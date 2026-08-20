@@ -39,7 +39,7 @@ interface DSPanelProps {
 /**
  * Pacte OS — Canonical Panel.
  * Canonical panel component for new code. Module-specific dialects
- * (HUDFrame for Health, AuraWidget for Finance metric cards) coexist
+ * (HUDFrame for Health, Prism for Analytics) coexist
  * by design — they encode module identity that DSPanel doesn't aim to absorb.
  *
  * - tier="primary"   → signature visualization, corner brackets 16px, inner glow

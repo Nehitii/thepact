@@ -1138,3 +1138,27 @@
   background: var(--cy-rouge); color: #180205;
   box-shadow: 0 0 22px rgba(255, 59, 78, 0.3);
 }
+
+/* Ce qui est acquis : range, consultable, et defaisable. */
+.cy-replies.est-acquis { border-style: solid; border-color: color-mix(in oklab, var(--cy-vert) 40%, transparent); }
+.cy-replies.est-acquis svg { color: var(--cy-vert); transform: none; }
+.cy-replies.est-acquis em { color: var(--cy-vert); }
+
+.cy-acquises { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.cy-piece.est-acquise {
+  border-color: color-mix(in oklab, var(--cy-vert) 40%, transparent);
+  background: color-mix(in oklab, var(--cy-vert) 7%, transparent);
+}
+.cy-piece.est-acquise i {
+  border-color: var(--cy-vert); background: none; color: var(--cy-vert);
+  transform: none;
+}
+.cy-piece.est-acquise i svg { transform: none; }
+.cy-piece.est-acquise span { color: var(--cy-encre-2); text-decoration: line-through; }
+.cy-piece.est-acquise b { color: var(--cy-vert); }
+.cy-piece.est-acquise:hover {
+  border-color: var(--cy-jaune); background: rgba(252, 238, 10, 0.07);
+}
+.cy-piece.est-acquise:hover i { border-color: var(--cy-jaune); color: var(--cy-jaune); }
+.cy-piece.est-acquise:hover span { color: var(--cy-encre); text-decoration: none; }
+.cy-piece.est-acquise:disabled { opacity: 0.5; cursor: not-allowed; }

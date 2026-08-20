@@ -177,7 +177,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           ? supabase.from("goals").select("id, created_at, start_date, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
-        supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
+        supabase.from("monthly_finance_validations").select("month, actual_total_income, actual_total_expenses").eq("user_id", user.id).not("validated_at", "is", null).order("month"),
         supabase.from("habit_logs").select("log_date, completed").eq("user_id", user.id).order("log_date", { ascending: false }).limit(400),
         supabase.from("todo_history").select("completed_at").eq("user_id", user.id),
         supabase.from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at").eq("user_id", user.id).eq("completed", true),
@@ -332,13 +332,23 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         return { date: h.entry_date, score: Math.round(avg * 20) };
       }).reverse();
 
-      // Finance trend
-      const financeTrend = finance.map((f: any) => ({
-        month: f.month?.slice(0, 7),
-        income: Number(f.income || 0),
-        expenses: Number(f.fixed_expenses || 0) + Number(f.variable_expenses || 0),
-        savings: Number(f.savings || 0),
-      }));
+/* La courbe financiere lisait une table « finance » que plus rien
+         n alimentait : deux lignes de fin 2025, aucune ecriture nulle
+         part dans le projet. Elle affichait donc un trace fige pendant
+         que les vrais chiffres vivaient dans les validations
+         mensuelles. Elle lit desormais celles-ci — seulement les mois
+         reellement valides, puisqu un mois non valide n a pas de
+         montants constates. L epargne est ce qui reste. */
+      const financeTrend = finance.map((f: any) => {
+        const entrees = Number(f.actual_total_income || 0);
+        const sorties = Number(f.actual_total_expenses || 0);
+        return {
+          month: f.month?.slice(0, 7),
+          income: entrees,
+          expenses: sorties,
+          savings: Math.max(0, entrees - sorties),
+        };
+      });
 
       /* Habitudes, jour par jour.
        *

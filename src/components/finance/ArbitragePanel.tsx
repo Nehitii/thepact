@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, Coins, PackageCheck, Target, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Coins, PackageCheck, Target, Sparkles, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency, getCurrencySymbol } from "@/lib/currency";
@@ -125,6 +125,27 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
     return lots.filter((l) => l.pieces.length > 0 && l.pieces.every((p) => panier.has(p.id)));
   }, [lots, panier]);
 
+  /* Ce qui est deja acquis quitte l arbitrage — il n y a plus rien a
+     arbitrer dessus — mais reste consultable, et surtout defaisable.
+     Marquer quinze pieces d un clic sans pouvoir revenir dessus etait
+     une porte a sens unique. */
+  const acquises = useMemo(
+    () => pieces.filter((p) => p.acquired_at).slice().sort((a, b) => b.price - a.price),
+    [pieces],
+  );
+  const [voirAcquises, setVoirAcquises] = useState(false);
+  const totalAcquis = acquises.reduce((s, p) => s + p.price, 0);
+
+  const defaire = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    try {
+      await acquerir.mutateAsync({ ids, acquis: false });
+      toast.success(t("finance.arb.defait", { count: ids.length }));
+    } catch (e) {
+      toast.error(t("finance.arb.acquisEchec"), { description: (e as Error).message });
+    }
+  };
+
   /* Ce que la somme touche passe devant ; le reste se replie. Neuf
      objectifs deplies en permanence faisaient deux ecrans et demi
      pour une decision qui n en concerne que deux ou trois. */
@@ -184,7 +205,9 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
     return <p className="cy-arb-etat">{t("finance.arb.chargement")}</p>;
   }
 
-  if (lots.length === 0) {
+  /* L etat vide ne vaut que s il n y a VRAIMENT rien : tout acquis, il
+     masquerait le seul endroit d ou l on peut revenir en arriere. */
+  if (lots.length === 0 && acquises.length === 0) {
     return (
       <p className="cy-arb-etat">
         <b>{t("finance.arb.videTitre")}</b>
@@ -309,6 +332,43 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
           <span>{formatCurrency(resteIntact, currency)}</span>
           <em>{toutVoir ? t("finance.arb.masquer") : t("finance.arb.afficher")}</em>
         </button>
+      )}
+
+      {/* Ce qui est acquis : consultable, et defaisable. */}
+      {acquises.length > 0 && (
+        <>
+          <button
+            type="button"
+            className="cy-replies est-acquis"
+            aria-expanded={voirAcquises}
+            onClick={() => setVoirAcquises((v) => !v)}
+          >
+            <PackageCheck aria-hidden="true" />
+            <b>{t("finance.arb.dejaAcquises", { count: acquises.length })}</b>
+            <span>{formatCurrency(totalAcquis, currency)}</span>
+            <em>{voirAcquises ? t("finance.arb.masquer") : t("finance.arb.afficher")}</em>
+          </button>
+
+          {voirAcquises && (
+            <div className="cy-acquises">
+              {acquises.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="cy-piece est-acquise"
+                  onClick={() => defaire([p.id])}
+                  title={t("finance.arb.defaireUne")}
+                  aria-label={t("finance.arb.defaireNommee", { nom: p.name })}
+                  disabled={acquerir.isPending}
+                >
+                  <i aria-hidden="true"><Undo2 /></i>
+                  <span>{p.name}</span>
+                  <b>{formatCurrency(p.price, currency)}</b>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Le pied ──────────────────────────────────────── */}

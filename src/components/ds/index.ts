@@ -40,11 +40,9 @@ export { DSLoadingState } from "./DSLoadingState";
 
 /* ─── Module dialects — assumed by design ─────────────────────
  * Canonical DSPanel is the default for new code. Module-specific
- * dialects (HUDFrame for Health, AuraWidget for Finance metric cards,
  * Prism sub-components for Analytics) coexist legitimately — they
  * encode module identity that DSPanel doesn't aim to absorb.
  * ───────────────────────────────────────────────────────────── */
-export { AuraWidget } from "@/components/finance/aura/AuraWidget";
 export { HUDFrame } from "@/components/health/HUDFrame";
 export { ModuleHeader } from "@/components/layout/ModuleHeader";
 export type { ModuleHeaderBadge } from "@/components/layout/ModuleHeader";

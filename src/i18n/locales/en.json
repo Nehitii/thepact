@@ -46,7 +46,9 @@
     "selected": "selected",
     "done": "Done",
     "on": "ON",
-    "off": "OFF"
+    "off": "OFF",
+    "or": "or",
+    "previous": "Previous"
   },
   "auth": {
     "brand": "Pact",
@@ -200,7 +202,8 @@
         "goalsSteps": "Goals & Steps",
         "journal": "Journal Entries",
         "finance": "Finance Data",
-        "data": "Data"
+        "data": "Data",
+        "health": "Health"
       },
       "allDesc": "Complete backup of all your data",
       "goalsDesc": "Your goals and their steps only",
@@ -211,7 +214,8 @@
         "stepsCompleted": "Steps Completed",
         "journalEntries": "Journal Entries",
         "achievements": "Achievements"
-      }
+      },
+      "healthDesc": "Wellness check-ins, sleep, activity & stress data (CSV)"
     }
   },
   "todo": {
@@ -639,76 +643,32 @@
     "doneLabel": "Completed"
   },
   "finance": {
-    "analytics": {
-      "incomeVsExpenses": "Income vs Expenses",
-      "last6Months": "Last 6 months",
-      "perYear": "per year",
-      "monthComparison": "Month Comparison",
-      "noPreviousMonth": "No previous validated month to compare",
-      "topExpenses": "Top Expenses"
-    },
     "dashboard": "Finance Dashboard",
-    "dashboardSubtitle": "Track your project financing & monthly budget",
     "title": "TRACK FINANCE",
     "subtitle": "Your financial command center",
     "tabs": {
       "overview": "Overview",
       "monthly": "Monthly",
-      "projections": "Projections",
-      "dashboard": "Dashboard",
-      "budget": "Budget",
-      "planner": "Planner",
-      "accounts": "Accounts",
-      "transactions": "Transactions"
+      "dashboard": "Dashboard"
     },
     "vault": {
-      "heroAria": "Vault overview",
-      "tickerAria": "Live financial summary",
-      "cashFlow30d": "Cash flow · 30d",
-      "vsLastMonth": "vs last month",
-      "liquidity": "Liquidity",
-      "burnRate": "Burn rate",
-      "mo": "mo",
-      "moShort": "mo",
-      "mom": "MoM"
+      "mo": "mo"
     },
     "aura": {
-      "heroAria": "Total balance overview",
-      "totalBalance": "Total Balance",
       "thisMonth": "this month",
-      "noComparison": "No previous data",
-      "accounts": "accounts",
-      "cashFlow30d": "Cash flow · 30 days",
-      "recurring": "Recurring monthly",
-      "netCashflow": "Net cash flow",
-      "forecast": "Forecast",
-      "forecastSubtitle": "Long-term financial projections"
+      "recurring": "Recurring monthly"
     },
     "export": {
       "title": "Export",
-      "success": "Report exported",
-      "fullReport": "Full Report (CSV)"
+      "success": "Report exported"
     },
     "transactions": {
       "title": "Bank Transactions",
       "subtitle": "Track all your bank operations in detail",
       "add": "Add Transaction",
-      "addTitle": "New Transaction",
-      "importCsv": "Import CSV",
-      "csvImportTitle": "Import CSV Statement",
-      "csvSelectFile": "Select a CSV file",
-      "csvHint": "Supported formats: Date, Description, Amount",
-      "csvEmpty": "CSV file is empty or invalid",
-      "csvRowsParsed": "{{count}} transactions parsed",
-      "importBtn": "Import {{count}} transactions",
-      "importSuccess": "{{count}} transactions imported",
-      "importFailed": "Import failed",
-      "linkToAccount": "Link to account",
       "searchPlaceholder": "Search transactions…",
       "date": "Date",
       "description": "Description",
-      "descriptionPlaceholder": "e.g. Grocery store, Rent payment…",
-      "account": "Account",
       "category": "Category",
       "type": "Type",
       "note": "Note",
@@ -716,75 +676,40 @@
       "credit": "Credit",
       "empty": "No transactions yet",
       "emptyHint": "Add transactions manually or import from CSV",
-      "added": "Transaction added",
       "addFailed": "Failed to add transaction",
       "deleted": "Transaction deleted",
       "deleteFailed": "Failed to delete transaction",
-      "skippedRows": "{{count}} rows skipped (invalid date or amount)",
-      "chooseAnotherFile": "Choose another file",
       "thisMonth": "This month",
       "export": "Export"
-    },
-    "alerts": {
-      "negativeNet": "Negative monthly balance: {{amount}} deficit",
-      "budgetExceeded": "Budget exceeded for {{category}}: {{amount}} over limit",
-      "pendingValidation": "Last month's finances haven't been validated yet"
     },
     "healthScore": {
       "title": "Financial Health",
       "subtitle": "Score based on your habits",
-      "savingsRate": "Savings rate",
-      "budgetCompliance": "Budget compliance",
-      "validationStreak": "Validation streak",
-      "diversification": "Income diversity",
-      "excellent": "Excellent",
-      "good": "Good",
-      "average": "Average",
-      "needsWork": "Needs work"
+      "good": "Good"
     },
     "autoGenerate": {
       "title": "Auto-generate transactions",
       "description": "Create {{count}} transactions from recurring items",
       "generate": "Generate",
-      "autoNote": "Auto-generated from recurring items",
       "success": "{{count}} transactions created",
       "error": "Failed to generate transactions"
     },
     "accounts": {
-      "netWorth": "Net Worth",
-      "myAccounts": "My Accounts",
-      "addAccount": "Add Account",
-      "editAccount": "Edit Account",
-      "accountName": "Account Name",
-      "bankName": "Bank / Institution",
       "type": "Account Type",
-      "initialBalance": "Initial Balance",
-      "balanceAsOf": "Balance as of",
-      "computedBalance": "Live Balance",
-      "linkedTransactions": "{{count}} linked transactions",
-      "runningBalance": "Balance",
       "icon": "Icon",
       "color": "Color",
-      "added": "Account added",
       "updated": "Account updated",
       "deleted": "Account deleted",
       "saveFailed": "Failed to save account",
       "deleteFailed": "Failed to delete account",
       "empty": "No accounts yet",
       "emptyHint": "Add your bank accounts to track your balances",
-      "addFirst": "Add Your First Account",
-      "accountsCount": "{{count}} active accounts",
-      "inactive": "Inactive",
       "types": {
-        "checking": "Checking",
         "savings": "Savings",
-        "livret": "Savings Book",
         "investment": "Investment",
         "retirement": "Retirement",
         "insurance": "Life Insurance",
         "credit": "Credit",
-        "cash": "Cash",
-        "crypto": "Crypto",
         "other": "Other"
       }
     },
@@ -795,37 +720,21 @@
       "to": "To Account",
       "amount": "Amount",
       "note": "Note",
-      "notePlaceholder": "Optional note...",
-      "selectAccount": "Select an account",
-      "execute": "Execute Transfer",
       "success": "Transfer completed",
       "history": "Transfer History",
-      "noHistory": "No transfers yet",
-      "exceedsBalance": "Amount exceeds source balance ({{balance}})"
+      "noHistory": "No transfers yet"
     },
     "overview": {
-      "projectFinancing": "Project Financing",
-      "budgetOverview": "Budget overview",
-      "totalTarget": "Total Target",
-      "customTarget": "Custom Target",
-      "alreadyFunded": "Already Funded",
-      "financed": "Financed",
       "remaining": "Remaining",
       "progress": "Progress",
-      "notLinkedToGoals": "Not linked to goals",
       "custom": "Custom",
       "monthlyAllocation": "Monthly Allocation",
-      "monthsToGoal": "Months to Goal",
-      "onTrack": "On Track",
-      "behindSchedule": "Behind Schedule"
+      "onTrack": "On Track"
     },
     "smartFinancing": {
       "title": "Smart Financing",
       "subtitle": "Adjust your payment plan",
       "amountToFinance": "Amount to Finance",
-      "afterBalance": "After {{amount}} existing balance",
-      "existingBalance": "Existing Balance Available",
-      "existingBalanceHint": "Money already set aside for this project",
       "paymentDuration": "Payment Duration",
       "months": "months",
       "month": "month",
@@ -837,12 +746,7 @@
     "monthly": {
       "title": "Monthly Validation",
       "monthlyBalance": "Monthly Balance",
-      "currentPeriod": "Current period",
-      "sixMonthTrend": "6-Month Trend",
       "saved": "saved",
-      "notEnoughData": "Validate at least 2 months to see your trend",
-      "deficit": "deficit",
-      "selectMonth": "Select Month",
       "income": "Income",
       "expenses": "Expenses",
       "balance": "Balance",
@@ -854,17 +758,12 @@
       "incomeReceived": "Income Received",
       "additionalExpenses": "Additional Expenses",
       "additionalIncome": "Additional Income",
-      "plannedIncome": "Planned Income",
       "actualIncome": "Actual Income",
-      "plannedExpenses": "Planned Expenses",
       "actualExpenses": "Actual Expenses",
-      "unplannedIncome": "Unplanned Income",
-      "unplannedExpenses": "Unplanned Expenses",
       "validate": "Validate Month",
       "validateThisMonth": "Validate This Month",
       "validating": "Validating...",
       "validated": "Validated",
-      "notValidated": "Not Validated",
       "confirmIncome": "Confirm Income",
       "confirmExpenses": "Confirm Expenses",
       "confirmTip": "Confirm both your recurring expenses and income before validating.",
@@ -949,26 +848,8 @@
     },
     "projections": {
       "title": "Financial Projections",
-      "savingsRate": "Savings Rate",
-      "monthlyNet": "Monthly Net",
       "yearly": "Yearly",
-      "toGoal": "To Goal",
-      "balanceEvolution": "Balance Evolution",
-      "monthProjection": "12-month projection",
-      "expenseDistribution": "Expenses",
-      "byCategory": "By category",
-      "noExpenseData": "No expense data yet",
-      "addExpensesHint": "Add recurring expenses to see distribution",
-      "positiveBalance": "Positive monthly balance",
-      "negativeBalance": "Negative monthly balance",
-      "savingMessage": "You're saving {{amount}} per month. At this rate, you'll save {{yearly}} this year.",
-      "spendingMessage": "You're spending {{amount}} more than you earn each month. Consider reviewing your expenses.",
-      "actual": "Actual",
-      "projected": "Projected",
-      "realData": "Real Data",
-      "targetDate": "Target Date",
-      "projectedDate": "Projected Date",
-      "monthlyNeeded": "Monthly Needed"
+      "actual": "Actual"
     },
     "validation": {
       "title": "Monthly Validation",
@@ -982,7 +863,6 @@
       "confirmIncomeHint": "Confirm all income was received as expected.",
       "allIncomeReceived": "All income received correctly",
       "additionalTransactions": "Additional Transactions",
-      "additionalHint": "Add any unexpected expenses or income.",
       "addUnexpected": "Add any unexpected expenses or income.",
       "extraExpenses": "Extra Expenses",
       "extraIncome": "Extra Income",
@@ -990,7 +870,6 @@
       "reviewSummary": "Review your monthly summary before confirming.",
       "totalIncome": "Total Income",
       "totalExpenses": "Total Expenses",
-      "confirmAndValidate": "Confirm & Validate",
       "confirmValidate": "Confirm & Validate",
       "continue": "Continue",
       "total": "Total:",
@@ -1010,13 +889,9 @@
       "fundingTargetHint": "Enter a custom funding target for your project",
       "fundingTargetDefault": "Uses total from goal estimated costs",
       "monthlyAllocation": "Monthly Allocation",
-      "monthlyAllocationHint": "Amount to allocate monthly towards your project",
       "saved": "Settings saved",
       "saveFailed": "Failed to save settings",
       "saveSettings": "Save Settings",
-      "delimiterComma": "Comma (,)",
-      "delimiterSemicolon": "Semicolon (;)",
-      "delimiterTab": "Tab",
       "cibleAuto": "Sum of goals",
       "cibleManuelle": "Manual target",
       "allocationAide": "What you set aside each month. Left at zero, the horizon uses the month's balance.",
@@ -1027,21 +902,15 @@
       "title": "Category Budgets",
       "subtitle": "Set spending limits per category",
       "empty": "No budgets set",
-      "emptyHint": "Add a budget to track your spending by category",
-      "limitPlaceholder": "Monthly limit",
-      "exceeded": "Exceeded by {{amount}}",
-      "used": "used"
+      "emptyHint": "Add a budget to track your spending by category"
     },
     "savings": {
       "title": "Savings Goals",
       "subtitle": "Track progress towards your savings targets",
       "empty": "No savings goals yet",
       "goalName": "Goal Name",
-      "targetAmount": "Target Amount",
-      "currentAmount": "Current Amount",
       "deadline": "Deadline",
-      "daysLeft": "{{count}} days left",
-      "updateAmount": "Update amount"
+      "daysLeft": "{{count}} days left"
     },
     "sections": {
       "pacte": "The pact",
@@ -1084,7 +953,13 @@
       "horsPortee_one": "{{count}} goal out of reach",
       "horsPortee_other": "{{count}} goals out of reach",
       "afficher": "Show",
-      "masquer": "Hide"
+      "masquer": "Hide",
+      "dejaAcquises_one": "{{count}} item already acquired",
+      "dejaAcquises_other": "{{count}} items already acquired",
+      "defaireUne": "Put back as pending",
+      "defaireNommee": "Put « {{nom}} » back as pending",
+      "defait_one": "{{count}} item put back",
+      "defait_other": "{{count}} items put back"
     },
     "terminal": {
       "sous": "What the pact costs, what is paid, what is left to find — and the means to decide.",
@@ -1288,6 +1163,10 @@
       "success": "Health data exported successfully",
       "error": "Failed to export data",
       "noData": "No health data to export"
+    },
+    "actions": {
+      "breathing": "Breathing",
+      "checkin": "Check-in"
     }
   },
   "shop": {
@@ -1562,7 +1441,9 @@
       "toasts": {
         "updated": "Privacy updated",
         "updatedDesc": "Your privacy preferences have been saved."
-      }
+      },
+      "noSharedData": "NO SHARED DATA",
+      "shareRevoked": "Sharing revoked"
     },
     "notifications": {
       "title": "Notifications",
@@ -1583,7 +1464,8 @@
       "toasts": {
         "updated": "Settings updated",
         "updatedDesc": "Your notification preferences have been saved."
-      }
+      },
+      "quietHoursUpdated": "Quiet hours updated."
     },
     "displaySound": {
       "title": "Display & Sound",
@@ -1622,7 +1504,11 @@
         "motionSaved": "Motion preference saved.",
         "particleSaved": "Particle setting saved.",
         "saveFailed": "Failed to save sound settings"
-      }
+      },
+      "accentColor": "Accent colour",
+      "accentColorDesc": "Sets the accent colour across the whole interface",
+      "fontSize": "Font size",
+      "fontSizeDesc": "Adjusts text size across the app"
     },
     "boundedProfile": {
       "title": "Bounded Profile",
@@ -1792,16 +1678,11 @@
   "journal": {
     "title": "Journal",
     "subtitle": "Your thoughts, documented",
-    "newEntry": "New entry",
-    "editEntry": "Edit Entry",
-    "deleteEntry": "Delete Entry",
     "noEntries": "No entries yet",
-    "noEntriesDesc": "Start documenting your journey",
     "form": {
       "title": "Title",
       "titlePlaceholder": "Entry title...",
       "content": "Content",
-      "contentPlaceholder": "Write your thoughts...",
       "mood": "Mood",
       "lifeContext": "Life Context"
     },
@@ -1817,7 +1698,6 @@
       "work": "Work",
       "personal": "Personal",
       "health": "Health",
-      "relationships": "Relationships",
       "growth": "Growth"
     },
     "toasts": {
@@ -1831,7 +1711,6 @@
       "pinFailed": "Could not pin entry"
     },
     "loading": "Opening journal…",
-    "systemLabel": "JOURNAL // ACTIVE",
     "searchLabel": "Search the journal",
     "searchPlaceholder": "Search entries…",
     "filterLabel": "Filter entries",
@@ -1874,7 +1753,6 @@
       "close": "Close",
       "save": "Save",
       "draftRestored": "Draft restored",
-      "titleLabel": "Entry title",
       "titlePlaceholder": "Entry title…",
       "bodyPlaceholder": "Start writing…",
       "editorLoading": "Loading editor…",
@@ -2446,7 +2324,12 @@
     "noBlockedUsers": "NO BLOCKED USERS",
     "unblock": "UNBLOCK",
     "userUnblocked": "User unblocked",
-    "userUnblockedDesc": "The user has been removed from your block list."
+    "userUnblockedDesc": "The user has been removed from your block list.",
+    "activeAllies": "active",
+    "awaiting": "awaiting response",
+    "joinedShort": "joined",
+    "liveNow": "live now",
+    "pendingShort": "pending"
   },
   "guild": {
     "overview": "Overview",

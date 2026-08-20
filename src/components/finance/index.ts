@@ -1,7 +1,6 @@
 /**
  * Finance components barrel export.
  */
-export { FinanceOverviewCard } from "./FinanceOverviewCard";
 export { FinanceSettingsModal } from "./FinanceSettingsModal";
 
 export { SmartFinancingPanel } from "./SmartFinancingPanel";

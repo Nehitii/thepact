@@ -46,7 +46,9 @@
     "selected": "sélectionné(s)",
     "done": "Fait",
     "on": "OUI",
-    "off": "NON"
+    "off": "NON",
+    "or": "ou",
+    "previous": "Précédent"
   },
   "auth": {
     "brand": "Pact",
@@ -200,7 +202,8 @@
         "goalsSteps": "Objectifs & Étapes",
         "journal": "Entrées de journal",
         "finance": "Données financières",
-        "data": "Données"
+        "data": "Données",
+        "health": "Santé"
       },
       "allDesc": "Sauvegarde complète de toutes tes données",
       "goalsDesc": "Tes objectifs et leurs étapes uniquement",
@@ -211,7 +214,8 @@
         "stepsCompleted": "Étapes complétées",
         "journalEntries": "Entrées de journal",
         "achievements": "Succès"
-      }
+      },
+      "healthDesc": "Points du jour, sommeil, activité et stress (CSV)"
     }
   },
   "todo": {
@@ -640,75 +644,31 @@
   },
   "finance": {
     "dashboard": "Tableau de bord financier",
-    "dashboardSubtitle": "Suis le financement de ton projet et ton budget mensuel",
     "title": "SUIVI FINANCIER",
     "subtitle": "Ton centre de commande financier",
-    "analytics": {
-      "incomeVsExpenses": "Revenus vs Dépenses",
-      "last6Months": "6 derniers mois",
-      "perYear": "par an",
-      "monthComparison": "Comparaison mensuelle",
-      "noPreviousMonth": "Aucun mois validé précédent à comparer",
-      "topExpenses": "Top dépenses"
-    },
     "tabs": {
       "overview": "Vue d'ensemble",
       "monthly": "Mensuel",
-      "projections": "Projections",
-      "dashboard": "Tableau de bord",
-      "budget": "Budget",
-      "planner": "Planificateur",
-      "accounts": "Comptes",
-      "transactions": "Opérations"
+      "dashboard": "Tableau de bord"
     },
     "vault": {
-      "heroAria": "Vue d'ensemble du coffre",
-      "tickerAria": "Résumé financier en direct",
-      "cashFlow30d": "Flux · 30j",
-      "vsLastMonth": "vs mois dernier",
-      "liquidity": "Liquidité",
-      "burnRate": "Brûlage",
-      "mo": "mois",
-      "moShort": "mois",
-      "mom": "M/M"
+      "mo": "mois"
     },
     "aura": {
-      "heroAria": "Vue d'ensemble du solde",
-      "totalBalance": "Solde Total",
       "thisMonth": "ce mois-ci",
-      "noComparison": "Aucune donnée précédente",
-      "accounts": "comptes",
-      "cashFlow30d": "Flux de trésorerie · 30 jours",
-      "recurring": "Récurrent mensuel",
-      "netCashflow": "Flux net",
-      "forecast": "Prévisions",
-      "forecastSubtitle": "Projections financières à long terme"
+      "recurring": "Récurrent mensuel"
     },
     "export": {
       "title": "Exporter",
-      "success": "Rapport exporté",
-      "fullReport": "Rapport complet (CSV)"
+      "success": "Rapport exporté"
     },
     "transactions": {
       "title": "Opérations bancaires",
       "subtitle": "Suis toutes tes opérations bancaires en détail",
       "add": "Ajouter une opération",
-      "addTitle": "Nouvelle opération",
-      "importCsv": "Importer CSV",
-      "csvImportTitle": "Importer un relevé CSV",
-      "csvSelectFile": "Sélectionner un fichier CSV",
-      "csvHint": "Formats supportés : Date, Description, Montant",
-      "csvEmpty": "Le fichier CSV est vide ou invalide",
-      "csvRowsParsed": "{{count}} opérations détectées",
-      "importBtn": "Importer {{count}} opérations",
-      "importSuccess": "{{count}} opérations importées",
-      "importFailed": "Échec de l'import",
-      "linkToAccount": "Lier à un compte",
       "searchPlaceholder": "Rechercher des opérations…",
       "date": "Date",
       "description": "Description",
-      "descriptionPlaceholder": "ex. Courses, Loyer…",
-      "account": "Compte",
       "category": "Catégorie",
       "type": "Type",
       "note": "Note",
@@ -716,75 +676,40 @@
       "credit": "Crédit",
       "empty": "Aucune opération",
       "emptyHint": "Ajoute des opérations manuellement ou importe un CSV",
-      "added": "Opération ajoutée",
       "addFailed": "Échec de l'ajout",
       "deleted": "Opération supprimée",
       "deleteFailed": "Échec de la suppression",
-      "skippedRows": "{{count}} lignes ignorées (date ou montant invalide)",
-      "chooseAnotherFile": "Choisir un autre fichier",
       "thisMonth": "Ce mois",
       "export": "Exporter"
-    },
-    "alerts": {
-      "negativeNet": "Solde mensuel négatif : {{amount}} de déficit",
-      "budgetExceeded": "Budget dépassé pour {{category}} : {{amount}} au-dessus de la limite",
-      "pendingValidation": "Les finances du mois dernier n'ont pas encore été validées"
     },
     "healthScore": {
       "title": "Santé financière",
       "subtitle": "Score basé sur vos habitudes",
-      "savingsRate": "Taux d'épargne",
-      "budgetCompliance": "Respect des budgets",
-      "validationStreak": "Série de validations",
-      "diversification": "Diversité des revenus",
-      "excellent": "Excellent",
-      "good": "Bon",
-      "average": "Moyen",
-      "needsWork": "À améliorer"
+      "good": "Bon"
     },
     "autoGenerate": {
       "title": "Générer les transactions",
       "description": "Créer {{count}} transactions depuis les récurrents",
       "generate": "Générer",
-      "autoNote": "Généré automatiquement depuis les récurrents",
       "success": "{{count}} transactions créées",
       "error": "Erreur lors de la génération"
     },
     "accounts": {
-      "netWorth": "Patrimoine net",
-      "myAccounts": "Mes comptes",
-      "addAccount": "Ajouter un compte",
-      "editAccount": "Modifier le compte",
-      "accountName": "Nom du compte",
-      "bankName": "Banque / Institution",
       "type": "Type de compte",
-      "initialBalance": "Solde initial",
-      "balanceAsOf": "Solde au",
-      "computedBalance": "Solde en temps réel",
-      "linkedTransactions": "{{count}} opérations liées",
-      "runningBalance": "Solde",
       "icon": "Icône",
       "color": "Couleur",
-      "added": "Compte ajouté",
       "updated": "Compte mis à jour",
       "deleted": "Compte supprimé",
       "saveFailed": "Échec de l'enregistrement",
       "deleteFailed": "Échec de la suppression",
       "empty": "Aucun compte",
       "emptyHint": "Ajoute tes comptes bancaires pour suivre tes soldes",
-      "addFirst": "Ajouter ton premier compte",
-      "accountsCount": "{{count}} comptes actifs",
-      "inactive": "Inactif",
       "types": {
-        "checking": "Courant",
         "savings": "Épargne",
-        "livret": "Livret",
         "investment": "Investissement",
         "retirement": "Retraite (PER)",
         "insurance": "Assurance-vie",
         "credit": "Crédit",
-        "cash": "Espèces",
-        "crypto": "Crypto",
         "other": "Autre"
       }
     },
@@ -795,37 +720,21 @@
       "to": "Vers le compte",
       "amount": "Montant",
       "note": "Note",
-      "notePlaceholder": "Note optionnelle...",
-      "selectAccount": "Sélectionner un compte",
-      "execute": "Exécuter le virement",
       "success": "Virement effectué",
       "history": "Historique des virements",
-      "noHistory": "Aucun virement",
-      "exceedsBalance": "Le montant dépasse le solde du compte source ({{balance}})"
+      "noHistory": "Aucun virement"
     },
     "overview": {
-      "projectFinancing": "Financement du projet",
-      "budgetOverview": "Aperçu du budget",
-      "totalTarget": "Objectif total",
-      "customTarget": "Objectif personnalisé",
-      "alreadyFunded": "Déjà financé",
-      "financed": "Financé",
       "remaining": "Restant",
       "progress": "Progression",
-      "notLinkedToGoals": "Non lié aux objectifs",
       "custom": "Personnalisé",
       "monthlyAllocation": "Allocation mensuelle",
-      "monthsToGoal": "Mois jusqu'à l'objectif",
-      "onTrack": "En bonne voie",
-      "behindSchedule": "En retard"
+      "onTrack": "En bonne voie"
     },
     "smartFinancing": {
       "title": "Financement intelligent",
       "subtitle": "Ajuste ton plan de paiement",
       "amountToFinance": "Montant à financer",
-      "afterBalance": "Après {{amount}} de solde existant",
-      "existingBalance": "Solde disponible existant",
-      "existingBalanceHint": "Argent déjà mis de côté pour ce projet",
       "paymentDuration": "Durée de paiement",
       "months": "mois",
       "month": "mois",
@@ -837,12 +746,7 @@
     "monthly": {
       "title": "Validation mensuelle",
       "monthlyBalance": "Solde mensuel",
-      "currentPeriod": "Période en cours",
-      "sixMonthTrend": "Tendance sur 6 mois",
       "saved": "économisé",
-      "notEnoughData": "Validez au moins 2 mois pour voir la tendance",
-      "deficit": "déficit",
-      "selectMonth": "Sélectionner le mois",
       "income": "Revenus",
       "expenses": "Dépenses",
       "balance": "Solde",
@@ -854,17 +758,12 @@
       "incomeReceived": "Revenus reçus",
       "additionalExpenses": "Dépenses supplémentaires",
       "additionalIncome": "Revenus supplémentaires",
-      "plannedIncome": "Revenus prévus",
       "actualIncome": "Revenus réels",
-      "plannedExpenses": "Dépenses prévues",
       "actualExpenses": "Dépenses réelles",
-      "unplannedIncome": "Revenus imprévus",
-      "unplannedExpenses": "Dépenses imprévues",
       "validate": "Valider le mois",
       "validateThisMonth": "Valider ce mois",
       "validating": "Validation…",
       "validated": "Validé",
-      "notValidated": "Non validé",
       "confirmIncome": "Confirmer les revenus",
       "confirmExpenses": "Confirmer les dépenses",
       "confirmTip": "Confirme tes dépenses et revenus récurrents avant de valider.",
@@ -949,26 +848,8 @@
     },
     "projections": {
       "title": "Projections financières",
-      "savingsRate": "Taux d'épargne",
-      "monthlyNet": "Net mensuel",
       "yearly": "Annuel",
-      "toGoal": "Objectif",
-      "balanceEvolution": "Évolution du solde",
-      "monthProjection": "Projection sur 12 mois",
-      "expenseDistribution": "Dépenses",
-      "byCategory": "Par catégorie",
-      "noExpenseData": "Pas encore de données de dépenses",
-      "addExpensesHint": "Ajoute des dépenses récurrentes pour voir la répartition",
-      "positiveBalance": "Solde mensuel positif",
-      "negativeBalance": "Solde mensuel négatif",
-      "savingMessage": "Tu économises {{amount}} par mois. À ce rythme, tu auras économisé {{yearly}} cette année.",
-      "spendingMessage": "Tu dépenses {{amount}} de plus que tes revenus chaque mois. Pense à revoir tes dépenses.",
-      "actual": "Réel",
-      "projected": "Projeté",
-      "realData": "Données réelles",
-      "targetDate": "Date cible",
-      "projectedDate": "Date projetée",
-      "monthlyNeeded": "Mensuel requis"
+      "actual": "Réel"
     },
     "validation": {
       "title": "Validation mensuelle",
@@ -982,7 +863,6 @@
       "confirmIncomeHint": "Confirme que tous les revenus ont été reçus correctement.",
       "allIncomeReceived": "Tous les revenus reçus correctement",
       "additionalTransactions": "Transactions supplémentaires",
-      "additionalHint": "Ajoute des dépenses ou revenus imprévus.",
       "addUnexpected": "Ajoute des dépenses ou revenus imprévus.",
       "extraExpenses": "Dépenses supplémentaires",
       "extraIncome": "Revenus supplémentaires",
@@ -990,7 +870,6 @@
       "reviewSummary": "Vérifie ton résumé mensuel avant de confirmer.",
       "totalIncome": "Revenus totaux",
       "totalExpenses": "Dépenses totales",
-      "confirmAndValidate": "Confirmer et valider",
       "confirmValidate": "Confirmer et valider",
       "continue": "Continuer",
       "total": "Total :",
@@ -1010,13 +889,9 @@
       "fundingTargetHint": "Entre un objectif de financement personnalisé",
       "fundingTargetDefault": "Utilise le total des coûts estimés des objectifs",
       "monthlyAllocation": "Allocation mensuelle",
-      "monthlyAllocationHint": "Montant à allouer chaque mois",
       "saved": "Paramètres enregistrés",
       "saveFailed": "Échec de l'enregistrement",
       "saveSettings": "Enregistrer",
-      "delimiterComma": "Virgule (,)",
-      "delimiterSemicolon": "Point-virgule (;)",
-      "delimiterTab": "Tabulation",
       "cibleAuto": "Somme des objectifs",
       "cibleManuelle": "Cible manuelle",
       "allocationAide": "Ce que vous mettez de côté chaque mois. Laissée à zéro, l horizon utilise le solde du mois.",
@@ -1027,21 +902,15 @@
       "title": "Budgets par catégorie",
       "subtitle": "Définis des limites de dépenses par catégorie",
       "empty": "Aucun budget défini",
-      "emptyHint": "Ajoute un budget pour suivre tes dépenses par catégorie",
-      "limitPlaceholder": "Limite mensuelle",
-      "exceeded": "Dépassé de {{amount}}",
-      "used": "utilisé"
+      "emptyHint": "Ajoute un budget pour suivre tes dépenses par catégorie"
     },
     "savings": {
       "title": "Objectifs d'épargne",
       "subtitle": "Suis ta progression vers tes objectifs d'épargne",
       "empty": "Aucun objectif d'épargne",
       "goalName": "Nom de l'objectif",
-      "targetAmount": "Montant cible",
-      "currentAmount": "Montant actuel",
       "deadline": "Échéance",
-      "daysLeft": "{{count}} jours restants",
-      "updateAmount": "Mettre à jour le montant"
+      "daysLeft": "{{count}} jours restants"
     },
     "sections": {
       "pacte": "Le pacte",
@@ -1084,7 +953,13 @@
       "horsPortee_one": "{{count}} objectif hors de portée",
       "horsPortee_other": "{{count}} objectifs hors de portée",
       "afficher": "Afficher",
-      "masquer": "Masquer"
+      "masquer": "Masquer",
+      "dejaAcquises_one": "{{count}} pièce déjà acquise",
+      "dejaAcquises_other": "{{count}} pièces déjà acquises",
+      "defaireUne": "Remettre en attente",
+      "defaireNommee": "Remettre « {{nom}} » en attente",
+      "defait_one": "{{count}} pièce remise en attente",
+      "defait_other": "{{count}} pièces remises en attente"
     },
     "terminal": {
       "sous": "Ce que coûte le pacte, ce qui est payé, ce qu il reste à trouver — et de quoi arbitrer.",
@@ -1288,6 +1163,10 @@
       "success": "Données exportées avec succès",
       "error": "Échec de l'export",
       "noData": "Aucune donnée à exporter"
+    },
+    "actions": {
+      "breathing": "Respiration",
+      "checkin": "Point du jour"
     }
   },
   "shop": {
@@ -1562,7 +1441,9 @@
       "toasts": {
         "updated": "Confidentialité mise à jour",
         "updatedDesc": "Tes préférences ont été enregistrées."
-      }
+      },
+      "noSharedData": "AUCUNE DONNÉE PARTAGÉE",
+      "shareRevoked": "Partage révoqué"
     },
     "notifications": {
       "title": "Notifications",
@@ -1583,7 +1464,8 @@
       "toasts": {
         "updated": "Paramètres mis à jour",
         "updatedDesc": "Tes préférences de notification ont été enregistrées."
-      }
+      },
+      "quietHoursUpdated": "Heures calmes mises à jour."
     },
     "displaySound": {
       "title": "Affichage & Son",
@@ -1622,7 +1504,11 @@
         "motionSaved": "Préférence de mouvement enregistrée.",
         "particleSaved": "Paramètre de particules enregistré.",
         "saveFailed": "Échec de l'enregistrement des paramètres sonores"
-      }
+      },
+      "accentColor": "Couleur primaire",
+      "accentColorDesc": "Personnalise la couleur d'accent de toute l'interface",
+      "fontSize": "Taille de police",
+      "fontSizeDesc": "Ajuste la taille du texte dans toute l'application"
     },
     "boundedProfile": {
       "title": "Profil lié",
@@ -1792,16 +1678,11 @@
   "journal": {
     "title": "Journal",
     "subtitle": "Tes pensées, documentées",
-    "newEntry": "Nouvelle entree",
-    "editEntry": "Modifier l'entrée",
-    "deleteEntry": "Supprimer l'entrée",
     "noEntries": "Aucune entree pour l instant",
-    "noEntriesDesc": "Commence à documenter ton parcours",
     "form": {
       "title": "Titre",
       "titlePlaceholder": "Titre de l'entrée...",
       "content": "Contenu",
-      "contentPlaceholder": "Écris tes pensées...",
       "mood": "Humeur",
       "lifeContext": "Contexte de vie"
     },
@@ -1817,7 +1698,6 @@
       "work": "Travail",
       "personal": "Personnel",
       "health": "Santé",
-      "relationships": "Relations",
       "growth": "Croissance"
     },
     "toasts": {
@@ -1831,7 +1711,6 @@
       "pinFailed": "Epinglage impossible"
     },
     "loading": "Ouverture du journal…",
-    "systemLabel": "JOURNAL // ACTIF",
     "searchLabel": "Rechercher dans le journal",
     "searchPlaceholder": "Rechercher dans les entrees…",
     "filterLabel": "Filtrer les entrees",
@@ -1874,7 +1753,6 @@
       "close": "Fermer",
       "save": "Enregistrer",
       "draftRestored": "Brouillon restaure",
-      "titleLabel": "Titre de l entree",
       "titlePlaceholder": "Titre de l entree…",
       "bodyPlaceholder": "Commencez a ecrire…",
       "editorLoading": "Chargement de l editeur…",
@@ -2446,7 +2324,12 @@
     "noBlockedUsers": "AUCUN UTILISATEUR BLOQUÉ",
     "unblock": "DÉBLOQUER",
     "userUnblocked": "Utilisateur débloqué",
-    "userUnblockedDesc": "L'utilisateur a été retiré de ta liste de blocage."
+    "userUnblockedDesc": "L'utilisateur a été retiré de ta liste de blocage.",
+    "activeAllies": "actifs",
+    "awaiting": "en attente de réponse",
+    "joinedShort": "rejoints",
+    "liveNow": "en ligne",
+    "pendingShort": "en attente"
   },
   "guild": {
     "overview": "Vue d'ensemble",
