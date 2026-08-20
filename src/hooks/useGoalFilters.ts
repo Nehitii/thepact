@@ -10,7 +10,7 @@ import { filterGoalsByRule, type SuperGoalRule } from "@/components/goals/super/
 
 export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression" | "super_first" | "super_last";
 export type SortDirection = "asc" | "desc";
-export type DisplayMode = "bar" | "grid" | "bookmark";
+export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
 export type GoalTab = "all" | "active" | "completed";
 
 const STORAGE_KEY = "goals-page-settings";

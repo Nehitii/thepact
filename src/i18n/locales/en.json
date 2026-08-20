@@ -643,7 +643,8 @@
     "views": {
       "grid": "Grid",
       "list": "List",
-      "bar": "Bar"
+      "bar": "Bar",
+      "front": "The front"
     },
     "emptyStates": {
       "noActiveGoals": "No active goals",
@@ -2434,5 +2435,16 @@
     "streakShort": "Streak",
     "callsShort": "Calls",
     "backToConsole": "Back to console"
+  },
+  "front": {
+    "title": "The front",
+    "engaged": "Engaged",
+    "everything": "Everything",
+    "scopeHint": "Steps from engaged goals, or from all",
+    "excluded": "not drawn",
+    "excludedHint": "Hide steps excluded from the draw",
+    "empty": "No open step",
+    "emptyEngaged": "No step on an engaged goal",
+    "seeAll": "See all {{n}} steps"
   }
 }

@@ -16,6 +16,8 @@ import {
 } from "@/components/goals/super";
 import { GoalsPagination } from "@/components/goals/GoalsPagination";
 import { GoalsRegistre } from "@/components/goals/GoalsRegistre";
+import { FrontListe } from "@/components/front/FrontListe";
+import { useEtapesOuvertes } from "@/hooks/useEtapesOuvertes";
 import type { Goal } from "@/hooks/useGoals";
 import type { DisplayMode, GoalTab } from "@/hooks/useGoalFilters";
 
@@ -81,6 +83,10 @@ export function GoalsList({
   unlockCode,
 }: GoalsListProps) {
   const navigate = useNavigate();
+  /* Les etapes du lot filtre — avant pagination : le front les montre
+     toutes, il ne se decoupe pas en pages. */
+  const { data: etapesOuvertes = [], isLoading: chargementEtapes } =
+    useEtapesOuvertes(buckets[activeTab], customDifficultyColor);
   const { t } = useTranslation();
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
@@ -121,7 +127,7 @@ export function GoalsList({
             onClick={(id) => handleNavigate(id)}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
-            displayMode={displayMode}
+            displayMode={displayMode === "front" ? "bar" : displayMode}
             imageUrl={goal.image_url}
           />
         </motion.div>
@@ -272,7 +278,13 @@ export function GoalsList({
               {/* La vue liste n'est plus une grille de cartes : c'est un
                   registre, une ligne par objectif. Le composant gere sa
                   propre disposition et sa bascule de regroupement. */}
-              {displayMode === "bookmark" ? (
+              {/* Le front lit le meme ensemble filtre que les cartes,
+                  mais avant la pagination : une etape n a pas de page,
+                  et decouper le front en tranches de dix objectifs
+                  n aurait aucun sens. */}
+              {displayMode === "front" ? (
+                <FrontListe etapes={etapesOuvertes} chargement={chargementEtapes} />
+              ) : displayMode === "bookmark" ? (
                 <GoalsRegistre
                   goals={paginated}
                   allGoals={allGoals}
@@ -291,11 +303,13 @@ export function GoalsList({
                   {paginated.map((goal) => renderGoalCard(goal))}
                 </motion.div>
               )}
-              <GoalsPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={(page) => setCurrentPage(activeTab, page)}
-              />
+              {displayMode !== "front" && (
+                <GoalsPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => setCurrentPage(activeTab, page)}
+                />
+              )}
             </>
           )}
         </motion.div>

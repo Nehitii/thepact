@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface GoalsSkeletonProps {
-  mode?: "bar" | "grid" | "bookmark";
+  mode?: "bar" | "grid" | "bookmark" | "front";
   count?: number;
 }
 

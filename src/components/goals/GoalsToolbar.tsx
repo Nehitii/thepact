@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
+  Crosshair,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -58,6 +59,9 @@ const MODES: { mode: DisplayMode; icon: typeof LayoutList; cle: string }[] = [
   { mode: "bar", icon: LayoutList, cle: "goals.views.bar" },
   { mode: "grid", icon: LayoutGrid, cle: "goals.views.grid" },
   { mode: "bookmark", icon: Bookmark, cle: "goals.views.list" },
+  /* Le front ne montre pas des objectifs mais leurs etapes ouvertes :
+     la meme page, lue par ce qui reste a faire. */
+  { mode: "front", icon: Crosshair, cle: "goals.views.front" },
 ];
 
 const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [

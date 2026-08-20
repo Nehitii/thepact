@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback , useEffect } from "react";
 import "@/styles/cyberpunk.css";
 import "@/styles/goals.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
@@ -41,6 +41,19 @@ export default function Goals() {
   const loading = !user || goalsLoading;
 
   const filters = useGoalFilters(goals);
+
+  /* « /goals?vue=front » ouvre directement la vue des etapes : c est
+     le lien que pose le bloc de l accueil. On consomme le parametre
+     aussitot lu, sinon un retour arriere ramenerait la vue de force
+     alors que l utilisateur en a change entre-temps. */
+  const [parametres, setParametres] = useSearchParams();
+  useEffect(() => {
+    if (parametres.get("vue") !== "front") return;
+    filters.setDisplayMode("front");
+    const p = new URLSearchParams(parametres);
+    p.delete("vue");
+    setParametres(p, { replace: true });
+  }, [parametres, setParametres, filters]);
 
   // Optimistic focus toggle — React Query mutation with prefix-scoped invalidation
   const focusKey = ["goals", pact?.id] as const;

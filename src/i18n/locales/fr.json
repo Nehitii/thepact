@@ -643,7 +643,8 @@
     "views": {
       "grid": "Grille",
       "list": "Liste",
-      "bar": "Barre"
+      "bar": "Barre",
+      "front": "Le front"
     },
     "emptyStates": {
       "noActiveGoals": "Aucun objectif actif",
@@ -2434,5 +2435,16 @@
     "streakShort": "Serie",
     "callsShort": "Appels",
     "backToConsole": "Retour au poste"
+  },
+  "front": {
+    "title": "Le front",
+    "engaged": "Engagés",
+    "everything": "Tout",
+    "scopeHint": "Étapes des objectifs engagés, ou de tous",
+    "excluded": "hors tirage",
+    "excludedHint": "Masquer les étapes exclues du tirage",
+    "empty": "Aucune étape ouverte",
+    "emptyEngaged": "Aucune étape sur un objectif engagé",
+    "seeAll": "Voir les {{n}} étapes"
   }
 }
