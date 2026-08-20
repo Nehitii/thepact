@@ -1031,3 +1031,110 @@
 
 /* Le formulaire d ajout, quand il s ouvre. */
 .cy .neu-inset { background: #0F141A !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   LA GRILLE DES CATEGORIES
+   Un menu deroulant ne montre qu une valeur a la fois, et son
+   libelle disparait des que la colonne se resserre. La grille
+   les montre toutes, avec leur nom.
+   ═══════════════════════════════════════════════════════════ */
+.cy-cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 520px) { .cy-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.cy-cat {
+  --cy-cat: var(--cy-encre-3);
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 10px; cursor: pointer; text-align: left;
+  background: #0A0E13; border: 1px solid var(--cy-trait);
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  transition: border-color 160ms, background 160ms;
+}
+.cy-cat svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--cy-cat); }
+.cy-cat span {
+  font-family: var(--cy-titre); font-size: max(13px, 0.8125rem);
+  letter-spacing: 0.02em; color: var(--cy-encre-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cy-cat:hover { border-color: var(--cy-trait-fort); }
+.cy-cat[aria-checked="true"] {
+  border-color: var(--cy-cat);
+  background: color-mix(in oklab, var(--cy-cat) 12%, #0A0E13);
+}
+.cy-cat[aria-checked="true"] span { color: var(--cy-encre); }
+
+/* ═══════════════════════════════════════════════════════════
+   UNE LIGNE RECURRENTE
+   Les actions ne se cachent plus derriere le survol : elles
+   n existaient pas au doigt, et on ne devine pas ce qu on ne
+   voit pas. L etat inactif se dit, au lieu de se deviner a une
+   opacite qu un style en ligne ecrasait.
+   ═══════════════════════════════════════════════════════════ */
+.cy-ligne {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 44px; padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  transition: background 160ms;
+}
+.cy-ligne:last-child { border-bottom: 0; }
+.cy-ligne:hover { background: rgba(255, 255, 255, 0.022); }
+
+.cy-ligne-vignette { width: 18px; height: 18px; flex-shrink: 0; object-fit: cover; }
+.cy-ligne-nom {
+  flex: 1; min-width: 0;
+  font-family: var(--cy-titre); font-size: max(13.5px, 0.844rem);
+  color: var(--cy-encre); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cy-ligne-montant {
+  font-family: var(--cy-mono); font-size: max(11.5px, 0.72rem); font-weight: 700;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.cy-ligne[data-type="expense"] .cy-ligne-montant { color: var(--cy-rouge-encre); }
+.cy-ligne[data-type="income"] .cy-ligne-montant { color: var(--cy-vert); }
+
+/* Une ligne coupee se lit coupee. */
+.cy-ligne[data-actif="0"] .cy-ligne-nom,
+.cy-ligne[data-actif="0"] .cy-ligne-montant {
+  color: var(--cy-encre-3); text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.cy-ligne[data-actif="0"] .cy-ligne-vignette { filter: grayscale(1); opacity: 0.5; }
+
+.cy-ligne-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.cy-ligne-actions button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; cursor: pointer;
+  background: none; border: 1px solid transparent; color: var(--cy-encre-3);
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+.cy-ligne-actions button svg { width: 14px; height: 14px; }
+.cy-ligne-actions button:hover {
+  color: var(--cy-encre); border-color: var(--cy-trait); background: #0A0E13;
+}
+.cy-ligne-actions button.est-rouge:hover { color: var(--cy-rouge-encre); border-color: var(--cy-rouge-encre); }
+.cy-ligne-actions button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
+@media (pointer: coarse) { .cy-ligne-actions button { width: 44px; height: 44px; } }
+
+/* L invitation a ajouter : franche, pas un pointille timide. */
+.cy-ajouter {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; min-height: 46px; cursor: pointer;
+  background: rgba(252, 238, 10, 0.06); border: 1px solid var(--cy-jaune);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  font-family: var(--cy-chiffre); font-size: max(10.5px, 0.656rem); font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cy-jaune);
+  transition: background 180ms, box-shadow 180ms;
+}
+.cy-ajouter svg { width: 15px; height: 15px; }
+.cy-ajouter:hover {
+  background: rgba(252, 238, 10, 0.14);
+  box-shadow: 0 0 24px rgba(252, 238, 10, 0.2);
+}
+@media (pointer: coarse) { .cy-ajouter { min-height: 48px; } }
+
+.cy-lignes { padding: 0 6px 8px; }
+
+/* Le bouton qui detruit ne porte pas le vert de ce qui valide. */
+.cy-valider.est-rouge {
+  background: var(--cy-rouge); color: #180205;
+  box-shadow: 0 0 22px rgba(255, 59, 78, 0.3);
+}

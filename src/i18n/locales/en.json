@@ -1110,6 +1110,21 @@
       "moisAValider": "{{mois}} is not validated yet.",
       "moisValide": "{{mois}} is validated.",
       "validerLeMois": "Validate the month"
+    },
+    "ligne": {
+      "titreAjout": {
+        "expense": "Add an expense",
+        "income": "Add income"
+      },
+      "titreEdition": "Edit the line",
+      "libelle": "Label",
+      "montant": "Amount",
+      "montantAide": "The amount that lands every month.",
+      "icone": "Icon",
+      "ajouter": "Add",
+      "enregistrer": "Save",
+      "modifierNommee": "Edit « {{nom}} »",
+      "supprimerNommee": "Delete « {{nom}} »"
     }
   },
   "health": {

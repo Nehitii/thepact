@@ -26,6 +26,10 @@ export function createTableCrudHooks<TRow extends { id: string }>(
   options: CrudFactoryOptions,
 ) {
   const requireUser = options.requireUser ?? true;
+  /* Le client typé n accepte pas un nom de table variable : le seul
+     elargissement du fichier est concentre ici. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const table = () => (supabase as any).from(tableName);
   const key = options.queryKey;
 
   function useList() {
@@ -34,7 +38,7 @@ export function createTableCrudHooks<TRow extends { id: string }>(
       queryKey: [key, requireUser ? user?.id : "all"],
       queryFn: async () => {
         if (requireUser && !user?.id) return [] as TRow[];
-        let q: any = (supabase as any).from(tableName).select("*");
+        let q: any = table().select("*");
         if (requireUser) q = q.eq("user_id", user!.id);
         if (options.orderBy) {
           q = q.order(options.orderBy.column, {
@@ -58,9 +62,31 @@ export function createTableCrudHooks<TRow extends { id: string }>(
         const row: any = requireUser
           ? { ...payload, user_id: user!.id }
           : payload;
-        const { data, error } = await (supabase as any)
-          .from(tableName)
-          .upsert(row)
+        /* Une modification partielle n est pas un « upsert ».
+         *
+         * « upsert » envoie un INSERT … ON CONFLICT : la ligne inseree
+         * doit etre constructible AVANT que le conflit soit vu. Un
+         * appel qui ne porte que { id, is_active } echoue donc sur les
+         * colonnes obligatoires absentes — « name » ici — et le serveur
+         * repond 400. C est ce qui empechait de desactiver une ligne
+         * recurrente : le geste partait, et rien ne revenait.
+         *
+         * Avec un identifiant on met a jour ; sans, on insere. */
+        if (row.id) {
+          const { id, ...champs } = row;
+          let requete = table().update(champs).eq("id", id);
+          if (requireUser) requete = requete.eq("user_id", user!.id);
+          const { data, error } = await requete.select();
+          if (error) throw error;
+          /* Une regle de securite qui bloque ne renvoie pas d erreur
+             mais zero ligne : sans ce controle, l echec passerait pour
+             un succes. */
+          if (!data || data.length === 0) throw new Error("Aucune ligne modifiee");
+          return data[0] as TRow;
+        }
+
+        const { data, error } = await table()
+          .insert(row)
           .select()
           .single();
         if (error) throw error;
@@ -80,8 +106,7 @@ export function createTableCrudHooks<TRow extends { id: string }>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async (id: string) => {
-        const { error } = await (supabase as any)
-          .from(tableName)
+        const { error } = await table()
           .delete()
           .eq("id", id);
         if (error) throw error;

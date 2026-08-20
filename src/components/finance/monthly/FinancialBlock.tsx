@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import {
@@ -11,7 +11,7 @@ import {
 } from '@/lib/financeCategories';
 import type { FinancialItem } from '@/types/finance';
 import { CategoryGroup } from './CategoryGroup';
-import { AddItemForm } from './AddItemForm';
+import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 
 interface FinancialBlockProps {
   title: string;
@@ -40,8 +40,10 @@ export function FinancialBlock({
 }: FinancialBlockProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '', iconUrl: '' });
+  /* Une seule fenetre pour l ajout et la modification : la colonne
+     est trop etroite pour un formulaire en ligne, qui en debordait. */
+  const [fenetre, setFenetre] = useState(false);
+  const [ligneEditee, setLigneEditee] = useState<FinancialItem | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
@@ -56,28 +58,15 @@ export function FinancialBlock({
     });
   }, [items, categories]);
 
-  const handleSaveEdit = async () => {
-    if (!editingId || !editingData.name.trim() || !editingData.amount) return;
-    await onUpdate(
-      editingId,
-      editingData.name.trim(),
-      parseFloat(editingData.amount),
-      editingData.category || undefined,
-      undefined,
-      editingData.iconUrl || undefined,
-    );
-    setEditingId(null);
-  };
+  const ouvrirAjout = () => { setLigneEditee(null); setFenetre(true); };
+  const ouvrirEdition = (item: FinancialItem) => { setLigneEditee(item); setFenetre(true); };
 
-  const startEdit = (item: FinancialItem) => {
-    const itemCategory = getItemCategory(item, categories);
-    setEditingId(item.id);
-    setEditingData({
-      name: item.name,
-      amount: item.amount.toString(),
-      category: item.category || itemCategory.value,
-      iconUrl: item.icon_url || '',
-    });
+  const enregistrer = async (v: ValeursLigne) => {
+    if (ligneEditee) {
+      await onUpdate(ligneEditee.id, v.name, v.amount, v.category, v.iconEmoji, v.iconUrl);
+    } else {
+      await onAdd(v.name, v.amount, v.category, v.iconEmoji, v.iconUrl);
+    }
   };
 
   const DefaultIcon = categories[0]?.icon;
@@ -136,7 +125,10 @@ export function FinancialBlock({
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="px-6 pb-6 space-y-4">
-              <AddItemForm type={type} categories={categories} currency={currency} isPending={isPending} onAdd={onAdd} />
+              <button type="button" className="cy-ajouter" onClick={ouvrirAjout}>
+                <Plus aria-hidden="true" />
+                {t(`finance.ligne.titreAjout.${type}`)}
+              </button>
 
               {/* Category Groups */}
               <div className="space-y-3 max-h-[450px] overflow-y-auto scrollbar-thin pr-1">
@@ -161,12 +153,7 @@ export function FinancialBlock({
                         allCategories={categories}
                         isExpense={isExpense}
                         currency={currency}
-                        editingId={editingId}
-                        editingData={editingData}
-                        onStartEdit={startEdit}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={() => setEditingId(null)}
-                        onEditDataChange={setEditingData}
+                        onEdit={ouvrirEdition}
                         onDelete={onDelete}
                         onToggleActive={onToggleActive}
                       />
@@ -178,6 +165,16 @@ export function FinancialBlock({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <LigneRecurrente
+        ouvert={fenetre}
+        onOuvert={setFenetre}
+        type={type}
+        categories={categories}
+        ligne={ligneEditee}
+        onEnregistrer={enregistrer}
+        enCours={isPending}
+      />
     </motion.div>
   );
 }

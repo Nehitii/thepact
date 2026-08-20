@@ -1110,6 +1110,21 @@
       "moisAValider": "{{mois}} n est pas encore validé.",
       "moisValide": "{{mois}} est validé.",
       "validerLeMois": "Valider le mois"
+    },
+    "ligne": {
+      "titreAjout": {
+        "expense": "Ajouter une dépense",
+        "income": "Ajouter une entrée"
+      },
+      "titreEdition": "Modifier la ligne",
+      "libelle": "Libellé",
+      "montant": "Montant",
+      "montantAide": "Le montant qui tombe chaque mois.",
+      "icone": "Icône",
+      "ajouter": "Ajouter",
+      "enregistrer": "Enregistrer",
+      "modifierNommee": "Modifier « {{nom}} »",
+      "supprimerNommee": "Supprimer « {{nom}} »"
     }
   },
   "health": {
