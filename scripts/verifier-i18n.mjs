@@ -64,6 +64,21 @@ for (const f of fichiersSources(RACINE)) {
   }
 }
 
+/* Une page qui n appelle JAMAIS t() etait invisible pour ce
+   verificateur : il ne controle que les cles qu on lui donne. « The
+   Call » a ainsi vecu avec vingt-trois chaines anglaises en dur sans
+   qu aucun controle ne bronche. On signale desormais les pages muettes. */
+const muettes = [];
+for (const f of fichiersSources(RACINE)) {
+  const chemin = path.relative(process.cwd(), f).split(path.sep).join("/");
+  if (!chemin.startsWith("src/pages/")) continue;
+  const source = fs.readFileSync(f, "utf8");
+  if (source.includes("useTranslation") || source.includes("<Trans")) continue;
+  // Une page sans texte visible n a rien a traduire.
+  const textes = source.match(new RegExp(">[^<>{}]*[A-Za-z]{4,}[^<>{}]*<", "g")) || [];
+  if (textes.length >= 2) muettes.push({ chemin, textes: textes.length });
+}
+
 const manquantes = [];
 for (const cle of [...cles].sort()) {
   const absentes = LANGUES.filter((l) => !presente(traductions[l], cle));
@@ -83,6 +98,11 @@ const seulementA = [...a].filter((k) => !b.has(k));
 const seulementB = [...b].filter((k) => !a.has(k));
 
 console.log(`cles litterales utilisees : ${cles.size}`);
+if (muettes.length > 0) {
+  console.log(`
+${muettes.length} page(s) sans aucune traduction :`);
+  for (const m of muettes) console.log(`  ${m.chemin}   (~${m.textes} textes en dur)`);
+}
 console.log(`${LANGUES[0]} : ${a.size} traductions    ${LANGUES[1]} : ${b.size}`);
 
 if (seulementA.length || seulementB.length) {
