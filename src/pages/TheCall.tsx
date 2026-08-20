@@ -1,658 +1,648 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Zap, Check, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheCall } from "@/hooks/useTheCall";
 import { DSPageShell } from "@/components/ds";
+import { cn } from "@/lib/utils";
 
-// --- CONFIGURATION ---
-const HOLD_DURATION = 20000; // 20 seconds
-const PARTICLE_COUNT = 16;
+/* RIT.01 — L APPEL
+ *
+ * La page n a qu une fonction : maintenir vingt secondes, une fois par
+ * jour. Elle avait quatre defauts qui touchaient la donnee.
+ *
+ * 1. Le rituel se terminait sans le doigt qui l avait commence :
+ *    « pointercancel » n etait pas ecoute, et rien n annulait la boucle
+ *    au demontage. Un appui interrompu — un defilement, un appel, un
+ *    changement de page — la laissait courir jusqu au bout et ecrire.
+ * 2. L ecriture n etait ni attendue ni verifiee, et sortait en silence
+ *    si le pacte n etait pas encore charge : la page annoncait « ame
+ *    connectee » sans que rien ne soit enregistre.
+ * 3. La serie ne se cassait jamais, et 4. le verrou du jour comparait
+ *    une date locale a une date relue en UTC. Ces deux-la sont partis
+ *    en base, dans « enregistrer_appel » — voir « useTheCall ».
+ *
+ * S y ajoutent l acces clavier, qui n existait pas, et la boucle qui
+ * re-rendait tout l arbre soixante fois par seconde : la progression
+ * est maintenant peinte en imperatif, React ne voit que les paliers.
+ */
 
-// --- TYPES ---
-interface PactData {
-  id: string;
-  checkin_total_count: number;
-  checkin_streak: number;
-  last_checkin_date: string | null;
-}
+const DUREE = 20000;
+const NB_PARTICULES = 16;
 
-enum FinalSequenceState {
-  IDLE = "idle",
-  IMPLOSION = "implosion",
-  SINGULARITY = "singularity",
-  EXPLOSION = "explosion",
-  REVEAL = "reveal",
-  LOCKED = "locked",
-}
+/* Les trois couleurs de la montee. Ce sont des etapes d une jauge, pas
+   des couleurs d interface : elles restent nommees ici. */
+const FROID = [6, 182, 212] as const;
+const CHAUD = [139, 92, 246] as const;
+const BLANC = [255, 255, 255] as const;
 
-// --- UTILS ---
+type Phase =
+  | "attente" | "montee" | "critique"
+  | "implosion" | "singularite" | "explosion" | "revelation" | "verrouille";
+
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
+const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 const easeInExpo = (x: number) => (x === 0 ? 0 : Math.pow(2, 10 * x - 10));
+const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Detect prefers-reduced-motion
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const melange = (a: readonly number[], b: readonly number[], t: number) =>
+  `rgb(${Math.round(lerp(a[0], b[0], t))}, ${Math.round(lerp(a[1], b[1], t))}, ${Math.round(lerp(a[2], b[2], t))})`;
+
+const teinteDe = (p: number) =>
+  p < 0.5 ? melange(FROID, CHAUD, p * 2)
+    : p < 0.85 ? melange(CHAUD, [255, 0, 255], (p - 0.5) / 0.35)
+      : melange([255, 0, 255], BLANC, (p - 0.85) / 0.15);
+
+/* Le reglage etait lu une fois et jamais ecoute : le changer en cours
+   de session ne changeait rien. */
+function useMouvementReduit() {
+  const [reduit, setReduit] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const suivre = () => setReduit(m.matches);
+    m.addEventListener("change", suivre);
+    return () => m.removeEventListener("change", suivre);
+  }, []);
+  return reduit;
+}
 
 export default function TheCall() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const isMobile = useIsMobile();
+  const immobile = useMouvementReduit();
 
-  // --- STATE ---
-  const [pactData, setPactData] = useState<PactData | null>(null);
-  const [sequenceState, setSequenceState] = useState<FinalSequenceState>(FinalSequenceState.IDLE);
-  const [completedToday, setCompletedToday] = useState(false);
-  const [normalizedProgress, setNormalizedProgress] = useState(0);
-  const [earlyReleaseMsg, setEarlyReleaseMsg] = useState(false);
+  const {
+    pacte, chargement, erreurLecture, pret, dejaFait,
+    enregistrer, erreurEcriture, reinitialiserErreur, relire,
+  } = useTheCall();
 
-  // --- REFS ---
-  const screenShakeRef = useRef<HTMLDivElement>(null);
-  const backgroundFxRef = useRef<HTMLDivElement>(null);
-  const coreButtonRef = useRef<HTMLButtonElement>(null);
+  const [phase, setPhase] = useState<Phase>("attente");
+  const [relacheTot, setRelacheTot] = useState(false);
 
-  const rafRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(0);
-  const isHoldingRef = useRef(false);
-  const hasCompletedRef = useRef(false);
+  const racineRef = useRef<HTMLDivElement>(null);
+  const secousseRef = useRef<HTMLDivElement>(null);
+  const boutonRef = useRef<HTMLButtonElement>(null);
+  const anneauRef = useRef<SVGCircleElement>(null);
+  const compteRef = useRef<HTMLSpanElement>(null);
 
-  const timeSpeedRef = useRef<number>(1);
-  const isAutoPlayingRef = useRef(false);
+  const progresRef = useRef(0);
+  const tientRef = useRef(false);
+  const finiRef = useRef(false);
+  const departRef = useRef(0);
+  const rafRef = useRef(0);
+  const palierRef = useRef<Phase>("attente");
+  const vivantRef = useRef(true);
+  const vitesseRef = useRef(1);
+  const autoRef = useRef(false);
 
-  // --- DATA FETCHING ---
-  useEffect(() => {
-    if (user) fetchPactData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  const rayon = isMobile ? 126 : 152;
+  const circonference = 2 * Math.PI * rayon;
 
-  const fetchPactData = async () => {
-    if (!user) return;
-    const { data, error } = await supabase
-      .from("pacts")
-      .select("id, checkin_total_count, checkin_streak, last_checkin_date")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (data && !error) {
-      setPactData(data);
-      const today = new Date().toLocaleDateString("en-CA");
-      const last = data.last_checkin_date ? new Date(data.last_checkin_date).toLocaleDateString("en-CA") : null;
-      const done = today === last;
-
-      setCompletedToday(done);
-      setSequenceState(done ? FinalSequenceState.LOCKED : FinalSequenceState.IDLE);
-      setNormalizedProgress(done ? 1 : 0);
-      hasCompletedRef.current = done;
-    }
-  };
-
-  const saveCheckInData = async () => {
-    if (isAutoPlayingRef.current || timeSpeedRef.current > 1) {
-      if (import.meta.env.DEV) console.log("DEV MODE: Database update skipped");
-      return;
-    }
-
-    if (!pactData) return;
-    const todayStr = new Date().toLocaleDateString("en-CA");
-    await supabase
-      .from("pacts")
-      .update({
-        checkin_total_count: (pactData.checkin_total_count || 0) + 1,
-        checkin_streak: (pactData.checkin_streak || 0) + 1,
-        last_checkin_date: todayStr,
-      })
-      .eq("id", pactData.id);
-  };
-
-  // --- DEV TOOLS ---
-  const devReset = () => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    isHoldingRef.current = false;
-    hasCompletedRef.current = false;
-    isAutoPlayingRef.current = false;
-    timeSpeedRef.current = 1;
-    setCompletedToday(false);
-    setSequenceState(FinalSequenceState.IDLE);
-    setNormalizedProgress(0);
-    setEarlyReleaseMsg(false);
-    resetPhysicalEffects();
-  };
-
-  const devAutoPlay = (speedMultiplier: number = 1) => {
-    devReset();
-    setTimeout(() => {
-      isHoldingRef.current = true;
-      isAutoPlayingRef.current = true;
-      timeSpeedRef.current = speedMultiplier;
-      startTimeRef.current = performance.now();
-      rafRef.current = requestAnimationFrame(animate);
-    }, 50);
-  };
-
-  // --- CINEMATIC EFFECTS ---
-  const reducedMotion = prefersReducedMotion();
-
-  const resetPhysicalEffects = useCallback(() => {
-    if (screenShakeRef.current) {
-      screenShakeRef.current.style.transform = "none";
-      screenShakeRef.current.style.textShadow = "none";
-      screenShakeRef.current.style.filter = "none";
-    }
-    if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
-      coreButtonRef.current.style.transform = "none";
-    }
-  }, [sequenceState]);
-
-  const applyCinematicEffects = useCallback(
-    (progress: number) => {
-      if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
-        resetPhysicalEffects();
-        return;
-      }
-
-      const rawIntensity = easeInExpo(progress);
-      const intensity = clamp(rawIntensity, 0, 1);
-
-      // Skip shake & blur for reduced-motion
-      if (screenShakeRef.current && !reducedMotion) {
-        const shakeMax = 35 * intensity;
-        const rotateMax = 2 * intensity;
-        const x = (Math.random() - 0.5) * 2 * shakeMax;
-        const y = (Math.random() - 0.5) * 2 * shakeMax;
-        const r = (Math.random() - 0.5) * 2 * rotateMax;
-        const rgbSplit = 10 * intensity;
-        const blurAmount = 3 * intensity;
-
-        screenShakeRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${r}deg) scale(${1 + intensity * 0.05})`;
-        screenShakeRef.current.style.textShadow = `${rgbSplit}px 0 rgba(255, 0, 80, ${0.5 * intensity}), -${rgbSplit}px 0 rgba(0, 255, 255, ${0.5 * intensity})`;
-        if (intensity > 0.1) {
-          screenShakeRef.current.style.filter = `blur(${blurAmount}px) contrast(${1 + intensity * 0.2})`;
-        } else {
-          screenShakeRef.current.style.filter = "none";
-        }
-      }
-
-      if (coreButtonRef.current) {
-        if (reducedMotion) {
-          coreButtonRef.current.style.setProperty("--intensity", intensity.toString());
-          return;
-        }
-        const breatheSpeed = 2 + intensity * 10;
-        const breatheDepth = 0.02 + intensity * 0.08;
-        const scale = 1 + Math.sin((performance.now() / 1000) * breatheSpeed) * breatheDepth + intensity * 0.15;
-
-        let innerJitterX = 0, innerJitterY = 0;
-        if (progress > 0.8) {
-          const jitterIntensity = (progress - 0.8) * 5;
-          innerJitterX = (Math.random() - 0.5) * 10 * jitterIntensity;
-          innerJitterY = (Math.random() - 0.5) * 10 * jitterIntensity;
-        }
-
-        coreButtonRef.current.style.transform = `scale(${scale}) translate3d(${innerJitterX}px, ${innerJitterY}px, 0)`;
-        coreButtonRef.current.style.setProperty("--intensity", intensity.toString());
-      }
-
-      if (backgroundFxRef.current) {
-        const vignetteOpacity = 0.4 + intensity * 0.6;
-        backgroundFxRef.current.style.opacity = vignetteOpacity.toString();
-        backgroundFxRef.current.style.transform = `scale(${1 + intensity * 1.5})`;
-      }
-    },
-    [sequenceState, reducedMotion, resetPhysicalEffects],
+  /* Les particules etaient tirees au sort DANS le rendu : a soixante
+     rendus par seconde, leurs animations redemarraient sans cesse et ne
+     jouaient jamais. Elles sont tirees une fois. */
+  const particules = useMemo(
+    () => Array.from({ length: NB_PARTICULES }, (_, i) => ({
+      angle: (i / NB_PARTICULES) * 360,
+      taille: Math.random() * 2 + 1,
+      retard: -Math.random() * 2,
+    })),
+    [],
   );
 
-  // --- ANIMATION LOOP ---
-  const animate = () => {
-    if (!isHoldingRef.current || hasCompletedRef.current) return;
+  const enSequence = phase === "implosion" || phase === "singularite"
+    || phase === "explosion" || phase === "revelation";
+  const verrouille = phase === "verrouille";
+  const tenable = pret && !verrouille && !enSequence;
 
-    const now = performance.now();
-    const elapsed = (now - startTimeRef.current) * timeSpeedRef.current;
-    const progress = clamp(elapsed / HOLD_DURATION, 0, 1);
+  useEffect(() => {
+    if (dejaFait) { finiRef.current = true; setPhase("verrouille"); }
+  }, [dejaFait]);
 
-    setNormalizedProgress(progress);
-    applyCinematicEffects(progress);
+  /* Il n y avait aucun nettoyage dans tout le fichier : quitter la page
+     en cours d appui laissait la boucle finir sa course et ecrire. */
+  useEffect(() => {
+    /* Le drapeau doit etre RE-arme a chaque montage : en mode strict,
+       React monte, demonte, remonte — sans cette ligne, la sequence se
+       croyait morte des le premier rendu. */
+    vivantRef.current = true;
+    return () => { vivantRef.current = false; cancelAnimationFrame(rafRef.current); };
+  }, []);
 
-    if (progress >= 1) {
-      finishCinematicSequence();
-    } else {
-      rafRef.current = requestAnimationFrame(animate);
+  // ── La peinture, hors de React ──────────────────────────────
+  const peindre = useCallback((p: number) => {
+    const r = racineRef.current;
+    if (r) {
+      r.style.setProperty("--rit-p", String(p));
+      r.style.setProperty("--rit-teinte", teinteDe(p));
     }
-  };
+    if (compteRef.current) {
+      compteRef.current.textContent = p > 0 ? `${(20 - p * 20).toFixed(1)}s` : "";
+    }
+    if (anneauRef.current) {
+      anneauRef.current.style.strokeDashoffset = String(circonference * (1 - p));
+    }
 
-  // --- HANDLERS ---
-  const startHolding = (e: React.PointerEvent) => {
-    if (completedToday || hasCompletedRef.current) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    isHoldingRef.current = true;
-    setEarlyReleaseMsg(false);
-    startTimeRef.current = performance.now();
-    rafRef.current = requestAnimationFrame(animate);
-  };
+    const intensite = clamp(easeInExpo(p), 0, 1);
 
-  const stopHolding = () => {
-    if (hasCompletedRef.current) return;
-    if (isAutoPlayingRef.current) return;
+    if (secousseRef.current) {
+      if (immobile || intensite === 0) {
+        secousseRef.current.style.transform = "none";
+        secousseRef.current.style.textShadow = "none";
+        secousseRef.current.style.filter = "none";
+      } else {
+        const amp = 35 * intensite;
+        const x = (Math.random() - 0.5) * 2 * amp;
+        const y = (Math.random() - 0.5) * 2 * amp;
+        const rot = (Math.random() - 0.5) * 4 * intensite;
+        const ecart = 10 * intensite;
+        secousseRef.current.style.transform =
+          `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg) scale(${1 + intensite * 0.05})`;
+        secousseRef.current.style.textShadow =
+          `${ecart}px 0 rgba(255,0,80,${0.5 * intensite}), -${ecart}px 0 rgba(0,255,255,${0.5 * intensite})`;
+        secousseRef.current.style.filter =
+          intensite > 0.1 ? `blur(${3 * intensite}px) contrast(${1 + intensite * 0.2})` : "none";
+      }
+    }
 
-    const hadProgress = normalizedProgress > 0.05;
-    isHoldingRef.current = false;
+    if (boutonRef.current) {
+      if (immobile) {
+        boutonRef.current.style.transform = "none";
+      } else {
+        const souffle = 1 + Math.sin((performance.now() / 1000) * (2 + intensite * 10)) * (0.02 + intensite * 0.08);
+        const jx = p > 0.8 ? (Math.random() - 0.5) * 10 * ((p - 0.8) * 5) : 0;
+        const jy = p > 0.8 ? (Math.random() - 0.5) * 10 * ((p - 0.8) * 5) : 0;
+        boutonRef.current.style.transform =
+          `scale(${souffle + intensite * 0.15}) translate3d(${jx}px, ${jy}px, 0)`;
+      }
+    }
+  }, [circonference, immobile]);
+
+  const rendreLaMain = useCallback(() => {
+    progresRef.current = 0;
+    peindre(0);
+    palierRef.current = "attente";
+    setPhase("attente");
+  }, [peindre]);
+
+  // ── La conclusion ───────────────────────────────────────────
+  const conclure = useCallback(async () => {
+    tientRef.current = false;
+    finiRef.current = true;
     cancelAnimationFrame(rafRef.current);
-    resetPhysicalEffects();
+    peindre(1);
 
-    // Show early release message
-    if (hadProgress) {
-      setEarlyReleaseMsg(true);
-      setTimeout(() => setEarlyReleaseMsg(false), 2500);
+    setPhase("implosion");
+    await attendre(500);
+    setPhase("singularite");
+    await attendre(200);
+
+    /* L ecriture est ATTENDUE, et son echec remonte : la page ne dit
+       plus « connecte » avant que la base l ait accepte. En mode
+       demonstration, on ne touche pas a la base. */
+    if (!autoRef.current && vitesseRef.current === 1) {
+      try {
+        await enregistrer();
+      } catch {
+        finiRef.current = false;
+        if (vivantRef.current) rendreLaMain();
+        return;
+      }
+    }
+    if (!vivantRef.current) return;
+
+    setPhase("explosion");
+    await attendre(immobile ? 500 : 100);
+    if (!vivantRef.current) return;
+    setPhase("revelation");
+    await attendre(3000);
+    if (!vivantRef.current) return;
+    setPhase("verrouille");
+  }, [peindre, enregistrer, immobile, rendreLaMain]);
+
+  // ── La boucle ───────────────────────────────────────────────
+  const boucleRef = useRef<() => void>(() => {});
+  const planifier = useCallback(() => {
+    rafRef.current = requestAnimationFrame(() => boucleRef.current());
+  }, []);
+
+  const boucle = useCallback(() => {
+    if (!tientRef.current || finiRef.current) return;
+    const p = clamp(((performance.now() - departRef.current) * vitesseRef.current) / DUREE, 0, 1);
+    progresRef.current = p;
+    peindre(p);
+
+    /* React ne voit que les paliers : trois rendus au lieu de mille
+       deux cents. */
+    const palier: Phase = p >= 0.85 ? "critique" : p > 0 ? "montee" : "attente";
+    if (palierRef.current !== palier) { palierRef.current = palier; setPhase(palier); }
+
+    if (p >= 1) conclure();
+    else planifier();
+  }, [peindre, conclure, planifier]);
+
+  /* La boucle se re-planifiait elle-meme : les vingt secondes tournaient
+     sur les variables du premier rendu. Elle passe par une reference,
+     donc chaque image utilise la version courante. */
+  useEffect(() => { boucleRef.current = boucle; }, [boucle]);
+
+  // ── Les commandes ───────────────────────────────────────────
+  const demarrer = useCallback(() => {
+    if (!tenable || tientRef.current || finiRef.current) return;
+    if (erreurEcriture) reinitialiserErreur();
+    setRelacheTot(false);
+    tientRef.current = true;
+    departRef.current = performance.now();
+    planifier();
+  }, [tenable, erreurEcriture, reinitialiserErreur, planifier]);
+
+  const arreter = useCallback(() => {
+    if (!tientRef.current) return;
+    /* On lache toujours la prise — meme si la sequence finale est deja
+       partie : sinon l appui reste « en cours » pour toujours, et le
+       suivant est refuse sans rien dire. */
+    tientRef.current = false;
+    if (finiRef.current) return;
+    cancelAnimationFrame(rafRef.current);
+
+    if (progresRef.current > 0.05) {
+      setRelacheTot(true);
+      setTimeout(() => setRelacheTot(false), 2500);
     }
 
-    const snapBack = () => {
-      if (isHoldingRef.current || hasCompletedRef.current) return;
-      setNormalizedProgress((prev) => {
-        const next = prev - 0.05;
-        if (next <= 0) return 0;
-        rafRef.current = requestAnimationFrame(snapBack);
-        return next;
-      });
+    /* Le retour a zero planifiait sa propre image DANS le calcul d etat
+       de React. Il vit ici, avec la meme reference d animation que la
+       montee — un nouvel appui l annule donc vraiment. */
+    const revenir = () => {
+      if (tientRef.current || finiRef.current) return;
+      const p = Math.max(0, progresRef.current - 0.05);
+      progresRef.current = p;
+      peindre(p);
+      if (p > 0) rafRef.current = requestAnimationFrame(revenir);
+      else if (palierRef.current !== "attente") { palierRef.current = "attente"; setPhase("attente"); }
     };
-    snapBack();
-  };
+    revenir();
+  }, [peindre]);
 
-  // --- FINAL SEQUENCE ---
-  const finishCinematicSequence = async () => {
-    isHoldingRef.current = false;
-    hasCompletedRef.current = true;
-    isAutoPlayingRef.current = false;
+  // ── Outils de developpement ─────────────────────────────────
+  const devReset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
-    resetPhysicalEffects();
+    tientRef.current = false; finiRef.current = false;
+    autoRef.current = false; vitesseRef.current = 1;
+    setRelacheTot(false);
+    rendreLaMain();
+  }, [rendreLaMain]);
 
-    setSequenceState(FinalSequenceState.IMPLOSION);
-    await new Promise((r) => setTimeout(r, 500));
+  const devAuto = useCallback((vitesse: number) => {
+    devReset();
+    setTimeout(() => {
+      tientRef.current = true; autoRef.current = true; vitesseRef.current = vitesse;
+      departRef.current = performance.now();
+      planifier();
+    }, 50);
+  }, [devReset, planifier]);
 
-    setSequenceState(FinalSequenceState.SINGULARITY);
-    await new Promise((r) => setTimeout(r, 200));
+  // ── Les textes d etat ───────────────────────────────────────
+  const messageEtat = relacheTot ? t("thecall.fading")
+    : phase === "critique" ? t("thecall.critical")
+      : phase === "montee" ? t("thecall.rising")
+        : t("thecall.awaiting");
 
-    if (user && !completedToday) saveCheckInData();
-    setSequenceState(FinalSequenceState.EXPLOSION);
-    await new Promise((r) => setTimeout(r, reducedMotion ? 500 : 100));
+  const annonce = phase === "critique" ? t("thecall.critical")
+    : phase === "verrouille" ? t("thecall.announceDone")
+      : phase === "montee" ? t("thecall.syncing")
+        : "";
 
-    setSequenceState(FinalSequenceState.REVEAL);
-    await new Promise((r) => setTimeout(r, 3000)); // Reduced from 5s to 3s
-
-    setSequenceState(FinalSequenceState.LOCKED);
-    setCompletedToday(true);
-  };
-
-  // --- COLOR CALC ---
-  const p = normalizedProgress;
-  const isCritical = p > 0.85;
-
-  let currentColor: string;
-  if (p < 0.5) {
-    currentColor = `rgb(${lerp(6, 139, p * 2)}, ${lerp(182, 92, p * 2)}, ${lerp(212, 246, p * 2)})`;
-  } else if (p < 0.85) {
-    const t = (p - 0.5) / 0.35;
-    currentColor = `rgb(${lerp(139, 255, t)}, ${lerp(92, 0, t)}, ${lerp(246, 255, t)})`;
-  } else {
-    const t = (p - 0.85) / 0.15;
-    currentColor = `rgb(${lerp(255, 255, t)}, ${lerp(0, 255, t)}, ${lerp(255, 255, t)})`;
-  }
-
-  const glowIntensity = isCritical
-    ? `0 0 ${40 + p * 60}px ${currentColor}, inset 0 0 ${20 + p * 40}px ${currentColor}`
-    : `0 0 ${p * 40}px ${currentColor}`;
-
-  // SVG progress ring
-  const ringRadius = isMobile ? 126 : 152;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset = ringCircumference - p * ringCircumference;
-
-  // Stats
-  const totalCalls = pactData?.checkin_total_count ?? 0;
-  const streak = pactData?.checkin_streak ?? 0;
-
-  const isIdle = sequenceState === FinalSequenceState.IDLE;
-  const isLocked = sequenceState === FinalSequenceState.LOCKED;
+  const total = pacte?.total ?? 0;
+  const serie = pacte?.serie ?? 0;
 
   return (
     <DSPageShell width="full" padding="tight" className="!p-0">
-    <div className="h-screen bg-background overflow-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px]">
-      {/* BACKGROUND FX */}
       <div
-        ref={backgroundFxRef}
-        className="absolute inset-0 pointer-events-none z-0 transition-all duration-100 ease-out will-change-transform opacity-40"
+        ref={racineRef}
+        style={{ ["--rit-p" as string]: 0, ["--rit-teinte" as string]: "hsl(var(--ds-accent-primary))" } as React.CSSProperties}
+        /* « touch-none » etait pose sur la page entiere : le zoom par
+           pincement etait interdit partout. Il ne l est plus que sur le
+           bouton, ou il empeche le defilement pendant l appui. */
+        data-phase={phase}
+        data-pret={pret}
+        className="rit h-[100dvh] bg-background overflow-hidden flex flex-col relative text-foreground select-none"
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmax] h-[120vmax] bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_60%)] mix-blend-screen animate-pulse-slow" />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.08] mix-blend-overlay" />
-      </div>
-
-      {/* MAIN CONTAINER */}
-      <div
-        ref={screenShakeRef}
-        className="relative z-10 flex-1 flex flex-col items-center will-change-transform transform-style-3d"
-      >
-        {/* HEADER — simplified, no rotating rings */}
-        <div
-          className={`w-full z-20 transition-opacity duration-500 pointer-events-none shrink-0 ${isIdle || isLocked ? "opacity-100" : "opacity-0"}`}
-        >
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="pointer-events-auto absolute top-4 left-4 sm:top-6 sm:left-6 z-30 text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
-          >
-            <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
-          </Button>
-
-          <div className="pt-12 sm:pt-16 pb-2 sm:pb-4 text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-transparent to-primary/20" />
-              <span className="font-mono ds-t-label text-primary/40 tracking-[0.25em]">
-                RITUAL_ENGINE
-              </span>
-              <div className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-primary/20 to-transparent" />
-            </div>
-            <h1 className="font-orbitron font-black text-[clamp(24px,5vw,40px)] tracking-[0.08em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-foreground/95 to-foreground/50">
-              THE <span className="text-primary" style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary)))" }}>CALL</span>
-            </h1>
-
-            {/* Streak / Total — visible in idle */}
-            {isIdle && pactData && (
-              <div className="flex items-center justify-center gap-4 mt-3">
-                <span className="font-mono ds-t-label text-muted-foreground/60 tracking-wider">
-                  <Flame className="w-3 h-3 inline mr-1 text-orange-400/70" />{streak} streak
-                </span>
-                <span className="font-mono ds-t-label text-muted-foreground/60 tracking-wider">
-                  {totalCalls} calls
-                </span>
-              </div>
-            )}
-          </div>
+        {/* Le fond */}
+        <div className="absolute inset-0 pointer-events-none z-0 rit-fond">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmax] h-[120vmax] rit-halo" />
         </div>
 
-        {/* CENTER CONTENT — true flex center */}
-        <div className="flex-1 flex items-center justify-center w-full">
-          <div className="relative flex flex-col items-center justify-center">
-            {/* FINAL SEQUENCES */}
-            <div
-              className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? "opacity-100" : "opacity-0"}`}
-            />
-            {/* Flash — respect reduced-motion */}
-            <div
-              className={`fixed inset-0 z-[100] pointer-events-none transition-opacity ease-out ${
-                sequenceState === FinalSequenceState.EXPLOSION
-                  ? reducedMotion
-                    ? "duration-500 opacity-80 bg-white/80"
-                    : "duration-75 opacity-100 bg-white"
-                  : "[transition-duration:3000ms] opacity-0 bg-white"
-              }`}
-            />
-
-            {sequenceState === FinalSequenceState.REVEAL && (
-              <div className="absolute z-[110] flex flex-col items-center animate-reveal-majestic top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
-                <div className="absolute inset-[-300px] bg-gradient-conic from-cyan-200/0 via-cyan-100/20 to-cyan-200/0 animate-god-rays opacity-50 blur-2xl -z-10" />
-                <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tighter drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.9] mb-6">
-                  SOUL
-                  <br />
-                  CONNECTED
-                </h1>
-                <div className="h-[1px] width-0 bg-cyan-400/50 animate-expand-line" />
-                <p className="text-cyan-200/70 font-mono text-xs uppercase tracking-[0.5em] mt-6 animate-slide-up">
-                  Ritual Synchronized
-                </p>
-              </div>
-            )}
-
-            {/* BUTTON CORE + SVG RING */}
-            <div
-              className={`relative transition-all will-change-transform ${sequenceState === FinalSequenceState.IMPLOSION ? "scale-0 opacity-0 duration-500 cubic-bezier(.69,.01,.84,.19)" : "scale-100 opacity-100 duration-100"} ${sequenceState === FinalSequenceState.REVEAL ? "hidden" : "block"}`}
+        <div ref={secousseRef} className="relative z-10 flex-1 flex flex-col items-center will-change-transform">
+          {/* L en-tete */}
+          <div className={cn(
+            "w-full z-20 transition-opacity duration-500 pointer-events-none shrink-0",
+            enSequence ? "opacity-0" : "opacity-100",
+          )}>
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="pointer-events-auto absolute top-4 left-4 sm:top-6 sm:left-6 z-30 text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
             >
-              {/* SVG Progress Ring */}
-              {!completedToday && p > 0 && (
-                <svg
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
-                  width={(ringRadius + 8) * 2}
-                  height={(ringRadius + 8) * 2}
-                >
-                  <circle
-                    cx={ringRadius + 8}
-                    cy={ringRadius + 8}
-                    r={ringRadius}
-                    fill="none"
-                    stroke={currentColor}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeDasharray={ringCircumference}
-                    strokeDashoffset={ringOffset}
-                    opacity={0.6 + p * 0.4}
-                    style={{
-                      filter: `drop-shadow(0 0 ${4 + p * 8}px ${currentColor})`,
-                      transform: "rotate(-90deg)",
-                      transformOrigin: "center",
-                      transition: "stroke-dashoffset 0.1s linear",
-                    }}
-                  />
-                </svg>
+              <ArrowLeft className="w-3 h-3 mr-2" aria-hidden="true" /> {t("thecall.back")}
+            </Button>
+
+            <div className="pt-12 sm:pt-16 pb-2 sm:pb-4 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <span className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-transparent to-primary/20" />
+                <span className="font-mono ds-t-label text-primary/50 tracking-[0.25em]">{t("thecall.engine")}</span>
+                <span className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-primary/20 to-transparent" />
+              </div>
+              <h1 className="font-orbitron font-black text-[clamp(24px,5vw,40px)] tracking-[0.08em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-foreground/95 to-foreground/50">
+                THE <span className="text-primary [text-shadow:0_0_12px_hsl(var(--ds-accent-primary)/0.8)]">CALL</span>
+              </h1>
+
+              {pacte && !enSequence && (
+                <div className="flex items-center justify-center gap-4 mt-3">
+                  <span className="font-mono ds-t-label text-muted-foreground/70 tracking-wider">
+                    <Flame className="w-3 h-3 inline mr-1 text-orange-400/80" aria-hidden="true" />
+                    {t("thecall.streak", { count: serie })}
+                  </span>
+                  <span className="font-mono ds-t-label text-muted-foreground/70 tracking-wider">
+                    {t("thecall.calls", { count: total })}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Le centre */}
+          <div className="flex-1 flex items-center justify-center w-full">
+            <div className="relative flex flex-col items-center justify-center">
+              <div className={cn(
+                "fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200",
+                phase === "singularite" ? "opacity-100" : "opacity-0",
+              )} />
+              <div className={cn(
+                "fixed inset-0 z-[100] pointer-events-none transition-opacity ease-out bg-white",
+                phase === "explosion"
+                  ? (immobile ? "duration-500 opacity-70" : "duration-150 opacity-90")
+                  : "[transition-duration:3000ms] opacity-0",
+              )} />
+
+              {phase === "revelation" && (
+                <div className="absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
+                  <div className="absolute inset-[-300px] rit-rayons opacity-50 blur-2xl -z-10" />
+                  {/* C etait un second « h1 » sur la page. */}
+                  <p className="text-5xl sm:text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tight drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.95] mb-6 m-0">
+                    {t("thecall.connected")}
+                  </p>
+                  <span className="h-px w-0 bg-cyan-400/50 rit-trait" />
+                  <p className="text-cyan-200/70 font-mono text-xs uppercase tracking-[0.5em] mt-6 rit-monte">
+                    {t("thecall.synchronized")}
+                  </p>
+                </div>
               )}
 
-              <button
-                ref={coreButtonRef}
-                onPointerDown={startHolding}
-                onPointerUp={stopHolding}
-                onPointerLeave={stopHolding}
-                disabled={completedToday}
-                aria-label={completedToday ? "Daily ritual completed" : "Hold for 20 seconds to complete daily ritual"}
-                className={`
-                  relative w-60 h-60 sm:w-72 sm:h-72 rounded-full flex items-center justify-center overflow-visible
-                  border-[1px] transition-all duration-100 outline-none group will-change-transform
-                  ${completedToday ? "border-green-500/30 cursor-default bg-green-900/5" : "border-white/10 cursor-pointer bg-black/40"}
-                  [--intensity:0]
-                `}
-                style={{
-                  boxShadow: !completedToday && p > 0 ? glowIntensity : "none",
-                  borderColor: isCritical
-                    ? `rgba(255,255,255, ${p})`
-                    : completedToday
-                      ? "rgba(34,197,94,0.3)"
-                      : "rgba(255,255,255,0.1)",
-                }}
-              >
-                {!completedToday && p > 0 && (
-                  <>
-                    <div
-                      className="absolute inset-2 rounded-full blur-xl mix-blend-screen transition-colors duration-200 animate-pulse-plasma"
-                      style={{ background: currentColor, opacity: 0.4 + p * 0.4 }}
+              <div className={cn(
+                "relative transition-all will-change-transform",
+                phase === "implosion" ? "scale-0 opacity-0 duration-500" : "scale-100 opacity-100 duration-100",
+                phase === "revelation" ? "hidden" : "block",
+              )}>
+                {!verrouille && (
+                  <svg
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 rit-anneau"
+                    width={(rayon + 8) * 2}
+                    height={(rayon + 8) * 2}
+                    aria-hidden="true"
+                  >
+                    <circle
+                      ref={anneauRef}
+                      cx={rayon + 8} cy={rayon + 8} r={rayon}
+                      fill="none" stroke="var(--rit-teinte)" strokeWidth="2" strokeLinecap="round"
+                      strokeDasharray={circonference}
+                      strokeDashoffset={circonference}
+                      style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
                     />
-                    <div
-                      className="absolute inset-16 rounded-full blur-md mix-blend-overlay transition-colors duration-200"
-                      style={{ background: isCritical ? "white" : currentColor, opacity: p }}
-                    />
-                  </>
+                  </svg>
                 )}
 
-                {!completedToday && p > 0 && !reducedMotion && (
-                  <div className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]">
-                    {[...Array(PARTICLE_COUNT)].map((_, i) => {
-                      const angle = (i / PARTICLE_COUNT) * 360;
-                      const duration = lerp(3, 0.5, p);
-                      const size = Math.random() * 2 + 1;
-                      return (
-                        <div
-                          key={i}
-                          className="absolute top-1/2 left-1/2 rounded-full animate-gravity-well mix-blend-screen"
-                          style={{
-                            width: `${size}px`,
-                            height: `${size * 3}px`,
-                            background: isCritical ? "white" : currentColor,
-                            boxShadow: `0 0 ${size * 2}px ${currentColor}`,
-                            transformOrigin: "0 150px",
-                            transform: `rotate(${angle}deg) translateY(-150px)`,
-                            animationDuration: `${duration}s`,
-                            animationDelay: `${Math.random() * -2}s`,
-                            opacity: p,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div
-                  className="relative z-20 flex flex-col items-center pointer-events-none"
-                  style={{ transform: `scale(${1 + p * 0.2})` }}
+                <button
+                  ref={boutonRef}
+                  type="button"
+                  onPointerDown={(e) => {
+                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* pointeur synthetique */ }
+                    demarrer();
+                  }}
+                  onPointerUp={arreter}
+                  /* « pointercancel » manquait : c est lui que le systeme
+                     envoie quand le geste devient un defilement ou qu un
+                     appel arrive. Sans lui, la boucle continuait seule. */
+                  onPointerCancel={arreter}
+                  onLostPointerCapture={arreter}
+                  onKeyDown={(e) => {
+                    if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); demarrer(); }
+                  }}
+                  onKeyUp={(e) => {
+                    if (e.key === " " || e.key === "Enter") { e.preventDefault(); arreter(); }
+                  }}
+                  onBlur={arreter}
+                  disabled={!tenable}
+                  aria-label={verrouille ? t("thecall.ariaDone") : t("thecall.ariaHold")}
+                  aria-describedby="rit-etat"
+                  className={cn(
+                    "rit-noyau touch-none relative w-60 h-60 sm:w-72 sm:h-72 rounded-full flex items-center justify-center",
+                    "border transition-colors duration-100 will-change-transform",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    verrouille
+                      ? "border-[hsl(var(--ds-accent-success)/0.35)] bg-[hsl(var(--ds-accent-success)/0.06)] cursor-default"
+                      : "border-white/10 bg-black/40 cursor-pointer",
+                  )}
                 >
-                  {completedToday ? (
-                    <div className="flex flex-col items-center text-green-500">
-                      <Lock className="w-14 h-14 mb-3 drop-shadow-[0_0_15px_currentColor]" />
-                      <span className="font-mono ds-t-label tracking-[0.3em] uppercase opacity-70">Protocol Locked</span>
-                      {/* Stats in locked state */}
-                      {pactData && (
-                        <div className="flex items-center gap-3 mt-4 text-muted-foreground/50">
-                          <span className="font-mono ds-t-label tracking-wider">
-                            <Flame className="w-3 h-3 inline mr-1 text-orange-400/60" />{streak}
-                          </span>
-                          <span className="font-mono ds-t-label tracking-wider">
-                            {totalCalls + 1} calls
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
+                  {!verrouille && (
                     <>
-                      <Zap
-                        className={`w-16 h-16 transition-all duration-200 ${isCritical && !reducedMotion ? "animate-vibrate-wild" : ""}`}
-                        style={{
-                          fill: p > 0.5 ? currentColor : "transparent",
-                          stroke: p < 0.8 ? (p > 0 ? currentColor : "rgba(255,255,255,0.4)") : "transparent",
-                          strokeWidth: 1.5,
-                          filter: `drop-shadow(0 0 ${p * 30}px ${currentColor})`,
-                        }}
-                      />
-                      <div className="mt-4 h-5 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
-                        {p > 0 ? (
-                          <span
-                            style={{
-                              color: isCritical ? "white" : currentColor,
-                              textShadow: `0 0 ${p * 20}px currentColor`,
-                            }}
-                            className="tabular-nums"
-                          >
-                            {(20 - p * 20).toFixed(1)}s
-                          </span>
-                        ) : (
-                          <span className="text-white/50 animate-the-call-pulse">
-                            HOLD TO INITIATE
-                          </span>
-                        )}
-                      </div>
+                      <span className="rit-plasma absolute inset-2 rounded-full blur-xl mix-blend-screen" aria-hidden="true" />
+                      <span className="rit-coeur absolute inset-16 rounded-full blur-md mix-blend-overlay" aria-hidden="true" />
+                      {!immobile && (
+                        <span className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]" aria-hidden="true">
+                          {particules.map((pa, i) => (
+                            <span
+                              key={i}
+                              className="absolute top-1/2 left-1/2 rounded-full rit-particule mix-blend-screen"
+                              style={{
+                                width: `${pa.taille}px`,
+                                height: `${pa.taille * 3}px`,
+                                transformOrigin: "0 150px",
+                                transform: `rotate(${pa.angle}deg) translateY(-150px)`,
+                                animationDelay: `${pa.retard}s`,
+                              }}
+                            />
+                          ))}
+                        </span>
+                      )}
                     </>
                   )}
-                </div>
-              </button>
-            </div>
 
-            {/* Status text below button */}
-            {!completedToday && isIdle && (
-              <div className="mt-8 text-center overflow-hidden">
-                {earlyReleaseMsg ? (
-                  <p className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/60 animate-fade-in">
-                    Signal fading...
-                  </p>
-                ) : (
+                  <span className="rit-etiquette relative z-20 flex flex-col items-center pointer-events-none">
+                    {verrouille ? (
+                      <span className="flex flex-col items-center text-[hsl(var(--ds-accent-success))]">
+                        <Lock className="w-14 h-14 mb-3 drop-shadow-[0_0_15px_currentColor]" aria-hidden="true" />
+                        <span className="font-mono ds-t-label tracking-[0.3em] uppercase opacity-80">
+                          {t("thecall.locked")}
+                        </span>
+                        {pacte && (
+                          <span className="flex items-center gap-3 mt-4 text-muted-foreground/60">
+                            <span className="font-mono ds-t-label tracking-wider">
+                              <Flame className="w-3 h-3 inline mr-1 text-orange-400/70" aria-hidden="true" />{serie}
+                            </span>
+                            {/* Le total etait affiche « + 1 » cote client ;
+                                c est celui que la base a rendu. */}
+                            <span className="font-mono ds-t-label tracking-wider">{t("thecall.calls", { count: total })}</span>
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <>
+                        <Zap className="rit-eclair w-16 h-16" aria-hidden="true" />
+                        <span className="mt-4 h-5 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
+                          <span ref={compteRef} className="rit-compte tabular-nums" />
+                          <span className="rit-invite">
+                            {chargement ? t("thecall.loading") : t("thecall.hold")}
+                          </span>
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </button>
+              </div>
+
+              {/* L etat, annonce aussi a la voix */}
+              {!verrouille && !enSequence && (
+                <div className="mt-8 text-center">
                   <p
-                    className="font-mono ds-t-label uppercase tracking-[0.3em] transition-all duration-200"
-                    style={{
-                      color: isCritical ? "white" : p > 0 ? currentColor : undefined,
-                      opacity: p > 0 ? 0.7 + p * 0.3 : 0.5,
-                      transform: isCritical && !reducedMotion ? `translateX(${(Math.random() - 0.5) * 10}px)` : "none",
-                      textShadow: isCritical ? "2px 0 rgba(255,0,0,0.8), -2px 0 rgba(0,255,255,0.8)" : "none",
-                    }}
+                    id="rit-etat"
+                    className="rit-message font-mono ds-t-label uppercase tracking-[0.3em] transition-colors duration-200"
                   >
-                    {p === 0 && <span className="text-muted-foreground/50">Awaiting Input</span>}
-                    {p > 0 && p < 0.5 && "Synchronizing..."}
-                    {p >= 0.5 && p < 0.85 && "Energy rising // Hold steady"}
-                    {p >= 0.85 && "CRITICAL // DO NOT RELEASE"}
+                    {messageEtat}
                   </p>
-                )}
-              </div>
-            )}
+                  {phase === "attente" && !immobile && (
+                    <p className="mt-3 font-mono ds-t-label uppercase tracking-[0.2em] text-muted-foreground/50 flex items-center justify-center gap-2">
+                      <AlertTriangle className="w-3 h-3" aria-hidden="true" />
+                      {t("thecall.flashWarning")}
+                    </p>
+                  )}
+                </div>
+              )}
 
-            {/* Locked state: return CTA */}
-            {isLocked && (
-              <div className="mt-8 text-center">
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate("/")}
-                  className="text-muted-foreground/50 hover:text-foreground font-mono text-xs tracking-[0.2em]"
-                >
-                  Return to Dashboard
-                </Button>
-              </div>
-            )}
+              {/* Les erreurs : un message et une reprise, pas un verrou */}
+              {(erreurEcriture || erreurLecture) && (
+                <div className="mt-6 text-center max-w-[42ch]">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[hsl(var(--ds-accent-critical))]">
+                    {erreurEcriture ? t("thecall.errorWrite") : t("thecall.errorRead")}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    onClick={() => { reinitialiserErreur(); relire(); }}
+                    className="mt-2 font-mono text-xs tracking-[0.2em] text-muted-foreground hover:text-foreground"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-2" aria-hidden="true" />{t("thecall.retry")}
+                  </Button>
+                </div>
+              )}
+
+              {verrouille && (
+                <div className="mt-8 text-center">
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate("/")}
+                    className="text-muted-foreground/60 hover:text-foreground font-mono text-xs tracking-[0.2em]"
+                  >
+                    {t("thecall.returnHome")}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* DEV TOOLBAR — only in dev */}
-      {import.meta.env.DEV && (
-        <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
-          <Button variant="secondary" size="icon" onClick={() => devReset()} title="Hard Reset">
-            <RefreshCw className="w-4 h-4" />
-          </Button>
-          <Button variant="secondary" size="icon" onClick={() => devAutoPlay(1)} title="Auto Play (Normal)">
-            <Play className="w-4 h-4" />
-          </Button>
-          <Button variant="secondary" size="icon" onClick={() => devAutoPlay(5)} title="Fast Forward (5x)">
-            <FastForward className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
+        {/* Ce que la page dit a voix haute : les paliers, pas les dixiemes */}
+        <p role="status" aria-live="polite" className="sr-only">{annonce}</p>
 
-      <style>{`
-        @keyframes pulse-plasma { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.05); opacity: 0.8; } }
-        .animate-pulse-plasma { animation: pulse-plasma 2s ease-in-out infinite; }
-        
-        @keyframes gravity-well {
-            0% { transform: rotate(var(--start-angle)) translateY(-180px) scale(0.5); opacity: 0; }
-            20% { opacity: var(--opacity); }
-            100% { transform: rotate(calc(var(--start-angle) + 180deg)) translateY(0px) scale(0.1); opacity: 0; }
+        {import.meta.env.DEV && (
+          <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-20 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <Button variant="secondary" size="icon" onClick={devReset} aria-label="Reinitialiser (dev)" title="Reinitialiser">
+              <RefreshCw className="w-4 h-4" aria-hidden="true" />
+            </Button>
+            <Button variant="secondary" size="icon" onClick={() => devAuto(1)} aria-label="Lecture automatique (dev)" title="Lecture automatique">
+              <Play className="w-4 h-4" aria-hidden="true" />
+            </Button>
+            <Button variant="secondary" size="icon" onClick={() => devAuto(5)} aria-label="Lecture acceleree (dev)" title="Lecture acceleree x5">
+              <FastForward className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </div>
+        )}
+
+        <style>{`
+        /* La progression est une variable : le CSS s en sert seul, sans
+           repasser par React. */
+        .rit { --rit-p: 0; }
+        .rit-fond { opacity: calc(0.4 + var(--rit-p) * 0.6); transform: scale(calc(1 + var(--rit-p) * 1.5)); transition: opacity 120ms linear; }
+        .rit-halo {
+          background: radial-gradient(circle at center, hsl(var(--ds-accent-primary) / 0.15) 0%, transparent 60%);
+          mix-blend-mode: screen;
+          animation: rit-souffle 6s ease-in-out infinite;
         }
-        .animate-gravity-well { animation: gravity-well linear infinite; }
+        @keyframes rit-souffle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-        @keyframes vibrate-wild {
-            0% { transform: translate(0, 0) rotate(0); } 20% { transform: translate(-4px, 2px) rotate(-2deg); }
-            40% { transform: translate(3px, -3px) rotate(1deg); } 60% { transform: translate(-3px, 4px) rotate(3deg); }
-            80% { transform: translate(4px, -2px) rotate(-1deg); } 100% { transform: translate(0, 0) rotate(0); }
+        .rit-noyau { box-shadow: 0 0 calc(var(--rit-p) * 60px) var(--rit-teinte); }
+        .rit-noyau:focus-visible { --tw-ring-color: var(--rit-teinte); }
+        .rit-plasma { background: var(--rit-teinte); opacity: calc(var(--rit-p) * 0.8); animation: rit-plasma 2s ease-in-out infinite; }
+        .rit-coeur  { background: var(--rit-teinte); opacity: var(--rit-p); }
+        @keyframes rit-plasma { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        .rit-particule {
+          background: var(--rit-teinte);
+          box-shadow: 0 0 4px var(--rit-teinte);
+          opacity: var(--rit-p);
+          animation: rit-gravite calc(3s - var(--rit-p) * 2.5s) linear infinite;
         }
-        .animate-vibrate-wild { animation: vibrate-wild 0.08s linear infinite; }
+        @keyframes rit-gravite {
+          0%   { transform: rotate(0) translateY(-180px) scale(0.5); }
+          100% { transform: rotate(180deg) translateY(0) scale(0.1); }
+        }
 
-        @keyframes reveal-majestic { 0% { opacity: 0; transform: translate(-50%, -40%) scale(1.1); filter: blur(20px); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); } }
-        .animate-reveal-majestic { animation: reveal-majestic 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .rit-eclair {
+          color: var(--rit-teinte);
+          fill: var(--rit-teinte);
+          fill-opacity: calc(max(0, var(--rit-p) - 0.5) * 2);
+          filter: drop-shadow(0 0 calc(var(--rit-p) * 30px) var(--rit-teinte));
+          stroke-width: 1.5;
+        }
+        .rit-compte { color: var(--rit-teinte); text-shadow: 0 0 calc(var(--rit-p) * 20px) var(--rit-teinte); }
+        .rit-invite { color: hsl(var(--ds-text-muted)); opacity: calc(1 - var(--rit-p) * 4); animation: rit-respire 2.5s ease-in-out infinite; }
+        @keyframes rit-respire { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.85; } }
+        .rit-message { color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted))); }
 
-        @keyframes god-rays { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-god-rays { animation: god-rays 60s linear infinite; }
-        
-        @keyframes expand-line { 0% { width: 0; opacity: 0; } 100% { width: 200px; opacity: 1; } }
-        .animate-expand-line { animation: expand-line 1.5s ease-out forwards 0.5s; }
-        
-        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 0.6; transform: translateY(0); } }
-        .animate-slide-up { animation: slide-up 1s ease-out forwards 1s; opacity: 0; }
-
-        @keyframes the-call-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.8; } }
-        .animate-the-call-pulse { animation: the-call-pulse 2.5s ease-in-out infinite; }
-
-        .transform-style-3d { transform-style: preserve-3d; }
-        .bg-gradient-conic { background-image: conic-gradient(var(--tw-gradient-stops)); }
+        .rit-revelation { animation: rit-revele 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        @keyframes rit-revele {
+          0%   { opacity: 0; transform: translate(-50%, -40%) scale(1.1); filter: blur(20px); }
+          100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+        }
+        .rit-rayons { background: conic-gradient(hsl(var(--ds-accent-primary) / 0), hsl(var(--ds-accent-primary) / 0.2), hsl(var(--ds-accent-primary) / 0)); animation: rit-tourne 60s linear infinite; }
+        @keyframes rit-tourne { to { transform: rotate(360deg); } }
+        .rit-trait { animation: rit-etire 1.5s ease-out forwards 0.5s; }
+        @keyframes rit-etire { to { width: 200px; } }
+        .rit-monte { opacity: 0; animation: rit-remonte 1s ease-out forwards 1s; }
+        @keyframes rit-remonte { from { opacity: 0; transform: translateY(20px); } to { opacity: 0.7; transform: none; } }
 
         @media (prefers-reduced-motion: reduce) {
-          .animate-pulse-plasma,
-          .animate-gravity-well,
-          .animate-vibrate-wild,
-          .animate-god-rays,
-          .animate-the-call-pulse { animation: none !important; }
+          .rit-halo, .rit-plasma, .rit-particule, .rit-invite,
+          .rit-rayons, .rit-trait, .rit-monte, .rit-revelation { animation: none !important; }
+          .rit-monte { opacity: 0.7; }
+          .rit-trait { width: 200px; }
         }
       `}</style>
-    </div>
+      </div>
     </DSPageShell>
   );
 }

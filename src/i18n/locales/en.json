@@ -2233,5 +2233,31 @@
       "6m": "Last 6 months",
       "all": "All time"
     }
+  },
+  "thecall": {
+    "back": "Return",
+    "engine": "RITUAL ENGINE",
+    "streak_one": "{{count}} day streak",
+    "streak_other": "{{count}} day streak",
+    "calls_one": "{{count}} call",
+    "calls_other": "{{count}} calls",
+    "hold": "HOLD TO INITIATE",
+    "loading": "CONNECTING TO PACT…",
+    "ariaHold": "Hold for twenty seconds — with a finger, or the space bar — to complete the daily ritual",
+    "ariaDone": "Daily ritual completed",
+    "awaiting": "Awaiting input",
+    "syncing": "Synchronizing…",
+    "rising": "Energy rising // Hold steady",
+    "critical": "CRITICAL // DO NOT RELEASE",
+    "fading": "Signal fading…",
+    "locked": "PROTOCOL LOCKED",
+    "connected": "SOUL CONNECTED",
+    "synchronized": "Ritual synchronized",
+    "returnHome": "Return to dashboard",
+    "errorRead": "The pact could not be read.",
+    "errorWrite": "The call could not be saved.",
+    "retry": "Try again",
+    "flashWarning": "Intense light effects",
+    "announceDone": "Ritual saved"
   }
 }

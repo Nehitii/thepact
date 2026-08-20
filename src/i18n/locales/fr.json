@@ -2233,5 +2233,31 @@
       "6m": "6 derniers mois",
       "all": "Depuis le début"
     }
+  },
+  "thecall": {
+    "back": "Retour",
+    "engine": "MOTEUR RITUEL",
+    "streak_one": "{{count}} jour de serie",
+    "streak_other": "{{count}} jours de serie",
+    "calls_one": "{{count}} appel",
+    "calls_other": "{{count}} appels",
+    "hold": "MAINTENIR POUR INITIER",
+    "loading": "CONNEXION AU PACTE…",
+    "ariaHold": "Maintenir vingt secondes — au doigt, ou avec la barre d espace — pour accomplir le rituel du jour",
+    "ariaDone": "Rituel du jour accompli",
+    "awaiting": "En attente",
+    "syncing": "Synchronisation…",
+    "rising": "L energie monte // Tenez bon",
+    "critical": "CRITIQUE // NE RELACHEZ PAS",
+    "fading": "Signal perdu…",
+    "locked": "PROTOCOLE VERROUILLE",
+    "connected": "AME CONNECTEE",
+    "synchronized": "Rituel synchronise",
+    "returnHome": "Retour au tableau de bord",
+    "errorRead": "Impossible de lire le pacte.",
+    "errorWrite": "L appel n a pas pu etre enregistre.",
+    "retry": "Reessayer",
+    "flashWarning": "Effets lumineux intenses",
+    "announceDone": "Rituel enregistre"
   }
 }
