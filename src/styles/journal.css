@@ -260,6 +260,10 @@
   color: var(--jr-encre-3); line-height: 1.85;
 }
 .jr-cote b { display: block; color: var(--jr-encre); font-weight: 700; }
+/* Heure, cote et nombre de mots etaient en ligne, sans rien entre
+   eux : on lisait « 16:42REF·F33D5 WORDS ». Sur le dos d un dossier,
+   chaque mention tient sa ligne. */
+.jr-cote span { display: block; }
 @media (max-width: 640px) { .jr-cote { display: flex; gap: 10px; flex-wrap: wrap; } .jr-cote b { display: inline; } }
 
 .jr-bande {
@@ -897,7 +901,7 @@
    rangee, et la cote garde sa reference. */
 @media (max-width: 720px) {
   .jr-at-tete { padding: 6px 10px; gap: 8px; }
-  .jr-at-ref span { display: none; }
+  .jr-at-date, .jr-at-lecture { display: none; }
   .jr-at-ref em { font-size: max(9.5px, 0.594rem); }
 
   .jr-barre {

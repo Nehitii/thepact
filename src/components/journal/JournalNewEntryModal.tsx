@@ -256,9 +256,11 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
           <header className="jr-at-tete">
             <div className="jr-at-ref">
               <b>{reference}</b>
-              <span>{format(dateDoc, "yyyy.MM.dd")}</span>
-              <span>{t("journal.words", { count: mots })}</span>
-              <span>{t("journal.ed.lecture", { count: minutesDeLecture(mots) })}</span>
+              <span className="jr-at-date">{format(dateDoc, "yyyy.MM.dd")}</span>
+              {/* Le compte de mots reste, meme sur un ecran etroit :
+                  c est la seule mention qui bouge en ecrivant. */}
+              <span className="jr-at-mots">{t("journal.words", { count: mots })}</span>
+              <span className="jr-at-lecture">{t("journal.ed.lecture", { count: minutesDeLecture(mots) })}</span>
               {brouillonRestaure && <em>{t("journal.modal.draftRestored")}</em>}
             </div>
 
