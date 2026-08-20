@@ -12,7 +12,8 @@
    regarde son pacte.
    ═══════════════════════════════════════════════════════════ */
 
-.cy {
+.cy,
+.cy-reg {
   --cy-fond: #040507;
   --cy-plaque: #1A2029;
   --cy-creux: #26303D;
@@ -35,10 +36,12 @@
   /* Le chanfrein : la geometrie de tout l appareil. */
   --cy-coupe: 14px;
 
-  position: relative;
   color: var(--cy-encre);
   font-family: var(--cy-titre);
 }
+
+/* Le chassis se positionne ; les fenetres restent a Radix. */
+.cy { position: relative; }
 
 /* ── Le fond de l appareil ────────────────────────────────── */
 .cy-fond {
@@ -575,4 +578,104 @@
 @media (pointer: coarse) {
   .cy-raccourcis button, .cy-piece { min-height: 44px; }
   .cy-outil { width: 46px; height: 46px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LES REGLAGES
+   La meme plaque chanfreinee que les baies, en fenetre.
+   ═══════════════════════════════════════════════════════════ */
+.cy-reg {
+  max-width: 520px !important; width: calc(100vw - 32px);
+  padding: 0 !important; gap: 0 !important;
+  border: 1px solid var(--cy-jaune) !important; border-radius: 0 !important;
+  background: linear-gradient(180deg, var(--cy-plaque), #10151C) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(252, 238, 10, 0.03) !important;
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  overflow: hidden;
+}
+.cy-reg-tete {
+  display: flex; align-items: stretch; flex-shrink: 0;
+  border-bottom: 1px solid var(--cy-trait); background: rgba(0, 0, 0, 0.3);
+}
+.cy-reg-tete .cy-index { min-width: 52px; }
+.cy-reg-tete .cy-outil {
+  align-self: center; margin-right: 10px; width: 36px; height: 36px;
+  border-color: transparent; background: transparent;
+}
+.cy-reg-corps { padding: 6px 20px 4px; max-height: min(62vh, 560px); overflow-y: auto; }
+
+.cy-reg-rang { padding: 16px 0; border-bottom: 1px solid var(--cy-trait); }
+.cy-reg-rang:last-child { border-bottom: 0; }
+.cy-reg-nom {
+  display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+  font-family: var(--cy-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.cy-reg-nom svg { width: 13px; height: 13px; color: var(--cy-jaune); }
+
+.cy-reg-champ {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 48px; padding: 0 14px; width: 100%;
+  background: #0A0E13; border: 1px solid var(--cy-trait);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  transition: border-color 180ms, box-shadow 180ms;
+}
+.cy-reg-champ.est-court { width: 120px; }
+.cy-reg-champ:focus-within {
+  border-color: var(--cy-jaune); box-shadow: 0 0 20px rgba(252, 238, 10, 0.15);
+}
+.cy-reg-champ input {
+  flex: 1; min-width: 0; background: none !important; border: 0 !important; outline: none;
+  font-family: var(--cy-chiffre); font-size: 19px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--cy-encre) !important;
+}
+.cy-reg-champ b { font-family: var(--cy-chiffre); font-size: 15px; color: var(--cy-encre-3); }
+
+/* La cible : deux etats, et l on voit ce que la manuelle remplace. */
+.cy-reg-bascule { display: flex; gap: 6px; flex-wrap: wrap; }
+.cy-reg-bascule button {
+  flex: 1; min-width: 150px; min-height: 48px; padding: 0 14px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px;
+  background: #0A0E13; border: 1px solid var(--cy-trait);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  font-family: var(--cy-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--cy-encre-3);
+  transition: border-color 180ms, background 180ms, color 180ms;
+}
+.cy-reg-bascule button b {
+  font-family: var(--cy-chiffre); font-size: 14px; font-weight: 700;
+  letter-spacing: 0; text-transform: none; color: var(--cy-encre-2);
+}
+.cy-reg-bascule button:hover { border-color: var(--cy-trait-fort); }
+.cy-reg-bascule button[aria-pressed="true"] {
+  border-color: var(--cy-jaune); background: rgba(252, 238, 10, 0.08); color: var(--cy-jaune);
+}
+.cy-reg-bascule button[aria-pressed="true"] b { color: var(--cy-encre); }
+
+.cy-reg-champ + .cy-reg-aide { margin-top: 8px; }
+.cy-reg-bascule + .cy-reg-champ { margin-top: 8px; }
+.cy-reg-aide {
+  margin: 8px 0 0; font-family: var(--cy-titre);
+  font-size: max(13px, 0.8125rem); line-height: 1.45; color: var(--cy-encre-2);
+}
+
+.cy-reg-pied {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  padding: 14px 20px; border-top: 1px solid var(--cy-trait);
+  background: rgba(0, 0, 0, 0.28);
+}
+.cy-reg-pied .cy-valider { margin-left: auto; }
+.cy-reg-annuler {
+  min-height: 46px; padding: 0 18px; cursor: pointer;
+  background: transparent; border: 1px solid var(--cy-trait);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  font-family: var(--cy-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cy-encre-3);
+  transition: color 160ms, border-color 160ms;
+}
+.cy-reg-annuler:hover { color: var(--cy-encre); border-color: var(--cy-trait-fort); }
+
+@media (pointer: coarse) {
+  .cy-reg-champ, .cy-reg-bascule button, .cy-reg-annuler { min-height: 48px; }
+  .cy-reg-tete .cy-outil { width: 44px; height: 44px; }
 }

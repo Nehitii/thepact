@@ -151,6 +151,7 @@ export default function Finance() {
         open={reglagesOuverts}
         onOpenChange={setReglagesOuverts}
         currentSettings={reglages}
+        totalObjectifs={goals.reduce((s, g) => s + (g.estimated_cost || 0), 0)}
       />
     </DSPageShell>
   );
