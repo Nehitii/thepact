@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -59,6 +59,20 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   const [editConfirmedIncome, setEditConfirmedIncome] = useState(false);
   const [editUnplannedExpenses, setEditUnplannedExpenses] = useState('');
   const [editUnplannedIncome, setEditUnplannedIncome] = useState('');
+
+  /* Le palmares appelle a valider ; le panneau qui valide est plus
+     bas. On y emmene, et il s annonce une fois en arrivant. */
+  const refValidation = useRef<HTMLDivElement>(null);
+  const allerValider = useCallback(() => {
+    const cible = refValidation.current;
+    if (!cible) return;
+    const douceur = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    cible.scrollIntoView({ behavior: douceur, block: 'center' });
+    cible.focus({ preventScroll: true });
+    cible.classList.remove('est-signalee');
+    /* Relancer l animation demande de laisser passer une image. */
+    requestAnimationFrame(() => cible.classList.add('est-signalee'));
+  }, []);
 
   const totalExpenses = calculateActiveTotal(expenses);
   const totalIncome = calculateActiveTotal(income);
@@ -136,7 +150,11 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
     <div className="space-y-8">
       <MonthlyBalanceHero totalIncome={totalIncome} totalExpenses={totalExpenses} />
 
-      <MoisPalmares netPrevu={totalIncome - totalExpenses} restantPacte={restantPacte} />
+      <MoisPalmares
+        netPrevu={totalIncome - totalExpenses}
+        restantPacte={restantPacte}
+        onAllerValider={allerValider}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
@@ -169,7 +187,9 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
         </motion.div>
       </div>
 
-      <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />
+      <div ref={refValidation} className="cy-cible" tabIndex={-1}>
+        <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />
+      </div>
       <MonthlyHistory onEditMonth={(month) => setEditingMonth(month)} />
 
       {/* Edit past month validation modal */}

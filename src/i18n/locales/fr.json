@@ -1106,7 +1106,10 @@
       "rythmeValeur_other": "{{count}} mois",
       "rythmeAide": "À ce solde, le pacte est bouclé.",
       "rythmeVide": "Le mois ne dégage rien à verser.",
-      "bandeAide": "{{count}} mois validés sur les douze derniers"
+      "bandeAide": "{{count}} mois validés sur les douze derniers",
+      "moisAValider": "{{mois}} n est pas encore validé.",
+      "moisValide": "{{mois}} est validé.",
+      "validerLeMois": "Valider le mois"
     }
   },
   "health": {

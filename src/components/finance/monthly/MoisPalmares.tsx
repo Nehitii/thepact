@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Flame, Rocket, Trophy } from 'lucide-react';
+import { ArrowDown, CheckCircle2, Flame, Rocket, Trophy } from 'lucide-react';
 import { format, startOfMonth, subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -31,15 +31,23 @@ interface MoisPalmaresProps {
   netPrevu: number;
   /** Ce qu il reste a financer sur le pacte. */
   restantPacte: number;
+  /** Emmene au panneau qui valide le mois, plus bas dans l ecran. */
+  onAllerValider: () => void;
 }
 
 const CASES = 12;
 
-export function MoisPalmares({ netPrevu, restantPacte }: MoisPalmaresProps) {
+export function MoisPalmares({ netPrevu, restantPacte, onAllerValider }: MoisPalmaresProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
   const { data: validations = [] } = useMonthlyValidations(user?.id);
+
+  /* Le mois en cours : c est lui que le panneau plus bas valide, et
+     c est lui qui fera monter la serie affichee juste au-dessus. */
+  const moisCourant = format(startOfMonth(new Date()), 'yyyy-MM');
+  const validationCourante = validations.find((v) => v.month.slice(0, 7) === moisCourant);
+  const moisValide = !!validationCourante?.validated_at;
 
   const valides = useMemo(
     () => new Set(validations.filter((v) => v.validated_at).map((v) => v.month.slice(0, 7))),
@@ -136,6 +144,28 @@ export function MoisPalmares({ netPrevu, restantPacte }: MoisPalmaresProps) {
             <u>{m.lettre}</u>
           </motion.i>
         ))}
+      </div>
+
+      {/* La boucle se ferme ici : c est la validation qui fait monter
+          la serie, elle ne doit pas etre a deux ecrans de son chiffre. */}
+      <div className="cy-palm-appel" data-fait={moisValide ? '1' : '0'}>
+        {moisValide ? (
+          <p>
+            <CheckCircle2 aria-hidden="true" />
+            {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM') })}
+          </p>
+        ) : (
+          <>
+            <p>
+              <Flame aria-hidden="true" />
+              {t('finance.palmares.moisAValider', { mois: format(new Date(), 'MMMM') })}
+            </p>
+            <button type="button" onClick={onAllerValider}>
+              {t('finance.palmares.validerLeMois')}
+              <ArrowDown aria-hidden="true" />
+            </button>
+          </>
+        )}
       </div>
     </section>
   );

@@ -1106,7 +1106,10 @@
       "rythmeValeur_other": "{{count}} months",
       "rythmeAide": "At this balance, the pact closes.",
       "rythmeVide": "The month leaves nothing to pay in.",
-      "bandeAide": "{{count}} months validated out of the last twelve"
+      "bandeAide": "{{count}} months validated out of the last twelve",
+      "moisAValider": "{{mois}} is not validated yet.",
+      "moisValide": "{{mois}} is validated.",
+      "validerLeMois": "Validate the month"
     }
   },
   "health": {

@@ -924,3 +924,41 @@
   border-color: var(--cy-jaune); border-style: dashed;
 }
 .cy-palm-bande i[data-encours="1"] u { color: var(--cy-jaune); }
+
+/* L appel a valider : la serie se gagne la, pas deux ecrans plus bas. */
+.cy-palm-appel {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--cy-trait);
+}
+.cy-palm-appel p {
+  display: flex; align-items: center; gap: 9px; margin: 0;
+  font-family: var(--cy-titre); font-size: max(13.5px, 0.844rem);
+  color: var(--cy-encre-2);
+}
+.cy-palm-appel p svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--cy-jaune); }
+.cy-palm-appel[data-fait="1"] p { color: var(--cy-vert); }
+.cy-palm-appel[data-fait="1"] p svg { color: var(--cy-vert); }
+
+.cy-palm-appel button {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 42px; padding: 0 18px; cursor: pointer; border: 0;
+  background: var(--cy-jaune); color: #07080A;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  font-family: var(--cy-chiffre); font-size: max(10.5px, 0.656rem);
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  box-shadow: 0 0 22px rgba(252, 238, 10, 0.28);
+  transition: filter 160ms, box-shadow 160ms;
+}
+.cy-palm-appel button svg { width: 14px; height: 14px; }
+.cy-palm-appel button:hover { filter: brightness(1.1); box-shadow: 0 0 30px rgba(252, 238, 10, 0.45); }
+
+/* La cible du saut : elle s annonce une fois, puis se tait. */
+@keyframes cy-signale {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(252, 238, 10, 0); }
+  30% { box-shadow: 0 0 0 3px rgba(252, 238, 10, 0.5), 0 0 34px rgba(252, 238, 10, 0.25); }
+}
+.cy-cible:focus-visible { outline: none; }
+.cy-cible.est-signalee { animation: cy-signale 1400ms ease-out 1; }
+
+@media (pointer: coarse) { .cy-palm-appel button { min-height: 48px; } }
+@media (prefers-reduced-motion: reduce) { .cy-cible.est-signalee { animation: none; } }
