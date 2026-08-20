@@ -110,3 +110,59 @@ export function nomSansPrefixeGroupe(nom: string): string {
   const court = nom.replace(/^\s*super\s*goals?\s*[:\-–—]\s*/i, "").trim();
   return court.length > 0 ? court : nom;
 }
+
+/**
+ * DIRE CE QU UNE REGLE SELECTIONNE.
+ *
+ * Un groupe automatique affichait « regle auto · 32 » : le nombre
+ * qu elle capte, jamais son critere. Or c est le critere qui explique
+ * le nombre — et, ici, qui revele que la regle ne sert a rien : elle
+ * coche les six paliers sans autre condition, donc elle prend le
+ * pacte entier. Une regle qui selectionne tout ne distingue rien.
+ */
+const NOM_PALIER_REGLE: Record<string, string> = {
+  easy: "facile",
+  medium: "moyen",
+  hard: "difficile",
+  extreme: "extrême",
+  impossible: "impossible",
+  custom: "personnalisé",
+};
+
+/** Nombre de paliers existants : au complet, le critere ne filtre plus. */
+const PALIERS_EN_TOUT = 6;
+
+export function decrireRegle(regle: SuperGoalRule | null | undefined): string {
+  if (!regle) return "aucun critère";
+  const morceaux: string[] = [];
+
+  const d = regle.difficulties ?? [];
+  if (d.length >= PALIERS_EN_TOUT) morceaux.push("tous les paliers");
+  else if (d.length > 0) morceaux.push(d.map((x) => NOM_PALIER_REGLE[x] || x).join(", "));
+
+  if (regle.tags?.length) morceaux.push(`étiquettes : ${regle.tags.join(", ")}`);
+  if (regle.statuses?.length) morceaux.push(`états : ${regle.statuses.join(", ")}`);
+  if (regle.focusOnly) morceaux.push("brigade uniquement");
+  if (regle.excludeCompleted) morceaux.push("hors franchis");
+
+  return morceaux.length ? morceaux.join(" · ") : "aucun critère";
+}
+
+/**
+ * Une regle qui ne trie rien.
+ *
+ * Elle prend tout ce qu on lui presente : soit elle n a aucun critere,
+ * soit ses criteres sont si larges qu ils laissent passer la totalite.
+ * Le dire vaut mieux que de laisser chercher ce qu elle apporte.
+ */
+export function regleVaine(regle: SuperGoalRule | null | undefined, captes: number, eligibles: number): boolean {
+  if (!regle) return true;
+  const aUnCritere =
+    (regle.tags?.length ?? 0) > 0 ||
+    (regle.statuses?.length ?? 0) > 0 ||
+    regle.focusOnly === true ||
+    regle.excludeCompleted === true ||
+    (regle.difficulties?.length ?? 0) > 0;
+  if (!aUnCritere) return true;
+  return eligibles > 0 && captes >= eligibles;
+}
