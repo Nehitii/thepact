@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useFinance';
 import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
+import { MoisPalmares } from './MoisPalmares';
 import { FinancialBlock } from './FinancialBlock';
 import { MonthlyValidationPanel } from './MonthlyValidationPanel';
 import { MonthlyHistory } from './MonthlyHistory';
@@ -28,9 +29,11 @@ import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings } 
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;
+  /** Ce qu il reste a financer : le palmares en tire la part versee. */
+  restantPacte: number;
 }
 
-export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
+export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDashboardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -132,6 +135,8 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   return (
     <div className="space-y-8">
       <MonthlyBalanceHero totalIncome={totalIncome} totalExpenses={totalExpenses} />
+
+      <MoisPalmares netPrevu={totalIncome - totalExpenses} restantPacte={restantPacte} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>

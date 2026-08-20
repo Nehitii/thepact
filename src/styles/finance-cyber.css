@@ -24,6 +24,9 @@
   --cy-cyan: #00E5FF;
   --cy-vert: #2BFF88;
   --cy-rouge: #FF3B4E;
+  /* #FF3B4E tombe a 3,81 en texte sur le creux : le rouge des
+     remplissages n est pas celui des mots. */
+  --cy-rouge-encre: #FF6B78;
 
   --cy-encre: #EDEFF2;
   --cy-encre-2: #98A0AD;
@@ -201,7 +204,7 @@
   overflow: hidden;
 }
 .cy-lect[data-ton="acquis"] { --ton: var(--cy-vert); }
-.cy-lect[data-ton="reste"] { --ton: var(--cy-rouge); }
+.cy-lect[data-ton="reste"] { --ton: var(--cy-rouge-encre); }
 /* Le filet de tranche : le role du chiffre se lit avant le chiffre. */
 .cy-lect::before {
   content: ""; position: absolute; left: 0; top: 10px; bottom: 0; width: 2px;
@@ -464,7 +467,7 @@
 }
 @media (max-width: 720px) { .cy-mois-hero { grid-template-columns: 1fr; } }
 .cy-mois-hero .cy-lect[data-ton="entrees"] { --ton: var(--cy-vert); }
-.cy-mois-hero .cy-lect[data-ton="sorties"] { --ton: var(--cy-rouge); }
+.cy-mois-hero .cy-lect[data-ton="sorties"] { --ton: var(--cy-rouge-encre); }
 .cy-mois-hero .cy-lect[data-ton="solde"] { --ton: var(--cy-jaune); }
 
 /* ═══════════════════════════════════════════════════════════
@@ -856,3 +859,68 @@
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--cy-jaune);
 }
 @media (pointer: coarse) { .cy-replies { min-height: 48px; } }
+
+/* ═══════════════════════════════════════════════════════════
+   LE PALMARES DU MOIS
+   Le mois etait une comptabilite. Trois lectures le rattachent
+   au pacte, et douze cases disent la tenue sur un an.
+   ═══════════════════════════════════════════════════════════ */
+.cy-palm {
+  margin-bottom: 16px; padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(252, 238, 10, 0.05), transparent 62%), var(--cy-creux);
+  border: 1px solid var(--cy-trait);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.cy-palm-grille {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
+}
+@media (max-width: 720px) { .cy-palm-grille { grid-template-columns: 1fr; gap: 12px; } }
+
+.cy-palm-lect {
+  --ton: var(--cy-jaune);
+  display: flex; flex-direction: column; gap: 5px; min-width: 0;
+}
+.cy-palm-lect[data-cle="serie"] { --ton: var(--cy-rouge-encre); }
+.cy-palm-lect[data-cle="rythme"] { --ton: var(--cy-vert); }
+
+.cy-palm-nom {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--cy-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.cy-palm-nom svg { width: 13px; height: 13px; color: var(--ton); }
+.cy-palm-lect strong {
+  font-family: var(--cy-chiffre); font-size: clamp(19px, 2.3vw, 25px); font-weight: 700;
+  font-variant-numeric: tabular-nums; line-height: 1.05; color: var(--ton);
+  text-shadow: 0 0 20px color-mix(in oklab, var(--ton) 38%, transparent);
+}
+.cy-palm-lect em {
+  font-style: normal; font-family: var(--cy-titre);
+  font-size: max(12.5px, 0.78rem); line-height: 1.4; color: var(--cy-encre-2);
+}
+
+/* Douze cases : pleine si le mois est valide, creuse sinon. */
+.cy-palm-bande {
+  display: flex; gap: 5px; margin-top: 16px;
+  padding-top: 14px; border-top: 1px solid var(--cy-trait);
+}
+.cy-palm-bande i {
+  flex: 1; height: 30px; position: relative; transform-origin: bottom;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--cy-trait); background: #0A0E13;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+.cy-palm-bande i u {
+  text-decoration: none; font-family: var(--cy-mono);
+  font-size: max(9px, 0.5625rem); letter-spacing: 0.04em; color: var(--cy-encre-3);
+}
+.cy-palm-bande i[data-valide="1"] {
+  background: color-mix(in oklab, var(--cy-vert) 22%, #0A0E13);
+  border-color: color-mix(in oklab, var(--cy-vert) 60%, transparent);
+  box-shadow: inset 0 0 14px color-mix(in oklab, var(--cy-vert) 22%, transparent);
+}
+.cy-palm-bande i[data-valide="1"] u { color: var(--cy-vert); }
+.cy-palm-bande i[data-encours="1"] {
+  border-color: var(--cy-jaune); border-style: dashed;
+}
+.cy-palm-bande i[data-encours="1"] u { color: var(--cy-jaune); }

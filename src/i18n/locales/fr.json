@@ -1092,6 +1092,21 @@
       "lectureArbitrage_one": "{{count}} pièce en attente",
       "lectureArbitrage_other": "{{count}} pièces en attente",
       "navette": "Écrans de la page"
+    },
+    "palmares": {
+      "titre": "Palmarès du mois",
+      "versement": "Verse au pacte",
+      "versementAide": "Soit {{pct}} % de ce qu il reste à trouver.",
+      "serie": "Série",
+      "serieValeur_one": "{{count}} mois",
+      "serieValeur_other": "{{count}} mois",
+      "serieAide": "Mois validés d affilée.",
+      "rythme": "Rythme",
+      "rythmeValeur_one": "{{count}} mois",
+      "rythmeValeur_other": "{{count}} mois",
+      "rythmeAide": "À ce solde, le pacte est bouclé.",
+      "rythmeVide": "Le mois ne dégage rien à verser.",
+      "bandeAide": "{{count}} mois validés sur les douze derniers"
     }
   },
   "health": {

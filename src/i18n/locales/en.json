@@ -1092,6 +1092,21 @@
       "lectureArbitrage_one": "{{count}} item pending",
       "lectureArbitrage_other": "{{count}} items pending",
       "navette": "Page screens"
+    },
+    "palmares": {
+      "titre": "Month scoreboard",
+      "versement": "Pays into the pact",
+      "versementAide": "That is {{pct}}% of what is left to find.",
+      "serie": "Streak",
+      "serieValeur_one": "{{count}} month",
+      "serieValeur_other": "{{count}} months",
+      "serieAide": "Months validated in a row.",
+      "rythme": "Pace",
+      "rythmeValeur_one": "{{count}} month",
+      "rythmeValeur_other": "{{count}} months",
+      "rythmeAide": "At this balance, the pact closes.",
+      "rythmeVide": "The month leaves nothing to pay in.",
+      "bandeAide": "{{count}} months validated out of the last twelve"
     }
   },
   "health": {

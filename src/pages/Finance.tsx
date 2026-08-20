@@ -180,7 +180,10 @@ export default function Finance() {
               )}
 
               {ecranActif === "mois" && (
-                <MonthlyDashboard salaryPaymentDay={reglages.salary_payment_day} />
+                <MonthlyDashboard
+                  salaryPaymentDay={reglages.salary_payment_day}
+                  restantPacte={compte.restant}
+                />
               )}
             </div>
           </div>
