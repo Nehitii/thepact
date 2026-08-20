@@ -685,7 +685,27 @@
     "toolbar": "Filtres",
     "totalLabel": "Objectifs",
     "activeLabel": "En cours",
-    "doneLabel": "Franchis"
+    "doneLabel": "Franchis",
+    "edit": {
+      "title": "Modifier",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "identity": "Identité",
+      "name": "Nom",
+      "difficulty": "Palier",
+      "tags": "Étiquettes",
+      "tagsHint": "La première sélectionnée devient l'étiquette principale.",
+      "dates": "Calendrier",
+      "deadline": "Échéance",
+      "deadlineHint": "Une échéance allume le compte à rebours sur la carte de l'objectif.",
+      "notesPlaceholder": "Ce qu'il faut se rappeler à propos de cet objectif…",
+      "typeFixed": "fixé à la création",
+      "typeNormal": "Objectif ordinaire",
+      "typeHabit": "Habitude",
+      "typeGroup": "Groupe",
+      "groupNoSteps": "Un groupe n'a pas d'étapes : il compte ses membres, qui se choisissent depuis sa fiche.",
+      "habitNoSteps": "Une habitude n'a pas d'étapes : elle se coche jour après jour."
+    }
   },
   "finance": {
     "dashboard": "Tableau de bord financier",

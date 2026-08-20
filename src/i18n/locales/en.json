@@ -685,7 +685,27 @@
     "toolbar": "Filters",
     "totalLabel": "Goals",
     "activeLabel": "Active",
-    "doneLabel": "Completed"
+    "doneLabel": "Completed",
+    "edit": {
+      "title": "Edit",
+      "save": "Save",
+      "saving": "Saving…",
+      "identity": "Identity",
+      "name": "Name",
+      "difficulty": "Difficulty",
+      "tags": "Tags",
+      "tagsHint": "The first one selected becomes the primary tag.",
+      "dates": "Scheduling",
+      "deadline": "Deadline",
+      "deadlineHint": "A deadline turns on the countdown on the goal card.",
+      "notesPlaceholder": "What to remember about this goal…",
+      "typeFixed": "set at creation",
+      "typeNormal": "Ordinary goal",
+      "typeHabit": "Habit",
+      "typeGroup": "Group",
+      "groupNoSteps": "A group has no steps: it counts its members, chosen from its page.",
+      "habitNoSteps": "A habit has no steps: it is checked off day by day."
+    }
   },
   "finance": {
     "dashboard": "Finance Dashboard",

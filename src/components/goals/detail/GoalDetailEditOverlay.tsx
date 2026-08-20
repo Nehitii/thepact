@@ -1,20 +1,40 @@
-import React, { useEffect, useRef, useCallback } from "react";
+/**
+ * L ATELIER — modifier un objectif.
+ *
+ * Il reprend le chassis du dossier et sa disposition : a gauche ce
+ * qu est l objectif, a droite ce qu il demande. Les deux listes qui
+ * se font face dans la fiche se font face ici aussi — on modifie au
+ * meme endroit qu on lit, dans la meme langue.
+ *
+ * Trois choses ont change au-dela de l apparence.
+ *
+ * La barre de commande ne defile plus. Quitter et enregistrer etaient
+ * en bas de deux mille pixels de formulaire ; ils sont maintenant a
+ * portee ou qu on soit.
+ *
+ * Le type d objectif ne s affiche plus en trois grandes cartes dont
+ * une seule est vraie : il se fixe a la creation, un releve d une
+ * ligne suffit a le dire.
+ *
+ * L image rejoint la vignette de l identite, a la place qu elle
+ * occupe dans la fiche, au lieu d une section a elle seule.
+ */
+import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowLeft, Check, X, Target, Tag, Zap, Calendar, DollarSign,
-  Image, StickyNote, ListOrdered, Sparkles, Crown, Clock,
+  ArrowLeft, Check, X, Target, Tag, ListOrdered, Calendar, Receipt,
+  StickyNote, Sparkles, Crown, Ban,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/lib/goalConstants";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, type CostItemData } from "@/components/goals/CostItemsEditor";
 import { EditStepsList, type EditStepItem } from "@/components/goals/EditStepsList";
+import { encreSurFond } from "@/components/goals/detail/dossier/encre";
 import type { GoalDetailData } from "@/hooks/useGoalDetail";
+import "@/styles/cyberpunk.css";
+import "@/styles/goal-dossier.css";
+import "@/styles/goal-editeur.css";
 
 interface Step {
   id: string;
@@ -29,7 +49,6 @@ interface GoalDetailEditOverlayProps {
   goal: GoalDetailData;
   userId: string | undefined;
   steps: Step[];
-  // Edit state
   editName: string; setEditName: (v: string) => void;
   editDifficulty: string; setEditDifficulty: (v: string) => void;
   editTags: string[]; toggleEditTag: (tag: string) => void;
@@ -42,17 +61,16 @@ interface GoalDetailEditOverlayProps {
   onStepItemsChange: (items: EditStepItem[]) => void;
   editCostItems: CostItemData[];
   setEditCostItems: (items: CostItemData[]) => void;
-  // Custom difficulty
   customDifficultyActive: boolean;
   customDifficultyName: string;
   customDifficultyColor: string;
-  // Callbacks
   saving: boolean;
   onSave: () => void;
   onClose: () => void;
-  // Wishlist
   onAddToWishlist?: (item: CostItemData) => void;
 }
+
+const NOTES_MAX = 500;
 
 export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(props: GoalDetailEditOverlayProps) {
   const { t } = useTranslation();
@@ -67,186 +85,262 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
     saving, onSave, onClose, onAddToWishlist,
   } = props;
 
-  const allDifficulties = [
+  /* Echap ferme l atelier — en passant par onClose, qui porte la garde
+     des modifications non enregistrees. Et la page dessous cesse de
+     defiler tant qu il est ouvert : deux barres de defilement
+     imbriquees donnent l impression que rien ne bouge. */
+  useEffect(() => {
+    if (!isOpen) return;
+    const surTouche = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); onClose(); }
+    };
+    window.addEventListener("keydown", surTouche);
+    const defilementInitial = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", surTouche);
+      document.body.style.overflow = defilementInitial;
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const paliers = [
     ...DIFFICULTY_OPTIONS,
     ...(customDifficultyActive
       ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }]
       : []),
   ];
+  const teinte = paliers.find((p) => p.value === editDifficulty)?.color || "#94a3b8";
 
-  const inputStyle = "bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
+  const estHabitude = goal.goal_type === "habit";
+  const estGroupe = goal.goal_type === "super";
+  const TypeIcone = estGroupe ? Crown : estHabitude ? Sparkles : ListOrdered;
+  const typeNom = estGroupe
+    ? t("goals.edit.typeGroup", "Groupe")
+    : estHabitude
+      ? t("goals.edit.typeHabit", "Habitude")
+      : t("goals.edit.typeNormal", "Objectif ordinaire");
 
-  const content = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[9999] bg-background overflow-hidden"
-        >
-          <div className="fixed inset-0 pointer-events-none">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-          </div>
-          <div className="fixed inset-0 pointer-events-none opacity-10">
-            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)`, backgroundSize: "50px 50px" }} />
-          </div>
+  const contenu = (
+    <div className="ge" role="dialog" aria-modal="true" aria-label={t("goals.edit.title", "Modifier l'objectif")}>
+      <span className="ge-fond" aria-hidden="true" />
 
-          <div className="relative z-10 h-full overflow-y-auto">
-            <div className="max-w-2xl mx-auto px-6 py-8">
-              <motion.div className="space-y-6 mb-10" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Button variant="ghost" onClick={onClose} className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl">
-                  <ArrowLeft className="h-4 w-4 mr-2" />Back to Goal
-                </Button>
-                <div className="text-center space-y-3">
-                  <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">Edit Goal</h1>
-                  <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Update your evolution</p>
-                </div>
-              </motion.div>
+      <header className="ge-barre">
+        <button type="button" className="ge-bouton ge-bouton--retour" onClick={onClose} disabled={saving}>
+          <ArrowLeft size={13} aria-hidden="true" />
+          <span className="ge-mot">{t("goals.detail.back", "Retour")}</span>
+        </button>
+        <h1 className="ge-titre">
+          <span className="ge-mot">{t("goals.edit.title", "Modifier")}</span>
+          <b>{goal.name}</b>
+        </h1>
+        <div className="ge-barre-fin">
+          <button
+            type="button"
+            className="ge-bouton"
+            onClick={onClose}
+            disabled={saving}
+            aria-label={t("common.cancel", "Annuler")}
+          >
+            <X size={13} aria-hidden="true" />
+            <span className="ge-mot">{t("common.cancel", "Annuler")}</span>
+          </button>
+          <button type="button" className="ge-bouton ge-bouton--valider" onClick={onSave} disabled={saving}>
+            <Check size={13} aria-hidden="true" />
+            {saving ? t("goals.edit.saving", "Enregistrement…") : t("goals.edit.save", "Enregistrer")}
+          </button>
+        </div>
+      </header>
 
-              <motion.div className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-                <div className="relative p-8 md:p-10 space-y-10">
-
-                  {/* Section 1: Basic Info */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                      <Target className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Basic Information</h2>
+      <div className="ge-corps">
+        <div className="ge-grille">
+          {/* ── Ce qu est l objectif ── */}
+          <div className="ge-colonne">
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Target size={12} aria-hidden="true" />
+                {t("goals.edit.identity", "Identité")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-identite">
+                  {userId && (
+                    <div className="ge-vignette" style={{ ["--t" as string]: teinte }}>
+                      <GoalImageUpload value={editImage} onChange={setEditImage} userId={userId} />
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">Goal Name <span className="text-destructive">*</span></Label>
-                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} maxLength={100} />
+                  )}
+                  <div className="ge-identite-corps">
+                    <div className="ge-champ">
+                      <label className="ge-etiquette" htmlFor="ge-nom">
+                        {t("goals.edit.name", "Nom")} <i aria-hidden="true">*</i>
+                      </label>
+                      <input
+                        id="ge-nom"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        maxLength={100}
+                      />
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"><Tag className="h-4 w-4" />Tags <span className="text-destructive">*</span></Label>
-                      <div className="flex flex-wrap gap-2">
-                        {GOAL_TAGS.map((tag) => {
-                          const isSelected = editTags.includes(tag.value);
-                          return (
-                            <button key={tag.value} type="button" onClick={() => toggleEditTag(tag.value)} className={`relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200 ${isSelected ? "text-white shadow-lg" : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border"}`} style={isSelected ? { background: tag.color, boxShadow: `0 0 20px ${tag.color}40` } : {}}>
-                              <span className="flex items-center gap-1.5">{isSelected && <Check className="h-3.5 w-3.5" />}{getTagLabel(tag.value, t)}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Select your primary tag (first selected will be saved)</p>
+                    <div className="ge-type">
+                      <TypeIcone size={12} aria-hidden="true" />
+                      {typeNom}
+                      <span>{t("goals.edit.typeFixed", "fixé à la création")}</span>
                     </div>
-                  </div>
-
-                  {/* Section 2: Type & Difficulty */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                      <Zap className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h2>
-                    </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Type</Label>
-                      <div className="flex gap-3">
-                        {[
-                          { key: "normal", icon: ListOrdered, label: "Normal Goal", match: goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) },
-                          { key: "habit", icon: Sparkles, label: "Habit Goal", match: goal.goal_type === "habit" },
-                          { key: "super", icon: Crown, label: "Super Goal", match: goal.goal_type === "super" },
-                        ].map(({ key, icon: Icon, label, match }) => (
-                          <div key={key} className={`flex-1 p-4 rounded-xl border-2 text-center ${match ? (key === "super" ? "border-yellow-500 bg-yellow-500/10" : "border-primary bg-primary/10") : "border-border bg-muted/30"}`}>
-                            <Icon className={`h-6 w-6 mx-auto mb-1.5 ${match ? (key === "super" ? "text-yellow-500" : "text-primary") : "text-muted-foreground"}`} />
-                            <span className={`text-sm font-rajdhani font-medium ${match ? (key === "super" ? "text-yellow-500" : "text-primary") : "text-muted-foreground"}`}>{label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Goal type cannot be changed after creation</p>
-                    </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Difficulty</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {allDifficulties.map((diff) => {
-                          const isSelected = editDifficulty === diff.value;
-                          return (
-                            <button key={diff.value} type="button" onClick={() => setEditDifficulty(diff.value)} className={`relative px-4 py-2 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200 ${isSelected ? "text-white shadow-lg" : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"}`} style={isSelected ? { background: diff.color, boxShadow: `0 0 20px ${diff.color}40` } : {}}>
-                              {diff.value === "custom" ? customDifficultyName || t("goals.difficulties.custom") : t(`goals.difficulties.${diff.value}`)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    {goal.goal_type !== "habit" && goal.goal_type !== "super" && (
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"><ListOrdered className="h-4 w-4" />Mission Steps</Label>
-                        <EditStepsList items={editStepItems} onItemsChange={onStepItemsChange} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Section 3: Dates */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Scheduling</h2>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Start Date</Label>
-                        <Input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Completion Date</Label>
-                        <Input type="date" value={editCompletionDate} onChange={(e) => setEditCompletionDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"><Clock className="h-4 w-4" />Deadline (optional)</Label>
-                      <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
-                      <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer on goal cards</p>
-                    </div>
-                  </div>
-
-                  {/* Section 4: Budget & Cost */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                      <DollarSign className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
-                    </div>
-                    <CostItemsEditor items={editCostItems} onChange={setEditCostItems} legacyTotal={goal.estimated_cost} steps={steps} onAddToWishlist={onAddToWishlist} />
-                  </div>
-
-                  {/* Section 5: Media & Notes */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                      <Image className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Media & Notes</h2>
-                    </div>
-                    {userId && (
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Image</Label>
-                        <GoalImageUpload value={editImage} onChange={setEditImage} userId={userId} />
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"><StickyNote className="h-4 w-4" />Notes</Label>
-                      <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} rows={4} maxLength={500} placeholder="Add notes about your goal..." className={`rounded-xl resize-none text-base ${inputStyle}`} />
-                      <p className="text-xs text-muted-foreground text-right">{editNotes.length}/500</p>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-4 pt-6 border-t border-primary/20">
-                    <Button variant="outline" onClick={onClose} disabled={saving} className="flex-1 h-14 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider text-base">
-                      <X className="h-5 w-5 mr-2" />Cancel
-                    </Button>
-                    <Button onClick={onSave} disabled={saving} className="flex-1 h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]">
-                      <Check className="h-5 w-5 mr-2" />{saving ? "SAVING..." : "Save Changes"}
-                    </Button>
                   </div>
                 </div>
-              </motion.div>
-            </div>
+
+                <div className="ge-champ">
+                  <span className="ge-etiquette">{t("goals.edit.difficulty", "Palier")}</span>
+                  <div className="ge-pastilles">
+                    {paliers.map((p) => {
+                      const choisi = editDifficulty === p.value;
+                      return (
+                        <button
+                          key={p.value}
+                          type="button"
+                          className="ge-pastille"
+                          aria-pressed={choisi}
+                          onClick={() => setEditDifficulty(p.value)}
+                          style={choisi
+                            ? { ["--c" as string]: p.color, ["--encre" as string]: encreSurFond(p.color) }
+                            : undefined}
+                        >
+                          {p.value === "custom"
+                            ? customDifficultyName || t("goals.difficulties.custom")
+                            : t(`goals.difficulties.${p.value}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="ge-champ">
+                  <span className="ge-etiquette">
+                    <Tag size={11} aria-hidden="true" />
+                    {t("goals.edit.tags", "Étiquettes")} <i aria-hidden="true">*</i>
+                  </span>
+                  <div className="ge-pastilles">
+                    {GOAL_TAGS.map((tag) => {
+                      const choisi = editTags.includes(tag.value);
+                      return (
+                        <button
+                          key={tag.value}
+                          type="button"
+                          className="ge-pastille"
+                          aria-pressed={choisi}
+                          onClick={() => toggleEditTag(tag.value)}
+                          style={choisi
+                            ? { ["--c" as string]: tag.color, ["--encre" as string]: encreSurFond(tag.color) }
+                            : undefined}
+                        >
+                          {choisi && <Check size={10} aria-hidden="true" />}
+                          {getTagLabel(tag.value, t)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="ge-aide">
+                    {t("goals.edit.tagsHint", "La première sélectionnée devient l'étiquette principale.")}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Calendar size={12} aria-hidden="true" />
+                {t("goals.edit.dates", "Calendrier")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-duo">
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-debut">{t("goals.detail.startDate", "Début")}</label>
+                    <input id="ge-debut" type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                  </div>
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-fin">{t("goals.detail.completionDate", "Fin")}</label>
+                    <input id="ge-fin" type="date" value={editCompletionDate} onChange={(e) => setEditCompletionDate(e.target.value)} />
+                  </div>
+                </div>
+                <div className="ge-champ">
+                  <label className="ge-etiquette" htmlFor="ge-echeance">{t("goals.edit.deadline", "Échéance")}</label>
+                  <input id="ge-echeance" type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
+                  <p className="ge-aide">
+                    {t("goals.edit.deadlineHint", "Une échéance allume le compte à rebours sur la carte de l'objectif.")}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <StickyNote size={12} aria-hidden="true" />
+                {t("goals.detail.notes", "Notes")}
+                <b>{editNotes.length}/{NOTES_MAX}</b>
+              </header>
+              <div className="ge-corps-volet">
+                <textarea
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  rows={5}
+                  maxLength={NOTES_MAX}
+                  placeholder={t("goals.edit.notesPlaceholder", "Ce qu'il faut se rappeler à propos de cet objectif…")}
+                  aria-label={t("goals.detail.notes", "Notes")}
+                />
+              </div>
+            </section>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+
+          {/* ── Ce qu il demande ── */}
+          <div className="ge-colonne">
+            {!estHabitude && !estGroupe ? (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <ListOrdered size={12} aria-hidden="true" />
+                  {t("goals.detail.steps", "Étapes")}
+                  <b>{editStepItems.length}</b>
+                </header>
+                <div className="ge-embarque">
+                  <EditStepsList items={editStepItems} onItemsChange={onStepItemsChange} />
+                </div>
+              </section>
+            ) : (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <Ban size={12} aria-hidden="true" />
+                  {t("goals.detail.steps", "Étapes")}
+                </header>
+                <div className="ge-corps-volet">
+                  <p className="ge-aide">
+                    {estGroupe
+                      ? t("goals.edit.groupNoSteps", "Un groupe n'a pas d'étapes : il compte ses membres, qui se choisissent depuis sa fiche.")
+                      : t("goals.edit.habitNoSteps", "Une habitude n'a pas d'étapes : elle se coche jour après jour.")}
+                  </p>
+                </div>
+              </section>
+            )}
+
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Receipt size={12} aria-hidden="true" />
+                {t("goals.detail.ledger", "Registre")}
+                <b>{editCostItems.length}</b>
+              </header>
+              <div className="ge-embarque">
+                <CostItemsEditor
+                  items={editCostItems}
+                  onChange={setEditCostItems}
+                  legacyTotal={goal.estimated_cost}
+                  steps={steps}
+                  onAddToWishlist={onAddToWishlist}
+                />
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 
-  return createPortal(content, document.body);
+  return createPortal(contenu, document.body);
 });

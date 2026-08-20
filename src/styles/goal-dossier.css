@@ -14,7 +14,7 @@
    poste designe son etape par son numero.
    ═══════════════════════════════════════════════════════════════ */
 
-.gd {
+.gd, .ge {
   --gd-encre: #eaf6ff;
   --gd-encre-2: #cfe4f5;
   --gd-encre-3: var(--nexus-text-dimmer);
@@ -27,6 +27,10 @@
      clair : #FCEE0A sur blanc plafonne a 1,1:1. --gd-or est l encre
      doree, assombrie quand le fond s eclaircit. */
   --gd-or: var(--cp-jaune);
+}
+
+/* La mise en page du dossier, elle, n appartient qu au dossier. */
+.gd {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -36,7 +40,8 @@
 /* ── Theme clair ──
    Seuls les jetons changent ; aucune regle de composant ne connait le
    theme. */
-:root:not(.dark) .gd {
+:root:not(.dark) .gd,
+:root:not(.dark) .ge {
   --gd-encre: hsl(212 42% 13%);
   --gd-encre-2: hsl(212 24% 27%);
   --gd-encre-3: hsl(212 16% 38%);

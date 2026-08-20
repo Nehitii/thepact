@@ -1,0 +1,348 @@
+/* ═══════════════════════════════════════════════════════════════
+   L ATELIER — l editeur d un objectif
+
+   La fiche parle en majuscules mono, en angles coupes et en cellules.
+   Son editeur, lui, parlait encore en cartes de verre arrondies, avec
+   un titre en degrade de trente-deux pixels et cinq sections empilees
+   sur deux mille pixels. On ouvrait la fiche, on cliquait « modifier »,
+   et on changeait de machine.
+
+   L atelier reprend le chassis du dossier — memes jetons, meme
+   chanfrein, memes equerres — et sa disposition : a gauche ce qu est
+   l objectif, a droite ce qu il demande. Les deux listes qui se font
+   face dans la fiche se font face ici aussi, et on modifie au meme
+   endroit qu on lit.
+
+   Les trois editeurs embarques — etapes, couts, image — gardent leur
+   balisage : ils portent une logique de glisser-deposer et de
+   televersement qu il serait imprudent de reecrire pour une question
+   d apparence. Ils sont rhabilles depuis ici. Un selecteur d element
+   porte dans un descendant (0,1,1) l emporte sur une classe
+   utilitaire seule (0,1,0) : c est ce qui permet de leur imposer la
+   peau de l atelier sans toucher a une ligne de leur code.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ge {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: var(--nexus-bg);
+  --gd-mono: 'Share Tech Mono', monospace;
+}
+
+/* Le fond : la meme trame que le dossier, immobile et discrete. */
+.ge-fond {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(120% 90% at 50% 0%, #000 0%, transparent 75%);
+}
+
+/* ── La barre de commande ──
+   Elle ne defile pas : quitter et enregistrer sont a portee ou qu on
+   soit dans le formulaire. C est ce qui remplace les deux boutons
+   perdus deux mille pixels plus bas. */
+.ge-barre {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--gd-trait);
+  background: var(--nexus-bg);
+}
+.ge-titre {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+}
+.ge-titre b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--gd-encre);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ge-barre-fin { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.ge-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-2);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.ge-bouton:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.ge-bouton:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.ge-bouton:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Enregistrer est le seul geste plein de la barre : il ferme l atelier. */
+.ge-bouton--valider {
+  color: #04070a;
+  background: var(--gd-or);
+  border-color: var(--gd-or);
+  font-weight: 700;
+}
+.ge-bouton--valider:hover { color: #04070a; background: color-mix(in srgb, var(--gd-or) 82%, #fff); border-color: var(--gd-or); }
+
+/* ── Le corps ── */
+.ge-corps {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px 32px;
+}
+.ge-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.ge-colonne { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+@media (max-width: 1000px) {
+  .ge-grille { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Un panneau ── */
+.ge-volet {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--gd-trait);
+  background: rgb(255 255 255 / 0.012);
+}
+:root:not(.dark) .ge-volet { background: rgb(0 0 0 / 0.02); }
+.ge-tete {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+  padding: 0 12px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  background: var(--gd-plaque);
+  border-bottom: 1px solid var(--gd-trait);
+}
+.ge-tete svg { flex-shrink: 0; color: var(--gd-or); }
+.ge-tete b { margin-left: auto; color: var(--gd-encre-2); font-weight: 400; font-variant-numeric: tabular-nums; }
+.ge-corps-volet { display: flex; flex-direction: column; gap: 14px; padding: 14px 12px; }
+
+/* ── Un champ ── */
+.ge-champ { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ge-etiquette {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+}
+.ge-etiquette i { font-style: normal; color: var(--cp-rouge); }
+.ge-aide {
+  margin: 0;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  color: var(--gd-encre-3);
+}
+.ge-aide--droite { text-align: right; font-variant-numeric: tabular-nums; }
+.ge-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+/* ── LA PEAU DES CHAMPS ──
+   Elle s applique aussi aux editeurs embarques : un champ carre, un
+   liseré fin, et le jaune de l enseigne au foyer. */
+.ge input,
+.ge textarea,
+.ge select {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gd-encre);
+  background: rgb(0 0 0 / 0.28);
+  border: 1px solid var(--gd-trait);
+  border-radius: 0;
+  outline: none;
+  transition: border-color 120ms linear, box-shadow 120ms linear;
+}
+:root:not(.dark) .ge input,
+:root:not(.dark) .ge textarea,
+:root:not(.dark) .ge select { background: rgb(255 255 255 / 0.7); }
+.ge input::placeholder,
+.ge textarea::placeholder { color: var(--gd-encre-3); font-weight: 500; }
+.ge input:focus,
+.ge textarea:focus,
+.ge select:focus {
+  border-color: var(--gd-or);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gd-or) 45%, transparent);
+}
+.ge textarea { resize: none; line-height: 1.5; }
+.ge input[type="date"] { font-family: var(--gd-mono); font-size: 0.85rem; }
+/* Le champ de date garde son icone native, mais dans la bonne encre. */
+.ge input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(5deg);
+  cursor: pointer;
+}
+.ge input[type="checkbox"] { width: auto; }
+
+/* ── Pastilles : etiquettes et paliers ── */
+.ge-pastilles { display: flex; flex-wrap: wrap; gap: 5px; }
+.ge-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.ge-pastille:hover { color: var(--gd-encre); border-color: var(--gd-trait-fort, var(--gd-trait)); }
+.ge-pastille:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+/* Choisie, la pastille prend la couleur de ce qu elle designe — et son
+   encre se calcule sur cette couleur, pas l inverse. */
+.ge-pastille[aria-pressed="true"] {
+  background: var(--c);
+  border-color: var(--c);
+  color: var(--encre);
+  font-weight: 700;
+}
+.ge-pastille svg { flex-shrink: 0; }
+
+/* ── La vignette : l image de l objectif ──
+   Elle reprend le carre de la fiche, mais sur la seule image :
+   l editeur embarque mesure cent quarante-neuf pixels — bouton de
+   remplacement compris — et une boite de cent quatre les aurait
+   coupes. C est donc l apercu qui porte le carre et le liseré du
+   palier, pas la colonne. */
+.ge-vignette {
+  position: relative;
+  width: 116px;
+  flex-shrink: 0;
+}
+/* L apercu de l editeur embarque : carre, borde a la couleur du
+   palier, comme dans la fiche. */
+.ge-vignette [class*="aspect-square"] {
+  width: 116px;
+  max-width: 116px;
+  margin: 0;
+  border-radius: 0 !important;
+  border: 2px solid var(--t, var(--cp-cyan)) !important;
+}
+.ge-vignette [class*="space-y-3"] > div:last-child { gap: 4px; }
+.ge-vignette button {
+  border-radius: 0 !important;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1px;
+}
+.ge-identite { display: flex; gap: 14px; align-items: flex-start; }
+.ge-identite-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Le type, en lecture seule ──
+   Trois grandes cartes annoncaient un choix qui n en est pas un : le
+   type se fixe a la creation. Un releve suffit. */
+.ge-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gd-encre-2);
+  background: var(--gd-plaque);
+  border: 1px solid var(--gd-trait);
+}
+.ge-type svg { color: var(--gd-or); flex-shrink: 0; }
+.ge-type span { margin-left: auto; color: var(--gd-encre-3); letter-spacing: 0.6px; text-transform: none; }
+
+/* ── Les editeurs embarques ──
+   Ils portent leurs propres cartes arrondies et leurs propres titres.
+   Dans un volet qui les nomme deja, la carte fait un cadre dans un
+   cadre et le titre fait doublon. */
+.ge-embarque { padding: 12px; }
+.ge-embarque > div > .flex.items-center.justify-between:first-child { display: none; }
+.ge-embarque [class*="rounded-xl"],
+.ge-embarque [class*="rounded-lg"],
+.ge-embarque [class*="rounded-md"] { border-radius: 0 !important; }
+.ge-embarque button:not([role="switch"]) {
+  border-radius: 0;
+  font-family: var(--gd-mono);
+  letter-spacing: 1.2px;
+}
+/* Les bordures blanchatres des champs embarques rejoignent le trait
+   du dossier. */
+.ge-embarque [class*="border-white"] { border-color: var(--gd-trait) !important; }
+.ge-embarque [class*="bg-background/50"] { background: rgb(0 0 0 / 0.28) !important; }
+:root:not(.dark) .ge-embarque [class*="bg-background/50"] { background: rgb(255 255 255 / 0.7) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ge-bouton, .ge-pastille, .ge input, .ge textarea { transition: none; }
+}
+
+/* En theme clair, l or de l enseigne devient sombre (#6F6000) : l encre
+   noire posee dessus tombait a 3,22:1. Elle passe en clair, et le
+   survol assombrit au lieu d eclaircir — l eclaircir ramenait le
+   rapport a 3,95. */
+:root:not(.dark) .ge-bouton--valider { color: #f7fbff; }
+:root:not(.dark) .ge-bouton--valider:hover {
+  color: #f7fbff;
+  background: color-mix(in srgb, var(--gd-or) 78%, #000);
+  border-color: color-mix(in srgb, var(--gd-or) 78%, #000);
+}
+
+/* ── La barre sur un telephone ──
+   A trois cent soixante-quinze pixels elle se pliait en trois rangees,
+   soit cent trente-neuf pixels pris sur huit cents. Le retour cede sa
+   place — « annuler » fait exactement le meme geste — et seuls les
+   mots qui engagent restent ecrits. */
+@media (max-width: 640px) {
+  .ge-barre { gap: 8px; padding: 10px 12px; flex-wrap: nowrap; }
+  .ge-bouton--retour { display: none; }
+  .ge-titre > .ge-mot { display: none; }
+  .ge-barre-fin .ge-bouton:not(.ge-bouton--valider) .ge-mot { display: none; }
+  .ge-bouton { padding: 8px 11px; }
+  .ge-corps { padding: 12px 12px 28px; }
+}
