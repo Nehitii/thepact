@@ -72,6 +72,24 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  /* Les paquets TipTap doivent partager une seule instance de
+     ProseMirror. Decouverts en cours de route — l editeur du journal
+     n est charge qu a l ouverture de la fenetre — Vite les
+     pre-empaquette en deux fois, et la page se retrouve avec deux
+     ProseMirror : le schema du second est nul et l editeur casse. On
+     les declare pour qu ils soient tailles ensemble au demarrage. */
+  optimizeDeps: {
+    include: [
+      "@tiptap/core",
+      "@tiptap/pm/view",
+      "@tiptap/react",
+      "@tiptap/react/menus",
+      "@tiptap/starter-kit",
+      "@tiptap/extension-text-style",
+      "@tiptap/extension-task-list",
+      "@tiptap/extension-task-item",
+    ],
+  },
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {

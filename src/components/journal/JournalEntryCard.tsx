@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
-import DOMPurify from "dompurify";
 import { useTranslation } from "react-i18next";
 import { MoreVertical, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import type { JournalEntry } from "@/types/journal";
-import { getMood, getFont, getSize, getAlign } from "@/types/journal";
+import { getMood, getFont, getSize, getAlign, getAccentEtat } from "@/types/journal";
+import { assainirJournal, compterMots, referenceDe } from "@/lib/journalHtml";
 import { useToggleFavorite } from "@/hooks/useJournal";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -26,8 +26,6 @@ interface JournalEntryCardProps {
   onDelete?: (id: string) => void;
 }
 
-const referenceDe = (id: string) => "REF·" + id.replace(/[^0-9a-f]/gi, "").slice(-4).toUpperCase();
-
 export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -40,33 +38,24 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
   const createdDate = new Date(entry.created_at);
 
   /* L assainissement etait refait a chaque rendu, deux fois par carte. */
-  const html = useMemo(() => DOMPurify.sanitize(entry.content), [entry.content]);
-
-  /* Les numeros comptaient les PHRASES pendant que le corps etait rendu
-     en HTML : ils comptent les blocs effectivement affiches. */
-  const blocs = useMemo(() => {
-    if (!entry.line_numbers) return null;
-    const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
-    const racine = doc.body.firstElementChild;
-    if (!racine) return null;
-    const morceaux = Array.from(racine.children).map((e) => e.outerHTML).filter(Boolean);
-    return morceaux.length > 0 ? morceaux : [html];
-  }, [html, entry.line_numbers]);
-
-  const mots = useMemo(
-    () => html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length,
-    [html],
-  );
+  const html = useMemo(() => assainirJournal(entry.content), [entry.content]);
+  const mots = useMemo(() => compterMots(html), [html]);
 
   const handleToggleFavorite = () => {
     if (!user) return;
     toggleFav.mutate({ id: entry.id, userId: user.id, isFavorite: !entry.is_favorite });
   };
 
-  const styleCorps: React.CSSProperties = {
+  /* Le meme jeu de reglages que la feuille d ecriture, pose sur le
+     meme conteneur : c est ce qui fait qu on relit exactement ce
+     qu on a ecrit. */
+  const styleCorps = {
     fontFamily: font.css, fontStyle: font.style, fontSize: `${size.px}px`,
     textAlign: align.val,
-  };
+    ["--jr-fs" as string]: `${size.px}px`,
+    ["--jr-teinte" as string]: `var(--jr-etat-${mood.id})`,
+    ["--jr-accent" as string]: `var(--jr-etat-${getAccentEtat(entry.accent_color)})`,
+  } as React.CSSProperties;
 
   return (
     <article className="jr-entree">
@@ -116,18 +105,15 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
 
           <h2 className="jr-titre" style={{ textAlign: align.val }}>{entry.title}</h2>
 
-          {blocs ? (
-            <div className="jr-html" style={styleCorps}>
-              {blocs.map((b, i) => (
-                <div key={i} className="jr-ligne">
-                  <span className="jr-numero" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-                  <div className="flex-1 min-w-0" dangerouslySetInnerHTML={{ __html: b }} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="jr-html" style={styleCorps} dangerouslySetInnerHTML={{ __html: html }} />
-          )}
+          {/* Les numeros etaient comptes en decoupant le HTML a la main ;
+              ils sont maintenant portes par la feuille de style, donc
+              identiques dans l editeur et dans le dossier. */}
+          <div
+            className="jr-html"
+            data-lignes={entry.line_numbers ? "1" : "0"}
+            style={styleCorps}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
 
           <div className="jr-pied">
             {entry.tags?.map((tag) => (

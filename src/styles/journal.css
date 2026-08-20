@@ -103,6 +103,9 @@
      texte de dix pixels. */
   --jr-encre-3: #635B51;
   --jr-rouge: #C8102E;
+  /* Le rouge du sceau tombe a 4,39 en petit texte sur le papier
+     sombre du bandeau : l encre rouge est montee d un cran. */
+  --jr-rouge-encre: #B00D28;
   --jr-trait: #C9C2B6;
   --jr-mono: "JetBrains Mono", ui-monospace, monospace;
   --jr-titre: "Rajdhani", system-ui, sans-serif;
@@ -131,6 +134,7 @@
   --jr-encre-2: #B6ADA0;
   --jr-encre-3: #8B8174;
   --jr-rouge: #FF2D4E;
+  --jr-rouge-encre: #FF2D4E;
   --jr-trait: #2C2822;
 }
 
@@ -278,13 +282,6 @@
 .jr-html strong { color: var(--jr-encre); }
 .jr-html em { font-style: italic; }
 
-.jr-ligne { display: flex; gap: 14px; }
-.jr-numero {
-  flex-shrink: 0; min-width: 2ch; text-align: right;
-  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
-  line-height: 1.72; color: var(--jr-rouge); opacity: 0.55; user-select: none;
-}
-
 .jr-pied {
   display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
   font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
@@ -431,4 +428,494 @@
   padding: 10px 14px 12px; border-top: 1px solid var(--jr-trait);
   font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
   letter-spacing: 0.1em; color: var(--jr-encre-3); line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CE QU ON PEUT ECRIRE DANS UNE PAGE
+   Ces regles sont posees sur « .jr-html ». C est le meme
+   conteneur des deux cotes : la feuille ou l on ecrit et la
+   piece qu on relit. Un seul endroit ou la mise en forme est
+   decidee, donc aucune divergence possible entre les deux.
+   ═══════════════════════════════════════════════════════════ */
+.jr-html h2 {
+  margin: 1.4em 0 0.5em; font-family: var(--jr-titre); font-weight: 700;
+  font-size: 1.42em; line-height: 1.18; letter-spacing: 0.01em; color: var(--jr-encre);
+}
+.jr-html h3 {
+  margin: 1.2em 0 0.4em; font-family: var(--jr-titre); font-weight: 700;
+  font-size: 1.16em; line-height: 1.24; letter-spacing: 0.02em; color: var(--jr-encre);
+}
+.jr-html > :first-child { margin-top: 0; }
+
+.jr-html ul, .jr-html ol { margin: 0 0 0.85em; padding-left: 1.5em; }
+.jr-html ul { list-style: square; }
+.jr-html ol { list-style: decimal; }
+.jr-html li { margin-bottom: 0.28em; }
+.jr-html li::marker { color: var(--jr-encre-3); }
+
+/* Ce qu on se promet. La case n est pas un vrai bouton : dans une
+   page qu on relit, une case cliquable ment. */
+.jr-html ul[data-type="taskList"] { list-style: none; padding-left: 1.6em; }
+.jr-html ul[data-type="taskList"] li { position: relative; }
+.jr-html ul[data-type="taskList"] li::before {
+  content: "☐"; position: absolute; left: -1.5em; top: 0;
+  font-family: var(--jr-mono); color: var(--jr-encre-3);
+}
+.jr-html ul[data-type="taskList"] li[data-checked="true"]::before {
+  content: "☑"; color: var(--jr-accent, var(--jr-rouge));
+}
+.jr-html ul[data-type="taskList"] li[data-checked="true"] > div { opacity: 0.62; }
+.jr-html ul[data-type="taskList"] li > div > p { margin: 0 0 0.28em; }
+.jr-html ul[data-type="taskList"] li > label { display: none; }
+
+.jr-html blockquote {
+  margin: 0 0 0.85em; padding: 0.1em 0 0.1em 1em;
+  border-left: 2px solid var(--jr-accent, var(--jr-rouge));
+  color: var(--jr-encre); font-style: italic;
+}
+.jr-html hr {
+  margin: 1.6em 0; height: 0; border: 0;
+  border-top: 1px solid var(--jr-accent, var(--jr-rouge)); opacity: 0.5;
+}
+.jr-html code {
+  font-family: var(--jr-mono); font-size: 0.86em;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+  padding: 0.05em 0.35em;
+}
+.jr-html pre {
+  margin: 0 0 0.85em; padding: 0.8em 1em; overflow-x: auto;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+}
+.jr-html pre code { background: none; border: 0; padding: 0; font-size: 0.84em; }
+.jr-html a {
+  color: var(--jr-rouge); text-decoration: underline;
+  text-underline-offset: 2px; text-decoration-thickness: 1px;
+}
+.jr-html a:hover { text-decoration-thickness: 2px; }
+
+/* ── Les trois marques de la maison ───────────────────────── */
+
+/* La lueur. Le papier ne brille pas : en lumiere claire, elle
+   devient un halo colore derriere une encre restee noire — meme
+   intention, autre materiau, comme la laque et le papier. */
+.jr-lueur {
+  color: var(--jr-encre);
+  background: color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
+  box-shadow: 0 0 0 0.18em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
+  border-radius: 2px;
+}
+[data-jr="sombre"] .jr-lueur {
+  color: #fff; background: none; box-shadow: none;
+  text-shadow:
+    0 0 6px var(--jr-teinte, var(--jr-rouge)),
+    0 0 20px var(--jr-teinte, var(--jr-rouge));
+}
+
+.jr-marque {
+  background: color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 22%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 22%, transparent);
+  color: var(--jr-encre);
+}
+[data-jr="sombre"] .jr-marque {
+  background: color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
+}
+
+.jr-encre-flow { color: var(--jr-etat-flow); }
+.jr-encre-tension { color: var(--jr-etat-tension); }
+.jr-encre-static { color: var(--jr-etat-static); }
+.jr-encre-signal { color: var(--jr-etat-signal); }
+.jr-encre-void { color: var(--jr-etat-void); }
+.jr-encre-surge { color: var(--jr-etat-surge); }
+
+/* ── Les numeros de ligne ─────────────────────────────────── */
+/* Ils etaient obtenus en decoupant le HTML a la main, ce qui ne
+   pouvait pas exister dans l editeur. Ils sont maintenant une
+   regle de style : la feuille et la piece les comptent pareil.
+   « --jr-fs » porte la taille du document, pour que le numero
+   d un titre ne soit pas plus gros que celui d un paragraphe. */
+.jr-html[data-lignes="1"] {
+  counter-reset: jrl;
+  padding-left: calc(var(--jr-fs, 16px) * 3.2);
+}
+.jr-html[data-lignes="1"] > * { counter-increment: jrl; position: relative; }
+.jr-html[data-lignes="1"] > *::before {
+  content: counter(jrl, decimal-leading-zero);
+  position: absolute; top: 0;
+  left: calc(var(--jr-fs, 16px) * -3.2);
+  width: calc(var(--jr-fs, 16px) * 2.4);
+  text-align: right;
+  font-family: var(--jr-mono); font-size: var(--jr-fs, 16px);
+  font-weight: 400; font-style: normal;
+  color: var(--jr-accent, var(--jr-rouge)); opacity: 0.5;
+  user-select: none; pointer-events: none;
+}
+/* La case a cocher ecrivait deja dans cette gouttiere. */
+.jr-html[data-lignes="1"] ul[data-type="taskList"] li::before { position: absolute; }
+
+/* ═══════════════════════════════════════════════════════════
+   L ATELIER
+   La fenetre d ecriture : une seule piece, la feuille au
+   centre et les reglages sur le cote.
+   ═══════════════════════════════════════════════════════════ */
+.jr-at { display: flex; flex-direction: column; overflow: hidden; }
+
+.jr-at-tete {
+  flex-shrink: 0; display: flex; align-items: center; gap: 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--jr-trait);
+  background: var(--jr-papier-2);
+}
+.jr-at-ref {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; min-width: 0;
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-at-ref b { color: var(--jr-rouge-encre); font-weight: 700; letter-spacing: 0.18em; }
+.jr-at-ref em { font-style: normal; color: var(--jr-encre); }
+.jr-at-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.jr-at-actions .jr-bouton { min-height: 38px; padding: 0 14px; }
+.jr-at-actions .jr-bouton:disabled {
+  background: var(--jr-papier); color: var(--jr-encre-3);
+  border: 1px solid var(--jr-trait); cursor: not-allowed; filter: none;
+}
+.jr-at-icone {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: none; border: 1px solid transparent; color: var(--jr-encre-3);
+  cursor: pointer; transition: color 140ms, border-color 140ms, background 140ms;
+}
+.jr-at-icone svg { width: 16px; height: 16px; }
+.jr-at-icone:hover { color: var(--jr-encre); border-color: var(--jr-trait); background: var(--jr-papier); }
+.jr-at-icone[aria-pressed="true"] { color: var(--jr-rouge); border-color: var(--jr-rouge); }
+
+.jr-at-corps { flex: 1; min-height: 0; display: flex; position: relative; overflow: hidden; }
+
+/* ── Le rail ──────────────────────────────────────────────── */
+.jr-at-rail {
+  flex-shrink: 0; width: 316px; overflow-y: auto; overscroll-behavior: contain;
+  border-left: 1px solid var(--jr-trait); background: var(--jr-papier-2);
+  padding-bottom: 24px;
+}
+.jr-at-rail[data-ouvert="0"] { display: none; }
+.jr-at-rail-tete {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 16px; background: var(--jr-papier-2);
+  border-bottom: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-at-rail-tete .jr-at-icone { margin-left: auto; }
+.jr-at-voile { display: none; }
+
+.jr-at-sec { padding: 16px; border-bottom: 1px solid var(--jr-trait); }
+.jr-at-sec-t {
+  margin: 0 0 10px; font-family: var(--jr-mono); font-weight: 400;
+  font-size: max(10px, 0.625rem); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-at-aide {
+  margin: -4px 0 10px; font-size: max(11.5px, 0.72rem);
+  line-height: 1.5; color: var(--jr-encre-3);
+}
+.jr-at-col { display: flex; flex-direction: column; gap: 6px; }
+.jr-at-rang { display: flex; gap: 6px; }
+.jr-at-grille { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.jr-at-opt {
+  flex: 1; min-height: 40px; padding: 0 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--jr-papier); border: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.1em; color: var(--jr-encre-2);
+  cursor: pointer; transition: border-color 140ms, color 140ms, background 140ms;
+}
+.jr-at-opt.est-large { justify-content: flex-start; }
+.jr-at-opt:hover { border-color: var(--jr-encre-3); color: var(--jr-encre); }
+.jr-at-opt[aria-pressed="true"] {
+  border-color: var(--jr-encre); color: var(--jr-encre); background: var(--jr-papier-2);
+  box-shadow: inset 3px 0 0 var(--jr-choix, var(--jr-rouge));
+}
+.jr-at-opt.est-etat[aria-pressed="true"] { color: var(--jr-choix, var(--jr-encre)); border-color: var(--jr-choix, var(--jr-encre)); }
+.jr-at-opt.est-etat span { color: var(--jr-choix, var(--jr-encre-3)); }
+
+.jr-at-pastille {
+  width: 40px; height: 40px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--jr-papier); border: 1px solid var(--jr-trait); cursor: pointer;
+  transition: border-color 140ms;
+}
+.jr-at-pastille i { display: block; width: 16px; height: 16px; background: var(--jr-choix); }
+.jr-at-pastille:hover { border-color: var(--jr-encre-3); }
+.jr-at-pastille[aria-pressed="true"] { border-color: var(--jr-choix); box-shadow: inset 0 0 0 2px var(--jr-papier); }
+
+.jr-at-bascule {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 40px;
+  background: none; border: 0; cursor: pointer; padding: 0;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em; color: var(--jr-encre-2);
+}
+.jr-at-bascule i {
+  display: block; position: relative; width: 34px; height: 18px;
+  border: 1px solid var(--jr-trait); background: var(--jr-papier);
+}
+.jr-at-bascule u {
+  position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
+  background: var(--jr-encre-3); transition: left 160ms ease, background 160ms ease;
+}
+.jr-at-bascule[aria-checked="true"] i { border-color: var(--jr-rouge); }
+.jr-at-bascule[aria-checked="true"] u { left: 18px; background: var(--jr-rouge); }
+.jr-at-bascule[aria-checked="true"] span { color: var(--jr-encre); }
+
+.jr-at-jauge { display: flex; gap: 3px; }
+.jr-at-jauge button {
+  flex: 1; height: 40px; padding: 0; cursor: pointer;
+  border: 1px solid var(--jr-trait); background: var(--jr-papier);
+  transition: background 120ms;
+}
+.jr-at-jauge button[data-plein="1"] { background: var(--jr-encre); border-color: var(--jr-encre); }
+[data-jr="sombre"] .jr-at-jauge button[data-plein="1"] { background: var(--jr-encre-2); border-color: var(--jr-encre-2); }
+.jr-at-mesure {
+  display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0 0;
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-at-mesure b { color: var(--jr-rouge-encre); font-weight: 700; }
+
+.jr-at-etiquettes { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.jr-at-etiquettes:empty { display: none; }
+.jr-at-etiquettes button {
+  min-height: 32px; padding: 0 8px; cursor: pointer;
+  border: 1px solid var(--jr-trait); background: var(--jr-papier);
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.08em; color: var(--jr-encre-2);
+}
+.jr-at-etiquettes button:hover { border-color: var(--jr-rouge); color: var(--jr-rouge); }
+.jr-at-ajout { display: flex; gap: 6px; }
+.jr-at-ajout input, .jr-at-champ {
+  flex: 1; width: 100%; min-height: 40px; padding: 0 10px;
+  background: var(--jr-papier); border: 1px solid var(--jr-trait); outline: none;
+  font-family: var(--jr-mono); font-size: max(11.5px, 0.72rem); color: var(--jr-encre);
+}
+.jr-at-ajout input:focus, .jr-at-champ:focus { border-color: var(--jr-encre-3); }
+.jr-at-ajout input::placeholder, .jr-at-champ::placeholder { color: var(--jr-encre-3); }
+.jr-at-ajout button {
+  width: 40px; min-height: 40px; cursor: pointer;
+  border: 1px solid var(--jr-trait); background: var(--jr-papier); color: var(--jr-encre-2);
+}
+.jr-at-ajout button:hover { border-color: var(--jr-encre-3); color: var(--jr-encre); }
+.jr-at-select {
+  width: 100%; min-height: 40px; border-radius: 0;
+  background: var(--jr-papier); border: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(11.5px, 0.72rem); color: var(--jr-encre);
+}
+
+.jr-at-raccourcis {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0;
+  font-size: max(11.5px, 0.72rem); line-height: 1.4;
+}
+.jr-at-raccourcis dt {
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.06em; color: var(--jr-encre); white-space: nowrap;
+  border: 1px solid var(--jr-trait); padding: 2px 6px; background: var(--jr-papier);
+  height: fit-content;
+}
+.jr-at-raccourcis dd { margin: 0; color: var(--jr-encre-3); align-self: center; }
+
+/* ═══════════════════════════════════════════════════════════
+   L EDITEUR
+   ═══════════════════════════════════════════════════════════ */
+.jr-ed { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.jr-ed-attente {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+
+.jr-barre {
+  flex-shrink: 0; display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
+  padding: 6px 12px; border-bottom: 1px solid var(--jr-trait);
+  background: var(--jr-papier-2);
+}
+.jr-barre-filet { width: 1px; height: 20px; margin: 0 6px; background: var(--jr-trait); }
+
+.jr-outil {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex-shrink: 0;
+  background: none; border: 1px solid transparent; color: var(--jr-encre-2);
+  cursor: pointer; transition: color 120ms, border-color 120ms, background 120ms;
+}
+.jr-outil svg { width: 15px; height: 15px; }
+.jr-outil:hover:not(:disabled) { color: var(--jr-encre); border-color: var(--jr-trait); background: var(--jr-papier); }
+.jr-outil[aria-pressed="true"] {
+  color: var(--jr-rouge); border-color: var(--jr-rouge);
+  background: color-mix(in oklab, var(--jr-rouge) 10%, transparent);
+}
+.jr-outil:disabled { opacity: 0.32; cursor: not-allowed; }
+.jr-outil:focus-visible { outline: 2px solid var(--jr-rouge); outline-offset: 1px; }
+@media (pointer: coarse) {
+  .jr-outil { width: 44px; height: 44px; }
+  .jr-at-icone { width: 44px; height: 44px; }
+}
+
+/* La rangee contextuelle : elle s ouvre sous la barre plutot que
+   de flotter par-dessus le texte. */
+.jr-barre-2 {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 12px; border-bottom: 1px solid var(--jr-trait);
+  background: var(--jr-papier);
+  animation: jr-rangee 160ms ease-out;
+}
+@keyframes jr-rangee { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .jr-barre-2 { animation: none; } }
+
+.jr-barre-2-champ {
+  flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px;
+  min-height: 36px; padding: 0 10px;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+}
+.jr-barre-2-champ:focus-within { border-color: var(--jr-encre-3); }
+.jr-barre-2-champ svg { width: 14px; height: 14px; color: var(--jr-encre-3); flex-shrink: 0; }
+.jr-barre-2-champ input {
+  flex: 1; min-width: 0; background: none; border: 0; outline: none;
+  font-family: var(--jr-mono); font-size: max(11.5px, 0.72rem); color: var(--jr-encre);
+}
+.jr-barre-2-champ input::placeholder { color: var(--jr-encre-3); }
+
+.jr-barre-2-ok, .jr-barre-2-non, .jr-encre-choix {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 12px; cursor: pointer;
+  border: 1px solid var(--jr-trait); background: var(--jr-papier-2);
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--jr-encre-2);
+  transition: border-color 120ms, color 120ms;
+}
+.jr-barre-2-ok svg, .jr-encre-choix span { width: 14px; height: 14px; }
+.jr-barre-2-ok { color: var(--jr-papier); background: var(--jr-rouge); border-color: var(--jr-rouge); }
+.jr-barre-2-ok:disabled { opacity: 0.4; cursor: not-allowed; }
+.jr-barre-2-non:hover { border-color: var(--jr-rouge); color: var(--jr-rouge); }
+.jr-encre-choix { color: var(--jr-choix); border-color: color-mix(in oklab, var(--jr-choix) 45%, transparent); }
+.jr-encre-choix span { display: inline-flex; align-items: center; justify-content: center; }
+.jr-encre-choix:hover { border-color: var(--jr-choix); }
+.jr-barre-2-fermer {
+  margin-left: auto; width: 36px; height: 36px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid transparent; color: var(--jr-encre-3);
+}
+.jr-barre-2-fermer svg { width: 14px; height: 14px; }
+.jr-barre-2-fermer:hover { color: var(--jr-encre); border-color: var(--jr-trait); }
+
+/* ── La feuille ───────────────────────────────────────────── */
+.jr-ed-defile { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.jr-feuille {
+  max-width: 780px; margin: 0 auto; padding: 40px 32px 45vh;
+}
+@media (max-width: 640px) { .jr-feuille { padding: 24px 18px 45vh; } }
+
+.jr-feuille-titre {
+  display: block; width: 100%; resize: none; overflow: hidden;
+  margin: 0 0 14px; padding: 0; border: 0; background: none; outline: none;
+  font-family: var(--jr-titre); font-weight: 700;
+  font-size: clamp(24px, 3.4vw, 34px); line-height: 1.12;
+  letter-spacing: 0.01em; color: var(--jr-encre);
+}
+.jr-feuille-titre::placeholder { color: var(--jr-encre-3); opacity: 0.6; }
+.jr-feuille-titre:focus-visible { outline: none; box-shadow: -12px 0 0 -11px var(--jr-rouge); }
+
+.jr-feuille-corps { position: relative; }
+.jr-feuille-corps .ProseMirror { outline: none; min-height: 42vh; }
+.jr-feuille-corps .ProseMirror-focused { outline: none; }
+.jr-feuille-amorce {
+  position: absolute; top: 0; left: 0; right: 0; margin: 0;
+  pointer-events: none; user-select: none;
+  color: var(--jr-encre-3); opacity: 0.65; line-height: 1.72;
+}
+/* Le curseur trouve sa place meme dans un document vide. */
+.jr-feuille-corps .ProseMirror p.is-empty::after { content: ""; }
+.jr-feuille-corps .ProseMirror ::selection { background: color-mix(in oklab, var(--jr-rouge) 24%, transparent); }
+.jr-feuille-corps .ProseMirror .ProseMirror-gapcursor:after { border-top-color: var(--jr-encre); }
+
+/* ── Le menu sur la selection ─────────────────────────────── */
+.jr-bulle {
+  display: flex; align-items: center; gap: 2px; padding: 3px;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-encre-3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  z-index: 10001;
+}
+.jr-bulle .jr-barre-filet { height: 18px; margin: 0 4px; }
+
+/* ── Le menu d insertion ──────────────────────────────────── */
+.jr-slash {
+  position: fixed; z-index: 10002; width: 260px; max-height: 264px; overflow-y: auto;
+  /* Radix eteint les evenements du corps pendant un dialogue. */
+  pointer-events: auto;
+  background: var(--jr-papier); border: 1px solid var(--jr-encre-3);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
+}
+.jr-slash-tete {
+  position: sticky; top: 0; padding: 8px 12px;
+  background: var(--jr-papier); border-bottom: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-slash-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 12px; cursor: pointer; text-align: left;
+  background: none; border: 0; border-bottom: 1px solid var(--jr-trait);
+  font-size: max(12.5px, 0.78rem); color: var(--jr-encre-2);
+}
+.jr-slash-item:last-child { border-bottom: 0; }
+.jr-slash-item svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--jr-encre-3); }
+.jr-slash-item b {
+  margin-left: auto; font-family: var(--jr-mono); font-weight: 400;
+  font-size: max(10px, 0.625rem); color: var(--jr-encre-3);
+  border: 1px solid var(--jr-trait); padding: 1px 5px;
+}
+.jr-slash-item[data-actif="1"] { background: var(--jr-papier-2); color: var(--jr-encre); }
+.jr-slash-item[data-actif="1"] svg { color: var(--jr-rouge); }
+
+/* ── Le rail devient un tiroir quand l ecran se resserre ──── */
+@media (max-width: 1100px) {
+  .jr-at-rail {
+    position: absolute; top: 0; right: 0; bottom: 0; z-index: 3;
+    width: min(340px, 100%);
+    box-shadow: -18px 0 40px rgba(0, 0, 0, 0.24);
+    animation: jr-tiroir 200ms ease-out;
+  }
+  .jr-at-voile {
+    display: block; position: absolute; inset: 0; z-index: 2;
+    background: rgba(0, 0, 0, 0.28); border: 0; cursor: pointer;
+  }
+}
+@keyframes jr-tiroir { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .jr-at-rail { animation: none; } }
+
+/* ── Sur telephone, la feuille passe avant l outillage ─────── */
+/* Dix-neuf outils sur 375 pixels faisaient quatre rangees, et la
+   cote du document trois lignes : deux cent quatre-vingt-dix pixels
+   de mobilier avant le premier mot. La barre defile sur une seule
+   rangee, et la cote garde sa reference. */
+@media (max-width: 720px) {
+  .jr-at-tete { padding: 6px 10px; gap: 8px; }
+  .jr-at-ref span { display: none; }
+  .jr-at-ref em { font-size: max(9.5px, 0.594rem); }
+
+  .jr-barre {
+    flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none; padding: 4px 8px;
+  }
+  .jr-barre::-webkit-scrollbar { display: none; }
+  .jr-barre .jr-outil, .jr-barre .jr-barre-filet { flex-shrink: 0; }
+
+  .jr-barre-2 { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .jr-barre-2::-webkit-scrollbar { display: none; }
+  .jr-barre-2 > * { flex-shrink: 0; }
+  .jr-barre-2-champ { min-width: 150px; }
+}
+
+/* Au doigt, aucune cible sous quarante-quatre pixels. */
+@media (pointer: coarse) {
+  .jr-at-actions .jr-bouton { min-height: 44px; }
+  .jr-barre-2-ok, .jr-barre-2-non, .jr-encre-choix, .jr-barre-2-fermer { min-height: 44px; }
+  .jr-barre-2-fermer { width: 44px; }
 }

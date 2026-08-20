@@ -70,6 +70,18 @@ export const getSize = (id: string | null | undefined) =>
 export const getAlign = (id: string | null | undefined) =>
   ALIGN_OPTIONS.find(a => a.id === id) || ALIGN_OPTIONS[0];
 
+/* L accent et l etat partagent exactement la meme palette : le
+   premier habille le mobilier du document — numeros de ligne et
+   traits de separation — le second colore ce qui est ecrit. Chaque
+   accent pointe donc vers l encre deja accordee au papier, plutot
+   que de refaire six teintes en double. */
+const ACCENT_VERS_ETAT: Record<string, string> = {
+  cyan: "flow", purple: "signal", red: "tension",
+  gold: "static", blue: "void", green: "surge",
+};
+export const getAccentEtat = (id: string | null | undefined): string =>
+  ACCENT_VERS_ETAT[id ?? ""] ?? "flow";
+
 // Legacy exports kept for backward-compat
 export type JournalMood = string;
 export const MOOD_CONFIG: Record<string, { icon: string; color: string; bgColor: string }> = {
