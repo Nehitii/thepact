@@ -1,0 +1,594 @@
+/* ═══════════════════════════════════════════════════════════════
+   LA FICHE D UN OBJECTIF — LE DOSSIER
+
+   La liste des objectifs parle en majuscules mono, en angles coupes
+   et en cellules ; la fiche qui s ouvrait derriere parlait en cartes
+   de verre arrondies. Deux machines pour un seul geste.
+
+   Le dossier reprend la langue de la liste : le chanfrein et les
+   equerres de cyberpunk.css, la barre jaune du titre et la gouttiere
+   numerotee du registre. Et il repond a deux defauts mesures :
+   deux mille neuf cent soixante-cinq pixels de defilement, et un
+   bloc de couts qui recopiait le titre entier de chaque etape sous
+   chaque poste. Ici les etapes et le registre se font face, et un
+   poste designe son etape par son numero.
+   ═══════════════════════════════════════════════════════════════ */
+
+.gd {
+  --gd-encre: #eaf6ff;
+  --gd-encre-2: #cfe4f5;
+  --gd-encre-3: var(--nexus-text-dimmer);
+  --gd-trait: var(--nexus-border);
+  --gd-trait-doux: rgb(255 255 255 / 0.06);
+  --gd-plaque: hsl(var(--primary) / 0.04);
+  --gd-mono: 'Share Tech Mono', monospace;
+  --gd-vert: #00ff88;
+  /* Le jaune de l enseigne est un FOND, jamais une encre en theme
+     clair : #FCEE0A sur blanc plafonne a 1,1:1. --gd-or est l encre
+     doree, assombrie quand le fond s eclaircit. */
+  --gd-or: var(--cp-jaune);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Theme clair ──
+   Seuls les jetons changent ; aucune regle de composant ne connait le
+   theme. */
+:root:not(.dark) .gd {
+  --gd-encre: hsl(212 42% 13%);
+  --gd-encre-2: hsl(212 24% 27%);
+  --gd-encre-3: hsl(212 16% 38%);
+  --gd-trait-doux: rgb(0 0 0 / 0.09);
+  --gd-plaque: hsl(var(--primary) / 0.08);
+  --gd-or: #6f6000;
+  --gd-vert: #0a7a45;
+}
+:root:not(.dark) .gd .cp-tag-sombre { color: var(--gd-or); border-color: var(--gd-or); }
+:root:not(.dark) .gd-volet { background: rgb(0 0 0 / 0.02); }
+
+/* ── Retour ── */
+.gd-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 12px 6px 8px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.gd-retour:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); background: hsl(var(--primary) / 0.06); }
+.gd-retour:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   BANDEAU
+   ═══════════════════════════════════════════════════════════════ */
+.gd-bandeau { --cp-chanfrein: 18px; }
+.gd-bandeau-in {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+}
+.gd-vignette {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  border: 2px solid var(--t, var(--cp-cyan));
+  background: rgb(0 0 0 / 0.4);
+  overflow: hidden;
+}
+.gd-vignette img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gd-vignette[data-honore="1"] img { filter: grayscale(1); }
+.gd-vignette-vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--t, var(--cp-cyan));
+  opacity: 0.5;
+}
+/* La vignette est la seule surface coloree du bandeau : le halo du
+   palier s y arrete, tout le reste reste neutre pour que les releves
+   se comparent. */
+.gd-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 22px -6px var(--t, var(--cp-cyan));
+  pointer-events: none;
+}
+/* L etoile de focus mord sur l angle de la vignette : c est une
+   marque posee sur la piece, pas un bouton de la barre d outils. */
+.gd-focus {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--gd-encre-3);
+  background: var(--nexus-bg);
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  z-index: 2;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.gd-focus:hover { color: var(--gd-or); border-color: var(--gd-or); }
+.gd-focus:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+.gd-focus[data-actif="1"] { color: var(--cp-jaune); border-color: var(--cp-jaune); }
+:root:not(.dark) .gd-focus[data-actif="1"] { color: var(--gd-or); border-color: var(--gd-or); }
+
+.gd-centre { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.gd-nom {
+  position: relative;
+  margin: 0;
+  padding-left: 14px;
+  font-size: clamp(1.15rem, 0.9rem + 1vw, 1.6rem);
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--gd-encre);
+  /* Le titre debordait de son cadre. Il se coupe desormais sur deux
+     lignes et rend la main. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gd-nom::before {
+  content: "";
+  position: absolute;
+  inset: 2px auto 2px 0;
+  width: 4px;
+  background: var(--cp-jaune);
+  box-shadow: 0 0 14px -1px var(--cp-jaune);
+}
+.gd-releves { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gd-xp {
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  color: var(--gd-or);
+  font-variant-numeric: tabular-nums;
+}
+.gd-etiq {
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  padding: 1px 6px;
+  border: 1px solid var(--gd-trait);
+}
+.gd-jauge-ligne { display: flex; align-items: center; gap: 10px; }
+.gd-jauge-ligne .cp-segments { flex: 1; }
+.gd-jauge-val {
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  color: var(--gd-encre-2);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ── Outils ──
+   Sept actions en boutons a texte prenaient deux lignes et pesaient
+   autant que le nom de l objectif. En outils, elles tiennent dans un
+   coin et se nomment au survol. */
+.gd-outils {
+  display: grid;
+  grid-template-columns: repeat(4, 30px);
+  gap: 4px;
+}
+.gd-outil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--gd-encre-3);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.gd-outil:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); background: hsl(var(--primary) / 0.08); }
+.gd-outil:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+.gd-outil:disabled { opacity: 0.4; cursor: not-allowed; }
+.gd-outil--valider:hover { color: var(--gd-vert); border-color: var(--gd-vert); background: rgb(0 255 136 / 0.08); }
+.gd-outil--danger:hover { color: var(--cp-rouge); border-color: var(--cp-rouge); background: rgb(255 0 60 / 0.08); }
+.gd-outil--verrou { color: var(--gd-or); border-color: color-mix(in srgb, var(--gd-or) 45%, transparent); }
+
+/* ── Sceau ──
+   Un objectif honore porte sa mention en travers du bandeau, comme
+   un tampon sur un dossier clos. */
+.gd-sceau {
+  position: absolute;
+  top: 14px;
+  right: 58px;
+  padding: 3px 10px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 3px;
+  color: var(--gd-vert);
+  border: 2px solid var(--gd-vert);
+  transform: rotate(-8deg);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CORPS — deux colonnes
+   A gauche ce qu on fait, a droite ce que ca coute.
+   ═══════════════════════════════════════════════════════════════ */
+.gd-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 14px;
+}
+.gd-corps--seul { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 900px) {
+  .gd-corps { grid-template-columns: minmax(0, 1fr); }
+  .gd-bandeau-in { grid-template-columns: auto minmax(0, 1fr); }
+  /* Huit outils sur une seule rangee : quatre colonnes les auraient
+     empiles sous le nom. */
+  .gd-outils { grid-column: 1 / -1; grid-template-columns: repeat(8, 30px); }
+}
+
+.gd-volet {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--gd-trait);
+  background: rgb(255 255 255 / 0.012);
+}
+.gd-tete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  padding: 0 12px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  background: var(--gd-plaque);
+  border-bottom: 1px solid var(--gd-trait);
+}
+.gd-tete b {
+  margin-left: auto;
+  color: var(--gd-encre-2);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.gd-tete-bouton {
+  margin-left: auto;
+  padding: 2px 8px;
+  font: inherit;
+  letter-spacing: 1.6px;
+  color: var(--gd-encre-2);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+}
+.gd-tete-bouton:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.gd-tete-bouton:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+
+/* La hauteur suit l ecran : douze etapes tiennent sans defiler sur un
+   portable, quarante defilent a l interieur du volet plutot que
+   d allonger la page. */
+.gd-liste { max-height: clamp(240px, 46vh, 520px); overflow-y: auto; }
+.gd-vide {
+  padding: 14px 12px;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+}
+
+/* ── Une etape ──
+   La gouttiere numerotee a gauche porte la reference que le registre
+   appelle a droite. C est elle qui remplace la recopie du titre
+   entier sous chaque poste. */
+.gd-etape {
+  display: grid;
+  grid-template-columns: 34px 20px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding-right: 10px;
+  border-bottom: 1px solid var(--gd-trait-doux);
+  transition: background 120ms linear;
+}
+.gd-etape:hover { background: hsl(var(--primary) / 0.06); }
+.gd-num {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--gd-encre-3);
+  background: var(--gd-plaque);
+  border-right: 1px solid var(--gd-trait-doux);
+  font-variant-numeric: tabular-nums;
+}
+/* La case a cocher est un bouton a part entiere : cocher une etape et
+   l ouvrir sont deux intentions distinctes. */
+.gd-case {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  color: #04070a;
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: background 120ms linear, border-color 120ms linear;
+}
+.gd-case:hover { border-color: var(--t, var(--cp-cyan)); }
+.gd-case:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+.gd-etape[data-faite="1"] .gd-case { background: var(--t, var(--cp-cyan)); border-color: var(--t, var(--cp-cyan)); }
+.gd-ouvrir {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 0;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.gd-ouvrir:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.gd-etape-titre {
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gd-encre);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gd-etape[data-faite="1"] .gd-etape-titre { color: var(--gd-encre-3); }
+.gd-note { color: var(--gd-encre-3); flex-shrink: 0; }
+.gd-etape-cout {
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--gd-or);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Le registre ──
+   Un poste designe son etape par son numero. Un poste deja finance
+   se barre : la ligne reste lisible, son montant sort du restant. */
+.gd-poste {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding-right: 12px;
+  border-bottom: 1px solid var(--gd-trait-doux);
+}
+.gd-ref {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--t, var(--cp-cyan));
+  background: var(--gd-plaque);
+  border-right: 1px solid var(--gd-trait-doux);
+  font-variant-numeric: tabular-nums;
+}
+/* La reference porte la teinte du palier : lisible sur fond noir,
+   elle tombe a 1,9:1 sur fond clair. On l assombrit plutot que de lui
+   retirer sa couleur — c est elle qui relie le poste a son etape. */
+:root:not(.dark) .gd-ref { color: color-mix(in srgb, var(--t, #00f0ff) 58%, #000); }
+.gd-ref--libre { color: var(--gd-encre-3); }
+.gd-poste-corps { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.gd-poste-nom {
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gd-encre);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gd-poste-cat {
+  flex-shrink: 0;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+}
+.gd-poste[data-finance="1"] .gd-poste-nom { color: var(--gd-encre-3); text-decoration: line-through; }
+.gd-prix {
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--gd-encre-2);
+  font-variant-numeric: tabular-nums;
+}
+.gd-poste[data-finance="1"] .gd-prix { color: var(--gd-vert); }
+
+.gd-somme {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: auto;
+  background: var(--gd-trait);
+  border-top: 1px solid var(--gd-trait);
+}
+.gd-somme div { padding: 8px 10px; background: var(--nexus-bg); }
+.gd-somme span {
+  display: block;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+}
+.gd-somme b {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--gd-mono);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--gd-encre);
+  font-variant-numeric: tabular-nums;
+}
+.gd-somme b.est-or { color: var(--gd-or); }
+.gd-somme b.est-verte { color: var(--gd-vert); }
+
+/* ── Habitude ──
+   Un jour est une cellule, pas une carte. La grille se lit comme une
+   bande de munitions : ce qui est tenu est plein, le reste est creux. */
+.gd-jours {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 3px;
+  padding: 12px;
+}
+.gd-jour {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--gd-encre-3);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background 120ms linear, color 120ms linear, border-color 120ms linear;
+}
+.gd-jour:hover { border-color: var(--t, var(--cp-cyan)); color: var(--gd-encre); }
+.gd-jour:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+.gd-jour[data-tenu="1"] {
+  color: #04070a;
+  background: var(--t, var(--cp-cyan));
+  border-color: var(--t, var(--cp-cyan));
+}
+
+/* ── Membres d un groupe ── */
+.gd-membre {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 96px 46px;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding-right: 12px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--gd-trait-doux);
+  cursor: pointer;
+  transition: background 120ms linear;
+}
+.gd-membre:hover { background: hsl(var(--primary) / 0.06); }
+.gd-membre:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.gd-membre-nom {
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gd-encre);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gd-membre-jauge { display: flex; gap: 2px; }
+.gd-membre-jauge u { flex: 1; height: 8px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
+:root:not(.dark) .gd-membre-jauge u { background: rgb(0 0 0 / 0.12); }
+.gd-membre-jauge u.on { background: var(--t, var(--cp-cyan)); }
+.gd-membre-pct {
+  text-align: right;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--gd-encre-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BANDE DE PIED
+   Notes, contrats, dependances : reels, mais ils ne meritent pas un
+   panneau plein chacun tant qu ils sont vides. Un pli suffit.
+   ═══════════════════════════════════════════════════════════════ */
+.gd-pied { display: flex; flex-direction: column; gap: 6px; }
+.gd-pli {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 12px;
+  width: 100%;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  /* Encre pleine et non l encre douce : le pli est pose sur le fond de
+     page, pas sur une plaque. */
+  color: var(--gd-encre-2);
+  background: transparent;
+  border: 1px solid var(--gd-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.gd-pli:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.gd-pli:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.gd-pli b { margin-left: auto; color: var(--gd-encre-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+.gd-pli svg:first-child { transition: transform 160ms ease; flex-shrink: 0; }
+.gd-pli[aria-expanded="true"] svg:first-child { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  .gd-pli svg:first-child { transition: none; }
+}
+.gd-pli-corps {
+  padding: 12px;
+  border: 1px solid var(--gd-trait);
+  border-top: none;
+}
+.gd-notes {
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--gd-encre-2);
+  white-space: pre-wrap;
+}
+
+/* ── Panneaux annexes ──
+   Les contrats, les dependances, le gel de serie et l empilement
+   portent leur propre carte arrondie et leur propre titre. Dans un
+   pli, la carte fait un cadre dans un cadre et le titre fait doublon
+   avec le libelle du pli. On retire l un et l autre : le pli nomme
+   deja la section, et son bouton porte ce nom pour les lecteurs
+   d ecran. */
+.gd-annexe > div { border: none; background: transparent; padding: 0; border-radius: 0; }
+.gd-annexe h3 { display: none; }

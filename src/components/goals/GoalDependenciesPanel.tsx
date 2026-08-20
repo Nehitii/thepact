@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Link2, X, GitBranch, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function GoalDependenciesPanel({ goalId }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
@@ -44,16 +46,16 @@ export function GoalDependenciesPanel({ goalId }: Props) {
     <div className="rounded-xl border border-border/40 bg-card/40 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <GitBranch className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-semibold uppercase tracking-wider">Dépendances</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider">{t("goals.detail.dependencies", "Dépendances")}</h3>
       </div>
 
       {isLoading ? (
-        <div className="text-xs text-muted-foreground">Chargement…</div>
+        <div className="text-xs text-muted-foreground">{t("common.loading", "Chargement…")}</div>
       ) : (
         <>
           {data?.outgoing.length ? (
             <div className="space-y-1.5">
-              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">Cet objectif dépend de</div>
+              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">{t("goals.deps.dependsOn", "Cet objectif dépend de")}</div>
               {data.outgoing.map(d => (
                 <div key={d.id} className="flex items-center gap-2 rounded-md bg-background/60 border border-border/30 px-2 py-1.5 text-xs">
                   <ArrowRight className="h-3 w-3 text-primary/70" />
@@ -68,7 +70,7 @@ export function GoalDependenciesPanel({ goalId }: Props) {
                   )}
                   <button
                     onClick={() => remove.mutate(d.id)}
-                    aria-label="Retirer"
+                    aria-label={t("common.remove", "Retirer")}
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <X className="h-3 w-3" />
@@ -80,7 +82,7 @@ export function GoalDependenciesPanel({ goalId }: Props) {
 
           {data?.incoming.length ? (
             <div className="space-y-1.5">
-              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">Bloque / lié à</div>
+              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">{t("goals.deps.blocks", "Bloque / lié à")}</div>
               {data.incoming.map(d => (
                 <div key={d.id} className="flex items-center gap-2 rounded-md bg-background/40 border border-border/20 px-2 py-1.5 text-xs">
                   <Link2 className="h-3 w-3 text-muted-foreground" />
@@ -94,17 +96,17 @@ export function GoalDependenciesPanel({ goalId }: Props) {
           ) : null}
 
           {!data?.outgoing.length && !data?.incoming.length && (
-            <div className="text-xs text-muted-foreground italic">Aucune dépendance pour le moment.</div>
+            <div className="text-xs text-muted-foreground italic">{t("goals.deps.none", "Aucune dépendance pour le moment.")}</div>
           )}
 
           <div className="flex gap-2 pt-2 border-t border-border/30">
             <Select value={target} onValueChange={setTarget}>
               <SelectTrigger className="flex-1 h-8 text-xs">
-                <SelectValue placeholder="Choisir un objectif…" />
+                <SelectValue placeholder={t("goals.deps.pick", "Choisir un objectif…")} />
               </SelectTrigger>
               <SelectContent>
                 {candidates.length === 0 ? (
-                  <SelectItem value="none" disabled>Aucun objectif disponible</SelectItem>
+                  <SelectItem value="none" disabled>{t("goals.deps.noneAvailable", "Aucun objectif disponible")}</SelectItem>
                 ) : (
                   candidates.map(g => (
                     <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
@@ -117,8 +119,8 @@ export function GoalDependenciesPanel({ goalId }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="blocks">Bloque</SelectItem>
-                <SelectItem value="related">Lié</SelectItem>
+                <SelectItem value="blocks">{t("goals.deps.kindBlocks", "Bloque")}</SelectItem>
+                <SelectItem value="related">{t("goals.deps.kindRelated", "Lié")}</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -127,7 +129,7 @@ export function GoalDependenciesPanel({ goalId }: Props) {
               disabled={!target || target === "none" || create.isPending}
               className="h-8"
             >
-              Ajouter
+              {t("common.add", "Ajouter")}
             </Button>
           </div>
         </>

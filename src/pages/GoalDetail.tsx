@@ -1,10 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { useGoalContracts } from "@/hooks/useGoalContracts";
+import { useGoalDependencies } from "@/hooks/useGoalDependencies";
 import { useGoalDetail } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
@@ -17,12 +21,11 @@ import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
-import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import { GoalContractsPanel } from "@/components/goals/GoalContractsPanel";
 import { GoalDependenciesPanel } from "@/components/goals/GoalDependenciesPanel";
 import { StreakFreezePanel } from "@/components/habits/StreakFreezePanel";
 import { HabitStackPanel } from "@/components/habits/HabitStackPanel";
-import { Link2 } from "lucide-react";
+import { FileText, Handshake, GitBranch, Snowflake, Layers } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
 import {
@@ -36,15 +39,19 @@ import {
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
+import { GoalDetailEditOverlay } from "@/components/goals/detail";
 import {
-  GoalDetailHero, GoalDetailSteps, GoalDetailHabit,
-  GoalDetailCosts, GoalDetailSuperGoal, GoalDetailEditOverlay,
-} from "@/components/goals/detail";
+  DossierBandeau, DossierEtapes, DossierRegistre, DossierHabitude,
+  DossierCourbe, DossierMembres, DossierPli,
+} from "@/components/goals/detail/dossier";
+import "@/styles/cyberpunk.css";
+import "@/styles/goal-dossier.css";
 
 import type { GoalDetailData as Goal } from "@/hooks/useGoalDetail";
 
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
   const navigate = useNavigate();
@@ -71,8 +78,6 @@ export default function GoalDetail() {
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
@@ -89,6 +94,15 @@ export default function GoalDetail() {
   const { data: goalDetailData, isLoading: goalDetailLoading } = useGoalDetail(id, user?.id);
   const { data: pact } = usePact(user?.id);
   const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
+
+  /* Les plis de pied affichent leur compte sans etre deplies : le
+     panneau des contrats se retire tout seul quand le drapeau est
+     baisse, un pli vide n aurait rien a ouvrir. */
+  const { enabled: contratsActifs } = useFeatureFlag("goal_contracts");
+  const { data: contrats = [] } = useGoalContracts(id);
+  const { data: dependances } = useGoalDependencies(id);
+  const nbDependances =
+    (dependances?.outgoing?.length ?? 0) + (dependances?.incoming?.length ?? 0);
 
   const getDifficultyColor = useCallback(
     (d: string) => getUnifiedDifficultyColor(d, customDifficultyColor),
@@ -180,10 +194,10 @@ export default function GoalDetail() {
   }, []);
 
   const getDifficultyLabel = useCallback(
-    (d: string) => getCentralizedDifficultyLabel(d, undefined, customDifficultyName),
-    [customDifficultyName],
+    (d: string) => getCentralizedDifficultyLabel(d, t, customDifficultyName),
+    [customDifficultyName, t],
   );
-  const getStatusLabel = useCallback((s: string) => getCentralizedStatusLabel(s), []);
+  const getStatusLabel = useCallback((s: string) => getCentralizedStatusLabel(s, t), [t]);
 
   // Handle save
   const handleEditGoal = useCallback(async () => {
@@ -297,6 +311,15 @@ export default function GoalDetail() {
   const isCompleted = goal.status === "fully_completed";
   const displayTags = goalTagsData.length > 0 ? goalTagsData.map((t) => t.tag) : goal.type ? [mapToValidTag(goal.type)] : [];
 
+  /* Le montant qu une etape traine derriere elle : le rail l affiche
+     en bout de ligne, ce qui evite d aller le chercher dans le
+     registre d en face. */
+  const coutParEtape = new Map<string, number>();
+  for (const poste of costItems) {
+    if (!poste.step_id) continue;
+    coutParEtape.set(poste.step_id, (coutParEtape.get(poste.step_id) ?? 0) + Number(poste.price || 0));
+  }
+
   const wishlistHandler = isModulePurchased("wishlist")
     ? (item: CostItemData) => {
         if (!user?.id) return;
@@ -306,97 +329,137 @@ export default function GoalDetail() {
       }
     : undefined;
 
+  const uniteAvancement = isSuperGoal
+    ? t("goals.detail.unitGoals", "objectifs")
+    : isHabitGoal
+      ? t("goals.detail.unitDays", "jours")
+      : t("goals.detail.unitSteps", "étapes");
+
   return (
     <DSPageShell
-      width="md"
+      width="xl"
       background={<DSBackground variant="cyber" />}
       className="!px-4 md:!px-6 !pt-8 !pb-24"
     >
       {/* Particles overlay — preserved at root level */}
       <ParticleEffects />
 
-      <div className="space-y-6">
-        <GoalDetailHero
+      <div className="gd">
+        <DossierBandeau
           goal={goal}
-          progress={progress}
-          completedStepsCount={completedStepsCount}
-          totalStepsCount={totalStepsCount}
-          difficultyColor={difficultyColor}
-          isCompleted={isCompleted}
-          displayTags={displayTags}
-          getDifficultyLabel={getDifficultyLabel}
-          getStatusLabel={getStatusLabel}
-          toggleFocus={actions.toggleFocus}
-          onEdit={() => setEditDialogOpen(true)}
-          onFullyComplete={actions.handleFullyComplete}
+          teinte={difficultyColor}
+          progression={progress}
+          faites={completedStepsCount}
+          total={totalStepsCount}
+          uniteAvancement={uniteAvancement}
+          libellePalier={getDifficultyLabel(goal.difficulty)}
+          libelleEtat={getStatusLabel(goal.status)}
+          etiquettes={displayTags}
+          estHonore={isCompleted}
+          partageActif={!!social.sharing}
+          onRetour={() => navigate("/goals")}
+          onModifier={() => setEditDialogOpen(true)}
+          onToutValider={actions.handleFullyComplete}
           onPause={actions.handlePauseGoal}
-          onResume={actions.handleResumeGoal}
-          onArchive={actions.handleArchiveGoal}
-          onDuplicate={() => actions.handleDuplicateGoal(goalTagsData)}
-          onDelete={actions.handleDeleteGoal}
-          onToggleLock={async () => {
+          onReprendre={actions.handleResumeGoal}
+          onArchiver={actions.handleArchiveGoal}
+          onDupliquer={() => actions.handleDuplicateGoal(goalTagsData)}
+          onSupprimer={actions.handleDeleteGoal}
+          onBasculerFocus={actions.toggleFocus}
+          onPartager={() => setShareModalOpen(true)}
+          onBasculerVerrou={async () => {
             const newLocked = !goal.is_locked;
             const { error } = await supabase.from("goals").update({ is_locked: newLocked }).eq("id", goal.id);
             if (!error) {
               setGoal({ ...goal, is_locked: newLocked });
               queryClient.invalidateQueries({ queryKey: ["goals"] });
-              toast.success(newLocked ? "Goal locked" : "Goal unlocked");
+              toast.success(newLocked ? t("goals.detail.locked", "Objectif verrouillé") : t("goals.detail.unlocked", "Objectif déverrouillé"));
             }
           }}
         />
 
-        {/* Share Goal Button — gated behind social.sharing flag */}
-        {social.sharing && (
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm" onClick={() => setShareModalOpen(true)} className="text-xs font-bold uppercase tracking-wider gap-1.5">
-              <Link2 className="h-3.5 w-3.5" /> Share with Friend
-            </Button>
-          </div>
-        )}
+        {/* Le corps : a gauche ce qu on fait, a droite ce que ca coute.
+            Un groupe n a ni etapes ni postes propres — il occupe alors
+            toute la largeur avec ses membres. */}
+        <div className={`gd-corps${isSuperGoal && costItems.length === 0 ? " gd-corps--seul" : ""}`}>
+          {isSuperGoal ? (
+            <DossierMembres
+              membres={childGoalsInfo}
+              teintePar={getDifficultyColor}
+              dynamique={!!goal.is_dynamic_super}
+              onOuvrir={(childId) => navigate(`/goals/${childId}`)}
+              onModifier={() => setSuperGoalEditOpen(true)}
+            />
+          ) : isHabitGoal ? (
+            <DossierHabitude
+              coches={goal.habit_checks || []}
+              duree={goal.habit_duration_days || 0}
+              teinte={difficultyColor}
+              onBasculer={actions.handleToggleHabitCheck}
+            />
+          ) : (
+            <DossierEtapes
+              etapes={steps}
+              teinte={difficultyColor}
+              coutParEtape={coutParEtape}
+              devise={currency}
+              onBasculer={actions.handleToggleStep}
+              onOuvrir={(stepId) => navigate(`/step/${stepId}`)}
+            />
+          )}
 
-        {isSuperGoal ? (
-          <GoalDetailSuperGoal
-            goal={goal}
-            childGoalsInfo={childGoalsInfo}
-            customDifficultyName={customDifficultyName}
-            customDifficultyColor={customDifficultyColor}
-            onEditChildren={() => setSuperGoalEditOpen(true)}
-          />
-        ) : isHabitGoal ? (
-          <GoalDetailHabit
-            goal={goal}
-            completedStepsCount={completedStepsCount}
-            difficultyColor={difficultyColor}
-            onToggleHabitCheck={actions.handleToggleHabitCheck}
-          />
-        ) : (
-          <GoalDetailSteps
-            steps={steps}
-            completedStepsCount={completedStepsCount}
-            totalStepsCount={totalStepsCount}
-            difficultyColor={difficultyColor}
-            onToggleStep={actions.handleToggleStep}
-          />
-        )}
+          {isHabitGoal ? (
+            <DossierCourbe coches={goal.habit_checks || []} depuis={goal.created_at} />
+          ) : (isSuperGoal && costItems.length === 0) ? null : (
+            <DossierRegistre
+              postes={costItems}
+              etapes={steps}
+              teinte={difficultyColor}
+              devise={currency}
+              coutEstime={goal.estimated_cost || 0}
+            />
+          )}
+        </div>
 
-        <GoalDetailCosts
-          goal={goal}
-          costItems={costItems}
-          steps={steps}
-          difficultyColor={difficultyColor}
-          currency={currency}
-        />
+        <div className="gd-pied">
+          {goal.notes && (
+            <DossierPli nom={t("goals.detail.notes", "Notes")} icone={FileText} ouvertParDefaut>
+              <p className="gd-notes">{goal.notes}</p>
+            </DossierPli>
+          )}
 
-        {goal && <GoalContractsPanel goalId={goal.id} goalName={goal.name} />}
-        {goal && <GoalDependenciesPanel goalId={goal.id} />}
-        {goal && isHabitGoal && <StreakFreezePanel goalId={goal.id} />}
-        {goal && isHabitGoal && (
-          <HabitStackPanel
-            goalId={goal.id}
-            pactId={(goal as any).pact_id}
-            prerequisiteHabitId={(goal as any).prerequisite_habit_id}
-          />
-        )}
+          {contratsActifs && (
+            <DossierPli nom={t("goals.detail.contracts", "Contrats")} icone={Handshake} compte={contrats.length}>
+              <div className="gd-annexe">
+                <GoalContractsPanel goalId={goal.id} goalName={goal.name} />
+              </div>
+            </DossierPli>
+          )}
+
+          <DossierPli nom={t("goals.detail.dependencies", "Dépendances")} icone={GitBranch} compte={nbDependances}>
+            <div className="gd-annexe">
+              <GoalDependenciesPanel goalId={goal.id} />
+            </div>
+          </DossierPli>
+
+          {isHabitGoal && (
+            <DossierPli nom={t("goals.detail.streakFreeze", "Gel de série")} icone={Snowflake}>
+              <div className="gd-annexe"><StreakFreezePanel goalId={goal.id} /></div>
+            </DossierPli>
+          )}
+
+          {isHabitGoal && (
+            <DossierPli nom={t("goals.detail.habitStack", "Empilement")} icone={Layers}>
+              <div className="gd-annexe">
+                <HabitStackPanel
+                  goalId={goal.id}
+                  pactId={(goal as any).pact_id}
+                  prerequisiteHabitId={(goal as any).prerequisite_habit_id}
+                />
+              </div>
+            </DossierPli>
+          )}
+        </div>
       </div>
 
       <GoalDetailEditOverlay
