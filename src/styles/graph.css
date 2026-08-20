@@ -369,31 +369,3 @@
   .gr-retour { transition: none; }
   .gr-retour:hover { transform: none; }
 }
-
-/* ═══ LA LENTILLE ═══
-   Un groupe automatique n est pas un arbre, c est un ensemble. On ne
-   le relie donc pas : on l eclaire. Les objectifs que sa regle capte
-   gardent leur couleur et prennent un liseré ; le reste s eteint sans
-   disparaitre — il faut voir ce qui est HORS de la regle pour juger
-   ce qu elle vaut. */
-.gr-noeud.gr-hors-portee {
-  opacity: 0.16;
-  filter: saturate(0.15);
-  transition: opacity 220ms ease, filter 220ms ease;
-}
-.gr-noeud.gr-capte {
-  transition: box-shadow 220ms ease;
-  box-shadow: 0 0 0 2px var(--t, #fcee0a), 0 0 26px -6px var(--t, #fcee0a);
-}
-@media (prefers-reduced-motion: reduce) {
-  .gr-noeud.gr-hors-portee, .gr-noeud.gr-capte { transition: none; }
-}
-
-/* Une regle qui prend tout le pacte ne trie rien : le dire evite de
-   chercher ce qu elle apporte. */
-.gr-vaine {
-  font-style: normal;
-  color: var(--cp-rouge, #ff003c);
-  letter-spacing: 1px;
-}
-.gr-bascule[data-vaine="1"] .gr-bascule-note { color: var(--cp-texte-doux, #7089a0); }

@@ -147,22 +147,3 @@ export function decrireRegle(regle: SuperGoalRule | null | undefined): string {
 
   return morceaux.length ? morceaux.join(" · ") : "aucun critère";
 }
-
-/**
- * Une regle qui ne trie rien.
- *
- * Elle prend tout ce qu on lui presente : soit elle n a aucun critere,
- * soit ses criteres sont si larges qu ils laissent passer la totalite.
- * Le dire vaut mieux que de laisser chercher ce qu elle apporte.
- */
-export function regleVaine(regle: SuperGoalRule | null | undefined, captes: number, eligibles: number): boolean {
-  if (!regle) return true;
-  const aUnCritere =
-    (regle.tags?.length ?? 0) > 0 ||
-    (regle.statuses?.length ?? 0) > 0 ||
-    regle.focusOnly === true ||
-    regle.excludeCompleted === true ||
-    (regle.difficulties?.length ?? 0) > 0;
-  if (!aUnCritere) return true;
-  return eligibles > 0 && captes >= eligibles;
-}

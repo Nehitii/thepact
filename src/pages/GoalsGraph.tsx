@@ -19,7 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DSPageShell, DSPageLoader } from "@/components/ds";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
-import { filterGoalsByRule, decrireRegle, regleVaine, type SuperGoalRule } from "@/components/goals/super";
+import { filterGoalsByRule, decrireRegle, type SuperGoalRule } from "@/components/goals/super";
 import { ArrowLeft, Plus } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
@@ -176,8 +176,6 @@ export default function GoalsGraph() {
   const { user } = useAuth();
   const { data: pact } = usePact(user?.id);
   const { data: goals = [], isLoading: chargementGoals } = useGoals(pact?.id);
-  /* La regle ne trace plus d aretes : elle eclaire. Voir plus bas. */
-  const [lentille, setLentille] = useState(false);
 
   const { nodes, edges, stats } = useMemo(() => {
     const parId = new Map(goals.map((g) => [g.id, g]));
@@ -185,8 +183,8 @@ export default function GoalsGraph() {
     const ordinaires = goals.filter((g) => g.goal_type !== "super");
 
     /* Un groupe declare relie ses membres ; un groupe automatique les
-       capte par une regle. Les deux compositions se calculent ici, mais
-       seule la premiere donnera des aretes — voir la lentille plus bas. */
+       capte par une regle. Seule la premiere composition donne des
+       aretes — voir juste en dessous. */
     const amas = supers.map((s) => {
       const enfants = s.is_dynamic_super && s.super_goal_rule
         ? filterGoalsByRule(
@@ -197,25 +195,21 @@ export default function GoalsGraph() {
       return { id: s.id, enfants, dynamique: !!s.is_dynamic_super };
     });
 
-    /* UNE REGLE ECLAIRE, ELLE NE RELIE PAS.
+    /* UN GROUPE AUTOMATIQUE NE TRACE PAS D ARETES.
      *
-     * La bascule ajoutait les aretes des groupes automatiques. Celle du
-     * pacte capte trente-deux objectifs sur trente-deux : on passait de
-     * vingt-deux liens lisibles a cinquante-quatre, dont trente-deux qui
-     * partaient tous du meme moyeu. Un enchevetrement ne montre rien.
+     * Une bascule les ajoutait. Celle du pacte capte trente-deux
+     * objectifs sur trente-deux : on passait de vingt-deux liens
+     * lisibles a cinquante-quatre, dont trente-deux partant du meme
+     * moyeu. Un enchevetrement ne montre rien.
      *
-     * Un groupe automatique n est pas un arbre, c est un ENSEMBLE. On le
-     * dessine donc comme tel : ses membres s allument, le reste
-     * s eteint. Aucune arete, aucune position ne bouge — la lentille
-     * change ce qu on regarde, pas la carte.
+     * Un groupe automatique n est d ailleurs pas un arbre, c est un
+     * ensemble : le lien qui compte est sa regle, et elle se lit sur sa
+     * carte. Son moyeu reste donc pose a part, sans arete.
      */
     const amasTraces = amas.filter((a) => !a.dynamique);
     const rattaches = new Set<string>();
     amasTraces.forEach((a) => a.enfants.forEach((id) => rattaches.add(id)));
     const libres = ordinaires.filter((g) => !rattaches.has(g.id)).map((g) => g.id);
-
-    const captesParRegle = new Set<string>();
-    amas.filter((a) => a.dynamique).forEach((a) => a.enfants.forEach((id) => captesParRegle.add(id)));
 
     const pos = disposer(
       amasTraces.map((a) => ({ id: a.id, enfants: a.enfants })),
@@ -248,12 +242,8 @@ export default function GoalsGraph() {
         position: pos.get(g.id) || { x: 0, y: 0 },
         sourcePosition: Position.Right,
         targetPosition: Position.Left,
-        className: [
-          "gr-noeud",
-          estSuper && "gr-noeud--moyeu",
-          `gr-etat-${etat}`,
-          lentille && (captesParRegle.has(g.id) || monAmas?.dynamique ? "gr-capte" : "gr-hors-portee"),
-        ].filter(Boolean).join(" "),
+        className: ["gr-noeud", estSuper && "gr-noeud--moyeu", `gr-etat-${etat}`]
+          .filter(Boolean).join(" "),
         // La propriete personnalisee doit etre castee : le type CSSProperties
         // de React ne declare pas les variables --*.
         style: { ["--t" as string]: teinte } as React.CSSProperties,
@@ -264,7 +254,14 @@ export default function GoalsGraph() {
                regles ecrites pour ".gr-noeud > div" ne correspondaient donc
                a rien et la hauteur n etait jamais appliquee — les cartes
                faisaient 173px au lieu de 84, d ou dix-sept chevauchements. */
-            <span className="gr-carte">
+            <span
+              className="gr-carte"
+              title={
+                estSuper && monAmas?.dynamique
+                  ? `Règle : ${decrireRegle(g.super_goal_rule as SuperGoalRule | null)} — capte ${monAmas.enfants.length} objectifs`
+                  : undefined
+              }
+            >
               {g.image_url
                 ? <img src={g.image_url} alt="" className="gr-img" loading="lazy" />
                 : <span className="gr-img gr-img--absente" aria-hidden="true" />}
@@ -272,7 +269,7 @@ export default function GoalsGraph() {
               <span className="gr-corps">
                 <span className="gr-haut">
                   <span className="gr-palier">
-                    {estSuper ? (monAmas?.dynamique ? "DYNAMIQUE" : "GROUPE") : NOM_PALIER[palier] || palier}
+                    {estSuper ? (monAmas?.dynamique ? "RÈGLE AUTO" : "GROUPE") : NOM_PALIER[palier] || palier}
                   </span>
                   {/* rien ici : la marque est en bas de carte */}
                 </span>
@@ -332,19 +329,9 @@ export default function GoalsGraph() {
         supers: supers.length,
         rattaches: rattaches.size,
         libres: libres.length,
-        dependances: aretes.filter((e) => e.id.startsWith("dep-")).length,
-        nomsDynamiques: supers.filter((g) => g.is_dynamic_super).map((g) => g.name),
-        tailleDynamique: captesParRegle.size,
-        eligibles: ordinaires.length,
-        regles: supers
-          .filter((g) => g.is_dynamic_super)
-          .map((g) => decrireRegle(g.super_goal_rule as SuperGoalRule | null)),
-        regleVaine: supers
-          .filter((g) => g.is_dynamic_super)
-          .some((g) => regleVaine(g.super_goal_rule as SuperGoalRule | null, captesParRegle.size, ordinaires.length)),
       },
     };
-  }, [goals, lentille]);
+  }, [goals]);
 
   if (chargementGoals) {
     return <DSPageLoader message="LECTURE DE LA CONSTELLATION" />;
@@ -385,49 +372,8 @@ export default function GoalsGraph() {
               <span className="gr-chiffre"><b style={{ color: JAUNE }}>{stats.supers}</b> groupes</span>
               <span className="gr-chiffre"><b style={{ color: "#00d4ff" }}>{stats.rattaches}</b> rattachés</span>
               <span className="gr-chiffre"><b style={{ color: "#7089a0" }}>{stats.libres}</b> libres</span>
-              {stats.dependances > 0 && (
-                <span className="gr-chiffre"><b style={{ color: "#ff003c" }}>{stats.dependances}</b> dépendances</span>
-              )}
             </div>
 
-            {/* La regle se dit, elle ne se devine pas.
-
-                La bascule annoncait « regle auto · 32 » : le nombre capte,
-                jamais le critere. Or c est le critere qui explique le
-                nombre — et ici qui revele que la regle ne trie rien, parce
-                qu elle coche les six paliers sans autre condition. On
-                l ecrit donc en toutes lettres, et on le dit quand elle
-                prend tout. */}
-            {stats.nomsDynamiques.length > 0 && (
-              <button
-                type="button"
-                role="switch"
-                aria-checked={lentille}
-                onClick={() => setLentille((v) => !v)}
-                className="gl-bascule gr-bascule"
-                data-actif={lentille}
-                data-vaine={stats.regleVaine ? "1" : "0"}
-                title={
-                  `${stats.nomsDynamiques.join(", ")} rassemble ses membres par une règle : ` +
-                  `${stats.regles.join(" / ")}. Elle capte ${stats.tailleDynamique} objectifs ` +
-                  `sur ${stats.eligibles}. ` +
-                  (stats.regleVaine
-                    ? "Elle prend tout le pacte : elle ne distingue rien tant qu'on ne la restreint pas."
-                    : "Activer éclaire ce qu'elle capte et éteint le reste.")
-                }
-              >
-                <span className="gl-bascule-piste" aria-hidden="true">
-                  <span className="gl-bascule-bloc" />
-                </span>
-                <span className="gl-bascule-txt ds-t-label">
-                  {stats.nomsDynamiques.join(" · ")}
-                  <i className="gr-bascule-note">
-                    {stats.regles.join(" / ")} · {stats.tailleDynamique}/{stats.eligibles}
-                    {stats.regleVaine && <em className="gr-vaine"> ne trie rien</em>}
-                  </i>
-                </span>
-              </button>
-            )}
           </div>
         </div>
 
