@@ -310,6 +310,23 @@ export default function TheCall() {
             <b ref={chargeRef}>0%</b>
             <span>{t("thecall.charge")}</span>
           </span>
+
+          {/* Le banc etait un bouton fantome dans un coin, sous les
+              elements flottants de l application. Il vit dans le rail. */}
+          {import.meta.env.DEV && (
+            <span className="rit-banc" role="group" aria-label="Banc d essai (dev)">
+              <span className="rit-sig hidden sm:inline">BANC</span>
+              <button type="button" onClick={devReset} aria-label="Reinitialiser (dev)" title="Reinitialiser" className="rit-outil est-icone">
+                <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => devAuto(1)} aria-label="Lecture automatique (dev)" title="Lecture automatique" className="rit-outil est-icone">
+                <Play className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => devAuto(5)} aria-label="Lecture acceleree (dev)" title="Lecture acceleree x5" className="rit-outil est-icone">
+                <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            </span>
+          )}
         </header>
 
         {/* ── Le titre ─────────────────────────────────────────── */}
@@ -318,16 +335,14 @@ export default function TheCall() {
           <h1 className="rit-titre">
             THE <em>CALL</em>
           </h1>
-          {pacte && (
-            <div className="rit-mesures">
-              <span className="rit-mesure">
-                <Flame className="w-3 h-3" aria-hidden="true" />
-                <b>{serie}</b>{t("thecall.streakShort")}
-              </span>
-              <span className="rit-sep" aria-hidden="true" />
-              <span className="rit-mesure"><b>{total}</b>{t("thecall.callsShort")}</span>
-            </div>
-          )}
+          <div className="rit-mesures">
+            <span className="rit-mesure">
+              <Flame className="w-3 h-3" aria-hidden="true" />
+              <b>{pacte ? serie : "—"}</b>{t("thecall.streakShort")}
+            </span>
+            <span className="rit-sep" aria-hidden="true" />
+            <span className="rit-mesure"><b>{pacte ? total : "—"}</b>{t("thecall.callsShort")}</span>
+          </div>
         </div>
 
         {/* ── La scene ─────────────────────────────────────────── */}
@@ -433,8 +448,8 @@ export default function TheCall() {
             </button>
           )}
 
-          {phase === "attente" && !immobile && !verrouille && (
-            <p className="rit-avert">
+          {!verrouille && (
+            <p className={cn("rit-avert", (phase !== "attente" || immobile) && "est-efface")} aria-hidden={phase !== "attente"}>
               <AlertTriangle className="w-3 h-3" aria-hidden="true" />
               {t("thecall.flashWarning")}
             </p>
@@ -443,20 +458,6 @@ export default function TheCall() {
 
         {/* Ce que la page dit a voix haute : les paliers, pas les dixiemes */}
         <p role="status" aria-live="polite" className="sr-only">{annonce}</p>
-
-        {import.meta.env.DEV && (
-          <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-25 hover:opacity-100 focus-within:opacity-100 transition-opacity">
-            <button type="button" onClick={devReset} aria-label="Reinitialiser (dev)" title="Reinitialiser" className="rit-outil est-icone">
-              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-            </button>
-            <button type="button" onClick={() => devAuto(1)} aria-label="Lecture automatique (dev)" title="Lecture automatique" className="rit-outil est-icone">
-              <Play className="w-3.5 h-3.5" aria-hidden="true" />
-            </button>
-            <button type="button" onClick={() => devAuto(5)} aria-label="Lecture acceleree (dev)" title="Lecture acceleree x5" className="rit-outil est-icone">
-              <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
-            </button>
-          </div>
-        )}
 
         <style>{`
         /* ═══════════════════════════════════════════════════════
@@ -585,6 +586,9 @@ export default function TheCall() {
         /* Le compte a rebours passe devant un coeur incandescent : il lui
            faut son propre fond, pas seulement sa couleur. */
         .rit-compte {
+          /* Reservee des le depart : sinon l apparition du chiffre
+             pousse l etiquette, et toute la scene descend. */
+          display: block; min-height: 1.05em;
           font-family: var(--rit-mono); font-weight: 700;
           font-size: clamp(28px, 6vmin, 46px); line-height: 1;
           font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
@@ -626,7 +630,10 @@ export default function TheCall() {
           transition: opacity 400ms var(--ds-ease-out);
         }
         .rit-message {
-          margin: 0;
+          /* Deux lignes reservees : le message change de longueur, et
+             sur un ecran etroit il passe a la ligne. */
+          margin: 0; min-height: 2.6em;
+          display: flex; align-items: center; justify-content: center;
           font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
           letter-spacing: 0.3em; text-transform: uppercase;
           color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted)));
@@ -652,6 +659,7 @@ export default function TheCall() {
         }
         .rit-avert {
           margin: 0; display: flex; align-items: center; gap: 7px;
+          transition: opacity 300ms var(--ds-ease-out);
           font-family: var(--rit-mono); font-size: max(9px, 0.5625rem);
           letter-spacing: 0.2em; text-transform: uppercase;
           color: hsl(var(--ds-text-muted) / 0.6);
@@ -686,6 +694,14 @@ export default function TheCall() {
         .rit-outil:focus-visible { outline: 1px solid var(--rit-teinte); outline-offset: 2px; }
         .rit-outil.est-icone { width: 32px; min-width: 32px; padding: 0; }
         .rit-outil.est-large { padding: 0 22px; min-height: 38px; }
+        .rit-avert.est-efface { opacity: 0; }
+
+        /* Le banc d essai : dans le rail, pas dans un coin. */
+        .rit-banc {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding-left: 12px; margin-left: 2px;
+          border-left: 1px solid var(--rit-trait);
+        }
 
         /* ── La revelation ─────────────────────────────────────── */
         .rit-revelation { animation: rit-revele 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
