@@ -633,7 +633,10 @@
       "habitStack": "Habit stack",
       "unitSteps": "steps",
       "unitDays": "days",
-      "unitGoals": "goals"
+      "unitGoals": "goals",
+      "holdToHonour": "Hold to honour this group",
+      "holdLabel": "HOLD TO HONOUR",
+      "thresholdNote": "All {{n}} goals in this group are complete."
     },
     "views": {
       "grid": "Grid",

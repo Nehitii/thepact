@@ -12,6 +12,7 @@ import { Check, MessageSquare } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getCostCategoryLabel } from "@/lib/goalConstants";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
+import { BoutonHonneur } from "./BoutonHonneur";
 
 const deuxChiffres = (n: number) => String(n).padStart(2, "0");
 
@@ -257,13 +258,17 @@ export interface MembreDossier {
 }
 
 export const DossierMembres = React.memo(function DossierMembres({
-  membres, teintePar, dynamique, onOuvrir, onModifier,
+  membres, teintePar, dynamique, onOuvrir, onModifier, auSeuil, onHonorer, onEclat,
 }: {
   membres: MembreDossier[];
   teintePar: (difficulte: string) => string;
   dynamique: boolean;
   onOuvrir: (id: string) => void;
   onModifier: () => void;
+  /** Tous les membres sont franchis, le groupe n est pas encore honore. */
+  auSeuil: boolean;
+  onHonorer: () => void;
+  onEclat?: (x: number, y: number, couleur: string) => void;
 }) {
   const { t } = useTranslation();
   const franchis = membres.filter((m) => m.isCompleted).length;
@@ -312,6 +317,9 @@ export const DossierMembres = React.memo(function DossierMembres({
           <p className="gd-vide">{t("goals.detail.noMembers", "Aucun membre")}</p>
         )}
       </div>
+      {auSeuil && (
+        <BoutonHonneur total={membres.length} onHonorer={onHonorer} onEclat={onEclat} />
+      )}
     </section>
   );
 });

@@ -592,3 +592,233 @@
    d ecran. */
 .gd-annexe > div { border: none; background: transparent; padding: 0; border-radius: 0; }
 .gd-annexe h3 { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE SCEAU — le geste qui honore un groupe
+
+   Ce qui rend une action satisfaisante dans un jeu, ce n est pas
+   l effet qui suit : c est la tension qui precede. Une attaque
+   chargee tient une seconde pendant laquelle tout monte — le son, la
+   vibration, la lumiere — et c est ce qui donne son poids au moment
+   ou l on lache.
+
+   D ou un bouton qu on MAINTIENT. Tout, ici, suit la meme variable
+   « --p », la charge de zero a un : la lumiere des deux bords qui se
+   rejoignent, l amplitude du tremblement, l ecartement des lettres,
+   l avancee des chevrons. Un seul geste, quatre signes qui montent
+   ensemble.
+   ═══════════════════════════════════════════════════════════════ */
+
+.gh {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px 12px 14px;
+  border-top: 1px solid var(--gd-trait);
+}
+
+/* Le cadre porte le chanfrein et le tremblement ; la plaque porte la
+   lumiere. Les separer evite de faire vibrer le contenu a l interieur
+   d un cadre immobile. */
+.gh-cadre {
+  --cp-chanfrein: 14px;
+  background: linear-gradient(135deg,
+    var(--gd-or) 0%,
+    color-mix(in srgb, var(--gd-or) 35%, transparent) 45%,
+    color-mix(in srgb, var(--gd-or) 35%, transparent) 55%,
+    var(--gd-or) 100%);
+  /* L amplitude du tremblement suit la charge : imperceptible au
+     depart, franche a la fin. */
+  --a: calc(var(--p, 0) * 1.7px);
+}
+.gh-cadre[data-phase="charge"] { animation: gh-vibre 88ms linear infinite; }
+
+@keyframes gh-vibre {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(calc(var(--a) * -1), calc(var(--a) * 0.45)); }
+  50%      { transform: translate(var(--a), calc(var(--a) * -0.5)); }
+  75%      { transform: translate(calc(var(--a) * 0.55), var(--a)); }
+}
+
+.gh-plaque {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 60px;
+  padding: 0 18px;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  background:
+    radial-gradient(120% 180% at 50% 120%, color-mix(in srgb, var(--gd-or) 12%, transparent) 0%, transparent 62%),
+    var(--nexus-bg);
+  transition: background 160ms linear;
+  /* Un geste maintenu au doigt : sans cela le navigateur selectionne
+     le libelle, ouvre son menu contextuel, ou prend l appui pour le
+     debut d un defilement — et la charge s interrompt. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.gh-plaque:focus-visible { outline: 2px solid var(--cp-cyan); outline-offset: -4px; }
+.gh-plaque:disabled { cursor: default; }
+
+/* Respiration au repos : la plaque appelle sans clignoter. */
+.gh-cadre[data-phase="repos"] .gh-plaque { animation: gh-respire 2.6s ease-in-out infinite; }
+@keyframes gh-respire {
+  0%, 100% { box-shadow: inset 0 0 22px -14px var(--gd-or); }
+  50%      { box-shadow: inset 0 0 30px -8px var(--gd-or); }
+}
+
+.gh-libelle {
+  position: relative;
+  z-index: 2;
+  font-family: var(--gd-mono);
+  font-size: max(12px, 0.78rem);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--gd-encre);
+  /* Les lettres s ecartent a mesure que la charge monte : le mot
+     s ouvre au lieu de se contenter de s eclairer. */
+  letter-spacing: calc(2.5px + var(--p, 0) * 5px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 120ms linear;
+}
+.gh-cadre[data-phase="eclat"] .gh-libelle { color: #04070a; }
+/* Sur la plaque surexposee, un chevron jaune disparaitrait. */
+.gh-cadre[data-phase="eclat"] .gh-chevrons i {
+  border-color: #04070a;
+  opacity: 0.8;
+  animation: none;
+}
+
+/* Trois chevrons de chaque cote, qui avancent vers le centre avec la
+   charge. Au repos ils derivent doucement : le bouton indique ou
+   appuyer sans le dire. */
+.gh-chevrons { position: relative; z-index: 2; display: flex; gap: 3px; }
+.gh-chevrons i {
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid var(--gd-or);
+  border-right: 2px solid var(--gd-or);
+  transform: rotate(45deg) translateX(calc(var(--p, 0) * 4px));
+  opacity: calc(0.35 + var(--p, 0) * 0.65);
+  animation: gh-derive 1.8s ease-in-out infinite;
+}
+.gh-chevrons i:nth-child(2) { animation-delay: 0.12s; }
+.gh-chevrons i:nth-child(3) { animation-delay: 0.24s; }
+.gh-chevrons--droite i { transform: rotate(-135deg) translateX(calc(var(--p, 0) * 4px)); }
+@keyframes gh-derive {
+  0%, 100% { opacity: calc(0.3 + var(--p, 0) * 0.7); }
+  50%      { opacity: calc(0.7 + var(--p, 0) * 0.3); }
+}
+
+/* La charge : deux fronts de lumiere partis des bords, qui se
+   rejoignent au centre quand le geste aboutit. */
+.gh-charge { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.gh-charge::before,
+.gh-charge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--p, 0) * 50.5%);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--gd-or) 42%, transparent) 0%,
+    color-mix(in srgb, var(--gd-or) 10%, transparent) 70%,
+    transparent 100%);
+}
+.gh-charge::before { left: 0; }
+.gh-charge::after { right: 0; transform: scaleX(-1); transform-origin: right center; }
+
+/* L eclair : trois etats francs, sans interpolation. Un fondu ferait
+   un halo ; on veut une surexposition.
+
+   Il passe SOUS le libelle. Au-dessus, il masquait « HONORE » a
+   l instant precis ou ce mot est la recompense ; en dessous, la plaque
+   vire au jaune plein et le mot s y detache en encre sombre. */
+.gh-eclair { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; }
+.gh-cadre[data-phase="eclat"] .gh-eclair {
+  animation: gh-surexpose 320ms steps(1) forwards;
+}
+@keyframes gh-surexpose {
+  0%   { opacity: 1; background: #ffffff; }
+  22%  { opacity: 1; background: var(--gd-or); }
+  46%  { opacity: 1; background: #ffffff; }
+  70%  { opacity: 1; background: var(--gd-or); }
+  100% { opacity: 1; background: var(--gd-or); }
+}
+
+/* L onde : un contour qui s ecarte de la plaque et se dissout. Il vit
+   hors du cadre, que le chanfrein decoupe. */
+.gh-onde {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 16px;
+  height: 62px;
+  z-index: 0;
+  pointer-events: none;
+  border: 2px solid var(--gd-or);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  animation: gh-onde 620ms cubic-bezier(0.16, 0.8, 0.3, 1) forwards;
+}
+@keyframes gh-onde {
+  0%   { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.22); }
+}
+
+.gh-note {
+  margin: 0;
+  font-family: var(--gd-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  text-align: center;
+  color: var(--gd-encre-3);
+}
+
+/* Le tremblement et l onde sont du decor ; la charge, elle, est
+   l interface — elle reste, sinon le geste devient aveugle. */
+@media (prefers-reduced-motion: reduce) {
+  .gh-cadre[data-phase="charge"] { animation: none; }
+  .gh-cadre[data-phase="repos"] .gh-plaque { animation: none; }
+  .gh-chevrons i { animation: none; }
+  .gh-onde { animation: gh-onde-sobre 200ms linear forwards; }
+  .gh-cadre[data-phase="eclat"] .gh-eclair { animation: gh-onde-sobre 200ms linear forwards; background: var(--gd-or); }
+}
+@keyframes gh-onde-sobre {
+  from { opacity: 0.8; }
+  to   { opacity: 0; }
+}
+
+/* ── Le sceau tombe comme un tampon ──
+   Il arrive de trop haut, depasse le repos, puis se pose. Une arrivee
+   en fondu ferait une apparition ; on veut un impact. */
+.gd-sceau { animation: gd-tampon 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+@keyframes gd-tampon {
+  0%   { opacity: 0;    transform: rotate(-8deg) scale(2.6); }
+  62%  { opacity: 0.95; transform: rotate(-8deg) scale(0.9); }
+  80%  { opacity: 0.85; transform: rotate(-8deg) scale(1.07); }
+  100% { opacity: 0.75; transform: rotate(-8deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gd-sceau { animation: none; }
+}
+
+/* A pleine charge, « HOLD TO HONOUR » demande deux cent dix pixels
+   pour une boite qui en fait deux cent deux sur un telephone : le mot
+   se tronquait a l instant precis ou il s ouvre. L ecartement garde
+   son effet, avec moins d amplitude. */
+@media (max-width: 520px) {
+  .gh-libelle { letter-spacing: calc(2px + var(--p, 0) * 3px); }
+  .gh-plaque { gap: 10px; padding: 0 12px; }
+}

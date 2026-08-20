@@ -633,7 +633,10 @@
       "habitStack": "Empilement",
       "unitSteps": "étapes",
       "unitDays": "jours",
-      "unitGoals": "objectifs"
+      "unitGoals": "objectifs",
+      "holdToHonour": "Maintenir pour honorer ce groupe",
+      "holdLabel": "MAINTENIR POUR HONORER",
+      "thresholdNote": "Les {{n}} objectifs du groupe sont franchis."
     },
     "views": {
       "grid": "Grille",

@@ -406,6 +406,9 @@ export default function GoalDetail() {
               dynamique={!!goal.is_dynamic_super}
               onOuvrir={(childId) => navigate(`/goals/${childId}`)}
               onModifier={() => setSuperGoalEditOpen(true)}
+              auSeuil={totalStepsCount > 0 && completedStepsCount >= totalStepsCount && !isCompleted}
+              onHonorer={actions.handleFullyComplete}
+              onEclat={triggerParticles}
             />
           ) : isHabitGoal ? (
             <DossierHabitude
