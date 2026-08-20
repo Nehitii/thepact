@@ -2260,6 +2260,7 @@
     "announceDone": "Ritual saved",
     "charge": "Charge",
     "streakShort": "Streak",
-    "callsShort": "Calls"
+    "callsShort": "Calls",
+    "backToConsole": "Back to console"
   }
 }

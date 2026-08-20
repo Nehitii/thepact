@@ -211,7 +211,8 @@ export function CoeurStellaire({
       /* L effondrement : tout rentre dans le point, puis en jaillit. */
       let echelle = 1;
       let eclat = 1 + eclatSeuil * 1.4;
-      let calme = 0;   // l astre d apres
+      let calme = 0;      // l astre d apres
+      let naissance = 1;  // sa montee en douceur
       if (ph === "implosion") {
         const u = Math.min(depuis / 0.5, 1);
         echelle = 1 - u * 0.97;
@@ -221,8 +222,14 @@ export function CoeurStellaire({
       } else if (ph === "explosion" || ph === "revelation") {
         echelle = 0;
       } else if (ph === "verrouille") {
-        if (o.apres) { echelle = 0.42; eclat = 0.55; calme = 1; }
-        else echelle = 0;
+        if (o.apres) {
+          /* L astre ne surgit pas : il se leve. La revelation n est plus
+             chassee par une minuterie, c est l utilisateur qui la quitte,
+             et ce qu il retrouve doit arriver doucement. */
+          const u = clamp01(depuis / 1.1);
+          naissance = 1 - Math.pow(1 - u, 3);
+          echelle = 0.42 * naissance; eclat = 0.55 * naissance; calme = 1;
+        } else echelle = 0;
       }
 
       const tremble = immobile ? 0 : Math.max(0, p - 0.55) * 26 * (1 + excentrique);
@@ -236,7 +243,7 @@ export function CoeurStellaire({
          l ecran virait au blanc complet a 90 %. L eclair reste pour le
          coeur et les anneaux, il ne prend pas le fond. */
       const intensiteFond = calme
-        ? 0.12
+        ? 0.12 * naissance
         : Math.min(0.4, (0.10 + p * 0.3) * (1 + eclatSeuil * 0.35));
       const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(largeur, hauteur) * 0.8);
       halo.addColorStop(0, rgba(c, intensiteFond));

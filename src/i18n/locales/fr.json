@@ -2260,6 +2260,7 @@
     "announceDone": "Rituel enregistre",
     "charge": "Charge",
     "streakShort": "Serie",
-    "callsShort": "Appels"
+    "callsShort": "Appels",
+    "backToConsole": "Retour au poste"
   }
 }

@@ -105,9 +105,11 @@ export default function TheCall() {
 
   const [phase, setPhase] = useState<Phase>("attente");
   const [relacheTot, setRelacheTot] = useState(false);
+  const [sortieRevelation, setSortieRevelation] = useState(false);
 
   const racineRef = useRef<HTMLDivElement>(null);
   const boutonRef = useRef<HTMLButtonElement>(null);
+  const suiteRef = useRef<HTMLButtonElement>(null);
   const compteRef = useRef<HTMLSpanElement>(null);
   const chargeRef = useRef<HTMLElement>(null);
 
@@ -193,14 +195,10 @@ export default function TheCall() {
     setPhase("explosion");
     await attendre(immobile ? 500 : 100);
     if (!vivantRef.current) return;
+    /* On s arrete la. La revelation restait trois secondes puis
+       s effacait toute seule : ce qu on vient de gagner ne doit pas etre
+       chasse par une minuterie. C est un bouton qui la quitte. */
     setPhase("revelation");
-    await attendre(3000);
-    if (!vivantRef.current) return;
-    /* Le reacteur a disparu : le fond doit redescendre avec lui, sinon
-       l ecran reste incandescent sous l etat verrouille. */
-    progresRef.current = 0;
-    peindre(0);
-    setPhase("verrouille");
   }, [peindre, enregistrer, immobile, rendreLaMain]);
 
   // ── La boucle ───────────────────────────────────────────────
@@ -287,6 +285,28 @@ export default function TheCall() {
       planifier();
     }, 50);
   }, [devReset, planifier]);
+
+  /* Le clavier doit pouvoir continuer : le bouton prend la main des que
+     la revelation s installe. */
+  useEffect(() => {
+    if (phase !== "revelation") return;
+    const id = setTimeout(() => suiteRef.current?.focus(), 900);
+    return () => clearTimeout(id);
+  }, [phase]);
+
+  const quitterRevelation = useCallback(() => {
+    if (sortieRevelation) return;
+    setSortieRevelation(true);
+    /* Le temps que la revelation s eteigne, puis le poste revient — et
+       la toile fait lever l astre par-dessous. */
+    setTimeout(() => {
+      if (!vivantRef.current) return;
+      progresRef.current = 0;
+      peindre(0);
+      setSortieRevelation(false);
+      setPhase("verrouille");
+    }, 620);
+  }, [sortieRevelation, peindre]);
 
   // ── Les textes d etat ───────────────────────────────────────
   const messageEtat = relacheTot ? t("thecall.fading")
@@ -394,10 +414,21 @@ export default function TheCall() {
             )} />
 
             {phase === "revelation" && (
-              <div className="absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
+              <div className={cn(
+                "absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full",
+                sortieRevelation && "est-sortie",
+              )}>
                 <p className="rit-connecte">{t("thecall.connected")}</p>
                 <span className="rit-trait" />
                 <p className="rit-sous-connecte">{t("thecall.synchronized")}</p>
+                <button
+                  ref={suiteRef}
+                  type="button"
+                  onClick={quitterRevelation}
+                  className="rit-outil est-large rit-suite"
+                >
+                  {t("thecall.backToConsole")}
+                </button>
               </div>
             )}
 
@@ -758,6 +789,22 @@ export default function TheCall() {
           animation: rit-remonte 1s ease-out forwards 0.9s;
         }
         @keyframes rit-remonte { from { opacity: 0; transform: translateY(18px); } to { opacity: 0.85; transform: none; } }
+
+        /* Le bouton arrive apres le texte, sans se presser. */
+        .rit-suite {
+          margin-top: 34px; opacity: 0;
+          animation: rit-remonte 900ms ease-out forwards 1.5s;
+        }
+        .rit-suite:hover { opacity: 1; }
+        /* La revelation ne disparait pas : elle s eteint. */
+        .rit-revelation.est-sortie {
+          animation: rit-eteint 620ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          pointer-events: none;
+        }
+        @keyframes rit-eteint {
+          0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+          100% { opacity: 0; transform: translate(-50%, -52%) scale(1.04); filter: blur(12px); }
+        }
 
         @media (pointer: coarse) { .rit-outil { min-height: 44px; } .rit-outil.est-icone { width: 44px; min-width: 44px; } }
 
