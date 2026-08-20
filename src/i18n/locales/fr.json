@@ -628,7 +628,6 @@
       "missingGoal": "Objectif introuvable",
       "noMembers": "Aucun membre",
       "contracts": "Contrats",
-      "dependencies": "Dépendances",
       "streakFreeze": "Gel de série",
       "habitStack": "Empilement",
       "unitSteps": "étapes",
@@ -685,16 +684,7 @@
     "toolbar": "Filtres",
     "totalLabel": "Objectifs",
     "activeLabel": "En cours",
-    "doneLabel": "Franchis",
-    "deps": {
-      "dependsOn": "Cet objectif dépend de",
-      "blocks": "Bloque / lié à",
-      "none": "Aucune dépendance pour le moment.",
-      "pick": "Choisir un objectif…",
-      "noneAvailable": "Aucun objectif disponible",
-      "kindBlocks": "Bloque",
-      "kindRelated": "Lié"
-    }
+    "doneLabel": "Franchis"
   },
   "finance": {
     "dashboard": "Tableau de bord financier",

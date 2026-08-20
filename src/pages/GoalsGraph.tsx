@@ -25,10 +25,10 @@ import { ArrowLeft, Plus } from "lucide-react";
 /* ─────────────────────────────────────────────────────────────
    CONSTELLATION
 
-   Cette page lisait goal_dependencies — une table vide, et qui l'est
-   restee : sur 38 objectifs, aucune dependance n'a jamais ete declaree,
-   et le seul endroit ou en creer une est enterre en bas du detail d'un
-   objectif. Le graphe affichait donc 38 boites sans aucun lien.
+   Cette page lisait une table de dependances restee vide : sur 38
+   objectifs, aucune n'a jamais ete declaree. Le graphe affichait donc
+   38 boites sans aucun lien. La fonctionnalite a depuis ete retiree,
+   et cette page ne lit plus que la structure ci-dessous.
 
    Or la structure existe deja, ailleurs : un super-objectif rassemble
    des objectifs, soit nommement (child_goal_ids), soit par une regle
@@ -178,20 +178,6 @@ export default function GoalsGraph() {
   const { data: goals = [], isLoading: chargementGoals } = useGoals(pact?.id);
   const [montrerDynamiques, setMontrerDynamiques] = useState(false);
 
-  const { data: deps = [], isLoading: chargementDeps } = useQuery({
-    queryKey: ["all-goal-deps", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from("goal_dependencies")
-        .select("id, goal_id, depends_on_goal_id, kind")
-        .eq("user_id", user.id);
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!user?.id,
-  });
-
   const { nodes, edges, stats } = useMemo(() => {
     const parId = new Map(goals.map((g) => [g.id, g]));
     const supers = goals.filter((g) => g.goal_type === "super");
@@ -321,25 +307,6 @@ export default function GoalsGraph() {
       });
     });
 
-    // Les dependances restent une seconde couche : le jour ou il y en a,
-    // elles se superposent a la structure au lieu de la remplacer.
-    (deps as any[])
-      .filter((d) => parId.has(d.goal_id) && parId.has(d.depends_on_goal_id))
-      .forEach((d) => {
-        aretes.push({
-          id: `dep-${d.id}`,
-          source: d.depends_on_goal_id,
-          target: d.goal_id,
-          animated: d.kind === "blocks",
-          label: d.kind === "blocks" ? "bloque" : undefined,
-          style: {
-            stroke: d.kind === "blocks" ? "#ff003c" : "#00d4ff",
-            strokeWidth: 1.6,
-          },
-          labelStyle: { fontSize: 11, fill: "#ff8fa3" },
-        });
-      });
-
     return {
       nodes: noeuds,
       edges: aretes,
@@ -352,9 +319,9 @@ export default function GoalsGraph() {
         tailleDynamique: amas.filter((a) => a.dynamique).reduce((n, a) => n + a.enfants.length, 0),
       },
     };
-  }, [goals, deps, montrerDynamiques]);
+  }, [goals, montrerDynamiques]);
 
-  if (chargementGoals || chargementDeps) {
+  if (chargementGoals) {
     return <DSPageLoader message="LECTURE DE LA CONSTELLATION" />;
   }
 

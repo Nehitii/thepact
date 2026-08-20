@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/hooks/useGoalContracts";
-import { useGoalDependencies } from "@/hooks/useGoalDependencies";
 import { useGoalDetail } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
@@ -22,10 +21,9 @@ import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
 import { GoalContractsPanel } from "@/components/goals/GoalContractsPanel";
-import { GoalDependenciesPanel } from "@/components/goals/GoalDependenciesPanel";
 import { StreakFreezePanel } from "@/components/habits/StreakFreezePanel";
 import { HabitStackPanel } from "@/components/habits/HabitStackPanel";
-import { FileText, Handshake, GitBranch, Snowflake, Layers } from "lucide-react";
+import { FileText, Handshake, Snowflake, Layers } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
 import {
@@ -96,14 +94,11 @@ export default function GoalDetail() {
   const { data: pact } = usePact(user?.id);
   const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
 
-  /* Les plis de pied affichent leur compte sans etre deplies : le
-     panneau des contrats se retire tout seul quand le drapeau est
-     baisse, un pli vide n aurait rien a ouvrir. */
+  /* Le pli des contrats affiche son compte sans etre deplie, et se
+     retire tout seul quand le drapeau est baisse : un pli vide n aurait
+     rien a ouvrir. */
   const { enabled: contratsActifs } = useFeatureFlag("goal_contracts");
   const { data: contrats = [] } = useGoalContracts(id);
-  const { data: dependances } = useGoalDependencies(id);
-  const nbDependances =
-    (dependances?.outgoing?.length ?? 0) + (dependances?.incoming?.length ?? 0);
 
   const getDifficultyColor = useCallback(
     (d: string) => getUnifiedDifficultyColor(d, customDifficultyColor),
@@ -441,6 +436,9 @@ export default function GoalDetail() {
           )}
         </div>
 
+        {/* Le pied ne se dessine que s il porte quelque chose : sans
+            cela il consomme un espacement de la colonne pour rien. */}
+        {(goal.notes || contratsActifs || isHabitGoal) && (
         <div className="gd-pied">
           {goal.notes && (
             <DossierPli nom={t("goals.detail.notes", "Notes")} icone={FileText} ouvertParDefaut>
@@ -455,12 +453,6 @@ export default function GoalDetail() {
               </div>
             </DossierPli>
           )}
-
-          <DossierPli nom={t("goals.detail.dependencies", "Dépendances")} icone={GitBranch} compte={nbDependances}>
-            <div className="gd-annexe">
-              <GoalDependenciesPanel goalId={goal.id} />
-            </div>
-          </DossierPli>
 
           {isHabitGoal && (
             <DossierPli nom={t("goals.detail.streakFreeze", "Gel de série")} icone={Snowflake}>
@@ -480,6 +472,7 @@ export default function GoalDetail() {
             </DossierPli>
           )}
         </div>
+        )}
       </div>
 
       <GoalDetailEditOverlay

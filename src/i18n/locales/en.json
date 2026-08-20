@@ -628,7 +628,6 @@
       "missingGoal": "Missing goal",
       "noMembers": "No members",
       "contracts": "Contracts",
-      "dependencies": "Dependencies",
       "streakFreeze": "Streak freeze",
       "habitStack": "Habit stack",
       "unitSteps": "steps",
@@ -685,16 +684,7 @@
     "toolbar": "Filters",
     "totalLabel": "Goals",
     "activeLabel": "Active",
-    "doneLabel": "Completed",
-    "deps": {
-      "dependsOn": "This goal depends on",
-      "blocks": "Blocks / linked to",
-      "none": "No dependencies yet.",
-      "pick": "Pick a goal…",
-      "noneAvailable": "No goal available",
-      "kindBlocks": "Blocks",
-      "kindRelated": "Related"
-    }
+    "doneLabel": "Completed"
   },
   "finance": {
     "dashboard": "Finance Dashboard",
