@@ -638,7 +638,11 @@
       "thresholdNote": "Les {{n}} objectifs du groupe sont franchis.",
       "sortOrder": "Ordre",
       "sortProgress": "Avancement",
-      "sortHint": "Changer l'ordre d'affichage"
+      "sortHint": "Changer l'ordre d'affichage",
+      "undoTitle": "Défaire cet objectif ?",
+      "undoBody": "« {{etape}} » est décochée, et cet objectif honoré retombe en cours.",
+      "undoGroups": "Le compte de {{groupes}} suivra.",
+      "undoConfirm": "Décocher"
     },
     "views": {
       "grid": "Grille",

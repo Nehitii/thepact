@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { synchroniserGroupes } from "@/lib/superGoals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -112,7 +113,18 @@ export default function StepDetail() {
         .eq("goal_id", goalId);
       if (stepsError) throw stepsError;
       const completedCount = stepsData?.filter((s) => s.status === "completed").length || 0;
-      await supabase.from("goals").update({ validated_steps: completedCount }).eq("id", goalId);
+      const { data: majGoal } = await supabase
+        .from("goals")
+        .update({ validated_steps: completedCount })
+        .eq("id", goalId)
+        .select("pact_id")
+        .maybeSingle();
+
+      /* Un objectif ne vit pas seul : les groupes qui le comptent
+         suivent son avancement. La fiche le faisait deja, cette page
+         non — cocher une derniere etape depuis ici laissait donc le
+         groupe en arriere. */
+      if (majGoal?.pact_id) await synchroniserGroupes(majGoal.pact_id);
     } catch (error) {
       console.error("Error recalculating goal progress:", error);
     }

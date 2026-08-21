@@ -638,7 +638,11 @@
       "thresholdNote": "All {{n}} goals in this group are complete.",
       "sortOrder": "Order",
       "sortProgress": "Progress",
-      "sortHint": "Change the display order"
+      "sortHint": "Change the display order",
+      "undoTitle": "Undo this goal?",
+      "undoBody": "\"{{etape}}\" is unchecked, and this honoured goal falls back to in progress.",
+      "undoGroups": "The count of {{groupes}} will follow.",
+      "undoConfirm": "Uncheck"
     },
     "views": {
       "grid": "Grid",

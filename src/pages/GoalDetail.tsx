@@ -40,6 +40,10 @@ import { useGoals } from "@/hooks/useGoals";
 import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
 import { GoalDetailEditOverlay } from "@/components/goals/detail";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DossierBandeau, DossierEtapes, DossierRegistre, DossierHabitude,
   DossierCourbe, DossierMembres, DossierPli,
 } from "@/components/goals/detail/dossier";
@@ -77,6 +81,10 @@ export default function GoalDetail() {
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  /* Decocher une etape d un objectif honore le fait retomber, et
+     entraine avec lui les groupes qui le comptent. Un clic sur une
+     case ne doit pas suffire. */
+  const [etapeADefaire, setEtapeADefaire] = useState<{ id: string; titre: string } | null>(null);
 
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
@@ -341,6 +349,23 @@ export default function GoalDetail() {
       }
     : undefined;
 
+  /* Cocher est sans consequence ; decocher un objectif deja honore le
+     defait, et defait le compte des groupes qui le portent. On ne
+     retient que ce geste-la. */
+  const estHonore = goal.status === "fully_completed" || goal.status === "validated";
+  const groupesPorteurs = allGoals
+    .filter((g) => g.goal_type === "super")
+    .filter((g) => membresDuGroupe(g, allGoals).some((m) => m.id === goal.id))
+    .map((g) => g.name);
+
+  const demanderBascule = (stepId: string, statut: string) => {
+    if (statut === "completed" && estHonore) {
+      setEtapeADefaire({ id: stepId, titre: steps.find((e) => e.id === stepId)?.title ?? "" });
+      return;
+    }
+    actions.handleToggleStep(stepId, statut);
+  };
+
   const uniteAvancement = isSuperGoal
     ? t("goals.detail.unitGoals", "objectifs")
     : isHabitGoal
@@ -418,7 +443,7 @@ export default function GoalDetail() {
               teinte={difficultyColor}
               coutParEtape={coutParEtape}
               devise={currency}
-              onBasculer={actions.handleToggleStep}
+              onBasculer={demanderBascule}
               onOuvrir={(stepId) => navigate(`/step/${stepId}`)}
             />
           )}
@@ -514,6 +539,43 @@ export default function GoalDetail() {
           customDifficultyColor={customDifficultyColor}
         />
       )}
+
+      <AlertDialog open={!!etapeADefaire} onOpenChange={(ouvert) => !ouvert && setEtapeADefaire(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("goals.detail.undoTitle", "Défaire cet objectif ?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("goals.detail.undoBody", {
+                defaultValue:
+                  "« {{etape}} » est décochée, et cet objectif honoré retombe en cours.",
+                etape: etapeADefaire?.titre ?? "",
+              })}
+              {groupesPorteurs.length > 0 && (
+                <>
+                  {" "}
+                  {t("goals.detail.undoGroups", {
+                    defaultValue: "Le compte de {{groupes}} suivra.",
+                    groupes: groupesPorteurs.join(", "),
+                  })}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel", "Annuler")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (etapeADefaire) actions.handleToggleStep(etapeADefaire.id, "completed");
+                setEtapeADefaire(null);
+              }}
+            >
+              {t("goals.detail.undoConfirm", "Décocher")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {goal && (
         <ShareGoalModal
