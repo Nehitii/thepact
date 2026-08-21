@@ -12,6 +12,10 @@
  *
  *   ajustement  « contenir » montre le logo entier, cerne de vide.
  *               « remplir » remplit la plaque et rogne les bords.
+ *               « etirer » remplit sans rien rogner, en deformant.
+ *               Ce dernier est un choix, pas un accident : un
+ *               logotype en bandeau y gagne souvent, la ou une
+ *               marque figurative y perdrait.
  *   dx, dy      le decalage, en pourcentage de la plaque. Zero est
  *               centre ; les bornes sont a plus ou moins cinquante.
  *   zoom        de 100 a 300, pour un logo livre avec trois cents
@@ -37,7 +41,7 @@
  * seul point de passage : tout ce qui entre en ressort utilisable.
  */
 
-export type Ajustement = 'contenir' | 'remplir';
+export type Ajustement = 'contenir' | 'remplir' | 'etirer';
 export type FondDeMarque = 'clair' | 'sombre' | 'teinte';
 
 export interface CadreImage {
@@ -87,7 +91,9 @@ export function normaliserCadre(brut: unknown): CadreImage {
     && (typeof o.x === 'number' || typeof o.y === 'number');
 
   return {
-    ajustement: o.ajustement === 'remplir' ? 'remplir' : 'contenir',
+    ajustement: o.ajustement === 'remplir' ? 'remplir'
+      : o.ajustement === 'etirer' ? 'etirer'
+      : 'contenir',
     dx: ancien
       ? borner(50 - Number(o.x ?? 50), -DECALAGE_MAX, DECALAGE_MAX, 0)
       : borner(o.dx, -DECALAGE_MAX, DECALAGE_MAX, CADRE_PAR_DEFAUT.dx),
@@ -155,10 +161,11 @@ const FONDS: Record<FondDeMarque, string | null> = {
  */
 export function styleDuCadre(c: CadreImage, teinte: string): React.CSSProperties {
   const remplit = c.ajustement === 'remplir';
+  const etire = c.ajustement === 'etirer';
   const ampleur = c.zoom / 100 - 1;
   return {
     background: FONDS[c.fond] ?? teinte,
-    '--cadre-ajuste': remplit ? 'cover' : 'contain',
+    '--cadre-ajuste': remplit ? 'cover' : etire ? 'fill' : 'contain',
     '--cadre-pos': remplit ? `${50 - c.dx}% ${50 - c.dy}%` : '50% 50%',
     '--cadre-decale': remplit
       ? '0%, 0%'
@@ -166,7 +173,9 @@ export function styleDuCadre(c: CadreImage, teinte: string): React.CSSProperties
     '--cadre-zoom': String(c.zoom / 100),
     /* Un logo cale sur les bords a besoin de respirer ; un logo qui
        remplit la plaque, non — la marge y rognerait pour rien. */
-    '--cadre-marge': remplit ? '0px' : '8px',
+    /* Etire comme rempli, l image occupe deja toute la plaque : une
+       marge y rognerait pour rien. */
+    '--cadre-marge': remplit || etire ? '0px' : '8px',
   } as React.CSSProperties;
 }
 

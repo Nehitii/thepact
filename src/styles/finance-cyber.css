@@ -1796,7 +1796,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cy-cadreur-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+/* Trois ajustements desormais : ajuster, remplir, etirer. */
+.cy-cadreur-choix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+/* A trois de front, licone en gouttiere ecrase le libelle : elle passe
+   au-dessus, et chaque choix garde son exemple lisible. */
+.cy-cadreur-choix button { grid-template-columns: 1fr; gap: 2px; }
+.cy-cadreur-choix svg { grid-row: auto; }
 .cy-cadreur-choix button {
   display: grid;
   grid-template-columns: auto 1fr;

@@ -1196,7 +1196,9 @@
       "reinitialiser": "Reset",
       "retirer": "Remove",
       "mauvaisType": "That file is not an image.",
-      "deplacer": "Move the image — arrow keys, or drag"
+      "deplacer": "Move the image — arrow keys, or drag",
+      "etirer": "Stretch",
+      "etirerAide": "slightly distorts"
     },
     "parcours": {
       "titre": "Close the month",

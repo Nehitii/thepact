@@ -24,7 +24,7 @@
  */
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ImagePlus, Loader2, Trash2, Maximize2, Minimize2, RotateCcw, Move } from 'lucide-react';
+import { ImagePlus, Loader2, Trash2, Maximize2, Minimize2, RotateCcw, Move, StretchHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { optimizeImage } from '@/lib/imageOptimization';
@@ -174,6 +174,17 @@ export function CadreurDImage({ url, cadre, onUrl, onCadre, teinte }: Props) {
       cle: 'remplir', icone: Maximize2,
       libelle: t('finance.cadre.remplir', 'Remplir'),
       aide: t('finance.cadre.remplirAide', 'bords rognés'),
+    },
+    /* ETIRER N EST PAS UN ACCIDENT, C EST UN CHOIX.
+       « Ajuster » laisse du vide, « remplir » coupe : pour un logotype
+       en bandeau, ni l un ni l autre ne convient, et une legere
+       deformation vaut mieux qu une marge ou qu un mot tronque. Sur
+       une marque figurative en revanche, c est a proscrire — d ou
+       l avertissement dans l aide plutot qu un simple libelle. */
+    {
+      cle: 'etirer', icone: StretchHorizontal,
+      libelle: t('finance.cadre.etirer', 'Étirer'),
+      aide: t('finance.cadre.etirerAide', 'déforme un peu'),
     },
   ];
 
