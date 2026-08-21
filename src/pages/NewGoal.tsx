@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -142,6 +143,41 @@ export default function NewGoal() {
     };
     loadProfile();
   }, [user]);
+
+  /* LE MEME CALQUE QUE L ATELIER, DONC LES MEMES REGLAGES.
+   *
+   * La creation se pose par-dessus tout, comme la modification : deux
+   * editeurs du meme objet ne peuvent pas s ouvrir de deux facons.
+   * La page dessous cesse donc de defiler tant qu il est ouvert — deux
+   * barres de defilement imbriquees donnent l impression que rien ne
+   * bouge.
+   *
+   * Echap ne ferme que tant que rien n a ete saisi. Au-dela il
+   * jetterait un formulaire a moitie rempli sans rien demander, la ou
+   * l atelier, lui, a une garde sur les modifications non
+   * enregistrees. Les etapes par defaut ne comptent pas comme une
+   * saisie : elles sont la avant qu on ait touche a quoi que ce soit.
+   */
+  const rienSaisi =
+    !name.trim() && !notes.trim() && !imageUrl &&
+    costItems.length === 0 && selectedChildGoalIds.length === 0;
+
+  useEffect(() => {
+    const defilementInitial = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = defilementInitial; };
+  }, []);
+
+  useEffect(() => {
+    const surTouche = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && rienSaisi) {
+        e.preventDefault();
+        navigate("/goals");
+      }
+    };
+    window.addEventListener("keydown", surTouche);
+    return () => window.removeEventListener("keydown", surTouche);
+  }, [rienSaisi, navigate]);
 
   const allDifficulties = [
     ...DIFFICULTY_OPTIONS,
@@ -345,8 +381,23 @@ export default function NewGoal() {
         ? t("goals.new.needMembers", "Il manque au moins un membre")
         : null;
 
-  return (
-    <div className="ge ge--page">
+  /* PAR-DESSUS TOUT, DONC PAR LE MEME CHEMIN QUE L ATELIER.
+   *
+   * « position: fixed » et « z-index: 9999 » ne suffisent pas : un
+   * z-index ne se compare qu a l interieur de son contexte
+   * d empilement. Rendu dans <main>, ce cadre restait sous la barre
+   * laterale — mesure faite, un lien de navigation repondait encore au
+   * pointeur a l endroit ou le cadre etait cense se trouver, alors
+   * meme qu il portait 9999 contre 50. La barre laterale ne gagnait
+   * pas par son z-index mais par celui de son parent.
+   *
+   * L atelier de modification n avait pas ce probleme parce qu il se
+   * rend dans <body> par un portail. La creation emprunte le meme
+   * chemin : c est ce qui fait que les deux se posent vraiment de la
+   * meme facon, et non seulement qu ils se ressemblent.
+   */
+  const contenu = (
+    <div className="ge" role="dialog" aria-modal="true" aria-label={t("goals.new.title", "Créer")}>
       <span className="ge-fond" aria-hidden="true" />
 
       <header className="ge-barre">
@@ -768,4 +819,6 @@ export default function NewGoal() {
       </div>
     </div>
   );
+
+  return createPortal(contenu, document.body);
 }

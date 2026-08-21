@@ -351,38 +351,32 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   L ATELIER EN PAGE — creer un objectif
+   CREER, DANS LE MEME ATELIER
 
-   Modifier s ouvre par-dessus la fiche : un calque plein cadre qui
-   prend tout l ecran. Creer est une page a part entiere, atteinte
-   depuis la navigation, et masquer cette navigation derriere un calque
-   serait un cul-de-sac. Le chassis ne change donc pas — memes jetons,
-   memes volets, meme grille — seul l ancrage : le cadre se pose dans le
-   flux, et la barre de commande devient collante au lieu d etre fixe.
-   Elle reste a portee ou qu on soit dans le formulaire, ce qui etait
-   tout son objet.
+   Modifier et creer sont le meme geste sur le meme objet : les deux
+   doivent se poser de la meme facon. La creation a d abord ete tentee
+   en page — un cadre ancre dans le flux, a cote de la navigation — au
+   motif que masquer cette navigation derriere un calque ferait un
+   cul-de-sac. Le resultat parlait de lui-meme : l un recouvrait
+   l ecran, l autre non, et on sentait deux machines la ou il n y en a
+   qu une. La sortie n est pas un probleme — la barre porte « retour »
+   et « annuler », comme le calque de modification.
+
+   La creation reprend donc « .ge » tel quel : plein cadre, par-dessus
+   tout, la meme barre qui ne defile pas et le meme corps qui defile en
+   dessous. Elle n a aucun ancrage a elle.
+
+   Ce qui suit ne concerne que ce que la creation demande EN PLUS de la
+   modification — un vrai choix de type — et non l endroit ou elle se
+   pose.
    ═══════════════════════════════════════════════════════════════ */
+
 /* L encre posee sur l or de l enseigne. Elle suit la meme regle que le
    bouton qui engage : noire sur l or clair du theme sombre, claire sur
    l or sombre (#6F6000) du theme clair, ou l encre noire tombait a
    3,22:1. */
 .ge { --encre-type: #04070a; }
 :root:not(.dark) .ge { --encre-type: #f7fbff; }
-
-.ge--page {
-  position: relative;
-  inset: auto;
-  z-index: 0;
-  /* Le meme mecanisme que le calque, et non « position: sticky » sur la
-     barre : un ancetre du gabarit porte overflow-x-hidden, ce qui suffit
-     a annuler tout sticky en dessous — mesure faite, la barre partait
-     avec le defilement. Le cadre prend donc la hauteur de la fenetre, la
-     barre reste un element de tete qui ne defile pas, et c est le corps
-     qui defile en lui. La zone de contenu commence en haut de l ecran :
-     100dvh l epouse exactement, et suit la barre d adresse mobile. */
-  height: 100vh;
-  height: 100dvh;
-}
 
 /* ── LE TYPE, ICI, EST UN CHOIX ──
    Dans l atelier c est un releve d une ligne : le type se fixe a la
