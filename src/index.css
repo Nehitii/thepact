@@ -235,6 +235,9 @@ All colors MUST be HSL.
     --signal-cyan:   192 95% 27%;
     --signal-jaune:  48 96% 26%;
     --signal-rouge:  352 85% 42%;
+
+    /* Le troisieme rang de lecture : lisible sans appeler. */
+    --encre-discrete: 210 18% 45%;
     --accent-ambre: 35 100% 27%;
 
     /* HUD Card Surfaces */
@@ -400,6 +403,7 @@ All colors MUST be HSL.
     --signal-cyan:   187 85% 53%;
     --signal-jaune:  54 97% 62%;
     --signal-rouge:  351 95% 71%;
+    --encre-discrete: 208 22% 62%;
     --accent-ambre: 42 100% 62%;
 
     /* HUD Card Surfaces - Deep Panels */
@@ -1446,23 +1450,61 @@ html body[data-scroll-locked] {
 /* ═══════════════════════════════════════════════════════════════
    LES UTILITAIRES DE SIGNAL SUIVENT LE THÈME
 
-   Cent soixante et onze fois dans soixante-neuf fichiers, l app écrit
-   text-amber-400, text-emerald-400, text-cyan-400. Sur du noir ils
-   brillent ; sur le sol clair ils tombent entre 1,1 et 1,7 — c est
-   ce qui rendait quatre-vingt-seize textes invisibles.
+   Deux cent quarante et une fois dans l'app, un composant écrit
+   text-amber-400, text-cyan-500, text-emerald-400. Sur du noir ils
+   brillent ; sur le sol clair ils tombent entre 1,1 et 1,7 — c'est ce
+   qui rendait quatre-vingt-seize textes invisibles.
 
-   On ne réécrit pas les cent soixante et onze appels : on redéfinit ce
-   que la classe veut dire. En sombre elle garde sa valeur Tailwind
-   d origine ; en clair elle prend le signal transposé.
+   On ne réécrit pas les appels : on redéfinit ce que la classe VEUT
+   DIRE. Et il n'y a pas besoin d'exclure les sous-arbres sombres au
+   sélecteur — à l'intérieur d'un « dark », c'est la VARIABLE qui
+   reprend sa valeur néon. Le mécanisme se corrige lui-même.
 
-   Ceci n est SÛR que parce que toute surface restant noire déclare
-   « dark » — sans quoi ces mêmes classes deviendraient illisibles à
-   l intérieur de la barre latérale ou de la page finance.
+   Les variantes d'opacité ont leur propre règle plutôt qu'un balayage
+   large : /40 et /90 ne disent pas la même chose, l'un murmure et
+   l'autre affirme.
    ═══════════════════════════════════════════════════════════════ */
 :root:not(.dark) {
-  .text-amber-400, .text-amber-300 { color: hsl(var(--signal-ambre)); }
-  .text-emerald-400, .text-emerald-300, .text-green-400 { color: hsl(var(--signal-vert)); }
-  .text-cyan-400, .text-cyan-300, .text-sky-400 { color: hsl(var(--signal-cyan)); }
-  .text-yellow-400, .text-yellow-300, .text-lime-400 { color: hsl(var(--signal-jaune)); }
-  .text-rose-400, .text-red-400, .text-pink-400, .text-fuchsia-400 { color: hsl(var(--signal-rouge)); }
+  .text-amber-300, .text-amber-400, .text-amber-500, .text-orange-400, .text-orange-500 { color: hsl(var(--signal-ambre)); }
+  .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-green-400, .text-green-500, .text-teal-400 { color: hsl(var(--signal-vert)); }
+  .text-cyan-300, .text-cyan-400, .text-cyan-500, .text-sky-400, .text-sky-500, .text-blue-400, .text-blue-500 { color: hsl(var(--signal-cyan)); }
+  .text-yellow-300, .text-yellow-400, .text-yellow-500, .text-lime-400, .text-lime-500 { color: hsl(var(--signal-jaune)); }
+  .text-rose-400, .text-red-400, .text-red-500, .text-pink-400, .text-fuchsia-400, .text-violet-400, .text-violet-500, .text-purple-400, .text-purple-500, .text-indigo-400 { color: hsl(var(--signal-rouge)); }
+
+  .text-amber-300\/40, .text-amber-400\/40, .text-amber-500\/40, .text-orange-400\/40, .text-orange-500\/40 { color: hsl(var(--signal-ambre) / 0.4); }
+  .text-amber-300\/50, .text-amber-400\/50, .text-amber-500\/50, .text-orange-400\/50, .text-orange-500\/50 { color: hsl(var(--signal-ambre) / 0.5); }
+  .text-amber-300\/60, .text-amber-400\/60, .text-amber-500\/60, .text-orange-400\/60, .text-orange-500\/60 { color: hsl(var(--signal-ambre) / 0.6); }
+  .text-amber-300\/70, .text-amber-400\/70, .text-amber-500\/70, .text-orange-400\/70, .text-orange-500\/70 { color: hsl(var(--signal-ambre) / 0.7); }
+  .text-amber-300\/80, .text-amber-400\/80, .text-amber-500\/80, .text-orange-400\/80, .text-orange-500\/80 { color: hsl(var(--signal-ambre) / 0.8); }
+  .text-amber-300\/90, .text-amber-400\/90, .text-amber-500\/90, .text-orange-400\/90, .text-orange-500\/90 { color: hsl(var(--signal-ambre) / 0.9); }
+  .text-emerald-300\/40, .text-emerald-400\/40, .text-emerald-500\/40, .text-green-400\/40, .text-green-500\/40, .text-teal-400\/40 { color: hsl(var(--signal-vert) / 0.4); }
+  .text-emerald-300\/50, .text-emerald-400\/50, .text-emerald-500\/50, .text-green-400\/50, .text-green-500\/50, .text-teal-400\/50 { color: hsl(var(--signal-vert) / 0.5); }
+  .text-emerald-300\/60, .text-emerald-400\/60, .text-emerald-500\/60, .text-green-400\/60, .text-green-500\/60, .text-teal-400\/60 { color: hsl(var(--signal-vert) / 0.6); }
+  .text-emerald-300\/70, .text-emerald-400\/70, .text-emerald-500\/70, .text-green-400\/70, .text-green-500\/70, .text-teal-400\/70 { color: hsl(var(--signal-vert) / 0.7); }
+  .text-emerald-300\/80, .text-emerald-400\/80, .text-emerald-500\/80, .text-green-400\/80, .text-green-500\/80, .text-teal-400\/80 { color: hsl(var(--signal-vert) / 0.8); }
+  .text-emerald-300\/90, .text-emerald-400\/90, .text-emerald-500\/90, .text-green-400\/90, .text-green-500\/90, .text-teal-400\/90 { color: hsl(var(--signal-vert) / 0.9); }
+  .text-cyan-300\/40, .text-cyan-400\/40, .text-cyan-500\/40, .text-sky-400\/40, .text-sky-500\/40, .text-blue-400\/40, .text-blue-500\/40 { color: hsl(var(--signal-cyan) / 0.4); }
+  .text-cyan-300\/50, .text-cyan-400\/50, .text-cyan-500\/50, .text-sky-400\/50, .text-sky-500\/50, .text-blue-400\/50, .text-blue-500\/50 { color: hsl(var(--signal-cyan) / 0.5); }
+  .text-cyan-300\/60, .text-cyan-400\/60, .text-cyan-500\/60, .text-sky-400\/60, .text-sky-500\/60, .text-blue-400\/60, .text-blue-500\/60 { color: hsl(var(--signal-cyan) / 0.6); }
+  .text-cyan-300\/70, .text-cyan-400\/70, .text-cyan-500\/70, .text-sky-400\/70, .text-sky-500\/70, .text-blue-400\/70, .text-blue-500\/70 { color: hsl(var(--signal-cyan) / 0.7); }
+  .text-cyan-300\/80, .text-cyan-400\/80, .text-cyan-500\/80, .text-sky-400\/80, .text-sky-500\/80, .text-blue-400\/80, .text-blue-500\/80 { color: hsl(var(--signal-cyan) / 0.8); }
+  .text-cyan-300\/90, .text-cyan-400\/90, .text-cyan-500\/90, .text-sky-400\/90, .text-sky-500\/90, .text-blue-400\/90, .text-blue-500\/90 { color: hsl(var(--signal-cyan) / 0.9); }
+  .text-yellow-300\/40, .text-yellow-400\/40, .text-yellow-500\/40, .text-lime-400\/40, .text-lime-500\/40 { color: hsl(var(--signal-jaune) / 0.4); }
+  .text-yellow-300\/50, .text-yellow-400\/50, .text-yellow-500\/50, .text-lime-400\/50, .text-lime-500\/50 { color: hsl(var(--signal-jaune) / 0.5); }
+  .text-yellow-300\/60, .text-yellow-400\/60, .text-yellow-500\/60, .text-lime-400\/60, .text-lime-500\/60 { color: hsl(var(--signal-jaune) / 0.6); }
+  .text-yellow-300\/70, .text-yellow-400\/70, .text-yellow-500\/70, .text-lime-400\/70, .text-lime-500\/70 { color: hsl(var(--signal-jaune) / 0.7); }
+  .text-yellow-300\/80, .text-yellow-400\/80, .text-yellow-500\/80, .text-lime-400\/80, .text-lime-500\/80 { color: hsl(var(--signal-jaune) / 0.8); }
+  .text-yellow-300\/90, .text-yellow-400\/90, .text-yellow-500\/90, .text-lime-400\/90, .text-lime-500\/90 { color: hsl(var(--signal-jaune) / 0.9); }
+  .text-rose-400\/40, .text-red-400\/40, .text-red-500\/40, .text-pink-400\/40, .text-fuchsia-400\/40, .text-violet-400\/40, .text-violet-500\/40, .text-purple-400\/40, .text-purple-500\/40, .text-indigo-400\/40 { color: hsl(var(--signal-rouge) / 0.4); }
+  .text-rose-400\/50, .text-red-400\/50, .text-red-500\/50, .text-pink-400\/50, .text-fuchsia-400\/50, .text-violet-400\/50, .text-violet-500\/50, .text-purple-400\/50, .text-purple-500\/50, .text-indigo-400\/50 { color: hsl(var(--signal-rouge) / 0.5); }
+  .text-rose-400\/60, .text-red-400\/60, .text-red-500\/60, .text-pink-400\/60, .text-fuchsia-400\/60, .text-violet-400\/60, .text-violet-500\/60, .text-purple-400\/60, .text-purple-500\/60, .text-indigo-400\/60 { color: hsl(var(--signal-rouge) / 0.6); }
+  .text-rose-400\/70, .text-red-400\/70, .text-red-500\/70, .text-pink-400\/70, .text-fuchsia-400\/70, .text-violet-400\/70, .text-violet-500\/70, .text-purple-400\/70, .text-purple-500\/70, .text-indigo-400\/70 { color: hsl(var(--signal-rouge) / 0.7); }
+  .text-rose-400\/80, .text-red-400\/80, .text-red-500\/80, .text-pink-400\/80, .text-fuchsia-400\/80, .text-violet-400\/80, .text-violet-500\/80, .text-purple-400\/80, .text-purple-500\/80, .text-indigo-400\/80 { color: hsl(var(--signal-rouge) / 0.8); }
+  .text-rose-400\/90, .text-red-400\/90, .text-red-500\/90, .text-pink-400\/90, .text-fuchsia-400\/90, .text-violet-400\/90, .text-violet-500\/90, .text-purple-400\/90, .text-purple-500\/90, .text-indigo-400\/90 { color: hsl(var(--signal-rouge) / 0.9); }
+
+  /* Le texte discret de shadcn, employé translucide : composé sur du
+     clair, 80 % d'un gris moyen s'efface. On le rend opaque et on
+     laisse l'encre discrète porter la hiérarchie. */
+  .text-muted-foreground\/80, .text-muted-foreground\/70,
+  .text-muted-foreground\/60, .text-muted-foreground\/50 { color: hsl(var(--encre-discrete)); }
 }
