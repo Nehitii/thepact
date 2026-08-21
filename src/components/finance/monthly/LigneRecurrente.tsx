@@ -51,6 +51,9 @@ export interface ValeursLigne {
   moisAncre?: string | null;
   echeances?: number | null;
   montantTotal?: number | null;
+  /** Le jour du mois ou l argent bouge, et de combien de mois il suit. */
+  jourEcheance?: number | null;
+  decalageMois?: number;
 }
 
 /* DEUX FACONS DE PAYER, ET UNE SEULE QUESTION A POSER.
@@ -114,6 +117,11 @@ export function LigneRecurrente({
   const [moisChoisis, setMoisChoisis] = useState<number[]>([]);
   const [ancre, setAncre] = useState(moisCourantISO());
   const [nbEcheances, setNbEcheances] = useState('4');
+  /* LE JOUR OU L ARGENT BOUGE, ET SON DECALAGE.
+     Vide par defaut : la plupart des lignes n ont pas de jour connu, et
+     l exiger serait demander une precision que personne n a. */
+  const [jour, setJour] = useState('');
+  const [decalage, setDecalage] = useState(0);
 
   useEffect(() => {
     if (!ouvert) return;
@@ -138,6 +146,8 @@ export function LigneRecurrente({
     );
     setAncre(ligne?.mois_ancre ? String(ligne.mois_ancre).slice(0, 7) : moisCourantISO());
     setNbEcheances(n != null ? String(n) : '4');
+    setJour(ligne?.jour_echeance != null ? String(ligne.jour_echeance) : '');
+    setDecalage(ligne?.decalage_mois ?? 0);
     /* Pour un echeancier, le champ du montant porte le prix paye et
        non la part : c est ainsi qu on achete, donc ainsi qu on s en
        souvient. */
@@ -209,6 +219,13 @@ export function LigneRecurrente({
         : !motif || motif.periode === 1
           ? null
           : `${new Date().getFullYear()}-${String(motif.ancre + 1).padStart(2, '0')}-01`,
+      /* Un jour hors de 1-31 n a pas de sens : on prefere ne rien
+         dire plutot que d ecrire une valeur fausse. */
+      jourEcheance: (() => {
+        const j = parseInt(jour, 10);
+        return Number.isFinite(j) && j >= 1 && j <= 31 ? j : null;
+      })(),
+      decalageMois: decalage,
       echeances: estEcheancier ? nEcheances : null,
       montantTotal: estEcheancier ? valeur : null,
     });
@@ -362,6 +379,55 @@ export function LigneRecurrente({
               />
             </div>
           )}
+
+          {/* LE JOUR, ET LE MOIS OU L ARGENT BOUGE VRAIMENT.
+              Un loyer d aout encaisse le 3 septembre n est pas en
+              retard : il n a pas encore eu lieu. Sans ce jour, le
+              parcours ne peut pas faire la difference entre « pas
+              encore » et « manquant », et reproche un oubli a qui n a
+              rien oublie. */}
+          <div className="cy-reg-rang">
+            <label className="cy-reg-nom" htmlFor="ligne-jour">
+              <CalendarClock aria-hidden="true" />
+              {t('finance.ligne.jourEcheance', 'Le jour où l’argent bouge')}
+            </label>
+            <div className="cy-jour">
+              <label className="cy-reg-champ cy-jour-champ">
+                <span>{t('finance.ligne.leJour', 'Le')}</span>
+                <input
+                  id="ligne-jour"
+                  type="text"
+                  inputMode="numeric"
+                  className="cy-saisie"
+                  value={jour}
+                  placeholder="—"
+                  onChange={(e) => setJour(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
+                />
+              </label>
+              <div className="cy-jour-quand" role="radiogroup" aria-label={t('finance.ligne.quelMois', 'Quel mois')}>
+                {[0, 1].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    role="radio"
+                    aria-checked={decalage === d}
+                    onClick={() => setDecalage(d)}
+                  >
+                    {d === 0
+                      ? t('finance.ligne.ceMoisLa', 'du mois même')
+                      : t('finance.ligne.duMoisSuivant', 'du mois suivant')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="cy-reg-aide">
+              {jour
+                ? decalage === 1
+                  ? t('finance.ligne.jourAideSuivant', { jour, defaultValue: `Le mois d’août sera compté le ${jour} septembre.` })
+                  : t('finance.ligne.jourAideMeme', { jour, defaultValue: `Chaque mois, le ${jour}.` })
+                : t('finance.ligne.jourAideVide', 'Facultatif. Sans jour, le parcours ne peut pas distinguer « pas encore » de « manquant ».')}
+            </p>
+          </div>
 
           {/* Un echeancier ne se decrit pas par un motif d annee : ses
               echeances se suivent et peuvent franchir le 31 decembre.

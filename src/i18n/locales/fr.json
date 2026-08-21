@@ -1159,7 +1159,15 @@
         "recurrentAide": "un loyer, un abonnement, un impôt",
         "echeancierAide": "un achat payé en 3 ou 4 fois"
       },
-      "quandElleTombe": "Quand elle tombe"
+      "quandElleTombe": "Quand elle tombe",
+      "jourEcheance": "Le jour où l’argent bouge",
+      "leJour": "Le",
+      "quelMois": "Quel mois",
+      "ceMoisLa": "du mois même",
+      "duMoisSuivant": "du mois suivant",
+      "jourAideSuivant": "Le mois d’août sera compté le {{jour}} septembre.",
+      "jourAideMeme": "Chaque mois, le {{jour}}.",
+      "jourAideVide": "Facultatif. Sans jour, le parcours ne peut pas distinguer « pas encore » de « manquant »."
     },
     "grille": {
       "legende": "Les mois où elle tombe",
@@ -1225,7 +1233,10 @@
       "surTotal": "sur {{total}}",
       "surN": "sur {{n}}",
       "reste": "{{n}} ligne(s) non cochée(s) — elles ne comptent pas dans le total.",
-      "dejaValide": "Ce mois était déjà validé — valider à nouveau le corrigera."
+      "dejaValide": "Ce mois était déjà validé — valider à nouveau le corrigera.",
+      "prevuLe": "prévu le {{date}}",
+      "aVenir_one": "{{count}} pas encore arrivée",
+      "aVenir_other": "{{count}} pas encore arrivées"
     },
     "garde": {
       "montantVide": "Il manque le montant.",

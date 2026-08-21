@@ -47,7 +47,7 @@ import {
   useMonthlyValidation, useUpsertMonthlyValidation,
 } from '@/hooks/useFinance';
 import { usePointages, useEcrirePointage, useEffacerPointage } from '@/hooks/usePointages';
-import { montantDuMois, tombeEn } from '@/lib/finance/cadence';
+import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/lib/finance/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/lib/finance/garde';
 import { MarqueCreancier } from './MarqueCreancier';
 import type { FinancialItem } from '@/types/finance';
@@ -68,10 +68,15 @@ interface Rang {
   prevu: number;
   reel: number;
   pointe: boolean;
+  /* LA DATE OU L ARGENT BOUGE, ET S IL A DEJA BOUGE.
+     Nulles quand la ligne ne dit pas son jour : on ne peut alors ni
+     l affirmer ni le nier, et se taire vaut mieux que supposer. */
+  quand: Date | null;
+  passe: boolean | null;
 }
 
 export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
 
@@ -101,6 +106,13 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
 
   const dateMois = useMemo(() => parseISO(mois), [mois]);
 
+  /* « 3 sept. » plutot qu une date complete : dans une liste, le mois
+     suffit a situer, et l annee encombre. */
+  const nommerJour = useMemo(() => {
+    const f = new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short' });
+    return (d: Date) => f.format(d).replace('.', '');
+  }, [i18n.language]);
+
   /* CE QU ON POINTE : CE QUI TOMBE CE MOIS-LA.
      Une charge trimestrielle n a rien a faire dans la liste d aout si
      elle tombe en octobre — la cocher n aurait aucun sens, et la
@@ -112,7 +124,11 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
       .map((item) => {
         const p = parLigne.get(item.id);
         const prevu = montantDuMois(item, dateMois);
-        return { item, prevu, reel: p ? p.montant_reel : prevu, pointe: !!p?.pointe };
+        return {
+          item, prevu, reel: p ? p.montant_reel : prevu, pointe: !!p?.pointe,
+          quand: dateDeMouvement(item, dateMois),
+          passe: dejaPasse(item, dateMois),
+        };
       });
     return { expense: construire(depenses), income: construire(revenus) };
   }, [depenses, revenus, pointages, dateMois]);
@@ -139,7 +155,9 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   const toutPointer = async (genre: Etape) => {
     if (genre === 'bilan') return;
     const rs = genre === 'income' ? rangs.income : rangs.expense;
-    for (const r of rs.filter((x) => !x.pointe)) {
+    /* On ne coche que ce qui a eu lieu : cocher une ligne a venir
+       inscrirait un mouvement qui na pas eu lieu. */
+    for (const r of oubliees(rs)) {
       await ecrire.mutateAsync({
         mois, ligne_id: r.item.id, genre,
         nom: r.item.name, montant_prevu: r.prevu, montant_reel: r.reel, pointe: true,
@@ -238,9 +256,23 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     setNomAjout(''); setMontantAjout(''); setAjout(null);
   };
 
+  /* CE QUI RESTE N EST PAS CE QUI MANQUE.
+   *
+   * Une ligne non pointee dont l argent n a pas encore bouge n est pas
+   * un oubli : le loyer d aout encaisse le 3 septembre ne peut pas
+   * etre coche le 21 aout. Les compter ensemble faisait reprocher un
+   * retard a qui n avait rien oublie — et poussait a cocher pour faire
+   * taire le compteur, ce qui est exactement ce qu un pointage ne doit
+   * pas encourager.
+   *
+   * On les separe donc : « a venir » d un cote, « oubliees » de
+   * l autre, et seules les secondes appellent une action. */
+  const aVenir = (rs: Rang[]) => rs.filter((r) => !r.pointe && r.passe === false);
+  const oubliees = (rs: Rang[]) => rs.filter((r) => !r.pointe && r.passe !== false);
+
   const reelDepenses = totalPointe(rangs.expense);
   const reelRevenus = totalPointe(rangs.income);
-  const restant = (rs: Rang[]) => rs.filter((r) => !r.pointe).length;
+  const restant = (rs: Rang[]) => oubliees(rs).length;
 
   const conclure = async () => {
     try {
@@ -308,6 +340,15 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
                   defaultValue: `${courant.filter((r) => r.pointe).length} / ${courant.length}`,
                 })}
               </span>
+              {aVenir(courant).length > 0 && (
+                <span className="cy-parc-avenir-compte">
+                  {t('finance.parcours.aVenir', {
+                    count: aVenir(courant).length,
+                    defaultValue: `${aVenir(courant).length} pas encore arrivée(s)`,
+                  })}
+                </span>
+              )}
+
               {restant(courant) > 0 && (
                 <button type="button" className="cy-parc-tout" onClick={() => toutPointer(genreCourant)}>
                   <Check aria-hidden="true" />
@@ -321,7 +362,12 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
                 const corrige = Math.abs(r.reel - r.prevu) >= 0.005;
                 const enCours = enCorrection === r.item.id;
                 return (
-                  <li key={r.item.id} className="cy-parc-rang" data-pointe={r.pointe ? '1' : '0'}>
+                  <li
+                    key={r.item.id}
+                    className="cy-parc-rang"
+                    data-pointe={r.pointe ? '1' : '0'}
+                    data-avenir={!r.pointe && r.passe === false ? '1' : '0'}
+                  >
                     <button
                       type="button"
                       className="cy-parc-case"
@@ -341,7 +387,20 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
                       taille={30}
                     />
 
-                    <span className="cy-parc-nom">{r.item.name}</span>
+                    <span className="cy-parc-nom">
+                      {r.item.name}
+                      {/* L echeance, dite seulement quand elle apprend
+                          quelque chose : une ligne deja passee n a pas
+                          besoin de rappeler sa date. */}
+                      {r.passe === false && r.quand && (
+                        <u className="cy-parc-avenir">
+                          {t('finance.parcours.prevuLe', {
+                            date: nommerJour(r.quand),
+                            defaultValue: `prévu le ${nommerJour(r.quand)}`,
+                          })}
+                        </u>
+                      )}
+                    </span>
 
                     {enCours ? (
                       <div className="cy-parc-correction">

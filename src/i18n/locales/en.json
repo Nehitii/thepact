@@ -1159,7 +1159,15 @@
         "recurrentAide": "rent, a subscription, a tax",
         "echeancierAide": "a purchase paid in 3 or 4"
       },
-      "quandElleTombe": "When it falls"
+      "quandElleTombe": "When it falls",
+      "jourEcheance": "The day the money moves",
+      "leJour": "On the",
+      "quelMois": "Which month",
+      "ceMoisLa": "of the same month",
+      "duMoisSuivant": "of the next month",
+      "jourAideSuivant": "August will be counted on {{jour}} September.",
+      "jourAideMeme": "Every month, on the {{jour}}.",
+      "jourAideVide": "Optional. Without a day, the flow can’t tell « not yet » from « missing »."
     },
     "grille": {
       "legende": "The months it falls on",
@@ -1225,7 +1233,10 @@
       "surTotal": "of {{total}}",
       "surN": "of {{n}}",
       "reste": "{{n}} line(s) left unticked — they are not counted in the total.",
-      "dejaValide": "This month was already closed — closing again will correct it."
+      "dejaValide": "This month was already closed — closing again will correct it.",
+      "prevuLe": "due {{date}}",
+      "aVenir_one": "{{count}} not in yet",
+      "aVenir_other": "{{count}} not in yet"
     },
     "garde": {
       "montantVide": "The amount is missing.",

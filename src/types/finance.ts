@@ -27,6 +27,10 @@ export interface RecurringExpense {
   mois_ancre?: string | null;
   /** Nombre d echeances, ou rien pour une charge sans fin. */
   echeances?: number | null;
+  /** Le jour du mois ou l argent bouge — voir lib/finance/cadence.ts. */
+  jour_echeance?: number | null;
+  /** De combien de mois le mouvement suit le mois concerne. */
+  decalage_mois?: number | null;
   /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
   montant_total?: number | null;
   created_at: string;
@@ -56,6 +60,10 @@ export interface RecurringIncome {
   mois_ancre?: string | null;
   /** Nombre d echeances, ou rien pour une charge sans fin. */
   echeances?: number | null;
+  /** Le jour du mois ou l argent bouge — voir lib/finance/cadence.ts. */
+  jour_echeance?: number | null;
+  /** De combien de mois le mouvement suit le mois concerne. */
+  decalage_mois?: number | null;
   /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
   montant_total?: number | null;
   created_at: string;
@@ -132,6 +140,10 @@ export interface FinancialItem {
   mois_ancre?: string | null;
   /** Nombre d echeances, ou rien pour une charge sans fin. */
   echeances?: number | null;
+  /** Le jour du mois ou l argent bouge — voir lib/finance/cadence.ts. */
+  jour_echeance?: number | null;
+  /** De combien de mois le mouvement suit le mois concerne. */
+  decalage_mois?: number | null;
   /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
   montant_total?: number | null;
 }

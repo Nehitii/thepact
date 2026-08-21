@@ -2863,3 +2863,58 @@
   border-top: 1px solid color-mix(in srgb, var(--cy-jaune) 28%, transparent);
 }
 .cy-reg-refus svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── LE JOUR OU L ARGENT BOUGE ──
+   Un loyer daout encaisse le 3 septembre nest pas en retard : il na
+   pas encore eu lieu. Sans ce jour, le parcours reproche un oubli a
+   qui na rien oublie. */
+.cy-jour { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cy-jour-champ { flex: 0 0 auto; }
+.cy-jour-champ span {
+  font-family: var(--cy-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3);
+}
+.cy-jour-champ input { width: 3.2em; text-align: center; }
+.cy-jour-quand { display: flex; }
+.cy-jour-quand button {
+  padding: 6px 11px;
+  font-family: var(--cy-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3);
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+}
+.cy-jour-quand button + button { border-left: 0; }
+.cy-jour-quand button:hover { color: var(--cy-encre); }
+.cy-jour-quand button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
+.cy-jour-quand button[aria-checked="true"] {
+  color: var(--cy-fond);
+  background: var(--cy-cyan);
+  border-color: var(--cy-cyan);
+  font-weight: 700;
+}
+
+/* Une ligne a venir sefface sans disparaitre : elle nappelle aucune
+   action, mais on doit pouvoir la voir et la cocher si elle arrive. */
+.cy-parc-rang[data-avenir="1"] { opacity: 0.62; }
+.cy-parc-avenir {
+  display: block;
+  font-family: var(--cy-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.8px;
+  text-decoration: none;
+  color: var(--cy-jaune);
+}
+.cy-parc-avenir-compte {
+  font-family: var(--cy-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-jaune);
+}

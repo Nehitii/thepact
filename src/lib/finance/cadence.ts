@@ -37,6 +37,10 @@ export interface LigneCadencee {
   mois_ancre?: string | null;
   echeances?: number | null;
   montant_total?: number | null;
+  /** Le jour du mois ou l argent bouge. Nul si on ne le sait pas. */
+  jour_echeance?: number | null;
+  /** De combien de mois le mouvement suit le mois concerne. */
+  decalage_mois?: number | null;
 }
 
 /** Le premier du mois, en local, a partir d une date ou d une chaine. */
@@ -316,4 +320,63 @@ export function regulariser(mois: number[]): MotifAnnuel | null {
     }
   }
   return meilleur;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE JOUR OU L ARGENT BOUGE
+
+   Une ligne tombait DANS son mois, point. Aucun moyen de dire qu un
+   loyer d aout arrive le 3 septembre.
+
+   La consequence n etait pas cosmetique. Au pointage, ces lignes-la
+   restaient decochees alors qu elles n etaient pas en retard : elles
+   n avaient simplement pas encore eu lieu. Le parcours ne savait pas
+   distinguer « pas encore » de « manquant » — et c est exactement la
+   difference qui compte quand on valide un mois.
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Le jour du mois, borne au dernier jour reel de ce mois-la. */
+function jourReel(annee: number, mois: number, jour: number): number {
+  /* Le 31 d un mois de trente jours n existe pas : on retombe sur le
+     dernier. Un prelevement au 31 tombe le 28 en fevrier, ce que fait
+     aussi la banque. */
+  const dernier = new Date(annee, mois + 1, 0).getDate();
+  return Math.min(Math.max(1, jour), dernier);
+}
+
+/**
+ * La date a laquelle l argent bouge, pour le mois donne.
+ *
+ * Sans jour d echeance, on ne sait pas : on rend null plutot que de
+ * supposer le premier du mois, ce qui ferait croire a une precision
+ * qu on n a pas.
+ */
+export function dateDeMouvement(ligne: LigneCadencee, mois: Date | string): Date | null {
+  if (!tombeEn(ligne, mois)) return null;
+  if (ligne.jour_echeance == null) return null;
+
+  const base = debutDeMois(mois);
+  /* Le decalage porte sur le MOIS, pas sur le jour : le loyer d aout
+     arrive le 3 septembre, et non le 34 aout. */
+  const cible = new Date(base.getFullYear(), base.getMonth() + (ligne.decalage_mois ?? 0), 1);
+  return new Date(
+    cible.getFullYear(),
+    cible.getMonth(),
+    jourReel(cible.getFullYear(), cible.getMonth(), ligne.jour_echeance),
+  );
+}
+
+/**
+ * L argent a-t-il deja bouge, a la date d aujourd hui ?
+ *
+ * Rend null quand la ligne ne dit pas son jour : on ne peut alors ni
+ * l affirmer ni le nier, et pretendre le contraire serait pire que se
+ * taire. Le parcours s en sert pour ne pas reprocher un retard a une
+ * ligne qui n a pas encore eu lieu.
+ */
+export function dejaPasse(ligne: LigneCadencee, mois: Date | string, aujourdHui = new Date()): boolean | null {
+  const d = dateDeMouvement(ligne, mois);
+  if (!d) return null;
+  const jour = new Date(aujourdHui.getFullYear(), aujourdHui.getMonth(), aujourdHui.getDate());
+  return d.getTime() <= jour.getTime();
 }

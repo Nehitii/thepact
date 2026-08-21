@@ -12,6 +12,7 @@ import {
   rangEcheance, tombeEn, montantDuMois, prochaineEcheance,
   totalDuMois, provisionMensuelle, cadenceDe,
   moisDuMotif, moisDeChute, motifDepuisMois, regulariser,
+  dateDeMouvement, dejaPasse,
 } from "../src/lib/finance/cadence.ts";
 
 let echecs = 0;
@@ -108,6 +109,39 @@ dit("rien a regulariser", regulariser([]), null);
 console.log("\n── les nouveaux noms de cadence ──");
 dit("bimestriel", cadenceDe({ amount: 1, is_active: true, periode_mois: 2, mois_ancre: "2026-01-01" }), "bimestriel");
 dit("quadrimestriel", cadenceDe({ amount: 1, is_active: true, periode_mois: 4, mois_ancre: "2026-01-01" }), "quadrimestriel");
+
+
+console.log("\n── le jour où l'argent bouge ──");
+const iso2 = (d: Date | null) => (d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : null);
+
+/* Le cas réel : un loyer d'août encaissé le 3 septembre. */
+const loyerDecale = { amount: 500, is_active: true, jour_echeance: 3, decalage_mois: 1 };
+dit("le loyer d'août bouge le 3 septembre", iso2(dateDeMouvement(loyerDecale, "2026-08")), "2026-09-03");
+dit("celui de décembre bouge le 3 janvier", iso2(dateDeMouvement(loyerDecale, "2026-12")), "2027-01-03");
+
+/* Sans décalage : le mouvement reste dans son mois. */
+const salaire = { amount: 1600, is_active: true, jour_echeance: 28, decalage_mois: 0 };
+dit("un salaire au 28 reste en août", iso2(dateDeMouvement(salaire, "2026-08")), "2026-08-28");
+
+/* Le 31 d'un mois de trente jours n'existe pas. */
+const au31 = { amount: 10, is_active: true, jour_echeance: 31 };
+dit("le 31 avril devient le 30", iso2(dateDeMouvement(au31, "2026-04")), "2026-04-30");
+dit("le 31 février devient le 28", iso2(dateDeMouvement(au31, "2026-02")), "2026-02-28");
+dit("le 31 janvier reste le 31", iso2(dateDeMouvement(au31, "2026-01")), "2026-01-31");
+
+/* Sans jour, on ne sait pas — et on le dit. */
+dit("sans jour, pas de date", dateDeMouvement({ amount: 10, is_active: true }, "2026-08"), null);
+dit("sans jour, pas de verdict", dejaPasse({ amount: 10, is_active: true }, "2026-08"), null);
+
+/* Une ligne qui ne tombe pas ce mois-là n'a pas de mouvement. */
+dit("le trimestre ne bouge pas en août", dateDeMouvement({ ...trimestre, jour_echeance: 5 }, "2026-08"), null);
+
+/* Déjà passé, ou pas encore : c'est toute la question du pointage. */
+const le21aout = new Date(2026, 7, 21);
+dit("au 21 août, le loyer du 3 septembre n'est pas arrivé", dejaPasse(loyerDecale, "2026-08", le21aout), false);
+dit("au 21 août, le loyer de juillet est arrivé", dejaPasse(loyerDecale, "2026-07", le21aout), true);
+dit("au 21 août, le salaire du 28 n'est pas tombé", dejaPasse(salaire, "2026-08", le21aout), false);
+dit("le jour même compte comme passé", dejaPasse({ amount: 1, is_active: true, jour_echeance: 21 }, "2026-08", le21aout), true);
 
 
 console.log(`\n${echecs === 0 ? "TOUT PASSE" : echecs + " ECHEC(S)"}`);

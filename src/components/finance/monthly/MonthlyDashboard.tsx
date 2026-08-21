@@ -133,6 +133,8 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
     icon_cadre: v.iconCadre ?? null,
     periode_mois: v.periodeMois ?? 1,
     mois_ancre: v.moisAncre ?? null,
+    jour_echeance: v.jourEcheance ?? null,
+    decalage_mois: v.decalageMois ?? 0,
     echeances: v.echeances ?? null,
     montant_total: v.montantTotal ?? null,
   });
