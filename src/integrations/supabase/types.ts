@@ -4025,6 +4025,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           exclude_from_spin: boolean
+          is_ultimate: boolean
           goal_id: string
           id: string
           notes: string | null
@@ -4040,6 +4041,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           exclude_from_spin?: boolean
+          is_ultimate?: boolean
           goal_id: string
           id?: string
           notes?: string | null
@@ -4055,6 +4057,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           exclude_from_spin?: boolean
+          is_ultimate?: boolean
           goal_id?: string
           id?: string
           notes?: string | null

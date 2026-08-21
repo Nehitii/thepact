@@ -848,3 +848,56 @@
 /* La fleche indique le sens du classement, pas le fait de trier : elle
    descend quand les plus avances passent devant. */
 .gd-tri svg { flex-shrink: 0; opacity: 0.8; }
+
+/* ── L ETAPE ULTIME ET LE ZENITH ──
+   Elle est a cote de la suite, pas dedans : un intertitre la separe,
+   et son rang cede la place a l etoile. L ambre la distingue du cyan
+   des etapes ordinaires sans la rendre plus criarde qu elles — c est
+   un bonus, pas une urgence. */
+.gd-ultime-tete {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 4px;
+  padding-top: 9px;
+  border-top: 1px solid var(--gd-trait);
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #ffc53d;
+}
+.gd-ultime-tete svg { flex-shrink: 0; }
+.gd-ultime-tete span {
+  margin-left: auto;
+  color: var(--gd-encre-3);
+  letter-spacing: 0.6px;
+  text-transform: none;
+}
+.gd-etape[data-ultime="1"] { --t: #ffc53d; }
+.gd-etape[data-ultime="1"] .gd-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffc53d;
+}
+
+/* Le sceau du zenith, a cote de celui de l honneur.
+   Il ne le remplace pas : l objectif reste honore et gagne une
+   distinction par-dessus — c est ce qui laisse les comptes, l XP et
+   les constellations exactement ou ils sont. */
+.gd-sceau-zenith {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #04070a;
+  background: #ffc53d;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 5px 100%);
+}
+.gd-sceau-zenith svg { flex-shrink: 0; }

@@ -11,7 +11,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, Pencil, Check, CheckCheck, Pause, Play, Archive, Copy,
-  Lock, LockOpen, Trash2, Star, Target, Link2,
+  Lock, LockOpen, Trash2, Star, Target, Link2, Sparkle,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -33,6 +33,9 @@ interface Props {
   libelleEtat: string;
   etiquettes: string[];
   estHonore: boolean;
+  /* L etape ultime est franchie : l objectif est alle au-dela de ce
+     qu il promettait. Une marque en plus, pas un etat qui remplace. */
+  auZenith: boolean;
   partageActif: boolean;
   onRetour: () => void;
   onModifier: () => void;
@@ -49,7 +52,7 @@ interface Props {
 
 export const DossierBandeau = React.memo(function DossierBandeau({
   goal, teinte, progression, faites, total, uniteAvancement,
-  libellePalier, libelleEtat, etiquettes, estHonore, partageActif,
+  libellePalier, libelleEtat, etiquettes, estHonore, auZenith, partageActif,
   onRetour, onModifier, onToutValider, onPause, onReprendre, onArchiver,
   onDupliquer, onSupprimer, onBasculerVerrou, onBasculerFocus, onPartager,
 }: Props) {
@@ -70,6 +73,12 @@ export const DossierBandeau = React.memo(function DossierBandeau({
           <span className="cp-equerre cp-equerre-hg" aria-hidden="true" />
           <span className="cp-equerre cp-equerre-bd" aria-hidden="true" />
           {estHonore && <span className="gd-sceau">{t("goals.detail.honoured", "HONORÉ")}</span>}
+          {auZenith && (
+            <span className="gd-sceau-zenith">
+              <Sparkle size={10} aria-hidden="true" />
+              {t("goals.detail.zenith", "ZÉNITH")}
+            </span>
+          )}
 
           <div className="gd-bandeau-in">
             <div className="gd-vignette" data-honore={estHonore ? "1" : "0"} style={{ ["--t" as string]: teinte }}>

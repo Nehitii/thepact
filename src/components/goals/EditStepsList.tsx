@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { GripVertical, Trash2, Plus, Dices } from "lucide-react";
+import { GripVertical, Trash2, Plus, Dices, Sparkle } from "lucide-react";
 
 export interface EditStepItem {
   /** DB id if existing step, undefined if newly added */
@@ -30,6 +30,13 @@ export interface EditStepItem {
   key: string;
   /** If true, this step is excluded from the mission spin/randomizer */
   excludeFromSpin?: boolean;
+  /**
+   * L etape ultime. Elle ne compte pas dans l avancement — c est ce qui
+   * en fait un bonus et non une etape de plus — et la franchir porte
+   * l objectif au zenith. Il n y en a qu une : la designer libere la
+   * precedente.
+   */
+  estUltime?: boolean;
 }
 
 interface EditStepsListProps {
@@ -42,13 +49,15 @@ interface SortableStepProps {
   index: number;
   name: string;
   excludeFromSpin?: boolean;
+  estUltime?: boolean;
   onNameChange: (value: string) => void;
   onExcludeChange: (checked: boolean) => void;
+  onUltimeChange: (checked: boolean) => void;
   onDelete: () => void;
   canDelete: boolean;
 }
 
-function SortableStep({ id, index, name, excludeFromSpin, onNameChange, onExcludeChange, onDelete, canDelete }: SortableStepProps) {
+function SortableStep({ id, index, name, excludeFromSpin, estUltime, onNameChange, onExcludeChange, onUltimeChange, onDelete, canDelete }: SortableStepProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -72,7 +81,11 @@ function SortableStep({ id, index, name, excludeFromSpin, onNameChange, onExclud
       >
         <GripVertical className="h-4 w-4" />
       </button>
-      <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">{index + 1}.</span>
+      {/* Une etape ultime n a pas de rang : elle n est pas la n-ieme
+          d une suite, elle est a cote. */}
+      <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+        {estUltime ? <Sparkle className="h-3.5 w-3.5 ml-auto text-amber-300" /> : `${index + 1}.`}
+      </span>
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
@@ -81,6 +94,27 @@ function SortableStep({ id, index, name, excludeFromSpin, onNameChange, onExclud
         autoComplete="off"
         className="h-10 text-sm rounded-xl flex-1 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
       />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => onUltimeChange(!estUltime)}
+            className={`p-1.5 rounded-lg transition-all duration-200 shrink-0 ${
+              estUltime
+                ? "text-amber-300 bg-amber-400/15"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            }`}
+            title={estUltime ? "Étape ultime" : "Désigner comme étape ultime"}
+          >
+            <Sparkle className="h-4 w-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {estUltime
+            ? "Étape ultime : hors avancement, elle porte l'objectif au zénith"
+            : "Désigner comme étape ultime (une seule par objectif)"}
+        </TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -154,6 +188,17 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
     [items, onItemsChange],
   );
 
+  /* Il n y a qu une etape ultime : en designer une libere la
+     precedente. La regle est aussi celle de la base — un index partiel
+     refuse deux ultimes sur le meme objectif — mais on ne laisse pas
+     l utilisateur decouvrir la contrainte au moment d enregistrer. */
+  const handleUltimeChange = useCallback(
+    (index: number, checked: boolean) => {
+      onItemsChange(items.map((item, i) => ({ ...item, estUltime: checked && i === index })));
+    },
+    [items, onItemsChange],
+  );
+
   const handleDelete = useCallback(
     (index: number) => {
       onItemsChange(items.filter((_, i) => i !== index));
@@ -183,8 +228,10 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
               index={index}
               name={item.name}
               excludeFromSpin={item.excludeFromSpin}
+              estUltime={item.estUltime}
               onNameChange={(val) => handleNameChange(index, val)}
               onExcludeChange={(checked) => handleExcludeChange(index, checked)}
+              onUltimeChange={(checked) => handleUltimeChange(index, checked)}
               onDelete={() => handleDelete(index)}
               canDelete={items.length > 1}
             />

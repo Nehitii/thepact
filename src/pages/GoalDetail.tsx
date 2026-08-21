@@ -155,7 +155,7 @@ export default function GoalDetail() {
       setEditNotes(g.notes || "");
       setEditDeadline((g as any).deadline || "");
       setSteps(goalDetailData.steps);
-      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false })));
+      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false, estUltime: (s as any).is_ultimate ?? false })));
       setEditMembresIds(g.child_goal_ids || []);
       setEditRegle((g.super_goal_rule as SuperGoalRule) || {});
       setEditVivant(!!g.is_dynamic_super);
@@ -250,7 +250,14 @@ export default function GoalDetail() {
       const { handleUpdateGoal } = await import("@/lib/goalDetailHandlers");
       const updates: Record<string, unknown> = {};
       if (editName !== goal.name) updates.name = editName;
-      if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
+      /* L etape ultime ne compte pas dans l avancement : le total
+         qu on ecrit est celui des etapes ordinaires. */
+      const totalOrdinaire = editStepItems.filter((i) => !i.estUltime).length;
+      if (goal.goal_type === "normal" && totalOrdinaire !== goal.total_steps) {
+        updates.total_steps = totalOrdinaire;
+      } else if (goal.goal_type !== "normal" && editSteps !== goal.total_steps) {
+        updates.total_steps = editSteps;
+      }
       if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
       const primaryTag = editTags[0] || "personal";
       if (primaryTag !== goal.type) updates.type = primaryTag;
@@ -315,21 +322,21 @@ export default function GoalDetail() {
           if (idsToDelete.length > 0) await supabase.from("steps").delete().in("id", idsToDelete);
 
           const updatePromises: Promise<unknown>[] = [];
-          const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number; exclude_from_spin: boolean }[] = [];
+          const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number; exclude_from_spin: boolean; is_ultimate: boolean }[] = [];
           for (let i = 0; i < editStepItems.length; i++) {
             const item = editStepItems[i];
             const title = item.name?.trim() || `Step ${i + 1}`;
             if (item.dbId && existingIds.has(item.dbId)) {
-              updatePromises.push(Promise.resolve(supabase.from("steps").update({ title, order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false }).eq("id", item.dbId)));
+              updatePromises.push(Promise.resolve(supabase.from("steps").update({ title, order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false, is_ultimate: item.estUltime ?? false }).eq("id", item.dbId)));
             } else {
-              newStepsToInsert.push({ goal_id: id, title, description: "", notes: "", order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false });
+              newStepsToInsert.push({ goal_id: id, title, description: "", notes: "", order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false, is_ultimate: item.estUltime ?? false });
             }
           }
           await Promise.all([...updatePromises, ...(newStepsToInsert.length > 0 ? [supabase.from("steps").insert(newStepsToInsert)] : [])]);
         }
 
         const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
-        if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false }))); }
+        if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false, estUltime: s.is_ultimate ?? false }))); }
 
         /* La modification peut retirer les etapes qui restaient : le
            declencheur en base fait alors basculer l objectif, et les
@@ -408,6 +415,10 @@ export default function GoalDetail() {
      defait, et defait le compte des groupes qui le portent. On ne
      retient que ce geste-la. */
   const estHonore = goal.status === "fully_completed" || goal.status === "validated";
+  /* Le zenith se deduit : c est le fait que l etape ultime soit
+     franchie. Aucune colonne a tenir d accord avec elle. */
+  const auZenith = steps.some((e) => (e as any).is_ultimate && e.status === "completed");
+
   const groupesPorteurs = allGoals
     .filter((g) => g.goal_type === "super")
     .filter((g) => membresDuGroupe(g, allGoals).some((m) => m.id === goal.id))
@@ -455,6 +466,7 @@ export default function GoalDetail() {
           }
           etiquettes={displayTags}
           estHonore={isCompleted}
+          auZenith={auZenith}
           partageActif={!!social.sharing}
           onRetour={() => navigate("/goals")}
           onModifier={() => setEditDialogOpen(true)}

@@ -8,7 +8,7 @@
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Check, MessageSquare, ListOrdered, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
+import { Check, MessageSquare, ListOrdered, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkle } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getCostCategoryLabel } from "@/lib/goalConstants";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
@@ -22,6 +22,8 @@ export interface EtapeDossier {
   order: number;
   status: string;
   notes?: string | null;
+  /** L etape ultime : hors avancement, elle porte l objectif au zenith. */
+  is_ultimate?: boolean;
 }
 
 export interface PosteDossier {
@@ -46,52 +48,80 @@ export const DossierEtapes = React.memo(function DossierEtapes({
   onOuvrir: (stepId: string) => void;
 }) {
   const { t } = useTranslation();
-  const faites = etapes.filter((e) => e.status === "completed").length;
+
+  /* L ETAPE ULTIME SE LIT A PART.
+   *
+   * Elle n est pas la n-ieme d une suite : elle est a cote. Elle ne
+   * porte donc pas de rang, elle ne compte pas dans la fraction du
+   * volet — sans quoi un objectif de cinq etapes plus l ultime
+   * afficherait 5/6 une fois tout fait, et l objectif honore aurait
+   * l air inacheve — et elle vient apres, sous son propre intertitre,
+   * parce qu on n y va qu une fois le reste tenu. */
+  const ordinaires = etapes.filter((e) => !e.is_ultimate);
+  const ultime = etapes.find((e) => e.is_ultimate);
+  const faites = ordinaires.filter((e) => e.status === "completed").length;
+
+  const ligne = (e: EtapeDossier, rang: number | null) => {
+    const faite = e.status === "completed";
+    const cout = coutParEtape.get(e.id);
+    return (
+      <div
+        key={e.id}
+        className="gd-etape"
+        data-faite={faite ? "1" : "0"}
+        data-ultime={rang === null ? "1" : "0"}
+        style={{ ["--t" as string]: teinte }}
+      >
+        <span className="gd-num">
+          {rang === null ? <Sparkle size={11} aria-hidden="true" /> : deuxChiffres(rang)}
+        </span>
+        {/* Cocher une etape et l ouvrir sont deux gestes distincts :
+            deux boutons, pas une ligne cliquable avec une zone morte
+            au milieu. */}
+        <button
+          type="button"
+          className="gd-case"
+          onClick={() => onBasculer(e.id, e.status)}
+          aria-pressed={faite}
+          aria-label={faite
+            ? t("goals.detail.uncheckStep", "Décocher l'étape")
+            : t("goals.detail.checkStep", "Valider l'étape")}
+        >
+          {faite && <Check size={11} strokeWidth={3} aria-hidden="true" />}
+        </button>
+        <button type="button" className="gd-ouvrir" onClick={() => onOuvrir(e.id)} title={e.title}>
+          <span className="gd-etape-titre">{e.title}</span>
+        </button>
+        {e.notes
+          ? <MessageSquare size={12} className="gd-note" aria-hidden="true" />
+          : <span />}
+        {cout
+          ? <span className="gd-etape-cout">{formatCurrency(cout, devise)}</span>
+          : <span />}
+      </div>
+    );
+  };
 
   return (
     <section className="gd-volet">
       <header className="gd-tete">
         {t("goals.detail.steps", "Étapes")}
-        <b>{faites}/{etapes.length}</b>
+        <b>{faites}/{ordinaires.length}</b>
       </header>
       <div className="gd-liste">
-        {etapes.map((e, i) => {
-          const faite = e.status === "completed";
-          const cout = coutParEtape.get(e.id);
-          return (
-            <div
-              key={e.id}
-              className="gd-etape"
-              data-faite={faite ? "1" : "0"}
-              style={{ ["--t" as string]: teinte }}
-            >
-              <span className="gd-num">{deuxChiffres(i + 1)}</span>
-              {/* Cocher une etape et l ouvrir sont deux gestes
-                  distincts : deux boutons, pas une ligne cliquable
-                  avec une zone morte au milieu. */}
-              <button
-                type="button"
-                className="gd-case"
-                onClick={() => onBasculer(e.id, e.status)}
-                aria-pressed={faite}
-                aria-label={faite
-                  ? t("goals.detail.uncheckStep", "Décocher l'étape")
-                  : t("goals.detail.checkStep", "Valider l'étape")}
-              >
-                {faite && <Check size={11} strokeWidth={3} aria-hidden="true" />}
-              </button>
-              <button type="button" className="gd-ouvrir" onClick={() => onOuvrir(e.id)} title={e.title}>
-                <span className="gd-etape-titre">{e.title}</span>
-              </button>
-              {e.notes
-                ? <MessageSquare size={12} className="gd-note" aria-hidden="true" />
-                : <span />}
-              {cout
-                ? <span className="gd-etape-cout">{formatCurrency(cout, devise)}</span>
-                : <span />}
-            </div>
-          );
-        })}
+        {ordinaires.map((e, i) => ligne(e, i + 1))}
+
+        {ultime && (
+          <>
+            <p className="gd-ultime-tete">
+              <Sparkle size={10} aria-hidden="true" />
+              {t("goals.detail.ultimate", "Étape ultime")}
+              <span>{t("goals.detail.ultimateHint", "hors avancement")}</span>
+            </p>
+            {ligne(ultime, null)}
+          </>
+        )}
+
         {etapes.length === 0 && (
           <p className="gd-vide">{t("goals.detail.noSteps", "Aucune étape")}</p>
         )}

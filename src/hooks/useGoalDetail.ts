@@ -44,6 +44,9 @@ export interface StepData {
   description?: string | null;
   completion_date?: string | null;
   validated_at?: string | null;
+  /* L etape ultime : exclue de l avancement, une seule par objectif,
+     elle ouvre le zenith une fois franchie. */
+  is_ultimate?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -65,7 +65,9 @@ export async function handleFullyComplete(
 
 export async function handleUpdateGoal(
   goalId: string,
-  currentTotalSteps: number,
+  /** Conserve pour la compatibilite de l appel ; plus lu depuis que
+   *  la reconciliation des etapes a ete retiree. */
+  _currentTotalSteps: number,
   updates: {
     name?: string;
     total_steps?: number;
@@ -87,54 +89,28 @@ export async function handleUpdateGoal(
       return;
     }
 
-    // If total_steps changed, handle step adjustments
-    if (updates.total_steps !== undefined && updates.total_steps !== currentTotalSteps) {
-      const newTotal = updates.total_steps;
-      
-      if (newTotal > currentTotalSteps) {
-        // Add new steps
-        const stepsToAdd = newTotal - currentTotalSteps;
-        const newSteps = Array.from({ length: stepsToAdd }, (_, i) => ({
-          goal_id: goalId,
-          title: `Step ${currentTotalSteps + i + 1}`,
-          order: currentTotalSteps + i + 1,
-          status: "pending" as const,
-          description: "",
-          notes: ""
-        }));
-
-        const { error: insertError } = await supabase
-          .from("steps")
-          .insert(newSteps);
-
-        if (insertError) {
-          onError(insertError.message);
-          return;
-        }
-      } else if (newTotal < currentTotalSteps) {
-        // Remove excess steps (last ones)
-        const { data: allSteps } = await supabase
-          .from("steps")
-          .select("id")
-          .eq("goal_id", goalId)
-          .order("order", { ascending: false })
-          .limit(currentTotalSteps - newTotal);
-
-        if (allSteps && allSteps.length > 0) {
-          const stepIds = allSteps.map(s => s.id);
-          const { error: deleteError } = await supabase
-            .from("steps")
-            .delete()
-            .in("id", stepIds);
-
-          if (deleteError) {
-            onError(deleteError.message);
-            return;
-          }
-        }
-      }
-    }
-
+    /* CE QUI ECRIT total_steps N ECRIT PAS LES ETAPES.
+     *
+     * Cette fonction reconciliait la table des etapes avec le compteur :
+     * en ajouter si le total montait, supprimer les dernieres s il
+     * baissait. Elle partait du principe que total_steps EST le nombre
+     * de lignes, ce qui n est plus vrai — et ne l etait deja plus pour
+     * une habitude.
+     *
+     * Deux degats, dont un mesure. L etape ultime ne compte pas dans
+     * l avancement : la designer faisait donc baisser le total d une
+     * unite, et la reconciliation supprimait la derniere etape — c est
+     * a dire l ultime elle-meme. Releve en essai : cinq etapes avant,
+     * quatre apres, aucune ultime, l etape perdue. Et dans l autre
+     * sens, allonger une habitude de cinquante a cent quatre-vingts
+     * jours aurait insere cent trente fausses etapes dans un objectif
+     * qui n en a pas.
+     *
+     * La page de detail, seule appelante, gere deja ses etapes une par
+     * une — insertion, mise a jour, suppression, depuis la liste
+     * editee. La reconciliation faisait donc doublon avec elle en plus
+     * de se tromper. Une seule main sur la table des etapes.
+     */
     onSuccess();
   } catch (error: any) {
     onError(error.message || "Failed to update goal");

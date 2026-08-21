@@ -263,7 +263,11 @@ export default function NewGoal() {
           difficulty: validatedData.difficulty as any,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
-          total_steps: goalType === "normal" ? stepItems.length : goalType === "habit" ? habitDurationDays : 0,
+          /* L etape ultime est un bonus : elle n entre pas dans le
+             total qui sert d avancement. */
+          total_steps: goalType === "normal"
+            ? stepItems.filter((i) => !i.estUltime).length
+            : goalType === "habit" ? habitDurationDays : 0,
           potential_score: potentialScore,
           start_date: new Date(startDate).toISOString(),
           status: "not_started",
@@ -291,6 +295,7 @@ export default function NewGoal() {
           notes: "",
           order: i + 1,
           exclude_from_spin: item.excludeFromSpin ?? false,
+          is_ultimate: item.estUltime ?? false,
         }));
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")

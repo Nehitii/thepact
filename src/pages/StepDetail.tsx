@@ -110,7 +110,9 @@ export default function StepDetail() {
       const { data: stepsData, error: stepsError } = await supabase
         .from("steps")
         .select("id, status")
-        .eq("goal_id", goalId);
+        .eq("goal_id", goalId)
+        // L etape ultime ne compte pas dans l avancement.
+        .eq("is_ultimate", false);
       if (stepsError) throw stepsError;
       const completedCount = stepsData?.filter((s) => s.status === "completed").length || 0;
       const { data: majGoal } = await supabase

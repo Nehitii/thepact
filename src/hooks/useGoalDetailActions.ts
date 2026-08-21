@@ -84,8 +84,12 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         .eq("id", stepId);
       if (error) throw error;
 
-      const newValidatedCount =
-        detail.steps.filter((s) => (s.id === stepId ? newStatus : s.status) === "completed").length;
+      /* Le compte ignore l etape ultime — y compris quand c est elle
+         qu on vient de cocher : elle ouvre le zenith, elle ne fait pas
+         avancer l objectif. */
+      const newValidatedCount = detail.steps
+        .filter((s) => !s.is_ultimate)
+        .filter((s) => (s.id === stepId ? newStatus : s.status) === "completed").length;
       const { error: goalErr } = await supabase
         .from("goals")
         .update({ validated_steps: newValidatedCount })
@@ -275,7 +279,13 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (!detail || !userId) throw new Error("Goal not loaded");
       if (detail.goal.status === "fully_completed") return { skipped: true, goal: detail.goal };
 
-      const { data: stepsData } = await supabase.from("steps").select("id").eq("goal_id", detail.goal.id);
+      /* « Tout completer » honore l objectif ; il ne donne pas le
+         zenith au passage. L etape ultime reste a faire. */
+      const { data: stepsData } = await supabase
+        .from("steps")
+        .select("id")
+        .eq("goal_id", detail.goal.id)
+        .eq("is_ultimate", false);
       if (!stepsData) throw new Error("Failed to load steps");
 
       const now = new Date().toISOString();

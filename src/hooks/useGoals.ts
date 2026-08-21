@@ -33,6 +33,8 @@ export interface Goal {
   is_dynamic_super?: boolean;
   // Step counts from batch query
   completedStepsCount?: number;
+  /** L etape ultime de cet objectif est franchie : il est au zenith. */
+  auZenith?: boolean;
   totalStepsCount?: number;
   // Tags from relational select
   tags?: string[];
@@ -73,23 +75,33 @@ export async function fetchGoals(
       if (!goalsData || goalsData.length === 0) return [];
 
       // Single batch query for step counts (not N+1)
-      let stepCountsByGoal: Map<string, { total: number; completed: number }> | null = null;
+      let stepCountsByGoal: Map<string, { total: number; completed: number; zenith: boolean }> | null = null;
 
       if (includeStepCounts) {
         const goalIds = goalsData.map((g: any) => g.id);
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")
-          .select("goal_id, status")
+          .select("goal_id, status, is_ultimate")
           .in("goal_id", goalIds);
 
         if (stepsError) throw stepsError;
 
+        /* Une seule lecture pour deux questions. L etape ultime est un
+           bonus : elle ne compte ni au numerateur ni au denominateur de
+           l avancement. Mais c est elle, et elle seule, qui dit si
+           l objectif est au zenith — la filtrer dans la requete aurait
+           oblige a une seconde lecture pour la retrouver. */
         stepCountsByGoal = new Map();
         if (stepsData) {
           for (const step of stepsData) {
-            const existing = stepCountsByGoal.get(step.goal_id) || { total: 0, completed: 0 };
-            existing.total++;
-            if (step.status === "completed") existing.completed++;
+            const existing = stepCountsByGoal.get(step.goal_id)
+              || { total: 0, completed: 0, zenith: false };
+            if (step.is_ultimate) {
+              if (step.status === "completed") existing.zenith = true;
+            } else {
+              existing.total++;
+              if (step.status === "completed") existing.completed++;
+            }
             stepCountsByGoal.set(step.goal_id, existing);
           }
         }
@@ -110,6 +122,10 @@ export async function fetchGoals(
           ...goalFields,
           totalStepsCount: counts?.total,
           completedStepsCount: counts?.completed,
+          /* Le zenith n est pas une colonne : c est le fait que l etape
+             ultime soit franchie. Le deduire plutot que l enregistrer
+             evite deux verites a tenir d accord. */
+          auZenith: counts?.zenith ?? false,
           tags: relationalTags && relationalTags.length > 0 ? relationalTags : undefined,
         } as Goal;
       });
