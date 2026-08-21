@@ -168,9 +168,15 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   const versLaBase = (v: ValeursLigne) => ({
     name: v.name,
     amount: v.amount,
-    category: v.category,
-    icon_emoji: v.iconEmoji,
-    icon_url: v.iconUrl,
+    /* ?? null PARTOUT, ET PAS SEULEMENT SUR L IMAGE.
+       Le client Supabase OMET les cles a undefined : un champ vide
+       n effacait donc pas la valeur en base, il la laissait
+       intacte. Retirer un logo ne fonctionnait pas pour cette raison,
+       et une categorie ou une emoji retiree se serait tue de la meme
+       facon. Dire null, c est dire « efface ». */
+    category: v.category ?? null,
+    icon_emoji: v.iconEmoji ?? null,
+    icon_url: v.iconUrl ?? null,
     icon_cadre: v.iconCadre ?? null,
     periode_mois: v.periodeMois ?? 1,
     mois_ancre: v.moisAncre ?? null,

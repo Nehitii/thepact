@@ -128,25 +128,45 @@ const FONDS: Record<FondDeMarque, string | null> = {
 };
 
 /**
- * Les proprietes CSS d une plaque. Le composant les pose telles
- * quelles ; la feuille de style s en sert par des variables, ce qui
- * evite d ecrire des styles en ligne pour chaque regle.
+ * Les proprietes CSS d une plaque.
  *
- * L ordre du transform compte : on decale AVANT de zoomer, pour qu un
- * decalage de dix pour cent reste dix pour cent de la plaque quel que
- * soit le zoom — sans quoi le glisser s emballerait a fort
- * grossissement.
+ * DEUX MECANIQUES, PARCE QUE LE DEBORDEMENT N EST PAS LE MEME.
+ *
+ * Une premiere version deplacait l image par un simple transform, dans
+ * les deux modes. Elle avait un defaut serieux : rien ne la bornait au
+ * debordement reel. Un logo carre de deux cents pixels dans une plaque
+ * au format 16/7, en remplissage, ne deborde QUE verticalement — le
+ * pousser horizontalement le sortait a moitie du cadre et laissait du
+ * blanc a cote. Un panoramique qui decouvre du vide est casse.
+ *
+ * En REMPLISSAGE, object-position fait exactement ce travail et se
+ * borne tout seul : ses pourcentages vont de « bord gauche » a « bord
+ * droit », et sur l axe ou l image ne deborde pas ils n ont simplement
+ * aucun effet. On ne peut donc pas decouvrir de vide.
+ *
+ * En AJUSTEMENT, object-position n a aucune marge — l image tient
+ * entiere — et seul le zoom en cree. Le decalage passe alors par un
+ * transform dont l amplitude est multipliee par (zoom - 1) : a zoom 1
+ * il ne bouge rien, ce qui est exact, et a zoom 2 un decalage de
+ * cinquante amene le bord de l image pile sur celui de la plaque.
+ *
+ * Le signe est inverse pour object-position, afin que les deux modes
+ * se pilotent pareil : on glisse l image, elle suit.
  */
 export function styleDuCadre(c: CadreImage, teinte: string): React.CSSProperties {
+  const remplit = c.ajustement === 'remplir';
+  const ampleur = c.zoom / 100 - 1;
   return {
     background: FONDS[c.fond] ?? teinte,
-    '--cadre-ajuste': c.ajustement === 'remplir' ? 'cover' : 'contain',
-    '--cadre-dx': `${c.dx}%`,
-    '--cadre-dy': `${c.dy}%`,
+    '--cadre-ajuste': remplit ? 'cover' : 'contain',
+    '--cadre-pos': remplit ? `${50 - c.dx}% ${50 - c.dy}%` : '50% 50%',
+    '--cadre-decale': remplit
+      ? '0%, 0%'
+      : `${(c.dx * ampleur).toFixed(2)}%, ${(c.dy * ampleur).toFixed(2)}%`,
     '--cadre-zoom': String(c.zoom / 100),
     /* Un logo cale sur les bords a besoin de respirer ; un logo qui
        remplit la plaque, non — la marge y rognerait pour rien. */
-    '--cadre-marge': c.ajustement === 'remplir' ? '0px' : '8px',
+    '--cadre-marge': remplit ? '0px' : '8px',
   } as React.CSSProperties;
 }
 

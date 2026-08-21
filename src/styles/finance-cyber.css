@@ -1592,13 +1592,29 @@
    sens et quel que soit le format du logo. */
 .cy-marque-photo { background: #fff; place-items: stretch; }
 .cy-marque-photo img {
+  /* HORS DU FLUX, SINON C EST ELLE QUI DECIDE DE LA HAUTEUR.
+     En flux, une image participe au dimensionnement de son conteneur :
+     height: 100% ne peut pas se resoudre contre une hauteur qui depend
+     d elle, elle retombe donc sur sa taille naturelle et pousse la
+     plaque. Un logo carre donnait une plaque carree, un logo large une
+     plaque basse — les fiches d une meme rangee n avaient plus la meme
+     tete, et le format 16/7 ne servait a rien.
+
+     Absolue, elle ne pese plus rien : la plaque tient son format, et
+     l image s y ajuste. */
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   /* LES QUATRE VARIABLES VIENNENT DU CADRAGE ENREGISTRE.
      Sans reglage, ce sont les valeurs de repli ci-dessous — un logo
      contenu, centre, sans zoom, avec sa marge. Voir lib/finance/cadre.ts. */
   object-fit: var(--cadre-ajuste, contain);
-  transform: translate(var(--cadre-dx, 0%), var(--cadre-dy, 0%)) scale(var(--cadre-zoom, 1));
+  object-position: var(--cadre-pos, 50% 50%);
+  /* Lordre compte : scale sapplique dabord, translate ensuite et sur
+     la taille NON mise a lechelle — un decalage de dix pour cent reste
+     dix pour cent de la plaque quel que soit le zoom. */
+  transform: translate(var(--cadre-decale, 0%, 0%)) scale(var(--cadre-zoom, 1));
   /* En pixels et non en pourcentage : sur une plaque rectangulaire,
      12% ne vaut pas la meme chose en haut et sur les cotes. */
   padding: var(--cadre-marge, 8px);
@@ -1711,7 +1727,11 @@
   width: 100%;
   height: 100%;
   object-fit: var(--cadre-ajuste, contain);
-  transform: translate(var(--cadre-dx, 0%), var(--cadre-dy, 0%)) scale(var(--cadre-zoom, 1));
+  object-position: var(--cadre-pos, 50% 50%);
+  /* Lordre compte : scale sapplique dabord, translate ensuite et sur
+     la taille NON mise a lechelle — un decalage de dix pour cent reste
+     dix pour cent de la plaque quel que soit le zoom. */
+  transform: translate(var(--cadre-decale, 0%, 0%)) scale(var(--cadre-zoom, 1));
   padding: var(--cadre-marge, 8px);
   /* Sans cela, glisser sur limage declenche le glisser-deposer natif
      du navigateur et le geste est perdu au premier pixel. */
@@ -1884,7 +1904,16 @@
    du cadreur de promettre ce que la fiche affichera. Voir
    FORMAT_PLAQUE dans lib/finance/cadre.ts. */
 .cy-fiche-portrait { position: relative; aspect-ratio: 16 / 7; }
-.cy-fiche-portrait .cy-marque { width: 100%; height: 100%; font-size: 92px; }
+.cy-fiche-portrait .cy-marque {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  /* Les initiales se mesurent en em de la plaque : sur une plaque au
+     format fixe, une taille fixe suffit et reste juste a toute
+     largeur de colonne. */
+  font-size: 92px;
+}
 .cy-fiche-rail { position: absolute; inset: auto 0 0 0; height: 3px; }
 
 .cy-fiche-corps { display: flex; flex-direction: column; gap: 8px; padding: 11px 12px 4px; }

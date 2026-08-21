@@ -34,7 +34,12 @@ export interface ValeursLigne {
   amount: number;
   category?: string;
   iconEmoji?: string;
-  iconUrl?: string;
+  /* NUL EST UNE VALEUR, ET « INDEFINI » N EN EST PAS UNE.
+     Retirer une image ne fonctionnait pas : on envoyait undefined, que
+     le client Supabase OMET de la requete — la colonne n etait donc
+     jamais touchee et l ancien logo restait. Il faut dire null pour
+     effacer, et le type doit le permettre. */
+  iconUrl?: string | null;
   /* Comment l image se pose. Nul quand rien n a ete regle : ecrire le
      defaut partout ferait croire a une intention. */
   iconCadre?: CadreImage | null;
@@ -169,7 +174,7 @@ export function LigneRecurrente({
          a une echeance : pour un echeancier, la part et non le total. */
       amount: estEcheancier ? partsEcheancier[0] : valeur,
       category: categorie || undefined,
-      iconUrl: urlIcone || undefined,
+      iconUrl: urlIcone || null,
       /* Sans image, le cadre ne cadre rien : linscrire laisserait un
          reglage orphelin derriere une ligne qui na plus de logo. */
       iconCadre: urlIcone ? cadreAEnregistrer(cadre) : null,
