@@ -319,8 +319,8 @@ export const DossierMembres = React.memo(function DossierMembres({
     <section className="gd-volet">
       <header className="gd-tete">
         {dynamique
-          ? t("goals.detail.dynamicGroup", "Groupe dynamique")
-          : t("goals.detail.group", "Groupe")}
+          ? t("goals.detail.dynamicGroup", "Constellation vivante")
+          : t("goals.detail.group", "Constellation")}
         <span className="gd-tete-fin">
           <b>{franchis}/{membres.length}</b>
           {membres.length > 1 && (
@@ -365,7 +365,7 @@ export const DossierMembres = React.memo(function DossierMembres({
           );
         })}
         {membres.length === 0 && (
-          <p className="gd-vide">{t("goals.detail.noMembers", "Aucun membre")}</p>
+          <p className="gd-vide">{t("goals.detail.noMembers", "Aucun astre dans cette constellation")}</p>
         )}
       </div>
       {auSeuil && (

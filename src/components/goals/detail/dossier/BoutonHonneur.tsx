@@ -125,7 +125,7 @@ export function BoutonHonneur({ total, onHonorer, onEclat }: Props) {
           onKeyUp={(e) => {
             if (e.key === " " || e.key === "Enter") { e.preventDefault(); relacher(); }
           }}
-          aria-label={t("goals.detail.holdToHonour", "Maintenir pour honorer ce groupe")}
+          aria-label={t("goals.detail.holdToHonour", "Maintenir pour honorer cette constellation")}
         >
           <span className="gh-chevrons" aria-hidden="true"><i /><i /><i /></span>
           <span className="gh-libelle">
@@ -144,7 +144,7 @@ export function BoutonHonneur({ total, onHonorer, onEclat }: Props) {
 
       <p className="gh-note">
         {t("goals.detail.thresholdNote", {
-          defaultValue: "Les {{n}} objectifs du groupe sont franchis.",
+          defaultValue: "Les {{n}} astres de la constellation sont franchis.",
           n: total,
         })}
       </p>

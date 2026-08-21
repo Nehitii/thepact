@@ -76,7 +76,7 @@ const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [
   { valeur: "status", cle: "goals.sort.status", defaut: "Statut" },
   { valeur: "start", cle: "goals.sort.start", defaut: "Date de début" },
   { valeur: "progression", cle: "goals.sort.progress", defaut: "Progression" },
-  { valeur: "super", cle: "goals.sort.super", defaut: "Super" },
+  { valeur: "super", cle: "goals.sort.super", defaut: "Constellation" },
 ];
 
 /* Sous le front, on ne trie plus des objectifs.

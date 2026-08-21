@@ -366,8 +366,8 @@ export default function NewGoal() {
     {
       valeur: "super" as const,
       icone: Crown,
-      nom: t("goals.edit.typeGroup", "Groupe"),
-      quoi: t("goals.new.typeGroupWhat", "Un ensemble d'objectifs"),
+      nom: t("goals.edit.typeGroup", "Constellation"),
+      quoi: t("goals.new.typeGroupWhat", "Des objectifs lus comme un seul"),
     },
   ];
 
@@ -718,7 +718,7 @@ export default function NewGoal() {
               <section className="ge-volet">
                 <header className="ge-tete">
                   <Crown size={12} aria-hidden="true" />
-                  {t("goals.new.members", "Membres")}
+                  {t("goals.new.members", "Astres")}
                   <b>{membresDuGroupe}</b>
                 </header>
                 <div className="ge-corps-volet">
@@ -778,12 +778,12 @@ export default function NewGoal() {
                           onClick={() => setIsDynamicSuper(!isDynamicSuper)}
                         >
                           <Zap size={10} aria-hidden="true" />
-                          {t("goals.new.dynamic", "Groupe vivant")}
+                          {t("goals.new.dynamic", "Constellation vivante")}
                         </button>
                       </div>
                       <p className="ge-aide">
                         {isDynamicSuper
-                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra le groupe.")
+                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra la constellation.")
                           : t("goals.new.dynamicOff", "La règle sert une fois, à la création. Les membres sont ensuite figés.")}
                       </p>
                     </div>

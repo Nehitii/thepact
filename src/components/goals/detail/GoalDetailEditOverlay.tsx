@@ -137,7 +137,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
     : filterGoalsByRule(vivier, editRegle).length;
   const TypeIcone = estGroupe ? Crown : estHabitude ? Sparkles : ListOrdered;
   const typeNom = estGroupe
-    ? t("goals.edit.typeGroup", "Groupe")
+    ? t("goals.edit.typeGroup", "Constellation")
     : estHabitude
       ? t("goals.edit.typeHabit", "Habitude")
       : t("goals.edit.typeNormal", "Objectif ordinaire");
@@ -328,7 +328,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
               <section className="ge-volet">
                 <header className="ge-tete">
                   <Crown size={12} aria-hidden="true" />
-                  {t("goals.new.members", "Membres")}
+                  {t("goals.new.members", "Astres")}
                   <b>{nombreDeMembres}</b>
                 </header>
                 <div className="ge-corps-volet">
@@ -388,12 +388,12 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
                           onClick={() => setEditVivant(!editVivant)}
                         >
                           <Zap size={10} aria-hidden="true" />
-                          {t("goals.new.dynamic", "Groupe vivant")}
+                          {t("goals.new.dynamic", "Constellation vivante")}
                         </button>
                       </div>
                       <p className="ge-aide">
                         {editVivant
-                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra le groupe.")
+                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra la constellation.")
                           : t("goals.new.dynamicOff", "La règle sert une fois, au moment où tu enregistres. Les membres sont ensuite figés.")}
                       </p>
                     </div>
