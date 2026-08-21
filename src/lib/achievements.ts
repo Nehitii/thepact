@@ -137,38 +137,44 @@ export async function trackLogin(userId: string) {
   await checkAchievements(userId);
 }
 
-// Track goal creation
-export async function trackGoalCreated(userId: string, difficulty: string) {
-  const difficultyField = `${difficulty.toLowerCase()}_goals_created`;
-  const { error: error1 } = await supabase.rpc('increment_tracking_counter' as any, {
-    p_user_id: userId, p_field: 'total_goals_created', p_increment: 1
-  });
-  if (!error1) {
-    await supabase.rpc('increment_tracking_counter' as any, {
-      p_user_id: userId, p_field: difficultyField, p_increment: 1
-    });
-  }
+/**
+ * Les compteurs d objectifs et d etapes se lisent, ils ne s ajoutent plus.
+ *
+ * Ils suivaient les evenements : +1 a chaque coche, sans memoire de ce
+ * qui avait deja ete compte. Decocher puis recocher la meme etape la
+ * comptait deux fois, et un objectif acheve autrement que par le bouton
+ * « tout completer » ne comptait jamais. Mesure sur le compte de
+ * reference avant correction : 132 etapes pour 119 faites, 4 objectifs
+ * pour 13 franchis, et les compteurs par palier restes a zero.
+ *
+ * Le serveur les recalcule desormais depuis les objectifs et les etapes
+ * eux-memes — resynchroniser_compteurs_succes(). L appel est idempotent :
+ * le repeter ne change rien, et un ecart se referme au premier passage.
+ * C est ce qui garantit qu un objectif ne vaut qu une fois, quel que
+ * soit le nombre de fois qu on le valide et qu on le devalide.
+ */
+export async function resynchroniserCompteurs(userId: string) {
+  await supabase.rpc('resynchroniser_compteurs_succes' as any);
   await checkAchievements(userId);
+}
+
+// Track goal creation
+export async function trackGoalCreated(userId: string, _difficulty?: string) {
+  await resynchroniserCompteurs(userId);
 }
 
 // Track goal completion
 export async function trackGoalCompleted(userId: string, difficulty: string, createdAt: string, completedAt: string) {
-  const difficultyField = `${difficulty.toLowerCase()}_goals_completed`;
   const created = new Date(createdAt);
   const completed = new Date(completedAt);
   const timeDiff = completed.getTime() - created.getTime();
   const hoursDiff = timeDiff / (1000 * 60 * 60);
   const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
 
-  const { error: error1 } = await supabase.rpc('increment_tracking_counter' as any, {
-    p_user_id: userId, p_field: 'goals_completed_total', p_increment: 1
-  });
-  if (!error1) {
-    await supabase.rpc('increment_tracking_counter' as any, {
-      p_user_id: userId, p_field: difficultyField, p_increment: 1
-    });
-  }
+  await supabase.rpc('resynchroniser_compteurs_succes' as any);
 
+  /* Ces quatre-la se jugent sur le temps mis, pas sur un decompte :
+     elles restent attachees a l instant du franchissement. */
   if (difficulty === 'impossible' && daysDiff < 30) await unlockAchievement(userId, 'cut_through_time');
   if (difficulty === 'extreme' && hoursDiff < 72) await unlockAchievement(userId, 'warping_path');
   if (difficulty === 'extreme' && hoursDiff < 48) await unlockAchievement(userId, 'blood_of_resolve');
@@ -179,10 +185,7 @@ export async function trackGoalCompleted(userId: string, difficulty: string, cre
 
 // Track step completion
 export async function trackStepCompleted(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
-    p_user_id: userId, p_field: 'steps_completed_total', p_increment: 1
-  });
-  await checkAchievements(userId);
+  await resynchroniserCompteurs(userId);
 }
 
 // Track pact creation

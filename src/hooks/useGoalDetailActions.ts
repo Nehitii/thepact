@@ -10,7 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { synchroniserGroupes } from "@/lib/superGoals";
 import { PLAFOND_BRIGADE, recrutable } from "@/lib/brigade";
-import { trackStepCompleted, trackGoalCompleted } from "@/lib/achievements";
+import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/lib/achievements";
 import { toast } from "sonner";
 import type { GoalDetailData, StepData } from "@/hooks/useGoalDetail";
 
@@ -142,6 +142,12 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
                 onClick: () => toggleStep.mutate({ stepId, currentStatus: "completed" }),
               },
             });
+          } else if (userId) {
+            /* Decocher fait retomber les compteurs. Ils se lisent sur
+               les etapes et les objectifs, pas sur le nombre de fois
+               qu on les a coches : c est la seule facon qu un objectif
+               ne vaille qu une fois, quoi qu on fasse ensuite. */
+            setTimeout(() => resynchroniserCompteurs(userId), 0);
           }
         },
       },
@@ -221,6 +227,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
                 onClick: () => toggleHabit.mutate({ dayIndex }),
               },
             });
+          } else if (userId) {
+            /* Decocher un jour peut faire retomber l habitude de
+               « franchie » a « engagee » : le compte d objectifs suit. */
+            setTimeout(() => resynchroniserCompteurs(userId), 0);
           }
         },
       },
