@@ -131,7 +131,11 @@ export default function Finance() {
 
   return (
     <DSPageShell width="lg" padding="tight">
-      <div className="cy">
+      {/* « dark » decrit ce que la page EST : .cy-fond peint un sol
+          noir fixe qui recouvre le viewport, quel que soit le theme du
+          systeme. Sans cette classe, les utilitaires de signal y
+          prendraient leur valeur claire et disparaitraient. */}
+      <div className="cy dark">
         <div className="cy-fond" aria-hidden="true" />
         <div className="cy-balayage" aria-hidden="true" />
 

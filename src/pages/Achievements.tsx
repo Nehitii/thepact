@@ -241,7 +241,7 @@ export default function Achievements() {
               </span>
               <ChevronDown size={16} className="text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-[#0f0f0f] border border-white/10 text-white min-w-[240px] p-2 rounded-2xl shadow-3xl">
+            <DropdownMenuContent className="dark bg-[#0f0f0f] border border-white/10 text-white min-w-[240px] p-2 rounded-2xl shadow-3xl">
               <DropdownMenuItem onClick={() => setSelectedRarity("all")} className="font-orbitron ds-t-label uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1">
                 <Check className={cn("mr-3 h-4 w-4 text-primary", selectedRarity === "all" ? "opacity-100" : "opacity-0")} />
                 {t("achievements.showAll")}

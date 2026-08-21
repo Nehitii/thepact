@@ -468,7 +468,7 @@ export default function Legal() {
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
                 placeholder="Type DELETE to confirm"
-                className="bg-[#0d1a2d]/90 border-red-500/30 text-white placeholder:text-[#6b9ec4]/50 font-mono"
+                className="dark bg-[#0d1a2d]/90 border-red-500/30 text-white placeholder:text-[#6b9ec4]/50 font-mono"
               />
             </AlertDialogDescription>
           </AlertDialogHeader>

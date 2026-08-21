@@ -387,7 +387,7 @@ export const AppSidebar = memo(function AppSidebar() {
               <div className="absolute -inset-3 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
               <div
                 className={cn(
-                  "relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]",
+                  "dark relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]",
                   mini ? "w-10 h-10" : "w-12 h-12",
                 )}
                 style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}
@@ -540,7 +540,7 @@ export const AppSidebar = memo(function AppSidebar() {
         </nav>
 
         {/* ─── TERMINAL FOOTER (PARAMÈTRES RESTAURÉS) ─── */}
-        <div className={cn("mt-auto relative bg-[#0a0a0c] border-t border-primary/30", mini ? "p-1.5" : "p-3")}>
+        <div className={cn("dark mt-auto relative bg-[#0a0a0c] border-t border-primary/30", mini ? "p-1.5" : "p-3")}>
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_10px_hsl(var(--primary)/0.8)]" />
 
           <DropdownMenu>
@@ -601,7 +601,7 @@ export const AppSidebar = memo(function AppSidebar() {
             <DropdownMenuContent
               align={mini ? "start" : "end"}
               side="right"
-              className="w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_hsl(var(--primary)/0.15)] rounded-none backdrop-blur-xl p-0"
+              className="dark w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_hsl(var(--primary)/0.15)] rounded-none backdrop-blur-xl p-0"
               sideOffset={16}
             >
               {/* Header du dropdown */}

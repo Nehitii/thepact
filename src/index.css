@@ -224,6 +224,17 @@ All colors MUST be HSL.
     /* L encre secondaire et l accent d etat : mêmes raisons que
        ci-dessus, un cran plus bas dans la hiérarchie. */
     --encre-second: 210 34% 30%;
+
+    /* LES SIGNAUX, EN THÈME CLAIR.
+       Même teinte que le néon du thème sombre, luminosité descendue
+       jusqu'à passer 4,5 sur le sol ET sur une carte blanche. L'ambre
+       et le jaune, teintes les plus lumineuses du cercle, descendent
+       plus bas que les autres — c'est le prix de leur éclat. */
+    --signal-ambre:  38 96% 30%;
+    --signal-vert:   160 92% 25%;
+    --signal-cyan:   192 95% 27%;
+    --signal-jaune:  48 96% 26%;
+    --signal-rouge:  352 85% 42%;
     --accent-ambre: 35 100% 27%;
 
     /* HUD Card Surfaces */
@@ -380,6 +391,15 @@ All colors MUST be HSL.
     /* Reprises des hexadécimaux qui étaient en dur : #cfe4f5 et
        #ffc53d. Le thème sombre ne bouge pas. */
     --encre-second: 207 65% 89%;
+
+    /* En sombre, les signaux reprennent exactement les valeurs
+       Tailwind qui étaient écrites en dur : amber-400, emerald-400,
+       cyan-400, yellow-400, rose-400. Rien ne bouge. */
+    --signal-ambre:  43 96% 56%;
+    --signal-vert:   158 64% 52%;
+    --signal-cyan:   187 85% 53%;
+    --signal-jaune:  54 97% 62%;
+    --signal-rouge:  351 95% 71%;
     --accent-ambre: 42 100% 62%;
 
     /* HUD Card Surfaces - Deep Panels */
@@ -1421,4 +1441,28 @@ html body[data-scroll-locked] {
   overflow: visible !important;
   position: static !important;
   top: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES UTILITAIRES DE SIGNAL SUIVENT LE THÈME
+
+   Cent soixante et onze fois dans soixante-neuf fichiers, l app écrit
+   text-amber-400, text-emerald-400, text-cyan-400. Sur du noir ils
+   brillent ; sur le sol clair ils tombent entre 1,1 et 1,7 — c est
+   ce qui rendait quatre-vingt-seize textes invisibles.
+
+   On ne réécrit pas les cent soixante et onze appels : on redéfinit ce
+   que la classe veut dire. En sombre elle garde sa valeur Tailwind
+   d origine ; en clair elle prend le signal transposé.
+
+   Ceci n est SÛR que parce que toute surface restant noire déclare
+   « dark » — sans quoi ces mêmes classes deviendraient illisibles à
+   l intérieur de la barre latérale ou de la page finance.
+   ═══════════════════════════════════════════════════════════════ */
+:root:not(.dark) {
+  .text-amber-400, .text-amber-300 { color: hsl(var(--signal-ambre)); }
+  .text-emerald-400, .text-emerald-300, .text-green-400 { color: hsl(var(--signal-vert)); }
+  .text-cyan-400, .text-cyan-300, .text-sky-400 { color: hsl(var(--signal-cyan)); }
+  .text-yellow-400, .text-yellow-300, .text-lime-400 { color: hsl(var(--signal-jaune)); }
+  .text-rose-400, .text-red-400, .text-pink-400, .text-fuchsia-400 { color: hsl(var(--signal-rouge)); }
 }
