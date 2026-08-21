@@ -2843,3 +2843,23 @@
   .cy-aff-outils { grid-column: 3 / -1; justify-content: flex-end; }
   .cy-aff-filigrane { width: 108px; height: 108px; }
 }
+
+/* ── LE REFUS DE SAISIE ──
+   Un bouton grise sans explication laisse chercher ce qui cloche, et
+   la premiere hypothese est rarement la bonne. Le message se pose au
+   plus pres du bouton bloque. */
+.cy-reg-refus {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 16px;
+  font-family: var(--cy-mono);
+  font-size: max(10px, 0.625rem);
+  line-height: 1.55;
+  letter-spacing: 0.4px;
+  color: var(--cy-jaune);
+  background: color-mix(in srgb, var(--cy-jaune) 7%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--cy-jaune) 28%, transparent);
+}
+.cy-reg-refus svg { width: 14px; height: 14px; flex-shrink: 0; }

@@ -1226,6 +1226,16 @@
       "surN": "sur {{n}}",
       "reste": "{{n}} ligne(s) non cochée(s) — elles ne comptent pas dans le total.",
       "dejaValide": "Ce mois était déjà validé — valider à nouveau le corrigera."
+    },
+    "garde": {
+      "montantVide": "Il manque le montant.",
+      "montantIllisible": "Ce montant ne se lit pas.",
+      "montantNegatif": "Un montant ne peut pas être négatif — c’est la colonne qui dit le sens.",
+      "montantNul": "Une ligne à zéro n’a pas d’effet. Désactive-la plutôt que de la mettre à zéro.",
+      "montantEnorme": "Au-delà de {{max}}, c’est sûrement une faute de frappe.",
+      "nomVide": "Il manque le nom.",
+      "nomTropLong": "Le nom dépasse {{nomMax}} caractères.",
+      "tropDeLignes": "Maximum {{lignesMax}} lignes par bloc."
     }
   },
   "health": {

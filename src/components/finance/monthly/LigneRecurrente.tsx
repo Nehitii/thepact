@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Tag, Type, Coins, X, Repeat, CalendarClock, Layers } from 'lucide-react';
+import { Check, Tag, Type, Coins, X, Repeat, CalendarClock, Layers, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -9,6 +9,7 @@ import { getCategoryLabel, type FinanceCategory } from '@/lib/financeCategories'
 import { CadreurDImage } from '../CadreurDImage';
 import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/lib/finance/cadre';
 import { couleurDe } from '@/lib/finance/marque';
+import { lireNom, lireMontant, direLeRefus, NOM_MAX } from '@/lib/finance/garde';
 import { SelecteurDeMois } from './SelecteurDeMois';
 import { moisDeChute, motifDepuisMois } from '@/lib/finance/cadence';
 import type { FinancialItem } from '@/types/finance';
@@ -147,12 +148,25 @@ export function LigneRecurrente({
   const motif = motifDepuisMois(moisChoisis);
   const nEcheances = Math.max(2, Math.min(60, parseInt(nbEcheances, 10) || 2));
 
-  const valeur = parseFloat(montant.replace(',', '.'));
-  /* Un motif irregulier ne s enregistre pas : il ne saurait pas se
-     repeter l annee suivante. Le bouton reste donc bloque, et la
+  /* LES MEMES BORNES QUE PARTOUT AILLEURS.
+     Les regles vivaient ici, et avaient donc derive : la correction
+     « Desormais » du parcours ecrivait dans la meme colonne en
+     acceptant zero, et rien ne bornait le haut — une faute de frappe a
+     sept zeros passait, puis faussait l horizon et l historique. Voir
+     lib/finance/garde.ts, et la migration qui pose les memes bornes en
+     base. */
+  const lectureNom = lireNom(nom);
+  const lectureMontant = lireMontant(montant);
+  const valeur = lectureMontant.valeur ?? NaN;
+
+  /* Un motif irregulier ne s enregistre pas non plus : il ne saurait
+     pas se repeter l annee suivante. Le bouton reste bloque, et la
      grille propose juste au-dessus de quoi le rattraper en un clic. */
-  const valide = nom.trim().length > 0 && Number.isFinite(valeur) && valeur > 0
-    && (estEcheancier || motif !== null);
+  const valide = !lectureNom.raison && !lectureMontant.raison && (estEcheancier || motif !== null);
+
+  /* Le refus se dit, il ne se devine pas. Un bouton grise sans raison
+     laisse chercher ce qui cloche. */
+  const refus = lectureNom.raison ?? (montant.trim() !== '' ? lectureMontant.raison : null);
 
   /* L apercu de l echeancier : ce qui sera reellement preleve, mois
      par mois. Deux cents euros en trois fois ne tombent pas juste — la
@@ -167,9 +181,9 @@ export function LigneRecurrente({
   })();
 
   const enregistrer = async () => {
-    if (!valide || enCours) return;
+    if (!valide || enCours || !lectureNom.valeur) return;
     await onEnregistrer({
-      name: nom.trim(),
+      name: lectureNom.valeur,
       /* Ce qu on enregistre dans « amount », c est toujours ce qui part
          a une echeance : pour un echeancier, la part et non le total. */
       amount: estEcheancier ? partsEcheancier[0] : valeur,
@@ -263,6 +277,7 @@ export function LigneRecurrente({
                 type="text"
                 className="cy-saisie"
                 value={nom}
+                maxLength={NOM_MAX}
                 onChange={(e) => setNom(e.target.value)}
                 placeholder={t('finance.recurring.namePlaceholder')}
                 autoComplete="off"
@@ -416,6 +431,16 @@ export function LigneRecurrente({
             />
           </div>
         </div>
+
+        {/* LE REFUS SE DIT, IL NE SE DEVINE PAS.
+            Un bouton grise sans explication laisse chercher ce qui
+            cloche — et la premiere hypothese est rarement la bonne. */}
+        {refus && (
+          <p className="cy-reg-refus" role="status">
+            <AlertTriangle aria-hidden="true" />
+            {t(direLeRefus(refus).cle, direLeRefus(refus).valeurs)}
+          </p>
+        )}
 
         <footer className="cy-reg-pied">
           <button type="button" className="cy-reg-annuler" onClick={() => onOuvert(false)}>

@@ -13,6 +13,7 @@ import {
   useDeleteRecurringIncome,
 } from '@/hooks/useFinance';
 import { totalDuMois, provisionMensuelle } from '@/lib/finance/cadence';
+import { placeDisponible, LIGNES_MAX } from '@/lib/finance/garde';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 import { EcheancesParticulieres } from './EcheancesParticulieres';
 import type { FinancialItem } from '@/types/finance';
@@ -137,13 +138,13 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   });
 
   const handleAddExpense = async (v: ValeursLigne) => {
-    if (expenses.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
+    if (placeDisponible(expenses.length).raison) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
     try { await addExpense.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.expenseAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
   const handleAddIncome = async (v: ValeursLigne) => {
-    if (income.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
+    if (placeDisponible(income.length).raison) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
     try { await addIncome.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.incomeAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };

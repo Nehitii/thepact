@@ -1226,6 +1226,16 @@
       "surN": "of {{n}}",
       "reste": "{{n}} line(s) left unticked — they are not counted in the total.",
       "dejaValide": "This month was already closed — closing again will correct it."
+    },
+    "garde": {
+      "montantVide": "The amount is missing.",
+      "montantIllisible": "That amount can’t be read.",
+      "montantNegatif": "An amount can’t be negative — the column carries the sign.",
+      "montantNul": "A line at zero does nothing. Deactivate it rather than zeroing it.",
+      "montantEnorme": "Above {{max}}, that is almost certainly a typo.",
+      "nomVide": "The name is missing.",
+      "nomTropLong": "The name exceeds {{nomMax}} characters.",
+      "tropDeLignes": "At most {{lignesMax}} lines per block."
     }
   },
   "health": {

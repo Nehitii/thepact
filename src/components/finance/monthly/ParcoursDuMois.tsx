@@ -48,6 +48,7 @@ import {
 } from '@/hooks/useFinance';
 import { usePointages, useEcrirePointage, useEffacerPointage } from '@/hooks/usePointages';
 import { montantDuMois, tombeEn } from '@/lib/finance/cadence';
+import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/lib/finance/garde';
 import { MarqueCreancier } from './MarqueCreancier';
 import type { FinancialItem } from '@/types/finance';
 
@@ -151,15 +152,31 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     setSaisie(String(r.reel));
   };
 
-  const valeurSaisie = () => {
-    const v = parseFloat(saisie.replace(',', '.'));
-    return Number.isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : null;
+  /* DEUX LECTURES, ET LA DIFFERENCE EST VOULUE.
+   *
+   * Un POINTAGE a zero a un sens, et un bon : « ce mois-ci, ca n est
+   * pas parti ». L interdire obligerait a decocher la ligne, ce qui ne
+   * dit pas la meme chose — decoche veut dire « je n ai pas verifie ».
+   *
+   * Une LIGNE RECURRENTE a zero n en a pas : elle ne coute rien, ne
+   * rapporte rien, et encombre la liste. « Desormais » ecrit dans cette
+   * colonne-la, et doit donc etre plus severe que « Ce mois-ci ». Les
+   * deux boutons ne partagent pas la meme regle, et c est normal :
+   * ils n ecrivent pas au meme endroit. */
+  const pourLeMois = () => lireMontant(saisie, { zeroAdmis: true });
+  const pourLaRecurrence = () => lireMontant(saisie);
+
+  const refuser = (raison: Parameters<typeof direLeRefus>[0]) => {
+    const { cle, valeurs } = direLeRefus(raison);
+    toast.error(t(cle, valeurs));
   };
 
   /** Corriger ce mois-ci : le pointage porte le vrai montant. */
   const corrigerLeMois = async (r: Rang, genre: Etape) => {
-    const v = valeurSaisie();
-    if (v == null || genre === 'bilan') return;
+    const lu = pourLeMois();
+    if (lu.raison) return refuser(lu.raison);
+    const v = lu.valeur;
+    if (genre === 'bilan') return;
     await ecrire.mutateAsync({
       mois, ligne_id: r.item.id, genre,
       nom: r.item.name, montant_prevu: r.prevu, montant_reel: v, pointe: true,
@@ -169,8 +186,10 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
 
   /** Corriger desormais : la recurrence change, et ce mois avec elle. */
   const corrigerDesormais = async (r: Rang, genre: Etape) => {
-    const v = valeurSaisie();
-    if (v == null || genre === 'bilan') return;
+    const lu = pourLaRecurrence();
+    if (lu.raison) return refuser(lu.raison);
+    const v = lu.valeur;
+    if (genre === 'bilan') return;
     const maj = genre === 'income' ? majRevenu : majDepense;
     await maj.mutateAsync({ id: r.item.id, amount: v });
     await ecrire.mutateAsync({
@@ -183,8 +202,20 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
 
   const ajouter = async (genre: Etape) => {
     if (genre === 'bilan') return;
-    const v = parseFloat(montantAjout.replace(',', '.'));
-    if (!nomAjout.trim() || !Number.isFinite(v) || v <= 0) return;
+
+    /* LE PLAFOND VAUT ICI AUSSI.
+       Il n etait verifie qu a l ajout depuis un bloc : on pouvait donc
+       depasser trente lignes en passant par le parcours, ce qui n est
+       pas un choix mais un oubli. */
+    const place = placeDisponible((genre === 'income' ? revenus : depenses).length);
+    if (place.raison) return refuser(place.raison);
+
+    const luNom = lireNom(nomAjout);
+    if (luNom.raison) return refuser(luNom.raison);
+    const luMontant = lireMontant(montantAjout);
+    if (luMontant.raison) return refuser(luMontant.raison);
+    const v = luMontant.valeur;
+
     const creer = genre === 'income' ? ajoutRevenu : ajoutDepense;
     /* Sans identifiant, useUpsert insere et rend la ligne creee : son
        id sert immediatement a pointer le mois en cours. Mensuelle par
@@ -192,8 +223,8 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
        presque toujours un prelevement qui reviendra — c est tout le
        sens de « et tous les mois ». */
     const cree = await creer.mutateAsync({
-      name: nomAjout.trim(),
-      amount: Math.round(v * 100) / 100,
+      name: luNom.valeur,
+      amount: v,
       periode_mois: 1,
       mois_ancre: null,
       is_active: true,
@@ -201,8 +232,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     if (cree?.id) {
       await ecrire.mutateAsync({
         mois, ligne_id: cree.id, genre,
-        nom: nomAjout.trim(), montant_prevu: Math.round(v * 100) / 100,
-        montant_reel: Math.round(v * 100) / 100, pointe: true,
+        nom: luNom.valeur, montant_prevu: v, montant_reel: v, pointe: true,
       });
     }
     setNomAjout(''); setMontantAjout(''); setAjout(null);
@@ -328,10 +358,10 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
                         </label>
                         {/* Les deux portees, dites en toutes lettres.
                             Deviner serait fautif dans les deux sens. */}
-                        <button type="button" onClick={() => corrigerLeMois(r, genreCourant)} disabled={valeurSaisie() == null}>
+                        <button type="button" onClick={() => corrigerLeMois(r, genreCourant)} disabled={pourLeMois().raison !== null}>
                           {t('finance.parcours.ceMoisSeulement', 'Ce mois-ci')}
                         </button>
-                        <button type="button" className="cy-parc-desormais" onClick={() => corrigerDesormais(r, genreCourant)} disabled={valeurSaisie() == null}>
+                        <button type="button" className="cy-parc-desormais" onClick={() => corrigerDesormais(r, genreCourant)} disabled={pourLaRecurrence().raison !== null}>
                           {t('finance.parcours.desormais', 'Désormais')}
                         </button>
                         <button type="button" className="cy-parc-annuler" onClick={() => setEnCorrection(null)} aria-label={t('common.cancel')}>
