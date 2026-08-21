@@ -11,6 +11,10 @@ interface SuperGoalBookmarkCardProps {
   name: string;
   childCount: number;
   completedCount: number;
+  /** Le groupe a ete honore — le geste, pas le seuil. */
+  honore?: boolean;
+  /** Tous les membres sont franchis, le geste reste a faire. */
+  pret?: boolean;
   isDynamic: boolean;
   rule?: SuperGoalRule | null;
   difficulty?: string;
@@ -56,7 +60,7 @@ const getDiffLabel = (diff: string, customName?: string): string => {
 };
 
 export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
-  id, name, childCount, completedCount, isDynamic, rule,
+  id, name, childCount, completedCount, honore, pret, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalBookmarkCardProps) {
@@ -77,9 +81,9 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
       difficultyColor: color,
       intensity: getDifficultyIntensity(diff),
       ruleLabel: label,
-      isComplete: completedCount === childCount && childCount > 0,
+      isComplete: !!honore,
     };
-  }, [childCount, completedCount, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
+  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
 
   const getTierBackground = () => {
     switch (difficulty) {
@@ -245,7 +249,18 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
               </div>
             )}
 
-            {ruleLabel && !isComplete && (
+            {/* Tous les membres sont franchis, le geste reste a faire. */}
+            {pret && (
+              <div
+                className="flex items-center justify-center gap-1 text-xs font-rajdhani mt-1"
+                style={{ color: difficultyColor }}
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                <span>À honorer</span>
+              </div>
+            )}
+
+            {ruleLabel && !isComplete && !pret && (
               <div className="ds-t-label text-center text-gray-500 font-mono truncate mt-1">{ruleLabel}</div>
             )}
           </div>

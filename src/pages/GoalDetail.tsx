@@ -34,7 +34,7 @@ import {
   SuperGoalEditModal, computeSuperGoalProgress,
   type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/components/goals/super";
-import { membresDuGroupe, estFranchi, synchroniserGroupes } from "@/lib/superGoals";
+import { membresDuGroupe, estFranchi, estPretAHonorer, synchroniserGroupes } from "@/lib/superGoals";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
@@ -390,7 +390,14 @@ export default function GoalDetail() {
           total={totalStepsCount}
           uniteAvancement={uniteAvancement}
           libellePalier={getDifficultyLabel(goal.difficulty)}
-          libelleEtat={getStatusLabel(goal.status)}
+          /* Un groupe au seuil n'est pas « en cours » : tout est fait,
+             il n'attend que le geste. La fiche le nomme, comme le
+             registre et les cartes. */
+          libelleEtat={
+            estPretAHonorer(goal, allGoals)
+              ? t("goals.detail.toHonour", "À honorer")
+              : getStatusLabel(goal.status)
+          }
           etiquettes={displayTags}
           estHonore={isCompleted}
           partageActif={!!social.sharing}

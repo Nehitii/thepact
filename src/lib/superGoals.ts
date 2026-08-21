@@ -44,6 +44,31 @@ export interface ObjectifPourGroupe {
 export const estFranchi = (g: { status?: string | null }): boolean =>
   g.status === "fully_completed" || g.status === "validated";
 
+/**
+ * PRET A HONORER — l etat entre « en cours » et « franchi ».
+ *
+ * Depuis qu un groupe s honore a la main, il existe un moment ou tout
+ * le travail est fait et ou il ne reste plus que le geste : maintenir
+ * le bouton. Ce moment est une information — c est celui ou il faut
+ * aller chercher son du — et il n avait pas de nom. Faute de nom, il
+ * se confondait avec « en cours », et le geste restait invisible
+ * depuis la liste.
+ *
+ * Seuls les groupes connaissent cet etat. Un objectif ordinaire passe
+ * a « franchi » de lui-meme des que sa derniere etape est cochee : il
+ * n attend rien de personne.
+ */
+export function estPretAHonorer<T extends ObjectifPourGroupe>(
+  groupe: ObjectifPourGroupe,
+  tous: T[],
+): boolean {
+  if (groupe.goal_type !== "super") return false;
+  if (estFranchi(groupe)) return false;
+  const membres = membresDuGroupe(groupe, tous);
+  // Un groupe vide n attend pas un geste : il attend des membres.
+  return membres.length > 0 && membres.every(estFranchi);
+}
+
 /** Membres d un groupe : liste declaree, ou regle pour un groupe automatique. */
 /* Le groupe et le vivier n ont pas forcement le meme type : la fiche
    detaillee tient un objectif complet et une liste allegee. Seul le

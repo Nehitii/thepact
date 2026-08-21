@@ -2910,6 +2910,23 @@
   stroke-width: 3.4;
   stroke-linecap: square;
 }
+/* PRET A HONORER — la meme bande, en negatif.
+   Depuis qu'un groupe s'honore a la main, il existe un etat entre
+   « en cours » et « honore » : tous les membres sont franchis, le
+   geste reste a faire. Plutot qu'un troisieme signe a apprendre, on
+   reprend la bande d'honneur — meme place, meme silhouette biseautee
+   — et on en inverse la densite : sombre a encre vive au lieu de
+   pleine a encre sombre. De loin, l'une est une barre allumee et
+   l'autre une barre eteinte ; de pres, le mot tranche.
+   Un contour aurait ete coupe par le clip-path sur les deux biseaux :
+   le fond, lui, epouse la forme exactement. */
+.verre-honore.est-pret {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, #05080f);
+  box-shadow: none;
+}
+.verre-honore.est-pret svg { stroke: var(--accent); }
+
 /* La regle .verre--honore masquait la jauge ; celle-ci n'est plus rendue
    du tout dans ce cas, la regle n'a donc plus d'objet. L'image garde en
    revanche sa pleine intensite. */
@@ -3045,6 +3062,7 @@
 }
 .rg-etat--attente { color: var(--cp-texte-doux); }
 .rg-etat--encours { color: var(--cp-cyan); }
+.rg-etat--pret    { color: #ffc53d; }
 .rg-etat--honore  { color: #00ff88; }
 
 .rg-focus {

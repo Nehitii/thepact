@@ -18,6 +18,7 @@ import { GoalsPagination } from "@/components/goals/GoalsPagination";
 import { GoalsRegistre } from "@/components/goals/GoalsRegistre";
 import { FrontListe } from "@/components/front/FrontListe";
 import { useEtapesOuvertes } from "@/hooks/useEtapesOuvertes";
+import { estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import type { DisplayMode, GoalTab } from "@/hooks/useGoalFilters";
 
@@ -102,7 +103,7 @@ export function GoalsList({
   };
 
   const renderGoalCard = (goal: Goal) => {
-    const isCompleted = goal.status === "fully_completed" || goal.status === "validated";
+    const isCompleted = estFranchi(goal);
 
     // Super Goal
     if (goal.goal_type === "super") {
@@ -121,6 +122,8 @@ export function GoalsList({
             name={goal.name}
             childCount={childGoals.length}
             completedCount={completedChildCount}
+            honore={isCompleted}
+            pret={estPretAHonorer(goal, allGoals)}
             isDynamic={goal.is_dynamic_super || false}
             rule={goal.super_goal_rule as SuperGoalRule | undefined}
             difficulty={goal.difficulty}

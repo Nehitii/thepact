@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useState } from "react";
 import { ChevronRight, Crown, Lock, Star } from "lucide-react";
 import { getStatusLabel } from "@/lib/goalConstants";
-import { membresDuGroupe, estFranchi } from "@/lib/superGoals";
+import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
 
@@ -77,9 +77,18 @@ function avancement(g: Goal, membres?: Goal[]): { faits: number; total: number; 
   return { faits, total, pct: total > 0 ? Math.min(100, Math.round((faits / total) * 100)) : 0 };
 }
 
-type Etat = "attente" | "encours" | "honore";
-function etatDe(g: Goal): Etat {
+/* Quatre etats, et non trois.
+ *
+ * Un groupe dont tous les membres sont franchis n'est pas « en
+ * cours » : il n'attend plus de travail, il attend un geste. Confondre
+ * les deux rendait ce moment invisible dans la seule vue qui affiche
+ * un etat en toutes lettres. Le vivier n'est demande que pour cette
+ * question — les appels qui portent sur un objectif ordinaire s'en
+ * passent, il ne les concerne pas. */
+type Etat = "attente" | "encours" | "pret" | "honore";
+function etatDe(g: Goal, tous?: Goal[]): Etat {
   if (g.status === "fully_completed" || g.status === "validated") return "honore";
+  if (tous && estPretAHonorer(g, tous)) return "pret";
   if (g.status === "in_progress") return "encours";
   return "attente";
 }
@@ -199,7 +208,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
     const t = teinte(g, customDifficultyColor);
     const membres = g.goal_type === "super" ? membresDuGroupe(g, allGoals) : undefined;
     const av = avancement(g, membres);
-    const etat = etatDe(g);
+    const etat = etatDe(g, allGoals);
     const estOuvert = ouvert === g.id;
     // Un objectif sans etape et un groupe sans membre n'ont rien a deplier.
     const deployable = g.goal_type === "super" ? (membres?.length ?? 0) > 0 : av.total > 0;
@@ -250,7 +259,9 @@ export const GoalsRegistre = memo(function GoalsRegistre({
             ))}
           </span>
           <span className="rg-xp">{g.potential_score ?? 0}</span>
-          <span className={`rg-etat rg-etat--${etat}`}>{getStatusLabel(g.status || "not_started")}</span>
+          <span className={`rg-etat rg-etat--${etat}`}>
+            {etat === "pret" ? "À honorer" : getStatusLabel(g.status || "not_started")}
+          </span>
           <button
             type="button"
             className={`rg-focus${g.is_focus ? " active" : ""}`}

@@ -9,6 +9,10 @@ interface SuperGoalGridCardProps {
   name: string;
   childCount: number;
   completedCount: number;
+  /** Le groupe a ete honore — le geste, pas le seuil. */
+  honore?: boolean;
+  /** Tous les membres sont franchis, le geste reste a faire. */
+  pret?: boolean;
   isDynamic: boolean;
   rule?: SuperGoalRule | null;
   difficulty?: string;
@@ -43,7 +47,7 @@ const getDiffLabel = (diff: string, customName?: string): string => {
 };
 
 export const SuperGoalGridCard = memo(function SuperGoalGridCard({
-  id, name, childCount, completedCount, isDynamic, rule,
+  id, name, childCount, completedCount, honore, pret, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalGridCardProps) {
@@ -61,7 +65,18 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
     return { progress: prog, theme: t, ruleLabel: label };
   }, [childCount, completedCount, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
 
-  const isComplete = completedCount === childCount && childCount > 0;
+  /* Trois etats, et non deux.
+   *
+   * Un groupe s'honore a la main depuis qu'on l'a decide. Celui dont
+   * tous les membres sont franchis n'est donc pas honore : il est pret
+   * a l'etre, et c'est une information — c'est le moment d'aller le
+   * chercher. La carte le disait honore d'office, ce qui rendait le
+   * geste invisible et contredisait la liste.
+   *
+   * Les deux etats arrivent calcules : estPretAHonorer() en est la
+   * seule definition, partagee avec le registre et le filtre.
+   */
+  const isComplete = !!honore;
 
   const cssVars = {
     "--accent": theme.color,
@@ -144,6 +159,13 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             <span className="verre-honore">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
               HONORÉ
+            </span>
+          ) : pret ? (
+            /* La meme bande, evidee : la forme est la, elle attend
+               d'etre remplie. */
+            <span className="verre-honore est-pret">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
+              À HONORER
             </span>
           ) : (
             <div className="verre-bas">

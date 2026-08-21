@@ -6,7 +6,7 @@
  */
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Goal } from "@/hooks/useGoals";
-import { filterGoalsByRule, type SuperGoalRule } from "@/components/goals/super/types";
+import { estFranchi } from "@/lib/superGoals";
 import { brigadeDe } from "@/lib/brigade";
 
 export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression" | "super_first" | "super_last";
@@ -192,50 +192,26 @@ export function useGoalFilters(goals: Goal[]) {
   }, [goals, searchQuery, hideSuperGoals]);
 
   const buckets = useMemo(() => {
-    /* Un super-objectif ne porte pas son propre achevement.
+    /* Un groupe est franchi quand on l'a honore, pas quand ses membres
+     * le sont.
      *
-     * Son champ status reste a "not_started" quoi qu'il arrive : ce qui le
-     * termine, c'est que TOUS les objectifs qu'il contient le soient. Les
-     * cartes le savent deja — elles affichent la bande HONORÉ des que le
-     * compte atteint son total — mais le filtre, lui, lisait le status
-     * brut. Un groupe entierement honore se retrouvait donc dans
-     * "Actifs", en contradiction avec sa propre carte.
+     * Ce filtre deduisait l'achevement d'un groupe de celui de ses
+     * enfants, parce que son status restait alors bloque a
+     * "not_started" et ne disait rien. Ce n'est plus le cas : un groupe
+     * suit desormais ses compteurs, et ne passe a "fully_completed" que
+     * par le geste de l'utilisateur. Son status dit donc la verite, et
+     * la deduction est devenue un mensonge — elle rangeait dans
+     * "Termines" un groupe que personne n'avait honore. C'est ainsi
+     * qu'un onglet annoncait 14 acheves pour 13 objectifs franchis.
      *
-     * On calcule ici le meme achevement que les cartes, a partir des
-     * enfants, pour que la liste et la carte disent la meme chose.
+     * Un groupe se lit maintenant comme n'importe quel objectif.
      */
-    const parId = new Map(goals.map((g) => [g.id, g]));
-    const estTermine = (g: Goal) => g.status === "fully_completed" || g.status === "validated";
-
-    const acheve = (g: Goal): boolean => {
-      if (g.goal_type !== "super") return estTermine(g);
-
-      // Un groupe dynamique n'a pas de liste d'enfants : ses membres sont
-      // calcules par sa regle. On applique la meme regle que les cartes,
-      // sinon un groupe automatique entierement honore resterait actif.
-      const sg = g as any;
-      const enfants: Goal[] = sg.is_dynamic_super && sg.super_goal_rule
-        ? filterGoalsByRule(
-            goals.filter((x) => x.id !== g.id && x.goal_type !== "super"),
-            sg.super_goal_rule as SuperGoalRule,
-          )
-        : (((sg.child_goal_ids || []) as string[])
-            .map((id) => parId.get(id))
-            .filter(Boolean) as Goal[]);
-
-      // Un groupe sans enfant n'est pas "termine" : il est vide. Le ranger
-      // dans les acheves le ferait disparaitre de la vue ou on peut
-      // encore le remplir.
-      if (enfants.length === 0) return false;
-      return enfants.every(estTermine);
-    };
-
-    const completed = filtered.filter(acheve);
+    const completed = filtered.filter(estFranchi);
     const idsTermines = new Set(completed.map((g) => g.id));
     const active = filtered.filter((g) => !idsTermines.has(g.id) && g.status !== "cancelled");
 
     return { all: filtered, active, completed };
-  }, [filtered, goals]);
+  }, [filtered]);
 
   const currentBucket = buckets[activeTab];
   const sorted = useMemo(() => sortGoals(currentBucket, sortBy, sortDirection), [currentBucket, sortBy, sortDirection]);

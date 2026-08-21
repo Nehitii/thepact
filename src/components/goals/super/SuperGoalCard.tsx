@@ -9,6 +9,10 @@ interface SuperGoalCardProps {
   name: string;
   childCount: number;
   completedCount: number;
+  /** Le groupe a ete honore — le geste, pas le seuil. */
+  honore?: boolean;
+  /** Tous les membres sont franchis, le geste reste a faire. */
+  pret?: boolean;
   isDynamic: boolean;
   rule?: SuperGoalRule | null;
   difficulty?: string;

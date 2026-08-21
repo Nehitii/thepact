@@ -9,6 +9,10 @@ interface SuperGoalBarCardProps {
   name: string;
   childCount: number;
   completedCount: number;
+  /** Le groupe a ete honore — le geste, pas le seuil. */
+  honore?: boolean;
+  /** Tous les membres sont franchis, le geste reste a faire. */
+  pret?: boolean;
   isDynamic: boolean;
   rule?: SuperGoalRule | null;
   difficulty?: string;
@@ -44,7 +48,7 @@ const getDiffLabel = (difficulty: string, customName: string): string => {
 };
 
 export const SuperGoalBarCard = memo(function SuperGoalBarCard({
-  id, name, childCount, completedCount, isDynamic, rule,
+  id, name, childCount, completedCount, honore, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalBarCardProps) {
@@ -65,9 +69,9 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
       progressPercent: prog,
       intensity: getDifficultyIntensity(diff),
       ruleLabel: label,
-      isComplete: completedCount === childCount && childCount > 0,
+      isComplete: !!honore,
     };
-  }, [childCount, completedCount, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
+  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
 
   const cssVars = {
     "--accent": theme.color,
