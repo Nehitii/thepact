@@ -6,7 +6,23 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0",
+    /* LE SERVEUR DE DEV N EST PLUS OFFERT AU RESEAU.
+     *
+     * Il ecoutait sur 0.0.0.0, donc sur toutes les interfaces : n importe
+     * quelle machine du meme reseau — Wi-Fi partage, box, appareil invite
+     * — pouvait l atteindre sur le port 8080.
+     *
+     * Ce n est pas theorique. Vite <= 6.4.2 porte un contournement de
+     * `server.fs.deny` par chemins alternatifs Windows (severite HAUTE),
+     * et esbuild <= 0.24.2 laisse n importe quel site adresser des
+     * requetes au serveur de dev et en lire la reponse. Les deux
+     * supposent d abord de pouvoir JOINDRE le serveur. En restant sur
+     * localhost, on retire cette premiere marche.
+     *
+     * Rien n est perdu pour autant : `npm run dev -- --host` reouvre
+     * l acces reseau le temps d une session, quand on veut essayer la
+     * PWA depuis un telephone. L exposition devient un geste, au lieu
+     * d etre l etat par defaut. */
     port: 8080,
     hmr: {
       overlay: false,
