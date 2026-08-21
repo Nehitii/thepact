@@ -60,7 +60,13 @@ export function useEtapes(goals: Goal[], couleurPersonnalisee?: string) {
   const ids = concernes.map((g) => g.id);
 
   return useQuery({
-    queryKey: ["etapes-du-pacte", [...ids].sort().join(",")],
+    /* La cle commence par « goals » a dessein. React Query invalide
+       par prefixe : les quatorze endroits qui invalident deja
+       « goals » quand une etape change rafraichissent donc aussi le
+       front, sans avoir a y penser. Sous sa propre cle, il gardait un
+       titre modifie jusqu a l expiration de sa fraicheur — c est
+       exactement ce qui s est vu. */
+    queryKey: ["goals", "etapes-du-pacte", [...ids].sort().join(",")],
     enabled: ids.length > 0,
     staleTime: 30_000,
     queryFn: async (): Promise<Etape[]> => {

@@ -505,3 +505,57 @@
   color: #ffc53d;
 }
 .ge-alerte svg { flex-shrink: 0; margin-top: 2px; }
+
+/* ── L ETABLI : une seule colonne ──
+   Un objectif a deux faces — ce qu il est, ce qu il demande — et la
+   grille les met face a face. Une etape n en a qu une : l etaler sur
+   deux colonnes laisserait la moitie de l ecran vide et ferait
+   chercher le regard. Meme grille, une colonne, centree. */
+.ge-grille--simple {
+  grid-template-columns: minmax(0, 660px);
+  justify-content: center;
+}
+
+/* D ou vient l etape.
+   Un releve, pas un champ : on ne change pas l objectif d une etape
+   ici. Il porte la teinte du palier a son flanc, et il mene a la
+   fiche — c est le chemin qu on veut quand on arrive sur une etape
+   sans savoir de quoi elle fait partie. */
+.ge-porteur {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 11px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gd-encre-2);
+  background: var(--gd-plaque);
+  border: 1px solid var(--gd-trait);
+  border-left: 3px solid var(--t, var(--cp-cyan));
+  cursor: pointer;
+  text-align: left;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.ge-porteur:hover { color: var(--gd-encre); border-color: hsl(var(--primary) / 0.5); border-left-color: var(--t, var(--cp-cyan)); }
+.ge-porteur:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.ge-porteur svg { flex-shrink: 0; color: var(--t, var(--cp-cyan)); }
+.ge-porteur span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ge-porteur b { color: var(--gd-encre-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* Un releve de dates : ce que la page sait, sans qu on puisse le
+   changer. */
+.ge-releve {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  color: var(--gd-encre-3);
+}
+.ge-releve svg { flex-shrink: 0; }
+.ge-releve b { color: var(--gd-encre-2); font-weight: 400; font-variant-numeric: tabular-nums; }

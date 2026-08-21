@@ -2493,6 +2493,25 @@
     "callsShort": "Calls",
     "backToConsole": "Back to console"
   },
+  "steps": {
+    "edit": "Edit",
+    "untitled": "Untitled step",
+    "name": "Step name",
+    "namePlaceholder": "What there is to do…",
+    "openGoal": "Open the goal",
+    "isUltimate": "Ultimate step: outside progress, it carries the goal to its zenith.",
+    "state": "State",
+    "pending": "To do",
+    "completed": "Done",
+    "created": "Created",
+    "validated": "Cleared",
+    "draw": "Draw",
+    "excluded": "Out of the draw",
+    "excludedOn": "The mission draw will never offer this step.",
+    "excludedOff": "The mission draw may offer this step.",
+    "notesPlaceholder": "What to remember about this step…",
+    "notFound": "Step not found"
+  },
   "front": {
     "title": "The front",
     "engaged": "Engaged",

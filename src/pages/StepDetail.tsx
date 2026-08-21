@@ -1,19 +1,45 @@
+/**
+ * L ETABLI — modifier une etape.
+ *
+ * Troisieme membre de la famille de l atelier, apres la creation d un
+ * objectif et sa modification. Il parlait encore la langue qu on a
+ * retiree des deux autres : un titre en degrade de quarante-huit
+ * pixels, des cartes de statut de deux cents pixels pour un choix qui
+ * n en compte que deux, et le bouton qui engage tout en bas.
+ *
+ * Il reprend donc le meme chassis — meme calque plein cadre, meme
+ * barre de commande qui ne defile pas, memes volets, memes jetons.
+ *
+ * Deux choses qu il ne disait pas.
+ *
+ * De quel objectif l etape vient. On modifiait une etape sans savoir
+ * a quoi elle appartenait, alors que c est la premiere chose qu on
+ * veut verifier en arrivant. L objectif s affiche, avec sa teinte, et
+ * son nom mene a sa fiche.
+ *
+ * Ce que l etape est. Une etape ultime ne compte pas dans
+ * l avancement et porte l objectif au zenith une fois franchie : la
+ * page le dit, meme si c est la fiche de l objectif qui la designe.
+ */
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { synchroniserGroupes } from "@/lib/superGoals";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { getDifficultyColor } from "@/lib/utils";
+import { encreSurFond } from "@/components/goals/detail/dossier/encre";
 import { toast } from "sonner";
-import { ArrowLeft, Target, Check, StickyNote, ListOrdered, Dices } from "lucide-react";
+import {
+  ArrowLeft, Check, X, Target, StickyNote, Dices, Sparkle, ListOrdered, Calendar,
+} from "lucide-react";
 import { format } from "date-fns";
-import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
-import { motion } from "framer-motion";
+import { DSPageLoader } from "@/components/ds";
+import "@/styles/cyberpunk.css";
+import "@/styles/goal-dossier.css";
+import "@/styles/goal-editeur.css";
 
 interface Step {
   id: string;
@@ -27,16 +53,27 @@ interface Step {
   completion_date?: string;
   validated_at?: string;
   exclude_from_spin: boolean;
+  is_ultimate?: boolean;
   created_at: string;
   updated_at: string;
 }
 
+interface ObjectifPorteur {
+  id: string;
+  name: string;
+  difficulty: string;
+}
+
+const NOTES_MAX = 500;
+
 export default function StepDetail() {
   const { stepId } = useParams();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step | null>(null);
+  const [objectif, setObjectif] = useState<ObjectifPorteur | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -48,13 +85,20 @@ export default function StepDetail() {
   const loadStepData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: stepData, error: stepError } = await supabase.from("steps").select("*").eq("id", stepId).single();
+      const { data: stepData, error: stepError } = await supabase
+        .from("steps").select("*").eq("id", stepId).single();
       if (stepError) throw stepError;
       setStep(stepData);
       setTitle(stepData.title);
       setNotes(stepData.notes || "");
       setStatus(stepData.status);
       setExcludeFromSpin(stepData.exclude_from_spin ?? false);
+
+      /* L objectif porteur, pour sa teinte et son nom : on ne modifie
+         pas une etape sans savoir a quoi elle appartient. */
+      const { data: goalData } = await supabase
+        .from("goals").select("id, name, difficulty").eq("id", stepData.goal_id).maybeSingle();
+      if (goalData) setObjectif(goalData as ObjectifPorteur);
     } catch (error: any) {
       console.error("Error loading step:", error);
       toast.error("Error", { description: "Failed to load step details" });
@@ -64,46 +108,21 @@ export default function StepDetail() {
   }, [stepId]);
 
   useEffect(() => {
-    if (user && stepId) {
-      loadStepData();
-    }
+    if (user && stepId) loadStepData();
   }, [user, stepId, loadStepData]);
 
-  const handleSave = async () => {
-    if (!step) return;
-    try {
-      setSaving(true);
-      const updates: any = {
-        title,
-        notes,
-        status,
-        exclude_from_spin: excludeFromSpin,
-        updated_at: new Date().toISOString(),
-      };
+  /* Le calque prend tout l ecran : la page dessous cesse de defiler,
+     comme pour les deux autres editeurs. */
+  useEffect(() => {
+    const defilementInitial = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = defilementInitial; };
+  }, []);
 
-      if (status === "completed" && !step.validated_at) {
-        updates.completion_date = new Date().toISOString();
-        updates.validated_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase.from("steps").update(updates).eq("id", step.id);
-      if (error) throw error;
-
-      await recalculateGoalProgress(step.goal_id);
-      
-      // Fix Bug 3: Invalidate React Query caches so GoalDetail shows fresh data
-      queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      
-      toast.success("Success", { description: "Step updated successfully" });
-      navigate(`/goals/${step.goal_id}`);
-    } catch (error: any) {
-      console.error("Error saving step:", error);
-      toast.error("Error", { description: error.message });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const quitter = useCallback(() => {
+    if (step) navigate(`/goals/${step.goal_id}`);
+    else navigate("/goals");
+  }, [step, navigate]);
 
   const recalculateGoalProgress = async (goalId: string) => {
     try {
@@ -122,258 +141,254 @@ export default function StepDetail() {
         .select("pact_id")
         .maybeSingle();
 
-      /* Un objectif ne vit pas seul : les groupes qui le comptent
-         suivent son avancement. La fiche le faisait deja, cette page
-         non — cocher une derniere etape depuis ici laissait donc le
-         groupe en arriere. */
+      /* Un objectif ne vit pas seul : les constellations qui le
+         comptent suivent son avancement. La fiche le faisait deja,
+         cette page non — cocher une derniere etape depuis ici laissait
+         donc la constellation en arriere. */
       if (majGoal?.pact_id) await synchroniserGroupes(majGoal.pact_id);
     } catch (error) {
       console.error("Error recalculating goal progress:", error);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-500/15 text-green-400 border-green-500/30";
-      case "in_progress":
-        return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-      case "blocked":
-        return "bg-red-500/15 text-red-400 border-red-500/30";
-      default:
-        return "bg-muted text-muted-foreground border-border";
+  const handleSave = async () => {
+    if (!step || saving) return;
+    try {
+      setSaving(true);
+      const updates: Record<string, unknown> = {
+        title,
+        notes,
+        status,
+        exclude_from_spin: excludeFromSpin,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (status === "completed" && !step.validated_at) {
+        updates.completion_date = new Date().toISOString();
+        updates.validated_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase.from("steps").update(updates).eq("id", step.id);
+      if (error) throw error;
+
+      await recalculateGoalProgress(step.goal_id);
+
+      /* « goals » couvre aussi le front : sa cle commence par ce
+         prefixe, et React Query invalide par prefixe. */
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+
+      toast.success("Success", { description: "Step updated successfully" });
+      navigate(`/goals/${step.goal_id}`);
+    } catch (error: any) {
+      console.error("Error saving step:", error);
+      toast.error("Error", { description: error.message });
+    } finally {
+      setSaving(false);
     }
   };
 
-  // Common input style for readability on dark background
-  const inputStyle =
-    "bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
-
-  if (loading) {
-    return (
-      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
-        <DSPageLoader />
-      </DSPageShell>
-    );
-  }
+  if (loading) return <DSPageLoader />;
 
   if (!step) {
     return (
-      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
-            <Button onClick={() => navigate(-1)} className="rounded-xl">
-              Go Back
-            </Button>
-          </div>
+      <div className="ge" role="dialog" aria-modal="true">
+        <span className="ge-fond" aria-hidden="true" />
+        <header className="ge-barre">
+          <button type="button" className="ge-bouton" onClick={() => navigate("/goals")}>
+            <ArrowLeft size={13} aria-hidden="true" />
+            {t("goals.detail.back", "Retour")}
+          </button>
+        </header>
+        <div className="ge-corps">
+          <p className="ge-aide">{t("steps.notFound", "Étape introuvable")}</p>
         </div>
-      </DSPageShell>
+      </div>
     );
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-  };
+  const teinte = getDifficultyColor(objectif?.difficulty);
+  const faite = status === "completed";
+  const dateFr = (v?: string | null) => (v ? format(new Date(v), "d MMM yyyy") : null);
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } },
-  };
+  const contenu = (
+    <div className="ge" role="dialog" aria-modal="true" aria-label={t("steps.edit", "Modifier l'étape")}>
+      <span className="ge-fond" aria-hidden="true" />
 
-  return (
-    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="relative z-10 px-6 py-8 space-y-6"
-      >
-        {/* Header */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          <Button
-            variant="ghost"
-            onClick={() => step && navigate(`/goals/${step.goal_id}`)}
-            disabled={!step}
-            className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
+      <header className="ge-barre">
+        <button type="button" className="ge-bouton ge-bouton--retour" onClick={quitter} disabled={saving}>
+          <ArrowLeft size={13} aria-hidden="true" />
+          <span className="ge-mot">{t("goals.detail.back", "Retour")}</span>
+        </button>
+        <h1 className="ge-titre">
+          <span className="ge-mot">{t("steps.edit", "Modifier")}</span>
+          <b>{title.trim() || t("steps.untitled", "Étape sans nom")}</b>
+        </h1>
+        <div className="ge-barre-fin">
+          <button type="button" className="ge-bouton" onClick={quitter} disabled={saving}>
+            <X size={13} aria-hidden="true" />
+            <span className="ge-mot">{t("common.cancel", "Annuler")}</span>
+          </button>
+          <button
+            type="button"
+            className="ge-bouton ge-bouton--valider"
+            onClick={handleSave}
+            disabled={saving || !title.trim()}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Goal
-          </Button>
+            <Check size={13} aria-hidden="true" />
+            {saving ? t("goals.edit.saving", "Enregistrement…") : t("goals.edit.save", "Enregistrer")}
+          </button>
+        </div>
+      </header>
 
-          <div className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
-              Edit Step
-            </h1>
-            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">
-              Created {format(new Date(step.created_at), "MMM d, yyyy")}
-            </p>
-            <Badge className={`${getStatusColor(step.status)} font-rajdhani`}>{step.status.replace("_", " ")}</Badge>
-          </div>
-        </motion.div>
+      <div className="ge-corps">
+        <div className="ge-grille ge-grille--simple">
+          <div className="ge-colonne">
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Target size={12} aria-hidden="true" />
+                {t("goals.edit.identity", "Identité")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-champ">
+                  <label className="ge-etiquette" htmlFor="et-nom">
+                    {t("steps.name", "Nom de l'étape")} <i aria-hidden="true">*</i>
+                  </label>
+                  <input
+                    id="et-nom"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    maxLength={100}
+                    autoComplete="off"
+                    placeholder={t("steps.namePlaceholder", "Ce qu'il y a à faire…")}
+                  />
+                </div>
 
-        {/* Form Card */}
-        <motion.div
-          variants={itemVariants}
-          className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
-        >
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-          <div className="relative p-8 md:p-10 space-y-10">
-            {/* Section 1: Basic Info */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <Target className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Step Information</h2>
-              </div>
-
-              {/* Step Name */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="title"
-                  className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                >
-                  Step Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter step name"
-                  className={`h-12 text-base rounded-xl ${inputStyle}`}
-                />
-              </div>
-
-              {/* Status Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                  <ListOrdered className="h-4 w-4" />
-                  Status
-                </Label>
-                <div className="grid grid-cols-2 gap-4">
+                {/* D ou vient cette etape : la premiere chose a verifier
+                    en arrivant, et elle manquait. */}
+                {objectif && (
                   <button
                     type="button"
-                    onClick={() => setStatus("pending")}
-                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                      status === "pending"
-                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
-                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
-                    }`}
+                    className="ge-porteur"
+                    onClick={() => navigate(`/goals/${objectif.id}`)}
+                    style={{ ["--t" as string]: teinte }}
+                    title={t("steps.openGoal", "Ouvrir l'objectif")}
                   >
-                    <div
-                      className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                        status === "pending" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {status === "pending" && <Check className="h-3 w-3 text-primary-foreground" />}
-                    </div>
-                    <div
-                      className={`font-rajdhani font-bold text-lg ${status === "pending" ? "text-primary" : "text-foreground"}`}
-                    >
-                      Pending
-                    </div>
-                    <div className="text-sm text-muted-foreground">Step is not yet complete</div>
+                    <ListOrdered size={12} aria-hidden="true" />
+                    <span>{objectif.name}</span>
+                    <b>#{step.order}</b>
                   </button>
+                )}
 
-                  <button
-                    type="button"
-                    onClick={() => setStatus("completed")}
-                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                      status === "completed"
-                        ? "border-green-500 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.2)]"
-                        : "border-border bg-muted/30 hover:border-green-500/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                        status === "completed" ? "border-green-500 bg-green-500" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {status === "completed" && <Check className="h-3 w-3 text-white" />}
-                    </div>
-                    <div
-                      className={`font-rajdhani font-bold text-lg ${status === "completed" ? "text-green-400" : "text-foreground"}`}
-                    >
-                      Completed
-                    </div>
-                    <div className="text-sm text-muted-foreground">Step has been finished</div>
-                  </button>
-                </div>
+                {step.is_ultimate && (
+                  <p className="ge-alerte">
+                    <Sparkle size={11} aria-hidden="true" />
+                    {t("steps.isUltimate", "Étape ultime : hors avancement, elle porte l'objectif au zénith.")}
+                  </p>
+                )}
               </div>
-            </div>
+            </section>
 
-            {/* Section: Spin Exclusion */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <Dices className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Mission Roulette</h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setExcludeFromSpin(!excludeFromSpin)}
-                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300 text-left ${
-                  excludeFromSpin
-                    ? "border-amber-500/50 bg-amber-500/10"
-                    : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
-                }`}
-              >
-                <div className={`p-2 rounded-xl ${excludeFromSpin ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground"}`}>
-                  <Dices className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <div className={`font-rajdhani font-bold text-lg ${excludeFromSpin ? "text-amber-400" : "text-foreground"}`}>
-                    {excludeFromSpin ? "Excluded from spin" : "Included in spin"}
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Check size={12} aria-hidden="true" />
+                {t("steps.state", "État")}
+              </header>
+              <div className="ge-corps-volet">
+                {/* Une etape n a que deux etats : faite, ou pas. Deux
+                    pastilles suffisent la ou il y avait deux cartes de
+                    deux cents pixels. */}
+                <div className="ge-champ">
+                  <div className="ge-pastilles">
+                    <button
+                      type="button"
+                      className="ge-pastille"
+                      aria-pressed={!faite}
+                      onClick={() => setStatus("pending")}
+                      style={!faite
+                        ? { ["--c" as string]: teinte, ["--encre" as string]: encreSurFond(teinte) }
+                        : undefined}
+                    >
+                      {t("steps.pending", "À faire")}
+                    </button>
+                    <button
+                      type="button"
+                      className="ge-pastille"
+                      aria-pressed={faite}
+                      onClick={() => setStatus("completed")}
+                      style={faite
+                        ? { ["--c" as string]: "#00ff88", ["--encre" as string]: encreSurFond("#00ff88") }
+                        : undefined}
+                    >
+                      <Check size={10} aria-hidden="true" />
+                      {t("steps.completed", "Faite")}
+                    </button>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                </div>
+
+                <div className="ge-releve">
+                  <Calendar size={11} aria-hidden="true" />
+                  <span>{t("steps.created", "Créée")}</span>
+                  <b>{dateFr(step.created_at) ?? "—"}</b>
+                  {step.validated_at && (
+                    <>
+                      <span>{t("steps.validated", "Franchie")}</span>
+                      <b>{dateFr(step.validated_at)}</b>
+                    </>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Dices size={12} aria-hidden="true" />
+                {t("steps.draw", "Tirage")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-champ">
+                  <div className="ge-pastilles">
+                    <button
+                      type="button"
+                      className="ge-pastille ge-pastille--bascule"
+                      aria-pressed={excludeFromSpin}
+                      onClick={() => setExcludeFromSpin(!excludeFromSpin)}
+                    >
+                      <Dices size={10} aria-hidden="true" />
+                      {t("steps.excluded", "Hors tirage")}
+                    </button>
+                  </div>
+                  <p className="ge-aide">
                     {excludeFromSpin
-                      ? "This step will never appear in the Mission Roulette"
-                      : "This step can be randomly selected by the Mission Roulette"}
-                  </div>
+                      ? t("steps.excludedOn", "Le tirage de mission ne proposera jamais cette étape.")
+                      : t("steps.excludedOff", "Le tirage de mission peut proposer cette étape.")}
+                  </p>
                 </div>
-              </button>
-            </div>
-
-            {/* Section 2: Notes */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <StickyNote className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Notes</h2>
               </div>
+            </section>
 
-              <div className="space-y-3">
-                <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                  Step Notes
-                </Label>
-                <Textarea
-                  id="notes"
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <StickyNote size={12} aria-hidden="true" />
+                {t("goals.detail.notes", "Notes")}
+                <b>{notes.length}/{NOTES_MAX}</b>
+              </header>
+              <div className="ge-corps-volet">
+                <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes or context for this step..."
                   rows={5}
-                  maxLength={500}
-                  className={`rounded-xl resize-none text-base ${inputStyle}`}
+                  maxLength={NOTES_MAX}
+                  placeholder={t("steps.notesPlaceholder", "Ce qu'il faut se rappeler à propos de cette étape…")}
+                  aria-label={t("goals.detail.notes", "Notes")}
                 />
-                <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
               </div>
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-6 border-t border-primary/20">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]"
-              >
-                <Check className="h-5 w-5 mr-2" />
-                {saving ? "SAVING..." : "SAVE CHANGES"}
-              </Button>
-            </div>
+            </section>
           </div>
-        </motion.div>
-      </motion.div>
-    </DSPageShell>
+        </div>
+      </div>
+    </div>
   );
+
+  return createPortal(contenu, document.body);
 }

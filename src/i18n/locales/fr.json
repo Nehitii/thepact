@@ -2493,6 +2493,25 @@
     "callsShort": "Appels",
     "backToConsole": "Retour au poste"
   },
+  "steps": {
+    "edit": "Modifier",
+    "untitled": "Étape sans nom",
+    "name": "Nom de l’étape",
+    "namePlaceholder": "Ce qu’il y a à faire…",
+    "openGoal": "Ouvrir l’objectif",
+    "isUltimate": "Étape ultime : hors avancement, elle porte l’objectif au zénith.",
+    "state": "État",
+    "pending": "À faire",
+    "completed": "Faite",
+    "created": "Créée",
+    "validated": "Franchie",
+    "draw": "Tirage",
+    "excluded": "Hors tirage",
+    "excludedOn": "Le tirage de mission ne proposera jamais cette étape.",
+    "excludedOff": "Le tirage de mission peut proposer cette étape.",
+    "notesPlaceholder": "Ce qu’il faut se rappeler à propos de cette étape…",
+    "notFound": "Étape introuvable"
+  },
   "front": {
     "title": "Le front",
     "engaged": "Engagés",
