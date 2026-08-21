@@ -501,7 +501,7 @@
       "auto": "Par une règle",
       "dynamic": "Groupe vivant",
       "dynamicOn": "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra le groupe.",
-      "dynamicOff": "La règle sert une fois, à la création. Les membres sont ensuite figés.",
+      "dynamicOff": "La règle sert une fois, au moment où tu enregistres. Les membres sont ensuite figés.",
       "ai": "Décomposer",
       "aiHint": "Proposer une décomposition à partir du nom",
       "needName": "Il manque le nom",

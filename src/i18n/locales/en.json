@@ -501,7 +501,7 @@
       "auto": "By a rule",
       "dynamic": "Living group",
       "dynamicOn": "The rule keeps replaying: any goal that later matches it joins the group.",
-      "dynamicOff": "The rule runs once, at creation. Members are then fixed.",
+      "dynamicOff": "The rule runs once, when you save. Members are then fixed.",
       "ai": "Break down",
       "aiHint": "Suggest a breakdown from the name",
       "needName": "The name is missing",

@@ -24,12 +24,16 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, Check, X, Target, Tag, ListOrdered, Calendar, Receipt,
-  StickyNote, Sparkles, Crown, Ban,
+  StickyNote, Sparkles, Crown, Ban, Filter, HandIcon, Zap,
 } from "lucide-react";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/lib/goalConstants";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, type CostItemData } from "@/components/goals/CostItemsEditor";
 import { EditStepsList, type EditStepItem } from "@/components/goals/EditStepsList";
+import {
+  GoalSelectionList, AutoBuildRuleEditor, filterGoalsByRule, type SuperGoalRule,
+} from "@/components/goals/super";
+import type { Goal } from "@/hooks/useGoals";
 import { encreSurFond } from "@/components/goals/detail/dossier/encre";
 import type { GoalDetailData } from "@/hooks/useGoalDetail";
 import "@/styles/cyberpunk.css";
@@ -61,6 +65,13 @@ interface GoalDetailEditOverlayProps {
   onStepItemsChange: (items: EditStepItem[]) => void;
   editCostItems: CostItemData[];
   setEditCostItems: (items: CostItemData[]) => void;
+  /* La composition d un groupe — ce qu il demande, comme les etapes
+     sont ce que demande un objectif ordinaire. */
+  allGoals: Goal[];
+  editMembresIds: string[]; setEditMembresIds: (v: string[]) => void;
+  editRegle: SuperGoalRule; setEditRegle: (v: SuperGoalRule) => void;
+  editVivant: boolean; setEditVivant: (v: boolean) => void;
+  editModeGroupe: "manual" | "auto"; setEditModeGroupe: (v: "manual" | "auto") => void;
   customDifficultyActive: boolean;
   customDifficultyName: string;
   customDifficultyColor: string;
@@ -81,6 +92,8 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
     editStartDate, setEditStartDate, editCompletionDate, setEditCompletionDate,
     editDeadline, setEditDeadline, editImage, setEditImage,
     editStepItems, onStepItemsChange, editCostItems, setEditCostItems,
+    allGoals, editMembresIds, setEditMembresIds, editRegle, setEditRegle,
+    editVivant, setEditVivant, editModeGroupe, setEditModeGroupe,
     customDifficultyActive, customDifficultyName, customDifficultyColor,
     saving, onSave, onClose, onAddToWishlist,
   } = props;
@@ -115,6 +128,13 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
 
   const estHabitude = goal.goal_type === "habit";
   const estGroupe = goal.goal_type === "super";
+
+  /* Le vivier : tout sauf les groupes, et sauf lui-meme. On ne met pas
+     un groupe dans un groupe, ni un groupe dans lui-meme. */
+  const vivier = allGoals.filter((g) => g.id !== goal.id && g.goal_type !== "super");
+  const nombreDeMembres = editModeGroupe === "manual"
+    ? editMembresIds.length
+    : filterGoalsByRule(vivier, editRegle).length;
   const TypeIcone = estGroupe ? Crown : estHabitude ? Sparkles : ListOrdered;
   const typeNom = estGroupe
     ? t("goals.edit.typeGroup", "Groupe")
@@ -304,6 +324,82 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
                   <EditStepsList items={editStepItems} onItemsChange={onStepItemsChange} />
                 </div>
               </section>
+            ) : estGroupe ? (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <Crown size={12} aria-hidden="true" />
+                  {t("goals.new.members", "Membres")}
+                  <b>{nombreDeMembres}</b>
+                </header>
+                <div className="ge-corps-volet">
+                  <div className="ge-champ">
+                    <span className="ge-etiquette">{t("goals.new.buildMode", "Composition")}</span>
+                    <div className="ge-pastilles">
+                      <button
+                        type="button"
+                        className="ge-pastille ge-pastille--bascule"
+                        aria-pressed={editModeGroupe === "manual"}
+                        onClick={() => setEditModeGroupe("manual")}
+                      >
+                        <HandIcon size={10} aria-hidden="true" />
+                        {t("goals.new.manual", "Choisis à la main")}
+                      </button>
+                      <button
+                        type="button"
+                        className="ge-pastille ge-pastille--bascule"
+                        aria-pressed={editModeGroupe === "auto"}
+                        onClick={() => setEditModeGroupe("auto")}
+                      >
+                        <Filter size={10} aria-hidden="true" />
+                        {t("goals.new.auto", "Par une règle")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="ge-embarque">
+                  {editModeGroupe === "manual" ? (
+                    <GoalSelectionList
+                      goals={vivier}
+                      selectedIds={editMembresIds}
+                      onSelectionChange={setEditMembresIds}
+                      customDifficultyName={customDifficultyName}
+                      customDifficultyColor={customDifficultyColor}
+                    />
+                  ) : (
+                    <AutoBuildRuleEditor
+                      rule={editRegle}
+                      onRuleChange={setEditRegle}
+                      goals={vivier}
+                      customDifficultyName={customDifficultyName}
+                      customDifficultyActive={customDifficultyActive}
+                    />
+                  )}
+                </div>
+
+                {editModeGroupe === "auto" && (
+                  <div className="ge-corps-volet">
+                    <div className="ge-champ">
+                      <div className="ge-pastilles">
+                        <button
+                          type="button"
+                          className="ge-pastille ge-pastille--bascule"
+                          aria-pressed={editVivant}
+                          onClick={() => setEditVivant(!editVivant)}
+                        >
+                          <Zap size={10} aria-hidden="true" />
+                          {t("goals.new.dynamic", "Groupe vivant")}
+                        </button>
+                      </div>
+                      <p className="ge-aide">
+                        {editVivant
+                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra le groupe.")
+                          : t("goals.new.dynamicOff", "La règle sert une fois, au moment où tu enregistres. Les membres sont ensuite figés.")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </section>
             ) : (
               <section className="ge-volet">
                 <header className="ge-tete">
@@ -312,9 +408,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
                 </header>
                 <div className="ge-corps-volet">
                   <p className="ge-aide">
-                    {estGroupe
-                      ? t("goals.edit.groupNoSteps", "Un groupe n'a pas d'étapes : il compte ses membres, qui se choisissent depuis sa fiche.")
-                      : t("goals.edit.habitNoSteps", "Une habitude n'a pas d'étapes : elle se coche jour après jour.")}
+                    {t("goals.edit.habitNoSteps", "Une habitude n'a pas d'étapes : elle se coche jour après jour.")}
                   </p>
                 </div>
               </section>

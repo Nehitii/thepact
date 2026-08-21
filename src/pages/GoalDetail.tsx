@@ -31,7 +31,7 @@ import {
   getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/lib/goalConstants";
 import {
-  SuperGoalEditModal, computeSuperGoalProgress,
+  computeSuperGoalProgress, filterGoalsByRule,
   type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/components/goals/super";
 import { membresDuGroupe, estFranchi, estPretAHonorer, synchroniserGroupes } from "@/lib/superGoals";
@@ -78,8 +78,25 @@ export default function GoalDetail() {
   const [editNotes, setEditNotes] = useState("");
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
-  const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
+  /* LA COMPOSITION D UN GROUPE EST UN CHAMP COMME LES AUTRES.
+   *
+   * La fiche d un groupe portait deux boutons « Modifier » : celui du
+   * bandeau ouvrait l atelier — nom, palier, etiquettes, dates, notes,
+   * registre — et celui du volet des membres ouvrait une modale a
+   * part, pour la composition. Deux fois le meme mot, deux editeurs
+   * differents, et l atelier qui renvoyait a la fiche pour ce qu il ne
+   * savait pas faire.
+   *
+   * La composition rejoint donc l atelier, au meme endroit que les
+   * etapes d un objectif ordinaire : c est ce que le groupe demande,
+   * comme les etapes sont ce que l objectif demande. Un seul
+   * « Modifier », un seul editeur — et la creation le faisait deja
+   * ainsi. */
+  const [editMembresIds, setEditMembresIds] = useState<string[]>([]);
+  const [editRegle, setEditRegle] = useState<SuperGoalRule>({});
+  const [editVivant, setEditVivant] = useState(false);
+  const [editModeGroupe, setEditModeGroupe] = useState<"manual" | "auto">("manual");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   /* Decocher une etape d un objectif honore le fait retomber, et
      entraine avec lui les groupes qui le comptent. Un clic sur une
@@ -136,6 +153,12 @@ export default function GoalDetail() {
       setEditDeadline((g as any).deadline || "");
       setSteps(goalDetailData.steps);
       setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false })));
+      setEditMembresIds(g.child_goal_ids || []);
+      setEditRegle((g.super_goal_rule as SuperGoalRule) || {});
+      setEditVivant(!!g.is_dynamic_super);
+      /* Le mode se lit sur ce qui est enregistre : une regle presente
+         veut dire qu on a compose par regle. */
+      setEditModeGroupe(g.super_goal_rule ? "auto" : "manual");
       setLoading(false);
     }
   }, [goalDetailData]);
@@ -190,15 +213,15 @@ export default function GoalDetail() {
   // Edit overlay unsaved changes guard
   useEffect(() => {
     if (editDialogOpen) {
-      editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems });
+      editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant });
     }
   }, [editDialogOpen]);
 
   const hasUnsavedChanges = useCallback(() => {
     if (!editInitialStateRef.current) return false;
-    const current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems });
+    const current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant });
     return current !== editInitialStateRef.current;
-  }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems]);
+  }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems, editMembresIds, editRegle, editVivant]);
 
   const handleCloseEdit = useCallback(() => {
     if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) return;
@@ -233,6 +256,26 @@ export default function GoalDetail() {
       if (editImage !== goal.image_url) updates.image_url = editImage;
       const currentDeadline = (goal as any).deadline || "";
       if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
+
+      /* La composition d un groupe part avec le reste : c est un champ
+         de l atelier, plus une modale separee. En mode « regle », la
+         liste declaree n est figee que si le groupe ne vit pas — un
+         groupe vivant rejoue sa regle et n a donc pas de liste. */
+      if (goal.goal_type === "super") {
+        if (editModeGroupe === "manual") {
+          updates.child_goal_ids = editMembresIds;
+          updates.super_goal_rule = null;
+          updates.is_dynamic_super = false;
+        } else {
+          const apparies = filterGoalsByRule(
+            allGoals.filter((g) => g.id !== goal.id && g.goal_type !== "super"),
+            editRegle,
+          ).map((g) => g.id);
+          updates.child_goal_ids = editVivant ? null : apparies;
+          updates.super_goal_rule = editRegle;
+          updates.is_dynamic_super = editVivant;
+        }
+      }
 
       if (id) {
         try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast.error("Error", { description: "Failed to save cost items" }); }
@@ -277,19 +320,9 @@ export default function GoalDetail() {
         toast.success("Goal Updated", { description: "Changes saved successfully" });
       }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
-  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
+  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
 
   // Handle super goal save
-  const handleSuperGoalSave = useCallback(async ({ childGoalIds, rule, isDynamic }: { childGoalIds: string[]; rule: SuperGoalRule | null; isDynamic: boolean }) => {
-    if (!goal) return;
-    const { error } = await supabase.from("goals").update({ child_goal_ids: childGoalIds, super_goal_rule: rule as any, is_dynamic_super: isDynamic }).eq("id", goal.id);
-    if (error) { toast.error("Error", { description: error.message }); return; }
-    const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
-    if (updatedGoal) setGoal(updatedGoal);
-    queryClient.invalidateQueries({ queryKey: ["goals"] });
-    queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-    toast.success("Super Goal Updated", { description: "Child goals have been updated" });
-  }, [goal, id, queryClient, toast]);
 
   // Loading / Not found
   if (loading) {
@@ -432,7 +465,6 @@ export default function GoalDetail() {
               teintePar={getDifficultyColor}
               dynamique={!!goal.is_dynamic_super}
               onOuvrir={(childId) => navigate(`/goals/${childId}`)}
-              onModifier={() => setSuperGoalEditOpen(true)}
               auSeuil={totalStepsCount > 0 && completedStepsCount >= totalStepsCount && !isCompleted}
               onHonorer={actions.handleFullyComplete}
               onEclat={triggerParticles}
@@ -523,6 +555,11 @@ export default function GoalDetail() {
         editStepItems={editStepItems}
         onStepItemsChange={(items) => { setEditStepItems(items); setEditSteps(items.length); }}
         editCostItems={editCostItems} setEditCostItems={setEditCostItems}
+        allGoals={allGoals}
+        editMembresIds={editMembresIds} setEditMembresIds={setEditMembresIds}
+        editRegle={editRegle} setEditRegle={setEditRegle}
+        editVivant={editVivant} setEditVivant={setEditVivant}
+        editModeGroupe={editModeGroupe} setEditModeGroupe={setEditModeGroupe}
         customDifficultyActive={customDifficultyActive}
         customDifficultyName={customDifficultyName}
         customDifficultyColor={customDifficultyColor}
@@ -532,20 +569,6 @@ export default function GoalDetail() {
         onAddToWishlist={wishlistHandler}
       />
 
-      {goal && isSuperGoal && (
-        <SuperGoalEditModal
-          isOpen={superGoalEditOpen}
-          onClose={() => setSuperGoalEditOpen(false)}
-          onSave={handleSuperGoalSave}
-          currentChildIds={goal.child_goal_ids || []}
-          currentRule={goal.super_goal_rule as SuperGoalRule | null}
-          currentIsDynamic={goal.is_dynamic_super || false}
-          allGoals={allGoals}
-          superGoalId={goal.id}
-          customDifficultyName={customDifficultyName}
-          customDifficultyColor={customDifficultyColor}
-        />
-      )}
 
       <AlertDialog open={!!etapeADefaire} onOpenChange={(ouvert) => !ouvert && setEtapeADefaire(null)}>
         <AlertDialogContent>

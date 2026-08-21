@@ -271,13 +271,12 @@ const ICONE_TRI = {
 } as const;
 
 export const DossierMembres = React.memo(function DossierMembres({
-  membres, teintePar, dynamique, onOuvrir, onModifier, auSeuil, onHonorer, onEclat,
+  membres, teintePar, dynamique, onOuvrir, auSeuil, onHonorer, onEclat,
 }: {
   membres: MembreDossier[];
   teintePar: (difficulte: string) => string;
   dynamique: boolean;
   onOuvrir: (id: string) => void;
-  onModifier: () => void;
   /** Tous les membres sont franchis, le groupe n est pas encore honore. */
   auSeuil: boolean;
   onHonorer: () => void;
@@ -336,9 +335,6 @@ export const DossierMembres = React.memo(function DossierMembres({
               {nomTri}
             </button>
           )}
-          <button type="button" className="gd-tete-bouton" onClick={onModifier}>
-            {t("goals.detail.editMembers", "Modifier")}
-          </button>
         </span>
       </header>
       <div className="gd-liste">
