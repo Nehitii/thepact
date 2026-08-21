@@ -1756,7 +1756,7 @@
   letter-spacing: 5px;
   text-transform: uppercase;
   line-height: 1;
-  color: #eaf6ff;
+  color: hsl(var(--encre-titre));
   white-space: nowrap;
 }
 .gl-titre::before {
@@ -2615,7 +2615,7 @@
   letter-spacing: .5px;
   line-height: 1.16;
   text-transform: uppercase;
-  color: #f2f9ff;
+  color: hsl(var(--encre-titre-douce));
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -3030,7 +3030,7 @@
   font-family: 'Rajdhani', sans-serif;
   font-size: 0.98rem;
   font-weight: 700;
-  color: #eaf6ff;
+  color: hsl(var(--encre-titre));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

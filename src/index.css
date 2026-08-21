@@ -213,6 +213,14 @@ All colors MUST be HSL.
     --background: 210 50% 96%;
     --foreground: 210 100% 12%;
 
+    /* L ENCRE DES TITRES.
+       Sept feuilles portaient #eaf6ff ou #f2f9ff en dur, invisibles
+       sur un fond clair. On ne pouvait pas les renvoyer vers
+       --foreground sans ternir le theme sombre, ou l encre des titres
+       est plus vive que le texte courant. */
+    --encre-titre: 210 100% 14%;
+    --encre-titre-douce: 210 60% 24%;
+
     /* HUD Card Surfaces */
     --card: 210 40% 98%;
     --card-foreground: 210 100% 12%;
@@ -358,6 +366,11 @@ All colors MUST be HSL.
     /* Sci-Fi HUD Dark Mode - Deep Blue-Black */
     --background: 210 100% 2%;
     --foreground: 205 100% 90%;
+
+    /* Exactement les valeurs qui etaient en dur : #eaf6ff et #f2f9ff.
+       Le theme sombre ne bouge pas d un cheveu. */
+    --encre-titre: 205 100% 96%;
+    --encre-titre-douce: 208 100% 97%;
 
     /* HUD Card Surfaces - Deep Panels */
     --card: 210 80% 5%;

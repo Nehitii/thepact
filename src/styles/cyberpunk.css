@@ -144,11 +144,40 @@
    5. RAYURES DE DANGER. Diagonales jaune/noir, strictement locales.
    ═══════════════════════════════════════════════════════════════ */
 
+/* LES ACCENTS SONT AVEUGLES AU THEME, ET CA SE VOIT.
+   Un jaune acide sur fond noir se lit a quinze de contraste ; le meme
+   sur fond clair tombe a 1,1, c est-a-dire invisible. Vingt regles les
+   emploient comme couleur de TEXTE sur des pages qui n ont pas de fond
+   sombre a elles — l onglet actif de Goals en faisait partie.
+
+   On garde donc le neon pour le sombre, et on descend la luminosite en
+   clair en conservant la teinte : c est la meme couleur, lisible sur
+   son fond. La page finance n est pas concernee, elle peint son propre
+   fond et n utilise plus que ses jetons --cy-*.
+
+   Les valeurs de remplissage restent le neon dans les deux themes :
+   --cp-jaune-plein sert aux fonds et aux liserés, ou le contraste se
+   joue avec l encre posee dessus et non avec la page. */
 :root {
+  --cp-jaune: #6b6300;
+  --cp-rouge: #b3002a;
+  --cp-cyan: #006b73;
+
+  --cp-jaune-plein: #fcee0a;
+  --cp-rouge-plein: #ff003c;
+  --cp-cyan-plein: #00f0ff;
+
+  --cp-chanfrein: 14px;
+}
+
+.dark {
   --cp-jaune: #fcee0a;
   --cp-rouge: #ff003c;
   --cp-cyan: #00f0ff;
-  --cp-chanfrein: 14px;
+
+  --cp-jaune-plein: #fcee0a;
+  --cp-rouge-plein: #ff003c;
+  --cp-cyan-plein: #00f0ff;
 }
 
 /* ── Le chanfrein ──
@@ -460,7 +489,7 @@
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: 0.4px;
-  color: #eaf6ff;
+  color: hsl(var(--encre-titre));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -627,7 +656,7 @@
   font-weight: 700;
   line-height: 1.14;
   letter-spacing: 0.3px;
-  color: #f2f9ff;
+  color: hsl(var(--encre-titre-douce));
   text-shadow: 0 1px 6px rgb(0 0 0 / 0.85);
   display: -webkit-box;
   -webkit-line-clamp: 2;

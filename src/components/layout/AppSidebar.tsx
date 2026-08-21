@@ -346,7 +346,12 @@ export const AppSidebar = memo(function AppSidebar() {
         data-chrome="sidebar"
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
-          "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
+          /* « dark » n est pas un choix de theme ici, c est une
+             description : la barre porte un fond noir en dur quel que
+             soit le theme du systeme. Sans cette classe, ses jetons
+             suivaient le theme clair et posaient de l encre foncee sur
+             du noir — vingt-deux textes a 1,2 de contraste. */
+          "dark flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
           "shadow-[8px_0_30px_-10px_hsl(var(--primary)/0.15)]",
           "transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]",
           !isMobile && "sticky top-0 h-screen overflow-hidden",
