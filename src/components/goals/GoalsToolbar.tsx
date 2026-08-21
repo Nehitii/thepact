@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { estTriDeFront } from "@/hooks/useEtapes";
 import type {
   SortOption,
   SortDirection,
@@ -55,13 +56,16 @@ interface GoalsToolbarProps {
   handleItemsPerPageChange: (v: string) => void;
 }
 
-const MODES: { mode: DisplayMode; icon: typeof LayoutList; cle: string }[] = [
+const MODES: { mode: DisplayMode; icon: typeof LayoutList; cle: string; apart?: boolean }[] = [
   { mode: "bar", icon: LayoutList, cle: "goals.views.bar" },
   { mode: "grid", icon: LayoutGrid, cle: "goals.views.grid" },
   { mode: "bookmark", icon: Bookmark, cle: "goals.views.list" },
-  /* Le front ne montre pas des objectifs mais leurs etapes ouvertes :
-     la meme page, lue par ce qui reste a faire. */
-  { mode: "front", icon: Crosshair, cle: "goals.views.front" },
+  /* Le front ne montre pas des objectifs mais leurs etapes : la meme
+     page, lue par ce qui reste a faire. Il est mis a l'ecart dans la
+     reglette parce qu'il ne change pas seulement la forme des cartes —
+     il change l'objet compte, et les trois onglets de la page avec
+     lui. Le decalage dit cette difference avant qu'on ait clique. */
+  { mode: "front", icon: Crosshair, cle: "goals.views.front", apart: true },
 ];
 
 const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [
@@ -75,6 +79,20 @@ const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [
   { valeur: "progression", cle: "goals.sort.progress", defaut: "Progression" },
   { valeur: "super_first", cle: "goals.sort.superFirst", defaut: "Super en premier" },
   { valeur: "super_last", cle: "goals.sort.superLast", defaut: "Super en dernier" },
+];
+
+/* Sous le front, on ne trie plus des objectifs.
+   Sur les dix tris ci-dessus, la moitie ne porte sur rien qu'une etape
+   possede : elle n'a ni date de creation, ni date de debut, ni statut a
+   trois valeurs, et elle n'appartient a aucun groupe. Proposer
+   « Super en dernier » au-dessus d'une liste d'etapes, c'etait offrir un
+   bouton qui ne fait rien. Il en reste trois, qui portent chacun sur
+   quelque chose de reel — l'avancement et le palier viennent de
+   l'objectif d'ou l'etape sort, le titre est le sien. */
+const TRIS_DU_FRONT: { valeur: SortOption; cle: string; defaut: string }[] = [
+  { valeur: "progression", cle: "front.sortProgress", defaut: "Avancement" },
+  { valeur: "difficulty", cle: "front.sortTier", defaut: "Palier" },
+  { valeur: "name", cle: "front.sortTitle", defaut: "Titre" },
 ];
 
 export function GoalsToolbar({
@@ -94,17 +112,26 @@ export function GoalsToolbar({
 }: GoalsToolbarProps) {
   const { t } = useTranslation();
 
+  /* Le front change les regles d'affichage : ce qui ne s'y applique
+     pas ne s'y montre pas. */
+  const enFront = displayMode === "front";
+  const tris = enFront ? TRIS_DU_FRONT : TRIS;
+  /* Un tri d'objectif retenu de la vue precedente n'a pas d'equivalent
+     ici : le classement retombe sur l'avancement, et le menu doit dire
+     ce qui est reellement applique. */
+  const triAffiche = enFront && !estTriDeFront(sortBy) ? "progression" : sortBy;
+
   return (
     <div className="cp-cadre">
       <div className="cp-fond gl-barre">
         {/* Mode d'affichage — segments usines, comme le selecteur de periode */}
         <div className="cp-periode" role="group" aria-label={t("goals.views.grid")}>
-          {MODES.map(({ mode, icon: Icon, cle }) => (
+          {MODES.map(({ mode, icon: Icon, cle, apart }) => (
             <button
               key={mode}
               type="button"
               onClick={() => setDisplayMode(mode)}
-              className="cp-periode-seg gl-seg-icone"
+              className={`cp-periode-seg gl-seg-icone${apart ? " gl-seg-apart" : ""}`}
               data-actif={displayMode === mode}
               aria-pressed={displayMode === mode}
               title={t(cle)}
@@ -120,12 +147,12 @@ export function GoalsToolbar({
         {/* Tri */}
         <div className="gl-groupe">
           <span className="gl-etiquette ds-t-label">{t("goals.sort.label")}</span>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+          <Select value={triAffiche} onValueChange={(v) => setSortBy(v as SortOption)}>
             <SelectTrigger className="gl-select w-[142px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TRIS.map((o) => (
+              {tris.map((o) => (
                 <SelectItem key={o.valeur} value={o.valeur}>
                   {t(o.cle, o.defaut)}
                 </SelectItem>
@@ -173,7 +200,7 @@ export function GoalsToolbar({
           )}
         </div>
 
-        {hasSuperGoals && (
+        {hasSuperGoals && !enFront && (
           <>
             <span className="gl-sep" />
             {/* Interrupteur, et non case a cocher : une case generique
@@ -205,20 +232,24 @@ export function GoalsToolbar({
 
         <span className="gl-pousse" />
 
-        {/* Densite de page */}
-        <div className="gl-groupe">
-          <span className="gl-etiquette ds-t-label">{t("goals.perPage")}</span>
-          <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-            <SelectTrigger className="gl-select w-[74px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {["5", "10", "20", "50", "100", "200"].map((v) => (
-                <SelectItem key={v} value={v}>{v}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Densite de page — le front ne se pagine pas : il montre toutes
+            ses etapes d'un coup, une etape n'ayant pas de page. Le
+            reglage ne pilotait donc rien de visible. */}
+        {!enFront && (
+          <div className="gl-groupe">
+            <span className="gl-etiquette ds-t-label">{t("goals.perPage")}</span>
+            <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="gl-select w-[74px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["5", "10", "20", "50", "100", "200"].map((v) => (
+                  <SelectItem key={v} value={v}>{v}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
     </div>
   );

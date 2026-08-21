@@ -2475,7 +2475,11 @@
     "todo": "À faire",
     "done": "Faites",
     "allSteps": "Toutes",
-    "stateHint": "Étapes à faire, faites, ou toutes",
+    "sortProgress": "Avancement",
+    "sortTier": "Palier",
+    "sortTitle": "Titre",
+    "fromBrigade": "De la brigade",
+    "fromBrigadeHint": "N'afficher que les étapes venant des objectifs de la brigade",
     "emptyDone": "Aucune étape franchie ici"
   },
   "brigade": {

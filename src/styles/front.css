@@ -184,9 +184,6 @@
    doit se voir sans repeindre la ligne. */
 .fr-marque { color: var(--fr-or); margin-right: 5px; vertical-align: -1px; }
 .fr-ligne[data-brigade="1"]::before { width: 3px; }
-.fr-portee { display: inline-flex; align-items: center; gap: 5px; color: var(--fr-or); border-color: color-mix(in srgb, var(--fr-or) 55%, transparent); }
-.fr-portee svg { flex-shrink: 0; }
-
 /* CE QUI EST FAIT.
    Le front montre desormais les etapes franchies aussi bien que celles
    qui restent. Une etape faite ne doit pas se lire comme un travail a
@@ -212,11 +209,19 @@
 .fr-ligne[data-faite="1"] .fr-marque { color: #00ff88; }
 .fr-ligne[data-faite="1"] .fr-titre { text-decoration: line-through; text-decoration-thickness: 1px; }
 
-/* Le bouton d'etat reprend la forme du bouton de portee, et prend la
-   couleur de ce qu'il montre : l'or du travail en cours, le vert de ce
-   qui est acquis, le neutre quand il ne trie plus rien. */
-.fr-etat { display: inline-flex; align-items: center; gap: 5px; }
-.fr-etat svg { flex-shrink: 0; }
-.fr-etat[data-etat="afaire"] { color: var(--fr-or); border-color: color-mix(in srgb, var(--fr-or) 55%, transparent); }
-.fr-etat[data-etat="faites"] { color: #00ff88; border-color: color-mix(in srgb, #00ff88 55%, transparent); }
-.fr-etat[data-etat="toutes"] { color: var(--fr-encre-2); border-color: color-mix(in srgb, var(--fr-encre-2) 45%, transparent); }
+/* LE SEUL BOUTON QUI RESTE.
+   Trois selecteurs se disputaient cet en-tete : une portee a trois
+   valeurs dont « engages », que personne ne pouvait deviner ; un oeil
+   sans libelle qui retranchait vingt-six etapes du compte en silence ;
+   et un etat que les onglets font desormais. Il ne reste que la
+   question qu'aucun onglet ne pose : « seulement mes trois
+   objectifs ? »
+   Eteint il est neutre, allume il prend l'or de la brigade : l'etat
+   pressed se voit sans avoir a le deviner. */
+.fr-brigade { display: inline-flex; align-items: center; gap: 5px; }
+.fr-brigade svg { flex-shrink: 0; }
+.fr-brigade[aria-pressed="true"] {
+  color: var(--fr-or);
+  border-color: color-mix(in srgb, var(--fr-or) 60%, transparent);
+  background: color-mix(in srgb, var(--fr-or) 12%, transparent);
+}

@@ -2475,7 +2475,11 @@
     "todo": "To do",
     "done": "Done",
     "allSteps": "All",
-    "stateHint": "Steps to do, done, or all",
+    "sortProgress": "Progress",
+    "sortTier": "Tier",
+    "sortTitle": "Title",
+    "fromBrigade": "From the brigade",
+    "fromBrigadeHint": "Show only steps coming from brigade goals",
     "emptyDone": "No step completed here"
   },
   "brigade": {

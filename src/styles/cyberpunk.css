@@ -357,6 +357,13 @@
   background: var(--cp-jaune);
   font-weight: 700;
 }
+/* Un segment a l'ecart.
+   La reglette separe ses segments par une gouttiere d'un pixel : en
+   l'elargissant a neuf, la teinte du cadre passe au travers et forme
+   une vraie coupure. Le segment reste dans le meme cadre — c'est bien
+   une vue de la meme page — mais il cesse d'appartenir a la meme
+   serie. C'est le minimum qui se voit sans se remarquer. */
+.cp-periode-seg.gl-seg-apart { margin-left: 9px; }
 
 /* ── Archive des objectifs ── */
 .cp-archive {

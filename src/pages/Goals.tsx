@@ -206,6 +206,8 @@ export default function Goals() {
             totalPages={filters.totalPages}
             setCurrentPage={filters.setCurrentPage}
             displayMode={filters.displayMode}
+            sortBy={filters.sortBy}
+            sortDirection={filters.sortDirection}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             searchQuery={filters.searchQuery}

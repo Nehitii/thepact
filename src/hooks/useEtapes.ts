@@ -39,6 +39,8 @@ export interface Etape {
   exclue: boolean;
   /** L etape est franchie. */
   faite: boolean;
+  /** Le palier de l objectif d ou vient l etape. */
+  difficulte: string;
 }
 
 const PALIER: Record<string, string> = {
@@ -92,6 +94,7 @@ export function useEtapes(goals: Goal[], couleurPersonnalisee?: string) {
           /* « validated » est un statut d objectif ; une etape ne
              connait que « pending » et « completed ». */
           faite: s.status === "completed",
+          difficulte: g.difficulty,
         }];
       });
     },
@@ -101,46 +104,80 @@ export function useEtapes(goals: Goal[], couleurPersonnalisee?: string) {
 /**
  * Le classement du front.
  *
+ * UNE ETAPE N A QUE DEUX ETATS : elle est faite, ou elle ne l est pas.
+ * « En cours » est un mot d objectif, et le plaquer sur une etape ne
+ * decrivait rien. Les trois onglets de la page se lisent donc ici comme
+ * un total et ses deux moities : toutes, celles qui restent, celles qui
+ * sont faites. Et 184 = 65 + 119, verifiable en base.
+ *
+ * Un seul filtre s ajoute, parce qu il repond a une autre question :
+ * « seulement mes trois objectifs ? ». La brigade est une notion
+ * d objectif, pas d etape — une etape n est pas « focus », c est son
+ * objectif qui l est. Le filtre retient donc les etapes QUI VIENNENT
+ * d un objectif de la brigade, et son libelle le dit.
+ *
+ * Ont disparu ici : la portee a trois valeurs, dont « engages » que
+ * personne ne pouvait deviner, et le filtre de tirage, un icone d oeil
+ * sans libelle qui retirait vingt-six etapes du compte en silence. Une
+ * etape hors tirage reste marquee sur sa ligne : l information est
+ * gardee, c est le retranchement muet qui part.
+ *
  * Aucune etape ne porte d echeance — la colonne existe, elle est vide
  * sur les soixante-cinq. Le seul ordre qui dise quelque chose d utile
- * est donc celui de l objectif le plus proche du but : finir ce qui
- * est presque fini avant d ouvrir un chantier de plus. A egalite,
- * l ordre des etapes dans leur objectif.
- *
- * Deux axes, qui sont deux questions distinctes. La portee demande
- * « lesquelles me regardent ? » — la brigade, les objectifs engages ou
- * tous. L etat demande « lesquelles restent ? ». Les croiser permet de
- * lire la meme collection comme un plan de travail ou comme un releve
- * de ce qui est acquis.
+ * est donc celui de l objectif le plus proche du but : finir ce qui est
+ * presque fini avant d ouvrir un chantier de plus. A egalite, l ordre
+ * des etapes dans leur objectif.
  */
-export type PorteeFront = "brigade" | "engages" | "tout";
 export type EtatFront = "afaire" | "faites" | "toutes";
+
+/**
+ * Les tris qui veulent dire quelque chose pour une etape.
+ *
+ * La page en propose dix, taillees pour des objectifs — date de
+ * creation, statut, groupes d abord, groupes en dernier. Une etape n a
+ * ni date ni statut a trois valeurs, et n appartient a aucun groupe :
+ * la moitie de ce menu ne triait rien. Il en reste trois, qui portent
+ * chacun sur quelque chose que l etape possede vraiment.
+ *
+ * Aucune etape ne porte d echeance — la colonne existe, elle est vide
+ * sur les soixante-cinq. « Avancement » reste donc le defaut : finir ce
+ * qui est presque fini avant d ouvrir un chantier de plus.
+ */
+export type TriFront = "progression" | "difficulty" | "name";
+export const TRIS_FRONT: TriFront[] = ["progression", "difficulty", "name"];
+export const estTriDeFront = (t: string): t is TriFront =>
+  (TRIS_FRONT as string[]).includes(t);
+
+const RANG_PALIER: Record<string, number> = {
+  easy: 0, medium: 1, hard: 2, extreme: 3, impossible: 4, custom: 5,
+};
 
 export function classerLeFront(
   etapes: Etape[],
-  options: { portee: PorteeFront; etat: EtatFront; sansExclues: boolean },
+  options: { etat: EtatFront; brigadeSeule: boolean; tri?: TriFront; sens?: "asc" | "desc" },
 ): Etape[] {
   let retenues = etapes;
-  if (options.portee === "brigade") retenues = retenues.filter((e) => e.brigade);
-  else if (options.portee === "engages") retenues = retenues.filter((e) => e.engage);
+  if (options.brigadeSeule) retenues = retenues.filter((e) => e.brigade);
 
   if (options.etat === "afaire") retenues = retenues.filter((e) => !e.faite);
   else if (options.etat === "faites") retenues = retenues.filter((e) => e.faite);
 
-  /* L exclusion du tirage ne mord que sur ce qui reste a faire : une
-     etape franchie n attend plus rien d un tirage.
-     Sans cette reserve, « Faites » annonçait 48 et « Toutes » n en
-     montrait que 46 — deux etapes franchies disparaissaient au motif
-     qu elles etaient hors tirage, et le compte changeait sans qu on
-     ait rien demande. */
-  if (options.sansExclues) retenues = retenues.filter((e) => e.faite || !e.exclue);
+  /* Chaque comparateur est ecrit dans le sens croissant ; le sens
+     descendant l inverse. Le defaut de la page etant « decroissant »,
+     « avancement » place donc en tete ce qui est le plus pres du but. */
+  const tri = options.tri ?? "progression";
+  const croissant = (a: Etape, b: Etape) => {
+    if (tri === "name") return a.titre.localeCompare(b.titre, undefined, { numeric: true });
+    if (tri === "difficulty") {
+      return (
+        (RANG_PALIER[a.difficulte] ?? 9) - (RANG_PALIER[b.difficulte] ?? 9) ||
+        a.avancement - b.avancement ||
+        a.rang - b.rang
+      );
+    }
+    return a.avancement - b.avancement || b.rang - a.rang;
+  };
 
-  /* Ce qui est fait se lit a l envers de ce qui reste : on descend
-     depuis les objectifs les plus aboutis, et l ordre des etapes
-     remonte le temps au lieu de l annoncer. */
-  return [...retenues].sort((a, b) =>
-    options.etat === "faites"
-      ? b.avancement - a.avancement || b.rang - a.rang
-      : b.avancement - a.avancement || a.rang - b.rang,
-  );
+  const signe = options.sens === "asc" ? 1 : -1;
+  return [...retenues].sort((a, b) => signe * croissant(a, b));
 }

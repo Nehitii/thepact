@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, List, Zap, CheckCircle2, SearchX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,10 @@ import {
 import { GoalsPagination } from "@/components/goals/GoalsPagination";
 import { GoalsRegistre } from "@/components/goals/GoalsRegistre";
 import { FrontListe } from "@/components/front/FrontListe";
-import { useEtapes } from "@/hooks/useEtapes";
+import { useEtapes, classerLeFront, estTriDeFront, type EtatFront } from "@/hooks/useEtapes";
 import { estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
-import type { DisplayMode, GoalTab } from "@/hooks/useGoalFilters";
+import type { DisplayMode, GoalTab, SortDirection, SortOption } from "@/hooks/useGoalFilters";
 
 interface GoalsListProps {
   allGoals: Goal[];
@@ -32,6 +32,8 @@ interface GoalsListProps {
   totalPages: number;
   setCurrentPage: (tab: GoalTab, page: number) => void;
   displayMode: DisplayMode;
+  sortBy: SortOption;
+  sortDirection: SortDirection;
   customDifficultyName: string;
   customDifficultyColor: string;
   searchQuery: string;
@@ -56,6 +58,16 @@ const tabs: { id: GoalTab; cle: string; icon: typeof List }[] = [
   { id: "completed", cle: "goals.filters.completed", icon: CheckCircle2 },
 ];
 
+/* Sous le front, les memes trois onglets comptent des etapes — et une
+   etape n'a que deux etats. « En cours » est un mot d'objectif : une
+   etape est faite ou elle ne l'est pas. Les onglets prennent donc le
+   vocabulaire de ce qu'ils trient, un total et ses deux moities. */
+const CLES_FRONT: Record<GoalTab, string> = {
+  all: "front.allSteps",
+  active: "front.todo",
+  completed: "front.done",
+};
+
 function getGridClass(displayMode: DisplayMode) {
   if (displayMode === "grid") {
     // True responsive CSS grid: 2 cols on phones (avoids stretched giant cards),
@@ -76,6 +88,8 @@ export function GoalsList({
   totalPages,
   setCurrentPage,
   displayMode,
+  sortBy,
+  sortDirection,
   customDifficultyName,
   customDifficultyColor,
   searchQuery,
@@ -84,10 +98,64 @@ export function GoalsList({
   unlockCode,
 }: GoalsListProps) {
   const navigate = useNavigate();
-  /* Les etapes du lot filtre — avant pagination : le front les montre
-     toutes, il ne se decoupe pas en pages. */
-  const { data: etapesOuvertes = [], isLoading: chargementEtapes } =
-    useEtapes(buckets[activeTab], customDifficultyColor);
+  /* Les etapes de tout le lot filtre — avant pagination : le front les
+     montre toutes, il ne se decoupe pas en pages.
+     La requete porte sur « all » et non sur l'onglet courant : c'est la
+     meme collection pour les trois, et c'est elle qui permet d'annoncer
+     sur chaque onglet le nombre d'etapes qu'il recouvre. Changer
+     d'onglet ne redemande donc plus rien a la base. */
+  const { data: toutesEtapes = [], isLoading: chargementEtapes } =
+    useEtapes(buckets.all, customDifficultyColor);
+
+  /* SOUS LE FRONT, LES TROIS ONGLETS CLASSENT DES ETAPES.
+   *
+   * Ailleurs ils repartissent des objectifs — tous, engages, franchis.
+   * Mais le front ne montre pas d'objectifs : compter des objectifs
+   * au-dessus d'une liste d'etapes obligeait a traduire de tete, et le
+   * nombre annonce n'etait celui de rien de ce qu'on avait sous les
+   * yeux. Les memes trois mots s'appliquent donc a l'objet montre :
+   * toutes les etapes, celles qui restent, celles qui sont faites.
+   *
+   * Et une etape n'a que deux etats : elle est faite, ou elle ne l'est
+   * pas. Les trois onglets sont donc un total et ses deux moities —
+   * 184 = 65 + 119, verifiable en base. C'est ce qui a fait tomber les
+   * anciens reglages : une portee a trois valeurs dont « engages », que
+   * personne ne pouvait deviner, et un icone d'oeil sans libelle qui
+   * retirait vingt-six etapes du compte en silence. Un onglet
+   * annoncait ainsi un nombre qui n'etait le total de rien.
+   *
+   * Reste un filtre, parce qu'il repond a une autre question :
+   * « seulement mes trois objectifs ? ». Il vit ici et non dans le
+   * front parce que les compteurs en dependent — un onglet ne doit
+   * jamais pouvoir annoncer un nombre que la liste ne montrerait pas.
+   */
+  const [brigadeSeule, setBrigadeSeule] = useState(false);
+
+  const aUneBrigade = toutesEtapes.some((e) => e.brigade);
+
+  const { etapesOnglet, comptesEtapes } = useMemo(() => {
+    const ETAT: Record<GoalTab, EtatFront> = {
+      all: "toutes",
+      active: "afaire",
+      completed: "faites",
+    };
+    /* Le tri de la page peut etre un tri d'objectif — « date de
+       creation », « groupes d'abord » — qui ne veut rien dire pour une
+       etape. On retombe alors sur l'avancement plutot que de ne pas
+       trier du tout. */
+    const tri = estTriDeFront(sortBy) ? sortBy : undefined;
+    const pour = (onglet: GoalTab) =>
+      classerLeFront(toutesEtapes, { etat: ETAT[onglet], brigadeSeule, tri, sens: sortDirection });
+    const listes = { all: pour("all"), active: pour("active"), completed: pour("completed") };
+    return {
+      etapesOnglet: listes[activeTab],
+      comptesEtapes: {
+        all: listes.all.length,
+        active: listes.active.length,
+        completed: listes.completed.length,
+      } as Record<GoalTab, number>,
+    };
+  }, [toutesEtapes, brigadeSeule, activeTab, sortBy, sortDirection]);
   const { t } = useTranslation();
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
@@ -245,7 +313,8 @@ export function GoalsList({
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
-          const count = buckets[tab.id].length;
+          const enFront = displayMode === "front";
+          const count = enFront ? comptesEtapes[tab.id] : buckets[tab.id].length;
           return (
             <button
               key={tab.id}
@@ -257,7 +326,7 @@ export function GoalsList({
             >
               <span className="gl-onglet-in">
                 <Icon className="h-4 w-4" aria-hidden="true" />
-                <span className="gl-onglet-nom">{t(tab.cle)}</span>
+                <span className="gl-onglet-nom">{t(enFront ? CLES_FRONT[tab.id] : tab.cle)}</span>
                 <span className="gl-onglet-nb">{count}</span>
               </span>
             </button>
@@ -286,7 +355,14 @@ export function GoalsList({
                   et decouper le front en tranches de dix objectifs
                   n aurait aucun sens. */}
               {displayMode === "front" ? (
-                <FrontListe etapes={etapesOuvertes} onglet={activeTab} chargement={chargementEtapes} />
+                <FrontListe
+                  etapes={etapesOnglet}
+                  onglet={activeTab}
+                  aUneBrigade={aUneBrigade}
+                  brigadeSeule={brigadeSeule}
+                  onBrigadeSeule={setBrigadeSeule}
+                  chargement={chargementEtapes}
+                />
               ) : displayMode === "bookmark" ? (
                 <GoalsRegistre
                   goals={paginated}
