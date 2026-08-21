@@ -848,6 +848,8 @@
     },
     "monthly": {
       "title": "Monthly Validation",
+      "provision": "Monthly set-aside",
+      "provisionHint": "for upcoming instalments",
       "monthlyBalance": "Monthly Balance",
       "saved": "saved",
       "income": "Income",
@@ -1089,7 +1091,21 @@
       "moisValide": "{{mois}} is validated.",
       "validerLeMois": "Validate the month"
     },
+    "cadence": {
+      "dansNMois": "in {{count}} months",
+      "terminee": "finished",
+      "mensuel": "Monthly",
+      "trimestriel": "Quarterly",
+      "semestriel": "Half-yearly",
+      "annuel": "Yearly",
+      "echeancier": "In instalments"
+    },
     "ligne": {
+      "cadence": "Cadence",
+      "premierMois": "First month",
+      "premiereEcheance": "First instalment",
+      "enCombienDeFois": "How many instalments",
+      "montantTotalAide": "The price paid — the app splits it across instalments.",
       "titreAjout": {
         "expense": "Add an expense",
         "income": "Add income"

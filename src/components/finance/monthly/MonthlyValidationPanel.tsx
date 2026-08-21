@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Check, Edit2, AlertCircle } from 'lucide-react';
@@ -13,7 +13,7 @@ import {
   useRecurringIncome,
 } from '@/hooks/useFinance';
 import { toast } from 'sonner';
-import { calculateActiveTotal } from '@/lib/financeCategories';
+import { totalDuMois } from '@/lib/finance/cadence';
 import {
   ConfirmationToggle,
   CurrencyInput,
@@ -52,8 +52,15 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
     }
   }, [currentValidation]);
 
-  const totalRecurringExpenses = calculateActiveTotal(recurringExpenses);
-  const totalRecurringIncome = calculateActiveTotal(recurringIncome);
+  /* CE QUI EST VALIDE EST CE QUI EST PARTI.
+   *
+   * Ce panneau ecrit dans monthly_validations ce que le mois a
+   * reellement coute. Une somme a plat y aurait inscrit l assurance
+   * annuelle douze fois par an — et l historique, qui s appuie
+   * dessus, aurait menti pour toujours. */
+  const moisValide = useMemo(() => parseISO(currentMonth), [currentMonth]);
+  const totalRecurringExpenses = totalDuMois(recurringExpenses, moisValide);
+  const totalRecurringIncome = totalDuMois(recurringIncome, moisValide);
 
   const isValidated = !!currentValidation && currentValidation.validated_at !== null;
   const canEdit = isValidated && isEditing;

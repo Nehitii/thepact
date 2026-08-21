@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Plus } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
+import { totalDuMois } from '@/lib/finance/cadence';
 import {
   type FinanceCategory,
   getItemCategory,
@@ -19,8 +20,8 @@ interface FinancialBlockProps {
   items: FinancialItem[];
   categories: FinanceCategory[];
   isLoading: boolean;
-  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
-  onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
+  onAdd: (v: ValeursLigne) => Promise<void>;
+  onUpdate: (id: string, v: ValeursLigne) => Promise<void>;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
   isPending?: boolean;
@@ -46,26 +47,30 @@ export function FinancialBlock({
   const [ligneEditee, setLigneEditee] = useState<FinancialItem | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  const moisCourant = useMemo(() => new Date(), []);
+  const totalAmount = totalDuMois(items, moisCourant);
   const isExpense = type === 'expense';
 
   const groupedItems = useMemo(() => {
     const groups = groupItemsByCategory(items, categories);
     return Array.from(groups.values()).sort((a, b) => {
-      const totalA = a.items.reduce((sum, i) => sum + i.amount, 0);
-      const totalB = b.items.reduce((sum, i) => sum + i.amount, 0);
+      /* Les categories se rangent par ce qu elles pesent CE mois-ci :
+         trier sur un montant qui ne part pas mettrait en tete une
+         categorie sans effet sur le mois. */
+      const totalA = totalDuMois(a.items, moisCourant);
+      const totalB = totalDuMois(b.items, moisCourant);
       return totalB - totalA;
     });
-  }, [items, categories]);
+  }, [items, categories, moisCourant]);
 
   const ouvrirAjout = () => { setLigneEditee(null); setFenetre(true); };
   const ouvrirEdition = (item: FinancialItem) => { setLigneEditee(item); setFenetre(true); };
 
   const enregistrer = async (v: ValeursLigne) => {
     if (ligneEditee) {
-      await onUpdate(ligneEditee.id, v.name, v.amount, v.category, v.iconEmoji, v.iconUrl);
+      await onUpdate(ligneEditee.id, v);
     } else {
-      await onAdd(v.name, v.amount, v.category, v.iconEmoji, v.iconUrl);
+      await onAdd(v);
     }
   };
 

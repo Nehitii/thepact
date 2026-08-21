@@ -1162,3 +1162,127 @@
 .cy-piece.est-acquise:hover i { border-color: var(--cy-jaune); color: var(--cy-jaune); }
 .cy-piece.est-acquise:hover span { color: var(--cy-encre); text-decoration: none; }
 .cy-piece.est-acquise:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── LA PROVISION ──
+   Une charge trimestrielle ou annuelle ne pese que le mois ou elle
+   tombe : c est la tresorerie, et c est elle qui commande le solde.
+   Mais elle vient — et n en rien dire les onze autres mois laisserait
+   croire a une aisance qui n existe pas.
+
+   Elle se lit donc sous le solde et non dedans, en une ligne basse et
+   calme. Elle n a pas le poids des trois lectures du haut parce
+   qu elle n est pas du meme ordre : ce n est pas une somme qui est
+   partie, c est une somme qu il faudrait garder. */
+.cy-provision {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 7px 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cy-encre-2, #cfe4f5);
+  background: hsl(var(--primary) / 0.05);
+  border-left: 2px solid var(--cy-provision-teinte, #7bd88f);
+}
+.cy-provision svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--cy-provision-teinte, #7bd88f);
+}
+.cy-provision strong {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--cy-provision-teinte, #7bd88f);
+  font-variant-numeric: tabular-nums;
+}
+/* Ce qu elle couvre, dit tout de suite apres le chiffre : une somme
+   sans son objet ne s interprete pas. */
+.cy-provision em {
+  font-style: normal;
+  letter-spacing: 0.6px;
+  text-transform: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+@media (max-width: 560px) {
+  .cy-provision em { flex-basis: 100%; }
+}
+
+/* ── LES CADENCES, DANS LA FENETRE DE SAISIE ──
+   Cinq choix sur une rangee : quatre periodes, plus le paiement en
+   plusieurs fois, qui est la meme mecanique avec une fin. Ils
+   reprennent la forme des categories juste au-dessus — meme grammaire
+   pour un choix de meme nature. */
+.cy-cadences { display: flex; flex-wrap: wrap; gap: 5px; }
+.cy-cadence {
+  padding: 5px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.cy-cadence:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-cadence:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadence[aria-checked="true"] {
+  color: #05080f;
+  background: var(--cp-cyan, #5cb6ff);
+  border-color: var(--cp-cyan, #5cb6ff);
+  font-weight: 700;
+}
+
+/* L apercu d un echeancier : ce qui sera reellement preleve, mois par
+   mois. La derniere echeance absorbe le reste de la division — le
+   montrer ici evite de decouvrir l ecart sur le releve. */
+.cy-echeancier-apercu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 7px 0 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  color: var(--cy-encre-2, #cfe4f5);
+  font-variant-numeric: tabular-nums;
+}
+.cy-echeancier-apercu u { margin-left: 6px; color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); text-decoration: none; }
+
+/* ── LA CADENCE SUR UNE LIGNE ──
+   Une charge qui ne tombe pas tous les mois doit le dire : sans cela,
+   son montant se lit comme une charge mensuelle. Le mot est petit et
+   se pose apres le nom, la ou l oeil le trouve sans le chercher. */
+.cy-ligne-cadence {
+  margin-left: 7px;
+  padding: 1px 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  border: 1px solid hsl(var(--primary) / 0.24);
+  vertical-align: 1px;
+}
+/* Le mois ou elle ne tombe pas, la ligne reste visible mais ne compte
+   pas. Elle annonce quand elle revient : la voir venir vaut mieux que
+   la voir disparaitre. */
+.cy-ligne-veille {
+  font-style: normal;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  text-transform: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}

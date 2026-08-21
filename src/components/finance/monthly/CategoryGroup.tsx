@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Edit2, ChevronRight, EyeOff, Eye } from 'lucide-react';
@@ -6,6 +6,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { formatCurrency } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel } from '@/lib/financeCategories';
 import type { FinancialItem } from '@/types/finance';
+import {
+  totalDuMois, montantDuMois, tombeEn, prochaineEcheance, moisEntre,
+  rangEcheance, cadenceDe,
+} from '@/lib/finance/cadence';
 
 export interface CategoryGroupProps {
   category: FinanceCategory;
@@ -31,7 +35,11 @@ export function CategoryGroup({
 }: CategoryGroupProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
-  const categoryTotal = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  /* Ce que la categorie pese ce mois-ci, et non la somme de ses
+     lignes : une charge annuelle n en fait pas partie onze mois sur
+     douze. */
+  const moisCourant = useMemo(() => new Date(), []);
+  const categoryTotal = totalDuMois(items, moisCourant);
   const Icon = category.icon;
   const hexColor = category.hexColor;
 
@@ -61,7 +69,12 @@ export function CategoryGroup({
           {items.length}
         </span>
         <span className={`text-sm font-bold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-          {isExpense ? '-' : '+'}{formatCurrency(categoryTotal, currency)}
+          {/* Une categorie dont rien ne tombe ce mois-ci ne vaut pas
+              « -0 € » : le signe sur un zero se lit comme une erreur.
+              Un tiret dit la meme chose sans faire douter. */}
+          {categoryTotal === 0
+            ? <i className="cy-ligne-veille">—</i>
+            : <>{isExpense ? '-' : '+'}{formatCurrency(categoryTotal, currency)}</>}
         </span>
       </button>
 
@@ -82,9 +95,38 @@ export function CategoryGroup({
                     <span aria-hidden="true">{item.icon_emoji}</span>
                   ) : null}
 
-                  <span className="cy-ligne-nom">{item.name}</span>
+                  <span className="cy-ligne-nom">
+                    {item.name}
+                    {/* LA CADENCE, SUR LA LIGNE.
+                        Une charge qui ne tombe pas tous les mois doit
+                        le dire, sinon son montant se lit comme une
+                        charge mensuelle. Un echeancier dit ou il en
+                        est — « 2/4 » — parce que ce qui compte alors,
+                        c est ce qui reste. */}
+                    {cadenceDe(item) !== "mensuel" && (
+                      <b className="cy-ligne-cadence">
+                        {item.echeances != null
+                          ? `${Math.max(1, rangEcheance(item, moisCourant) || rangEcheance(item, moisCourant))}/${item.echeances}`
+                          : t(`finance.cadence.${cadenceDe(item)}`, cadenceDe(item))}
+                      </b>
+                    )}
+                  </span>
                   <span className="cy-ligne-montant">
-                    {isExpense ? "-" : "+"}{formatCurrency(item.amount, currency)}
+                    {tombeEn(item, moisCourant) ? (
+                      <>{isExpense ? "-" : "+"}{formatCurrency(montantDuMois(item, moisCourant), currency)}</>
+                    ) : (
+                      /* Le mois ou elle ne tombe pas, la ligne reste
+                         visible mais ne compte pas : on la voit venir
+                         sans qu elle pese. */
+                      <i className="cy-ligne-veille">
+                        {(() => {
+                          const p = prochaineEcheance(item, moisCourant);
+                          if (!p) return t("finance.cadence.terminee", "terminé");
+                          const n = moisEntre(moisCourant, p);
+                          return t("finance.cadence.dansNMois", { count: n, defaultValue: `dans ${n} mois` });
+                        })()}
+                      </i>
+                    )}
                   </span>
 
                   {/* Les actions ne se cachent plus derriere le survol :

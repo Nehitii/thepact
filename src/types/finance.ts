@@ -16,6 +16,17 @@ export interface RecurringExpense {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
+  /* LA CADENCE — voir src/lib/finance/cadence.ts.
+     Un abonnement trimestriel et un paiement en plusieurs fois sont la
+     meme mecanique : une charge qui ne tombe pas tous les mois. */
+  /** Mois entre deux echeances : 1 mensuel, 3, 6, 12. */
+  periode_mois?: number | null;
+  /** Mois de la premiere echeance ; dit QUELS mois sont concernes. */
+  mois_ancre?: string | null;
+  /** Nombre d echeances, ou rien pour une charge sans fin. */
+  echeances?: number | null;
+  /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
+  montant_total?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +43,17 @@ export interface RecurringIncome {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
+  /* LA CADENCE — voir src/lib/finance/cadence.ts.
+     Un abonnement trimestriel et un paiement en plusieurs fois sont la
+     meme mecanique : une charge qui ne tombe pas tous les mois. */
+  /** Mois entre deux echeances : 1 mensuel, 3, 6, 12. */
+  periode_mois?: number | null;
+  /** Mois de la premiere echeance ; dit QUELS mois sont concernes. */
+  mois_ancre?: string | null;
+  /** Nombre d echeances, ou rien pour une charge sans fin. */
+  echeances?: number | null;
+  /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
+  montant_total?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -95,6 +117,17 @@ export interface FinancialItem {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
+  /* LA CADENCE — voir src/lib/finance/cadence.ts.
+     Un abonnement trimestriel et un paiement en plusieurs fois sont la
+     meme mecanique : une charge qui ne tombe pas tous les mois. */
+  /** Mois entre deux echeances : 1 mensuel, 3, 6, 12. */
+  periode_mois?: number | null;
+  /** Mois de la premiere echeance ; dit QUELS mois sont concernes. */
+  mois_ancre?: string | null;
+  /** Nombre d echeances, ou rien pour une charge sans fin. */
+  echeances?: number | null;
+  /** Prix paye d un echeancier : la division ne tombe pas toujours juste. */
+  montant_total?: number | null;
 }
 
 /**

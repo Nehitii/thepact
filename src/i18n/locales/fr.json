@@ -848,6 +848,8 @@
     },
     "monthly": {
       "title": "Validation mensuelle",
+      "provision": "Provision mensuelle",
+      "provisionHint": "pour les échéances à venir",
       "monthlyBalance": "Solde mensuel",
       "saved": "économisé",
       "income": "Revenus",
@@ -1089,7 +1091,21 @@
       "moisValide": "{{mois}} est validé.",
       "validerLeMois": "Valider le mois"
     },
+    "cadence": {
+      "dansNMois": "dans {{count}} mois",
+      "terminee": "terminé",
+      "mensuel": "Mensuel",
+      "trimestriel": "Trimestriel",
+      "semestriel": "Semestriel",
+      "annuel": "Annuel",
+      "echeancier": "En plusieurs fois"
+    },
     "ligne": {
+      "cadence": "Cadence",
+      "premierMois": "Premier mois",
+      "premiereEcheance": "Première échéance",
+      "enCombienDeFois": "En combien de fois",
+      "montantTotalAide": "Le prix payé — l’app répartit sur les échéances.",
       "titreAjout": {
         "expense": "Ajouter une dépense",
         "income": "Ajouter une entrée"

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowDownRight, ArrowUpRight, Scale } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Scale, PiggyBank } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AnimatedNumber } from '../widgets';
 
@@ -19,9 +19,13 @@ import { AnimatedNumber } from '../widgets';
 interface MonthlyBalanceHeroProps {
   totalIncome: number;
   totalExpenses: number;
+  /* Ce qu il faudrait mettre de cote chaque mois pour absorber les
+     echeances a venir. Ce n est pas une depense du mois : elle ne
+     compte donc pas dans le solde, et se lit a part. */
+  provision?: number;
 }
 
-export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanceHeroProps) {
+export function MonthlyBalanceHero({ totalIncome, totalExpenses, provision = 0 }: MonthlyBalanceHeroProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
   const netBalance = totalIncome - totalExpenses;
@@ -67,6 +71,22 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
           </motion.div>
         ))}
       </div>
+
+      {/* LA PROVISION, SOUS LE SOLDE ET NON DEDANS.
+          Une charge trimestrielle ou annuelle ne pese que le mois ou
+          elle tombe : c est la tresorerie, et c est elle qui commande
+          le solde ci-dessus. Mais elle vient — et ne rien en dire les
+          onze autres mois laisserait croire a une aisance qui n existe
+          pas. La provision est donc affichee, distincte, avec ce
+          qu elle couvre : « pour les echeances a venir ». */}
+      {provision > 0 && (
+        <p className="cy-provision">
+          <PiggyBank aria-hidden="true" />
+          <span>{t('finance.monthly.provision', 'Provision mensuelle')}</span>
+          <strong><AnimatedNumber value={provision} currency={currency} isPositive /></strong>
+          <em>{t('finance.monthly.provisionHint', 'pour les échéances à venir')}</em>
+        </p>
+      )}
 
       {/* La balance : ce qui entre contre ce qui sort, d un seul trait. */}
       {(totalIncome > 0 || totalExpenses > 0) && (

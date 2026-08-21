@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,8 @@ import {
   useDeleteRecurringExpense,
   useDeleteRecurringIncome,
 } from '@/hooks/useFinance';
+import { totalDuMois, provisionMensuelle } from '@/lib/finance/cadence';
+import type { ValeursLigne } from './LigneRecurrente';
 import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { MoisPalmares } from './MoisPalmares';
@@ -74,8 +76,23 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
     requestAnimationFrame(() => cible.classList.add('est-signalee'));
   }, []);
 
-  const totalExpenses = calculateActiveTotal(expenses);
-  const totalIncome = calculateActiveTotal(income);
+  /* DEUX LECTURES, ET ELLES NE DISENT PAS LA MEME CHOSE.
+   *
+   * Le total du mois est la tresorerie : ce qui part reellement ce
+   * mois-ci. Une assurance annuelle pese six cents euros le mois ou
+   * elle tombe et rien les onze autres — la ou, avant, elle gonflait
+   * chaque mois de six cents. C est lui qui commande le solde, parce
+   * que c est lui qui repond a « ai-je de quoi ce mois-ci ».
+   *
+   * La provision repond a une autre question — « combien mettre de
+   * cote pour absorber ce qui vient » — et ne se melange donc pas au
+   * total. Six cents euros annuels valent cinquante euros de
+   * provision.
+   */
+  const moisCourant = useMemo(() => new Date(), []);
+  const totalExpenses = totalDuMois(expenses, moisCourant);
+  const totalIncome = totalDuMois(income, moisCourant);
+  const provision = provisionMensuelle(expenses);
 
   // When editingMonth changes and data loads, pre-populate
   useEffect(() => {
@@ -114,25 +131,39 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
     }
   };
 
-  const handleAddExpense = async (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
+  /* La cadence part avec le reste : c est un champ de la ligne, pas
+     un reglage a cote. */
+  const versLaBase = (v: ValeursLigne) => ({
+    name: v.name,
+    amount: v.amount,
+    category: v.category,
+    icon_emoji: v.iconEmoji,
+    icon_url: v.iconUrl,
+    periode_mois: v.periodeMois ?? 1,
+    mois_ancre: v.moisAncre ?? null,
+    echeances: v.echeances ?? null,
+    montant_total: v.montantTotal ?? null,
+  });
+
+  const handleAddExpense = async (v: ValeursLigne) => {
     if (expenses.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
-    try { await addExpense.mutateAsync({ name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.expenseAdded')); }
+    try { await addExpense.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.expenseAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
-  const handleAddIncome = async (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
+  const handleAddIncome = async (v: ValeursLigne) => {
     if (income.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
-    try { await addIncome.mutateAsync({ name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.incomeAdded')); }
+    try { await addIncome.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.incomeAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
-  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
-    try { await updateExpense.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.expenseUpdated')); }
+  const handleUpdateExpense = async (id: string, v: ValeursLigne) => {
+    try { await updateExpense.mutateAsync({ id, ...versLaBase(v) }); toast.success(t('finance.recurring.expenseUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
-  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
-    try { await updateIncome.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.incomeUpdated')); }
+  const handleUpdateIncome = async (id: string, v: ValeursLigne) => {
+    try { await updateIncome.mutateAsync({ id, ...versLaBase(v) }); toast.success(t('finance.recurring.incomeUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
@@ -148,7 +179,11 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
 
   return (
     <div className="space-y-8">
-      <MonthlyBalanceHero totalIncome={totalIncome} totalExpenses={totalExpenses} />
+      <MonthlyBalanceHero
+        totalIncome={totalIncome}
+        totalExpenses={totalExpenses}
+        provision={provision}
+      />
 
       <MoisPalmares
         netPrevu={totalIncome - totalExpenses}
