@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from "react";
 import { ChevronRight, Crown, Lock, Star } from "lucide-react";
 import { getStatusLabel } from "@/lib/goalConstants";
-import { nomSansPrefixeGroupe } from "@/components/goals/super/types";
 import { membresDuGroupe, estFranchi } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
@@ -240,7 +239,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
           <span className="rg-nom">
             {g.goal_type === "super" && <Crown size={10} aria-hidden="true" />}
             {g.is_locked && <Lock size={10} aria-hidden="true" />}
-            {g.goal_type === "super" ? nomSansPrefixeGroupe(g.name) : g.name}
+            {g.name}
           </span>
           <span className="rg-etapes">
             {av.faits}<i>/{av.total}</i>
@@ -364,7 +363,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
               membres,
               <>
                 <Crown size={11} aria-hidden="true" />
-                <b>{nomSansPrefixeGroupe(groupe.name)}</b>
+                <b>{groupe.name}</b>
                 <span className="rg-fil" />
                 {/* Une constellation repliee doit suffire a decider si on
                     l ouvre. Au-dela de douze membres, une pastille par

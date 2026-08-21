@@ -369,3 +369,18 @@
   .gr-retour { transition: none; }
   .gr-retour:hover { transform: none; }
 }
+
+/* ── Le sens du courant ──
+   ReactFlow anime le pointille de la source vers la cible. Une arete
+   part du moyeu et arrive sur l objectif : le pointille descendait
+   donc du groupe vers ses membres, alors que c est l inverse qui se
+   passe — ce sont les objectifs franchis qui alimentent leur groupe.
+
+   On inverse le sens de lecture plutot que de retourner l arete : sa
+   direction porte la structure du pacte, et la disposition en depend. */
+.gr-toile .react-flow__edge.animated path {
+  animation-direction: reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gr-toile .react-flow__edge.animated path { animation: none; }
+}

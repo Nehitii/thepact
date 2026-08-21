@@ -2,7 +2,7 @@ import React, { useMemo, memo } from "react";
 import { Crown, Zap, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
-import { nomSansPrefixeGroupe, type SuperGoalRule } from "./types";
+import { type SuperGoalRule } from "./types";
 
 interface SuperGoalGridCardProps {
   id: string;
@@ -125,7 +125,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             )}
           </div>
 
-          <h3 className="verre-nom">{nomSansPrefixeGroupe(name)}</h3>
+          <h3 className="verre-nom">{name}</h3>
 
           {/* Une pastille par objectif contenu, allumee quand il est
               honore. Au-dela de douze elles formeraient un trait continu

@@ -44,7 +44,15 @@ const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrimitive.C
   ...props
 }, ref) => <SelectPrimitive.Portal>
     <SelectPrimitive.Content ref={ref} className={cn(
-      "relative z-[100] max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-border/60 bg-card backdrop-blur-xl text-foreground shadow-lg",
+      // Une liste ouverte depuis un calque plein ecran doit passer
+      // au-dessus de lui : les calques de l app montent a 9999, et
+      // Radix recopie ce z-index sur l enveloppe du popper.
+      //
+      // Et elle ne depasse jamais la place disponible. « max-h-96 »
+      // seul vaut 384 pixels quoi qu il arrive : dans une fenetre plus
+      // courte, Radix ne pouvait que la poser en dehors de l ecran.
+      // La variable est fournie par le mode popper.
+      "relative z-[10001] max-h-[min(24rem,var(--radix-select-content-available-height))] min-w-[8rem] overflow-hidden rounded-xl border border-border/60 bg-card backdrop-blur-xl text-foreground shadow-lg",
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
       className
