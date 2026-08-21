@@ -231,12 +231,9 @@
   background: var(--t, #94a3b8);
 }
 
-/* ── Les trois etats ── */
-.gr-etat-acquis {
-  box-shadow: 0 0 20px -4px var(--t, #94a3b8);
-}
-.gr-etat-acquis .gr-img { filter: saturate(1.06) contrast(1.05); }
-
+/* ── Les trois etats ──
+   L etat « acquis » est traite plus bas, avec l explication du
+   renversement d emphase. */
 .gr-etat-encours .gr-img { filter: saturate(0.92); }
 
 /* Verrouille : desature et retrait, sans disparaitre. On doit voir que
@@ -252,7 +249,8 @@
 .gr-noeud--moyeu { width: 222px; padding: 2px; }
 .gr-noeud--moyeu .gr-carte { height: 106px; }
 .gr-noeud--moyeu .gr-nom { font-size: 1.04rem; -webkit-line-clamp: 3; line-clamp: 3; }
-.gr-noeud--moyeu.gr-etat-acquis { box-shadow: 0 0 28px -3px var(--t, #fcee0a); }
+/* Un groupe honore recule comme le reste : il a ete franchi, il n a
+   plus rien a demander. */
 
 /* ── Poignees ──
    ReactFlow pose des pastilles de connexion sur chaque noeud. Le graphe
@@ -279,18 +277,49 @@
 @media (prefers-reduced-motion: reduce) {
   .gr-noeud { transition: none; }
   .gr-noeud:hover { transform: none; }
+  .gr-etat-acquis { transition: none; }
 }
 
-/* ── Ecart entre "acquis" et "en cours" ──
-   Les deux etaient a pleine couleur : seul un petit glyphe les separait,
-   et il disparaissait a l'echelle. On creuse l'ecart sur des signaux qui
-   survivent au zoom arriere — l'epaisseur du cadre et le halo. */
+/* ── CE QUI EST FRANCHI RECULE ──
+ *
+ * Deux tentatives ont cherche a faire ressortir un objectif franchi :
+ * un glyphe, puis un cadre plus epais et un halo. Aucune ne tenait a
+ * l echelle ou l on regarde vraiment la constellation. Mesure a la vue
+ * d ensemble — zoom 0,17 — une carte de cent soixante-seize pixels en
+ * fait trente : le cadre tombe de 1,5 a 0,26 pixel, l epaisseur qui
+ * marquait le franchissement a 0,51, et la bande a deux et demi. Ni
+ * l epaisseur ni le texte ne survivent au zoom arriere. Seules la
+ * teinte et la masse survivent.
+ *
+ * Et le halo etait dans la couleur du palier : un noeud vert entoure de
+ * vert ne se distingue pas d un noeud vert.
+ *
+ * On renverse donc l emphase au lieu de la renforcer. Ce qui est
+ * franchi s eteint ; ce qui garde sa couleur est ce qui reste a faire.
+ * Quatorze noeuds sur trente-huit cessent de reclamer l attention, et
+ * la question qu on pose vraiment au graphe — ou reste-t-il du travail
+ * — se lit d un coup d oeil.
+ *
+ * Reculer n est pas disparaitre : le survol les rallume, comme pour un
+ * objectif verrouille. */
 .gr-etat-acquis {
-  padding: 3px;
-  box-shadow: 0 0 26px -5px var(--t, #94a3b8), 0 0 0 1px rgb(255 255 255 / 0.14);
+  padding: 1.5px;
+  box-shadow: none;
+  opacity: 0.38;
+  transition: opacity 170ms ease;
 }
+.gr-etat-acquis .gr-img { filter: grayscale(1) brightness(0.62); }
+/* La bande porte le mot « honore » : elle recule avec la carte plutot
+   que de rester le seul point vif d un noeud eteint. */
+.gr-etat-acquis .gr-acquis-bande {
+  /* Le gris est celui qui passe le seuil : l encre de la bande est
+     presque noire, et #6B7686 la laissait a 4,35:1. */
+  background: #737e8d;
+  box-shadow: none;
+}
+.gr-etat-acquis:hover { opacity: 1; }
+.gr-etat-acquis:hover .gr-img { filter: grayscale(0.18) brightness(0.95); }
 
-.gr-etat-acquis .gr-img { filter: saturate(1.12) contrast(1.06) brightness(1.04); }
 .gr-etat-encours .gr-img { filter: saturate(0.86) brightness(0.9); }
 .gr-etat-encours .gr-jauge { height: 7px; }
 
