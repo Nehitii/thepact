@@ -35,6 +35,14 @@ export const EXPENSE_CATEGORIES: FinanceCategory[] = [
   { value: 'shopping', labelKey: 'finance.categories.shopping', icon: ShoppingBag, color: 'text-violet-400', bg: 'bg-violet-500/10', hexColor: '#a78bfa' },
   { value: 'maintenance', labelKey: 'finance.categories.maintenance', icon: Wrench, color: 'text-amber-400', bg: 'bg-amber-500/10', hexColor: '#fbbf24' },
   { value: 'insurance', labelKey: 'finance.categories.insurance', icon: Receipt, color: 'text-teal-400', bg: 'bg-teal-500/10', hexColor: '#2dd4bf' },
+  /* QUATRE CATEGORIES QUI EXISTAIENT DEJA DANS LES FAITS.
+     « Protection Juridique », « Bouygues Mobile » et « CB Societe
+     generale » etaient rangees dans « autre » ou « logement », faute
+     de mieux — et portaient donc le gris de « autre » sur leur
+     monogramme. Leur donner leur nom leur donne aussi leur couleur. */
+  { value: 'banking', labelKey: 'finance.categories.banking', icon: Landmark, color: 'text-cyan-300', bg: 'bg-cyan-300/10', hexColor: '#67e8f9' },
+  { value: 'legal', labelKey: 'finance.categories.legal', icon: Receipt, color: 'text-amber-300', bg: 'bg-amber-300/10', hexColor: '#fcd34d' },
+  { value: 'telecom', labelKey: 'finance.categories.telecom', icon: Wifi, color: 'text-sky-300', bg: 'bg-sky-300/10', hexColor: '#7dd3fc' },
   { value: 'childcare', labelKey: 'finance.categories.childcare', icon: Heart, color: 'text-rose-300', bg: 'bg-rose-300/10', hexColor: '#fda4af' },
   { value: 'pets', labelKey: 'finance.categories.pets', icon: Heart, color: 'text-orange-300', bg: 'bg-orange-300/10', hexColor: '#fdba74' },
   { value: 'gifts', labelKey: 'finance.categories.gifts', icon: Gift, color: 'text-pink-300', bg: 'bg-pink-300/10', hexColor: '#f9a8d4' },

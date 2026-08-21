@@ -108,7 +108,7 @@ export function AnneeDesEcheances({ items, moisCourant, annee, onAnnee, onEdit }
                   onClick={() => onEdit(item)}
                   title={`${item.name} · ${formatCurrency(montant, currency)}`}
                 >
-                  <MarqueCreancier nom={item.name} iconUrl={item.icon_url} categorie={item.category} taille={18} />
+                  <MarqueCreancier nom={item.name} iconUrl={item.icon_url} categorie={item.category} cadre={item.icon_cadre} taille={18} />
                   {/* Les centimes n apprennent rien a cette taille et
                       font deborder la baie : on arrondit a l euro, et
                       le total du mois juste dessous reste exact. */}

@@ -19,24 +19,31 @@
  */
 import { useMemo } from 'react';
 import { initialesDe, couleurDe } from '@/lib/finance/marque';
+import { normaliserCadre, styleDuCadre } from '@/lib/finance/cadre';
 
 interface Props {
   nom: string;
   iconUrl?: string | null;
   categorie?: string | null;
+  /** Le cadrage enregistre, tel quil sort de la base. */
+  cadre?: unknown;
   /** Le cote de la plaque, en pixels. Le portrait d une fiche est rectangulaire : passer null. */
   taille?: number | null;
   className?: string;
 }
 
-export function MarqueCreancier({ nom, iconUrl, categorie, taille = 44, className = '' }: Props) {
+export function MarqueCreancier({ nom, iconUrl, categorie, cadre, taille = 44, className = '' }: Props) {
   const initiales = useMemo(() => initialesDe(nom), [nom]);
   const couleur = useMemo(() => couleurDe(categorie), [categorie]);
   const dimension = taille == null ? undefined : { width: taille, height: taille };
 
   if (iconUrl) {
+    /* Le cadrage decide du fond, du recadrage, du point garde au
+       centre et du zoom. Sans reglage enregistre, normaliserCadre rend
+       le defaut — une image contenue sur fond clair. */
+    const pose = styleDuCadre(normaliserCadre(cadre), couleur);
     return (
-      <span className={`cy-marque cy-marque-photo ${className}`} style={dimension}>
+      <span className={`cy-marque cy-marque-photo ${className}`} style={{ ...dimension, ...pose }}>
         {/* L image d un creancier est un logo, pas une photographie :
             elle doit tenir entiere dans sa plaque plutot que d etre
             recadree, et on la pose donc sur du blanc — c est le fond

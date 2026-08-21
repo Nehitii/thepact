@@ -74,6 +74,7 @@ export function PlancheDesCreanciers({ items, moisCourant, nommerMois, onEdit, o
                 nom={item.name}
                 iconUrl={item.icon_url}
                 categorie={item.category}
+                cadre={item.icon_cadre}
                 taille={null}
               />
               <span className="cy-fiche-rail" style={{ background: couleur }} aria-hidden="true" />

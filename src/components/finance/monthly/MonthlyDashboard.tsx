@@ -171,6 +171,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
     category: v.category,
     icon_emoji: v.iconEmoji,
     icon_url: v.iconUrl,
+    icon_cadre: v.iconCadre ?? null,
     periode_mois: v.periodeMois ?? 1,
     mois_ancre: v.moisAncre ?? null,
     echeances: v.echeances ?? null,

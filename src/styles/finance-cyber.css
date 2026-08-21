@@ -1594,13 +1594,17 @@
 .cy-marque-photo img {
   width: 100%;
   height: 100%;
-  /* Un logo doit tenir entier dans sa plaque : le recadrer couperait
-     precisement ce qui le rend reconnaissable. */
-  object-fit: contain;
+  /* LES QUATRE VARIABLES VIENNENT DU CADRAGE ENREGISTRE.
+     Sans reglage, ce sont les valeurs de repli ci-dessous — un logo
+     contenu, centre, sans zoom, avec sa marge. Voir lib/finance/cadre.ts. */
+  object-fit: var(--cadre-ajuste, contain);
+  transform: translate(var(--cadre-dx, 0%), var(--cadre-dy, 0%)) scale(var(--cadre-zoom, 1));
   /* En pixels et non en pourcentage : sur une plaque rectangulaire,
      12% ne vaut pas la meme chose en haut et sur les cotes. */
-  padding: 8px;
+  padding: var(--cadre-marge, 8px);
 }
+/* Sur une pastille de dix-huit pixels, huit pixels de marge ne
+   laisseraient rien a voir. */
 .cy-jeton .cy-marque-photo img { padding: 1px; }
 .cy-marque-lettres { background: var(--marque-couleur, #94a3b8); }
 .cy-marque-lettres b {
@@ -1620,6 +1624,236 @@
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(135deg, rgb(0 0 0 / 0.22) 0 1px, transparent 1px 5px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE CADREUR
+
+   Televerser ne suffisait pas : l image etait posee de la seule facon
+   prevue, et le resultat dependait de la chance qu on avait eue avec
+   le fichier. Un logo large tombait bien, un logo carre cerne de
+   marge s affichait minuscule, un logo blanc sur fond transparent
+   disparaissait sur du blanc.
+   ═══════════════════════════════════════════════════════════════ */
+
+.cy-cadreur { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── SANS IMAGE ── */
+.cy-cadreur-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 86px;
+  padding: 16px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px dashed hsl(var(--primary) / 0.3);
+  cursor: pointer;
+  transition: color 130ms linear, border-color 130ms linear, background 130ms linear;
+}
+.cy-cadreur-vide:hover {
+  color: var(--cy-encre, #e8f4ff);
+  border-color: hsl(var(--primary) / 0.6);
+  background: hsl(var(--primary) / 0.04);
+}
+.cy-cadreur-vide:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-cadreur-vide svg { width: 20px; height: 20px; }
+.cy-cadreur-vide span {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cy-encre-2, #cfe4f5);
+}
+.cy-cadreur-vide u {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+.cy-tourne { animation: cy-tourner 900ms linear infinite; }
+@keyframes cy-tourner { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .cy-tourne { animation: none; } }
+
+/* ── LES DEUX APERCUS ──
+   La meme marque parait sur la plaque large d une fiche et sur la
+   pastille carree du calendrier. Un cadrage qui va sur l une peut
+   couper l autre : les deux sont donc la, et se reglent ensemble. */
+.cy-cadreur-apercus { display: flex; align-items: flex-end; gap: 12px; }
+.cy-cadreur-plaque,
+.cy-cadreur-pastille {
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid hsl(var(--primary) / 0.28);
+}
+/* LE MEME FORMAT QUE LA FICHE, ET C EST TOUT LE SUJET.
+   L apercu supposait 203 sur 92 alors que la plaque d une fiche avait
+   une hauteur fixe et une largeur qui suivait la grille : son format
+   changeait avec la fenetre. En remplissage, un format different rogne
+   differemment — on reglait sur une forme pour en obtenir une autre.
+   Les deux tiennent desormais le meme 16/7. */
+.cy-cadreur-plaque {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 16 / 7;
+  cursor: grab;
+  touch-action: none;
+}
+.cy-cadreur-plaque:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-cadreur-plaque[data-glisse="1"] { cursor: grabbing; }
+.cy-cadreur-plaque[data-glisse="1"] figcaption { opacity: 0; }
+.cy-cadreur-pastille { width: 62px; height: 62px; flex-shrink: 0; }
+.cy-cadreur-apercus img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--cadre-ajuste, contain);
+  transform: translate(var(--cadre-dx, 0%), var(--cadre-dy, 0%)) scale(var(--cadre-zoom, 1));
+  padding: var(--cadre-marge, 8px);
+  /* Sans cela, glisser sur limage declenche le glisser-deposer natif
+     du navigateur et le geste est perdu au premier pixel. */
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.cy-cadreur-pastille img { padding: calc(var(--cadre-marge, 8px) / 2); }
+.cy-cadreur-apercus figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: opacity 120ms linear;
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 3px 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(8px, 0.5rem);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-align: center;
+  color: #dbe9f7;
+  /* Le bandeau se pose sur l image, donc sur une couleur inconnue :
+     il porte son propre fond plutot que de parier sur le contraste. */
+  background: rgb(4 5 7 / 0.72);
+}
+.cy-cadreur-apercus figcaption svg { width: 10px; height: 10px; }
+
+/* ── LES REGLAGES ── */
+.cy-cadreur-reglages { display: flex; flex-direction: column; gap: 10px; }
+.cy-cadreur-rang { display: flex; flex-direction: column; gap: 6px; }
+.cy-cadreur-nom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-cadreur-nom b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  color: var(--cp-cyan, #5cb6ff);
+  font-variant-numeric: tabular-nums;
+}
+
+.cy-cadreur-choix { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cy-cadreur-choix button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 8px;
+  padding: 8px 10px;
+  text-align: left;
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.cy-cadreur-choix svg { grid-row: 1 / 3; width: 16px; height: 16px; color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); }
+.cy-cadreur-choix b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cy-encre-2, #cfe4f5);
+}
+.cy-cadreur-choix u {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  text-decoration: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-cadreur-choix button:hover { border-color: hsl(var(--primary) / 0.45); }
+.cy-cadreur-choix button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadreur-choix button[aria-checked="true"] {
+  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 12%, transparent);
+  border-color: var(--cp-cyan, #5cb6ff);
+}
+.cy-cadreur-choix button[aria-checked="true"] b,
+.cy-cadreur-choix button[aria-checked="true"] svg { color: var(--cp-cyan, #5cb6ff); }
+
+.cy-cadreur-fonds { display: flex; gap: 6px; }
+.cy-cadreur-fonds button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+}
+.cy-cadreur-fonds button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.45); }
+.cy-cadreur-fonds button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadreur-fonds button[aria-checked="true"] { color: var(--cp-cyan, #5cb6ff); border-color: var(--cp-cyan, #5cb6ff); }
+.cy-cadreur-fonds i {
+  display: block;
+  width: 13px;
+  height: 13px;
+  /* Un echantillon blanc sur fond noir a besoin d un cerne, sinon on
+     ne voit pas ou il commence. */
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+.cy-cadreur-glissiere { width: 100%; accent-color: var(--cp-cyan, #5cb6ff); cursor: pointer; }
+@media (pointer: coarse) { .cy-cadreur-glissiere { height: 32px; } }
+
+.cy-cadreur-outils { display: flex; flex-wrap: wrap; gap: 6px; }
+.cy-cadreur-outils button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+}
+.cy-cadreur-outils button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.45); }
+.cy-cadreur-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadreur-outils svg { width: 12px; height: 12px; }
+.cy-cadreur-retirer { margin-left: auto; }
+.cy-cadreur-retirer:hover { color: #ff7a8a !important; border-color: color-mix(in srgb, #ff7a8a 55%, transparent) !important; }
+
+@media (max-width: 520px) {
+  .cy-cadreur-choix { grid-template-columns: 1fr; }
+  .cy-cadreur-apercus { flex-direction: column; align-items: stretch; }
+  .cy-cadreur-pastille { width: 62px; align-self: flex-start; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1646,7 +1880,10 @@
    compte pour la tresorerie. */
 .cy-fiche[data-tombe="1"] { background: hsl(var(--primary) / 0.07); border-color: hsl(var(--primary) / 0.34); }
 
-.cy-fiche-portrait { position: relative; height: 92px; }
+/* Format fixe, et non hauteur fixe : cest ce qui permet a lapercu
+   du cadreur de promettre ce que la fiche affichera. Voir
+   FORMAT_PLAQUE dans lib/finance/cadre.ts. */
+.cy-fiche-portrait { position: relative; aspect-ratio: 16 / 7; }
 .cy-fiche-portrait .cy-marque { width: 100%; height: 100%; font-size: 92px; }
 .cy-fiche-rail { position: absolute; inset: auto 0 0 0; height: 3px; }
 

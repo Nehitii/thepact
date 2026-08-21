@@ -956,7 +956,10 @@
       "benefits": "Allocations",
       "royalties": "Redevances",
       "refunds": "Remboursements",
-      "gift": "Don"
+      "gift": "Don",
+      "banking": "Frais bancaires",
+      "legal": "Protection juridique",
+      "telecom": "Téléphonie"
     },
     "projections": {
       "title": "Projections financières",
@@ -1167,6 +1170,29 @@
     "annee": {
       "precedente": "Année {{annee}}",
       "suivante": "Année {{annee}}"
+    },
+    "cadre": {
+      "choisir": "Ajouter un logo",
+      "formats": "PNG ou JPG · 2 Mo max",
+      "tropLourd": "Image trop lourde (2 Mo maximum).",
+      "echec": "L’image n’a pas pu être envoyée.",
+      "surLaFiche": "Sur la fiche",
+      "surLeCalendrier": "Au calendrier",
+      "cadrage": "Cadrage",
+      "contenir": "Ajuster",
+      "contenirAide": "le logo entier",
+      "remplir": "Remplir",
+      "remplirAide": "bords rognés",
+      "fond": "Fond",
+      "clair": "Clair",
+      "sombre": "Sombre",
+      "teinte": "Teinte",
+      "zoom": "Zoom",
+      "remplacer": "Remplacer",
+      "reinitialiser": "Réinitialiser",
+      "retirer": "Retirer",
+      "mauvaisType": "Ce fichier n’est pas une image.",
+      "deplacer": "Déplacer l’image — flèches du clavier, ou glisser"
     }
   },
   "health": {

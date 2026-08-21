@@ -1,6 +1,6 @@
 import imageCompression, { type Options } from "browser-image-compression";
 
-export type ImagePurpose = "avatar" | "goal" | "journal" | "thumbnail";
+export type ImagePurpose = "avatar" | "goal" | "journal" | "thumbnail" | "logo";
 
 const PRESETS: Record<ImagePurpose, Options> = {
   avatar: {
@@ -30,6 +30,21 @@ const PRESETS: Record<ImagePurpose, Options> = {
     useWebWorker: true,
     fileType: "image/webp",
     initialQuality: 0.8,
+  },
+  /* UN LOGO DE CREANCIER.
+     Il paraissait autrefois sur une vignette de quarante pixels, ou
+     « thumbnail » et ses deux cents pixels suffisaient largement. Il
+     occupe desormais la plaque dune fiche — deux cent trois pixels de
+     large, donc quatre cent six sur un ecran a double densite — et
+     deux cents pixels sy verraient flous. Cinq cent douze couvrent le
+     cas sans peser : un logo est une aplat de couleurs, il se
+     compresse bien mieux quune photographie. */
+  logo: {
+    maxSizeMB: 0.15,
+    maxWidthOrHeight: 512,
+    useWebWorker: true,
+    fileType: "image/webp",
+    initialQuality: 0.85,
   },
 };
 

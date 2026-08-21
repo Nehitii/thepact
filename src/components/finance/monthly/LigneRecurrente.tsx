@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCurrencySymbol } from '@/lib/currency';
 import { getCategoryLabel, type FinanceCategory } from '@/lib/financeCategories';
-import { FinanceImageUpload } from '../FinanceImageUpload';
+import { CadreurDImage } from '../CadreurDImage';
+import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/lib/finance/cadre';
+import { couleurDe } from '@/lib/finance/marque';
 import { SelecteurDeMois } from './SelecteurDeMois';
 import { moisDeChute, motifDepuisMois } from '@/lib/finance/cadence';
 import type { FinancialItem } from '@/types/finance';
@@ -33,6 +35,9 @@ export interface ValeursLigne {
   category?: string;
   iconEmoji?: string;
   iconUrl?: string;
+  /* Comment l image se pose. Nul quand rien n a ete regle : ecrire le
+     defaut partout ferait croire a une intention. */
+  iconCadre?: CadreImage | null;
   /* LA CADENCE. Un abonnement trimestriel et un paiement en plusieurs
      fois sont la meme mecanique : une charge qui ne tombe pas tous les
      mois. Voir src/lib/finance/cadence.ts. */
@@ -98,6 +103,7 @@ export function LigneRecurrente({
   const [montant, setMontant] = useState('');
   const [categorie, setCategorie] = useState(categories[0]?.value ?? '');
   const [urlIcone, setUrlIcone] = useState('');
+  const [cadre, setCadre] = useState<CadreImage>(CADRE_PAR_DEFAUT);
   const [mode, setMode] = useState<Mode>('recurrent');
   const [moisChoisis, setMoisChoisis] = useState<number[]>([]);
   const [ancre, setAncre] = useState(moisCourantISO());
@@ -109,6 +115,9 @@ export function LigneRecurrente({
     setMontant(ligne ? String(ligne.amount) : '');
     setCategorie(ligne?.category ?? categories[0]?.value ?? '');
     setUrlIcone(ligne?.icon_url ?? '');
+    /* Le cadre vient dune colonne jsonb : il peut contenir nimporte
+       quoi, et normaliserCadre est le seul point de passage. */
+    setCadre(normaliserCadre(ligne?.icon_cadre));
 
     /* La cadence se relit de ce qui est enregistre : un echeancier se
        reconnait a son nombre d echeances, tout le reste revient. Les
@@ -161,6 +170,9 @@ export function LigneRecurrente({
       amount: estEcheancier ? partsEcheancier[0] : valeur,
       category: categorie || undefined,
       iconUrl: urlIcone || undefined,
+      /* Sans image, le cadre ne cadre rien : linscrire laisserait un
+         reglage orphelin derriere une ligne qui na plus de logo. */
+      iconCadre: urlIcone ? cadreAEnregistrer(cadre) : null,
       /* Un echeancier se preleve mois apres mois : sa periode vaut un,
          et c est sa premiere echeance qui le situe. Une charge qui
          revient tient dans le motif lu sur la grille. */
@@ -384,14 +396,18 @@ export function LigneRecurrente({
             </div>
           )}
 
-          {/* ── L icone, facultative ───────────────────────── */}
+          {/* ── LE LOGO, ET COMMENT IL SE POSE ──────────────
+              Televerser ne suffisait pas : limage etait posee de la
+              seule facon prevue, et le resultat dependait de la chance
+              quon avait eue avec le fichier. */}
           <div className="cy-reg-rang">
             <span className="cy-reg-nom">{t('finance.ligne.icone')}</span>
-            <FinanceImageUpload
-              size="sm"
-              currentUrl={urlIcone || null}
-              onUpload={(url) => setUrlIcone(url)}
-              onClear={() => setUrlIcone('')}
+            <CadreurDImage
+              url={urlIcone || null}
+              cadre={cadre}
+              onUrl={(u) => setUrlIcone(u ?? '')}
+              onCadre={setCadre}
+              teinte={couleurDe(categorie)}
             />
           </div>
         </div>
