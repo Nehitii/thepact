@@ -221,6 +221,11 @@ All colors MUST be HSL.
     --encre-titre: 210 100% 14%;
     --encre-titre-douce: 210 60% 24%;
 
+    /* L encre secondaire et l accent d etat : mêmes raisons que
+       ci-dessus, un cran plus bas dans la hiérarchie. */
+    --encre-second: 210 34% 30%;
+    --accent-ambre: 35 100% 27%;
+
     /* HUD Card Surfaces */
     --card: 210 40% 98%;
     --card-foreground: 210 100% 12%;
@@ -371,6 +376,11 @@ All colors MUST be HSL.
        Le theme sombre ne bouge pas d un cheveu. */
     --encre-titre: 205 100% 96%;
     --encre-titre-douce: 208 100% 97%;
+
+    /* Reprises des hexadécimaux qui étaient en dur : #cfe4f5 et
+       #ffc53d. Le thème sombre ne bouge pas. */
+    --encre-second: 207 65% 89%;
+    --accent-ambre: 42 100% 62%;
 
     /* HUD Card Surfaces - Deep Panels */
     --card: 210 80% 5%;

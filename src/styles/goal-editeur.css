@@ -359,9 +359,9 @@
    noire posee dessus tombait a 3,22:1. Elle passe en clair, et le
    survol assombrit au lieu d eclaircir — l eclaircir ramenait le
    rapport a 3,95. */
-:root:not(.dark) .ge-bouton--valider { color: #f7fbff; }
+:root:not(.dark) .ge-bouton--valider { color: hsl(var(--encre-titre-douce)); }
 :root:not(.dark) .ge-bouton--valider:hover {
-  color: #f7fbff;
+  color: hsl(var(--encre-titre-douce));
   background: color-mix(in srgb, var(--gd-or) 78%, #000);
   border-color: color-mix(in srgb, var(--gd-or) 78%, #000);
 }
@@ -502,7 +502,7 @@
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
   line-height: 1.4;
-  color: #ffc53d;
+  color: hsl(var(--accent-ambre));
 }
 .ge-alerte svg { flex-shrink: 0; margin-top: 2px; }
 

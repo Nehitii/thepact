@@ -76,6 +76,11 @@
   --ds-surface-1:     220 30% 92%;
   --ds-surface-2:     220 25% 89%;
   --ds-surface-3:     220 20% 86%;
+
+  /* Le cyan de signal, pose en TEXTE, tombe a 1,25 sur une surface
+     claire — le lien devitement en faisait les frais. Meme teinte,
+     luminosite descendue. */
+  --ds-accent-primary:  190 100% 24%;
   --ds-overlay:       220 30% 96%;
 
   --ds-text-primary:   210 100% 8%;

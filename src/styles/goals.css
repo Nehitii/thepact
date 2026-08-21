@@ -1678,7 +1678,7 @@
   font-weight: 700;
   letter-spacing: 2.4px;
   text-transform: uppercase;
-  color: #dbeaf7;
+  color: hsl(var(--encre-second));
 }
 .gl-vide-texte {
   margin: 0 0 6px;
@@ -2071,7 +2071,21 @@
   white-space: nowrap;
 }
 .gl-part-jauge { height: 10px; }
+/* En theme clair, le meme neon tombe a 1,1 : illisible. On garde la
+   teinte — elle code letat, actif ou franchi — et on la descend vers
+   son propre noir. La jauge, elle, reste en neon : son contraste se
+   joue avec le creux quelle remplit, pas avec la page.
+
+   Quarante pour cent : cest la proportion la plus genereuse qui fasse
+   passer les TROIS teintes au-dessus de 4,5 sur le fond clair. Lambre
+   supporterait 55, le vert 45, le jaune sarrete a 40 — cest lui qui
+   commande, sans quoi une des trois resterait sous le seuil. */
+:root:not(.dark) .gl-part-val { color: color-mix(in srgb, var(--c, currentColor) 40%, #04121f); }
+
 .gl-part-val {
+  /* La teinte du conteneur, telle quelle : sur fond noir, un neon se
+     lit a seize de contraste. */
+  color: var(--c, currentColor);
   min-width: 2.1rem;
   text-align: right;
   font-size: 1.1rem;
@@ -2776,7 +2790,7 @@
   margin-top: 0;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1px;
-  color: #cfe4f5;
+  color: hsl(var(--encre-second));
   white-space: nowrap;
 }
 .verre-etat::before {
@@ -3039,7 +3053,7 @@
 .rg-etapes {
   text-align: right;
   font-size: max(11px, 0.6875rem);
-  color: #cfe4f5;
+  color: hsl(var(--encre-second));
   font-variant-numeric: tabular-nums;
 }
 .rg-etapes i { font-style: normal; color: var(--nexus-text-dimmer); }
@@ -3062,7 +3076,7 @@
 }
 .rg-etat--attente { color: var(--cp-texte-doux); }
 .rg-etat--encours { color: var(--cp-cyan); }
-.rg-etat--pret    { color: #ffc53d; }
+.rg-etat--pret    { color: hsl(var(--accent-ambre)); }
 /* Le zenith : le meme or, mais plein — dans une colonne de mots, la
    rarete se dit par la densite. */
 .rg-etat--zenith {
@@ -3120,7 +3134,7 @@
 .rg-pastilles { display: flex; gap: 3px; flex-shrink: 0; }
 .rg-pastilles u { width: 12px; height: 4px; background: rgb(255 255 255 / 0.16); text-decoration: none; }
 .rg-pastilles u.on { background: var(--cp-jaune); }
-.rg-compte { color: #cfe4f5; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.rg-compte { color: hsl(var(--encre-second)); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
 /* Les lignes d'un groupe sont indentees par une branche, pas par une
    marge : la branche relie visuellement l'objectif a son groupe, une
@@ -3224,7 +3238,7 @@
   font-family: 'Rajdhani', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #dbeaf7;
+  color: hsl(var(--encre-second));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3232,7 +3246,7 @@
 .rg-membre-j { display: flex; gap: 2px; }
 .rg-membre-j u { flex: 1; height: 6px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
 .rg-membre-j u.on { background: var(--t); }
-.rg-membre-c { text-align: right; color: #cfe4f5; font-variant-numeric: tabular-nums; }
+.rg-membre-c { text-align: right; color: hsl(var(--encre-second)); font-variant-numeric: tabular-nums; }
 
 .rg-etapes-liste {
   list-style: none;
@@ -3249,7 +3263,7 @@
   height: 24px;
   font-family: 'Share Tech Mono', monospace;
   font-size: max(11px, 0.6875rem);
-  color: #cfe4f5;
+  color: hsl(var(--encre-second));
 }
 .rg-etape-n { color: var(--cp-texte-doux); font-variant-numeric: tabular-nums; }
 .rg-etape-coche { color: var(--t); text-align: center; }

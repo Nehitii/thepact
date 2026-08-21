@@ -174,12 +174,16 @@ function Part({ libelle, valeur, total, teinte }: {
 }) {
   const pct = total > 0 ? (valeur / total) * 100 : 0;
   return (
-    <div className="gl-part">
+    /* La teinte descend sur le conteneur plutot que sur chaque
+       enfant : la jauge la veut en neon — le contraste sy joue avec le
+       creux quelle remplit — la ou le chiffre est du TEXTE, et doit
+       pouvoir sassombrir en theme clair. Voir .gl-part-val. */
+    <div className="gl-part" style={{ ["--c" as string]: teinte }}>
       <span className="gl-part-nom ds-t-label">{libelle}</span>
-      <span className="cp-segments gl-part-jauge" style={{ ["--c" as string]: teinte }}>
+      <span className="cp-segments gl-part-jauge">
         <i style={{ width: `${pct}%` }} />
       </span>
-      <span className="gl-part-val font-orbitron" style={{ color: teinte }}>{valeur}</span>
+      <span className="gl-part-val font-orbitron">{valeur}</span>
     </div>
   );
 }
