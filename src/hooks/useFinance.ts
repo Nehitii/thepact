@@ -92,7 +92,18 @@ export function useUpsertMonthlyValidation() {
   });
 }
 
-// Finance Settings hooks
+/* LES REGLAGES DE FINANCE VIVENT DANS `profiles`.
+ *
+ * Il n y a pas de table `finance_settings`, et en chercher une fait
+ * perdre du temps. Ces quatre colonnes sont posees sur le profil parce
+ * qu elles decrivent la PERSONNE — le jour ou son salaire tombe, ce
+ * qu elle met de cote — et non un mois donne. Les separer aurait cree
+ * une table a une ligne par utilisateur, jointe partout pour rien.
+ *
+ * Le nom du hook dit ce qu il REND, pas ou il le prend : c est le bon
+ * sens de la dependance. Ce commentaire existe pour que l ecart entre
+ * les deux cesse de ressembler a un oubli.
+ */
 export async function fetchFinanceSettings(userId?: string): Promise<FinanceSettings | null> {
   if (!userId) return null;
   const { data, error } = await supabase
