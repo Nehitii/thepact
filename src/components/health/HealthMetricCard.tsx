@@ -17,7 +17,7 @@ const colorVariants = {
   blue: {
     icon: "text-blue-400",
     glow: "hsl(217, 91%, 60%)",
-    accent: "#3b82f6",
+    accent: "hsl(var(--signal-cyan))",
     track: "stroke-blue-400/20",
     fill: "stroke-blue-400",
     gradFrom: "from-blue-500/10",
@@ -27,7 +27,9 @@ const colorVariants = {
   cyan: {
     icon: "text-hud-phosphor",
     glow: "hsl(var(--hud-phosphor))",
-    accent: "hsl(187, 100%, 50%)",
+    /* Reference de jeton : le cyan pur tombe a 1,45 sur fond clair,
+       et cet accent sert de couleur de TEXTE au badge et a la valeur. */
+    accent: "hsl(var(--signal-cyan))",
     track: "stroke-hud-phosphor/20",
     fill: "stroke-hud-phosphor",
     gradFrom: "from-hud-phosphor/10",
@@ -37,7 +39,7 @@ const colorVariants = {
   amber: {
     icon: "text-hud-amber",
     glow: "hsl(var(--hud-amber))",
-    accent: "hsl(43, 100%, 50%)",
+    accent: "hsl(var(--signal-ambre))",
     track: "stroke-hud-amber/20",
     fill: "stroke-hud-amber",
     gradFrom: "from-hud-amber/10",

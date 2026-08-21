@@ -157,7 +157,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
             Mission Randomizer
           </span>
         </div>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: "1px solid rgba(255,140,0,0.3)", color: "#ff8c00", background: "rgba(255,140,0,0.06)", clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+        <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: "1px solid rgba(255,140,0,0.3)", color: "#ff8c00", background: "rgba(255,140,0,0.06)", clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
           STANDBY
         </div>
       </div>

@@ -272,7 +272,7 @@ function peindreMaree(e: Etat, dt: number, eveil: number, prog: number) {
     c.y -= c.v * (0.7 + prog * 1.1) * eveil * (dt / 16.7);
     if (c.y < -c.lg * 20) { c.y = e.h + Math.random() * 160; c.lg = 5 + ((Math.random() * 7) | 0); }
     const taille = 10 + c.plan * 4;
-    ctx.font = `${taille}px "Share Tech Mono", monospace`;
+    ctx.font = `${taille}px "JetBrains Mono", monospace`;
     for (let k = 0; k < c.lg; k++) {
       const y = c.y + k * (taille + 4);
       if (y < -20 || y > e.h + 20) continue;

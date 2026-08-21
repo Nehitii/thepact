@@ -6,7 +6,7 @@ import { RankCore } from "./RankCore";
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",
   rajdhani: "'Rajdhani', sans-serif",
-  "share-tech-mono": "'Share Tech Mono', monospace",
+  "share-tech-mono": "'JetBrains Mono', ui-monospace, monospace",
   "space-grotesk": "'Space Grotesk', sans-serif",
   inter: "'Inter', sans-serif",
 };
@@ -171,7 +171,7 @@ export function NexusHeroBanner({
             <div key={s.label} className="flex flex-col items-center">
               <span
                 style={{
-                  fontFamily: "'Share Tech Mono', monospace",
+                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
                   fontSize: 24,
                   color: s.color,
                   textShadow: s.glow,

@@ -1519,7 +1519,7 @@
 .gl-pousse { flex: 1; }
 .gl-groupe { display: flex; align-items: center; gap: 7px; }
 .gl-etiquette {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 1.8px;
   color: var(--cp-texte-doux);
@@ -1533,7 +1533,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -1564,7 +1564,7 @@
    un input clippe perd son anneau de focus. */
 .gl-select {
   height: 34px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1px;
   border-radius: 0;
@@ -1585,7 +1585,7 @@
   padding-left: 32px;
   padding-right: 28px;
   border-radius: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1px;
   background: var(--nexus-bg);
@@ -1638,7 +1638,7 @@
   text-transform: uppercase;
 }
 .gl-onglet-nb {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1px;
   color: var(--nexus-text-dimmer);
@@ -1683,7 +1683,7 @@
 .gl-vide-texte {
   margin: 0 0 6px;
   max-width: 30rem;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   color: var(--cp-texte-doux);
 }
 
@@ -1698,7 +1698,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -1988,7 +1988,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 1.8px;
   color: var(--cp-texte-doux);
@@ -2032,7 +2032,7 @@
 }
 .gl-bilan-total span {
   margin-top: 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--nexus-text-dimmer);
@@ -2062,7 +2062,7 @@
   gap: 11px;
 }
 .gl-part-nom {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--nexus-text-dimmer);
@@ -2201,7 +2201,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -2421,7 +2421,7 @@
   gap: 3px;
   flex-shrink: 0;
   padding: 0 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.6px;
   color: #0a0a00;
@@ -2436,7 +2436,7 @@
 .eclat-groupe-regle {
   margin-top: 5px;
   padding-left: 2px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   color: var(--nexus-text-dimmer);
@@ -2600,7 +2600,7 @@
     color-mix(in srgb, var(--accent) 68%, black) 62%,
     color-mix(in srgb, var(--accent) 92%, white) 100%);
   box-shadow: 0 3px 14px -4px rgb(0 0 0 / .85);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   font-weight: 700;
   letter-spacing: 3px;
@@ -2659,7 +2659,7 @@
   position: relative;
   display: block;
   margin-top: 4px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.8px;
   text-transform: uppercase;
@@ -2816,7 +2816,7 @@
   align-items: center;
   gap: 3px;
   padding: 0 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   color: #05080f;
@@ -2840,7 +2840,7 @@
 .verre-regle {
   display: block;
   margin-top: 4px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1px;
   color: var(--cp-texte-doux);
@@ -2906,7 +2906,7 @@
   justify-content: center;
   gap: 6px;
   height: 18px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   font-weight: 700;
   letter-spacing: 2.4px;
@@ -2967,7 +2967,7 @@
   width: 100%;
   background: var(--nexus-bg);
   border: 1px solid var(--nexus-border);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 .rg-barre {
@@ -2978,7 +2978,7 @@
   border-bottom: 1px solid var(--nexus-border);
 }
 .rg-titre {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--nexus-text-dim);
@@ -3225,7 +3225,7 @@
   height: 26px;
   padding: 0 8px;
   text-align: left;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   color: var(--cp-texte-doux);
   cursor: pointer;
@@ -3261,7 +3261,7 @@
   align-items: center;
   gap: 8px;
   height: 24px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   color: hsl(var(--encre-second));
 }
@@ -3281,7 +3281,7 @@
 .rg-attente {
   margin: 0;
   padding: 10px 12px 12px 30px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.2px;
   color: var(--cp-texte-doux);

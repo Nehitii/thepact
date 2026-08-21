@@ -52,10 +52,13 @@ import { getDifficultyLabel, getTagLabel } from "@/lib/goalConstants";
 const AXE = { fontSize: 11, fill: "var(--nexus-text-dimmer)" } as const;
 const TRAIT = "hsl(var(--primary) / 0.16)";
 const ACCENT = "hsl(var(--primary))";
-const AMBRE = "#ffab00";
-const VERT = "#00ff88";
-const ROUGE = "#ff6b4a";
-const LEGENDE = { fontSize: 11, fontFamily: "'Share Tech Mono', monospace" } as const;
+const AMBRE = "hsl(var(--signal-ambre))";
+/* Une reference de jeton plutot quune couleur : le JS ne sait pas
+   quel theme est actif, le CSS si. Sur fond clair, #00ff88 tombe a
+   1,22 — le compteur dXP etait illisible. */
+const VERT = "hsl(var(--signal-vert))";
+const ROUGE = "hsl(var(--signal-rouge))";
+const LEGENDE = { fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
 
 const VUES: { id: PrismSection; nom: string; sous: string }[] = [
   { id: "trajectoire", nom: "Trajectoire", sous: "Comment j'avance dans le temps" },
@@ -133,7 +136,9 @@ function Compteur({ valeur, unite, libelle, teinte, pct }: {
       <span className="ana-compteur-txt">
         <span
           className="ana-compteur-val font-orbitron"
-          style={{ color: teinte, textShadow: `0 0 14px ${teinte}55` }}
+          /* Le halo prend la teinte a trente pour cent : concatener « 55 »
+             a une couleur ne marche que sur un hexadecimal. */
+          style={{ color: teinte, textShadow: `0 0 14px color-mix(in srgb, ${teinte} 33%, transparent)` }}
         >
           {valeur}{unite && <i className="ana-compteur-unite">{unite}</i>}
         </span>

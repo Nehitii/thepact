@@ -49,7 +49,7 @@
   flex-shrink: 0;
   min-height: 38px;
   padding: 0 13px 0 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -97,7 +97,7 @@
 
 .gr-chiffres { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .gr-chiffre {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -127,7 +127,7 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   color: var(--cp-texte-doux);
 }
 
@@ -194,7 +194,7 @@
 .gr-haut { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
 .gr-palier {
   padding: 0 4px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
   letter-spacing: 1.6px;
   color: #05080f;
@@ -357,7 +357,7 @@
   gap: 5px;
   height: 15px;
   margin-top: 3px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2.4px;

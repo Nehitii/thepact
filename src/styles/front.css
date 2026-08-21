@@ -18,7 +18,7 @@
   --fr-trait: var(--nexus-border);
   --fr-trait-doux: rgb(255 255 255 / 0.06);
   --fr-plaque: hsl(var(--primary) / 0.04);
-  --fr-mono: 'Share Tech Mono', monospace;
+  --fr-mono: 'JetBrains Mono', ui-monospace, monospace;
   --fr-or: var(--cp-jaune);
   position: relative;
 }

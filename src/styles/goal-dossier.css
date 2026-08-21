@@ -21,7 +21,7 @@
   --gd-trait: var(--nexus-border);
   --gd-trait-doux: rgb(255 255 255 / 0.06);
   --gd-plaque: hsl(var(--primary) / 0.04);
-  --gd-mono: 'Share Tech Mono', monospace;
+  --gd-mono: 'JetBrains Mono', ui-monospace, monospace;
   --gd-vert: #00ff88;
   /* Le jaune de l enseigne est un FOND, jamais une encre en theme
      clair : #FCEE0A sur blanc plafonne a 1,1:1. --gd-or est l encre

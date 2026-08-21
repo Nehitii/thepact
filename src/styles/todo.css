@@ -231,7 +231,10 @@
 /* La reference etait a 3,66 de rapport : discrete ne veut pas dire
    illisible — c est elle qu on cite quand on parle d une tache. */
 .tsk-meta .tsk-ref { color: hsl(var(--ds-text-muted) / 0.9); font-variant-numeric: tabular-nums; }
-.tsk-meta .tsk-sep { color: var(--tsk-trait-fort); }
+/* Un point separateur est un signe typographique, pas un filet : il
+   prenait la couleur des traits, a trente-deux pour cent, ce qui le
+   laissait a 1,12 de contraste. Lencre discrete est faite pour ca. */
+.tsk-meta .tsk-sep { color: hsl(var(--encre-discrete)); }
 .tsk-meta .tsk-quand { color: color-mix(in oklab, var(--tsk-teinte) 70%, white); }
 .tsk-meta .tsk-reports { color: hsl(var(--ds-accent-warning)); }
 

@@ -42,7 +42,7 @@
 .ana-panneau-titre {
   flex-shrink: 0;
   margin: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 3px;
   color: var(--nexus-text-dim);
@@ -54,7 +54,7 @@
 }
 .ana-panneau-droite {
   flex-shrink: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 1.4px;
   color: var(--nexus-text-dimmer);
   font-variant-numeric: tabular-nums;
@@ -65,13 +65,13 @@
   place-items: center;
   padding: 2.25rem 0;
   margin: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   color: var(--nexus-text-dimmer);
 }
 .ana-pied {
   margin: 0.6rem 0 0;
   text-align: center;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   color: var(--nexus-text-dimmer);
 }
 .ana-pied-gauche { text-align: left; margin-bottom: 0.9rem; }
@@ -100,7 +100,7 @@
   font-style: normal;
 }
 .ana-compteur-lib {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--nexus-text-dimmer);
@@ -264,7 +264,7 @@
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.6px;
   text-transform: uppercase;
@@ -344,9 +344,13 @@
 }
 .cp-telemetrie-piste > span {
   flex: 0 0 50%;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2.4px;
+  /* Un bandeau de telemetrie est discret par intention, pas illisible
+     par accident. Quarante-deux pour cent du bleu sur du noir se lit
+     encore ; sur du papier, la meme valeur se compose vers le blanc et
+     tombe a 1,33. Lencre discrete tient le meme role sans disparaitre. */
   color: hsl(var(--primary) / 0.42);
   white-space: nowrap;
 }
@@ -371,7 +375,7 @@
 }
 .cp-periode-seg {
   padding: 4px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.6px;
   color: var(--nexus-text-dimmer);
@@ -453,7 +457,7 @@
 }
 .cp-fiche-etat {
   padding: 1px 6px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
@@ -462,7 +466,7 @@
 .cp-etat-actif   { color: #0a0a00; background: var(--cp-jaune); }
 .cp-etat-attente { color: var(--nexus-text-dimmer); border: 1px solid var(--nexus-border); }
 .cp-fiche-score {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.2px;
   color: var(--cp-cyan);
@@ -477,7 +481,7 @@
   gap: 4px;
 }
 .cp-fiche-palier {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2.2px;
   color: var(--t);
@@ -498,7 +502,7 @@
 }
 .cp-fiche-barre { --c: var(--t); height: 9px; margin-top: 2px; }
 .cp-fiche-pct {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   color: var(--nexus-text-dim);
@@ -626,7 +630,7 @@
 }
 .cp-contrat-xp {
   padding: 1px 6px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.2px;
   color: var(--cp-cyan);
@@ -644,7 +648,7 @@
   gap: 3px;
 }
 .cp-contrat-palier {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2.4px;
   color: var(--t);
@@ -669,7 +673,7 @@
 .cp-contrat-barre > i { box-shadow: none; }
 .cp-contrat-pct {
   flex-shrink: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.2px;
   color: hsl(var(--encre-second));
@@ -701,7 +705,7 @@
   gap: 10px;
 }
 .cp-releve-nom {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -714,7 +718,7 @@
 .cp-releve-val {
   min-width: 2.2rem;
   text-align: right;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.2px;
   color: hsl(var(--encre-second));
@@ -736,3 +740,6 @@
   .cp-contrat:hover { transform: none; }
   .cp-contrat:hover .cp-contrat-img { transform: none; }
 }
+
+/* La telemetrie, en theme clair : voir le commentaire de la regle. */
+:root:not(.dark) .cp-telemetrie-piste > span { color: hsl(var(--encre-discrete)); }

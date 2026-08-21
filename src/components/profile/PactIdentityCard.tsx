@@ -23,7 +23,7 @@ const SYMBOL_OPTIONS = [
 const FONT_OPTIONS = [
   { key: "orbitron", label: "Orbitron", family: "'Orbitron', sans-serif" },
   { key: "rajdhani", label: "Rajdhani", family: "'Rajdhani', sans-serif" },
-  { key: "share-tech-mono", label: "Share Tech", family: "'Share Tech Mono', monospace" },
+  { key: "share-tech-mono", label: "Share Tech", family: "'JetBrains Mono', ui-monospace, monospace" },
   { key: "space-grotesk", label: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
   { key: "inter", label: "Inter", family: "'Inter', sans-serif" },
 ];

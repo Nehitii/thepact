@@ -168,14 +168,14 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
               <StatusIcon color={c.primary} />
             </div>
           </div>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: `rgba(${c.rgb},0.6)`, textTransform: "uppercase" as const, textAlign: "center", animation: c.blinkAnim }}>
+          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: `rgba(${c.rgb},0.6)`, textTransform: "uppercase" as const, textAlign: "center", animation: c.blinkAnim }}>
             {c.labelLines[0]}<br />{c.labelLines[1]}
           </div>
         </div>
 
         {/* Center: Countdown + bar */}
         <div style={{ padding: "20px 28px" }}>
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 4, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginBottom: 12 }}>
+          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 4, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginBottom: 12 }}>
             ⬝ PACTE EN COURS — {calc.phase} — COMPTE À REBOURS ACTIF
           </div>
 
@@ -191,7 +191,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
                   <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, whiteSpace: "nowrap" }}>
                     {pad(t.val)}
                   </span>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginTop: 4 }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginTop: 4 }}>
                     {t.label}
                   </span>
                 </div>
@@ -205,7 +205,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
           </div>
 
           <div style={{ marginTop: 14 }}>
-            <div className="flex justify-between" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, marginBottom: 5 }}>
+            <div className="flex justify-between" style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, marginBottom: 5 }}>
               <span>DÉBUT · {startStr}</span>
               <span>{Math.round(calc.progressPct)}% ÉCOULÉ</span>
               <span>FIN · {endStr}</span>
@@ -231,10 +231,10 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
             { key: "COMPLÉTION OBJ.", val: `${goalsCompleted} / ${totalGoals}`, critical: false },
           ].map((row) => (
             <div key={row.key} className="flex flex-col gap-0.5">
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: `rgba(${c.rgb},0.85)`, textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
+              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: `rgba(${c.rgb},0.85)`, textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
                 {row.key}
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : `rgba(${c.rgb},0.92)`, textShadow: row.critical ? `0 0 6px rgba(${c.rgb},0.5)` : "none" }}>
+              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : `rgba(${c.rgb},0.92)`, textShadow: row.critical ? `0 0 6px rgba(${c.rgb},0.5)` : "none" }}>
                 {row.val}
               </span>
             </div>

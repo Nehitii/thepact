@@ -1054,7 +1054,7 @@ All colors MUST be HSL.
   position: absolute;
   top: 0.5rem;
   right: 0.65rem;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.08em;
   color: var(--qa-c, #fff);
@@ -1235,13 +1235,13 @@ All colors MUST be HSL.
 .quest-prime { text-align: right; flex: none; }
 .quest-prime b {
   display: block;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.9rem;
   color: var(--qo-c, #fff);
   font-variant-numeric: tabular-nums;
 }
 .quest-prime span {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.14em;
   color: var(--nexus-text-dimmer);
@@ -1263,7 +1263,7 @@ All colors MUST be HSL.
   overflow: hidden;
 }
 .mon-switch-btn {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1293,7 +1293,7 @@ All colors MUST be HSL.
 }
 .mon-pt { fill: #fff; filter: drop-shadow(0 0 7px var(--c, hsl(var(--primary)))); }
 .mon-lab {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9.5px;
   letter-spacing: 0.06em;
 }
@@ -1465,30 +1465,30 @@ html body[data-scroll-locked] {
    l'autre affirme.
    ═══════════════════════════════════════════════════════════════ */
 :root:not(.dark) {
-  .text-amber-300, .text-amber-400, .text-amber-500, .text-orange-400, .text-orange-500 { color: hsl(var(--signal-ambre)); }
+  .text-amber-300, .text-amber-400, .text-amber-500, .text-orange-400, .text-orange-500, .text-hud-amber { color: hsl(var(--signal-ambre)); }
   .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-green-400, .text-green-500, .text-teal-400 { color: hsl(var(--signal-vert)); }
-  .text-cyan-300, .text-cyan-400, .text-cyan-500, .text-sky-400, .text-sky-500, .text-blue-400, .text-blue-500 { color: hsl(var(--signal-cyan)); }
+  .text-cyan-300, .text-cyan-400, .text-cyan-500, .text-sky-400, .text-sky-500, .text-blue-400, .text-blue-500, .text-hud-phosphor { color: hsl(var(--signal-cyan)); }
   .text-yellow-300, .text-yellow-400, .text-yellow-500, .text-lime-400, .text-lime-500 { color: hsl(var(--signal-jaune)); }
   .text-rose-400, .text-red-400, .text-red-500, .text-pink-400, .text-fuchsia-400, .text-violet-400, .text-violet-500, .text-purple-400, .text-purple-500, .text-indigo-400 { color: hsl(var(--signal-rouge)); }
 
-  .text-amber-300\/40, .text-amber-400\/40, .text-amber-500\/40, .text-orange-400\/40, .text-orange-500\/40 { color: hsl(var(--signal-ambre) / 0.4); }
-  .text-amber-300\/50, .text-amber-400\/50, .text-amber-500\/50, .text-orange-400\/50, .text-orange-500\/50 { color: hsl(var(--signal-ambre) / 0.5); }
-  .text-amber-300\/60, .text-amber-400\/60, .text-amber-500\/60, .text-orange-400\/60, .text-orange-500\/60 { color: hsl(var(--signal-ambre) / 0.6); }
-  .text-amber-300\/70, .text-amber-400\/70, .text-amber-500\/70, .text-orange-400\/70, .text-orange-500\/70 { color: hsl(var(--signal-ambre) / 0.7); }
-  .text-amber-300\/80, .text-amber-400\/80, .text-amber-500\/80, .text-orange-400\/80, .text-orange-500\/80 { color: hsl(var(--signal-ambre) / 0.8); }
-  .text-amber-300\/90, .text-amber-400\/90, .text-amber-500\/90, .text-orange-400\/90, .text-orange-500\/90 { color: hsl(var(--signal-ambre) / 0.9); }
+  .text-amber-300\/40, .text-amber-400\/40, .text-amber-500\/40, .text-orange-400\/40, .text-orange-500\/40, .text-hud-amber\/40 { color: hsl(var(--signal-ambre) / 0.4); }
+  .text-amber-300\/50, .text-amber-400\/50, .text-amber-500\/50, .text-orange-400\/50, .text-orange-500\/50, .text-hud-amber\/50 { color: hsl(var(--signal-ambre) / 0.5); }
+  .text-amber-300\/60, .text-amber-400\/60, .text-amber-500\/60, .text-orange-400\/60, .text-orange-500\/60, .text-hud-amber\/60 { color: hsl(var(--signal-ambre) / 0.6); }
+  .text-amber-300\/70, .text-amber-400\/70, .text-amber-500\/70, .text-orange-400\/70, .text-orange-500\/70, .text-hud-amber\/70 { color: hsl(var(--signal-ambre) / 0.7); }
+  .text-amber-300\/80, .text-amber-400\/80, .text-amber-500\/80, .text-orange-400\/80, .text-orange-500\/80, .text-hud-amber\/80 { color: hsl(var(--signal-ambre) / 0.8); }
+  .text-amber-300\/90, .text-amber-400\/90, .text-amber-500\/90, .text-orange-400\/90, .text-orange-500\/90, .text-hud-amber\/90 { color: hsl(var(--signal-ambre) / 0.9); }
   .text-emerald-300\/40, .text-emerald-400\/40, .text-emerald-500\/40, .text-green-400\/40, .text-green-500\/40, .text-teal-400\/40 { color: hsl(var(--signal-vert) / 0.4); }
   .text-emerald-300\/50, .text-emerald-400\/50, .text-emerald-500\/50, .text-green-400\/50, .text-green-500\/50, .text-teal-400\/50 { color: hsl(var(--signal-vert) / 0.5); }
   .text-emerald-300\/60, .text-emerald-400\/60, .text-emerald-500\/60, .text-green-400\/60, .text-green-500\/60, .text-teal-400\/60 { color: hsl(var(--signal-vert) / 0.6); }
   .text-emerald-300\/70, .text-emerald-400\/70, .text-emerald-500\/70, .text-green-400\/70, .text-green-500\/70, .text-teal-400\/70 { color: hsl(var(--signal-vert) / 0.7); }
   .text-emerald-300\/80, .text-emerald-400\/80, .text-emerald-500\/80, .text-green-400\/80, .text-green-500\/80, .text-teal-400\/80 { color: hsl(var(--signal-vert) / 0.8); }
   .text-emerald-300\/90, .text-emerald-400\/90, .text-emerald-500\/90, .text-green-400\/90, .text-green-500\/90, .text-teal-400\/90 { color: hsl(var(--signal-vert) / 0.9); }
-  .text-cyan-300\/40, .text-cyan-400\/40, .text-cyan-500\/40, .text-sky-400\/40, .text-sky-500\/40, .text-blue-400\/40, .text-blue-500\/40 { color: hsl(var(--signal-cyan) / 0.4); }
-  .text-cyan-300\/50, .text-cyan-400\/50, .text-cyan-500\/50, .text-sky-400\/50, .text-sky-500\/50, .text-blue-400\/50, .text-blue-500\/50 { color: hsl(var(--signal-cyan) / 0.5); }
-  .text-cyan-300\/60, .text-cyan-400\/60, .text-cyan-500\/60, .text-sky-400\/60, .text-sky-500\/60, .text-blue-400\/60, .text-blue-500\/60 { color: hsl(var(--signal-cyan) / 0.6); }
-  .text-cyan-300\/70, .text-cyan-400\/70, .text-cyan-500\/70, .text-sky-400\/70, .text-sky-500\/70, .text-blue-400\/70, .text-blue-500\/70 { color: hsl(var(--signal-cyan) / 0.7); }
-  .text-cyan-300\/80, .text-cyan-400\/80, .text-cyan-500\/80, .text-sky-400\/80, .text-sky-500\/80, .text-blue-400\/80, .text-blue-500\/80 { color: hsl(var(--signal-cyan) / 0.8); }
-  .text-cyan-300\/90, .text-cyan-400\/90, .text-cyan-500\/90, .text-sky-400\/90, .text-sky-500\/90, .text-blue-400\/90, .text-blue-500\/90 { color: hsl(var(--signal-cyan) / 0.9); }
+  .text-cyan-300\/40, .text-cyan-400\/40, .text-cyan-500\/40, .text-sky-400\/40, .text-sky-500\/40, .text-blue-400\/40, .text-blue-500\/40, .text-hud-phosphor\/40 { color: hsl(var(--signal-cyan) / 0.4); }
+  .text-cyan-300\/50, .text-cyan-400\/50, .text-cyan-500\/50, .text-sky-400\/50, .text-sky-500\/50, .text-blue-400\/50, .text-blue-500\/50, .text-hud-phosphor\/50 { color: hsl(var(--signal-cyan) / 0.5); }
+  .text-cyan-300\/60, .text-cyan-400\/60, .text-cyan-500\/60, .text-sky-400\/60, .text-sky-500\/60, .text-blue-400\/60, .text-blue-500\/60, .text-hud-phosphor\/60 { color: hsl(var(--signal-cyan) / 0.6); }
+  .text-cyan-300\/70, .text-cyan-400\/70, .text-cyan-500\/70, .text-sky-400\/70, .text-sky-500\/70, .text-blue-400\/70, .text-blue-500\/70, .text-hud-phosphor\/70 { color: hsl(var(--signal-cyan) / 0.7); }
+  .text-cyan-300\/80, .text-cyan-400\/80, .text-cyan-500\/80, .text-sky-400\/80, .text-sky-500\/80, .text-blue-400\/80, .text-blue-500\/80, .text-hud-phosphor\/80 { color: hsl(var(--signal-cyan) / 0.8); }
+  .text-cyan-300\/90, .text-cyan-400\/90, .text-cyan-500\/90, .text-sky-400\/90, .text-sky-500\/90, .text-blue-400\/90, .text-blue-500\/90, .text-hud-phosphor\/90 { color: hsl(var(--signal-cyan) / 0.9); }
   .text-yellow-300\/40, .text-yellow-400\/40, .text-yellow-500\/40, .text-lime-400\/40, .text-lime-500\/40 { color: hsl(var(--signal-jaune) / 0.4); }
   .text-yellow-300\/50, .text-yellow-400\/50, .text-yellow-500\/50, .text-lime-400\/50, .text-lime-500\/50 { color: hsl(var(--signal-jaune) / 0.5); }
   .text-yellow-300\/60, .text-yellow-400\/60, .text-yellow-500\/60, .text-lime-400\/60, .text-lime-500\/60 { color: hsl(var(--signal-jaune) / 0.6); }
