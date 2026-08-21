@@ -45,17 +45,17 @@ interface Step {
   id: string;
   goal_id: string;
   title: string;
-  description?: string;
-  notes?: string;
+  description?: string | null;
+  notes?: string | null;
   order: number;
-  status: string;
-  due_date?: string;
-  completion_date?: string;
-  validated_at?: string;
+  status: string | null;
+  due_date?: string | null;
+  completion_date?: string | null;
+  validated_at?: string | null;
   exclude_from_spin: boolean;
   is_ultimate?: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface ObjectifPorteur {
@@ -83,6 +83,9 @@ export default function StepDetail() {
   const [excludeFromSpin, setExcludeFromSpin] = useState(false);
 
   const loadStepData = useCallback(async () => {
+    /* stepId vient de l URL : il peut manquer, et une requete sur un
+       identifiant absent ne rendrait rien de bon. */
+    if (!stepId) { setLoading(false); return; }
     try {
       setLoading(true);
       const { data: stepData, error: stepError } = await supabase
@@ -91,7 +94,7 @@ export default function StepDetail() {
       setStep(stepData);
       setTitle(stepData.title);
       setNotes(stepData.notes || "");
-      setStatus(stepData.status);
+      setStatus(stepData.status ?? "pending");
       setExcludeFromSpin(stepData.exclude_from_spin ?? false);
 
       /* L objectif porteur, pour sa teinte et son nom : on ne modifie

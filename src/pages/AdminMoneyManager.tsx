@@ -14,12 +14,12 @@ import { logAdminAction } from "@/hooks/useAdminAudit";
 import { Coins, Gift, Plus, Pencil, Zap, Copy } from "lucide-react";
 
 interface BondPack {
-  id: string; name: string; bond_amount: number; price_eur: number; bonus_percentage: number; is_active: boolean; display_order: number;
+  id: string; name: string; bond_amount: number; price_eur: number; bonus_percentage: number | null; is_active: boolean; display_order: number | null;
 }
 interface SpecialOffer {
   id: string; name: string; description: string | null; image_url: string | null; price_bonds: number | null; price_eur: number | null;
   original_price_bonds: number | null; original_price_eur: number | null; items: unknown | null; starts_at: string | null; ends_at: string | null;
-  is_active: boolean; display_order: number;
+  is_active: boolean; display_order: number | null;
 }
 
 export default function AdminMoneyManager() {
@@ -120,7 +120,7 @@ export default function AdminMoneyManager() {
                   <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center"><Coins className="h-5 w-5 text-primary" /></div>
                   <div>
                     <div className="text-primary font-rajdhani font-medium">{pack.name}</div>
-                    <div className="text-xs text-primary/50">{pack.bond_amount.toLocaleString()} Bonds · €{pack.price_eur}{pack.bonus_percentage > 0 && ` · +${pack.bonus_percentage}%`}</div>
+                    <div className="text-xs text-primary/50">{pack.bond_amount.toLocaleString()} Bonds · €{pack.price_eur}{(pack.bonus_percentage ?? 0) > 0 && ` · +${pack.bonus_percentage}%`}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

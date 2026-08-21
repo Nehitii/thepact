@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 interface TodoCalendarViewProps {
-  tasks: (TodoTask & { category?: string; task_type?: string })[];
+  tasks: (TodoTask & { category?: string | null; task_type?: string | null })[];
   onTaskClick?: (taskId: string) => void;
 }
 
@@ -64,7 +64,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
   }, [currentMonth]);
 
   const tasksByDate = useMemo(() => {
-    const map = new Map<string, (TodoTask & { category?: string; task_type?: string })[]>();
+    const map = new Map<string, (TodoTask & { category?: string | null; task_type?: string | null })[]>();
     
     tasks.forEach((task) => {
       if (task.deadline) {

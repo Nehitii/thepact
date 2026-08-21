@@ -43,11 +43,11 @@ interface CosmeticFrame {
   is_active: boolean;
   is_default: boolean;
   price: number;
-  frame_scale?: number;
-  frame_offset_x?: number;
-  frame_offset_y?: number;
-  show_border?: boolean;
-  avatar_border_color?: string;
+  frame_scale?: number | null;
+  frame_offset_x?: number | null;
+  frame_offset_y?: number | null;
+  show_border?: boolean | null;
+  avatar_border_color?: string | null;
 }
 
 interface CosmeticBanner {
@@ -56,8 +56,8 @@ interface CosmeticBanner {
   rarity: string;
   preview_url: string | null;
   banner_url: string | null;
-  gradient_start: string;
-  gradient_end: string;
+  gradient_start: string | null;
+  gradient_end: string | null;
   is_active: boolean;
   is_default: boolean;
   price: number;
@@ -67,8 +67,8 @@ interface CosmeticTitle {
   id: string;
   title_text: string;
   rarity: string;
-  glow_color: string;
-  text_color: string;
+  glow_color: string | null;
+  text_color: string | null;
   is_active: boolean;
   is_default: boolean;
   price: number;
@@ -439,27 +439,27 @@ export default function AdminCosmeticsManager() {
                           </div>
                           <div className="flex items-end justify-center gap-4 p-3 rounded-lg bg-card/30 border border-primary/10">
                             <InlineFramePreview
-                              frameImage={editingFrame.preview_url}
-                              frameScale={editingFrame.frame_scale}
-                              frameOffsetX={editingFrame.frame_offset_x}
-                              frameOffsetY={editingFrame.frame_offset_y}
-                              glowColor={editingFrame.glow_color}
+                              frameImage={editingFrame.preview_url ?? undefined}
+                              frameScale={editingFrame.frame_scale ?? undefined}
+                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
+                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
+                              glowColor={editingFrame.glow_color ?? undefined}
                               size="sm"
                             />
                             <InlineFramePreview
-                              frameImage={editingFrame.preview_url}
-                              frameScale={editingFrame.frame_scale}
-                              frameOffsetX={editingFrame.frame_offset_x}
-                              frameOffsetY={editingFrame.frame_offset_y}
-                              glowColor={editingFrame.glow_color}
+                              frameImage={editingFrame.preview_url ?? undefined}
+                              frameScale={editingFrame.frame_scale ?? undefined}
+                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
+                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
+                              glowColor={editingFrame.glow_color ?? undefined}
                               size="md"
                             />
                             <InlineFramePreview
-                              frameImage={editingFrame.preview_url}
-                              frameScale={editingFrame.frame_scale}
-                              frameOffsetX={editingFrame.frame_offset_x}
-                              frameOffsetY={editingFrame.frame_offset_y}
-                              glowColor={editingFrame.glow_color}
+                              frameImage={editingFrame.preview_url ?? undefined}
+                              frameScale={editingFrame.frame_scale ?? undefined}
+                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
+                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
+                              glowColor={editingFrame.glow_color ?? undefined}
                               size="2xl"
                             />
                           </div>
@@ -763,7 +763,7 @@ export default function AdminCosmeticsManager() {
             {filterItems(titles).map((title) => (
               <div key={title.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
                 <div className="flex items-center gap-4">
-                  <div className="px-3 py-1 rounded-md text-sm" style={{ color: title.text_color, textShadow: `0 0 10px ${title.glow_color}`, border: `1px solid ${title.text_color}30` }}>
+                  <div className="px-3 py-1 rounded-md text-sm" style={{ color: title.text_color ?? undefined, textShadow: `0 0 10px ${title.glow_color ?? "transparent"}`, border: `1px solid ${title.text_color ?? "currentColor"}30` }}>
                     {title.title_text}
                   </div>
                   <div className="text-xs text-primary/50">{title.rarity} · {title.price} Bonds</div>

@@ -13,6 +13,22 @@ interface WishlistPanelProps {
   onPurchaseItem: (item: any, itemType: string) => void;
 }
 
+/**
+ * Un article de la liste d envies, ramene a ce que le panneau en lit.
+ *
+ * Les cinq rayons n ont pas la meme forme : un titre porte title_text
+ * la ou un cadre porte name, un module et un lot comptent en
+ * price_bonds. Le denominateur commun est reconstitue a la volee, d ou
+ * la signature d index — ce qui reste du dossier d origine voyage avec.
+ */
+interface ArticleSouhaite {
+  name?: string;
+  price?: number;
+  rarity?: string | null;
+  type?: string;
+  [reste: string]: unknown;
+}
+
 export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
   const { user } = useAuth();
   const { data: wishlist = [], isLoading } = useWishlist(user?.id);
@@ -27,8 +43,12 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: ownedModules = [] } = useUserModulePurchases(user?.id);
 
+  /* CE QUE LA LISTE D ENVIES LIT D UN ARTICLE, QUEL QUE SOIT SON RAYON.
+     Sans ce type, « let item = null » s inferait en null, et le filtre
+     qui retire les nuls laissait un never : plus aucune propriete
+     n existait sur ce qui restait. */
   const enrichedWishlist = wishlist.map(w => {
-    let item = null;
+    let item: ArticleSouhaite | null = null;
     let itemData: any = null;
     let isOwned = false;
 

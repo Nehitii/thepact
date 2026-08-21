@@ -37,8 +37,8 @@ export function HealthWeeklyChart() {
     return { date: dateStr, data: dataByDate.get(dateStr) || null, isToday: dateStr === format(new Date(), "yyyy-MM-dd") };
   };
 
-  const getBarHeight = (value: number | null, max: number = 5) => {
-    if (value === null) return 0;
+  const getBarHeight = (value: number | null | undefined, max: number = 5) => {
+    if (value == null) return 0;
     return (value / max) * 100;
   };
 

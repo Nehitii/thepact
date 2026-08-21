@@ -174,7 +174,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   /** Corriger ce mois-ci : le pointage porte le vrai montant. */
   const corrigerLeMois = async (r: Rang, genre: Etape) => {
     const lu = pourLeMois();
-    if (lu.raison) return refuser(lu.raison);
+    if (!lu.ok) return refuser(lu.raison);
     const v = lu.valeur;
     if (genre === 'bilan') return;
     await ecrire.mutateAsync({
@@ -187,7 +187,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   /** Corriger desormais : la recurrence change, et ce mois avec elle. */
   const corrigerDesormais = async (r: Rang, genre: Etape) => {
     const lu = pourLaRecurrence();
-    if (lu.raison) return refuser(lu.raison);
+    if (!lu.ok) return refuser(lu.raison);
     const v = lu.valeur;
     if (genre === 'bilan') return;
     const maj = genre === 'income' ? majRevenu : majDepense;
@@ -208,12 +208,12 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
        depasser trente lignes en passant par le parcours, ce qui n est
        pas un choix mais un oubli. */
     const place = placeDisponible((genre === 'income' ? revenus : depenses).length);
-    if (place.raison) return refuser(place.raison);
+    if (!place.ok) return refuser(place.raison);
 
     const luNom = lireNom(nomAjout);
-    if (luNom.raison) return refuser(luNom.raison);
+    if (!luNom.ok) return refuser(luNom.raison);
     const luMontant = lireMontant(montantAjout);
-    if (luMontant.raison) return refuser(luMontant.raison);
+    if (!luMontant.ok) return refuser(luMontant.raison);
     const v = luMontant.valeur;
 
     const creer = genre === 'income' ? ajoutRevenu : ajoutDepense;
@@ -358,10 +358,10 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
                         </label>
                         {/* Les deux portees, dites en toutes lettres.
                             Deviner serait fautif dans les deux sens. */}
-                        <button type="button" onClick={() => corrigerLeMois(r, genreCourant)} disabled={pourLeMois().raison !== null}>
+                        <button type="button" onClick={() => corrigerLeMois(r, genreCourant)} disabled={!pourLeMois().ok}>
                           {t('finance.parcours.ceMoisSeulement', 'Ce mois-ci')}
                         </button>
-                        <button type="button" className="cy-parc-desormais" onClick={() => corrigerDesormais(r, genreCourant)} disabled={pourLaRecurrence().raison !== null}>
+                        <button type="button" className="cy-parc-desormais" onClick={() => corrigerDesormais(r, genreCourant)} disabled={!pourLaRecurrence().ok}>
                           {t('finance.parcours.desormais', 'Désormais')}
                         </button>
                         <button type="button" className="cy-parc-annuler" onClick={() => setEnCorrection(null)} aria-label={t('common.cancel')}>

@@ -44,7 +44,8 @@ interface Step {
   id: string;
   title: string;
   order: number;
-  status: string;
+  /* Nullable en base : une etape peut ne pas avoir de statut. */
+  status: string | null;
   notes?: string | null;
 }
 
@@ -474,7 +475,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
                 <CostItemsEditor
                   items={editCostItems}
                   onChange={setEditCostItems}
-                  legacyTotal={goal.estimated_cost}
+                  legacyTotal={goal.estimated_cost ?? 0}
                   steps={steps}
                   onAddToWishlist={onAddToWishlist}
                 />

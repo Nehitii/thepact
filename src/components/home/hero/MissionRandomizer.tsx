@@ -40,7 +40,7 @@ const DIFF_FILTERS = [
 const SlotReel = ({ candidates, winner, onSpinComplete }: { candidates: Goal[]; winner: Goal; onSpinComplete: () => void }) => {
   const controls = useAnimation();
   const reelStrip = useMemo(() => {
-    const strip = [];
+    const strip: Goal[] = [];
     for (let i = 0; i < REEL_ITEMS - 1; i++) strip.push(candidates[Math.floor(Math.random() * candidates.length)]);
     strip.push(winner);
     return strip;

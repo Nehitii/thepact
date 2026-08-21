@@ -62,7 +62,7 @@ export default function GoalDetail() {
   const createWishlistItem = useCreatePactWishlistItem();
 
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [steps, setSteps] = useState<{ id: string; title: string; order: number; status: string; due_date: string | null; notes?: string | null }[]>([]);
+  const [steps, setSteps] = useState<{ id: string; title: string; order: number; status: string | null; due_date: string | null; notes?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -311,7 +311,7 @@ export default function GoalDetail() {
         try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast.error("Error", { description: "Failed to save tags" }); }
       }
 
-      handleUpdateGoal(goal.id, goal.total_steps, updates as any, async () => {
+      handleUpdateGoal(goal.id, goal.total_steps ?? 0, updates as any, async () => {
         const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
         if (updatedGoal) { setGoal(updatedGoal); setEditName(updatedGoal.name); setEditSteps(updatedGoal.total_steps || 0); setEditNotes(updatedGoal.notes || ""); }
 
@@ -389,7 +389,7 @@ export default function GoalDetail() {
     progress = (completedStepsCount / totalStepsCount) * 100;
   }
 
-  const difficultyColor = getDifficultyColor(goal.difficulty);
+  const difficultyColor = getDifficultyColor(goal.difficulty ?? "medium");
   const isCompleted = goal.status === "fully_completed";
   const displayTags = goalTagsData.length > 0 ? goalTagsData.map((t) => t.tag) : goal.type ? [mapToValidTag(goal.type)] : [];
 
@@ -455,14 +455,14 @@ export default function GoalDetail() {
           faites={completedStepsCount}
           total={totalStepsCount}
           uniteAvancement={uniteAvancement}
-          libellePalier={getDifficultyLabel(goal.difficulty)}
+          libellePalier={getDifficultyLabel(goal.difficulty ?? "medium")}
           /* Un groupe au seuil n'est pas « en cours » : tout est fait,
              il n'attend que le geste. La fiche le nomme, comme le
              registre et les cartes. */
           libelleEtat={
             estPretAHonorer(goal, allGoals)
               ? t("goals.detail.toHonour", "À honorer")
-              : getStatusLabel(goal.status)
+              : getStatusLabel(goal.status ?? "not_started")
           }
           etiquettes={displayTags}
           estHonore={isCompleted}
@@ -522,7 +522,7 @@ export default function GoalDetail() {
           )}
 
           {isHabitGoal ? (
-            <DossierCourbe coches={goal.habit_checks || []} depuis={goal.created_at} />
+            <DossierCourbe coches={goal.habit_checks || []} depuis={goal.created_at ?? new Date().toISOString()} />
           ) : (isSuperGoal && costItems.length === 0) ? null : (
             <DossierRegistre
               postes={costItems}

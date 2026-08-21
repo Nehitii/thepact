@@ -157,16 +157,18 @@ export function LigneRecurrente({
      base. */
   const lectureNom = lireNom(nom);
   const lectureMontant = lireMontant(montant);
-  const valeur = lectureMontant.valeur ?? NaN;
+  const valeur = lectureMontant.ok ? lectureMontant.valeur : NaN;
 
   /* Un motif irregulier ne s enregistre pas non plus : il ne saurait
      pas se repeter l annee suivante. Le bouton reste bloque, et la
      grille propose juste au-dessus de quoi le rattraper en un clic. */
-  const valide = !lectureNom.raison && !lectureMontant.raison && (estEcheancier || motif !== null);
+  const valide = lectureNom.ok && lectureMontant.ok && (estEcheancier || motif !== null);
 
   /* Le refus se dit, il ne se devine pas. Un bouton grise sans raison
      laisse chercher ce qui cloche. */
-  const refus = lectureNom.raison ?? (montant.trim() !== '' ? lectureMontant.raison : null);
+  const refus = !lectureNom.ok ? lectureNom.raison
+    : (!lectureMontant.ok && montant.trim() !== '') ? lectureMontant.raison
+    : null;
 
   /* L apercu de l echeancier : ce qui sera reellement preleve, mois
      par mois. Deux cents euros en trois fois ne tombent pas juste — la
@@ -181,9 +183,9 @@ export function LigneRecurrente({
   })();
 
   const enregistrer = async () => {
-    if (!valide || enCours || !lectureNom.valeur) return;
+    if (!valide || enCours || !lectureNom.ok) return;
     await onEnregistrer({
-      name: lectureNom.valeur,
+      name: lectureNom.ok ? lectureNom.valeur : '',
       /* Ce qu on enregistre dans « amount », c est toujours ce qui part
          a une echeance : pour un echeancier, la part et non le total. */
       amount: estEcheancier ? partsEcheancier[0] : valeur,

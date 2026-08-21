@@ -138,13 +138,13 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   });
 
   const handleAddExpense = async (v: ValeursLigne) => {
-    if (placeDisponible(expenses.length).raison) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
+    if (!placeDisponible(expenses.length).ok) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
     try { await addExpense.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.expenseAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
   const handleAddIncome = async (v: ValeursLigne) => {
-    if (placeDisponible(income.length).raison) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
+    if (!placeDisponible(income.length).ok) { toast.error(t('finance.garde.tropDeLignes', { lignesMax: LIGNES_MAX })); return; }
     try { await addIncome.mutateAsync(versLaBase(v)); toast.success(t('finance.recurring.incomeAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };

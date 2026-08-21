@@ -142,7 +142,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     const detail = getDetail();
     if (!detail) return;
     if (currentStatus !== "completed") {
-      burstParticles(getDifficultyColor(detail.goal.difficulty));
+      burstParticles(getDifficultyColor(detail.goal.difficulty ?? "medium"));
     }
     toggleStep.mutate(
       { stepId, currentStatus },
@@ -246,7 +246,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     const detail = getDetail();
     if (!detail || !detail.goal.habit_checks || !userId) return;
     const coche = !detail.goal.habit_checks[dayIndex];
-    if (coche) burstParticles(getDifficultyColor(detail.goal.difficulty), depuis);
+    if (coche) burstParticles(getDifficultyColor(detail.goal.difficulty ?? "medium"), depuis);
     toggleHabit.mutate(
       { dayIndex, coche },
       {
@@ -313,7 +313,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       }
       if (userId) {
         setTimeout(
-          () => trackGoalCompleted(userId, goal.difficulty, goal.start_date || new Date().toISOString(), new Date().toISOString()),
+          () => trackGoalCompleted(userId, goal.difficulty ?? "medium", goal.start_date || new Date().toISOString(), new Date().toISOString()),
           0,
         );
       }
@@ -380,7 +380,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
           description: "This goal is now active again.",
           action: {
             label: "Undo",
-            onClick: () => updateStatus.mutate(previousStatus),
+            onClick: () => updateStatus.mutate(previousStatus ?? "not_started"),
           },
         }),
     });

@@ -26,7 +26,7 @@ interface ShopModule {
   icon_key: string | null;
   is_active: boolean;
   is_coming_soon: boolean;
-  display_order: number;
+  display_order: number | null;
 }
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {

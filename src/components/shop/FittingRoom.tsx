@@ -123,7 +123,7 @@ export function FittingRoom({
                   <div className="relative">
                     <AvatarFrame
                       size="lg"
-                      avatarUrl={profile?.avatar_url}
+                      avatarUrl={profile?.avatar_url ?? null}
                       fallback={(profile?.display_name || "U")[0]}
                       frameImage={displayFrame.preview_url}
                       borderColor={(displayFrame as any).avatar_border_color || displayFrame.border_color}

@@ -236,7 +236,7 @@ export default function NewGoal() {
 
       const primaryType = selectedTags[0] || "personal";
 
-      let superGoalData: { child_goal_ids?: string[]; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } =
+      let superGoalData: { child_goal_ids?: string[] | null; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } =
         {};
       if (goalType === "super") {
         if (superBuildMode === "manual") {

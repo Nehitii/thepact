@@ -22,19 +22,19 @@ interface CosmeticFrame {
   glow_color: string;
   preview_url: string | null;
   is_default: boolean;
-  frame_scale?: number;
-  frame_offset_x?: number;
-  frame_offset_y?: number;
-  show_border?: boolean;
-  avatar_border_color?: string;
+  frame_scale?: number | null;
+  frame_offset_x?: number | null;
+  frame_offset_y?: number | null;
+  show_border?: boolean | null;
+  avatar_border_color?: string | null;
 }
 
 interface CosmeticBanner {
   id: string;
   name: string;
   rarity: string;
-  gradient_start: string;
-  gradient_end: string;
+  gradient_start: string | null;
+  gradient_end: string | null;
   banner_url: string | null;
   is_default: boolean;
 }
@@ -43,8 +43,8 @@ interface CosmeticTitle {
   id: string;
   title_text: string;
   rarity: string;
-  glow_color: string;
-  text_color: string;
+  glow_color: string | null;
+  text_color: string | null;
   is_default: boolean;
 }
 
@@ -381,12 +381,12 @@ export function ProfileBoundedProfile({
                       avatarUrl={avatarUrl}
                       fallback={displayName?.[0] || "?"}
                       size="2xl"
-                      frameImage={activeFrame?.preview_url}
+                      frameImage={activeFrame?.preview_url ?? undefined}
                       borderColor={activeFrame?.avatar_border_color || activeFrame?.border_color || "#5bb4ff"}
                       glowColor={activeFrame?.glow_color || "rgba(91,180,255,0.5)"}
-                      frameScale={activeFrame?.frame_scale}
-                      frameOffsetX={activeFrame?.frame_offset_x}
-                      frameOffsetY={activeFrame?.frame_offset_y}
+                      frameScale={activeFrame?.frame_scale ?? undefined}
+                      frameOffsetX={activeFrame?.frame_offset_x ?? undefined}
+                      frameOffsetY={activeFrame?.frame_offset_y ?? undefined}
                       showBorder={activeFrame?.show_border !== false}
                       className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
                     />
@@ -546,12 +546,12 @@ export function ProfileBoundedProfile({
                 <div className="flex justify-center py-2">
                   <FramePreview
                     size="sm"
-                    frameImage={frame.preview_url}
+                    frameImage={frame.preview_url ?? undefined}
                     borderColor={frame.border_color}
-                    glowColor={frame.glow_color}
-                    frameScale={frame.frame_scale}
-                    frameOffsetX={frame.frame_offset_x}
-                    frameOffsetY={frame.frame_offset_y}
+                    glowColor={frame.glow_color ?? undefined}
+                    frameScale={frame.frame_scale ?? undefined}
+                    frameOffsetX={frame.frame_offset_x ?? undefined}
+                    frameOffsetY={frame.frame_offset_y ?? undefined}
                   />
                 </div>
                 <div className="ds-t-label text-center truncate px-1 mt-1 opacity-70 font-rajdhani uppercase">

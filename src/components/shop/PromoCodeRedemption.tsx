@@ -26,7 +26,9 @@ export function PromoCodeRedemption() {
         code: code.trim(),
       });
 
-      if (result) {
+      /* Le montant et le type sont optionnels a la source : sans eux,
+         le panneau annoncerait « tu as reçu undefined undefined ». */
+      if (result?.rewardAmount != null && result.rewardType) {
         setLastReward({
           amount: result.rewardAmount,
           type: result.rewardType,

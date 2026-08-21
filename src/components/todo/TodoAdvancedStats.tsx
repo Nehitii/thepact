@@ -84,7 +84,7 @@ export function TodoAdvancedStats() {
   // Category distribution
   const categoryData = useMemo(() => {
     const counts: Record<string, number> = {};
-    history.forEach((h: TodoHistory & { category?: string }) => {
+    history.forEach((h: TodoHistory & { category?: string | null }) => {
       const cat = h.category || 'general';
       counts[cat] = (counts[cat] || 0) + 1;
     });

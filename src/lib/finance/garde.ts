@@ -26,23 +26,19 @@ export const NOM_MAX = 120;
 export const LIGNES_MAX = 30;
 
 /**
- * UNE LECTURE : LA VALEUR, ET LA RAISON DU REFUS.
+ * UNE LECTURE : SOIT UNE VALEUR, SOIT UNE RAISON DE REFUS.
  *
- * On aurait aime une union discriminee — { ok: true, valeur } |
- * { ok: false, raison } — qui est la forme juste. Le projet compile
- * avec strict et strictNullChecks a false, et TypeScript n y reduit
- * pas les unions par un discriminant booleen : lu.raison etait signale
- * inexistant a l interieur meme du test qui le garantit.
- *
- * Deux champs toujours presents, dont l un est nul, ne demandent
- * aucune reduction. C est moins elegant et ca marche partout.
+ * Une premiere version rendait deux champs dont l un etait nul, parce
+ * que le projet compilait avec strictNullChecks a false et que
+ * TypeScript n y reduit pas les unions par un discriminant booleen :
+ * « lu.raison » etait signale inexistant a l interieur meme du test qui
+ * le garantit. strict est desormais actif, et la forme juste redevient
+ * possible — celle ou l on ne PEUT PAS lire une valeur refusee, parce
+ * que le compilateur l interdit.
  */
-export interface Lecture<T> {
-  /** La valeur retenue, ou null si elle a ete refusee. */
-  valeur: T | null;
-  /** La raison du refus, ou null si la lecture est bonne. */
-  raison: RaisonRefus | null;
-}
+export type Lecture<T> =
+  | { ok: true; valeur: T; raison?: undefined }
+  | { ok: false; valeur?: undefined; raison: RaisonRefus };
 
 export type RaisonRefus =
   | 'montantVide'
@@ -70,30 +66,30 @@ const enCentimes = (v: number) => Math.round(v * 100) / 100;
  */
 export function lireMontant(saisie: string, { zeroAdmis = false } = {}): Lecture<number> {
   const brut = saisie.trim();
-  if (brut === '') return { valeur: null, raison: 'montantVide' };
+  if (brut === '') return { ok: false, raison: 'montantVide' };
 
   const v = parseFloat(brut.replace(',', '.'));
-  if (!Number.isFinite(v)) return { valeur: null, raison: 'montantIllisible' };
-  if (v < 0) return { valeur: null, raison: 'montantNegatif' };
-  if (v === 0 && !zeroAdmis) return { valeur: null, raison: 'montantNul' };
-  if (v > MONTANT_MAX) return { valeur: null, raison: 'montantEnorme' };
+  if (!Number.isFinite(v)) return { ok: false, raison: 'montantIllisible' };
+  if (v < 0) return { ok: false, raison: 'montantNegatif' };
+  if (v === 0 && !zeroAdmis) return { ok: false, raison: 'montantNul' };
+  if (v > MONTANT_MAX) return { ok: false, raison: 'montantEnorme' };
 
-  return { raison: null, valeur: enCentimes(v) };
+  return { ok: true, valeur: enCentimes(v) };
 }
 
 /** Lit un nom de ligne. */
 export function lireNom(saisie: string): Lecture<string> {
   const nom = saisie.trim();
-  if (nom === '') return { valeur: null, raison: 'nomVide' };
-  if (nom.length > NOM_MAX) return { valeur: null, raison: 'nomTropLong' };
-  return { raison: null, valeur: nom };
+  if (nom === '') return { ok: false, raison: 'nomVide' };
+  if (nom.length > NOM_MAX) return { ok: false, raison: 'nomTropLong' };
+  return { ok: true, valeur: nom };
 }
 
 /** Reste-t-il de la place dans ce bloc ? */
 export function placeDisponible(nbLignes: number): Lecture<number> {
   return nbLignes >= LIGNES_MAX
-    ? { valeur: null, raison: 'tropDeLignes' }
-    : { valeur: LIGNES_MAX - nbLignes, raison: null };
+    ? { ok: false, raison: 'tropDeLignes' }
+    : { ok: true, valeur: LIGNES_MAX - nbLignes };
 }
 
 /**

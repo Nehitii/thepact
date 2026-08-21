@@ -7,7 +7,7 @@ export interface SharedGoalEntry {
   goal_id: string;
   owner_id: string;
   shared_with_id: string;
-  shared_at: string;
+  shared_at: string | null;
   owner_name?: string;
 }
 

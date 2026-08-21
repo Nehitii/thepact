@@ -300,7 +300,7 @@ export function useGuilds() {
     }) => {
       const { data, error } = await supabase.rpc("create_guild_with_owner", {
         p_name: name,
-        p_description: description || null,
+        p_description: description || undefined,
         p_icon: icon || "shield",
         p_color: color || "violet",
         p_is_public: is_public || false,

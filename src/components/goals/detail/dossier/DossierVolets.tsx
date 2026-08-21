@@ -20,7 +20,7 @@ export interface EtapeDossier {
   id: string;
   title: string;
   order: number;
-  status: string;
+  status: string | null;
   notes?: string | null;
   /** L etape ultime : hors avancement, elle porte l objectif au zenith. */
   is_ultimate?: boolean;
@@ -81,7 +81,7 @@ export const DossierEtapes = React.memo(function DossierEtapes({
         <button
           type="button"
           className="gd-case"
-          onClick={() => onBasculer(e.id, e.status)}
+          onClick={() => onBasculer(e.id, e.status ?? "pending")}
           aria-pressed={faite}
           aria-label={faite
             ? t("goals.detail.uncheckStep", "Décocher l'étape")
@@ -305,7 +305,7 @@ export interface MembreDossier {
   id: string;
   name: string;
   difficulty: string;
-  status: string;
+  status: string | null;
   progress: number;
   isCompleted: boolean;
   isMissing?: boolean;

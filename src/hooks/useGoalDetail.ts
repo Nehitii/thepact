@@ -9,26 +9,26 @@ import { supabase } from "@/integrations/supabase/client";
 export interface GoalDetailData {
   id: string;
   name: string;
-  type: string;
-  difficulty: string;
-  status: string;
-  validated_steps: number;
-  total_steps: number;
-  estimated_cost: number;
+  type: string | null;
+  difficulty: string | null;
+  status: string | null;
+  validated_steps: number | null;
+  total_steps: number | null;
+  estimated_cost: number | null;
   notes: string | null;
-  potential_score: number;
-  start_date?: string;
-  completion_date?: string;
-  image_url?: string;
-  is_focus?: boolean;
+  potential_score: number | null;
+  start_date?: string | null;
+  completion_date?: string | null;
+  image_url?: string | null;
+  is_focus?: boolean | null;
   goal_type?: string;
-  habit_duration_days?: number;
-  habit_checks?: boolean[];
+  habit_duration_days?: number | null;
+  habit_checks?: boolean[] | null;
   child_goal_ids?: string[] | null;
-  super_goal_rule?: any;
-  is_dynamic_super?: boolean;
+  super_goal_rule?: any | null;
+  is_dynamic_super?: boolean | null;
   pact_id?: string;
-  created_at?: string;
+  created_at?: string | null;
   deadline?: string | null;
   is_locked?: boolean;
 }
@@ -37,7 +37,7 @@ export interface StepData {
   id: string;
   title: string;
   order: number;
-  status: string;
+  status: string | null;
   due_date: string | null;
   notes?: string | null;
   goal_id: string;
@@ -47,8 +47,8 @@ export interface StepData {
   /* L etape ultime : exclue de l avancement, une seule par objectif,
      elle ouvre le zenith une fois franchie. */
   is_ultimate?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export function useGoalDetail(goalId: string | undefined, userId: string | undefined) {
