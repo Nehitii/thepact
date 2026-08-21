@@ -17,7 +17,9 @@
  * A une reserve pres : un groupe ne s honore pas tout seul. Le
  * declencheur mene un objectif jusqu au bout des que ses compteurs
  * sont pleins ; un groupe, lui, s arrete au seuil et attend une
- * declaration. Le detail est explique la ou le rattrapage se fait.
+ * declaration — et une fois declaree, elle tient meme si un membre
+ * retombe. Cette reserve vit dans le declencheur lui-meme, pose par
+ * la migration 20260820210000 : ecrire les compteurs suffit ici.
  *
  * La composition d un groupe etait ecrite deux fois, dans le registre
  * et dans la fiche, avec deux definitions differentes du « franchi ».
@@ -103,46 +105,11 @@ export async function synchroniserGroupes(pactId: string | undefined): Promise<C
     const faits = membres.filter(estFranchi).length;
     if (total === (groupe.total_steps ?? 0) && faits === (groupe.validated_steps ?? 0)) continue;
 
-    /* Une declaration d honneur precede l ecriture des compteurs :
-       c est elle qu il faudra defendre juste apres. */
-    const etaitHonore = groupe.status === "fully_completed";
-
     const { error: err } = await supabase
       .from("goals")
       .update({ total_steps: total, validated_steps: faits })
       .eq("id", groupe.id);
     if (err) continue;
-
-    /* UN GROUPE NE S HONORE PAS TOUT SEUL.
-     *
-     * Le declencheur en base honore un objectif des que ses compteurs
-     * sont pleins. Pour un objectif ordinaire c est juste : ses etapes
-     * sont son travail. Un groupe, lui, se declare honore — sans quoi
-     * il encaisserait son experience le jour ou son dernier membre
-     * tombe, sans que personne l ait decide.
-     *
-     * On rattrape donc le statut dans les deux sens : le groupe arrive
-     * au seuil sans le franchir, et celui qui a ete honore le reste
-     * quand ses membres bougent ensuite. L ecriture ne porte que sur
-     * « status » — le declencheur n ecoute que les deux compteurs, il
-     * ne se rallume donc pas.
-     *
-     * La migration 20260820210000 porte la meme regle en base, ou elle
-     * couvrirait tous les chemins d ecriture. Tant qu elle n est pas
-     * appliquee, c est ce rattrapage qui tient — et le jour ou elle
-     * l est, il devient inutile et doit partir. */
-    const auSeuil = total > 0 && faits >= total;
-    if (etaitHonore) {
-      await supabase.from("goals").update({ status: "fully_completed" }).eq("id", groupe.id);
-    } else if (auSeuil) {
-      /* Le declencheur a pose une date de franchissement en passant :
-         un groupe qui n a pas ete honore n en a pas. Elle appartiendra
-         au geste qui l honorera. */
-      await supabase
-        .from("goals")
-        .update({ status: "in_progress", completion_date: null })
-        .eq("id", groupe.id);
-    }
 
     corrections.push({
       id: groupe.id,
