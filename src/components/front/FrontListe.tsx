@@ -1,17 +1,23 @@
 /**
- * LE FRONT — la liste des etapes ouvertes.
+ * LE FRONT — la liste des etapes.
  *
- * Quatrieme vue de la page Goals : la meme page, lue par ce qui reste
- * a faire plutot que par ce qu on s est promis. Elle lit l ensemble
+ * Quatrieme vue de la page Goals : la meme page, lue par ses etapes
+ * plutot que par les objectifs qui les portent. Elle lit l ensemble
  * deja filtre par la page — la recherche et les onglets la reduisent
  * comme ils reduisent les cartes — mais avant la pagination : une
  * etape n a pas de page.
  *
- * Trois portees, qui sont trois questions. La brigade repond a « sur
- * quoi je me suis engage ? », les objectifs engages a « qu est-ce que
- * je reprends ? », tout a « qu est-ce que j ouvre ? ». La premiere
- * est le defaut des qu une brigade existe : c est elle qu on s est
- * donnee.
+ * Deux axes, qui sont deux questions. La portee repond a « lesquelles
+ * me regardent ? » : la brigade, les objectifs engages, ou tous. La
+ * premiere est le defaut des qu une brigade existe — c est elle qu on
+ * s est donnee. L etat repond a « lesquelles restent ? » : ce qui est
+ * a faire, ce qui est fait, ou tout.
+ *
+ * L etat suit l onglet de la page tant qu on n en a pas choisi un.
+ * Sous « Termines » il n y a que des etapes faites : y proposer « a
+ * faire » par defaut, c etait afficher une vue vide et laisser croire
+ * qu il n y avait rien. Le compte, lui, est toujours celui de ce qui
+ * est montre.
  *
  * Une ligne ouvre son etape. Elle ne la coche pas : cocher demande de
  * recalculer l avancement de l objectif, de synchroniser la liste
@@ -21,36 +27,45 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Crosshair, EyeOff, Star } from "lucide-react";
-import { classerLeFront, type EtapeOuverte, type PorteeFront } from "@/hooks/useEtapesOuvertes";
+import { Check, ChevronRight, Crosshair, EyeOff, Star } from "lucide-react";
+import { classerLeFront, type Etape, type EtatFront, type PorteeFront } from "@/hooks/useEtapes";
+import type { GoalTab } from "@/hooks/useGoalFilters";
 import "@/styles/front.css";
 
 interface Props {
-  etapes: EtapeOuverte[];
+  etapes: Etape[];
+  onglet: GoalTab;
   chargement?: boolean;
 }
 
 const CELLULES = 8;
 
-export function FrontListe({ etapes, chargement }: Props) {
+export function FrontListe({ etapes, onglet, chargement }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const aUneBrigade = etapes.some((e) => e.brigade);
   const [porteeChoisie, setPorteeChoisie] = useState<PorteeFront | null>(null);
   /* Tant que rien n a ete choisi, la portee suit l etat du pacte : la
-     brigade si elle existe, les objectifs engages sinon. */
-  const portee: PorteeFront = porteeChoisie ?? (aUneBrigade ? "brigade" : "engages");
+     brigade si elle existe, les objectifs engages sinon.
+     Sous « Termines », les deux sont vides par construction — un
+     objectif franchi n est ni engage ni dans la brigade. Y garder le
+     defaut ordinaire, c'etait remplacer une vue vide par une autre. */
+  const portee: PorteeFront =
+    porteeChoisie ?? (onglet === "completed" ? "tout" : aUneBrigade ? "brigade" : "engages");
+
+  const [etatChoisi, setEtatChoisi] = useState<EtatFront | null>(null);
+  const etat: EtatFront = etatChoisi ?? (onglet === "completed" ? "faites" : "afaire");
 
   const [sansExclues, setSansExclues] = useState(true);
 
   const retenues = useMemo(
-    () => classerLeFront(etapes, { portee, sansExclues }),
-    [etapes, portee, sansExclues],
+    () => classerLeFront(etapes, { portee, etat, sansExclues }),
+    [etapes, portee, etat, sansExclues],
   );
-  const exclues = etapes.filter((e) => e.exclue).length;
+  const exclues = etapes.filter((e) => e.exclue && !e.faite).length;
 
-  const suivante: Record<PorteeFront, PorteeFront> = {
+  const porteeSuivante: Record<PorteeFront, PorteeFront> = {
     brigade: "engages",
     engages: "tout",
     tout: aUneBrigade ? "brigade" : "engages",
@@ -59,6 +74,17 @@ export function FrontListe({ etapes, chargement }: Props) {
     brigade: t("brigade.label", "Brigade"),
     engages: t("front.engaged", "Engagés"),
     tout: t("front.everything", "Tout"),
+  };
+
+  const etatSuivant: Record<EtatFront, EtatFront> = {
+    afaire: "faites",
+    faites: "toutes",
+    toutes: "afaire",
+  };
+  const nomEtat: Record<EtatFront, string> = {
+    afaire: t("front.todo", "À faire"),
+    faites: t("front.done", "Faites"),
+    toutes: t("front.allSteps", "Toutes"),
   };
 
   return (
@@ -70,13 +96,23 @@ export function FrontListe({ etapes, chargement }: Props) {
           <button
             type="button"
             className="fr-filtre fr-portee"
-            onClick={() => setPorteeChoisie(suivante[portee])}
+            onClick={() => setPorteeChoisie(porteeSuivante[portee])}
             title={t("front.scopeHint", "Étapes de la brigade, des objectifs engagés, ou de tous")}
           >
             {portee === "brigade" && <Star size={9} aria-hidden="true" />}
             {nomPortee[portee]}
           </button>
-          {exclues > 0 && (
+          <button
+            type="button"
+            className="fr-filtre fr-etat"
+            data-etat={etat}
+            onClick={() => setEtatChoisi(etatSuivant[etat])}
+            title={t("front.stateHint", "Étapes à faire, faites, ou toutes")}
+          >
+            {etat === "faites" && <Check size={9} aria-hidden="true" />}
+            {nomEtat[etat]}
+          </button>
+          {exclues > 0 && etat !== "faites" && (
             <button
               type="button"
               className="fr-filtre"
@@ -101,17 +137,20 @@ export function FrontListe({ etapes, chargement }: Props) {
               type="button"
               className="fr-ligne"
               data-brigade={e.brigade ? "1" : "0"}
+              data-faite={e.faite ? "1" : "0"}
               style={{ ["--t" as string]: e.teinte }}
               onClick={() => navigate(`/step/${e.id}`)}
             >
               <span className="fr-corps">
                 <span className="fr-titre" title={e.titre}>
-                  {e.brigade && <Star size={10} className="fr-marque" aria-hidden="true" />}
+                  {e.faite
+                    ? <Check size={10} className="fr-marque" aria-hidden="true" />
+                    : e.brigade && <Star size={10} className="fr-marque" aria-hidden="true" />}
                   {e.titre}
                 </span>
                 <span className="fr-source">
                   <u>{e.objectifNom}</u>
-                  {e.exclue && <s>· {t("front.excluded", "hors tirage")}</s>}
+                  {e.exclue && !e.faite && <s>· {t("front.excluded", "hors tirage")}</s>}
                 </span>
               </span>
               <span className="fr-jauge" aria-hidden="true">
@@ -129,11 +168,13 @@ export function FrontListe({ etapes, chargement }: Props) {
           <p className="fr-vide">
             {chargement
               ? t("common.loading", "Chargement…")
-              : portee === "brigade"
-                ? t("front.emptyBrigade", "Aucune étape dans la brigade")
-                : portee === "engages"
-                  ? t("front.emptyEngaged", "Aucune étape sur un objectif engagé")
-                  : t("front.empty", "Aucune étape ouverte")}
+              : etat === "faites"
+                ? t("front.emptyDone", "Aucune étape franchie ici")
+                : portee === "brigade"
+                  ? t("front.emptyBrigade", "Aucune étape dans la brigade")
+                  : portee === "engages"
+                    ? t("front.emptyEngaged", "Aucune étape sur un objectif engagé")
+                    : t("front.empty", "Aucune étape ouverte")}
           </p>
         )}
       </div>

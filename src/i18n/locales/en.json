@@ -2471,7 +2471,12 @@
     "empty": "No open step",
     "emptyEngaged": "No step on an engaged goal",
     "seeAll": "See all {{n}} steps",
-    "emptyBrigade": "No step in the brigade"
+    "emptyBrigade": "No step in the brigade",
+    "todo": "To do",
+    "done": "Done",
+    "allSteps": "All",
+    "stateHint": "Steps to do, done, or all",
+    "emptyDone": "No step completed here"
   },
   "brigade": {
     "label": "Brigade",

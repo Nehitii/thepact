@@ -2471,7 +2471,12 @@
     "empty": "Aucune étape ouverte",
     "emptyEngaged": "Aucune étape sur un objectif engagé",
     "seeAll": "Voir les {{n}} étapes",
-    "emptyBrigade": "Aucune étape dans la brigade"
+    "emptyBrigade": "Aucune étape dans la brigade",
+    "todo": "À faire",
+    "done": "Faites",
+    "allSteps": "Toutes",
+    "stateHint": "Étapes à faire, faites, ou toutes",
+    "emptyDone": "Aucune étape franchie ici"
   },
   "brigade": {
     "label": "Brigade",

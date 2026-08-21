@@ -17,7 +17,7 @@ import {
 import { GoalsPagination } from "@/components/goals/GoalsPagination";
 import { GoalsRegistre } from "@/components/goals/GoalsRegistre";
 import { FrontListe } from "@/components/front/FrontListe";
-import { useEtapesOuvertes } from "@/hooks/useEtapesOuvertes";
+import { useEtapes } from "@/hooks/useEtapes";
 import { estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import type { DisplayMode, GoalTab } from "@/hooks/useGoalFilters";
@@ -87,7 +87,7 @@ export function GoalsList({
   /* Les etapes du lot filtre — avant pagination : le front les montre
      toutes, il ne se decoupe pas en pages. */
   const { data: etapesOuvertes = [], isLoading: chargementEtapes } =
-    useEtapesOuvertes(buckets[activeTab], customDifficultyColor);
+    useEtapes(buckets[activeTab], customDifficultyColor);
   const { t } = useTranslation();
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
@@ -286,7 +286,7 @@ export function GoalsList({
                   et decouper le front en tranches de dix objectifs
                   n aurait aucun sens. */}
               {displayMode === "front" ? (
-                <FrontListe etapes={etapesOuvertes} chargement={chargementEtapes} />
+                <FrontListe etapes={etapesOuvertes} onglet={activeTab} chargement={chargementEtapes} />
               ) : displayMode === "bookmark" ? (
                 <GoalsRegistre
                   goals={paginated}

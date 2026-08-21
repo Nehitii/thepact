@@ -1,10 +1,18 @@
 /**
- * LES ETAPES OUVERTES — ce sur quoi on peut partir.
+ * LES ETAPES DU PACTE.
  *
- * L application savait deja repondre a cette question, mais au
- * hasard : le tirage de mission de l accueil prend un objectif et sa
- * premiere etape ouverte. Ce hook donne la reponse deliberee — toutes
- * les etapes qui restent, avec l objectif d ou elles viennent.
+ * Ce hook ne connaissait que les etapes ouvertes : il demandait a la
+ * base tout ce qui n etait pas termine. Le front y gagnait sa raison
+ * d etre — savoir sur quoi partir — mais la page, elle, y perdait une
+ * moitie de sa verite. Les trois onglets filtrent des objectifs ; le
+ * front qui les suit n avait rien a montrer sous « Termines »,
+ * puisqu un objectif termine n a par construction plus une seule
+ * etape ouverte. L onglet existait, la vue etait vide.
+ *
+ * Il lit donc toutes les etapes, et chacune dit si elle est faite. Le
+ * tri se fait ensuite en memoire, avec un axe de plus : ce qui reste a
+ * faire, ce qui est fait, ou tout. Le compte affiche est celui de ce
+ * qu on montre — il ne peut donc pas mentir.
  *
  * Les habitudes et les groupes n en ont pas : une habitude se coche
  * par jour, un groupe compte ses membres. Seuls les objectifs
@@ -14,7 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Goal } from "@/hooks/useGoals";
 
-export interface EtapeOuverte {
+export interface Etape {
   id: string;
   titre: string;
   rang: number;
@@ -29,6 +37,8 @@ export interface EtapeOuverte {
   brigade: boolean;
   /** Le tirage de mission ne propose jamais cette etape. */
   exclue: boolean;
+  /** L etape est franchie. */
+  faite: boolean;
 }
 
 const PALIER: Record<string, string> = {
@@ -39,7 +49,7 @@ const PALIER: Record<string, string> = {
   impossible: "#c084fc",
 };
 
-export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) {
+export function useEtapes(goals: Goal[], couleurPersonnalisee?: string) {
   /* Un objectif archive n a plus de front ; un groupe et une habitude
      n ont pas d etapes du tout. */
   const concernes = goals.filter(
@@ -48,15 +58,14 @@ export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) 
   const ids = concernes.map((g) => g.id);
 
   return useQuery({
-    queryKey: ["etapes-ouvertes", [...ids].sort().join(",")],
+    queryKey: ["etapes-du-pacte", [...ids].sort().join(",")],
     enabled: ids.length > 0,
     staleTime: 30_000,
-    queryFn: async (): Promise<EtapeOuverte[]> => {
+    queryFn: async (): Promise<Etape[]> => {
       const { data, error } = await supabase
         .from("steps")
-        .select("id, goal_id, title, order, exclude_from_spin")
+        .select("id, goal_id, title, order, exclude_from_spin, status")
         .in("goal_id", ids)
-        .neq("status", "completed")
         .order("order", { ascending: true });
       if (error) throw error;
 
@@ -80,6 +89,9 @@ export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) 
           engage: g.status === "in_progress",
           brigade: !!g.is_focus,
           exclue: !!s.exclude_from_spin,
+          /* « validated » est un statut d objectif ; une etape ne
+             connait que « pending » et « completed ». */
+          faite: s.status === "completed",
         }];
       });
     },
@@ -94,18 +106,41 @@ export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) 
  * est donc celui de l objectif le plus proche du but : finir ce qui
  * est presque fini avant d ouvrir un chantier de plus. A egalite,
  * l ordre des etapes dans leur objectif.
+ *
+ * Deux axes, qui sont deux questions distinctes. La portee demande
+ * « lesquelles me regardent ? » — la brigade, les objectifs engages ou
+ * tous. L etat demande « lesquelles restent ? ». Les croiser permet de
+ * lire la meme collection comme un plan de travail ou comme un releve
+ * de ce qui est acquis.
  */
 export type PorteeFront = "brigade" | "engages" | "tout";
+export type EtatFront = "afaire" | "faites" | "toutes";
 
 export function classerLeFront(
-  etapes: EtapeOuverte[],
-  options: { portee: PorteeFront; sansExclues: boolean },
-): EtapeOuverte[] {
+  etapes: Etape[],
+  options: { portee: PorteeFront; etat: EtatFront; sansExclues: boolean },
+): Etape[] {
   let retenues = etapes;
   if (options.portee === "brigade") retenues = retenues.filter((e) => e.brigade);
   else if (options.portee === "engages") retenues = retenues.filter((e) => e.engage);
-  if (options.sansExclues) retenues = retenues.filter((e) => !e.exclue);
-  return [...retenues].sort(
-    (a, b) => b.avancement - a.avancement || a.rang - b.rang,
+
+  if (options.etat === "afaire") retenues = retenues.filter((e) => !e.faite);
+  else if (options.etat === "faites") retenues = retenues.filter((e) => e.faite);
+
+  /* L exclusion du tirage ne mord que sur ce qui reste a faire : une
+     etape franchie n attend plus rien d un tirage.
+     Sans cette reserve, « Faites » annonçait 48 et « Toutes » n en
+     montrait que 46 — deux etapes franchies disparaissaient au motif
+     qu elles etaient hors tirage, et le compte changeait sans qu on
+     ait rien demande. */
+  if (options.sansExclues) retenues = retenues.filter((e) => e.faite || !e.exclue);
+
+  /* Ce qui est fait se lit a l envers de ce qui reste : on descend
+     depuis les objectifs les plus aboutis, et l ordre des etapes
+     remonte le temps au lieu de l annoncer. */
+  return [...retenues].sort((a, b) =>
+    options.etat === "faites"
+      ? b.avancement - a.avancement || b.rang - a.rang
+      : b.avancement - a.avancement || a.rang - b.rang,
   );
 }
