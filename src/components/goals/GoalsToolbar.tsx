@@ -70,15 +70,13 @@ const MODES: { mode: DisplayMode; icon: typeof LayoutList; cle: string; apart?: 
 
 const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [
   { valeur: "difficulty", cle: "goals.sort.difficulty", defaut: "Difficulté" },
-  { valeur: "type", cle: "goals.sort.tag", defaut: "Étiquette" },
   { valeur: "points", cle: "goals.sort.points", defaut: "Points" },
   { valeur: "created", cle: "goals.sort.created", defaut: "Date de création" },
   { valeur: "name", cle: "goals.sort.name", defaut: "Nom" },
   { valeur: "status", cle: "goals.sort.status", defaut: "Statut" },
   { valeur: "start", cle: "goals.sort.start", defaut: "Date de début" },
   { valeur: "progression", cle: "goals.sort.progress", defaut: "Progression" },
-  { valeur: "super_first", cle: "goals.sort.superFirst", defaut: "Super en premier" },
-  { valeur: "super_last", cle: "goals.sort.superLast", defaut: "Super en dernier" },
+  { valeur: "super", cle: "goals.sort.super", defaut: "Super" },
 ];
 
 /* Sous le front, on ne trie plus des objectifs.

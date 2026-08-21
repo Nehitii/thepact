@@ -9,7 +9,33 @@ import type { Goal } from "@/hooks/useGoals";
 import { estFranchi } from "@/lib/superGoals";
 import { brigadeDe } from "@/lib/brigade";
 
-export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression" | "super_first" | "super_last";
+export type SortOption = "difficulty" | "points" | "created" | "name" | "status" | "start" | "progression" | "super";
+
+/* Deux tris ont disparu du menu, et un troisieme a fusionne.
+ *
+ * « Super en premier » et « Super en dernier » etaient le meme tri :
+ * tous deux multipliaient deja par la direction, si bien que
+ * « premier » en ordre decroissant donnait exactement « dernier ». La
+ * fleche du menu faisait donc le travail deux fois, et le menu
+ * proposait un choix qui n en etait pas un. Il reste « Super », et la
+ * fleche decide du cote.
+ *
+ * « Etiquette » triait sur la seule etiquette principale, alors qu un
+ * objectif en porte plusieurs depuis qu elles vivent dans goal_tags :
+ * il classait sur une donnee qui ne resume plus l objectif.
+ *
+ * Un reglage garde en memoire peut encore nommer l un des trois. On le
+ * ramene vers ce qui le remplace, plutot que de laisser le menu vide
+ * et le tri sans effet. */
+const TRIS_RETIRES: Record<string, SortOption> = {
+  super_first: "super",
+  super_last: "super",
+  type: "created",
+};
+export const triValide = (v: unknown): SortOption =>
+  typeof v === "string" && v in TRIS_RETIRES
+    ? TRIS_RETIRES[v]
+    : ((v as SortOption) || "created");
 export type SortDirection = "asc" | "desc";
 export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
 export type GoalTab = "all" | "active" | "completed";
@@ -82,8 +108,6 @@ function trierParCritere(goals: Goal[], sortBy: SortOption, dir: SortDirection):
       const order = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
       return sorted.sort((a, b) => (order.indexOf(a.difficulty) - order.indexOf(b.difficulty)) * d);
     }
-    case "type":
-      return sorted.sort((a, b) => a.type.localeCompare(b.type) * d);
     case "points":
       return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * d);
     case "created":
@@ -102,18 +126,13 @@ function trierParCritere(goals: Goal[], sortBy: SortOption, dir: SortDirection):
       });
     case "progression":
       return sorted.sort((a, b) => (getProgression(a) - getProgression(b)) * d);
-    case "super_first":
+    /* Les groupes d un cote, le reste de l autre ; la fleche dit
+       lequel passe devant. A egalite, le plus recent d abord. */
+    case "super":
       return sorted.sort((a, b) => {
-        const aSuper = a.goal_type === "super" ? 0 : 1;
-        const bSuper = b.goal_type === "super" ? 0 : 1;
-        if (aSuper !== bSuper) return (aSuper - bSuper) * d;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-    case "super_last":
-      return sorted.sort((a, b) => {
-        const aSuper = a.goal_type === "super" ? 1 : 0;
-        const bSuper = b.goal_type === "super" ? 1 : 0;
-        if (aSuper !== bSuper) return (aSuper - bSuper) * d;
+        const aGroupe = a.goal_type === "super" ? 0 : 1;
+        const bGroupe = b.goal_type === "super" ? 0 : 1;
+        if (aGroupe !== bGroupe) return (aGroupe - bGroupe) * d;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
     default:
@@ -137,7 +156,7 @@ function filterBySearch(goals: Goal[], query: string): Goal[] {
 export function useGoalFilters(goals: Goal[]) {
   const saved = useMemo(() => loadSettings(), []);
 
-  const [sortBy, setSortBy] = useState<SortOption>(saved.sortBy || "created");
+  const [sortBy, setSortBy] = useState<SortOption>(triValide(saved.sortBy));
   const [sortDirection, setSortDirection] = useState<SortDirection>(saved.sortDirection || "desc");
   const [activeTab, setActiveTab] = useState<GoalTab>("active");
   const [itemsPerPage, setItemsPerPage] = useState(saved.itemsPerPage || 10);

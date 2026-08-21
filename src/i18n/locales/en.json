@@ -533,11 +533,9 @@
       "status": "Status",
       "name": "Name",
       "progress": "Progress",
-      "tag": "Tag",
       "points": "Points",
       "start": "Start date",
-      "superFirst": "Super first",
-      "superLast": "Super last"
+      "super": "Super"
     },
     "form": {
       "goalName": "Goal Name",
