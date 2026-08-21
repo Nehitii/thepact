@@ -42,6 +42,42 @@ export type GoalTab = "all" | "active" | "completed";
 
 const STORAGE_KEY = "goals-page-settings";
 
+/* OU ON EN ETAIT, PAR OPPOSITION A CE QU ON PREFERE.
+ *
+ * Le tri, le mode d affichage et la densite sont des preferences : on
+ * les veut demain comme aujourd hui, elles vivent donc dans
+ * localStorage. L onglet ouvert, la page et la recherche en cours ne
+ * sont pas des preferences mais une position — celle qu on occupait
+ * avant d entrer dans un objectif. Les garder pour toujours ferait
+ * rouvrir l application sur « Termines, page 3 » le lendemain matin.
+ *
+ * Elles vivent donc dans sessionStorage : le temps de l onglet du
+ * navigateur, pas au-dela. Entrer dans un objectif et en ressortir
+ * ramene exactement ou l on etait ; rouvrir l application demain
+ * repart du debut.
+ */
+const PLACE_KEY = "goals-page-place";
+
+interface PositionGardee {
+  activeTab: GoalTab;
+  pages: Record<GoalTab, number>;
+  searchQuery: string;
+}
+
+function chargerPosition(): Partial<PositionGardee> {
+  try {
+    const brut = sessionStorage.getItem(PLACE_KEY);
+    if (brut) return JSON.parse(brut);
+  } catch { /* un stockage refuse ne doit pas casser la page */ }
+  return {};
+}
+
+function garderPosition(p: PositionGardee) {
+  try {
+    sessionStorage.setItem(PLACE_KEY, JSON.stringify(p));
+  } catch { /* idem */ }
+}
+
 interface PersistedSettings {
   sortBy: SortOption;
   sortDirection: SortDirection;
@@ -155,12 +191,13 @@ function filterBySearch(goals: Goal[], query: string): Goal[] {
 
 export function useGoalFilters(goals: Goal[]) {
   const saved = useMemo(() => loadSettings(), []);
+  const place = useMemo(() => chargerPosition(), []);
 
   const [sortBy, setSortBy] = useState<SortOption>(triValide(saved.sortBy));
   const [sortDirection, setSortDirection] = useState<SortDirection>(saved.sortDirection || "desc");
-  const [activeTab, setActiveTab] = useState<GoalTab>("active");
+  const [activeTab, setActiveTab] = useState<GoalTab>(place.activeTab || "active");
   const [itemsPerPage, setItemsPerPage] = useState(saved.itemsPerPage || 10);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(place.searchQuery || "");
   const [hideSuperGoals, setHideSuperGoals] = useState(saved.hideSuperGoals ?? false);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(saved.displayMode || "bar");
 
@@ -170,7 +207,14 @@ export function useGoalFilters(goals: Goal[]) {
   }, [sortBy, sortDirection, displayMode, itemsPerPage, hideSuperGoals]);
 
   // Per-tab pagination
-  const [pages, setPages] = useState({ all: 1, active: 1, completed: 1 });
+  const [pages, setPages] = useState(place.pages || { all: 1, active: 1, completed: 1 });
+
+  /* La position se garde a chaque changement, et non au depart : on ne
+     sait pas comment on quitte la page — un clic sur une carte, la
+     palette de commandes, le bouton « precedent » du navigateur. */
+  useEffect(() => {
+    garderPosition({ activeTab, pages, searchQuery });
+  }, [activeTab, pages, searchQuery]);
 
   const setCurrentPage = useCallback(
     (tab: GoalTab, page: number) => setPages((p) => ({ ...p, [tab]: page })),

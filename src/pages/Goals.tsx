@@ -19,6 +19,7 @@ import { useGoalFilters } from "@/hooks/useGoalFilters";
 import { GoalsHeader } from "@/components/goals/GoalsHeader";
 import { GoalsToolbar } from "@/components/goals/GoalsToolbar";
 import { GoalsList } from "@/components/goals/GoalsList";
+import { useRepriseDefilement } from "@/hooks/useRepriseDefilement";
 import { GoalsSkeleton } from "@/components/goals/GoalsSkeleton";
 import { motion } from "framer-motion";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -43,6 +44,12 @@ export default function Goals() {
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const unlockCode = profile?.goal_unlock_code ?? "";
   const loading = !user || goalsLoading;
+
+  /* La page se rouvre ou on l avait laissee : l onglet, la page et la
+     recherche viennent de useGoalFilters, le defilement d ici. On
+     n annonce « pret » qu une fois les objectifs charges — restaurer
+     plus tot viserait une page qui na pas encore sa hauteur. */
+  useRepriseDefilement(!loading && goals.length > 0, "/goals");
 
   const filters = useGoalFilters(goals);
 
