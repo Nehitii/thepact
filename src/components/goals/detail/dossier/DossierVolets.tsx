@@ -184,7 +184,9 @@ export const DossierHabitude = React.memo(function DossierHabitude({
   coches: boolean[];
   duree: number;
   teinte: string;
-  onBasculer: (index: number) => void;
+  /* L element touche remonte avec l index : c est de lui que part
+     l eclat, plutot que du centre de la fenetre. */
+  onBasculer: (index: number, depuis?: Element | null) => void;
 }) {
   const { t } = useTranslation();
   const tenus = coches.filter(Boolean).length;
@@ -204,7 +206,7 @@ export const DossierHabitude = React.memo(function DossierHabitude({
               className="gd-jour"
               data-tenu={tenu ? "1" : "0"}
               style={{ ["--t" as string]: teinte }}
-              onClick={() => onBasculer(i)}
+              onClick={(e) => onBasculer(i, e.currentTarget)}
               aria-pressed={tenu}
               aria-label={`${t("goals.detail.day", "Jour")} ${i + 1}`}
             >

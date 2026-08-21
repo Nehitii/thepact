@@ -55,8 +55,19 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     if (pactId) await synchroniserGroupes(pactId);
   };
 
-  const burstParticles = (color: string) => {
-    triggerParticles(window.innerWidth / 2, window.innerHeight / 2, color);
+  /* L eclat partait du centre de la fenetre, quel que soit le geste.
+     Sur une grille de cent quatre-vingts jours ou chaque case fait
+     quelques pixels, une gerbe au milieu de l ecran n a aucun rapport
+     avec ce qu on vient de cocher : elle se lit comme un evenement de
+     la page, pas comme la reponse a un clic. Elle part desormais de
+     l element touche quand on sait lequel c est. */
+  const burstParticles = (color: string, depuis?: Element | null) => {
+    const r = depuis?.getBoundingClientRect();
+    triggerParticles(
+      r ? r.left + r.width / 2 : window.innerWidth / 2,
+      r ? r.top + r.height / 2 : window.innerHeight / 2,
+      color,
+    );
   };
 
   // ---------- Toggle Step ----------
@@ -155,12 +166,29 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
   };
 
   // ---------- Toggle Habit Check ----------
+  /* UNE BASCULE NE SE DEDUIT PAS DU CACHE QU ELLE VIENT DE CHANGER.
+   *
+   * onMutate s execute avant mutationFn : le cache est deja bascule
+   * quand la mutation le relit. Elle rebasculait donc, et ecrivait en
+   * base exactement l ancienne valeur — puis l invalidation ramenait
+   * cette valeur a l ecran. Cocher un jour l allumait puis l eteignait
+   * aussitot, et la base n avait jamais rien enregistre d autre que
+   * « faux ». Mesure faite avant correction : apres un clic sur le
+   * jour 1, habit_checks[1] valait toujours false, mais updated_at
+   * venait d etre reecrit — l ecriture avait bien eu lieu, a l envers.
+   *
+   * La valeur voulue est donc calculee la ou le geste a lieu, avant
+   * toute mutation, et transmise. La mutation la pose telle quelle au
+   * lieu de la deduire : elle devient idempotente, et l ordre
+   * d execution de React Query cesse d avoir la moindre importance.
+   * C est ce que fait deja la bascule d etape, qui recoit son
+   * « currentStatus » du clic — et c est pourquoi elle, marchait. */
   const toggleHabit = useMutation({
-    mutationFn: async ({ dayIndex }: { dayIndex: number }) => {
+    mutationFn: async ({ dayIndex, coche }: { dayIndex: number; coche: boolean }) => {
       const detail = getDetail();
       if (!detail || !detail.goal.habit_checks) throw new Error("Habit not loaded");
       const newChecks = [...detail.goal.habit_checks];
-      newChecks[dayIndex] = !newChecks[dayIndex];
+      newChecks[dayIndex] = coche;
       const completedCount = newChecks.filter(Boolean).length;
       const isNowComplete = completedCount === detail.goal.habit_duration_days;
       const newStatus = isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started";
@@ -176,12 +204,12 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (error) throw error;
       return { newChecks, completedCount, isNowComplete, dayIndex };
     },
-    onMutate: async ({ dayIndex }) => {
+    onMutate: async ({ dayIndex, coche }) => {
       await qc.cancelQueries({ queryKey: detailKey });
       const snapshot = qc.getQueryData<DetailCache>(detailKey as any);
       if (snapshot?.goal.habit_checks) {
         const newChecks = [...snapshot.goal.habit_checks];
-        newChecks[dayIndex] = !newChecks[dayIndex];
+        newChecks[dayIndex] = coche;
         const completedCount = newChecks.filter(Boolean).length;
         const isNowComplete = completedCount === snapshot.goal.habit_duration_days;
         qc.setQueryData<DetailCache>(detailKey as any, {
@@ -207,13 +235,16 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
   });
 
-  const handleToggleHabitCheck = (dayIndex: number) => {
+  /* La valeur voulue se lit ici, avant toute mutation : c est le seul
+     endroit ou le cache dit encore ce qui est a l ecran. L element
+     touche sert d origine a l eclat. */
+  const handleToggleHabitCheck = (dayIndex: number, depuis?: Element | null) => {
     const detail = getDetail();
     if (!detail || !detail.goal.habit_checks || !userId) return;
-    const willBeChecked = !detail.goal.habit_checks[dayIndex];
-    if (willBeChecked) burstParticles(getDifficultyColor(detail.goal.difficulty));
+    const coche = !detail.goal.habit_checks[dayIndex];
+    if (coche) burstParticles(getDifficultyColor(detail.goal.difficulty), depuis);
     toggleHabit.mutate(
-      { dayIndex },
+      { dayIndex, coche },
       {
         onSuccess: ({ completedCount, isNowComplete, newChecks }) => {
           if (newChecks[dayIndex] && userId) {
@@ -224,7 +255,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
                 : `${completedCount}/${detail.goal.habit_duration_days} days done`,
               action: {
                 label: "Undo",
-                onClick: () => toggleHabit.mutate({ dayIndex }),
+                onClick: () => toggleHabit.mutate({ dayIndex, coche: false }),
               },
             });
           } else if (userId) {
