@@ -1099,7 +1099,9 @@
       "bandeAide": "{{count}} mois validés sur les douze derniers",
       "moisAValider": "{{mois}} n est pas encore validé.",
       "moisValide": "{{mois}} est validé.",
-      "validerLeMois": "Valider le mois"
+      "validerLeMois": "Valider le mois",
+      "ouvrirMois": "Ouvrir {{mois}}",
+      "revoirLeMois": "Revoir"
     },
     "particulieres": {
       "titre": "Échéances particulières",
@@ -1193,6 +1195,33 @@
       "retirer": "Retirer",
       "mauvaisType": "Ce fichier n’est pas une image.",
       "deplacer": "Déplacer l’image — flèches du clavier, ou glisser"
+    },
+    "parcours": {
+      "titre": "Valider le mois",
+      "etape": {
+        "expense": "Dépenses",
+        "income": "Revenus",
+        "bilan": "Bilan"
+      },
+      "consigneDepenses": "Coche ce qui est bien parti. Corrige ce qui n’est pas tombé juste.",
+      "consigneRevenus": "Coche ce qui est bien rentré. Corrige ce qui n’est pas tombé juste.",
+      "consigneBilan": "Voici ce que le mois a réellement coûté.",
+      "pointees": "{{faits}} / {{total}} pointées",
+      "toutPointer": "Tout cocher",
+      "corriger": "Corriger le montant",
+      "montantReel": "Montant réel",
+      "ceMoisSeulement": "Ce mois-ci",
+      "desormais": "Désormais",
+      "recurrenceMaj": "{{nom}} est mis à jour pour les mois suivants.",
+      "ajouter": "Ajouter un paiement oublié",
+      "ajouterEtReconduire": "Ajouter — et tous les mois",
+      "nomNouveau": "Nom du paiement",
+      "rien": "Rien ne tombe ce mois-ci de ce côté.",
+      "totalPointe": "Pointé",
+      "surTotal": "sur {{total}}",
+      "surN": "sur {{n}}",
+      "reste": "{{n}} ligne(s) non cochée(s) — elles ne comptent pas dans le total.",
+      "dejaValide": "Ce mois était déjà validé — valider à nouveau le corrigera."
     }
   },
   "health": {

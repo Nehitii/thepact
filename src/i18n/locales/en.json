@@ -1099,7 +1099,9 @@
       "bandeAide": "{{count}} months validated out of the last twelve",
       "moisAValider": "{{mois}} is not validated yet.",
       "moisValide": "{{mois}} is validated.",
-      "validerLeMois": "Validate the month"
+      "validerLeMois": "Validate the month",
+      "ouvrirMois": "Open {{mois}}",
+      "revoirLeMois": "Review"
     },
     "particulieres": {
       "titre": "Irregular charges",
@@ -1193,6 +1195,33 @@
       "retirer": "Remove",
       "mauvaisType": "That file is not an image.",
       "deplacer": "Move the image — arrow keys, or drag"
+    },
+    "parcours": {
+      "titre": "Close the month",
+      "etape": {
+        "expense": "Expenses",
+        "income": "Income",
+        "bilan": "Summary"
+      },
+      "consigneDepenses": "Tick what actually went out. Fix anything that didn’t match.",
+      "consigneRevenus": "Tick what actually came in. Fix anything that didn’t match.",
+      "consigneBilan": "Here is what the month really cost.",
+      "pointees": "{{faits}} / {{total}} ticked",
+      "toutPointer": "Tick all",
+      "corriger": "Correct the amount",
+      "montantReel": "Actual amount",
+      "ceMoisSeulement": "This month",
+      "desormais": "From now on",
+      "recurrenceMaj": "{{nom}} is updated for the coming months.",
+      "ajouter": "Add a missed payment",
+      "ajouterEtReconduire": "Add — and every month",
+      "nomNouveau": "Payment name",
+      "rien": "Nothing falls this month on this side.",
+      "totalPointe": "Ticked",
+      "surTotal": "of {{total}}",
+      "surN": "of {{n}}",
+      "reste": "{{n}} line(s) left unticked — they are not counted in the total.",
+      "dejaValide": "This month was already closed — closing again will correct it."
     }
   },
   "health": {

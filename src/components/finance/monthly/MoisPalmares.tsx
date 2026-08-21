@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowDown, CheckCircle2, Flame, Rocket, Trophy } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Flame, Lock, Rocket, Trophy } from 'lucide-react';
 import { format, startOfMonth, subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -31,13 +31,21 @@ interface MoisPalmaresProps {
   netPrevu: number;
   /** Ce qu il reste a financer sur le pacte. */
   restantPacte: number;
-  /** Emmene au panneau qui valide le mois, plus bas dans l ecran. */
-  onAllerValider: () => void;
+  /* OUVRE LE PARCOURS D UN MOIS.
+      Le bouton n etait qu un ascenseur vers un module en pied de page :
+      il fallait defiler tout l ecran pour valider, et le module restait
+      la une fois le mois fait, sans plus rien a dire. Il ouvre
+      desormais le parcours lui-meme.
+
+      La frise s en sert aussi : cliquer une case ouvre le parcours de
+      ce mois-la. C est ce qui permet de retirer l historique en pied de
+      page — un an de tenue, et chaque case est sa propre porte. */
+  onOuvrirParcours: (mois: string) => void;
 }
 
 const CASES = 12;
 
-export function MoisPalmares({ netPrevu, restantPacte, onAllerValider }: MoisPalmaresProps) {
+export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisPalmaresProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -72,15 +80,19 @@ export function MoisPalmares({ netPrevu, restantPacte, onAllerValider }: MoisPal
     return Array.from({ length: CASES }, (_, i) => {
       const d = subMonths(debut, CASES - 1 - i);
       const cle = format(d, 'yyyy-MM');
+      const v = validations.find((x) => x.month.slice(0, 7) === cle);
+      const solde = v ? (v.actual_total_income ?? 0) - (v.actual_total_expenses ?? 0) : null;
       return {
         cle,
+        premier: format(d, 'yyyy-MM-01'),
         lettre: format(d, 'MMM').slice(0, 1).toUpperCase(),
         libelle: format(d, 'MMM yyyy'),
+        solde,
         valide: valides.has(cle),
         encours: cle === format(debut, 'yyyy-MM'),
       };
     });
-  }, [valides]);
+  }, [valides, validations]);
 
   const versement = Math.max(0, netPrevu);
   const part = restantPacte > 0 ? Math.min(100, (versement / restantPacte) * 100) : 0;
@@ -129,40 +141,69 @@ export function MoisPalmares({ netPrevu, restantPacte, onAllerValider }: MoisPal
         ))}
       </div>
 
-      {/* Douze cases : un an de tenue. */}
-      <div className="cy-palm-bande" role="img" aria-label={t('finance.palmares.bandeAide', { count: valides.size })}>
+{/* DOUZE CASES : UN AN DE TENUE, ET DOUZE PORTES.
+          Elles ne faisaient que montrer. Un module d historique en pied
+          de page portait la meme information en plus long, avec un
+          bouton pour rouvrir un mois — deux endroits pour une seule
+          chose, et le plus discret etait le mieux place. Les cases
+          ouvrent donc le parcours du mois qu elles designent, et
+          l historique disparait. */}
+      <div className="cy-palm-bande" role="group" aria-label={t('finance.palmares.bandeAide', { count: valides.size })}>
         {bande.map((m, i) => (
-          <motion.i
+          <motion.button
             key={m.cle}
+            type="button"
             data-valide={m.valide ? '1' : '0'}
             data-encours={m.encours ? '1' : '0'}
-            title={m.libelle}
+            title={m.solde !== null
+              ? `${m.libelle} — ${formatCurrency(m.solde, currency)}`
+              : t('finance.palmares.ouvrirMois', { mois: m.libelle, defaultValue: m.libelle })}
+            aria-label={t('finance.palmares.ouvrirMois', { mois: m.libelle, defaultValue: m.libelle })}
+            onClick={() => onOuvrirParcours(m.premier)}
             initial={{ opacity: 0, scaleY: 0.4 }}
             animate={{ opacity: 1, scaleY: 1 }}
             transition={{ delay: 0.2 + i * 0.03, duration: 0.26 }}
           >
             <u>{m.lettre}</u>
-          </motion.i>
+          </motion.button>
         ))}
       </div>
 
       {/* La boucle se ferme ici : c est la validation qui fait monter
           la serie, elle ne doit pas etre a deux ecrans de son chiffre. */}
       <div className="cy-palm-appel" data-fait={moisValide ? '1' : '0'}>
-        {moisValide ? (
-          <p>
-            <CheckCircle2 aria-hidden="true" />
-            {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM') })}
-          </p>
+{moisValide ? (
+          <>
+            <p>
+              <CheckCircle2 aria-hidden="true" />
+              {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM') })}
+            </p>
+            {/* VERROUILLE, ET NON DISPARU.
+                Un bouton qui s efface une fois le geste fait laisse
+                croire qu on ne peut plus revenir dessus. Il reste, dit
+                qu il n y a plus rien a faire, et rouvre quand meme —
+                une erreur de pointage se corrige. */}
+            <button
+              type="button"
+              className="cy-palm-refaire"
+              onClick={() => onOuvrirParcours(format(startOfMonth(new Date()), 'yyyy-MM-01'))}
+            >
+              <Lock aria-hidden="true" />
+              {t('finance.palmares.revoirLeMois', 'Revoir')}
+            </button>
+          </>
         ) : (
           <>
             <p>
               <Flame aria-hidden="true" />
               {t('finance.palmares.moisAValider', { mois: format(new Date(), 'MMMM') })}
             </p>
-            <button type="button" onClick={onAllerValider}>
+            <button
+              type="button"
+              onClick={() => onOuvrirParcours(format(startOfMonth(new Date()), 'yyyy-MM-01'))}
+            >
               {t('finance.palmares.validerLeMois')}
-              <ArrowDown aria-hidden="true" />
+              <ArrowRight aria-hidden="true" />
             </button>
           </>
         )}

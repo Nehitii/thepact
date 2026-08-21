@@ -20,9 +20,7 @@ import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { MoisPalmares } from './MoisPalmares';
 import { FinancialBlock } from './FinancialBlock';
-import { MonthlyValidationPanel } from './MonthlyValidationPanel';
-import { MonthlyHistory } from './MonthlyHistory';
-import { ValidationFlowModal } from './validation/ValidationFlowModal';
+import { ParcoursDuMois } from './ParcoursDuMois';
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
@@ -61,28 +59,18 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   const upsertValidation = useUpsertMonthlyValidation();
 
   // Editing past month state
-  const [editingMonth, setEditingMonth] = useState<string | null>(null);
-  const { data: editingValidation } = useMonthlyValidation(user?.id, editingMonth ?? undefined);
 
-  // Validation modal state for editing past months
-  const [editConfirmedExpenses, setEditConfirmedExpenses] = useState(false);
-  const [editConfirmedIncome, setEditConfirmedIncome] = useState(false);
-  const [editUnplannedExpenses, setEditUnplannedExpenses] = useState('');
-  const [editUnplannedIncome, setEditUnplannedIncome] = useState('');
-
-  /* Le palmares appelle a valider ; le panneau qui valide est plus
-     bas. On y emmene, et il s annonce une fois en arrivant. */
-  const refValidation = useRef<HTMLDivElement>(null);
-  const allerValider = useCallback(() => {
-    const cible = refValidation.current;
-    if (!cible) return;
-    const douceur = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    cible.scrollIntoView({ behavior: douceur, block: 'center' });
-    cible.focus({ preventScroll: true });
-    cible.classList.remove('est-signalee');
-    /* Relancer l animation demande de laisser passer une image. */
-    requestAnimationFrame(() => cible.classList.add('est-signalee'));
-  }, []);
+  /* LE PARCOURS REMPLACE LE PANNEAU DU BAS.
+   *
+   * Valider se faisait dans un module en pied de page : le bouton du
+   * palmares n etait qu un ascenseur, il fallait defiler tout l ecran,
+   * et le module restait la une fois le mois valide, sans plus rien a
+   * dire. Le bouton ouvre desormais le parcours lui-meme.
+   *
+   * Le mois en cours par defaut, mais l etat porte un mois : cliquer
+   * une case de la frise du palmares ouvre le parcours de ce mois-la,
+   * ce qui remplace l historique en pied de page. */
+  const [moisAPointer, setMoisAPointer] = useState<string | null>(null);
 
   /* DEUX LECTURES, ET ELLES NE DISENT PAS LA MEME CHOSE.
    *
@@ -126,42 +114,6 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   const [fenetreParticuliere, setFenetreParticuliere] = useState(false);
   const [ligneParticuliere, setLigneParticuliere] = useState<FinancialItem | null>(null);
 
-  // When editingMonth changes and data loads, pre-populate
-  useEffect(() => {
-    if (editingValidation) {
-      setEditConfirmedExpenses(editingValidation.confirmed_expenses);
-      setEditConfirmedIncome(editingValidation.confirmed_income);
-      setEditUnplannedExpenses(editingValidation.unplanned_expenses?.toString() ?? '0');
-      setEditUnplannedIncome(editingValidation.unplanned_income?.toString() ?? '0');
-    } else if (editingMonth) {
-      setEditConfirmedExpenses(false);
-      setEditConfirmedIncome(false);
-      setEditUnplannedExpenses('0');
-      setEditUnplannedIncome('0');
-    }
-  }, [editingValidation, editingMonth]);
-
-  const handleEditValidate = async (overrides?: { actualIncome?: number; actualExpenses?: number }) => {
-    if (!editingMonth) return;
-    const totalActualIncome = overrides?.actualIncome ?? (totalIncome + (parseFloat(editUnplannedIncome) || 0));
-    const totalActualExpenses = overrides?.actualExpenses ?? (totalExpenses + (parseFloat(editUnplannedExpenses) || 0));
-    try {
-      await upsertValidation.mutateAsync({
-        month: editingMonth,
-        confirmed_expenses: editConfirmedExpenses,
-        confirmed_income: editConfirmedIncome,
-        unplanned_expenses: parseFloat(editUnplannedExpenses) || 0,
-        unplanned_income: parseFloat(editUnplannedIncome) || 0,
-        actual_total_income: totalActualIncome,
-        actual_total_expenses: totalActualExpenses,
-        validated_at: new Date().toISOString(),
-      });
-      toast.success(t('finance.monthly.validated'));
-      setEditingMonth(null);
-    } catch {
-      toast.error(t('finance.monthly.validationFailed'));
-    }
-  };
 
   /* La cadence part avec le reste : c est un champ de la ligne, pas
      un reglage a cote. */
@@ -227,7 +179,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
       <MoisPalmares
         netPrevu={totalIncome - totalExpenses}
         restantPacte={restantPacte}
-        onAllerValider={allerValider}
+        onOuvrirParcours={setMoisAPointer}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -289,31 +241,14 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
         enCours={addExpense.isPending || updateExpense.isPending}
       />
 
-      <div ref={refValidation} className="cy-cible" tabIndex={-1}>
-        <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />
-      </div>
-      <MonthlyHistory onEditMonth={(month) => setEditingMonth(month)} />
-
-      {/* Edit past month validation modal */}
-      {editingMonth && (
-        <ValidationFlowModal
-          onClose={() => setEditingMonth(null)}
-          onValidate={handleEditValidate}
-          isPending={upsertValidation.isPending}
-          recurringExpenses={expenses}
-          recurringIncome={income}
-          confirmedExpenses={editConfirmedExpenses}
-          confirmedIncome={editConfirmedIncome}
-          setConfirmedExpenses={setEditConfirmedExpenses}
-          setConfirmedIncome={setEditConfirmedIncome}
-          unplannedExpenses={editUnplannedExpenses}
-          unplannedIncome={editUnplannedIncome}
-          setUnplannedExpenses={setEditUnplannedExpenses}
-          setUnplannedIncome={setEditUnplannedIncome}
-          currency={currency}
-          isEditing
-          initialActualIncome={editingValidation?.actual_total_income ?? undefined}
-          initialActualExpenses={editingValidation?.actual_total_expenses ?? undefined}
+      {/* Le parcours du mois. Porte hors de larbre, il recouvre lecran :
+          valider est un geste qui merite toute la page, et non un
+          module en pied de liste quon atteint en defilant. */}
+      {moisAPointer && (
+        <ParcoursDuMois
+          mois={moisAPointer}
+          ouvert
+          onFermer={() => setMoisAPointer(null)}
         />
       )}
     </div>
