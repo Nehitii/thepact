@@ -233,6 +233,22 @@ export function moisDeChute(ligne: LigneCadencee): number[] {
  * franchement au lieu de deviner, et l interface propose de
  * regulariser.
  */
+/**
+ * Les mois d une ANNEE PRECISE ou cette ligne tombe.
+ *
+ * moisDeChute rend le motif d une annee quelconque, et ne sait donc
+ * rien dire d un echeancier : ses echeances se suivent, franchissent
+ * le 31 decembre, et n existent que dans les annees qu elles
+ * traversent. La vue calendrier a besoin de l autre lecture — celle
+ * d une annee datee — et l obtient en interrogeant les douze mois un
+ * par un plutot qu en refaisant le calcul a cote.
+ */
+export function tombeDansLAnnee(ligne: LigneCadencee, annee: number): number[] {
+  const mois: number[] = [];
+  for (let m = 0; m < 12; m++) if (tombeEn(ligne, new Date(annee, m, 1))) mois.push(m);
+  return mois;
+}
+
 export function motifDepuisMois(mois: number[]): MotifAnnuel | null {
   const tries = [...new Set(mois)].sort((a, b) => a - b);
   if (tries.length === 0) return null;

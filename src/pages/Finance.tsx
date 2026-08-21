@@ -19,6 +19,7 @@ import { Navette, type Ecran } from "@/components/finance/Navette";
 import { DSPageShell } from "@/components/ds";
 import { roundMoney } from "@/lib/financeCategories";
 import { parseISO } from "date-fns";
+import { totalDuMois, provisionMensuelle } from "@/lib/finance/cadence";
 import { formatCurrency } from "@/lib/currency";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -78,13 +79,36 @@ export default function Finance() {
     [goals, pieces, reglages.project_funding_target, reglages.already_funded],
   );
 
-  /* Ce qui reste chaque mois : c est lui qui donne l horizon, plutot
-     qu une allocation posee au doigt mouille. */
+  /* DEUX CHIFFRES, ET ILS NE REPONDENT PAS A LA MEME QUESTION.
+   *
+   * Une seule somme a plat les servait tous les deux, et elle comptait
+   * une charge trimestrielle de 554,61 comme si elle partait chaque
+   * mois : l onglet annoncait +130,21 la ou le panneau lisait
+   * +1 012,55. Deux chiffres qui se contredisent a un clic d intervalle
+   * font douter des deux.
+   *
+   * Le solde du mois est la tresorerie : ce qui part reellement en
+   * aout. C est lui que l onglet annonce, parce que c est lui que le
+   * panneau montre juste en dessous — les deux doivent dire la meme
+   * chose.
+   *
+   * Le net soutenable est ce qu on peut engager tous les mois sans se
+   * mettre en defaut le mois ou la trimestrielle tombe : le solde
+   * mensuel, moins la poche. C est lui qui va a l arbitrage, ou
+   * promettre 1 012 par mois au pacte reviendrait a promettre l argent
+   * de la copropriete.
+   */
+  const moisCourant = useMemo(() => new Date(), []);
+
+  const soldeDuMois = useMemo(
+    () => roundMoney(totalDuMois(recurringIncome, moisCourant) - totalDuMois(recurringExpenses, moisCourant)),
+    [recurringExpenses, recurringIncome, moisCourant],
+  );
+
   const netMensuel = useMemo(() => {
-    const depenses = recurringExpenses.filter((e) => e.is_active).reduce((s, e) => s + e.amount, 0);
-    const revenus = recurringIncome.filter((i) => i.is_active).reduce((s, i) => s + i.amount, 0);
-    return roundMoney(revenus - depenses);
-  }, [recurringExpenses, recurringIncome]);
+    const particulieres = recurringExpenses.filter((e) => (e.periode_mois ?? 1) !== 1 || e.echeances != null);
+    return roundMoney(soldeDuMois - provisionMensuelle(particulieres));
+  }, [recurringExpenses, soldeDuMois]);
 
   const finDeProjet = pact?.project_end_date ? parseISO(pact.project_end_date) : null;
   const partFinancee = compte.total > 0 ? Math.round((compte.finance / compte.total) * 100) : 0;
@@ -101,7 +125,7 @@ export default function Finance() {
     },
     {
       cle: "mois", index: "03", nom: t("finance.sections.mois"),
-      lecture: `${netMensuel >= 0 ? "+" : ""}${formatCurrency(netMensuel, currency)}`,
+      lecture: `${soldeDuMois >= 0 ? "+" : ""}${formatCurrency(soldeDuMois, currency)}`,
     },
   ];
 

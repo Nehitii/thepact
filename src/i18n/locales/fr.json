@@ -1112,7 +1112,10 @@
       "parMois": "par mois",
       "duMois": "dont ce mois-ci",
       "puisAn": "{{montant}} par an",
-      "puisTotal": "{{montant}} au total"
+      "puisTotal": "{{montant}} au total",
+      "vuePlanche": "Créanciers",
+      "vueAnnee": "Année",
+      "quelleVue": "Affichage"
     },
     "cadence": {
       "dansNMois": "dans {{count}} mois",
@@ -1160,6 +1163,10 @@
       "irregulier": "Ce motif ne se répète pas d’une année sur l’autre.",
       "tous": "Tous les mois",
       "effacer": "Effacer"
+    },
+    "annee": {
+      "precedente": "Année {{annee}}",
+      "suivante": "Année {{annee}}"
     }
   },
   "health": {

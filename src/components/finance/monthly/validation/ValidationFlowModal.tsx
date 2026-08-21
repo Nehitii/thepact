@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
+import { totalDuMois, tombeEn, montantDuMois } from '@/lib/finance/cadence';
 import { Input } from '@/components/ui/input';
 
 interface RecurringItem {
@@ -11,6 +12,14 @@ interface RecurringItem {
   name: string;
   amount: number;
   is_active: boolean;
+  /* LA CADENCE DOIT VOYAGER AVEC LA LIGNE.
+     Sans ces champs, totalDuMois recevrait des lignes sans periode et
+     les compterait toutes comme mensuelles — le calcul aurait l air
+     corrige et ne le serait pas, sans que rien ne le signale. */
+  periode_mois?: number | null;
+  mois_ancre?: string | null;
+  echeances?: number | null;
+  montant_total?: number | null;
 }
 
 interface ValidationFlowModalProps {
@@ -31,6 +40,8 @@ interface ValidationFlowModalProps {
   isEditing?: boolean;
   initialActualIncome?: number;
   initialActualExpenses?: number;
+  /** Le mois valide. Le mois en cours a defaut. */
+  mois?: Date;
 }
 
 type Step = 'expenses' | 'income' | 'extras' | 'confirm';
@@ -53,14 +64,21 @@ export function ValidationFlowModal({
   isEditing = false,
   initialActualIncome,
   initialActualExpenses,
+  mois = new Date(),
 }: ValidationFlowModalProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>('expenses');
   const [overrideIncome, setOverrideIncome] = useState(initialActualIncome?.toString() ?? '');
   const [overrideExpenses, setOverrideExpenses] = useState(initialActualExpenses?.toString() ?? '');
 
-  const totalExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
-  const totalIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  /* CE QUI EST ECRIT DANS LE REGISTRE DOIT ETRE CE QUI EST PARTI.
+     Cette fenetre ne fait pas qu afficher : elle enregistre le mois.
+     Une somme a plat y comptait les charges trimestrielles a plein, et
+     valider aout aurait inscrit 2 419,79 de depenses la ou 1 537,45
+     etaient parties. Une erreur d affichage se corrige ; une erreur
+     ecrite se retrouve dans l historique un an plus tard. */
+  const totalExpenses = totalDuMois(recurringExpenses, mois);
+  const totalIncome = totalDuMois(recurringIncome, mois);
 
   const steps: Step[] = ['expenses', 'income', 'extras', 'confirm'];
   const currentStepIndex = steps.indexOf(step);
@@ -134,6 +152,7 @@ export function ValidationFlowModal({
               <StepExpenses 
                 recurringExpenses={recurringExpenses}
                 totalExpenses={totalExpenses}
+                mois={mois}
                 confirmedExpenses={confirmedExpenses}
                 setConfirmedExpenses={setConfirmedExpenses}
                 currency={currency}
@@ -144,6 +163,7 @@ export function ValidationFlowModal({
               <StepIncome 
                 recurringIncome={recurringIncome}
                 totalIncome={totalIncome}
+                mois={mois}
                 confirmedIncome={confirmedIncome}
                 setConfirmedIncome={setConfirmedIncome}
                 currency={currency}
@@ -237,12 +257,13 @@ export function ValidationFlowModal({
 interface StepExpensesProps {
   recurringExpenses: RecurringItem[];
   totalExpenses: number;
+  mois: Date;
   confirmedExpenses: boolean;
   setConfirmedExpenses: (v: boolean) => void;
   currency: string;
 }
 
-function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, setConfirmedExpenses, currency }: StepExpensesProps) {
+function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, setConfirmedExpenses, currency, mois }: StepExpensesProps) {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -258,7 +279,7 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
         <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.confirmExpensesHint')}</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
-        {recurringExpenses.filter(e => e.is_active).map((expense) => (
+        {recurringExpenses.filter(e => e.is_active && tombeEn(e, mois)).map((expense) => (
           <motion.div 
             key={expense.id} 
             initial={{ opacity: 0, y: 5 }}
@@ -266,7 +287,7 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
             className="flex justify-between p-4 rounded-xl neu-inset"
           >
             <span className="text-sm text-foreground">{expense.name}</span>
-            <span className="text-sm font-semibold text-rose-400">{formatCurrency(expense.amount, currency)}</span>
+            <span className="text-sm font-semibold text-rose-400">{formatCurrency(montantDuMois(expense, mois), currency)}</span>
           </motion.div>
         ))}
       </div>
@@ -298,12 +319,13 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
 interface StepIncomeProps {
   recurringIncome: RecurringItem[];
   totalIncome: number;
+  mois: Date;
   confirmedIncome: boolean;
   setConfirmedIncome: (v: boolean) => void;
   currency: string;
 }
 
-function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirmedIncome, currency }: StepIncomeProps) {
+function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirmedIncome, currency, mois }: StepIncomeProps) {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -319,7 +341,7 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
         <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.confirmIncomeHint')}</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
-        {recurringIncome.filter(i => i.is_active).map((income) => (
+        {recurringIncome.filter(i => i.is_active && tombeEn(i, mois)).map((income) => (
           <motion.div 
             key={income.id}
             initial={{ opacity: 0, y: 5 }}
@@ -327,7 +349,7 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
             className="flex justify-between p-4 rounded-xl neu-inset"
           >
             <span className="text-sm text-foreground">{income.name}</span>
-            <span className="text-sm font-semibold text-emerald-400">{formatCurrency(income.amount, currency)}</span>
+            <span className="text-sm font-semibold text-emerald-400">{formatCurrency(montantDuMois(income, mois), currency)}</span>
           </motion.div>
         ))}
       </div>

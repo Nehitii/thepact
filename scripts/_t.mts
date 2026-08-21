@@ -1,0 +1,10 @@
+import { tombeDansLAnnee, tombeEn, moisDeChute, moisEntre, rangEcheance } from "../src/lib/finance/cadence.ts";
+const prime = { amount: 69.9, is_active: true, periode_mois: 12, mois_ancre: "2026-06-01" };
+console.log("moisEntre(ancre, juin2026) =", moisEntre("2026-06-01", new Date(2026, 5, 1)));
+console.log("rangEcheance(juin2026)     =", rangEcheance(prime, new Date(2026, 5, 1)));
+console.log("tombeEn(juin2026)          =", tombeEn(prime, new Date(2026, 5, 1)));
+console.log("moisDeChute                =", moisDeChute(prime));
+console.log("tombeDansLAnnee(2026)      =", tombeDansLAnnee(prime, 2026));
+console.log("tombeDansLAnnee(2027)      =", tombeDansLAnnee(prime, 2027));
+const citya = { amount: 554.61, is_active: true, periode_mois: 3, mois_ancre: "2026-01-01" };
+console.log("citya 2026                 =", tombeDansLAnnee(citya, 2026));

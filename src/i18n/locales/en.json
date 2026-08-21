@@ -1112,7 +1112,10 @@
       "parMois": "per month",
       "duMois": "of which this month",
       "puisAn": "{{montant}} a year",
-      "puisTotal": "{{montant}} in total"
+      "puisTotal": "{{montant}} in total",
+      "vuePlanche": "Payees",
+      "vueAnnee": "Year",
+      "quelleVue": "View"
     },
     "cadence": {
       "dansNMois": "in {{count}} months",
@@ -1160,6 +1163,10 @@
       "irregulier": "This pattern doesn’t repeat from one year to the next.",
       "tous": "Every month",
       "effacer": "Clear"
+    },
+    "annee": {
+      "precedente": "Year {{annee}}",
+      "suivante": "Year {{annee}}"
     }
   },
   "health": {

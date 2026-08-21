@@ -8,23 +8,21 @@
  * abonnement a sept euros — il ecrase la liste onze mois sur douze
  * sans y peser, et le douzieme il la fait mentir.
  *
- * Elles ont donc leur panneau. Chacune y montre ce qu on veut savoir
- * d elle et qui n a aucun sens pour une mensuelle : quand elle tombe,
- * combien de fois il reste, ce qu elle coute a l annee.
+ * DEUX VUES, PARCE QU IL Y A DEUX QUESTIONS.
  *
- * CE QU ON MONTRE, ET CE QU ON A CESSE DE MONTRER.
+ * La planche repond a « qui preleve » : une fiche par creancier, le
+ * portrait en haut, et l annee en douze segments dessous. C est la
+ * vue de travail — on y modifie, on y desactive, on y supprime.
  *
- * La premiere version alignait quatre colonnes de texte. Le mois de
- * chute — « juin » — flottait seul au milieu d une colonne vide, et
- * une ligne annuelle affichait deux fois le meme chiffre a dix pixels
- * d intervalle : son montant, puis son cout annuel, qui pour elle est
- * le meme nombre. Deux fois 69,90 cote a cote se lisent comme un
- * defaut d affichage, pas comme une information.
+ * Le calendrier repond a « quand est-ce que ca va faire mal » : douze
+ * baies, un jeton par prelevement dans le mois ou il tombe. Quatre
+ * pics a huit cents euros et sept mois vides se voient avant qu un
+ * chiffre n ait ete lu.
  *
- * « juin » devient donc l annee entiere en douze cases, dont une
- * allumee : c est la meme grille que celle ou on l a reglee, et la
- * cadence se voit avant d etre lue. Et le cout annuel ne parait que
- * lorsqu il apprend quelque chose — soit quand il differe du montant.
+ * Aucune des deux ne remplace l autre, et la premiere ne peut pas
+ * dire ce que dit la seconde : une liste ne montre pas la forme d une
+ * annee, meme si chaque ligne porte son propre calendrier. D ou la
+ * bascule, et le fait qu elle se souvienne du choix.
  *
  * ET SURTOUT LA POCHE.
  *
@@ -36,18 +34,16 @@
  * elle ne se melange pas au total du mois, et pourquoi le solde offre
  * de la deduire plutot que de le faire d office.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { CalendarClock, Eye, EyeOff, Pencil, Plus, Trash2, PiggyBank } from 'lucide-react';
+import { CalendarClock, LayoutGrid, CalendarRange, Plus, PiggyBank } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import type { FinancialItem } from '@/types/finance';
-import { BandeDesMois } from './SelecteurDeMois';
-import {
-  cadenceDe, montantDuMois, tombeEn, prochaineEcheance,
-  rangEcheance, provisionMensuelle, totalDuMois, moisDeChute,
-} from '@/lib/finance/cadence';
+import { PlancheDesCreanciers } from './PlancheDesCreanciers';
+import { AnneeDesEcheances } from './AnneeDesEcheances';
+import { provisionMensuelle, totalDuMois } from '@/lib/finance/cadence';
 
 interface Props {
   items: FinancialItem[];
@@ -57,10 +53,33 @@ interface Props {
   onToggleActive?: (id: string, isActive: boolean) => void;
 }
 
+type Vue = 'planche' | 'annee';
+const CLE_VUE = 'vowpact.echeances.vue';
+
+/* Le choix de vue se retient. Il ne vaut pas un aller-retour en base
+   — c est une preference d affichage, pas une donnee du pacte — mais
+   le reperdre a chaque rechargement en ferait un choix a refaire, et
+   un choix a refaire n en est plus un. */
+const lireVue = (): Vue => {
+  try {
+    return localStorage.getItem(CLE_VUE) === 'annee' ? 'annee' : 'planche';
+  } catch {
+    return 'planche';
+  }
+};
+
 export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggleActive }: Props) {
   const { t, i18n } = useTranslation();
   const { currency } = useCurrency();
   const moisCourant = useMemo(() => new Date(), []);
+
+  const [vue, setVue] = useState<Vue>(lireVue);
+  const [annee, setAnnee] = useState(() => moisCourant.getFullYear());
+
+  const choisirVue = (v: Vue) => {
+    setVue(v);
+    try { localStorage.setItem(CLE_VUE, v); } catch { /* le refus du stockage ne doit pas empecher la bascule */ }
+  };
 
   const poche = provisionMensuelle(items);
   const duMois = totalDuMois(items, moisCourant);
@@ -70,12 +89,10 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
     return (d: Date) => f.format(d).replace('.', '');
   }, [i18n.language]);
 
-  /* Ce qu une charge coute a l annee : c est le chiffre qui permet de
-     comparer une trimestrielle a une mensuelle. */
-  const parAn = (item: FinancialItem) => {
-    if (item.echeances != null) return item.montant_total ?? item.amount * item.echeances;
-    return item.amount * (12 / (item.periode_mois || 1));
-  };
+  const VUES: { cle: Vue; icone: typeof LayoutGrid; libelle: string }[] = [
+    { cle: 'planche', icone: LayoutGrid, libelle: t('finance.particulieres.vuePlanche', 'Créanciers') },
+    { cle: 'annee', icone: CalendarRange, libelle: t('finance.particulieres.vueAnnee', 'Année') },
+  ];
 
   return (
     <motion.div
@@ -90,6 +107,25 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
         <span className="cy-part-compte">
           {t('finance.particulieres.compte', { count: items.length, defaultValue: `${items.length} lignes` })}
         </span>
+
+        {items.length > 0 && (
+          <div className="cy-part-vues" role="radiogroup" aria-label={t('finance.particulieres.quelleVue', 'Affichage')}>
+            {VUES.map(({ cle, icone: Icone, libelle }) => (
+              <button
+                key={cle}
+                type="button"
+                role="radio"
+                aria-checked={vue === cle}
+                onClick={() => choisirVue(cle)}
+                title={libelle}
+              >
+                <Icone aria-hidden="true" />
+                <span>{libelle}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <button type="button" className="cy-part-ajout" onClick={onAdd}>
           <Plus aria-hidden="true" />
           {t('finance.particulieres.ajouter', 'Ajouter')}
@@ -103,93 +139,24 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
         </p>
       ) : (
         <>
-          <ul className="cy-part-liste">
-            {items.map((item) => {
-              const tombe = tombeEn(item, moisCourant);
-              const suivante = prochaineEcheance(item, moisCourant);
-              const rang = rangEcheance(item, moisCourant);
-              const mois = moisDeChute(item);
-              const annuel = parAn(item);
-              /* Le cout annuel ne parait que s il apprend quelque
-                 chose. Pour une charge annuelle il vaut le montant, et
-                 le repeter donnerait a lire deux fois le meme nombre. */
-              const annuelUtile = Math.abs(annuel - item.amount) >= 0.005;
-
-              return (
-                <li key={item.id} className="cy-part-ligne" data-actif={item.is_active ? '1' : '0'} data-tombe={tombe ? '1' : '0'}>
-                  <span className="cy-part-nom">
-                    {item.name}
-                    <b>{item.echeances != null
-                      ? `${Math.max(rang, 1)}/${item.echeances}`
-                      : t(`finance.cadence.${cadenceDe(item)}`, cadenceDe(item))}</b>
-                  </span>
-
-                  {/* L ANNEE, EN DOUZE CASES.
-                      La meme grille que celle ou on l a reglee : ce
-                      qu on coche est ce qu on relit. Un echeancier n a
-                      pas de motif annuel — ses echeances se suivent et
-                      franchissent le 31 decembre — il montre donc son
-                      avancement, qui est ce qui le concerne. */}
-                  <span className="cy-part-quand">
-                    {item.echeances != null ? (
-                      <span className="cy-part-jauge" role="img" aria-label={`${Math.max(rang, 1)}/${item.echeances}`}>
-                        {Array.from({ length: item.echeances }, (_, i) => (
-                          <i key={i} aria-hidden="true" data-passe={i < Math.max(rang, 1) ? '1' : '0'} />
-                        ))}
-                      </span>
-                    ) : (
-                      <BandeDesMois
-                        mois={mois}
-                        moisCourant={moisCourant.getMonth()}
-                        titre={t(`finance.cadence.${cadenceDe(item)}`, cadenceDe(item))}
-                      />
-                    )}
-                    <u>
-                      {tombe
-                        ? t('finance.particulieres.ceMois', 'ce mois-ci')
-                        : suivante
-                          ? t('finance.particulieres.prochaine', {
-                              mois: nommerMois(suivante),
-                              defaultValue: `prochaine : ${nommerMois(suivante)}`,
-                            })
-                          : t('finance.cadence.terminee', 'terminé')}
-                    </u>
-                  </span>
-
-                  <span className="cy-part-montant" data-ce-mois={tombe ? '1' : '0'}>
-                    {formatCurrency(tombe ? montantDuMois(item, moisCourant) : item.amount, currency)}
-                    <u>
-                      {annuelUtile
-                        ? t(item.echeances != null ? 'finance.particulieres.puisTotal' : 'finance.particulieres.puisAn',
-                            { montant: formatCurrency(annuel, currency) })
-                        : item.echeances != null
-                          ? t('finance.particulieres.auTotal', 'au total')
-                          : t('finance.particulieres.parAn', 'par an')}
-                    </u>
-                  </span>
-
-                  <span className="cy-part-actions">
-                    {onToggleActive && (
-                      <button
-                        type="button"
-                        onClick={() => onToggleActive(item.id, !item.is_active)}
-                        title={item.is_active ? t('finance.recurring.deactivate') : t('finance.recurring.activate')}
-                        aria-label={item.is_active ? t('finance.recurring.deactivate') : t('finance.recurring.activate')}
-                      >
-                        {item.is_active ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
-                      </button>
-                    )}
-                    <button type="button" onClick={() => onEdit(item)} title={t('finance.ligne.titreEdition')} aria-label={t('finance.ligne.titreEdition')}>
-                      <Pencil aria-hidden="true" />
-                    </button>
-                    <button type="button" onClick={() => onDelete(item.id)} title={t('common.delete')} aria-label={t('common.delete')}>
-                      <Trash2 aria-hidden="true" />
-                    </button>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          {vue === 'planche' ? (
+            <PlancheDesCreanciers
+              items={items}
+              moisCourant={moisCourant}
+              nommerMois={nommerMois}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggleActive={onToggleActive}
+            />
+          ) : (
+            <AnneeDesEcheances
+              items={items}
+              moisCourant={moisCourant}
+              annee={annee}
+              onAnnee={setAnnee}
+              onEdit={onEdit}
+            />
+          )}
 
           <footer className="cy-part-pied">
             <span className="cy-part-poche">

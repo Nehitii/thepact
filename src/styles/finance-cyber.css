@@ -1372,43 +1372,6 @@
   .cy-modes { grid-template-columns: 1fr; }
 }
 
-/* ── LA BANDE, EN LECTURE ──
-   La meme annee en douze cases, mais en petit et sans clic : ce qu on
-   regle dans la fenetre est exactement ce qu on relit dans la liste.
-   Une ligne annuelle affichait « juin » seul au milieu d une colonne
-   vide ; elle montre desormais l annee, dont un mois allume. */
-.cy-bande { display: inline-flex; gap: 2px; }
-.cy-bande i {
-  display: grid;
-  place-items: center;
-  width: 13px;
-  height: 15px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 8px;
-  font-style: normal;
-  text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.35));
-  border: 1px solid hsl(var(--primary) / 0.14);
-}
-.cy-bande i[data-coche="1"] {
-  color: #05080f;
-  font-weight: 700;
-  background: var(--cp-cyan, #5cb6ff);
-  border-color: var(--cp-cyan, #5cb6ff);
-}
-.cy-bande i[data-courant="1"] { box-shadow: inset 0 -2px 0 0 var(--cp-jaune, #ffd23f); }
-
-/* Un echeancier n a pas de motif annuel : ses echeances se suivent et
-   franchissent le 31 decembre. Il montre donc son avancement, qui est
-   ce qui le concerne — et qui se lit dans la meme grammaire. */
-.cy-part-jauge { display: inline-flex; gap: 2px; }
-.cy-part-jauge i {
-  width: 13px;
-  height: 5px;
-  background: hsl(var(--primary) / 0.16);
-}
-.cy-part-jauge i[data-passe="1"] { background: var(--cp-cyan, #5cb6ff); }
-
 /* L apercu d un echeancier : ce qui sera reellement preleve, mois par
    mois. La derniere echeance absorbe le reste de la division — le
    montrer ici evite de decouvrir l ecart sur le releve. */
@@ -1550,113 +1513,356 @@
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
 }
 
-/* UNE SEULE GRILLE POUR TOUTE LA LISTE.
-   Chaque ligne portait sa propre grille, et dimensionnait donc ses
-   colonnes pour elle seule : « par an » fait trente-six pixels quand
-   « 2 218,44 € par an » en fait quatre-vingt-dix-huit, et les bandes
-   des douze mois ne demarraient pas au meme endroit d une ligne a
-   l autre. Trois colonnes qui ne s alignent pas ne sont plus des
-   colonnes.
+/* ═══════════════════════════════════════════════════════════════
+   VOIR QUI PRELEVE
 
-   Les pistes sont donc definies une fois sur la liste, et chaque
-   ligne les reprend en subgrid — ce qui la laisse rester une boite a
-   part entiere, avec son fond, son filet et son opacite quand elle
-   est desactivee. Une grille posee sur la liste avec des lignes en
-   display:contents aurait aligne pareil, mais en perdant tout cela. */
-.cy-part-liste {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
-}
-.cy-part-ligne {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  border-bottom: 1px solid hsl(var(--primary) / 0.07);
-}
-.cy-part-ligne[data-actif="0"] { opacity: 0.5; }
-/* Le mois ou elle tombe, la ligne s allume : c est ce mois-la qui
-   compte pour la tresorerie. */
-.cy-part-ligne[data-tombe="1"] { background: hsl(var(--primary) / 0.04); }
+   Le panneau lisait correctement QUAND et COMBIEN. Il ne disait rien
+   de QUI : trois lignes de texte sur fond noir, et Amazon Prime
+   ressemblait a un impot foncier.
 
-.cy-part-nom {
+   Deux vues, parce qu il y a deux questions, et une bascule dans
+   l en-tete pour passer de l une a l autre.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LA BASCULE ── */
+.cy-part-vues {
+  margin-left: auto;
   display: flex;
-  align-items: baseline;
-  gap: 7px;
-  min-width: 0;
+  border: 1px solid hsl(var(--primary) / 0.22);
+}
+.cy-part-vues button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear;
+}
+.cy-part-vues button + button { border-left: 1px solid hsl(var(--primary) / 0.22); }
+.cy-part-vues button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-part-vues button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-part-vues button[aria-checked="true"] {
+  color: #05080f;
+  background: var(--cp-cyan, #5cb6ff);
+  font-weight: 700;
+}
+.cy-part-vues svg { width: 13px; height: 13px; }
+/* L en-tete est deja charge : sous 900px la bascule ne garde que ses
+   icones, qui suffisent a la reconnaitre une fois qu on l a vue. */
+@media (max-width: 900px) {
+  .cy-part-vues button span { display: none; }
+  .cy-part-vues button { padding: 6px 9px; }
+}
+/* Plus bas encore, l en-tete se plie plutot que de comprimer. */
+@media (max-width: 620px) {
+  .cy-part-tete { flex-wrap: wrap; }
+  .cy-part-vues { margin-left: 0; order: 3; }
+  .cy-part-ajout { order: 4; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LA MARQUE DU CREANCIER
+
+   Le vrai sujet n est pas le logo, c est son absence : Amazon Prime a
+   une image, un syndic n en aura jamais. A defaut, on dessine une
+   plaque — les initiales sur la couleur de la categorie, tramee en
+   diagonale. Ce n est pas un logo manquant, c est un objet, et une
+   ligne sans image ne se lit pas comme une ligne incomplete.
+   ═══════════════════════════════════════════════════════════════ */
+
+.cy-marque {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+/* L IMAGE PREND TOUTE LA PLAQUE, ET C EST CE QUI LA CENTRE.
+   place-items: center dimensionne la piste sur le contenu : une
+   hauteur de 100% ny resout plus rien, limage retombe sur sa taille
+   naturelle et se cale en haut. Il faut donc letirer — cest alors
+   object-fit qui centre la photographie dans la boite, dans les deux
+   sens et quel que soit le format du logo. */
+.cy-marque-photo { background: #fff; place-items: stretch; }
+.cy-marque-photo img {
+  width: 100%;
+  height: 100%;
+  /* Un logo doit tenir entier dans sa plaque : le recadrer couperait
+     precisement ce qui le rend reconnaissable. */
+  object-fit: contain;
+  /* En pixels et non en pourcentage : sur une plaque rectangulaire,
+     12% ne vaut pas la meme chose en haut et sur les cotes. */
+  padding: 8px;
+}
+.cy-jeton .cy-marque-photo img { padding: 1px; }
+.cy-marque-lettres { background: var(--marque-couleur, #94a3b8); }
+.cy-marque-lettres b {
+  position: relative;
+  z-index: 1;
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.42em;
+  letter-spacing: 0.04em;
+  color: #05080f;
+  line-height: 1;
+}
+/* La trame : c est elle qui fait du monogramme un objet dessine
+   plutot qu un carre de couleur en attendant mieux. */
+.cy-marque-lettres::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, rgb(0 0 0 / 0.22) 0 1px, transparent 1px 5px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VUE A — LA PLANCHE DE CONTACTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.cy-planche {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.cy-fiche {
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--primary) / 0.03);
+  border: 1px solid hsl(var(--primary) / 0.16);
+  transition: border-color 140ms linear, background 140ms linear;
+}
+.cy-fiche:hover { border-color: hsl(var(--primary) / 0.4); }
+.cy-fiche[data-actif="0"] { opacity: 0.45; }
+/* Le mois ou elle tombe, la fiche s allume : c est ce mois-la qui
+   compte pour la tresorerie. */
+.cy-fiche[data-tombe="1"] { background: hsl(var(--primary) / 0.07); border-color: hsl(var(--primary) / 0.34); }
+
+.cy-fiche-portrait { position: relative; height: 92px; }
+.cy-fiche-portrait .cy-marque { width: 100%; height: 100%; font-size: 92px; }
+.cy-fiche-rail { position: absolute; inset: auto 0 0 0; height: 3px; }
+
+.cy-fiche-corps { display: flex; flex-direction: column; gap: 8px; padding: 11px 12px 4px; }
+.cy-fiche-nom {
+  margin: 0;
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--cy-encre, #e8f4ff);
+  /* Deux lignes reservees des deux cotes : sans cela un nom court et
+     un nom long decalent tout ce qui suit, et les montants de la
+     planche ne s alignent plus d une fiche a l autre. */
+  min-height: 2.4em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cy-fiche-arc { display: flex; gap: 2px; }
+.cy-fiche-arc i {
+  flex: 1;
+  height: 4px;
+  background: hsl(var(--primary) / 0.14);
+}
+.cy-fiche-arc i[data-on="1"] { background: var(--cp-cyan, #5cb6ff); }
+/* Le mois en cours se marque d un trait jaune SOUS le segment plutot
+   que de le colorer : le jaune est la couleur de l appareil, il ne
+   dit jamais une donnee — et un mois qui tombe ET qui est le mois en
+   cours doit pouvoir dire les deux a la fois. */
+.cy-fiche-arc i[data-now="1"] { box-shadow: 0 3px 0 0 var(--cp-jaune, #ffd23f); }
+
+.cy-fiche-pied { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cy-fiche-montant {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--cy-encre, #e8f4ff);
 }
-.cy-part-nom b {
+.cy-fiche[data-tombe="1"] .cy-fiche-montant { color: #ff7a8a; }
+.cy-fiche-cadence {
   flex-shrink: 0;
   padding: 1px 5px;
   font-family: 'Share Tech Mono', monospace;
   font-size: max(9px, 0.5625rem);
-  font-weight: 400;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
   border: 1px solid hsl(var(--primary) / 0.24);
 }
-
-/* La colonne du milieu porte l annee en douze cases, et sous elle
-   la seule phrase qui ne se lit pas dans la bande : quand tombe la
-   prochaine. */
-.cy-part-quand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
+.cy-fiche-note {
+  margin: 0;
   font-family: 'Share Tech Mono', monospace;
   font-size: max(10px, 0.625rem);
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
 }
-.cy-part-quand u { text-decoration: none; }
-.cy-part-ligne[data-tombe="1"] .cy-part-quand u { color: #ff7a8a; }
+.cy-fiche-note[data-ce-mois="1"] { color: #ff7a8a; }
 
-.cy-part-montant,
-.cy-part-an {
+.cy-fiche-outils {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--cy-encre-2, #cfe4f5);
+  gap: 2px;
+  margin-top: auto;
+  padding: 6px 8px 8px;
 }
-.cy-part-montant[data-ce-mois="1"] { color: #ff7a8a; }
-.cy-part-an { color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); font-weight: 600; }
-.cy-part-montant u,
-.cy-part-an u {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: max(9px, 0.5625rem);
-  font-weight: 400;
-  letter-spacing: 0.8px;
-  text-decoration: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
-}
-
-.cy-part-actions { display: flex; gap: 4px; }
-.cy-part-actions button {
-  display: inline-flex;
-  padding: 5px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+.cy-fiche-outils button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.45));
   background: transparent;
   border: 0;
   cursor: pointer;
+  transition: color 120ms linear;
 }
-.cy-part-actions button:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-part-actions svg { width: 14px; height: 14px; }
+.cy-fiche-outils button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-fiche-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-fiche-outils svg { width: 14px; height: 14px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   VUE C — LE CALENDRIER DE L ANNEE
+   ═══════════════════════════════════════════════════════════════ */
+
+.cy-annee { padding: 14px 16px; }
+
+.cy-annee-barre {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.cy-annee-barre b {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cy-encre-2, #cfe4f5);
+  font-variant-numeric: tabular-nums;
+}
+.cy-annee-barre button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+}
+.cy-annee-barre button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.5); }
+.cy-annee-barre button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-annee-barre svg { width: 14px; height: 14px; }
+
+.cy-annee-baies {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.cy-baie-mois { display: flex; flex-direction: column; }
+.cy-baie-nom {
+  padding: 5px 0 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  border-bottom: 1px solid hsl(var(--primary) / 0.18);
+}
+/* Le mois en cours est un repere de l appareil, pas une donnee : il
+   est donc jaune, comme le chassis. */
+.cy-baie-mois[data-maintenant="1"] .cy-baie-nom {
+  color: var(--cp-jaune, #ffd23f);
+  border-bottom-color: var(--cp-jaune, #ffd23f);
+}
+
+.cy-baie-pile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 0;
+  min-height: 92px;
+  background: linear-gradient(to bottom, hsl(var(--primary) / 0.05), transparent);
+}
+.cy-baie-mois[data-maintenant="1"] .cy-baie-pile {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--cp-jaune, #ffd23f) 8%, transparent), transparent);
+}
+.cy-baie-mois[data-vide="1"] .cy-baie-pile { background: none; }
+
+.cy-jeton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: hsl(var(--primary) / 0.06);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-left-width: 3px;
+  cursor: pointer;
+  transition: background 120ms linear, border-color 120ms linear;
+}
+.cy-jeton:hover { background: hsl(var(--primary) / 0.14); }
+.cy-jeton:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-jeton b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cy-encre, #e8f4ff);
+  line-height: 1;
+}
+
+/* La jauge : le poids relatif du mois, la ou douze chiffres
+   demandent d etre compares un a un. */
+.cy-baie-jauge {
+  display: block;
+  height: 26px;
+  margin-top: 4px;
+  display: flex;
+  align-items: flex-end;
+}
+.cy-baie-jauge i {
+  display: block;
+  width: 100%;
+  min-height: 1px;
+  background: linear-gradient(to top, var(--cp-cyan, #5cb6ff), color-mix(in srgb, var(--cp-cyan, #5cb6ff) 30%, transparent));
+}
+
+.cy-baie-total {
+  padding: 6px 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  text-align: center;
+  color: var(--cy-encre-2, #cfe4f5);
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid hsl(var(--primary) / 0.18);
+}
+.cy-baie-mois[data-vide="1"] .cy-baie-total { color: hsl(var(--primary) / 0.3); }
+
+/* Douze colonnes ne tiennent pas sur un telephone : elles se replient
+   en six, ce qui donne deux rangees de six mois — un semestre par
+   rangee, qui se lit encore comme une annee. */
+@media (max-width: 780px) {
+  .cy-annee-baies { grid-template-columns: repeat(6, minmax(0, 1fr)); row-gap: 10px; }
+  .cy-baie-pile { min-height: 66px; }
+}
+@media (max-width: 420px) {
+  .cy-annee-baies { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cy-jeton b { font-size: 0.66rem; }
+}
 
 /* La poche, en pied de panneau : c est la conclusion de ce qui
    precede, pas une ligne de plus. */
@@ -1696,15 +1902,6 @@
 }
 .cy-part-poche u,
 .cy-part-dumois u { text-decoration: none; }
-
-@media (max-width: 720px) {
-  /* Sur une colonne, la subgrid n a plus rien a partager : chaque
-     ligne reprend sa propre grille, plus courte. */
-  .cy-part-liste { display: block; }
-  .cy-part-ligne { grid-template-columns: minmax(0, 1fr) auto; row-gap: 7px; }
-  .cy-part-quand { grid-column: 1 / -1; align-items: flex-start; }
-  .cy-part-actions { grid-column: 2; }
-}
 
 /* ── LE COMMUTATEUR DU SOLDE ──
    Deux soldes, et le choix entre les deux. Le reel est vrai mais
