@@ -30,9 +30,15 @@ interface Props {
   /** Le cote de la plaque, en pixels. Le portrait d une fiche est rectangulaire : passer null. */
   taille?: number | null;
   className?: string;
+  /* EN FILIGRANE : LA MARQUE SANS SA PLAQUE.
+     Une ligne-affiche laisse deborder la marque dans son propre fond,
+     tres basse. Le fond blanc du cadrage n a alors plus rien a faire
+     la — il ferait une tache pale au lieu d un filigrane — et la
+     trame du monogramme non plus, invisible a cette opacite. */
+  filigrane?: boolean;
 }
 
-export function MarqueCreancier({ nom, iconUrl, categorie, cadre, taille = 44, className = '' }: Props) {
+export function MarqueCreancier({ nom, iconUrl, categorie, cadre, taille = 44, className = '', filigrane = false }: Props) {
   const initiales = useMemo(() => initialesDe(nom), [nom]);
   const couleur = useMemo(() => couleurDe(categorie), [categorie]);
   const dimension = taille == null ? undefined : { width: taille, height: taille };
@@ -42,8 +48,12 @@ export function MarqueCreancier({ nom, iconUrl, categorie, cadre, taille = 44, c
        centre et du zoom. Sans reglage enregistre, normaliserCadre rend
        le defaut — une image contenue sur fond clair. */
     const pose = styleDuCadre(normaliserCadre(cadre), couleur);
+    /* En filigrane, on garde le cadrage — position, zoom, ajustement —
+       mais on retire le fond : c est l image qu on veut voir affleurer,
+       pas sa plaque. */
+    const style = filigrane ? { ...dimension, ...pose, background: 'transparent' } : { ...dimension, ...pose };
     return (
-      <span className={`cy-marque cy-marque-photo ${className}`} style={{ ...dimension, ...pose }}>
+      <span className={`cy-marque cy-marque-photo ${filigrane ? 'cy-marque-filigrane ' : ''}${className}`} style={style}>
         {/* L image d un creancier est un logo, pas une photographie :
             elle doit tenir entiere dans sa plaque plutot que d etre
             recadree, et on la pose donc sur du blanc — c est le fond
@@ -55,7 +65,7 @@ export function MarqueCreancier({ nom, iconUrl, categorie, cadre, taille = 44, c
 
   return (
     <span
-      className={`cy-marque cy-marque-lettres ${className}`}
+      className={`cy-marque cy-marque-lettres ${filigrane ? 'cy-marque-filigrane ' : ''}${className}`}
       style={{ ...dimension, '--marque-couleur': couleur } as React.CSSProperties}
       aria-hidden="true"
     >

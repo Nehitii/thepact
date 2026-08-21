@@ -923,7 +923,9 @@
       "emptyTitle": "No recurring {{type}}s yet",
       "emptyHint": "Click above to add your first one",
       "deactivate": "Deactivate this item",
-      "activate": "Activate this item"
+      "activate": "Activate this item",
+      "compteLignes_one": "{{count}} line",
+      "compteLignes_other": "{{count}} lines"
     },
     "categories": {
       "housing": "Housing",

@@ -923,7 +923,9 @@
       "emptyTitle": "Aucun {{type}} récurrent",
       "emptyHint": "Clique ci-dessus pour ajouter le premier",
       "deactivate": "Désactiver cet élément",
-      "activate": "Activer cet élément"
+      "activate": "Activer cet élément",
+      "compteLignes_one": "{{count}} ligne",
+      "compteLignes_other": "{{count}} lignes"
     },
     "categories": {
       "housing": "Logement",

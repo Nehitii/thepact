@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Plus } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { totalDuMois } from '@/lib/finance/cadence';
+import { totalDuMois, montantDuMois } from '@/lib/finance/cadence';
 import {
   type FinanceCategory,
   getItemCategory,
   groupItemsByCategory,
 } from '@/lib/financeCategories';
 import type { FinancialItem } from '@/types/finance';
-import { CategoryGroup } from './CategoryGroup';
+import { LigneAffiche } from './LigneAffiche';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 
 interface FinancialBlockProps {
@@ -51,17 +51,33 @@ export function FinancialBlock({
   const totalAmount = totalDuMois(items, moisCourant);
   const isExpense = type === 'expense';
 
-  const groupedItems = useMemo(() => {
-    const groups = groupItemsByCategory(items, categories);
-    return Array.from(groups.values()).sort((a, b) => {
-      /* Les categories se rangent par ce qu elles pesent CE mois-ci :
-         trier sur un montant qui ne part pas mettrait en tete une
-         categorie sans effet sur le mois. */
-      const totalA = totalDuMois(a.items, moisCourant);
-      const totalB = totalDuMois(b.items, moisCourant);
-      return totalB - totalA;
-    });
-  }, [items, categories, moisCourant]);
+  /* RANGEES PAR CE QU ELLES PESENT CE MOIS-CI.
+   *
+   * Les lignes se groupaient par categorie, dans une carte chacune.
+   * Six categories sur huit ne contenaient qu une ligne, et leur
+   * en-tete repetait donc le montant de cette ligne a dix pixels
+   * d ecart. Huit cadres identiques donnaient par ailleurs le meme
+   * poids visuel a 760 euros et a 6,99.
+   *
+   * Une seule liste, du plus lourd au plus leger. La categorie ne
+   * disparait pas : elle passe en filet de couleur sur la tranche et
+   * en libelle sous le nom — elle qualifie la ligne au lieu de
+   * l enfermer.
+   *
+   * Trier sur le montant du mois et non sur amount : une charge qui ne
+   * tombe pas ce mois-ci vaut zero, et n a rien a faire en tete. */
+  const rangees = useMemo(
+    () => [...items].sort((a, b) => montantDuMois(b, moisCourant) - montantDuMois(a, moisCourant)),
+    [items, moisCourant],
+  );
+
+  /* L echelle des barres : la plus lourde ligne du bloc. Chaque bloc a
+     la sienne — sans quoi trois revenus ecraseraient onze depenses, ou
+     l inverse, selon le cote le plus riche. */
+  const sommet = useMemo(
+    () => rangees.reduce((m, i) => Math.max(m, montantDuMois(i, moisCourant)), 0),
+    [rangees, moisCourant],
+  );
 
   const ouvrirAjout = () => { setLigneEditee(null); setFenetre(true); };
   const ouvrirEdition = (item: FinancialItem) => { setLigneEditee(item); setFenetre(true); };
@@ -107,7 +123,7 @@ export function FinancialBlock({
           <div className="text-left min-w-0">
             <h3 className="text-lg font-bold text-foreground leading-tight">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('finance.recurring.categorySummary', { categories: groupedItems.length, items: items.length })}
+              {t('finance.recurring.compteLignes', { count: items.length, defaultValue: `${items.length} lignes` })}
             </p>
           </div>
         </div>
@@ -138,13 +154,17 @@ export function FinancialBlock({
                 {t(`finance.ligne.titreAjout.${type}`)}
               </button>
 
-              {/* Category Groups */}
-              <div className="space-y-3 max-h-[450px] overflow-y-auto scrollbar-thin pr-1">
+              {/* PLUS D ASCENSEUR DANS LA CARTE.
+                  Le bloc portait son propre defilement, borne a 450px :
+                  la liste paraissait tronquee, et l on ne pouvait pas
+                  comparer les deux colonnes d un coup d oeil. La page
+                  defile, le bloc non. */}
+              <div className="cy-affiches">
                 {isLoading ? (
                   <div className="py-12 flex justify-center">
                     <div className="w-8 h-8 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
                   </div>
-                ) : groupedItems.length === 0 ? (
+                ) : rangees.length === 0 ? (
                   <div className="py-12 text-center">
                     <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 ${isExpense ? 'bg-rose-500/10' : 'bg-emerald-500/10'}`}>
                       {DefaultIcon && <DefaultIcon className={`w-8 h-8 ${isExpense ? 'text-rose-400/50' : 'text-emerald-400/50'}`} />}
@@ -153,20 +173,22 @@ export function FinancialBlock({
                     <p className="text-muted-foreground/60 text-xs mt-1">{t('finance.recurring.emptyHint')}</p>
                   </div>
                 ) : (
-                  groupedItems.map(({ category, items: groupItems }, index) => (
-                    <motion.div key={category.value} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-                      <CategoryGroup
-                        category={category}
-                        items={groupItems}
-                        allCategories={categories}
+                  <ul className="cy-affiches-liste">
+                    {rangees.map((item, i) => (
+                      <LigneAffiche
+                        key={item.id}
+                        item={item}
+                        rang={i}
                         isExpense={isExpense}
                         currency={currency}
+                        moisCourant={moisCourant}
+                        sommet={sommet}
                         onEdit={ouvrirEdition}
                         onDelete={onDelete}
                         onToggleActive={onToggleActive}
                       />
-                    </motion.div>
-                  ))
+                    ))}
+                  </ul>
                 )}
               </div>
             </div>

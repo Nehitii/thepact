@@ -2700,3 +2700,138 @@
   .cy-parc-pied { grid-template-columns: auto 1fr; padding: 12px 16px; }
   .cy-parc-total { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LA LIGNE-AFFICHE
+
+   Les recurrentes se rangeaient dans des cartes de categorie. Six
+   categories sur huit ne contenaient qu une ligne, et leur en-tete
+   repetait donc le montant de cette ligne a dix pixels d ecart. Huit
+   cadres identiques donnaient par ailleurs le meme poids visuel a
+   760 euros et a 6,99.
+
+   Une seule liste, du plus lourd au plus leger, et chaque ligne porte
+   son creancier : plaque a gauche, marque en filigrane dans le fond,
+   barre de poids sous le montant.
+   ═══════════════════════════════════════════════════════════════ */
+
+.cy-affiches { display: flex; flex-direction: column; gap: 10px; }
+.cy-affiches-liste { display: flex; flex-direction: column; gap: 5px; margin: 0; padding: 0; list-style: none; }
+
+.cy-aff {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 3px 68px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 13px;
+  min-height: 58px;
+  padding-right: 10px;
+  background: hsl(var(--primary) / 0.04);
+  border: 1px solid hsl(var(--primary) / 0.14);
+  transition: border-color 140ms linear, background 140ms linear;
+}
+.cy-aff:hover { background: hsl(var(--primary) / 0.08); border-color: hsl(var(--primary) / 0.34); }
+.cy-aff[data-actif="0"] { opacity: 0.42; }
+
+/* LE FILIGRANE.
+   C est ici que l identite se joue sans couter un pixel de hauteur :
+   la marque deborde dans le fond de sa propre ligne, tres basse. Onze
+   pour cent suffisent — au-dela, le nom passe devant et devient
+   illisible. */
+.cy-aff-filigrane {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 132px;
+  height: 132px;
+  opacity: 0.11;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.cy-aff-filigrane .cy-marque { width: 100%; height: 100%; font-size: 96px; }
+/* Sans plaque : c est l image qu on veut voir affleurer, pas son fond
+   blanc — qui ferait une tache pale au lieu d un filigrane. */
+.cy-marque-filigrane { background: transparent !important; }
+.cy-marque-filigrane.cy-marque-photo img { padding: 0; }
+/* La trame diagonale du monogramme est invisible a cette opacite et
+   ne fait que salir : on la retire. */
+.cy-marque-filigrane.cy-marque-lettres::after { display: none; }
+.cy-marque-filigrane.cy-marque-lettres b { color: var(--marque-couleur, #94a3b8); font-size: 0.5em; }
+
+.cy-aff > *:not(.cy-aff-filigrane) { position: relative; z-index: 1; }
+
+.cy-aff-rail { align-self: stretch; }
+
+.cy-aff-plaque { width: 68px; height: 38px; }
+
+.cy-aff-ident { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cy-aff-nom {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--cy-encre, #e8f4ff);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cy-aff-cat {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.55));
+}
+
+.cy-aff-chiffres { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.cy-aff-val {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.cy-aff-moins { color: #ff7a8a; }
+.cy-aff-plus { color: #7bd88f; }
+
+/* LA BARRE DE POIDS, a l echelle du bloc.
+   Une liste de nombres devient une forme : le loyer occupe la moitie
+   du mois, et cela se voit avant d etre lu. */
+.cy-aff-poids { display: block; width: 84px; height: 3px; background: hsl(var(--primary) / 0.16); }
+.cy-aff-poids i { display: block; height: 100%; }
+
+.cy-aff-outils { display: flex; gap: 1px; }
+.cy-aff-outils button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.4));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear;
+}
+.cy-aff-outils button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-aff-outils button:last-child:hover { color: #ff7a8a; }
+.cy-aff-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-aff-outils svg { width: 14px; height: 14px; }
+@media (pointer: coarse) { .cy-aff-outils button { width: 40px; height: 40px; } }
+
+@media (max-width: 620px) {
+  /* La barre et les outils passent sous le nom : a cette largeur, cinq
+     colonnes reduiraient le nom a trois lettres. */
+  .cy-aff { grid-template-columns: 3px 56px minmax(0, 1fr) auto; row-gap: 6px; padding: 8px 8px 8px 0; }
+  .cy-aff-plaque { width: 56px; height: 32px; }
+  /* La barre gardait ses 84 pixels et ne laissait que 78 au nom, qui
+     se coupait des « Loyer & charges ». Elle se contente de 56 : la
+     proportion se lit aussi bien, et le nom respire de vingt-huit
+     pixels de plus. */
+  .cy-aff-poids { width: 56px; }
+  .cy-aff-outils { grid-column: 3 / -1; justify-content: flex-end; }
+  .cy-aff-filigrane { width: 108px; height: 108px; }
+}
