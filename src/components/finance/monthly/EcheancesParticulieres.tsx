@@ -12,6 +12,20 @@
  * d elle et qui n a aucun sens pour une mensuelle : quand elle tombe,
  * combien de fois il reste, ce qu elle coute a l annee.
  *
+ * CE QU ON MONTRE, ET CE QU ON A CESSE DE MONTRER.
+ *
+ * La premiere version alignait quatre colonnes de texte. Le mois de
+ * chute — « juin » — flottait seul au milieu d une colonne vide, et
+ * une ligne annuelle affichait deux fois le meme chiffre a dix pixels
+ * d intervalle : son montant, puis son cout annuel, qui pour elle est
+ * le meme nombre. Deux fois 69,90 cote a cote se lisent comme un
+ * defaut d affichage, pas comme une information.
+ *
+ * « juin » devient donc l annee entiere en douze cases, dont une
+ * allumee : c est la meme grille que celle ou on l a reglee, et la
+ * cadence se voit avant d etre lue. Et le cout annuel ne parait que
+ * lorsqu il apprend quelque chose — soit quand il differe du montant.
+ *
  * ET SURTOUT LA POCHE.
  *
  * Une charge trimestrielle ne pese que le mois ou elle tombe, mais
@@ -29,9 +43,10 @@ import { CalendarClock, Eye, EyeOff, Pencil, Plus, Trash2, PiggyBank } from 'luc
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import type { FinancialItem } from '@/types/finance';
+import { BandeDesMois } from './SelecteurDeMois';
 import {
-  cadenceDe, montantDuMois, tombeEn, prochaineEcheance, moisEntre,
-  rangEcheance, provisionMensuelle, totalDuMois,
+  cadenceDe, montantDuMois, tombeEn, prochaineEcheance,
+  rangEcheance, provisionMensuelle, totalDuMois, moisDeChute,
 } from '@/lib/finance/cadence';
 
 interface Props {
@@ -42,38 +57,24 @@ interface Props {
   onToggleActive?: (id: string, isActive: boolean) => void;
 }
 
-const MOIS_COURTS = [
-  'janv', 'févr', 'mars', 'avr', 'mai', 'juin',
-  'juil', 'août', 'sept', 'oct', 'nov', 'déc',
-];
-
 export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggleActive }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currency } = useCurrency();
   const moisCourant = useMemo(() => new Date(), []);
 
   const poche = provisionMensuelle(items);
   const duMois = totalDuMois(items, moisCourant);
 
+  const nommerMois = useMemo(() => {
+    const f = new Intl.DateTimeFormat(i18n.language, { month: 'short', year: 'numeric' });
+    return (d: Date) => f.format(d).replace('.', '');
+  }, [i18n.language]);
+
   /* Ce qu une charge coute a l annee : c est le chiffre qui permet de
-     comparer une trimestrielle a une mensuelle, et il n apparait nulle
-     part ailleurs. */
+     comparer une trimestrielle a une mensuelle. */
   const parAn = (item: FinancialItem) => {
     if (item.echeances != null) return item.montant_total ?? item.amount * item.echeances;
     return item.amount * (12 / (item.periode_mois || 1));
-  };
-
-  /* Les mois de l annee ou la charge tombe, dits en clair. « janv ·
-     avr · juil · oct » vaut mieux que « tous les trois mois », qui
-     oblige a compter. */
-  const moisDeChute = (item: FinancialItem) => {
-    if (item.echeances != null || !item.mois_ancre) return null;
-    const periode = item.periode_mois || 1;
-    if (periode <= 1) return null;
-    const depart = new Date(String(item.mois_ancre).slice(0, 7) + '-01T00:00:00').getMonth();
-    const mois: string[] = [];
-    for (let i = 0; i < 12 / periode; i++) mois.push(MOIS_COURTS[(depart + i * periode) % 12]);
-    return mois.join(' · ');
   };
 
   return (
@@ -107,7 +108,13 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
               const tombe = tombeEn(item, moisCourant);
               const suivante = prochaineEcheance(item, moisCourant);
               const rang = rangEcheance(item, moisCourant);
-              const calendrier = moisDeChute(item);
+              const mois = moisDeChute(item);
+              const annuel = parAn(item);
+              /* Le cout annuel ne parait que s il apprend quelque
+                 chose. Pour une charge annuelle il vaut le montant, et
+                 le repeter donnerait a lire deux fois le meme nombre. */
+              const annuelUtile = Math.abs(annuel - item.amount) >= 0.005;
+
               return (
                 <li key={item.id} className="cy-part-ligne" data-actif={item.is_active ? '1' : '0'} data-tombe={tombe ? '1' : '0'}>
                   <span className="cy-part-nom">
@@ -117,25 +124,48 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
                       : t(`finance.cadence.${cadenceDe(item)}`, cadenceDe(item))}</b>
                   </span>
 
+                  {/* L ANNEE, EN DOUZE CASES.
+                      La meme grille que celle ou on l a reglee : ce
+                      qu on coche est ce qu on relit. Un echeancier n a
+                      pas de motif annuel — ses echeances se suivent et
+                      franchissent le 31 decembre — il montre donc son
+                      avancement, qui est ce qui le concerne. */}
                   <span className="cy-part-quand">
-                    {calendrier ?? (suivante
-                      ? t('finance.particulieres.prochaine', {
-                          mois: `${MOIS_COURTS[suivante.getMonth()]} ${suivante.getFullYear()}`,
-                          defaultValue: `prochaine : ${MOIS_COURTS[suivante.getMonth()]} ${suivante.getFullYear()}`,
-                        })
-                      : t('finance.cadence.terminee', 'terminé'))}
+                    {item.echeances != null ? (
+                      <span className="cy-part-jauge" role="img" aria-label={`${Math.max(rang, 1)}/${item.echeances}`}>
+                        {Array.from({ length: item.echeances }, (_, i) => (
+                          <i key={i} aria-hidden="true" data-passe={i < Math.max(rang, 1) ? '1' : '0'} />
+                        ))}
+                      </span>
+                    ) : (
+                      <BandeDesMois
+                        mois={mois}
+                        moisCourant={moisCourant.getMonth()}
+                        titre={t(`finance.cadence.${cadenceDe(item)}`, cadenceDe(item))}
+                      />
+                    )}
+                    <u>
+                      {tombe
+                        ? t('finance.particulieres.ceMois', 'ce mois-ci')
+                        : suivante
+                          ? t('finance.particulieres.prochaine', {
+                              mois: nommerMois(suivante),
+                              defaultValue: `prochaine : ${nommerMois(suivante)}`,
+                            })
+                          : t('finance.cadence.terminee', 'terminé')}
+                    </u>
                   </span>
 
                   <span className="cy-part-montant" data-ce-mois={tombe ? '1' : '0'}>
                     {formatCurrency(tombe ? montantDuMois(item, moisCourant) : item.amount, currency)}
-                    {tombe && <u>{t('finance.particulieres.ceMois', 'ce mois-ci')}</u>}
-                  </span>
-
-                  <span className="cy-part-an">
-                    {formatCurrency(parAn(item), currency)}
-                    <u>{item.echeances != null
-                      ? t('finance.particulieres.auTotal', 'au total')
-                      : t('finance.particulieres.parAn', 'par an')}</u>
+                    <u>
+                      {annuelUtile
+                        ? t(item.echeances != null ? 'finance.particulieres.puisTotal' : 'finance.particulieres.puisAn',
+                            { montant: formatCurrency(annuel, currency) })
+                        : item.echeances != null
+                          ? t('finance.particulieres.auTotal', 'au total')
+                          : t('finance.particulieres.parAn', 'par an')}
+                    </u>
                   </span>
 
                   <span className="cy-part-actions">

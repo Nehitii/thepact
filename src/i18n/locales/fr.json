@@ -1110,7 +1110,9 @@
       "auTotal": "au total",
       "poche": "Poche de sécurité",
       "parMois": "par mois",
-      "duMois": "dont ce mois-ci"
+      "duMois": "dont ce mois-ci",
+      "puisAn": "{{montant}} par an",
+      "puisTotal": "{{montant}} au total"
     },
     "cadence": {
       "dansNMois": "dans {{count}} mois",
@@ -1119,11 +1121,12 @@
       "trimestriel": "Trimestriel",
       "semestriel": "Semestriel",
       "annuel": "Annuel",
-      "echeancier": "En plusieurs fois"
+      "echeancier": "En plusieurs fois",
+      "bimestriel": "Bimestriel",
+      "quadrimestriel": "Quadrimestriel"
     },
     "ligne": {
       "cadence": "Cadence",
-      "premierMois": "Premier mois",
       "premiereEcheance": "Première échéance",
       "enCombienDeFois": "En combien de fois",
       "montantTotalAide": "Le prix payé — l’app répartit sur les échéances.",
@@ -1139,7 +1142,24 @@
       "ajouter": "Ajouter",
       "enregistrer": "Enregistrer",
       "modifierNommee": "Modifier « {{nom}} »",
-      "supprimerNommee": "Supprimer « {{nom}} »"
+      "supprimerNommee": "Supprimer « {{nom}} »",
+      "mode": {
+        "recurrent": "Elle revient",
+        "echeancier": "En plusieurs fois",
+        "recurrentAide": "un loyer, un abonnement, un impôt",
+        "echeancierAide": "un achat payé en 3 ou 4 fois"
+      },
+      "quandElleTombe": "Quand elle tombe"
+    },
+    "grille": {
+      "legende": "Les mois où elle tombe",
+      "invite": "Coche les mois où elle tombe — deux suffisent, le reste se complète.",
+      "tousLesMois": "elle part tous les mois",
+      "foisParAn_one": "{{count}} fois par an",
+      "foisParAn_other": "{{count}} fois par an",
+      "irregulier": "Ce motif ne se répète pas d’une année sur l’autre.",
+      "tous": "Tous les mois",
+      "effacer": "Effacer"
     }
   },
   "health": {

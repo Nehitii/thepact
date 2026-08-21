@@ -1110,7 +1110,9 @@
       "auTotal": "in total",
       "poche": "Safety pocket",
       "parMois": "per month",
-      "duMois": "of which this month"
+      "duMois": "of which this month",
+      "puisAn": "{{montant}} a year",
+      "puisTotal": "{{montant}} in total"
     },
     "cadence": {
       "dansNMois": "in {{count}} months",
@@ -1119,11 +1121,12 @@
       "trimestriel": "Quarterly",
       "semestriel": "Half-yearly",
       "annuel": "Yearly",
-      "echeancier": "In instalments"
+      "echeancier": "In instalments",
+      "bimestriel": "Every 2 months",
+      "quadrimestriel": "Every 4 months"
     },
     "ligne": {
       "cadence": "Cadence",
-      "premierMois": "First month",
       "premiereEcheance": "First instalment",
       "enCombienDeFois": "How many instalments",
       "montantTotalAide": "The price paid — the app splits it across instalments.",
@@ -1139,7 +1142,24 @@
       "ajouter": "Add",
       "enregistrer": "Save",
       "modifierNommee": "Edit « {{nom}} »",
-      "supprimerNommee": "Delete « {{nom}} »"
+      "supprimerNommee": "Delete « {{nom}} »",
+      "mode": {
+        "recurrent": "It comes back",
+        "echeancier": "In instalments",
+        "recurrentAide": "rent, a subscription, a tax",
+        "echeancierAide": "a purchase paid in 3 or 4"
+      },
+      "quandElleTombe": "When it falls"
+    },
+    "grille": {
+      "legende": "The months it falls on",
+      "invite": "Tick the months it falls on — two are enough, the rest fills in.",
+      "tousLesMois": "it goes out every month",
+      "foisParAn_one": "{{count}} time a year",
+      "foisParAn_other": "{{count}} times a year",
+      "irregulier": "This pattern doesn’t repeat from one year to the next.",
+      "tous": "Every month",
+      "effacer": "Clear"
     }
   },
   "health": {

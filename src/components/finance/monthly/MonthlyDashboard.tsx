@@ -37,6 +37,12 @@ interface MonthlyDashboardProps {
   restantPacte: number;
 }
 
+/* Le panneau des echeances particulieres ouvre la fenetre de saisie
+   sur une grille vide : on y ajoute une ligne precisement parce qu elle
+   n est pas mensuelle. Constante de module, sinon le tableau neuf a
+   chaque rendu relancerait l effet de la fenetre sans fin. */
+const AUCUN_MOIS: number[] = [];
+
 export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDashboardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -107,7 +113,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * mois : une cadence longue, ou un nombre d echeances. C est la
    * meme frontiere que celle du calcul, ce qui evite d en inventer
    * une seconde. */
-  const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
+    const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
     (l.periode_mois ?? 1) === 1 && l.echeances == null;
   const depensesMensuelles = useMemo(() => expenses.filter(estMensuelle), [expenses]);
   const depensesParticulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
@@ -268,6 +274,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
         type="expense"
         categories={EXPENSE_CATEGORIES}
         ligne={ligneParticuliere}
+        moisParDefaut={AUCUN_MOIS}
         onEnregistrer={async (v) => {
           if (ligneParticuliere) await handleUpdateExpense(ligneParticuliere.id, v);
           else await handleAddExpense(v);

@@ -1215,32 +1215,199 @@
   .cy-provision em { flex-basis: 100%; }
 }
 
-/* ── LES CADENCES, DANS LA FENETRE DE SAISIE ──
-   Cinq choix sur une rangee : quatre periodes, plus le paiement en
-   plusieurs fois, qui est la meme mecanique avec une fin. Ils
-   reprennent la forme des categories juste au-dessus — meme grammaire
-   pour un choix de meme nature. */
-.cy-cadences { display: flex; flex-wrap: wrap; gap: 5px; }
-.cy-cadence {
-  padding: 5px 10px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+/* ── LES DEUX FACONS DE PAYER ──
+   On offrait cinq cadences sur une rangee : mensuel, trimestriel,
+   semestriel, annuel, echeancier. Les quatre premieres sont la meme
+   chose a des rythmes differents ; la cinquieme est d une autre
+   nature, elle a une fin. Les aligner melangeait « a quel rythme » et
+   « jusqu a quand ».
+
+   Restent deux boutons, assez larges pour porter un exemple. Un
+   exemple vaut mieux qu une definition : « un achat paye en 3 ou 4
+   fois » se reconnait, « echeancier » se devine. */
+.cy-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cy-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  text-align: left;
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.22);
   cursor: pointer;
   transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
 }
-.cy-cadence:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-cadence:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
-.cy-cadence[aria-checked="true"] {
+.cy-mode b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cy-encre-2, #cfe4f5);
+}
+.cy-mode u {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-mode:hover { border-color: hsl(var(--primary) / 0.45); }
+.cy-mode:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-mode[aria-checked="true"] {
+  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 12%, transparent);
+  border-color: var(--cp-cyan, #5cb6ff);
+}
+.cy-mode[aria-checked="true"] b { color: var(--cp-cyan, #5cb6ff); }
+
+/* ── LA GRILLE DES DOUZE MOIS ──
+   Le selecteur de cadence demandait deux gestes de natures
+   differentes : choisir « trimestriel », puis designer un mois
+   d ancrage dans un champ natif — sans que rien ne dise que le second
+   decidait des trois autres.
+
+   Douze cases posent la question autrement : quels mois. La cadence
+   n est plus demandee, elle est deduite.
+
+   ON N ALLUME PAS COMME ON COCHE UNE CATEGORIE.
+
+   Une categorie selectionnee se remplit de cyan franc : il y en a une
+   seule. Douze cases pleines feraient un mur, et le mur ne dirait
+   plus rien. Elles se teintent donc, avec un liseré franc — c est
+   lisible d un coup d oeil sans crier. */
+.cy-grille-mois { display: flex; flex-direction: column; gap: 9px; }
+.cy-mois-cases {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+.cy-mois-case {
+  padding: 8px 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.18);
+  cursor: pointer;
+  transition: color 110ms linear, border-color 110ms linear, background 110ms linear;
+}
+.cy-mois-case:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.5); }
+.cy-mois-case:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-mois-case[data-coche="1"] {
+  color: var(--cp-cyan, #5cb6ff);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 16%, transparent);
+  border-color: var(--cp-cyan, #5cb6ff);
+}
+/* Le mois en cours se repere sans se confondre avec une case cochee :
+   c est un point de reference, pas un choix. */
+.cy-mois-case[data-courant="1"] { box-shadow: inset 0 -2px 0 0 var(--cp-jaune, #ffd23f); }
+
+/* Deux extremes se saisissent mal case par case : douze a cocher
+   pour un loyer, onze a decocher pour un impot trimestriel. Chaque
+   raccourci ne parait que quand il a un effet. */
+.cy-mois-raccourcis { display: flex; gap: 6px; }
+.cy-mois-raccourcis button {
+  padding: 3px 9px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.2);
+  cursor: pointer;
+}
+.cy-mois-raccourcis button:hover {
+  color: var(--cy-encre, #e8f4ff);
+  border-color: hsl(var(--primary) / 0.45);
+}
+.cy-mois-raccourcis button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+
+/* Le verdict : ce qu on vient de decrire, dit a chaque clic. Sans
+   lui, quatre cases allumees ne se distinguent pas d un trimestre
+   reussi par hasard. */
+.cy-mois-verdict {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-mois-verdict svg { width: 12px; height: 12px; flex-shrink: 0; }
+.cy-mois-verdict[data-etat="bon"] { color: #7bd88f; }
+.cy-mois-verdict[data-etat="bon"] b {
+  font-weight: 400;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.cy-mois-verdict[data-etat="bon"] span { color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); }
+.cy-mois-verdict[data-etat="casse"] { color: var(--cp-jaune, #ffd23f); }
+.cy-mois-rattrape {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cp-jaune, #ffd23f);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 45%, transparent);
+  cursor: pointer;
+}
+.cy-mois-rattrape:hover { background: color-mix(in srgb, var(--cp-jaune, #ffd23f) 12%, transparent); }
+.cy-mois-rattrape svg { width: 11px; height: 11px; }
+
+/* Au doigt, une case de trente et un pixels de haut se rate. Sous
+   640px la grille s aere, et les deux modes s empilent : deux colonnes
+   de cent trente-cinq pixels hachaient leur exemple en trois lignes. */
+@media (max-width: 640px) {
+  .cy-mois-case { min-height: 40px; }
+  .cy-modes { grid-template-columns: 1fr; }
+}
+
+/* ── LA BANDE, EN LECTURE ──
+   La meme annee en douze cases, mais en petit et sans clic : ce qu on
+   regle dans la fenetre est exactement ce qu on relit dans la liste.
+   Une ligne annuelle affichait « juin » seul au milieu d une colonne
+   vide ; elle montre desormais l annee, dont un mois allume. */
+.cy-bande { display: inline-flex; gap: 2px; }
+.cy-bande i {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 15px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  font-style: normal;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.35));
+  border: 1px solid hsl(var(--primary) / 0.14);
+}
+.cy-bande i[data-coche="1"] {
   color: #05080f;
+  font-weight: 700;
   background: var(--cp-cyan, #5cb6ff);
   border-color: var(--cp-cyan, #5cb6ff);
-  font-weight: 700;
 }
+.cy-bande i[data-courant="1"] { box-shadow: inset 0 -2px 0 0 var(--cp-jaune, #ffd23f); }
+
+/* Un echeancier n a pas de motif annuel : ses echeances se suivent et
+   franchissent le 31 decembre. Il montre donc son avancement, qui est
+   ce qui le concerne — et qui se lit dans la meme grammaire. */
+.cy-part-jauge { display: inline-flex; gap: 2px; }
+.cy-part-jauge i {
+  width: 13px;
+  height: 5px;
+  background: hsl(var(--primary) / 0.16);
+}
+.cy-part-jauge i[data-passe="1"] { background: var(--cp-cyan, #5cb6ff); }
 
 /* L apercu d un echeancier : ce qui sera reellement preleve, mois par
    mois. La derniere echeance absorbe le reste de la division — le
@@ -1383,10 +1550,30 @@
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
 }
 
-.cy-part-liste { margin: 0; padding: 0; list-style: none; }
+/* UNE SEULE GRILLE POUR TOUTE LA LISTE.
+   Chaque ligne portait sa propre grille, et dimensionnait donc ses
+   colonnes pour elle seule : « par an » fait trente-six pixels quand
+   « 2 218,44 € par an » en fait quatre-vingt-dix-huit, et les bandes
+   des douze mois ne demarraient pas au meme endroit d une ligne a
+   l autre. Trois colonnes qui ne s alignent pas ne sont plus des
+   colonnes.
+
+   Les pistes sont donc definies une fois sur la liste, et chaque
+   ligne les reprend en subgrid — ce qui la laisse rester une boite a
+   part entiere, avec son fond, son filet et son opacite quand elle
+   est desactivee. Une grille posee sur la liste avec des lignes en
+   display:contents aurait aligne pareil, mais en perdant tout cela. */
+.cy-part-liste {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+}
 .cy-part-ligne {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto auto;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
   gap: 12px;
   padding: 11px 16px;
@@ -1419,12 +1606,21 @@
   border: 1px solid hsl(var(--primary) / 0.24);
 }
 
+/* La colonne du milieu porte l annee en douze cases, et sous elle
+   la seule phrase qui ne se lit pas dans la bande : quand tombe la
+   prochaine. */
 .cy-part-quand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
   font-family: 'Share Tech Mono', monospace;
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
 }
+.cy-part-quand u { text-decoration: none; }
+.cy-part-ligne[data-tombe="1"] .cy-part-quand u { color: #ff7a8a; }
 
 .cy-part-montant,
 .cy-part-an {
@@ -1502,9 +1698,11 @@
 .cy-part-dumois u { text-decoration: none; }
 
 @media (max-width: 720px) {
-  .cy-part-ligne { grid-template-columns: minmax(0, 1fr) auto; row-gap: 5px; }
-  .cy-part-quand { grid-column: 1 / -1; }
-  .cy-part-an { grid-column: 1; align-items: flex-start; }
+  /* Sur une colonne, la subgrid n a plus rien a partager : chaque
+     ligne reprend sa propre grille, plus courte. */
+  .cy-part-liste { display: block; }
+  .cy-part-ligne { grid-template-columns: minmax(0, 1fr) auto; row-gap: 7px; }
+  .cy-part-quand { grid-column: 1 / -1; align-items: flex-start; }
   .cy-part-actions { grid-column: 2; }
 }
 

@@ -7,6 +7,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCurrencySymbol } from '@/lib/currency';
 import { getCategoryLabel, type FinanceCategory } from '@/lib/financeCategories';
 import { FinanceImageUpload } from '../FinanceImageUpload';
+import { SelecteurDeMois } from './SelecteurDeMois';
+import { moisDeChute, motifDepuisMois } from '@/lib/finance/cadence';
 import type { FinancialItem } from '@/types/finance';
 
 /* UNE LIGNE RECURRENTE
@@ -40,14 +42,26 @@ export interface ValeursLigne {
   montantTotal?: number | null;
 }
 
-/** Les cinq cadences offertes, dans l ordre ou on les rencontre. */
-const CADENCES = [
-  { cle: "mensuel", periode: 1, echeancier: false },
-  { cle: "trimestriel", periode: 3, echeancier: false },
-  { cle: "semestriel", periode: 6, echeancier: false },
-  { cle: "annuel", periode: 12, echeancier: false },
-  { cle: "echeancier", periode: 1, echeancier: true },
-] as const;
+/* DEUX FACONS DE PAYER, ET UNE SEULE QUESTION A POSER.
+ *
+ * On proposait cinq cadences sur une rangee : mensuel, trimestriel,
+ * semestriel, annuel, echeancier. Les quatre premieres sont la meme
+ * chose a des rythmes differents ; la cinquieme est d une autre
+ * nature — elle a une fin. Les mettre cote a cote melangeait la
+ * question « a quel rythme » et la question « jusqu a quand ».
+ *
+ * On demande donc d abord la seule chose qui les separe : est-ce que
+ * ca revient, ou est-ce que ca se termine. Le rythme se regle ensuite
+ * a la grille, et le nombre de fois au compteur.
+ */
+/* Hissees en constantes de module, et non ecrites en litteral a
+   l appel : un tableau neuf a chaque rendu changerait d identite,
+   l effet qui en depend se relancerait sans fin, et la saisie en
+   cours serait remise a zero a chaque frappe. */
+const TOUS_LES_MOIS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+const MODES = ['recurrent', 'echeancier'] as const;
+type Mode = typeof MODES[number];
 
 const moisCourantISO = () => {
   const d = new Date();
@@ -63,10 +77,19 @@ interface LigneRecurrenteProps {
   ligne: FinancialItem | null;
   onEnregistrer: (v: ValeursLigne) => Promise<void>;
   enCours?: boolean;
+  /* LES MOIS D UNE LIGNE NEUVE.
+     La fenetre sert deux entrees qui n ont pas la meme intention. On
+     ajoute une depense mensuelle depuis le bloc des mensuelles : douze
+     cases cochees, il n y a rien a faire. On ajoute depuis le panneau
+     des echeances particulieres precisement parce que ce n est PAS
+     mensuel : la grille part vide, et deux clics suffisent.
+     C est l entree qui sait, pas la fenetre. */
+  moisParDefaut?: number[];
 }
 
 export function LigneRecurrente({
   ouvert, onOuvert, type, categories, ligne, onEnregistrer, enCours,
+  moisParDefaut = TOUS_LES_MOIS,
 }: LigneRecurrenteProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
@@ -75,7 +98,8 @@ export function LigneRecurrente({
   const [montant, setMontant] = useState('');
   const [categorie, setCategorie] = useState(categories[0]?.value ?? '');
   const [urlIcone, setUrlIcone] = useState('');
-  const [cadence, setCadence] = useState<typeof CADENCES[number]['cle']>('mensuel');
+  const [mode, setMode] = useState<Mode>('recurrent');
+  const [moisChoisis, setMoisChoisis] = useState<number[]>([]);
   const [ancre, setAncre] = useState(moisCourantISO());
   const [nbEcheances, setNbEcheances] = useState('4');
 
@@ -87,25 +111,34 @@ export function LigneRecurrente({
     setUrlIcone(ligne?.icon_url ?? '');
 
     /* La cadence se relit de ce qui est enregistre : un echeancier se
-       reconnait a son nombre d echeances, une cadence longue a sa
-       periode. */
-    const periode = ligne?.periode_mois ?? 1;
+       reconnait a son nombre d echeances, tout le reste revient. Les
+       mois se rallument dans la grille — on retrouve exactement ce
+       qu on avait coche, et non une periode a re-decoder. */
     const n = ligne?.echeances ?? null;
-    setCadence(n != null ? 'echeancier' : periode === 3 ? 'trimestriel' : periode === 6 ? 'semestriel' : periode === 12 ? 'annuel' : 'mensuel');
+    setMode(n != null ? 'echeancier' : 'recurrent');
+    setMoisChoisis(
+      ligne
+        ? moisDeChute({ amount: ligne.amount, is_active: true, periode_mois: ligne.periode_mois, mois_ancre: ligne.mois_ancre })
+        : moisParDefaut,
+    );
     setAncre(ligne?.mois_ancre ? String(ligne.mois_ancre).slice(0, 7) : moisCourantISO());
     setNbEcheances(n != null ? String(n) : '4');
     /* Pour un echeancier, le champ du montant porte le prix paye et
        non la part : c est ainsi qu on achete, donc ainsi qu on s en
        souvient. */
     if (n != null && ligne?.montant_total != null) setMontant(String(ligne.montant_total));
-  }, [ouvert, ligne, categories]);
+  }, [ouvert, ligne, categories, moisParDefaut]);
 
-  const estEcheancier = cadence === 'echeancier';
-  const periodeChoisie = CADENCES.find((c) => c.cle === cadence)?.periode ?? 1;
+  const estEcheancier = mode === 'echeancier';
+  const motif = motifDepuisMois(moisChoisis);
   const nEcheances = Math.max(2, Math.min(60, parseInt(nbEcheances, 10) || 2));
 
   const valeur = parseFloat(montant.replace(',', '.'));
-  const valide = nom.trim().length > 0 && Number.isFinite(valeur) && valeur > 0;
+  /* Un motif irregulier ne s enregistre pas : il ne saurait pas se
+     repeter l annee suivante. Le bouton reste donc bloque, et la
+     grille propose juste au-dessus de quoi le rattraper en un clic. */
+  const valide = nom.trim().length > 0 && Number.isFinite(valeur) && valeur > 0
+    && (estEcheancier || motif !== null);
 
   /* L apercu de l echeancier : ce qui sera reellement preleve, mois
      par mois. Deux cents euros en trois fois ne tombent pas juste — la
@@ -128,11 +161,21 @@ export function LigneRecurrente({
       amount: estEcheancier ? partsEcheancier[0] : valeur,
       category: categorie || undefined,
       iconUrl: urlIcone || undefined,
-      periodeMois: periodeChoisie,
+      /* Un echeancier se preleve mois apres mois : sa periode vaut un,
+         et c est sa premiere echeance qui le situe. Une charge qui
+         revient tient dans le motif lu sur la grille. */
+      periodeMois: estEcheancier ? 1 : (motif?.periode ?? 1),
       /* Une cadence mensuelle sans fin n a pas besoin d ancre : elle
          tombe de toute facon, et l exiger serait demander une
-         information que personne n a envie de saisir. */
-      moisAncre: cadence === 'mensuel' ? null : `${ancre}-01`,
+         information que personne n a envie de saisir. Une cadence plus
+         longue s ancre dans l annee en cours — le motif se repete
+         ensuite indefiniment, l annee de depart n a donc pas a etre
+         choisie. */
+      moisAncre: estEcheancier
+        ? `${ancre}-01`
+        : !motif || motif.periode === 1
+          ? null
+          : `${new Date().getFullYear()}-${String(motif.ancre + 1).padStart(2, '0')}-01`,
       echeances: estEcheancier ? nEcheances : null,
       montantTotal: estEcheancier ? valeur : null,
     });
@@ -237,43 +280,63 @@ export function LigneRecurrente({
           </div>
 
           {/* ── LA CADENCE ─────────────────────────────────
-              Tout etait implicitement mensuel, ce qui obligeait a
-              saisir une assurance annuelle lissee a la main — et a
-              perdre a la fois le vrai montant et le mois ou il part.
-              Les cinq cadences tiennent sur une rangee : quatre
-              periodes, plus le paiement en plusieurs fois, qui est la
-              meme mecanique avec une fin. */}
+              Une seule question ici, et c est la seule qui separe
+              vraiment les deux cas : est-ce que ca revient, ou est-ce
+              que ca se termine. Le rythme vient apres, a la grille. */}
           <div className="cy-reg-rang">
             <span className="cy-reg-nom">
               <Repeat aria-hidden="true" />
               {t('finance.ligne.cadence', 'Cadence')}
             </span>
-            <div className="cy-cadences" role="radiogroup" aria-label={t('finance.ligne.cadence', 'Cadence')}>
-              {CADENCES.map((c) => (
+            <div className="cy-modes" role="radiogroup" aria-label={t('finance.ligne.cadence', 'Cadence')}>
+              {MODES.map((m) => (
                 <button
-                  key={c.cle}
+                  key={m}
                   type="button"
                   role="radio"
-                  aria-checked={cadence === c.cle}
-                  className="cy-cadence"
-                  onClick={() => setCadence(c.cle)}
+                  aria-checked={mode === m}
+                  className="cy-mode"
+                  onClick={() => setMode(m)}
                 >
-                  {t(`finance.cadence.${c.cle}`, c.cle)}
+                  <b>{t(`finance.ligne.mode.${m}`, m === 'recurrent' ? 'Elle revient' : 'En plusieurs fois')}</b>
+                  <u>
+                    {m === 'recurrent'
+                      ? t('finance.ligne.mode.recurrentAide', 'un loyer, un abonnement, un impôt')
+                      : t('finance.ligne.mode.echeancierAide', 'un achat payé en 3 ou 4 fois')}
+                  </u>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Une cadence qui n est pas mensuelle a besoin de son
-              premier mois : sans lui, « tous les trois mois » ne
-              designe aucun mois en particulier. */}
-          {cadence !== 'mensuel' && (
+          {/* LA GRILLE.
+              « Tous les trois mois » ne designe aucun mois en
+              particulier : il faut bien dire lesquels. On les coche
+              plutot que de les deduire d une periode et d une date
+              d ancrage — et deux clics suffisent, le second complete
+              le motif. */}
+          {!estEcheancier && (
+            <div className="cy-reg-rang">
+              <span className="cy-reg-nom">
+                <CalendarClock aria-hidden="true" />
+                {t('finance.ligne.quandElleTombe', 'Quand elle tombe')}
+              </span>
+              <SelecteurDeMois
+                mois={moisChoisis}
+                onChange={setMoisChoisis}
+                moisCourant={new Date().getMonth()}
+              />
+            </div>
+          )}
+
+          {/* Un echeancier ne se decrit pas par un motif d annee : ses
+              echeances se suivent et peuvent franchir le 31 decembre.
+              C est donc bien une date qu il lui faut. */}
+          {estEcheancier && (
             <div className="cy-reg-rang">
               <label className="cy-reg-nom" htmlFor="ligne-ancre">
                 <CalendarClock aria-hidden="true" />
-                {estEcheancier
-                  ? t('finance.ligne.premiereEcheance', 'Première échéance')
-                  : t('finance.ligne.premierMois', 'Premier mois')}
+                {t('finance.ligne.premiereEcheance', 'Première échéance')}
               </label>
               <div className="cy-reg-champ">
                 <input
