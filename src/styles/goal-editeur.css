@@ -304,9 +304,12 @@
    cadre et le titre fait doublon. */
 .ge-embarque { padding: 12px; }
 .ge-embarque > div > .flex.items-center.justify-between:first-child { display: none; }
-.ge-embarque [class*="rounded-xl"],
-.ge-embarque [class*="rounded-lg"],
-.ge-embarque [class*="rounded-md"] { border-radius: 0 !important; }
+/* Trois variantes etaient nommees ; il en restait quatre. La liste de
+   selection d un groupe portait trente-deux badges en « rounded » nu
+   (3,75px) et trente-deux pastilles de selection en « rounded-full »,
+   qui traversaient le filtre. Un seul motif les prend toutes : dans
+   l atelier, tout est carre. */
+.ge-embarque [class*="rounded"] { border-radius: 0 !important; }
 .ge-embarque button:not([role="switch"]) {
   border-radius: 0;
   font-family: var(--gd-mono);
@@ -345,4 +348,118 @@
   .ge-barre-fin .ge-bouton:not(.ge-bouton--valider) .ge-mot { display: none; }
   .ge-bouton { padding: 8px 11px; }
   .ge-corps { padding: 12px 12px 28px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   L ATELIER EN PAGE — creer un objectif
+
+   Modifier s ouvre par-dessus la fiche : un calque plein cadre qui
+   prend tout l ecran. Creer est une page a part entiere, atteinte
+   depuis la navigation, et masquer cette navigation derriere un calque
+   serait un cul-de-sac. Le chassis ne change donc pas — memes jetons,
+   memes volets, meme grille — seul l ancrage : le cadre se pose dans le
+   flux, et la barre de commande devient collante au lieu d etre fixe.
+   Elle reste a portee ou qu on soit dans le formulaire, ce qui etait
+   tout son objet.
+   ═══════════════════════════════════════════════════════════════ */
+/* L encre posee sur l or de l enseigne. Elle suit la meme regle que le
+   bouton qui engage : noire sur l or clair du theme sombre, claire sur
+   l or sombre (#6F6000) du theme clair, ou l encre noire tombait a
+   3,22:1. */
+.ge { --encre-type: #04070a; }
+:root:not(.dark) .ge { --encre-type: #f7fbff; }
+
+.ge--page {
+  position: relative;
+  inset: auto;
+  z-index: 0;
+  /* Le meme mecanisme que le calque, et non « position: sticky » sur la
+     barre : un ancetre du gabarit porte overflow-x-hidden, ce qui suffit
+     a annuler tout sticky en dessous — mesure faite, la barre partait
+     avec le defilement. Le cadre prend donc la hauteur de la fenetre, la
+     barre reste un element de tete qui ne defile pas, et c est le corps
+     qui defile en lui. La zone de contenu commence en haut de l ecran :
+     100dvh l epouse exactement, et suit la barre d adresse mobile. */
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ── LE TYPE, ICI, EST UN CHOIX ──
+   Dans l atelier c est un releve d une ligne : le type se fixe a la
+   creation et ne bouge plus. C est ici qu il se fixe, et ce choix
+   commande la moitie du formulaire — un objectif ordinaire demande des
+   etapes, une habitude une duree, un groupe des membres. Il merite donc
+   du poids, sans redevenir les trois cartes arrondies de deux cents
+   pixels qu on a retirees : trois segments d une meme plaque, separes
+   par le trait du dossier, chacun disant ce qu il engage. */
+.ge-types {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--gd-trait);
+  border: 1px solid var(--gd-trait);
+}
+.ge-type-seg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  background: var(--gd-plaque);
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear;
+}
+.ge-type-seg svg { color: var(--gd-or); flex-shrink: 0; transition: color 120ms linear; }
+.ge-type-seg small {
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.4px;
+  text-transform: none;
+  line-height: 1.25;
+  text-align: center;
+}
+.ge-type-seg:hover { color: var(--gd-encre); }
+.ge-type-seg:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.ge-type-seg[aria-pressed="true"] {
+  color: var(--encre-type);
+  background: var(--gd-or);
+  font-weight: 700;
+}
+.ge-type-seg[aria-pressed="true"] svg { color: var(--encre-type); }
+.ge-type-seg[aria-pressed="true"] small { color: var(--encre-type); opacity: 0.82; }
+
+/* Une pastille qui bascule un reglage plutot que d en choisir un dans
+   un ensemble : elle prend l or de l enseigne, comme le bouton qui
+   engage. */
+.ge-pastille--bascule[aria-pressed="true"] {
+  background: var(--gd-or);
+  border-color: var(--gd-or);
+  color: var(--encre-type);
+}
+
+@media (max-width: 520px) {
+  .ge-types { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Un bouton dans une tete de volet.
+   La tete fait trente pixels : le bouton de commande, taille pour la
+   barre, la ferait grandir de moitie. Meme grammaire, moitie moins
+   d air — il se pose entre le titre et le compteur sans deranger la
+   ligne. */
+.ge-bouton--mince {
+  padding: 3px 8px;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  gap: 5px;
+  margin-left: 4px;
+}
+.ge-tourne { animation: ge-rotation 900ms linear infinite; }
+@keyframes ge-rotation { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .ge-tourne { animation: none; }
 }

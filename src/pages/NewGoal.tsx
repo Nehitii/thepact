@@ -8,43 +8,23 @@ import { insertGoalTags } from "@/hooks/useGoalTags";
 import { useGoals } from "@/hooks/useGoals";
 import { usePact } from "@/hooks/usePact";
 import { useLifeAreas } from "@/hooks/useLifeAreas";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  ArrowLeft,
-  Target,
-  Sparkles,
-  Calendar,
-  ListOrdered,
-  Image,
-  StickyNote,
-  DollarSign,
-  Tag,
-  Zap,
-  Check,
-  X,
-  Crown,
-  Layers,
-  Filter,
-  HandIcon,
-  Compass,
+  ArrowLeft, Target, Sparkles, Calendar, ListOrdered, StickyNote,
+  Receipt, Tag, Zap, Check, X, Crown, Filter, HandIcon, Compass,
 } from "lucide-react";
 import { EditStepsList, EditStepItem } from "@/components/goals/EditStepsList";
 import { toast } from "sonner";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRule } from "@/components/goals/super";
-import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/lib/goalConstants";
+import { encreSurFond } from "@/components/goals/detail/dossier/encre";
 import { z } from "zod";
-import { motion } from "framer-motion";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
-import { DSPageShell, DSBackground } from "@/components/ds";
+import "@/styles/cyberpunk.css";
+import "@/styles/goal-dossier.css";
+import "@/styles/goal-editeur.css";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({
@@ -70,6 +50,8 @@ const goalSchema = z.object({
     .optional(),
   notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional(),
 });
+
+const NOTES_MAX = 500;
 
 export default function NewGoal() {
   const { t } = useTranslation();
@@ -316,272 +298,406 @@ export default function NewGoal() {
     }
   };
 
-  const selectedDifficulty = allDifficulties.find((d) => d.value === difficulty);
+  const paliers = allDifficulties;
+  const teinte = paliers.find((p) => p.value === difficulty)?.color || "#94a3b8";
 
-  // Style commun pour les inputs pour assurer la lisibilité
-  const inputStyle =
-    "h-12 text-base rounded-xl bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
+  const estOrdinaire = goalType === "normal";
+  const estHabitude = goalType === "habit";
+  const estGroupe = goalType === "super";
+
+  /* Le nombre de membres qu aura le groupe : declares en mode manuel,
+     calcules par la regle en mode automatique. C est ce que le volet
+     annonce, et c est la condition que la creation verifie. */
+  const membresDuGroupe = estGroupe
+    ? (superBuildMode === "manual"
+        ? selectedChildGoalIds.length
+        : filterGoalsByRule(existingGoals, superGoalRule).length)
+    : 0;
+
+  const TYPES = [
+    {
+      valeur: "normal" as const,
+      icone: ListOrdered,
+      nom: t("goals.edit.typeNormal", "Objectif"),
+      quoi: t("goals.new.typeNormalWhat", "Des étapes à franchir"),
+    },
+    {
+      valeur: "habit" as const,
+      icone: Sparkles,
+      nom: t("goals.edit.typeHabit", "Habitude"),
+      quoi: t("goals.new.typeHabitWhat", "Un jour après l'autre"),
+    },
+    {
+      valeur: "super" as const,
+      icone: Crown,
+      nom: t("goals.edit.typeGroup", "Groupe"),
+      quoi: t("goals.new.typeGroupWhat", "Un ensemble d'objectifs"),
+    },
+  ];
+
+  /* Ce qui manque pour creer. On le dit avant de refuser, plutot que de
+     laisser un bouton eteint sans raison visible. */
+  const manque = !name.trim()
+    ? t("goals.new.needName", "Il manque le nom")
+    : selectedTags.length === 0
+      ? t("goals.new.needTag", "Il manque une étiquette")
+      : estGroupe && membresDuGroupe === 0
+        ? t("goals.new.needMembers", "Il manque au moins un membre")
+        : null;
 
   return (
-    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
-      <div className="px-6 py-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          className="space-y-6 mb-10"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+    <div className="ge ge--page">
+      <span className="ge-fond" aria-hidden="true" />
+
+      <header className="ge-barre">
+        <button
+          type="button"
+          className="ge-bouton ge-bouton--retour"
+          onClick={() => navigate("/goals")}
+          disabled={loading}
         >
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/goals")}
-            className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
+          <ArrowLeft size={13} aria-hidden="true" />
+          <span className="ge-mot">{t("goals.detail.back", "Retour")}</span>
+        </button>
+        <h1 className="ge-titre">
+          <span className="ge-mot">{t("goals.new.title", "Créer")}</span>
+          <b>{name.trim() || t("goals.new.untitled", "Sans nom")}</b>
+        </h1>
+        <div className="ge-barre-fin">
+          {manque && <span className="ge-aide">{manque}</span>}
+          <button type="button" className="ge-bouton" onClick={() => navigate("/goals")} disabled={loading}>
+            <X size={13} aria-hidden="true" />
+            <span className="ge-mot">{t("common.cancel", "Annuler")}</span>
+          </button>
+          <button
+            type="button"
+            className="ge-bouton ge-bouton--valider"
+            onClick={handleCreate}
+            disabled={loading || !!manque}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Goals
-          </Button>
+            <Check size={13} aria-hidden="true" />
+            {loading ? t("goals.new.creating", "Création…") : t("goals.new.create", "Créer")}
+          </button>
+        </div>
+      </header>
 
-          <div className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
-              Create New Goal
-            </h1>
-            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Add an evolution to your Pact journey</p>
-          </div>
-        </motion.div>
+      <div className="ge-corps">
+        <div className="ge-grille">
+          {/* ── Ce qu est l objectif ── */}
+          <div className="ge-colonne">
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Target size={12} aria-hidden="true" />
+                {t("goals.edit.identity", "Identité")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-identite">
+                  {user && (
+                    <div className="ge-vignette" style={{ ["--t" as string]: teinte }}>
+                      <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />
+                    </div>
+                  )}
+                  <div className="ge-identite-corps">
+                    <div className="ge-champ">
+                      <label className="ge-etiquette" htmlFor="ge-nom">
+                        {t("goals.edit.name", "Nom")} <i aria-hidden="true">*</i>
+                      </label>
+                      <input
+                        id="ge-nom"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={100}
+                        autoComplete="off"
+                        placeholder={t("goals.new.namePlaceholder", "Ce qu'on se promet…")}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-        {/* Form Card */}
-        <motion.div
-          className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+                {/* Le seul choix de ce formulaire qui ne se reprend pas. */}
+                <div className="ge-champ">
+                  <span className="ge-etiquette">
+                    {t("goals.new.type", "Type")}
+                    <span className="ge-aide">{t("goals.edit.typeFixed", "fixé à la création")}</span>
+                  </span>
+                  <div className="ge-types" role="group" aria-label={t("goals.new.type", "Type")}>
+                    {TYPES.map(({ valeur, icone: Icone, nom, quoi }) => (
+                      <button
+                        key={valeur}
+                        type="button"
+                        className="ge-type-seg"
+                        aria-pressed={goalType === valeur}
+                        onClick={() => setGoalType(valeur)}
+                      >
+                        <Icone size={14} aria-hidden="true" />
+                        {nom}
+                        <small>{quoi}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-          <div className="relative p-8 md:p-10 space-y-10">
-            {/* Section 1: Basic Info */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <Target className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Basic Information</h2>
+                {/* Un groupe n a pas de palier propre : il herite de ses
+                    membres. */}
+                {!estGroupe && (
+                  <div className="ge-champ">
+                    <span className="ge-etiquette">{t("goals.edit.difficulty", "Palier")}</span>
+                    <div className="ge-pastilles">
+                      {paliers.map((p) => {
+                        const choisi = difficulty === p.value;
+                        return (
+                          <button
+                            key={p.value}
+                            type="button"
+                            className="ge-pastille"
+                            aria-pressed={choisi}
+                            onClick={() => setDifficulty(p.value)}
+                            style={choisi
+                              ? { ["--c" as string]: p.color, ["--encre" as string]: encreSurFond(p.color) }
+                              : undefined}
+                          >
+                            {p.value === "custom"
+                              ? customDifficultyName || t("goals.difficulties.custom")
+                              : t(`goals.difficulties.${p.value}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="ge-champ">
+                  <span className="ge-etiquette">
+                    <Tag size={11} aria-hidden="true" />
+                    {t("goals.edit.tags", "Étiquettes")} <i aria-hidden="true">*</i>
+                  </span>
+                  <div className="ge-pastilles">
+                    {GOAL_TAGS.map((tag) => {
+                      const choisi = selectedTags.includes(tag.value);
+                      return (
+                        <button
+                          key={tag.value}
+                          type="button"
+                          className="ge-pastille"
+                          aria-pressed={choisi}
+                          onClick={() => toggleTag(tag.value)}
+                          style={choisi
+                            ? { ["--c" as string]: tag.color, ["--encre" as string]: encreSurFond(tag.color) }
+                            : undefined}
+                        >
+                          {choisi && <Check size={10} aria-hidden="true" />}
+                          {getTagLabel(tag.value, t)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="ge-aide">
+                    {t("goals.edit.tagsHint", "La première sélectionnée devient l'étiquette principale.")}
+                  </p>
+                </div>
+
+                {/* Le domaine de vie porte sa couleur : une pastille la
+                    montre, une liste deroulante la perdait. */}
+                {lifeAreas.length > 0 && (
+                  <div className="ge-champ">
+                    <span className="ge-etiquette">
+                      <Compass size={11} aria-hidden="true" />
+                      {t("goals.new.lifeArea", "Domaine de vie")}
+                    </span>
+                    <div className="ge-pastilles">
+                      <button
+                        type="button"
+                        className="ge-pastille"
+                        aria-pressed={lifeAreaId === "none"}
+                        onClick={() => setLifeAreaId("none")}
+                        style={lifeAreaId === "none"
+                          ? { ["--c" as string]: "#64748b", ["--encre" as string]: encreSurFond("#64748b") }
+                          : undefined}
+                      >
+                        {t("goals.new.lifeAreaNone", "Aucun")}
+                      </button>
+                      {lifeAreas.map((a) => {
+                        const choisi = lifeAreaId === a.id;
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            className="ge-pastille"
+                            aria-pressed={choisi}
+                            onClick={() => setLifeAreaId(a.id)}
+                            style={choisi
+                              ? { ["--c" as string]: a.color, ["--encre" as string]: encreSurFond(a.color) }
+                              : undefined}
+                          >
+                            {choisi && <Check size={10} aria-hidden="true" />}
+                            {a.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
+            </section>
 
-              {/* Goal Name */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="name"
-                  className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                >
-                  Goal Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Enter your goal name..."
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={100}
-                  autoComplete="off"
-                  className={inputStyle}
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Calendar size={12} aria-hidden="true" />
+                {t("goals.edit.dates", "Calendrier")}
+              </header>
+              <div className="ge-corps-volet">
+                <div className="ge-duo">
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-debut">
+                      {t("goals.detail.startDate", "Début")}
+                    </label>
+                    <input
+                      id="ge-debut"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-echeance">
+                      {t("goals.edit.deadline", "Échéance")}
+                    </label>
+                    <input
+                      id="ge-echeance"
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <p className="ge-aide">
+                  {t("goals.edit.deadlineHint", "Une échéance allume le compte à rebours sur la carte de l'objectif.")}
+                </p>
+              </div>
+            </section>
+
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <StickyNote size={12} aria-hidden="true" />
+                {t("goals.detail.notes", "Notes")}
+                <b>{notes.length}/{NOTES_MAX}</b>
+              </header>
+              <div className="ge-corps-volet">
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={5}
+                  maxLength={NOTES_MAX}
+                  placeholder={t("goals.edit.notesPlaceholder", "Ce qu'il faut se rappeler à propos de cet objectif…")}
+                  aria-label={t("goals.detail.notes", "Notes")}
                 />
               </div>
+            </section>
+          </div>
 
-              {/* Tags Multi-Select */}
-              <div className="space-y-3">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Tags <span className="text-destructive">*</span>
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {GOAL_TAGS.map((tag) => {
-                    const isSelected = selectedTags.includes(tag.value);
-                    return (
+          {/* ── Ce qu il demande ──
+              Le type commande ce volet : des etapes, une duree, ou des
+              membres. */}
+          <div className="ge-colonne">
+            {estOrdinaire && (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <ListOrdered size={12} aria-hidden="true" />
+                  {t("goals.detail.steps", "Étapes")}
+                  {aiDecomposeEnabled && (
+                    <button
+                      type="button"
+                      className="ge-bouton ge-bouton--mince"
+                      onClick={handleAiDecompose}
+                      disabled={aiDecomposing || !name.trim()}
+                      title={t("goals.new.aiHint", "Proposer une décomposition à partir du nom")}
+                    >
+                      {aiDecomposing
+                        ? <Loader2 size={11} className="ge-tourne" aria-hidden="true" />
+                        : <SparklesIcon size={11} aria-hidden="true" />}
+                      {t("goals.new.ai", "Décomposer")}
+                    </button>
+                  )}
+                  <b>{stepItems.length}/20</b>
+                </header>
+                <div className="ge-embarque">
+                  <EditStepsList
+                    items={stepItems}
+                    onItemsChange={(items) => {
+                      setStepItems(items);
+                      setStepCount(items.length);
+                    }}
+                  />
+                </div>
+              </section>
+            )}
+
+            {estHabitude && (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <Sparkles size={12} aria-hidden="true" />
+                  {t("goals.new.rhythm", "Rythme")}
+                  <b>{habitDurationDays}{t("goals.new.daysShort", " j")}</b>
+                </header>
+                <div className="ge-corps-volet">
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-jours">
+                      {t("goals.new.durationDays", "Durée en jours")}
+                    </label>
+                    <input
+                      id="ge-jours"
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={habitDurationDays}
+                      onChange={(e) =>
+                        setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))
+                      }
+                      autoComplete="off"
+                    />
+                    <p className="ge-aide">
+                      {t("goals.new.durationHint", "Une case à cocher par jour, et l'habitude est franchie au dernier.")}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {estGroupe && (
+              <section className="ge-volet">
+                <header className="ge-tete">
+                  <Crown size={12} aria-hidden="true" />
+                  {t("goals.new.members", "Membres")}
+                  <b>{membresDuGroupe}</b>
+                </header>
+                <div className="ge-corps-volet">
+                  <div className="ge-champ">
+                    <span className="ge-etiquette">{t("goals.new.buildMode", "Composition")}</span>
+                    <div className="ge-pastilles">
                       <button
-                        key={tag.value}
                         type="button"
-                        onClick={() => toggleTag(tag.value)}
-                        className={`
-                          relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200
-                          ${
-                            isSelected
-                              ? "text-white shadow-lg"
-                              : "bg-background/50 text-muted-foreground hover:bg-background/80 hover:text-foreground border border-white/10"
-                          }
-                        `}
-                        style={
-                          isSelected
-                            ? {
-                                background: tag.color,
-                                boxShadow: `0 0 20px ${tag.color}40`,
-                              }
-                            : {}
-                        }
+                        className="ge-pastille ge-pastille--bascule"
+                        aria-pressed={superBuildMode === "manual"}
+                        onClick={() => setSuperBuildMode("manual")}
                       >
-                        <span className="flex items-center gap-1.5">
-                          {isSelected && <Check className="h-3.5 w-3.5" />}
-                          {getTagLabel(tag.value, t)}
-                        </span>
+                        <HandIcon size={10} aria-hidden="true" />
+                        {t("goals.new.manual", "Choisis à la main")}
                       </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Select one or more tags to categorize your goal</p>
-              </div>
-            </div>
-
-            {/* Section 2: Goal Type & Difficulty */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <Zap className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h2>
-              </div>
-
-              {/* Goal Type Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Type</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGoalType("normal")}
-                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                      goalType === "normal"
-                        ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
-                        : "border-white/10 bg-background/30 hover:border-primary/50 hover:bg-background/50"
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                        goalType === "normal" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {goalType === "normal" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                    </div>
-                    <ListOrdered
-                      className={`h-6 w-6 mb-2 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`}
-                    />
-                    <div
-                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}
-                    >
-                      Standard
-                    </div>
-                    <div className="text-xs text-muted-foreground">Steps-based progress</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setGoalType("habit")}
-                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                      goalType === "habit"
-                        ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
-                        : "border-white/10 bg-background/30 hover:border-primary/50 hover:bg-background/50"
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                        goalType === "habit" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {goalType === "habit" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                    </div>
-                    <Sparkles
-                      className={`h-6 w-6 mb-2 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`}
-                    />
-                    <div
-                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}
-                    >
-                      Habit
-                    </div>
-                    <div className="text-xs text-muted-foreground">Daily check-ins</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setGoalType("super")}
-                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                      goalType === "super"
-                        ? "border-yellow-500 bg-yellow-500/10 shadow-[0_0_30px_rgba(234,179,8,0.3)]"
-                        : "border-white/10 bg-background/30 hover:border-yellow-500/50 hover:bg-background/50"
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                        goalType === "super" ? "border-yellow-500 bg-yellow-500" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {goalType === "super" && <Check className="h-2.5 w-2.5 text-yellow-900" />}
-                    </div>
-                    <Crown
-                      className={`h-6 w-6 mb-2 ${goalType === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
-                    />
-                    <div
-                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "super" ? "text-yellow-500" : "text-foreground"}`}
-                    >
-                      Super Goal
-                    </div>
-                    <div className="text-xs text-muted-foreground">Meta-goal of goals</div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Super Goal Configuration */}
-              {goalType === "super" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-5 p-5 rounded-2xl border-2 border-yellow-500/30 bg-yellow-500/5"
-                >
-                  <div className="flex items-center gap-3">
-                    <Crown className="h-5 w-5 text-yellow-500" />
-                    <h3 className="font-orbitron text-sm uppercase tracking-wider text-yellow-500">
-                      Super Goal Configuration
-                    </h3>
-                  </div>
-
-                  {/* Build Mode Selection */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSuperBuildMode("manual")}
-                      className={`p-3 rounded-xl border-2 text-left transition-all ${
-                        superBuildMode === "manual"
-                          ? "border-primary bg-primary/10"
-                          : "border-white/10 bg-background/50 hover:border-primary/40"
-                      }`}
-                    >
-                      <HandIcon
-                        className={`h-5 w-5 mb-1 ${superBuildMode === "manual" ? "text-primary" : "text-muted-foreground"}`}
-                      />
-                      <div
-                        className={`font-medium text-sm ${superBuildMode === "manual" ? "text-primary" : "text-foreground"}`}
+                      <button
+                        type="button"
+                        className="ge-pastille ge-pastille--bascule"
+                        aria-pressed={superBuildMode === "auto"}
+                        onClick={() => setSuperBuildMode("auto")}
                       >
-                        Manual Selection
-                      </div>
-                      <div className="text-xs text-muted-foreground">Pick specific goals</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSuperBuildMode("auto")}
-                      className={`p-3 rounded-xl border-2 text-left transition-all ${
-                        superBuildMode === "auto"
-                          ? "border-primary bg-primary/10"
-                          : "border-white/10 bg-background/50 hover:border-primary/40"
-                      }`}
-                    >
-                      <Filter
-                        className={`h-5 w-5 mb-1 ${superBuildMode === "auto" ? "text-primary" : "text-muted-foreground"}`}
-                      />
-                      <div
-                        className={`font-medium text-sm ${superBuildMode === "auto" ? "text-primary" : "text-foreground"}`}
-                      >
-                        Auto-Build
-                      </div>
-                      <div className="text-xs text-muted-foreground">Use smart rules</div>
-                    </button>
+                        <Filter size={10} aria-hidden="true" />
+                        {t("goals.new.auto", "Par une règle")}
+                      </button>
+                    </div>
                   </div>
+                </div>
 
-                  {/* Manual Selection Mode */}
-                  {superBuildMode === "manual" && (
+                <div className="ge-embarque">
+                  {superBuildMode === "manual" ? (
                     <GoalSelectionList
                       goals={existingGoals}
                       selectedIds={selectedChildGoalIds}
@@ -589,287 +705,67 @@ export default function NewGoal() {
                       customDifficultyName={customDifficultyName}
                       customDifficultyColor={customDifficultyColor}
                     />
+                  ) : (
+                    <AutoBuildRuleEditor
+                      rule={superGoalRule}
+                      onRuleChange={setSuperGoalRule}
+                      goals={existingGoals}
+                      customDifficultyName={customDifficultyName}
+                      customDifficultyActive={customDifficultyActive}
+                    />
                   )}
+                </div>
 
-                  {/* Auto-Build Mode */}
-                  {superBuildMode === "auto" && (
-                    <div className="space-y-4">
-                      <AutoBuildRuleEditor
-                        rule={superGoalRule}
-                        onRuleChange={setSuperGoalRule}
-                        goals={existingGoals}
-                        customDifficultyName={customDifficultyName}
-                        customDifficultyActive={customDifficultyActive}
-                      />
-
-                      {/* Dynamic vs Static toggle */}
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-background/80 border border-white/10">
-                        <div>
-                          <Label className="font-medium flex items-center gap-2 text-foreground">
-                            <Zap className="h-4 w-4 text-purple-500" />
-                            Dynamic Super Goal
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Auto-updates when new goals match rules
-                          </p>
-                        </div>
-                        <Switch checked={isDynamicSuper} onCheckedChange={setIsDynamicSuper} />
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {/* Difficulty Selection - hide for super goals since they aggregate */}
-              {goalType !== "super" && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Difficulty</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {allDifficulties.map((diff) => {
-                      const isSelected = difficulty === diff.value;
-                      return (
+                {superBuildMode === "auto" && (
+                  <div className="ge-corps-volet">
+                    <div className="ge-champ">
+                      <div className="ge-pastilles">
                         <button
-                          key={diff.value}
                           type="button"
-                          onClick={() => setDifficulty(diff.value)}
-                          className={`
-                            relative px-5 py-2.5 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
-                            ${
-                              isSelected
-                                ? "text-white shadow-lg scale-105"
-                                : "bg-background/50 text-muted-foreground hover:bg-background/80 hover:text-foreground border border-white/10"
-                            }
-                          `}
-                          style={
-                            isSelected
-                              ? {
-                                  background: diff.color,
-                                  boxShadow: `0 0 25px ${diff.color}50`,
-                                }
-                              : {}
-                          }
+                          className="ge-pastille ge-pastille--bascule"
+                          aria-pressed={isDynamicSuper}
+                          onClick={() => setIsDynamicSuper(!isDynamicSuper)}
                         >
-                          {getDifficultyLabel(diff.value, t)}
+                          <Zap size={10} aria-hidden="true" />
+                          {t("goals.new.dynamic", "Groupe vivant")}
                         </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Steps / Duration based on goal type - not for super goals */}
-              {goalType !== "super" && (
-                <>
-                  <div className="space-y-6">
-                    {goalType === "normal" ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                            <ListOrdered className="h-4 w-4" />
-                            Steps ({stepItems.length}/20)
-                          </Label>
-                          {aiDecomposeEnabled && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={handleAiDecompose}
-                              disabled={aiDecomposing || !name.trim()}
-                              className="gap-1.5"
-                            >
-                              {aiDecomposing ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <SparklesIcon className="h-3.5 w-3.5" />
-                              )}
-                              AI Decompose
-                            </Button>
-                          )}
-                        </div>
-                        <EditStepsList
-                          items={stepItems}
-                          onItemsChange={(items) => {
-                            setStepItems(items);
-                            setStepCount(items.length);
-                          }}
-                        />
-                        <p className="text-xs text-muted-foreground">Drag to reorder, delete with trash icon</p>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Label
-                          htmlFor="habitDays"
-                          className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                        >
-                          <Calendar className="h-4 w-4" />
-                          Duration (Days)
-                        </Label>
-                        <Input
-                          id="habitDays"
-                          type="number"
-                          min="1"
-                          max="365"
-                          value={habitDurationDays}
-                          onChange={(e) =>
-                            setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))
-                          }
-                          autoComplete="off"
-                          className={inputStyle}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Start Date */}
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="startDate"
-                        className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                      >
-                        <Calendar className="h-4 w-4" />
-                        Start Date
-                      </Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className={inputStyle}
-                        style={{ colorScheme: "dark" }} // Force dark calendar icon
-                      />
-                    </div>
-
-                    {/* Deadline */}
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="deadline"
-                        className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                      >
-                        <Calendar className="h-4 w-4" />
-                        Deadline (optional)
-                      </Label>
-                      <Input
-                        id="deadline"
-                        type="date"
-                        value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
-                        className={inputStyle}
-                        style={{ colorScheme: "dark" }}
-                      />
-                      <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer</p>
+                      <p className="ge-aide">
+                        {isDynamicSuper
+                          ? t("goals.new.dynamicOn", "La règle est rejouée en permanence : tout objectif qui y répondra plus tard rejoindra le groupe.")
+                          : t("goals.new.dynamicOff", "La règle sert une fois, à la création. Les membres sont ensuite figés.")}
+                      </p>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
+                )}
+              </section>
+            )}
 
-            {/* Section 3: Cost & Budget */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <DollarSign className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
-              </div>
-
-              <CostItemsEditor
-                items={costItems}
-                onChange={setCostItems}
-                steps={
-                  goalType === "normal"
-                    ? stepItems.map((item, i) => ({
-                        id: `step-index-${i}`,
-                        title: item.name,
-                        order: i + 1,
-                      }))
-                    : undefined
-                }
-              />
-            </div>
-
-            {/* Section 4: Media & Notes */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                <Image className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Media & Notes</h2>
-              </div>
-
-              {/* Image Upload */}
-              {user && <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />}
-
-              {/* Life Area attribution */}
-              {lifeAreas.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                    <Compass className="h-4 w-4" />
-                    Domaine de vie (optionnel)
-                  </Label>
-                  <Select value={lifeAreaId} onValueChange={setLifeAreaId}>
-                    <SelectTrigger className="rounded-xl bg-background/50 border-white/10 text-foreground">
-                      <SelectValue placeholder="Aucun" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Aucun</SelectItem>
-                      {lifeAreas.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>
-                          <span className="inline-flex items-center gap-2">
-                            <span
-                              className="h-2.5 w-2.5 rounded-full"
-                              style={{ background: a.color }}
-                            />
-                            {a.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Notes */}
-              <div className="space-y-3">
-                <Label
-                  htmlFor="notes"
-                  className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                >
-                  <StickyNote className="h-4 w-4" />
-                  Notes (optional)
-                </Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Additional details, motivation, or reminders about this goal..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={4}
-                  maxLength={500}
-                  className="resize-none rounded-xl text-base bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
+            <section className="ge-volet">
+              <header className="ge-tete">
+                <Receipt size={12} aria-hidden="true" />
+                {t("goals.detail.ledger", "Registre")}
+                <b>{costItems.length}</b>
+              </header>
+              <div className="ge-embarque">
+                <CostItemsEditor
+                  items={costItems}
+                  onChange={setCostItems}
+                  steps={
+                    estOrdinaire
+                      ? stepItems.map((item, i) => ({
+                          id: `step-index-${i}`,
+                          title: item.name,
+                          order: i + 1,
+                        }))
+                      : undefined
+                  }
                 />
-                <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
               </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-primary/20">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/goals")}
-                className="flex-1 h-12 rounded-xl border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 font-rajdhani tracking-wider text-base text-foreground"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={loading || !name.trim() || selectedTags.length === 0}
-                className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-rajdhani tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:shadow-[0_0_30px_rgba(91,180,255,0.5)] transition-all duration-300"
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {loading ? "Creating..." : "Create Goal"}
-              </Button>
-            </div>
+            </section>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </DSPageShell>
+    </div>
   );
 }
