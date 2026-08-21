@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, Infinity, Palette, Puzzle, RefreshCw, Zap, X, Check, AlertTriangle, ChevronDown } from "lucide-react";
+import { Shield, Infinity as InfinityIcon, Palette, Puzzle, RefreshCw, Zap, X, Check, AlertTriangle, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { useShopModules, useUserModulePurchases, useShopFrames, useShopBanners, useUserCosmetics } from "@/hooks/useShop";
@@ -46,7 +46,7 @@ export default function AdminMode() {
       {/* Infinite Bonds */}
       <div className="flex justify-center mb-6">
         <div className="inline-flex items-center gap-2 bg-card/50 border border-amber-500/30 rounded-xl px-6 py-3">
-          <Infinity className="h-6 w-6 text-amber-400" />
+          <InfinityIcon className="h-6 w-6 text-amber-400" />
           <span className="text-2xl font-orbitron text-amber-400">∞</span>
           <span className="text-amber-400/80 font-rajdhani">Bonds (Admin)</span>
         </div>

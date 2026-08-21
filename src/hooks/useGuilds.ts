@@ -150,8 +150,12 @@ export function useGuilds() {
     staleTime: 60_000,
   });
 
-  // ── Guild Members ──
-  const membersQuery = (guildId: string) =>
+  /* ── Guild Members ──
+     Nomme useGuildMembers comme ses quatre soeurs juste en dessous.
+     Sous « membersQuery », eslint ne reconnaissait pas un hook : ni sa
+     definition ni ses cinq appels netaient verifies contre les regles
+     des hooks. Le motif etait bon, le nom lempechait detre controle. */
+  const useGuildMembers = (guildId: string) =>
     useQuery({
       queryKey: ["guild-members", guildId],
       queryFn: async (): Promise<GuildMember[]> => {
@@ -526,7 +530,7 @@ export function useGuilds() {
     publicGuilds: publicGuildsQuery.data || [],
     invites: invitesQuery.data || [],
     invitesLoading: invitesQuery.isLoading,
-    useGuildMembers: membersQuery,
+    useGuildMembers,
     useAnnouncements,
     useGuildGoals,
     useGuildActivity,
