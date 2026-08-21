@@ -848,6 +848,12 @@
     },
     "monthly": {
       "title": "Monthly Validation",
+      "validationFailed": "Monthly validation failed.",
+      "quelSolde": "Which balance",
+      "soldeReel": "Real balance",
+      "soldeAvecSecurite": "With the pocket",
+      "pocheDeduite": "{{montant}} set aside for upcoming charges",
+      "pocheIgnoree": "not counting {{montant}} to set aside",
       "provision": "Monthly set-aside",
       "provisionHint": "for upcoming instalments",
       "monthlyBalance": "Monthly Balance",
@@ -888,6 +894,7 @@
     "recurring": {
       "title": "Recurring Items",
       "income": "Recurring Income",
+      "expensesMonthly": "Monthly recurring expenses",
       "expenses": "Recurring Expenses",
       "addIncome": "Add Income",
       "addExpense": "Add Expense",
@@ -1090,6 +1097,20 @@
       "moisAValider": "{{mois}} is not validated yet.",
       "moisValide": "{{mois}} is validated.",
       "validerLeMois": "Validate the month"
+    },
+    "particulieres": {
+      "titre": "Irregular charges",
+      "compte_one": "{{count}} line",
+      "compte_other": "{{count}} lines",
+      "ajouter": "Add",
+      "vide": "Nothing here. A quarterly, yearly or instalment charge is entered like any other — its cadence brings it to this panel.",
+      "prochaine": "next: {{mois}}",
+      "ceMois": "this month",
+      "parAn": "per year",
+      "auTotal": "in total",
+      "poche": "Safety pocket",
+      "parMois": "per month",
+      "duMois": "of which this month"
     },
     "cadence": {
       "dansNMois": "in {{count}} months",

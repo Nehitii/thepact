@@ -1286,3 +1286,268 @@
   text-transform: none;
   color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
 }
+
+/* ── LES DEUX EN-TETES A LA MEME HAUTEUR ──
+   Les blocs des depenses et des revenus se font face. « Dépenses
+   récurrentes » passe a la ligne la ou « Revenus récurrents » tient
+   sur une seule : les deux colonnes se decalaient d une vingtaine de
+   pixels, et l oeil le voyait avant de lire.
+
+   Tout le reste de l en-tete est identique des deux cotes — meme
+   icone, meme sous-titre sur deux lignes, meme montant : le titre est
+   le seul coupable, avec ses trois lignes contre deux.
+
+   C est donc lui qu on cale, et non l en-tete. Reserver la hauteur
+   sur l en-tete demanderait de deviner un total en pixels, qu une
+   traduction plus longue ferait mentir ; reserver trois lignes de
+   titre tient dans toutes les langues ou le titre en demande trois ou
+   moins, et le laisse grandir au-dela sans rien casser.
+
+   Le titre est ensuite centre DANS sa reserve. Sans cela, le bloc des
+   revenus afficherait un blanc de vingt pixels entre son titre et son
+   sous-titre — la reserve se verrait, et un espace qu on voit est un
+   defaut, meme quand il aligne. */
+.cy-bloc-tete h3 {
+  min-height: 3.75rem;   /* repli : 3 x 20px, la ou l unite lh manque */
+  min-height: 3lh;
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  /* Sur une colonne, les blocs ne se font plus face : la reserve n a
+     plus d objet et coute de la hauteur. */
+  .cy-bloc-tete h3 { min-height: 0; display: block; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES ECHEANCES PARTICULIERES, ET LA POCHE
+
+   Un impot foncier preleve quatre fois par an n a rien a faire au
+   milieu d un abonnement a sept euros : il ecrase la liste onze mois
+   sur douze sans y peser, et le douzieme il la fait mentir. Ces
+   charges ont donc leur panneau, et il montre ce qu on veut savoir
+   d elles — quand elles tombent, ce qu elles coutent a l annee — deux
+   choses qui n ont aucun sens pour une mensuelle.
+   ═══════════════════════════════════════════════════════════════ */
+.cy-part {
+  border: 1px solid hsl(var(--primary) / 0.16);
+  background: hsl(var(--primary) / 0.02);
+}
+.cy-part-tete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid hsl(var(--primary) / 0.14);
+}
+.cy-part-tete svg { width: 15px; height: 15px; flex-shrink: 0; color: #7bd88f; }
+.cy-part-tete h3 {
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cy-encre-2, #cfe4f5);
+}
+.cy-part-compte {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-part-ajout {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cp-jaune, #ffd23f);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 45%, transparent);
+  cursor: pointer;
+}
+.cy-part-ajout:hover { background: color-mix(in srgb, var(--cp-jaune, #ffd23f) 12%, transparent); }
+.cy-part-ajout svg { width: 12px; height: 12px; color: currentColor; }
+
+.cy-part-vide {
+  margin: 0;
+  padding: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+
+.cy-part-liste { margin: 0; padding: 0; list-style: none; }
+.cy-part-ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid hsl(var(--primary) / 0.07);
+}
+.cy-part-ligne[data-actif="0"] { opacity: 0.5; }
+/* Le mois ou elle tombe, la ligne s allume : c est ce mois-la qui
+   compte pour la tresorerie. */
+.cy-part-ligne[data-tombe="1"] { background: hsl(var(--primary) / 0.04); }
+
+.cy-part-nom {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cy-encre, #e8f4ff);
+}
+.cy-part-nom b {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  border: 1px solid hsl(var(--primary) / 0.24);
+}
+
+.cy-part-quand {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+
+.cy-part-montant,
+.cy-part-an {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cy-encre-2, #cfe4f5);
+}
+.cy-part-montant[data-ce-mois="1"] { color: #ff7a8a; }
+.cy-part-an { color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); font-weight: 600; }
+.cy-part-montant u,
+.cy-part-an u {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(9px, 0.5625rem);
+  font-weight: 400;
+  letter-spacing: 0.8px;
+  text-decoration: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+
+.cy-part-actions { display: flex; gap: 4px; }
+.cy-part-actions button {
+  display: inline-flex;
+  padding: 5px;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.cy-part-actions button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-part-actions svg { width: 14px; height: 14px; }
+
+/* La poche, en pied de panneau : c est la conclusion de ce qui
+   precede, pas une ligne de plus. */
+.cy-part-pied {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 12px 16px;
+  background: hsl(var(--primary) / 0.05);
+}
+.cy-part-poche,
+.cy-part-dumois {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+.cy-part-poche svg { width: 13px; height: 13px; align-self: center; color: #7bd88f; }
+.cy-part-poche strong {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #7bd88f;
+  font-variant-numeric: tabular-nums;
+}
+.cy-part-dumois { margin-left: auto; }
+.cy-part-dumois strong {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  color: #ff7a8a;
+  font-variant-numeric: tabular-nums;
+}
+.cy-part-poche u,
+.cy-part-dumois u { text-decoration: none; }
+
+@media (max-width: 720px) {
+  .cy-part-ligne { grid-template-columns: minmax(0, 1fr) auto; row-gap: 5px; }
+  .cy-part-quand { grid-column: 1 / -1; }
+  .cy-part-an { grid-column: 1; align-items: flex-start; }
+  .cy-part-actions { grid-column: 2; }
+}
+
+/* ── LE COMMUTATEUR DU SOLDE ──
+   Deux soldes, et le choix entre les deux. Le reel est vrai mais
+   flatte : onze mois sur douze il montre une aisance que le douzieme
+   dementira. Celui avec la poche est plus dur, et c est celui sur
+   lequel on peut decider. Aucun ne remplace l autre. */
+.cy-solde-bascule {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.cy-solde-bascule button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  background: transparent;
+  border: 1px solid hsl(var(--primary) / 0.22);
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear, border-color 120ms linear;
+}
+.cy-solde-bascule button svg { width: 12px; height: 12px; }
+.cy-solde-bascule button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-solde-bascule button[aria-pressed="true"] {
+  color: #05080f;
+  background: #7bd88f;
+  border-color: #7bd88f;
+  font-weight: 700;
+}
+.cy-solde-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  text-transform: none;
+  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+}
+@media (max-width: 560px) { .cy-solde-note { flex-basis: 100%; } }

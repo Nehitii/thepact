@@ -13,7 +13,9 @@ import {
   useDeleteRecurringIncome,
 } from '@/hooks/useFinance';
 import { totalDuMois, provisionMensuelle } from '@/lib/finance/cadence';
-import type { ValeursLigne } from './LigneRecurrente';
+import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
+import { EcheancesParticulieres } from './EcheancesParticulieres';
+import type { FinancialItem } from '@/types/finance';
 import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { MoisPalmares } from './MoisPalmares';
@@ -92,7 +94,31 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   const moisCourant = useMemo(() => new Date(), []);
   const totalExpenses = totalDuMois(expenses, moisCourant);
   const totalIncome = totalDuMois(income, moisCourant);
-  const provision = provisionMensuelle(expenses);
+
+  /* DEUX PANNEAUX, PARCE QUE CE NE SONT PAS LES MEMES CHARGES.
+   *
+   * Les mensuelles se ressemblent : meme montant, tous les mois, on
+   * les lit comme un bloc. Un impot foncier de cinq cent cinquante-
+   * quatre euros preleve quatre fois par an n a rien a faire au milieu
+   * d un abonnement a sept euros — il ecrase la liste onze mois sur
+   * douze sans y peser, et le douzieme il la fait mentir.
+   *
+   * Une charge est « particuliere » des qu elle ne tombe pas chaque
+   * mois : une cadence longue, ou un nombre d echeances. C est la
+   * meme frontiere que celle du calcul, ce qui evite d en inventer
+   * une seconde. */
+  const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
+    (l.periode_mois ?? 1) === 1 && l.echeances == null;
+  const depensesMensuelles = useMemo(() => expenses.filter(estMensuelle), [expenses]);
+  const depensesParticulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
+
+  const poche = provisionMensuelle(depensesParticulieres);
+
+  /* Le panneau particulier a besoin de la meme fenetre de saisie que
+     les blocs. Elle est montee ici plutot que dupliquee dedans : une
+     seule fenetre, un seul comportement. */
+  const [fenetreParticuliere, setFenetreParticuliere] = useState(false);
+  const [ligneParticuliere, setLigneParticuliere] = useState<FinancialItem | null>(null);
 
   // When editingMonth changes and data loads, pre-populate
   useEffect(() => {
@@ -182,7 +208,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
       <MonthlyBalanceHero
         totalIncome={totalIncome}
         totalExpenses={totalExpenses}
-        provision={provision}
+        poche={poche}
       />
 
       <MoisPalmares
@@ -194,9 +220,9 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
           <FinancialBlock
-            title={t('finance.recurring.expenses')}
+            title={t('finance.recurring.expensesMonthly', 'Dépenses mensuelles récurrentes')}
             type="expense"
-            items={expenses}
+            items={depensesMensuelles}
             categories={EXPENSE_CATEGORIES}
             isLoading={expensesLoading}
             onAdd={handleAddExpense}
@@ -221,6 +247,33 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
           />
         </motion.div>
       </div>
+
+      {/* Ce qui ne tombe pas tous les mois, et la poche qu il
+          demande. Le panneau ne parait que s il a quelque chose a
+          dire : un pacte sans charge particuliere n a pas a porter un
+          cadre vide. */}
+      {depensesParticulieres.length > 0 && (
+        <EcheancesParticulieres
+          items={depensesParticulieres}
+          onAdd={() => { setLigneParticuliere(null); setFenetreParticuliere(true); }}
+          onEdit={(item) => { setLigneParticuliere(item); setFenetreParticuliere(true); }}
+          onDelete={(id) => deleteExpense.mutate(id)}
+          onToggleActive={handleToggleExpense}
+        />
+      )}
+
+      <LigneRecurrente
+        ouvert={fenetreParticuliere}
+        onOuvert={setFenetreParticuliere}
+        type="expense"
+        categories={EXPENSE_CATEGORIES}
+        ligne={ligneParticuliere}
+        onEnregistrer={async (v) => {
+          if (ligneParticuliere) await handleUpdateExpense(ligneParticuliere.id, v);
+          else await handleAddExpense(v);
+        }}
+        enCours={addExpense.isPending || updateExpense.isPending}
+      />
 
       <div ref={refValidation} className="cy-cible" tabIndex={-1}>
         <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />

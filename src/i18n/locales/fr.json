@@ -848,6 +848,12 @@
     },
     "monthly": {
       "title": "Validation mensuelle",
+      "validationFailed": "La validation du mois a échoué.",
+      "quelSolde": "Quel solde",
+      "soldeReel": "Solde réel",
+      "soldeAvecSecurite": "Avec la poche",
+      "pocheDeduite": "{{montant}} mis de côté pour les échéances à venir",
+      "pocheIgnoree": "sans compter {{montant}} à mettre de côté",
       "provision": "Provision mensuelle",
       "provisionHint": "pour les échéances à venir",
       "monthlyBalance": "Solde mensuel",
@@ -888,6 +894,7 @@
     "recurring": {
       "title": "Éléments récurrents",
       "income": "Revenus récurrents",
+      "expensesMonthly": "Dépenses mensuelles récurrentes",
       "expenses": "Dépenses récurrentes",
       "addIncome": "Ajouter un revenu",
       "addExpense": "Ajouter une dépense",
@@ -1090,6 +1097,20 @@
       "moisAValider": "{{mois}} n est pas encore validé.",
       "moisValide": "{{mois}} est validé.",
       "validerLeMois": "Valider le mois"
+    },
+    "particulieres": {
+      "titre": "Échéances particulières",
+      "compte_one": "{{count}} ligne",
+      "compte_other": "{{count}} lignes",
+      "ajouter": "Ajouter",
+      "vide": "Rien ici. Une charge trimestrielle, annuelle ou payée en plusieurs fois se saisit comme une autre — c’est sa cadence qui l’amène dans ce panneau.",
+      "prochaine": "prochaine : {{mois}}",
+      "ceMois": "ce mois-ci",
+      "parAn": "par an",
+      "auTotal": "au total",
+      "poche": "Poche de sécurité",
+      "parMois": "par mois",
+      "duMois": "dont ce mois-ci"
     },
     "cadence": {
       "dansNMois": "dans {{count}} mois",

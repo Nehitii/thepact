@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, Scale, PiggyBank } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatCurrency } from '@/lib/currency';
 import { AnimatedNumber } from '../widgets';
 
 /* LE SOLDE DU MOIS
@@ -19,16 +20,32 @@ import { AnimatedNumber } from '../widgets';
 interface MonthlyBalanceHeroProps {
   totalIncome: number;
   totalExpenses: number;
-  /* Ce qu il faudrait mettre de cote chaque mois pour absorber les
-     echeances a venir. Ce n est pas une depense du mois : elle ne
-     compte donc pas dans le solde, et se lit a part. */
-  provision?: number;
+  /* La poche de securite : ce qu il faudrait mettre de cote chaque
+     mois pour absorber les echeances qui ne tombent pas tous les mois.
+     Ce n est pas une depense du mois. */
+  poche?: number;
 }
 
-export function MonthlyBalanceHero({ totalIncome, totalExpenses, provision = 0 }: MonthlyBalanceHeroProps) {
+export function MonthlyBalanceHero({ totalIncome, totalExpenses, poche = 0 }: MonthlyBalanceHeroProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
-  const netBalance = totalIncome - totalExpenses;
+
+  /* DEUX SOLDES, ET LE CHOIX ENTRE LES DEUX.
+   *
+   * Le solde reel est ce qui reste une fois le mois paye. Il est vrai,
+   * mais il flatte : les onze mois ou la trimestrielle ne tombe pas,
+   * il montre une aisance que le douzieme dementira.
+   *
+   * Le solde avec securite deduit en plus la poche — ce qu il faudrait
+   * garder pour absorber ce qui vient. Il est plus dur, et c est celui
+   * sur lequel on peut decider.
+   *
+   * Aucun des deux ne remplace l autre : ils repondent a deux
+   * questions. Le commutateur laisse donc choisir, et n impose rien.
+   */
+  const [avecSecurite, setAvecSecurite] = useState(false);
+  const soldeReel = totalIncome - totalExpenses;
+  const netBalance = avecSecurite ? soldeReel - poche : soldeReel;
 
   const partEntrees = useMemo(() => {
     const total = totalIncome + totalExpenses;
@@ -72,20 +89,39 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses, provision = 0 }
         ))}
       </div>
 
-      {/* LA PROVISION, SOUS LE SOLDE ET NON DEDANS.
-          Une charge trimestrielle ou annuelle ne pese que le mois ou
-          elle tombe : c est la tresorerie, et c est elle qui commande
-          le solde ci-dessus. Mais elle vient — et ne rien en dire les
-          onze autres mois laisserait croire a une aisance qui n existe
-          pas. La provision est donc affichee, distincte, avec ce
-          qu elle couvre : « pour les echeances a venir ». */}
-      {provision > 0 && (
-        <p className="cy-provision">
-          <PiggyBank aria-hidden="true" />
-          <span>{t('finance.monthly.provision', 'Provision mensuelle')}</span>
-          <strong><AnimatedNumber value={provision} currency={currency} isPositive /></strong>
-          <em>{t('finance.monthly.provisionHint', 'pour les échéances à venir')}</em>
-        </p>
+      {/* LE COMMUTATEUR, SOUS LE SOLDE.
+          Il ne parait que s il y a une poche : sans charge
+          particuliere, les deux soldes sont le meme chiffre et le
+          choix n aurait aucun sens. */}
+      {poche > 0 && (
+        <div className="cy-solde-bascule" role="group" aria-label={t('finance.monthly.quelSolde', 'Quel solde')}>
+          <button
+            type="button"
+            aria-pressed={!avecSecurite}
+            onClick={() => setAvecSecurite(false)}
+          >
+            {t('finance.monthly.soldeReel', 'Solde réel')}
+          </button>
+          <button
+            type="button"
+            aria-pressed={avecSecurite}
+            onClick={() => setAvecSecurite(true)}
+          >
+            <PiggyBank aria-hidden="true" />
+            {t('finance.monthly.soldeAvecSecurite', 'Avec la poche')}
+          </button>
+          <span className="cy-solde-note">
+            {avecSecurite
+              ? t('finance.monthly.pocheDeduite', {
+                  montant: formatCurrency(poche, currency),
+                  defaultValue: `${formatCurrency(poche, currency)} mis de côté pour les échéances à venir`,
+                })
+              : t('finance.monthly.pocheIgnoree', {
+                  montant: formatCurrency(poche, currency),
+                  defaultValue: `sans compter ${formatCurrency(poche, currency)} à mettre de côté`,
+                })}
+          </span>
+        </div>
       )}
 
       {/* La balance : ce qui entre contre ce qui sort, d un seul trait. */}
