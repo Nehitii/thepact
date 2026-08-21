@@ -17,6 +17,8 @@ interface Goal {
   habit_checks?: boolean[] | null;
   totalStepsCount?: number;
   completedStepsCount?: number;
+  /** L etape ultime est franchie : l objectif est au zenith. */
+  auZenith?: boolean;
   potential_score?: number | null;
   tags?: string[];
   deadline?: string | null;
@@ -145,7 +147,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
    */
   return (
     <div
-      className={`eclat${goal.is_focus ? " eclat--focus" : ""}${isCompleted ? " eclat--honore" : ""}`}
+      className={`eclat${goal.is_focus ? " eclat--focus" : ""}${isCompleted ? " eclat--honore" : ""}${goal.auZenith ? " eclat--zenith" : ""}`}
       style={cssVars}
       onClick={() => onNavigate(goal.id)}
       role="button"

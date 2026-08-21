@@ -18,6 +18,8 @@ interface Goal {
   habit_checks?: boolean[] | null;
   totalStepsCount?: number;
   completedStepsCount?: number;
+  /** L etape ultime est franchie : l objectif est au zenith. */
+  auZenith?: boolean;
   status?: string | null;
   tags?: string[];
   deadline?: string | null;
@@ -153,6 +155,10 @@ export function GridViewGoalCard({
         "verre",
         goal.is_focus && "verre--focus",
         isCompleted && "verre--honore",
+        /* Un objectif au zenith charge la carte entiere plutot que de
+           gagner un badge de plus : le halo, le rail et la bande sont
+           tous les trois transfigures. */
+        goal.auZenith && "verre--zenith",
         goal.isShared && "verre--partage",
       )}
     >
@@ -187,9 +193,14 @@ export function GridViewGoalCard({
           {/* Un objectif honore perd sa jauge — pleine, donc muette — et
               recoit la bande qui le dit en toutes lettres. */}
           {isCompleted ? (
+            /* La bande garde son mot et sa place. Ce qui change au
+               zenith, c est ce dont elle est faite — et les deux
+               etoiles qui disent d ou vient cet or. */
             <span className="verre-honore">
+              {goal.auZenith && <i className="verre-zenith-etoile" aria-hidden="true">✦</i>}
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
               HONORÉ
+              {goal.auZenith && <i className="verre-zenith-etoile" aria-hidden="true">✦</i>}
             </span>
           ) : (
             <div className="verre-bas">

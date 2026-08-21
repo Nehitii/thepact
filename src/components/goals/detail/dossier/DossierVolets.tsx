@@ -112,14 +112,36 @@ export const DossierEtapes = React.memo(function DossierEtapes({
         {ordinaires.map((e, i) => ligne(e, i + 1))}
 
         {ultime && (
-          <>
+          /* L ETAPE ULTIME N EST PAS UNE LIGNE DE PLUS.
+           *
+           * C est l objet le plus rare de l application : il faut
+           * l avoir designee, puis l avoir franchie. La poser au bout
+           * de la liste, separee par un simple filet, la rangeait a
+           * cote des autres — alors qu elle n est pas du meme ordre.
+           *
+           * Elle a donc sa propre plaque, chanfreinee comme les cadres
+           * de l application, avec sa languette d or en applique. Et
+           * surtout deux etats franchement differents : dormante, elle
+           * est contenue, sombre, sous une trame en attente ; franchie,
+           * elle s allume — la plaque prend l or, le titre passe en
+           * encre sombre, et le sceau du zenith tombe. Le passage d un
+           * etat a l autre est l evenement ; il fallait qu il se voie.
+           */
+          <div className="gd-ultime" data-atteint={ultime.status === "completed" ? "1" : "0"}>
+            <span className="gd-ultime-halo" aria-hidden="true" />
             <p className="gd-ultime-tete">
-              <Sparkle size={10} aria-hidden="true" />
-              {t("goals.detail.ultimate", "Étape ultime")}
-              <span>{t("goals.detail.ultimateHint", "hors avancement")}</span>
+              <span className="gd-ultime-languette">
+                <Sparkle size={10} aria-hidden="true" />
+                {t("goals.detail.ultimate", "Étape ultime")}
+              </span>
+              <span className="gd-ultime-mention">
+                {ultime.status === "completed"
+                  ? t("goals.detail.zenithReached", "Zénith atteint")
+                  : t("goals.detail.ultimateHint", "hors avancement")}
+              </span>
             </p>
             {ligne(ultime, null)}
-          </>
+          </div>
         )}
 
         {etapes.length === 0 && (

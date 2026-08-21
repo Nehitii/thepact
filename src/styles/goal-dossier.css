@@ -849,40 +849,194 @@
    descend quand les plus avances passent devant. */
 .gd-tri svg { flex-shrink: 0; opacity: 0.8; }
 
-/* ── L ETAPE ULTIME ET LE ZENITH ──
-   Elle est a cote de la suite, pas dedans : un intertitre la separe,
-   et son rang cede la place a l etoile. L ambre la distingue du cyan
-   des etapes ordinaires sans la rendre plus criarde qu elles — c est
-   un bonus, pas une urgence. */
+
+/* ═══════════════════════════════════════════════════════════════
+   L ETAPE ULTIME — la piece rare
+
+   C est l objet le plus difficile a obtenir de l application : il faut
+   avoir designe une etape ultime, puis l avoir franchie. Elle ne peut
+   donc pas se poser au bout de la liste comme une ligne de plus.
+
+   Elle a sa plaque : chanfreinee aux deux coins opposes, comme les
+   cadres de l application, avec sa languette d or en applique et une
+   trame diagonale en fond — le motif que la carte sans image utilise
+   deja, ici en or et beaucoup plus discret.
+
+   DEUX ETATS, ET TOUT EST LA.
+
+   Dormante, elle est contenue : fond sombre, or a trente pour cent,
+   trame en attente. On voit qu il y a quelque chose, on voit que ce
+   n est pas encore arrive.
+
+   Franchie, elle s allume. La plaque prend l or, le titre passe en
+   encre sombre, un halo tourne autour du cadre et le sceau du zenith
+   tombe a droite. Le passage d un etat a l autre est l evenement de
+   l objectif — il fallait qu il se voie de loin.
+   ═══════════════════════════════════════════════════════════════ */
+
+@property --gd-ultime-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.gd-ultime {
+  --or: #ffc53d;
+  --or-vif: #fff3cd;
+  position: relative;
+  margin-top: 14px;
+  padding: 1px;
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+  background: color-mix(in srgb, var(--or) 30%, transparent);
+}
+
+/* Le halo ne tourne qu une fois le zenith atteint : avant, il n y a
+   rien a celebrer. */
+.gd-ultime-halo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.gd-ultime[data-atteint="1"] {
+  background: var(--or);
+  box-shadow: 0 0 26px -6px color-mix(in srgb, var(--or) 70%, transparent);
+}
+.gd-ultime[data-atteint="1"] .gd-ultime-halo {
+  background: conic-gradient(
+    from var(--gd-ultime-angle),
+    transparent 0deg 200deg,
+    color-mix(in srgb, var(--or-vif) 60%, transparent) 268deg,
+    var(--or-vif) 300deg,
+    color-mix(in srgb, var(--or-vif) 60%, transparent) 332deg,
+    transparent 360deg
+  );
+  animation: gd-ultime-tour 5.2s linear infinite;
+}
+@keyframes gd-ultime-tour { to { --gd-ultime-angle: 360deg; } }
+
+/* Le corps de la plaque, pose sur le lisere. */
+.gd-ultime > .gd-ultime-tete,
+.gd-ultime > .gd-etape {
+  position: relative;
+  z-index: 1;
+  background: var(--nexus-bg);
+}
+.gd-ultime > .gd-ultime-tete {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.gd-ultime > .gd-etape {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* La trame d attente : le meme motif que la carte sans image, en or et
+   au dixieme de son intensite. */
+.gd-ultime > .gd-etape::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--or) 7%, transparent) 0 7px,
+    transparent 7px 14px
+  );
+}
+
+/* ── L en-tete et sa languette ── */
 .gd-ultime-tete {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 10px 0 4px;
-  padding-top: 9px;
-  border-top: 1px solid var(--gd-trait);
+  gap: 10px;
+  margin: 0;
+  padding: 0 11px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--or) 22%, transparent);
+}
+.gd-ultime-languette {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 10px;
   font-family: var(--gd-mono);
   font-size: max(10px, 0.625rem);
-  letter-spacing: 1.8px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #ffc53d;
+  font-weight: 700;
+  color: #05080f;
+  background: var(--or);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
 }
-.gd-ultime-tete svg { flex-shrink: 0; }
-.gd-ultime-tete span {
+.gd-ultime-languette svg { flex-shrink: 0; }
+.gd-ultime-mention {
   margin-left: auto;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
   color: var(--gd-encre-3);
-  letter-spacing: 0.6px;
-  text-transform: none;
 }
-.gd-etape[data-ultime="1"] { --t: #ffc53d; }
-.gd-etape[data-ultime="1"] .gd-num {
+
+/* ── La ligne elle-meme ── */
+.gd-ultime > .gd-etape {
+  --t: var(--or);
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.gd-ultime > .gd-etape .gd-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #ffc53d;
+  color: var(--or);
+}
+.gd-ultime > .gd-etape .gd-etape-titre {
+  font-size: 1.02rem;
+  letter-spacing: 0.4px;
 }
 
-/* Le sceau du zenith, a cote de celui de l honneur.
+/* ── ATTEINT ──
+   La plaque s allume. Le fond passe a l or, et tout ce qui s y pose
+   prend l encre sombre : c est le meme calcul que les pastilles de
+   l atelier, applique a une surface entiere. */
+.gd-ultime[data-atteint="1"] > .gd-ultime-tete,
+.gd-ultime[data-atteint="1"] > .gd-etape {
+  background: linear-gradient(96deg,
+    color-mix(in srgb, var(--or) 92%, #fff),
+    var(--or) 46%,
+    color-mix(in srgb, var(--or) 92%, #fff));
+}
+.gd-ultime[data-atteint="1"] > .gd-etape::before {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(5 8 15 / 0.07) 0 7px,
+    transparent 7px 14px
+  );
+}
+.gd-ultime[data-atteint="1"] .gd-ultime-tete { border-bottom-color: rgb(5 8 15 / 0.22); }
+.gd-ultime[data-atteint="1"] .gd-ultime-languette {
+  color: var(--or);
+  background: #05080f;
+}
+.gd-ultime[data-atteint="1"] .gd-ultime-mention {
+  color: #05080f;
+  font-weight: 700;
+}
+.gd-ultime[data-atteint="1"] > .gd-etape .gd-num { color: #05080f; }
+.gd-ultime[data-atteint="1"] > .gd-etape .gd-etape-titre { color: #05080f; font-weight: 700; }
+.gd-ultime[data-atteint="1"] > .gd-etape .gd-case {
+  border-color: rgb(5 8 15 / 0.55);
+  background: rgb(5 8 15 / 0.12);
+  color: #05080f;
+}
+.gd-ultime[data-atteint="1"] > .gd-etape .gd-note,
+.gd-ultime[data-atteint="1"] > .gd-etape .gd-etape-cout { color: rgb(5 8 15 / 0.72); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gd-ultime[data-atteint="1"] .gd-ultime-halo {
+    animation: none;
+    background: linear-gradient(135deg, var(--or-vif), transparent 55%, var(--or-vif));
+  }
+}
+
+/* Le sceau du zenith, dans le bandeau, a cote de celui de l honneur.
    Il ne le remplace pas : l objectif reste honore et gagne une
    distinction par-dessus — c est ce qui laisse les comptes, l XP et
    les constellations exactement ou ils sont. */
@@ -896,7 +1050,7 @@
   font-size: max(10px, 0.625rem);
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #04070a;
+  color: #05080f;
   background: #ffc53d;
   clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 5px 100%);
 }

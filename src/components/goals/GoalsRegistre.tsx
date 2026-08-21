@@ -85,8 +85,14 @@ function avancement(g: Goal, membres?: Goal[]): { faits: number; total: number; 
  * un etat en toutes lettres. Le vivier n'est demande que pour cette
  * question — les appels qui portent sur un objectif ordinaire s'en
  * passent, il ne les concerne pas. */
-type Etat = "attente" | "encours" | "pret" | "honore";
+type Etat = "attente" | "encours" | "pret" | "honore" | "zenith";
 function etatDe(g: Goal, tous?: Goal[]): Etat {
+  /* Le zenith passe devant l honneur dans la colonne d etat : c est la
+     chose la plus rare que la ligne puisse dire, et elle n a la place
+     que d un mot. L objectif reste honore pour tout le reste — les
+     comptes, l XP, les constellations —, seul l affichage choisit le
+     plus fort des deux. */
+  if (g.auZenith) return "zenith";
   if (g.status === "fully_completed" || g.status === "validated") return "honore";
   if (tous && estPretAHonorer(g, tous)) return "pret";
   if (g.status === "in_progress") return "encours";
@@ -260,7 +266,11 @@ export const GoalsRegistre = memo(function GoalsRegistre({
           </span>
           <span className="rg-xp">{g.potential_score ?? 0}</span>
           <span className={`rg-etat rg-etat--${etat}`}>
-            {etat === "pret" ? "À honorer" : getStatusLabel(g.status || "not_started")}
+            {etat === "zenith"
+              ? "✦ Zénith"
+              : etat === "pret"
+                ? "À honorer"
+                : getStatusLabel(g.status || "not_started")}
           </span>
           <button
             type="button"

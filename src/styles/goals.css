@@ -3063,6 +3063,15 @@
 .rg-etat--attente { color: var(--cp-texte-doux); }
 .rg-etat--encours { color: var(--cp-cyan); }
 .rg-etat--pret    { color: #ffc53d; }
+/* Le zenith : le meme or, mais plein — dans une colonne de mots, la
+   rarete se dit par la densite. */
+.rg-etat--zenith {
+  color: #05080f;
+  background: #ffc53d;
+  padding: 1px 6px;
+  font-weight: 700;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 4px 100%);
+}
 .rg-etat--honore  { color: #00ff88; }
 
 .rg-focus {
@@ -3333,4 +3342,175 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .rg-pli { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE ZENITH — une carte chargee
+
+   Un objectif au zenith est rare par construction : il faut avoir
+   designe une etape ultime, puis l avoir franchie. Le dire par un
+   badge de plus le rangerait a cote des autres mentions, alors que
+   ce n est pas une mention — c est un etat de l objet.
+
+   La carte entiere est donc chargee, en trois gestes qui parlent la
+   meme langue que le reste :
+
+   — un halo qui fait le tour du cadre, comme un courant qui parcourt
+     un circuit. Il vit dans les deux pixels autour de la plaque, pas
+     dessus : la carte ne grossit pas, elle s allume.
+   — le rail de flanc, qui est deja la ligne d alimentation de la
+     carte, passe a l or et respire.
+   — la bande d honneur reste a sa place et garde son mot, mais elle
+     est transfiguree : or au lieu de la teinte du palier, etoile aux
+     deux bouts, et un balayage de lumiere la traverse.
+
+   L honneur n est pas remplace. C est la meme bande, au meme endroit,
+   avec le meme mot — ce qui change, c est ce dont elle est faite.
+   ═══════════════════════════════════════════════════════════════ */
+
+@property --verre-zenith-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.verre--zenith {
+  --or-zenith: #ffc53d;
+  --or-zenith-vif: #fff3cd;
+}
+
+/* Le halo. Il se pose SOUS la plaque, qui est opaque : seuls les deux
+   pixels de debord se voient. C est ce qui en fait un lisere de
+   lumiere et non un fond. */
+.verre--zenith::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  background: conic-gradient(
+    from var(--verre-zenith-angle),
+    transparent 0deg 190deg,
+    color-mix(in srgb, var(--or-zenith) 55%, transparent) 250deg,
+    var(--or-zenith) 292deg,
+    var(--or-zenith-vif) 300deg,
+    var(--or-zenith) 308deg,
+    color-mix(in srgb, var(--or-zenith) 55%, transparent) 350deg,
+    transparent 360deg
+  );
+  animation: verre-zenith-tour 4.6s linear infinite;
+  filter: blur(0.5px);
+}
+.verre--zenith .verre-in {
+  position: relative;
+  z-index: 1;
+  border-color: color-mix(in srgb, var(--or-zenith) 70%, var(--accent));
+}
+
+@keyframes verre-zenith-tour {
+  to { --verre-zenith-angle: 360deg; }
+}
+
+/* Le rail d alimentation respire. */
+.verre--zenith .verre-flanc {
+  background: var(--or-zenith);
+  box-shadow: 0 0 18px -1px var(--or-zenith);
+  animation: verre-zenith-souffle 3.2s ease-in-out infinite;
+}
+@keyframes verre-zenith-souffle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.62; }
+}
+
+/* L image prend un grain d or, sans virer au jaune : c est la lumiere
+   du cadre qui deteint, pas un filtre pose dessus. */
+.verre--zenith .verre-img { filter: saturate(1.12) contrast(1.06) brightness(1.04); }
+
+/* La bande, transfiguree. */
+.verre--zenith .verre-honore {
+  color: #05080f;
+  background: linear-gradient(92deg, var(--or-zenith), var(--or-zenith-vif) 52%, var(--or-zenith));
+  box-shadow: 0 0 20px -3px var(--or-zenith);
+  overflow: hidden;
+}
+.verre--zenith .verre-honore svg { stroke: #05080f; }
+/* Le balayage : une lueur qui traverse la bande, coupee par le meme
+   clip-path que la bande — elle ne deborde donc jamais. */
+.verre--zenith .verre-honore::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.62) 50%,
+    transparent 62%);
+  transform: translateX(-130%);
+  animation: verre-zenith-balai 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes verre-zenith-balai {
+  0%, 55% { transform: translateX(-130%); }
+  100% { transform: translateX(130%); }
+}
+
+/* L etoile aux deux bouts de la bande : la marque, discrete, qui dit
+   de quoi cet or est fait. */
+.verre-zenith-etoile {
+  font-size: 0.72em;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+/* Un objectif peut etre au zenith sans etre honore — l etape ultime se
+   coche a tout moment. Il n a alors pas de bande : l etoile se pose sur
+   la bande de palier, qui traverse deja l image. */
+.verre--zenith .verre-bande::after {
+  content: " ✦";
+  color: var(--or-zenith);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verre--zenith::before,
+  .verre--zenith .verre-flanc,
+  .verre--zenith .verre-honore::after { animation: none; }
+  /* Sans mouvement, le halo doit rester lisible : on le fige sur son
+     point le plus vif plutot que sur un hasard. */
+  .verre--zenith::before {
+    background: linear-gradient(135deg, var(--or-zenith), transparent 55%, var(--or-zenith));
+  }
+  .verre--zenith .verre-honore::after { display: none; }
+}
+
+/* ── LE ZENITH SUR LA CARTE BARRE ──
+   Elle parle « eclat » et non « verre » : elle n a ni halo tournant ni
+   bande d honneur, mais elle a deja une lueur qui la traverse et un
+   liseré. Ce sont eux qu on transfigure — meme idee, dite dans sa
+   langue a elle. La carte est haute de quatre-vingt-seize pixels : un
+   halo rotatif y serait tapageur, la ou un liseré d or et une lueur
+   plus chaude suffisent a la distinguer d un coup d oeil. */
+.eclat--zenith {
+  --or-zenith: #ffc53d;
+  border-color: var(--or-zenith);
+  box-shadow: 0 0 22px -8px var(--or-zenith), inset 0 0 0 1px rgb(255 197 61 / 0.18);
+}
+.eclat--zenith .eclat-lueur {
+  background: linear-gradient(100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--or-zenith) 34%, transparent) 42%,
+    color-mix(in srgb, var(--or-zenith) 10%, transparent) 58%,
+    transparent 70%);
+}
+.eclat--zenith .eclat-img img { filter: saturate(1.14) contrast(1.06) brightness(1.03); }
+/* L etoile se pose sur le flanc gauche, la ou l oeil entre dans la
+   ligne. */
+.eclat--zenith::after {
+  content: "✦";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--or-zenith);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--or-zenith) 70%, transparent);
+  pointer-events: none;
 }

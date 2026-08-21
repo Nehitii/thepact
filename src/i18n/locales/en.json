@@ -625,6 +625,7 @@
       "back": "Back to goals",
       "zenith": "ZENITH",
       "ultimate": "Ultimate step",
+      "zenithReached": "Zenith reached",
       "ultimateHint": "outside progress",
       "noUltimate": "No ultimate step on this goal",
       "honoured": "HONOURED",
