@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Search, Check, Target, Zap, Crown } from "lucide-react";
+import { Search, Check, Target, Zap, Crown, X } from "lucide-react";
+import { encreSurFond } from "@/components/goals/detail/dossier/encre";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -68,6 +69,11 @@ export function GoalSelectionList({
       
       // Exclude specified IDs
       if (excludeIds.includes(goal.id)) return false;
+
+      /* Ce qui est deja membre se lit en tete, en pastilles : le laisser
+         aussi dans le vivier reviendrait a le montrer deux fois, et a
+         faire chercher parmi des lignes qu on a deja retenues. */
+      if (selectedIds.includes(goal.id)) return false;
       
       // Search filter
       if (search && !goal.name.toLowerCase().includes(search.toLowerCase())) {
@@ -87,7 +93,24 @@ export function GoalSelectionList({
       
       return true;
     });
-  }, [goals, search, difficultyFilter, tagFilter, excludeIds]);
+  }, [goals, search, difficultyFilter, tagFilter, excludeIds, selectedIds]);
+
+  /* LE GROUPE SE LIT AVANT LE VIVIER.
+   *
+   * Les membres choisis etaient disperses parmi tous les objectifs :
+   * pour savoir ce qu on avait compose, il fallait parcourir la liste
+   * entiere et repérer les pastilles allumees. A trente-deux objectifs
+   * c etait deja penible ; a cent, impossible.
+   *
+   * Ils remontent donc en tete, en pastilles retirables — toujours
+   * visibles, meme pendant qu on cherche ou qu on filtre le vivier, ce
+   * qu un simple tri « selectionnes d abord » n aurait pas donne. On
+   * garde l ordre de selection : c est celui dans lequel on a compose.
+   */
+  const membres = useMemo(
+    () => selectedIds.map((id) => goals.find((g) => g.id === id)).filter(Boolean) as Goal[],
+    [selectedIds, goals],
+  );
 
   const toggleGoal = useCallback((goalId: string) => {
     if (selectedIds.includes(goalId)) {
@@ -109,6 +132,41 @@ export function GoalSelectionList({
 
   return (
     <div className="space-y-4">
+      {/* Le groupe, en tete */}
+      {membres.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Crown className="h-3.5 w-3.5" />
+            <span>Membres</span>
+            <span className="ml-auto tabular-nums">{membres.length}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {membres.map((membre) => {
+              const teinte = getDifficultyColor(membre.difficulty || "easy", customDifficultyColor);
+              return (
+                <button
+                  key={membre.id}
+                  type="button"
+                  onClick={() => toggleGoal(membre.id)}
+                  title={`Retirer « ${membre.name} » du groupe`}
+                  /* La pastille porte son propre fond, et son encre se
+                     calcule sur ce fond — pas sur celui de la page.
+                     Ecrite en teinte de palier sur un fond translucide,
+                     elle tombait a 1,49:1 en theme clair : le vert et le
+                     jaune des paliers sont taillés pour un fond sombre.
+                     Le meme parti que les pastilles de l atelier. */
+                  className="group inline-flex max-w-full items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold transition-opacity hover:opacity-90"
+                  style={{ background: teinte, color: encreSurFond(teinte) }}
+                >
+                  <span className="truncate">{membre.name}</span>
+                  <X className="h-3 w-3 flex-shrink-0 opacity-55 transition-opacity group-hover:opacity-100" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="space-y-3">
         <div className="relative">
@@ -151,7 +209,7 @@ export function GoalSelectionList({
       {/* Selection count and actions */}
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          {selectedIds.length} selected · {filteredGoals.length} available
+          {filteredGoals.length} à ajouter
         </span>
         <div className="flex gap-2">
           <button
