@@ -336,6 +336,15 @@
   font-family: var(--gd-mono);
   letter-spacing: 1.2px;
 }
+/* Un champ qui porte une icone garde la place de son icone.
+   La peau de l atelier impose « padding: 8px 10px » a tout champ, y
+   compris embarque — et ecrasait ainsi le « pl-10 » que le champ de
+   recherche se donnait pour laisser passer sa loupe. Le texte
+   repartait a dix pixels, la loupe en occupait douze a vingt-huit :
+   les deux se chevauchaient. Un champ qui se donne un retrait a gauche
+   le fait toujours pour une raison ; on la respecte. */
+.ge-embarque input[class*="pl-"] { padding-left: 34px; }
+
 /* Les bordures blanchatres des champs embarques rejoignent le trait
    du dossier. */
 .ge-embarque [class*="border-white"] { border-color: var(--gd-trait) !important; }

@@ -38,6 +38,26 @@ export function GoalSelectionList({
 }: GoalSelectionListProps) {
   const [search, setSearch] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+
+  /* LES PALIERS OFFERTS SONT CEUX QUI EXISTENT ICI.
+   *
+   * La liste en proposait quatre, par un « slice(0, 4) » sans motif :
+   * « impossible » tombait, et le palier personnalise n etait jamais
+   * offert. Sur le pacte de reference, dix objectifs selectionnables
+   * sur trente-deux etaient donc hors d atteinte du filtre — sept en
+   * palier personnalise, trois en impossible — alors meme que
+   * l editeur de regle, lui, les proposait tous les six.
+   *
+   * Plutot que de corriger le compte, on lit le vivier : un filtre ne
+   * propose que des paliers qu au moins un objectif porte. Il ne peut
+   * donc ni en oublier, ni en offrir qui ne donneraient rien. */
+  const paliersPresents = useMemo(() => {
+    const presents = new Set(goals.map((g) => g.difficulty || "easy"));
+    const connus = DIFFICULTY_OPTIONS.filter((d) => presents.has(d.value));
+    return presents.has("custom")
+      ? [...connus, { value: "custom", color: customDifficultyColor }]
+      : connus;
+  }, [goals, customDifficultyColor]);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   // Filter goals (exclude super goals and excluded IDs)
@@ -106,7 +126,7 @@ export function GoalSelectionList({
         <div className="flex flex-wrap gap-2">
           {/* Difficulty filters */}
           <div className="flex gap-1.5">
-            {DIFFICULTY_OPTIONS.slice(0, 4).map((diff) => (
+            {paliersPresents.map((diff) => (
               <button
                 key={diff.value}
                 type="button"
@@ -119,7 +139,9 @@ export function GoalSelectionList({
                 )}
                 style={difficultyFilter === diff.value ? { background: diff.color } : {}}
               >
-                {getDifficultyLabel(diff.value)}
+                {diff.value === "custom"
+                  ? customDifficultyName || getDifficultyLabel("custom")
+                  : getDifficultyLabel(diff.value)}
               </button>
             ))}
           </div>
