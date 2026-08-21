@@ -21,9 +21,7 @@ import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
 import { GoalContractsPanel } from "@/components/goals/GoalContractsPanel";
-import { StreakFreezePanel } from "@/components/habits/StreakFreezePanel";
-import { HabitStackPanel } from "@/components/habits/HabitStackPanel";
-import { FileText, Handshake, Snowflake, Layers } from "lucide-react";
+import { FileText, Handshake } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
 import {
@@ -97,6 +95,11 @@ export default function GoalDetail() {
   const [editRegle, setEditRegle] = useState<SuperGoalRule>({});
   const [editVivant, setEditVivant] = useState(false);
   const [editModeGroupe, setEditModeGroupe] = useState<"manual" | "auto">("manual");
+  /* La duree d une habitude se modifie dans l atelier, comme les
+     etapes d un objectif et les astres d une constellation. Elle n y
+     etait pas : l atelier savait tout changer sauf ce que le type
+     demande vraiment. */
+  const [editDuree, setEditDuree] = useState(1);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   /* Decocher une etape d un objectif honore le fait retomber, et
      entraine avec lui les groupes qui le comptent. Un clic sur une
@@ -159,6 +162,7 @@ export default function GoalDetail() {
       /* Le mode se lit sur ce qui est enregistre : une regle presente
          veut dire qu on a compose par regle. */
       setEditModeGroupe(g.super_goal_rule ? "auto" : "manual");
+      setEditDuree(g.habit_duration_days || (g.habit_checks?.length ?? 1));
       setLoading(false);
     }
   }, [goalDetailData]);
@@ -213,15 +217,15 @@ export default function GoalDetail() {
   // Edit overlay unsaved changes guard
   useEffect(() => {
     if (editDialogOpen) {
-      editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant });
+      editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant, editDuree });
     }
   }, [editDialogOpen]);
 
   const hasUnsavedChanges = useCallback(() => {
     if (!editInitialStateRef.current) return false;
-    const current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant });
+    const current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant, editDuree });
     return current !== editInitialStateRef.current;
-  }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems, editMembresIds, editRegle, editVivant]);
+  }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editDuree]);
 
   const handleCloseEdit = useCallback(() => {
     if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) return;
@@ -256,6 +260,24 @@ export default function GoalDetail() {
       if (editImage !== goal.image_url) updates.image_url = editImage;
       const currentDeadline = (goal as any).deadline || "";
       if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
+
+      /* CHANGER LA DUREE D UNE HABITUDE REDIMENSIONNE SES CASES.
+         Le tableau de cases et la duree doivent rester de meme taille :
+         sinon le dernier jour n est plus le dernier, et l habitude ne
+         peut plus se franchir. Allonger ajoute des jours vides ;
+         raccourcir coupe la fin — l atelier previent de ce que cela
+         efface avant qu on enregistre. Les compteurs suivent, et le
+         declencheur en base en tire le statut. */
+      if (goal.goal_type === "habit" && editDuree !== (goal.habit_duration_days ?? 0)) {
+        const anciennes = goal.habit_checks ?? [];
+        const coches = Array.from({ length: editDuree }, (_, i) => anciennes[i] ?? false);
+        const tenus = coches.filter(Boolean).length;
+        updates.habit_duration_days = editDuree;
+        updates.habit_checks = coches;
+        updates.total_steps = editDuree;
+        updates.validated_steps = tenus;
+        if (tenus < editDuree) updates.completion_date = null;
+      }
 
       /* La composition d un groupe part avec le reste : c est un champ
          de l atelier, plus une modale separee. En mode « regle », la
@@ -320,7 +342,7 @@ export default function GoalDetail() {
         toast.success("Goal Updated", { description: "Changes saved successfully" });
       }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
-  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
+  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
 
   // Handle super goal save
 
@@ -502,7 +524,7 @@ export default function GoalDetail() {
 
         {/* Le pied ne se dessine que s il porte quelque chose : sans
             cela il consomme un espacement de la colonne pour rien. */}
-        {(goal.notes || contratsActifs || isHabitGoal) && (
+        {(goal.notes || contratsActifs) && (
         <div className="gd-pied">
           {goal.notes && (
             <DossierPli nom={t("goals.detail.notes", "Notes")} icone={FileText} ouvertParDefaut>
@@ -518,23 +540,6 @@ export default function GoalDetail() {
             </DossierPli>
           )}
 
-          {isHabitGoal && (
-            <DossierPli nom={t("goals.detail.streakFreeze", "Gel de série")} icone={Snowflake}>
-              <div className="gd-annexe"><StreakFreezePanel goalId={goal.id} /></div>
-            </DossierPli>
-          )}
-
-          {isHabitGoal && (
-            <DossierPli nom={t("goals.detail.habitStack", "Empilement")} icone={Layers}>
-              <div className="gd-annexe">
-                <HabitStackPanel
-                  goalId={goal.id}
-                  pactId={(goal as any).pact_id}
-                  prerequisiteHabitId={(goal as any).prerequisite_habit_id}
-                />
-              </div>
-            </DossierPli>
-          )}
         </div>
         )}
       </div>
@@ -560,6 +565,7 @@ export default function GoalDetail() {
         editRegle={editRegle} setEditRegle={setEditRegle}
         editVivant={editVivant} setEditVivant={setEditVivant}
         editModeGroupe={editModeGroupe} setEditModeGroupe={setEditModeGroupe}
+        editDuree={editDuree} setEditDuree={setEditDuree}
         customDifficultyActive={customDifficultyActive}
         customDifficultyName={customDifficultyName}
         customDifficultyColor={customDifficultyColor}

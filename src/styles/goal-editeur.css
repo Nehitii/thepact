@@ -487,3 +487,21 @@
 @media (prefers-reduced-motion: reduce) {
   .ge-tourne { animation: none; }
 }
+
+/* Un avertissement dans un champ.
+   Ce n est pas une erreur — rien n est encore fait — mais une
+   consequence qu il vaut mieux connaitre avant d enregistrer. Il
+   reprend donc la forme de l aide, et l ambre de ce qui attend une
+   decision plutot que le rouge de ce qui a echoue. */
+.ge-alerte {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  line-height: 1.4;
+  color: #ffc53d;
+}
+.ge-alerte svg { flex-shrink: 0; margin-top: 2px; }

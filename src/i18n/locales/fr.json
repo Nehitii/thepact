@@ -736,6 +736,7 @@
       "typeHabit": "Habitude",
       "typeGroup": "Constellation",
       "groupNoSteps": "Un groupe n'a pas d'étapes : il compte ses membres, qui se choisissent depuis sa fiche.",
+      "habitShrink": "Raccourcir à {{duree}} jours effacera {{perdus}} jour(s) déjà tenu(s) au-delà.",
       "habitNoSteps": "Une habitude n'a pas d'étapes : elle se coche jour après jour."
     }
   },

@@ -24,7 +24,7 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, Check, X, Target, Tag, ListOrdered, Calendar, Receipt,
-  StickyNote, Sparkles, Crown, Ban, Filter, HandIcon, Zap,
+  StickyNote, Sparkles, Crown, Filter, HandIcon, Zap, TriangleAlert,
 } from "lucide-react";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/lib/goalConstants";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
@@ -72,6 +72,9 @@ interface GoalDetailEditOverlayProps {
   editRegle: SuperGoalRule; setEditRegle: (v: SuperGoalRule) => void;
   editVivant: boolean; setEditVivant: (v: boolean) => void;
   editModeGroupe: "manual" | "auto"; setEditModeGroupe: (v: "manual" | "auto") => void;
+  /* La duree d une habitude — ce qu elle demande, comme les etapes
+     pour un objectif ordinaire et les astres pour une constellation. */
+  editDuree: number; setEditDuree: (v: number) => void;
   customDifficultyActive: boolean;
   customDifficultyName: string;
   customDifficultyColor: string;
@@ -94,6 +97,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
     editStepItems, onStepItemsChange, editCostItems, setEditCostItems,
     allGoals, editMembresIds, setEditMembresIds, editRegle, setEditRegle,
     editVivant, setEditVivant, editModeGroupe, setEditModeGroupe,
+    editDuree, setEditDuree,
     customDifficultyActive, customDifficultyName, customDifficultyColor,
     saving, onSave, onClose, onAddToWishlist,
   } = props;
@@ -135,6 +139,19 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
   const nombreDeMembres = editModeGroupe === "manual"
     ? editMembresIds.length
     : filterGoalsByRule(vivier, editRegle).length;
+
+  /* RACCOURCIR UNE HABITUDE PEUT EFFACER DES JOURS TENUS.
+   *
+   * La duree commande la taille du tableau de cases. L allonger ajoute
+   * des jours vides, ce qui ne coute rien. La raccourcir coupe la fin
+   * du tableau — et avec elle, les jours qu on avait tenus au-dela de
+   * la nouvelle limite. On compte donc ce qui serait perdu et on le dit
+   * avant, plutot que de le decouvrir apres. */
+  const cochesActuelles = goal.habit_checks ?? [];
+  const dureeActuelle = goal.habit_duration_days ?? cochesActuelles.length;
+  const joursPerdus = estHabitude && editDuree < dureeActuelle
+    ? cochesActuelles.slice(editDuree).filter(Boolean).length
+    : 0;
   const TypeIcone = estGroupe ? Crown : estHabitude ? Sparkles : ListOrdered;
   const typeNom = estGroupe
     ? t("goals.edit.typeGroup", "Constellation")
@@ -403,10 +420,43 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
             ) : (
               <section className="ge-volet">
                 <header className="ge-tete">
-                  <Ban size={12} aria-hidden="true" />
-                  {t("goals.detail.steps", "Étapes")}
+                  <Sparkles size={12} aria-hidden="true" />
+                  {t("goals.new.rhythm", "Rythme")}
+                  <b>{editDuree}{t("goals.new.daysShort", " j")}</b>
                 </header>
                 <div className="ge-corps-volet">
+                  <div className="ge-champ">
+                    <label className="ge-etiquette" htmlFor="ge-jours">
+                      {t("goals.new.durationDays", "Durée en jours")}
+                    </label>
+                    <input
+                      id="ge-jours"
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={editDuree}
+                      onChange={(e) =>
+                        setEditDuree(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))
+                      }
+                      autoComplete="off"
+                    />
+                    <p className="ge-aide">
+                      {t("goals.new.durationHint", "Une case à cocher par jour, et l'habitude est franchie au dernier.")}
+                    </p>
+                  </div>
+
+                  {joursPerdus > 0 && (
+                    <p className="ge-alerte">
+                      <TriangleAlert size={11} aria-hidden="true" />
+                      {t("goals.edit.habitShrink", {
+                        defaultValue:
+                          "Raccourcir à {{duree}} jours effacera {{perdus}} jour(s) déjà tenu(s) au-delà.",
+                        duree: editDuree,
+                        perdus: joursPerdus,
+                      })}
+                    </p>
+                  )}
+
                   <p className="ge-aide">
                     {t("goals.edit.habitNoSteps", "Une habitude n'a pas d'étapes : elle se coche jour après jour.")}
                   </p>
