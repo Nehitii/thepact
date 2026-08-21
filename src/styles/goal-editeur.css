@@ -270,6 +270,27 @@
   border: 2px solid var(--t, var(--cp-cyan)) !important;
 }
 .ge-vignette [class*="space-y-3"] > div:last-child { gap: 4px; }
+
+/* La consigne du carre vide.
+   L editeur embarque prevoit un carre de deux cent quatre-vingts
+   pixels ; l atelier lui en donne cent seize. Sa consigne, ecrite en
+   treize pixels, y tenait sur deux lignes de quatre-vingt-dix collees
+   au bord gauche — deux pixels a gauche, vingt-cinq a droite. Le bloc
+   occupait bien toute la largeur, mais ses lignes n avaient aucun
+   alignement : « items-center » centre la boite, pas le texte dedans.
+   L icone, elle, etait juste — trente-neuf de chaque cote.
+   Le texte est donc centre, et ramene a la taille des etiquettes de
+   l atelier : a cette echelle, une consigne se lit comme une etiquette,
+   pas comme du corps de texte. */
+.ge-vignette [class*="border-dashed"] p {
+  text-align: center;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.6px;
+  line-height: 1.35;
+  padding: 0 7px;
+}
+.ge-vignette [class*="border-dashed"] svg { margin-bottom: 8px; }
 .ge-vignette button {
   border-radius: 0 !important;
   font-family: var(--gd-mono);
