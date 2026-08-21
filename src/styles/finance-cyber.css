@@ -12,8 +12,11 @@
    regarde son pacte.
    ═══════════════════════════════════════════════════════════ */
 
+/* .cy-parc est porte sur document.body pour passer devant la barre
+   laterale : hors de .cy, il n heriterait d aucun jeton. */
 .cy,
-.cy-reg {
+.cy-reg,
+.cy-parc {
   --cy-fond: #040507;
   --cy-plaque: #1A2029;
   --cy-creux: #26303D;
@@ -919,7 +922,7 @@
   clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
 }
 .cy-palm-bande button:hover { transform: translateY(-2px); filter: brightness(1.35); }
-.cy-palm-bande button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-palm-bande button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .cy-palm-bande button:hover { transform: none; } }
 .cy-palm-bande button u {
   text-decoration: none; font-family: var(--cy-mono);
@@ -1190,27 +1193,27 @@
   gap: 8px;
   margin: 10px 0 0;
   padding: 7px 12px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(11px, 0.6875rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
   background: hsl(var(--primary) / 0.05);
-  border-left: 2px solid var(--cy-provision-teinte, #7bd88f);
+  border-left: 2px solid var(--cy-provision-teinte));
 }
 .cy-provision svg {
   width: 13px;
   height: 13px;
   flex-shrink: 0;
   align-self: center;
-  color: var(--cy-provision-teinte, #7bd88f);
+  color: var(--cy-provision-teinte));
 }
 .cy-provision strong {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--cy-provision-teinte, #7bd88f);
+  color: var(--cy-provision-teinte));
   font-variant-numeric: tabular-nums;
 }
 /* Ce qu elle couvre, dit tout de suite apres le chiffre : une somme
@@ -1219,7 +1222,7 @@
   font-style: normal;
   letter-spacing: 0.6px;
   text-transform: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 @media (max-width: 560px) {
   .cy-provision em { flex-basis: 100%; }
@@ -1248,25 +1251,25 @@
   transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
 }
 .cy-mode b {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-mode u {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.4px;
   text-decoration: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-mode:hover { border-color: hsl(var(--primary) / 0.45); }
-.cy-mode:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-mode:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-mode[aria-checked="true"] {
-  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 12%, transparent);
-  border-color: var(--cp-cyan, #5cb6ff);
+  background: color-mix(in srgb, var(--cy-cyan) 12%, transparent);
+  border-color: var(--cy-cyan);
 }
-.cy-mode[aria-checked="true"] b { color: var(--cp-cyan, #5cb6ff); }
+.cy-mode[aria-checked="true"] b { color: var(--cy-cyan); }
 
 /* ── LA GRILLE DES DOUZE MOIS ──
    Le selecteur de cadence demandait deux gestes de natures
@@ -1291,27 +1294,27 @@
 }
 .cy-mois-case {
   padding: 8px 2px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.18);
   cursor: pointer;
   transition: color 110ms linear, border-color 110ms linear, background 110ms linear;
 }
-.cy-mois-case:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.5); }
-.cy-mois-case:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-mois-case:hover { color: var(--cy-encre); border-color: hsl(var(--primary) / 0.5); }
+.cy-mois-case:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-mois-case[data-coche="1"] {
-  color: var(--cp-cyan, #5cb6ff);
+  color: var(--cy-cyan);
   font-weight: 700;
-  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 16%, transparent);
-  border-color: var(--cp-cyan, #5cb6ff);
+  background: color-mix(in srgb, var(--cy-cyan) 16%, transparent);
+  border-color: var(--cy-cyan);
 }
 /* Le mois en cours se repere sans se confondre avec une case cochee :
    c est un point de reference, pas un choix. */
-.cy-mois-case[data-courant="1"] { box-shadow: inset 0 -2px 0 0 var(--cp-jaune, #ffd23f); }
+.cy-mois-case[data-courant="1"] { box-shadow: inset 0 -2px 0 0 var(--cy-jaune); }
 
 /* Deux extremes se saisissent mal case par case : douze a cocher
    pour un loyer, onze a decocher pour un impot trimestriel. Chaque
@@ -1319,20 +1322,20 @@
 .cy-mois-raccourcis { display: flex; gap: 6px; }
 .cy-mois-raccourcis button {
   padding: 3px 9px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.2);
   cursor: pointer;
 }
 .cy-mois-raccourcis button:hover {
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   border-color: hsl(var(--primary) / 0.45);
 }
-.cy-mois-raccourcis button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-mois-raccourcis button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 
 /* Le verdict : ce qu on vient de decrire, dit a chaque clic. Sans
    lui, quatre cases allumees ne se distinguent pas d un trimestre
@@ -1343,20 +1346,20 @@
   flex-wrap: wrap;
   gap: 7px;
   margin: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-mois-verdict svg { width: 12px; height: 12px; flex-shrink: 0; }
-.cy-mois-verdict[data-etat="bon"] { color: #7bd88f; }
+.cy-mois-verdict[data-etat="bon"] { color: var(--cy-vert); }
 .cy-mois-verdict[data-etat="bon"] b {
   font-weight: 400;
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
-.cy-mois-verdict[data-etat="bon"] span { color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); }
-.cy-mois-verdict[data-etat="casse"] { color: var(--cp-jaune, #ffd23f); }
+.cy-mois-verdict[data-etat="bon"] span { color: var(--cy-encre-3); }
+.cy-mois-verdict[data-etat="casse"] { color: var(--cy-jaune); }
 .cy-mois-rattrape {
   display: inline-flex;
   align-items: center;
@@ -1366,12 +1369,12 @@
   font-size: inherit;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--cp-jaune, #ffd23f);
+  color: var(--cy-jaune);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy-jaune) 45%, transparent);
   cursor: pointer;
 }
-.cy-mois-rattrape:hover { background: color-mix(in srgb, var(--cp-jaune, #ffd23f) 12%, transparent); }
+.cy-mois-rattrape:hover { background: color-mix(in srgb, var(--cy-jaune) 12%, transparent); }
 .cy-mois-rattrape svg { width: 11px; height: 11px; }
 
 /* Au doigt, une case de trente et un pixels de haut se rate. Sous
@@ -1391,13 +1394,13 @@
   align-items: baseline;
   gap: 6px;
   margin: 7px 0 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
   font-variant-numeric: tabular-nums;
 }
-.cy-echeancier-apercu u { margin-left: 6px; color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); text-decoration: none; }
+.cy-echeancier-apercu u { margin-left: 6px; color: var(--cy-encre-3); text-decoration: none; }
 
 /* ── LA CADENCE SUR UNE LIGNE ──
    Une charge qui ne tombe pas tous les mois doit le dire : sans cela,
@@ -1406,12 +1409,12 @@
 .cy-ligne-cadence {
   margin-left: 7px;
   padding: 1px 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   font-weight: 400;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   border: 1px solid hsl(var(--primary) / 0.24);
   vertical-align: 1px;
 }
@@ -1420,11 +1423,11 @@
    la voir disparaitre. */
 .cy-ligne-veille {
   font-style: normal;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
   text-transform: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 
 /* ── LES DEUX EN-TETES A LA MEME HAUTEUR ──
@@ -1480,20 +1483,20 @@
   padding: 13px 16px;
   border-bottom: 1px solid hsl(var(--primary) / 0.14);
 }
-.cy-part-tete svg { width: 15px; height: 15px; flex-shrink: 0; color: #7bd88f; }
+.cy-part-tete svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--cy-vert); }
 .cy-part-tete h3 {
   margin: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(11px, 0.6875rem);
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-part-compte {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-part-ajout {
   margin-left: auto;
@@ -1501,26 +1504,26 @@
   align-items: center;
   gap: 5px;
   padding: 5px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cp-jaune, #ffd23f);
+  color: var(--cy-jaune);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy-jaune) 45%, transparent);
   cursor: pointer;
 }
-.cy-part-ajout:hover { background: color-mix(in srgb, var(--cp-jaune, #ffd23f) 12%, transparent); }
+.cy-part-ajout:hover { background: color-mix(in srgb, var(--cy-jaune) 12%, transparent); }
 .cy-part-ajout svg { width: 12px; height: 12px; color: currentColor; }
 
 .cy-part-vide {
   margin: 0;
   padding: 16px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   line-height: 1.6;
   letter-spacing: 0.5px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1545,22 +1548,22 @@
   align-items: center;
   gap: 6px;
   padding: 5px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 0;
   cursor: pointer;
   transition: color 120ms linear, background 120ms linear;
 }
 .cy-part-vues button + button { border-left: 1px solid hsl(var(--primary) / 0.22); }
-.cy-part-vues button:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-part-vues button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-part-vues button:hover { color: var(--cy-encre); }
+.cy-part-vues button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: -2px; }
 .cy-part-vues button[aria-checked="true"] {
-  color: #05080f;
-  background: var(--cp-cyan, #5cb6ff);
+  color: var(--cy-fond);
+  background: var(--cy-cyan);
   font-weight: 700;
 }
 .cy-part-vues svg { width: 13px; height: 13px; }
@@ -1636,11 +1639,11 @@
 .cy-marque-lettres b {
   position: relative;
   z-index: 1;
-  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-family: 'Orbitron', var(--cy-titre);
   font-weight: 700;
   font-size: 0.42em;
   letter-spacing: 0.04em;
-  color: #05080f;
+  color: var(--cy-fond);
   line-height: 1;
 }
 /* La trame : c est elle qui fait du monogramme un objet dessine
@@ -1674,27 +1677,27 @@
   width: 100%;
   min-height: 86px;
   padding: 16px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px dashed hsl(var(--primary) / 0.3);
   cursor: pointer;
   transition: color 130ms linear, border-color 130ms linear, background 130ms linear;
 }
 .cy-cadreur-vide:hover {
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   border-color: hsl(var(--primary) / 0.6);
   background: hsl(var(--primary) / 0.04);
 }
-.cy-cadreur-vide:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-cadreur-vide:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
 .cy-cadreur-vide svg { width: 20px; height: 20px; }
 .cy-cadreur-vide span {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-cadreur-vide u {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1px;
   text-decoration: none;
@@ -1728,7 +1731,7 @@
   cursor: grab;
   touch-action: none;
 }
-.cy-cadreur-plaque:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-cadreur-plaque:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
 .cy-cadreur-plaque[data-glisse="1"] { cursor: grabbing; }
 .cy-cadreur-plaque[data-glisse="1"] figcaption { opacity: 0; }
 .cy-cadreur-pastille { width: 62px; height: 62px; flex-shrink: 0; }
@@ -1759,7 +1762,7 @@
   position: absolute;
   inset: auto 0 0 0;
   padding: 3px 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(8px, 0.5rem);
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1779,17 +1782,17 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-cadreur-nom b {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.85rem;
   letter-spacing: 0;
-  color: var(--cp-cyan, #5cb6ff);
+  color: var(--cy-cyan);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1807,27 +1810,27 @@
   cursor: pointer;
   transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
 }
-.cy-cadreur-choix svg { grid-row: 1 / 3; width: 16px; height: 16px; color: var(--cy-encre-3, rgb(160 210 255 / 0.6)); }
+.cy-cadreur-choix svg { grid-row: 1 / 3; width: 16px; height: 16px; color: var(--cy-encre-3); }
 .cy-cadreur-choix b {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-cadreur-choix u {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   text-decoration: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-cadreur-choix button:hover { border-color: hsl(var(--primary) / 0.45); }
-.cy-cadreur-choix button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadreur-choix button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-cadreur-choix button[aria-checked="true"] {
-  background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 12%, transparent);
-  border-color: var(--cp-cyan, #5cb6ff);
+  background: color-mix(in srgb, var(--cy-cyan) 12%, transparent);
+  border-color: var(--cy-cyan);
 }
 .cy-cadreur-choix button[aria-checked="true"] b,
-.cy-cadreur-choix button[aria-checked="true"] svg { color: var(--cp-cyan, #5cb6ff); }
+.cy-cadreur-choix button[aria-checked="true"] svg { color: var(--cy-cyan); }
 
 .cy-cadreur-fonds { display: flex; gap: 6px; }
 .cy-cadreur-fonds button {
@@ -1835,18 +1838,18 @@
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.22);
   cursor: pointer;
 }
-.cy-cadreur-fonds button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.45); }
-.cy-cadreur-fonds button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
-.cy-cadreur-fonds button[aria-checked="true"] { color: var(--cp-cyan, #5cb6ff); border-color: var(--cp-cyan, #5cb6ff); }
+.cy-cadreur-fonds button:hover { color: var(--cy-encre); border-color: hsl(var(--primary) / 0.45); }
+.cy-cadreur-fonds button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
+.cy-cadreur-fonds button[aria-checked="true"] { color: var(--cy-cyan); border-color: var(--cy-cyan); }
 .cy-cadreur-fonds i {
   display: block;
   width: 13px;
@@ -1856,7 +1859,7 @@
   border: 1px solid hsl(var(--primary) / 0.3);
 }
 
-.cy-cadreur-glissiere { width: 100%; accent-color: var(--cp-cyan, #5cb6ff); cursor: pointer; }
+.cy-cadreur-glissiere { width: 100%; accent-color: var(--cy-cyan); cursor: pointer; }
 @media (pointer: coarse) { .cy-cadreur-glissiere { height: 32px; } }
 
 .cy-cadreur-outils { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1865,20 +1868,20 @@
   align-items: center;
   gap: 5px;
   padding: 5px 10px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.22);
   cursor: pointer;
 }
-.cy-cadreur-outils button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.45); }
-.cy-cadreur-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-cadreur-outils button:hover { color: var(--cy-encre); border-color: hsl(var(--primary) / 0.45); }
+.cy-cadreur-outils button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-cadreur-outils svg { width: 12px; height: 12px; }
 .cy-cadreur-retirer { margin-left: auto; }
-.cy-cadreur-retirer:hover { color: #ff7a8a !important; border-color: color-mix(in srgb, #ff7a8a 55%, transparent) !important; }
+.cy-cadreur-retirer:hover { color: var(--cy-rouge-encre) !important; border-color: color-mix(in srgb, var(--cy-rouge-encre) 55%, transparent) !important; }
 
 @media (max-width: 520px) {
   .cy-cadreur-choix { grid-template-columns: 1fr; }
@@ -1929,11 +1932,11 @@
 .cy-fiche-corps { display: flex; flex-direction: column; gap: 8px; padding: 11px 12px 4px; }
 .cy-fiche-nom {
   margin: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.98rem;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   /* Deux lignes reservees des deux cotes : sans cela un nom court et
      un nom long decalent tout ce qui suit, et les montants de la
      planche ne s alignent plus d une fiche a l autre. */
@@ -1950,40 +1953,40 @@
   height: 4px;
   background: hsl(var(--primary) / 0.14);
 }
-.cy-fiche-arc i[data-on="1"] { background: var(--cp-cyan, #5cb6ff); }
+.cy-fiche-arc i[data-on="1"] { background: var(--cy-cyan); }
 /* Le mois en cours se marque d un trait jaune SOUS le segment plutot
    que de le colorer : le jaune est la couleur de l appareil, il ne
    dit jamais une donnee — et un mois qui tombe ET qui est le mois en
    cours doit pouvoir dire les deux a la fois. */
-.cy-fiche-arc i[data-now="1"] { box-shadow: 0 3px 0 0 var(--cp-jaune, #ffd23f); }
+.cy-fiche-arc i[data-now="1"] { box-shadow: 0 3px 0 0 var(--cy-jaune); }
 
 .cy-fiche-pied { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .cy-fiche-montant {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.15rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
 }
-.cy-fiche[data-tombe="1"] .cy-fiche-montant { color: #ff7a8a; }
+.cy-fiche[data-tombe="1"] .cy-fiche-montant { color: var(--cy-rouge-encre); }
 .cy-fiche-cadence {
   flex-shrink: 0;
   padding: 1px 5px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   border: 1px solid hsl(var(--primary) / 0.24);
 }
 .cy-fiche-note {
   margin: 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.5px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
-.cy-fiche-note[data-ce-mois="1"] { color: #ff7a8a; }
+.cy-fiche-note[data-ce-mois="1"] { color: var(--cy-rouge-encre); }
 
 .cy-fiche-outils {
   display: flex;
@@ -1996,14 +1999,14 @@
   place-items: center;
   width: 26px;
   height: 26px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.45));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 0;
   cursor: pointer;
   transition: color 120ms linear;
 }
-.cy-fiche-outils button:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-fiche-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-fiche-outils button:hover { color: var(--cy-encre); }
+.cy-fiche-outils button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: -2px; }
 .cy-fiche-outils svg { width: 14px; height: 14px; }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2020,11 +2023,11 @@
   margin-bottom: 12px;
 }
 .cy-annee-barre b {
-  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-family: 'Orbitron', var(--cy-titre);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
   font-variant-numeric: tabular-nums;
 }
 .cy-annee-barre button {
@@ -2032,13 +2035,13 @@
   place-items: center;
   width: 26px;
   height: 26px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.22);
   cursor: pointer;
 }
-.cy-annee-barre button:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.5); }
-.cy-annee-barre button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-annee-barre button:hover { color: var(--cy-encre); border-color: hsl(var(--primary) / 0.5); }
+.cy-annee-barre button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-annee-barre svg { width: 14px; height: 14px; }
 
 .cy-annee-baies {
@@ -2050,19 +2053,19 @@
 .cy-baie-mois { display: flex; flex-direction: column; }
 .cy-baie-nom {
   padding: 5px 0 6px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1px;
   text-transform: uppercase;
   text-align: center;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   border-bottom: 1px solid hsl(var(--primary) / 0.18);
 }
 /* Le mois en cours est un repere de l appareil, pas une donnee : il
    est donc jaune, comme le chassis. */
 .cy-baie-mois[data-maintenant="1"] .cy-baie-nom {
-  color: var(--cp-jaune, #ffd23f);
-  border-bottom-color: var(--cp-jaune, #ffd23f);
+  color: var(--cy-jaune);
+  border-bottom-color: var(--cy-jaune);
 }
 
 .cy-baie-pile {
@@ -2075,7 +2078,7 @@
   background: linear-gradient(to bottom, hsl(var(--primary) / 0.05), transparent);
 }
 .cy-baie-mois[data-maintenant="1"] .cy-baie-pile {
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--cp-jaune, #ffd23f) 8%, transparent), transparent);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--cy-jaune) 8%, transparent), transparent);
 }
 .cy-baie-mois[data-vide="1"] .cy-baie-pile { background: none; }
 
@@ -2091,13 +2094,13 @@
   transition: background 120ms linear, border-color 120ms linear;
 }
 .cy-jeton:hover { background: hsl(var(--primary) / 0.14); }
-.cy-jeton:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-jeton:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-jeton b {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 0.72rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   line-height: 1;
 }
 
@@ -2114,15 +2117,15 @@
   display: block;
   width: 100%;
   min-height: 1px;
-  background: linear-gradient(to top, var(--cp-cyan, #5cb6ff), color-mix(in srgb, var(--cp-cyan, #5cb6ff) 30%, transparent));
+  background: linear-gradient(to top, var(--cy-cyan), color-mix(in srgb, var(--cy-cyan) 30%, transparent));
 }
 
 .cy-baie-total {
   padding: 6px 0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   text-align: center;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
   font-variant-numeric: tabular-nums;
   border-top: 1px solid hsl(var(--primary) / 0.18);
 }
@@ -2155,25 +2158,25 @@
   display: inline-flex;
   align-items: baseline;
   gap: 7px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
-.cy-part-poche svg { width: 13px; height: 13px; align-self: center; color: #7bd88f; }
+.cy-part-poche svg { width: 13px; height: 13px; align-self: center; color: var(--cy-vert); }
 .cy-part-poche strong {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.15rem;
   font-weight: 700;
-  color: #7bd88f;
+  color: var(--cy-vert);
   font-variant-numeric: tabular-nums;
 }
 .cy-part-dumois { margin-left: auto; }
 .cy-part-dumois strong {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
-  color: #ff7a8a;
+  color: var(--cy-rouge-encre);
   font-variant-numeric: tabular-nums;
 }
 .cy-part-poche u,
@@ -2196,30 +2199,30 @@
   align-items: center;
   gap: 5px;
   padding: 5px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.22);
   cursor: pointer;
   transition: color 120ms linear, background 120ms linear, border-color 120ms linear;
 }
 .cy-solde-bascule button svg { width: 12px; height: 12px; }
-.cy-solde-bascule button:hover { color: var(--cy-encre, #e8f4ff); }
+.cy-solde-bascule button:hover { color: var(--cy-encre); }
 .cy-solde-bascule button[aria-pressed="true"] {
-  color: #05080f;
-  background: #7bd88f;
-  border-color: #7bd88f;
+  color: var(--cy-fond);
+  background: var(--cy-vert);
+  border-color: var(--cy-vert);
   font-weight: 700;
 }
 .cy-solde-note {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
   text-transform: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 @media (max-width: 560px) { .cy-solde-note { flex-basis: 100%; } }
 
@@ -2241,7 +2244,7 @@
   display: flex;
   flex-direction: column;
   background: #040507;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   overflow: hidden;
 }
 
@@ -2257,17 +2260,17 @@
 }
 .cy-parc-mois {
   grid-column: 1;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 2.2px;
   text-transform: uppercase;
-  color: var(--cp-jaune, #ffd23f);
+  color: var(--cy-jaune);
 }
 .cy-parc-tete h2 {
   grid-column: 1;
   grid-row: 2;
   margin: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -2286,7 +2289,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
@@ -2295,8 +2298,8 @@
 /* Le fil dit ou l on en est, pas seulement combien il reste. Une
    etape faite garde sa couleur : on doit pouvoir revenir dessus sans
    se demander si on l a franchie. */
-.cy-parc-fil li[data-etat="fait"] { color: #7bd88f; }
-.cy-parc-fil li[data-etat="ici"] { color: var(--cp-cyan, #5cb6ff); font-weight: 700; }
+.cy-parc-fil li[data-etat="fait"] { color: var(--cy-vert); }
+.cy-parc-fil li[data-etat="ici"] { color: var(--cy-cyan); font-weight: 700; }
 .cy-parc-fil li + li::before {
   content: "";
   width: 18px;
@@ -2310,13 +2313,13 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.24);
   cursor: pointer;
 }
-.cy-parc-fermer:hover { color: var(--cy-encre, #e8f4ff); border-color: hsl(var(--primary) / 0.5); }
-.cy-parc-fermer:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-parc-fermer:hover { color: var(--cy-encre); border-color: hsl(var(--primary) / 0.5); }
+.cy-parc-fermer:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-parc-fermer svg { width: 16px; height: 16px; }
 
 /* ── LE CORPS ── */
@@ -2341,15 +2344,15 @@
 }
 .cy-parc-consigne p {
   margin: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-parc-compte {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
   font-variant-numeric: tabular-nums;
 }
 .cy-parc-tout {
@@ -2358,17 +2361,17 @@
   align-items: center;
   gap: 6px;
   padding: 5px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cp-cyan, #5cb6ff);
+  color: var(--cy-cyan);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--cp-cyan, #5cb6ff) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy-cyan) 45%, transparent);
   cursor: pointer;
 }
-.cy-parc-tout:hover { background: color-mix(in srgb, var(--cp-cyan, #5cb6ff) 12%, transparent); }
-.cy-parc-tout:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-parc-tout:hover { background: color-mix(in srgb, var(--cy-cyan) 12%, transparent); }
+.cy-parc-tout:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 .cy-parc-tout svg { width: 12px; height: 12px; }
 
 /* ── UN RANG ── */
@@ -2388,8 +2391,8 @@
    qui est fait doit se distinguer sans cesser d etre lisible — on
    revient parfois dessus. */
 .cy-parc-rang[data-pointe="1"] {
-  background: color-mix(in srgb, #7bd88f 7%, transparent);
-  border-color: color-mix(in srgb, #7bd88f 26%, transparent);
+  background: color-mix(in srgb, var(--cy-vert) 7%, transparent);
+  border-color: color-mix(in srgb, var(--cy-vert) 26%, transparent);
 }
 
 .cy-parc-case {
@@ -2397,24 +2400,24 @@
   place-items: center;
   width: 24px;
   height: 24px;
-  color: #05080f;
+  color: var(--cy-fond);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.35);
   cursor: pointer;
   transition: background 120ms linear, border-color 120ms linear;
 }
-.cy-parc-case:hover { border-color: var(--cp-cyan, #5cb6ff); }
-.cy-parc-case:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
-.cy-parc-rang[data-pointe="1"] .cy-parc-case { background: #7bd88f; border-color: #7bd88f; }
+.cy-parc-case:hover { border-color: var(--cy-cyan); }
+.cy-parc-case:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
+.cy-parc-rang[data-pointe="1"] .cy-parc-case { background: var(--cy-vert); border-color: var(--cy-vert); }
 .cy-parc-case svg { width: 15px; height: 15px; stroke-width: 3; }
 @media (pointer: coarse) { .cy-parc-case { width: 32px; height: 32px; } }
 
 .cy-parc-nom {
   min-width: 0;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
   font-weight: 600;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2424,19 +2427,19 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.05rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 /* Un montant corrige montre ce qu il etait : sans cela, on ne sait
    plus si on a corrige, ni de combien. */
-.cy-parc-montant[data-corrige="1"] { color: var(--cp-jaune, #ffd23f); }
+.cy-parc-montant[data-corrige="1"] { color: var(--cy-jaune); }
 .cy-parc-montant s {
   font-size: 0.82rem;
   font-weight: 400;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.5));
+  color: var(--cy-encre-3);
 }
 
 .cy-parc-corriger {
@@ -2444,13 +2447,13 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.45));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 0;
   cursor: pointer;
 }
-.cy-parc-corriger:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-parc-corriger:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-parc-corriger:hover { color: var(--cy-encre); }
+.cy-parc-corriger:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: -2px; }
 .cy-parc-corriger svg { width: 14px; height: 14px; }
 
 /* ── LA CORRECTION, ET SES DEUX PORTEES ── */
@@ -2467,52 +2470,52 @@
   gap: 4px;
   padding: 4px 8px;
   background: hsl(var(--primary) / 0.06);
-  border: 1px solid var(--cp-cyan, #5cb6ff);
+  border: 1px solid var(--cy-cyan);
 }
 .cy-parc-champ input {
   width: 5.5em;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   background: transparent;
   border: 0;
   outline: none;
   text-align: right;
 }
 .cy-parc-champ b {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: 0.8rem;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-parc-correction > button {
   padding: 6px 11px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
   background: transparent;
   border: 1px solid hsl(var(--primary) / 0.3);
   cursor: pointer;
 }
-.cy-parc-correction > button:hover:not(:disabled) { border-color: hsl(var(--primary) / 0.6); color: var(--cy-encre, #e8f4ff); }
+.cy-parc-correction > button:hover:not(:disabled) { border-color: hsl(var(--primary) / 0.6); color: var(--cy-encre); }
 .cy-parc-correction > button:disabled { opacity: 0.4; cursor: not-allowed; }
-.cy-parc-correction > button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 1px; }
+.cy-parc-correction > button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 /* « Desormais » touche la recurrence : il porte donc la couleur de ce
    qui engage, pas celle d un bouton ordinaire. */
-.cy-parc-desormais { color: var(--cp-jaune, #ffd23f) !important; border-color: color-mix(in srgb, var(--cp-jaune, #ffd23f) 50%, transparent) !important; }
+.cy-parc-desormais { color: var(--cy-jaune) !important; border-color: color-mix(in srgb, var(--cy-jaune) 50%, transparent) !important; }
 .cy-parc-annuler { border: 0 !important; padding: 6px !important; display: grid; place-items: center; }
 .cy-parc-annuler svg { width: 14px; height: 14px; }
 
 .cy-parc-vide {
   padding: 22px 12px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 0.6px;
   text-align: center;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.5));
+  color: var(--cy-encre-3);
   border: 1px dashed hsl(var(--primary) / 0.18);
 }
 
@@ -2523,18 +2526,18 @@
   align-items: center;
   gap: 7px;
   padding: 8px 13px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--cp-jaune, #ffd23f);
+  color: var(--cy-jaune);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy-jaune) 42%, transparent);
   cursor: pointer;
 }
 .cy-parc-ouvrir-ajout:hover,
-.cy-parc-ajout > button:not(.cy-parc-annuler):hover { background: color-mix(in srgb, var(--cp-jaune, #ffd23f) 12%, transparent); }
-.cy-parc-ouvrir-ajout:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-parc-ajout > button:not(.cy-parc-annuler):hover { background: color-mix(in srgb, var(--cy-jaune) 12%, transparent); }
+.cy-parc-ouvrir-ajout:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
 .cy-parc-ouvrir-ajout svg,
 .cy-parc-ajout svg { width: 13px; height: 13px; }
 
@@ -2544,20 +2547,20 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 11px 12px;
-  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy-jaune) 32%, transparent);
 }
 .cy-parc-ajout > input {
   flex: 1;
   min-width: 160px;
   padding: 7px 10px;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   background: hsl(var(--primary) / 0.06);
   border: 1px solid hsl(var(--primary) / 0.28);
   outline: none;
 }
-.cy-parc-ajout > input:focus { border-color: var(--cp-cyan, #5cb6ff); }
+.cy-parc-ajout > input:focus { border-color: var(--cy-cyan); }
 
 /* ── LE BILAN ── */
 .cy-parc-bilan { display: flex; flex-direction: column; gap: 16px; }
@@ -2577,27 +2580,27 @@
   background: #040507;
 }
 .cy-parc-comptes dt {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.8px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-parc-comptes dd {
   margin: 0;
-  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-family: 'Orbitron', var(--cy-titre);
   font-size: 1.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.cy-parc-comptes dd[data-signe="plus"] { color: #7bd88f; }
-.cy-parc-comptes dd[data-signe="moins"] { color: #ff7a8a; }
+.cy-parc-comptes dd[data-signe="plus"] { color: var(--cy-vert); }
+.cy-parc-comptes dd[data-signe="moins"] { color: var(--cy-rouge-encre); }
 .cy-parc-comptes u {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1px;
   text-decoration: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.45));
+  color: var(--cy-encre-3);
 }
 .cy-parc-solde { background: hsl(var(--primary) / 0.05) !important; }
 
@@ -2608,14 +2611,14 @@
   gap: 8px;
   margin: 0;
   padding: 11px 14px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   line-height: 1.55;
   letter-spacing: 0.5px;
-  color: var(--cp-jaune, #ffd23f);
-  border: 1px solid color-mix(in srgb, var(--cp-jaune, #ffd23f) 30%, transparent);
+  color: var(--cy-jaune);
+  border: 1px solid color-mix(in srgb, var(--cy-jaune) 30%, transparent);
 }
-.cy-parc-deja { color: #7bd88f; border-color: color-mix(in srgb, #7bd88f 30%, transparent); }
+.cy-parc-deja { color: var(--cy-vert); border-color: color-mix(in srgb, var(--cy-vert) 30%, transparent); }
 .cy-parc-deja svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 /* ── LE PIED ── */
@@ -2633,16 +2636,16 @@
   align-items: baseline;
   gap: 8px;
   justify-self: center;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.6));
+  color: var(--cy-encre-3);
 }
 .cy-parc-total strong {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.25rem;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -2655,35 +2658,35 @@
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(10px, 0.625rem);
   letter-spacing: 1.6px;
   text-transform: uppercase;
   cursor: pointer;
   border: 1px solid hsl(var(--primary) / 0.3);
   background: transparent;
-  color: var(--cy-encre-2, #cfe4f5);
+  color: var(--cy-encre-2);
 }
 .cy-parc-retour { justify-self: start; }
 .cy-parc-suite,
 .cy-parc-conclure { justify-self: end; }
-.cy-parc-retour:hover { border-color: hsl(var(--primary) / 0.6); color: var(--cy-encre, #e8f4ff); }
+.cy-parc-retour:hover { border-color: hsl(var(--primary) / 0.6); color: var(--cy-encre); }
 .cy-parc-suite {
-  color: #05080f;
-  background: var(--cp-cyan, #5cb6ff);
-  border-color: var(--cp-cyan, #5cb6ff);
+  color: var(--cy-fond);
+  background: var(--cy-cyan);
+  border-color: var(--cy-cyan);
   font-weight: 700;
 }
 .cy-parc-conclure {
-  color: #05080f;
-  background: #7bd88f;
-  border-color: #7bd88f;
+  color: var(--cy-fond);
+  background: var(--cy-vert);
+  border-color: var(--cy-vert);
   font-weight: 700;
 }
 .cy-parc-conclure:disabled { opacity: 0.55; cursor: not-allowed; }
 .cy-parc-retour:focus-visible,
 .cy-parc-suite:focus-visible,
-.cy-parc-conclure:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: 2px; }
+.cy-parc-conclure:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
 .cy-parc-retour svg,
 .cy-parc-suite svg,
 .cy-parc-conclure svg { width: 14px; height: 14px; }
@@ -2769,34 +2772,34 @@
 
 .cy-aff-ident { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .cy-aff-nom {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--cy-encre, #e8f4ff);
+  color: var(--cy-encre);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .cy-aff-cat {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: var(--cy-mono);
   font-size: max(9px, 0.5625rem);
   letter-spacing: 1.4px;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.55));
+  color: var(--cy-encre-3);
 }
 
 .cy-aff-chiffres { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 .cy-aff-val {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: var(--cy-titre);
   font-size: 1.08rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.cy-aff-moins { color: #ff7a8a; }
-.cy-aff-plus { color: #7bd88f; }
+.cy-aff-moins { color: var(--cy-rouge-encre); }
+.cy-aff-plus { color: var(--cy-vert); }
 
 /* LA BARRE DE POIDS, a l echelle du bloc.
    Une liste de nombres devient une forme : le loyer occupe la moitie
@@ -2810,15 +2813,15 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  color: var(--cy-encre-3, rgb(160 210 255 / 0.4));
+  color: var(--cy-encre-3);
   background: transparent;
   border: 0;
   cursor: pointer;
   transition: color 120ms linear;
 }
-.cy-aff-outils button:hover { color: var(--cy-encre, #e8f4ff); }
-.cy-aff-outils button:last-child:hover { color: #ff7a8a; }
-.cy-aff-outils button:focus-visible { outline: 2px solid var(--cp-jaune, #ffd23f); outline-offset: -2px; }
+.cy-aff-outils button:hover { color: var(--cy-encre); }
+.cy-aff-outils button:last-child:hover { color: var(--cy-rouge-encre); }
+.cy-aff-outils button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: -2px; }
 .cy-aff-outils svg { width: 14px; height: 14px; }
 @media (pointer: coarse) { .cy-aff-outils button { width: 40px; height: 40px; } }
 
