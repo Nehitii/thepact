@@ -1781,7 +1781,8 @@
     "tri": {
       "recent": "Recent",
       "cher": "Price ↓",
-      "abordable": "Price ↑"
+      "abordable": "Price ↑",
+      "visuel": "Visual"
     },
     "vide": {
       "recherche": "No item matches this search.",
@@ -1805,11 +1806,13 @@
       "etape": "step",
       "voirEnLigne": "View online",
       "remettre": "Put back in the list",
-      "marquerPaye": "Mark as paid"
+      "marquerPaye": "Mark as paid",
+      "poserImage": "Add an image"
     },
     "etat": {
       "parEtape": "Step done",
-      "paye": "Paid"
+      "paye": "Paid",
+      "du": "To pay"
     },
     "registre": {
       "sansObjectif": "No goal",

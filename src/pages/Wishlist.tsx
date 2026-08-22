@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { DSPageShell, DSBackground } from "@/components/ds";
+import { DSPageShell } from "@/components/ds";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +32,7 @@ import { DeleteConfirmDialog } from "@/components/wishlist/DeleteConfirmDialog";
 import { WishlistFiche } from "@/components/wishlist/WishlistFiche";
 import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
 import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
+import { WishlistRail } from "@/components/wishlist/WishlistRail";
 import "@/styles/wishlist.css";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -63,7 +64,7 @@ import "@/styles/wishlist.css";
    ═══════════════════════════════════════════════════════════════ */
 
 type Vue = "tout" | "pacte" | "libre";
-type Tri = "recent" | "cher" | "abordable";
+type Tri = "visuel" | "recent" | "cher" | "abordable";
 
 const CLE_VUE = "vowpact.wishlist.vue";
 
@@ -118,7 +119,7 @@ export default function Wishlist() {
   }, [vue]);
 
   const [recherche, setRecherche] = useState("");
-  const [tri, setTri] = useState<Tri>("recent");
+  const [tri, setTri] = useState<Tri>("visuel");
 
   // ── Formulaire de creation ──
   const [newOpen, setNewOpen] = useState(false);
@@ -203,10 +204,20 @@ export default function Wishlist() {
         || (i.notes ?? "").toLowerCase().includes(mot))
       : base;
 
+    const recence = (a: PactWishlistItem, b: PactWishlistItem) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+
     const ordonnes = [...filtres].sort((a, b) => {
       if (tri === "cher") return Number(b.estimated_cost) - Number(a.estimated_cost);
       if (tri === "abordable") return Number(a.estimated_cost) - Number(b.estimated_cost);
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (tri === "visuel") {
+        /* Une photo achete une case : encore faut-il la voir. Sans
+           ce tri, les quatre articles photographies tombaient a deux
+           mille pixels du haut. */
+        const ecart = Number(Boolean(b.image_url)) - Number(Boolean(a.image_url));
+        return ecart !== 0 ? ecart : recence(a, b);
+      }
+      return recence(a, b);
     });
 
     return {
@@ -426,11 +437,18 @@ export default function Wishlist() {
     { cle: "libre", mot: t("wishlist.vue.libre", "Hors pacte"), compte: comptes.libres.length },
   ];
 
-  const partPayee = comptes.total > 0 ? (comptes.paye / comptes.total) * 100 : 0;
-  const partPayeePacte = comptes.totalPacte > 0 ? (comptes.payePacte / comptes.totalPacte) * 100 : 0;
+  const partPayee = comptes.total > 0 ? comptes.paye / comptes.total : 0;
+  const partPayeePacte = comptes.totalPacte > 0 ? comptes.payePacte / comptes.totalPacte : 0;
 
+  /* LE SHOWROOM EST ALLUME. La page pose son propre sol clair dans
+     l emplacement de fond, par-dessus le fond sombre de
+     l application, quel que soit le theme. C est une decision, pas un
+     oubli : sur les quinze photos du bordereau, treize sont des
+     photos de produit detourees SUR FOND BLANC. Sur un fond noir
+     elles apparaissaient comme des rectangles eblouissants a arete
+     dure. Ces photos veulent du clair. */
   return (
-    <DSPageShell width="xl" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
+    <DSPageShell width="xl" className="!px-0 !pt-0 !pb-0" background={<div className="wl-fond" />}>
       <DuplicateMergeDialog
         open={mergeOpen} onOpenChange={setMergeOpen}
         existing={mergeExistingPreview ?? { name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null }}
@@ -538,7 +556,7 @@ export default function Wishlist() {
               parle d autre chose que de ce qu on regarde. */}
           {vue === "tout" && (
             <div className="wl-bandeau">
-              <div className="wl-mesure">
+              <div className="wl-mesure" data-veine="du">
                 <u>{t("wishlist.mesure.reste", "Reste à acquérir")}</u>
                 <b>{formatCurrency(comptes.total - comptes.paye, currency)}</b>
               </div>
@@ -559,16 +577,14 @@ export default function Wishlist() {
                     })}
                   </u>
                 </div>
-                <div className="wl-rail">
-                  <i data-part="acquis" style={{ width: `${partPayee}%` }} />
-                </div>
+                <WishlistRail className="wl-rail" part={partPayee} />
               </div>
             </div>
           )}
 
           {vue === "pacte" && (
             <div className="wl-bandeau">
-              <div className="wl-mesure" data-veine="pacte">
+              <div className="wl-mesure" data-veine="du">
                 <u>{t("wishlist.mesure.restePacte", "Reste à financer")}</u>
                 <b>{formatCurrency(comptes.totalPacte - comptes.payePacte, currency)}</b>
               </div>
@@ -591,9 +607,7 @@ export default function Wishlist() {
                     })}
                   </u>
                 </div>
-                <div className="wl-rail">
-                  <i data-part="acquis" style={{ width: `${partPayeePacte}%` }} />
-                </div>
+                <WishlistRail className="wl-rail" part={partPayeePacte} />
               </div>
             </div>
           )}
@@ -628,6 +642,9 @@ export default function Wishlist() {
             </div>
             {vue !== "pacte" && (
               <>
+                <button type="button" className="wl-tri" aria-pressed={tri === "visuel"} onClick={() => setTri("visuel")}>
+                  {t("wishlist.tri.visuel", "Visuel")}
+                </button>
                 <button type="button" className="wl-tri" aria-pressed={tri === "recent"} onClick={() => setTri("recent")}>
                   {t("wishlist.tri.recent", "Récent")}
                 </button>

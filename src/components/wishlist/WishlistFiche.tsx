@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, ExternalLink, Pencil, Target, Trash2 } from "lucide-react";
+import { Check, ExternalLink, ImagePlus, Pencil, Target, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import type { PactWishlistItem } from "@/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
@@ -15,154 +15,163 @@ interface WishlistFicheProps {
   onToggleAcquired: (id: string, acquired: boolean) => void;
 }
 
+/** Deux lettres tirees du nom, pour la plaque gravee. */
+function initiales(nom: string) {
+  const mots = nom.trim().split(/\s+/).filter(Boolean);
+  if (mots.length === 0) return "??";
+  if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
+  return (mots[0][0] + mots[1][0]).toUpperCase();
+}
+
 /**
- * UNE FICHE.
+ * UNE TUILE DE VITRINE.
  *
- * L ancienne carte reservait cent quatre-vingt-douze pixels a une
- * image, qu il y en ait une ou non. Cinquante-cinq articles sur
- * soixante-dix n en ont pas — leur source, goal_cost_items, n a
- * meme pas de colonne pour ca. La page etait donc surtout faite de
- * vide, et c est ce vide qu on lit comme « les images ont saute ».
- * Ici la vignette n existe que s il y a une image.
+ * Le produit flotte sur sa plaque blanche avec son ombre de
+ * contact, comme pose sur une table eclairee. Les treize photos
+ * detourees sur fond blanc du bordereau y sont chez elles — elles
+ * viennent de catalogues, elles retrouvent un catalogue.
  *
- * Elle portait aussi un bandeau de priorite dont la couleur etait
- * calculee : colorClass.replace('text-','bg-').replace('400','500/60').
- * Tailwind ne genere que les classes qu il LIT dans le source ;
- * verifie dans la feuille produite, bg-cyan-500/60, bg-amber-500/60,
- * bg-orange-500/60 et bg-fuchsia-500/60 n existent pas. Ce bandeau
- * n a jamais rien affiche. Les couleurs passent ici par des jetons
- * CSS, que rien ne peut escamoter.
+ * UNE PHOTO ACHETE UNE CASE. La tuile porte data-photo, et la
+ * feuille de style lui donne deux colonnes au lieu d une. Remplir
+ * une image change la mise en page : ca se voit, donc ca donne
+ * envie de le faire.
+ *
+ * L ETIQUETTE DE PRIX vient de la direction « kiosque » : jaune,
+ * cernee de noir, collee de travers sur la photo, et elle se
+ * redresse quand la main approche.
+ *
+ * SANS PHOTO, PAS DE TROU. Cinquante-cinq articles sur soixante-dix
+ * n en ont pas — leur source, goal_cost_items, n a pas de colonne
+ * image. Ils recoivent une plaque de metal aux initiales gravees,
+ * qui propose au survol d en poser une.
  */
 export function WishlistFiche({
   item, currency, piece, onEdit, onDelete, onToggleAcquired,
 }: WishlistFicheProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [enVol, setEnVol] = useState(false);
+  const [imageMorte, setImageMorte] = useState(false);
 
   const duPacte = Boolean(item.source_goal_cost_id);
   const acquis = item.acquired;
+  const photo = Boolean(item.image_url) && !imageMorte;
 
   /* La synchronisation ecrivait « Source: <objectif> » dans les notes
-     de chaque piece : soixante-neuf articles sur soixante-dix n
-     avaient que ca, et la carte affichait donc le nom de l objectif
-     deux fois de suite, dont une en anglais. On ne montre la note que
-     si elle dit autre chose que la ligne au-dessus. */
+     de chaque piece : la carte affichait le nom de l objectif deux
+     fois de suite, dont une en anglais. */
   const noteUtile = item.notes && item.notes.trim() !== `Source: ${item.goal?.name ?? ""}`
     ? item.notes
     : null;
 
-  /* La coche est le geste le plus frequent de la page : elle ecrit
-     tout de suite. L ancienne carte attendait huit cents
-     millisecondes d animation avant d appeler la base — le temps de
-     changer d avis, de recliquer, et d envoyer deux ecritures. */
+  /* La coche ecrit tout de suite : l ancienne carte attendait huit
+     cents millisecondes d animation avant d appeler la base. */
   const basculer = useCallback(() => {
-    if (enVol) return;
-    setEnVol(true);
     onToggleAcquired(item.id, !acquis);
-    window.setTimeout(() => setEnVol(false), 400);
-  }, [enVol, acquis, item.id, onToggleAcquired]);
+  }, [acquis, item.id, onToggleAcquired]);
+
+  const etat = acquis
+    ? (piece?.parLEtape ? "etape" : "paye")
+    : "du";
 
   return (
-    <article
-      className="wl-fiche"
-      data-veine={duPacte ? "pacte" : "libre"}
-      data-acquis={acquis ? "oui" : "non"}
-    >
-      {item.image_url && (
-        <div className="wl-vignette">
+    <article className="wl-fiche" data-photo={photo ? "oui" : "non"} data-acquis={acquis ? "oui" : "non"}>
+      <div className="wl-vignette">
+        {photo ? (
           <img
-            src={item.image_url}
+            src={item.image_url ?? ""}
             alt=""
             loading="lazy"
             decoding="async"
-            onError={(e) => {
-              /* Une image morte laisse un cadre gris qu on prend pour
-                 un bug. On retire la vignette entiere. */
-              (e.currentTarget.parentElement as HTMLElement | null)?.remove();
-            }}
+            /* Une image morte laisserait un cadre vide qu on prend
+               pour un bug : la tuile repasse sur sa plaque gravee. */
+            onError={() => setImageMorte(true)}
           />
-        </div>
-      )}
-
-      <div className="wl-fiche-corps">
-        <h3 className="wl-fiche-nom">{item.name}</h3>
-
-        {duPacte && item.goal ? (
+        ) : (
           <button
             type="button"
-            className="wl-fiche-source"
-            onClick={() => navigate(`/goals/${item.goal?.id}`)}
-            title={t("wishlist.fiche.ouvrirObjectif", "Ouvrir l’objectif")}
+            className="wl-plaque"
+            onClick={() => onEdit(item)}
+            title={t("wishlist.fiche.poserImage", "Poser une image")}
           >
-            <Target aria-hidden="true" />
-            <span>{item.goal.name}</span>
-            {piece?.etapeRang != null && <span>· {t("wishlist.fiche.etape", "étape")} {piece.etapeRang}</span>}
+            <span>{initiales(item.name)}</span>
+            <i><ImagePlus aria-hidden="true" /> {t("wishlist.fiche.poserImage", "Poser une image")}</i>
           </button>
-        ) : item.category ? (
-          <span className="wl-fiche-source">{item.category}</span>
-        ) : null}
+        )}
 
-        {noteUtile && <p className="wl-fiche-note">{noteUtile}</p>}
+        <span className="wl-etat" data-etat={etat}>
+          {etat === "etape"
+            ? t("wishlist.etat.parEtape", "Étape faite")
+            : etat === "paye"
+              ? t("wishlist.etat.paye", "Payé")
+              : t("wishlist.etat.du", "À payer")}
+        </span>
 
-        <div className="wl-fiche-pied">
-          <span className="wl-fiche-prix">
-            {formatCurrency(Number(item.estimated_cost || 0), currency)}
-          </span>
+        {/* La reference de l article, comme sur une etiquette de
+            magasin. Tiree de son identifiant : elle ne bouge pas
+            quand on change le tri. */}
+        <span className="wl-code">ART-{item.id.slice(0, 4).toUpperCase()}</span>
 
-          <div className="wl-fiche-gestes">
-            {/* L etat dit d ou vient la coche : une piece marquee par
-                la validation de son etape n a pas ete cochee a la main. */}
-            {acquis && (
-              <span className="wl-etat" data-etat={piece?.parLEtape ? "etape" : "paye"}>
-                {piece?.parLEtape
-                  ? t("wishlist.etat.parEtape", "Étape faite")
-                  : t("wishlist.etat.paye", "Payé")}
-              </span>
-            )}
+        <span className="wl-prix">{formatCurrency(Number(item.estimated_cost || 0), currency)}</span>
+      </div>
 
-            <div className="wl-outils">
-              {item.url && (
-                <a
-                  className="wl-outil"
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={t("wishlist.fiche.voirEnLigne", "Voir en ligne")}
-                >
-                  <ExternalLink aria-hidden="true" />
-                </a>
-              )}
-              <button
-                type="button"
-                className="wl-outil"
-                onClick={() => onEdit(item)}
-                title={t("common.edit", "Modifier")}
-              >
-                <Pencil aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="wl-outil wl-outil--danger"
-                onClick={() => onDelete(item.id)}
-                title={t("common.delete", "Supprimer")}
-              >
-                <Trash2 aria-hidden="true" />
-              </button>
-            </div>
+      <div className="wl-fiche-corps">
+        <div style={{ minWidth: 0 }}>
+          <h3 className="wl-fiche-nom">{item.name}</h3>
 
+          {duPacte && item.goal ? (
             <button
               type="button"
-              className="wl-coche"
-              aria-pressed={acquis}
-              onClick={basculer}
-              title={acquis
-                ? t("wishlist.fiche.remettre", "Remettre dans la liste")
-                : t("wishlist.fiche.marquerPaye", "Marquer payé")}
+              className="wl-fiche-source"
+              onClick={() => navigate(`/goals/${item.goal?.id}`)}
+              title={t("wishlist.fiche.ouvrirObjectif", "Ouvrir l’objectif")}
             >
-              <Check aria-hidden="true" />
+              <Target aria-hidden="true" />
+              <span>
+                {item.goal.name}
+                {piece?.etapeRang != null && ` · ${t("wishlist.fiche.etape", "étape")} ${piece.etapeRang}`}
+              </span>
+            </button>
+          ) : item.category ? (
+            <span className="wl-fiche-source">{item.category}</span>
+          ) : null}
+
+          {noteUtile && <p className="wl-fiche-note">{noteUtile}</p>}
+        </div>
+
+        <div className="wl-fiche-gestes">
+          <div className="wl-outils">
+            {item.url && (
+              <a
+                className="wl-outil"
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t("wishlist.fiche.voirEnLigne", "Voir en ligne")}
+              >
+                <ExternalLink aria-hidden="true" />
+              </a>
+            )}
+            <button type="button" className="wl-outil" onClick={() => onEdit(item)}
+              title={t("common.edit", "Modifier")}>
+              <Pencil aria-hidden="true" />
+            </button>
+            <button type="button" className="wl-outil wl-outil--danger" onClick={() => onDelete(item.id)}
+              title={t("common.delete", "Supprimer")}>
+              <Trash2 aria-hidden="true" />
             </button>
           </div>
+
+          <button
+            type="button"
+            className="wl-coche"
+            aria-pressed={acquis}
+            onClick={basculer}
+            title={acquis
+              ? t("wishlist.fiche.remettre", "Remettre dans la liste")
+              : t("wishlist.fiche.marquerPaye", "Marquer payé")}
+          >
+            <Check aria-hidden="true" />
+          </button>
         </div>
       </div>
     </article>

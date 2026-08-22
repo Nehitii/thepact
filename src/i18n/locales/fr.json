@@ -1781,7 +1781,8 @@
     "tri": {
       "recent": "Récent",
       "cher": "Prix ↓",
-      "abordable": "Prix ↑"
+      "abordable": "Prix ↑",
+      "visuel": "Visuel"
     },
     "vide": {
       "recherche": "Aucun article ne correspond à cette recherche.",
@@ -1805,11 +1806,13 @@
       "etape": "étape",
       "voirEnLigne": "Voir en ligne",
       "remettre": "Remettre dans la liste",
-      "marquerPaye": "Marquer payé"
+      "marquerPaye": "Marquer payé",
+      "poserImage": "Poser une image"
     },
     "etat": {
       "parEtape": "Étape faite",
-      "paye": "Payé"
+      "paye": "Payé",
+      "du": "À payer"
     },
     "registre": {
       "sansObjectif": "Sans objectif",

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, ExternalLink, Pencil, Target, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { WishlistRail } from "@/components/wishlist/WishlistRail";
 import type { PactWishlistItem } from "@/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
 
@@ -111,7 +112,7 @@ export function WishlistRegistre({
       {groupes.map((g, rang) => {
         const reste = g.total - g.acquis;
         const ouvert = etat.has(g.cle);
-        const part = g.total > 0 ? Math.round((g.acquis / g.total) * 100) : 0;
+        const part = g.total > 0 ? g.acquis / g.total : 0;
 
         return (
           <section className="wl-groupe" key={g.cle} data-ouvert={ouvert ? "oui" : "non"}>
@@ -145,9 +146,9 @@ export function WishlistRegistre({
               )}
             </div>
 
-            <span className="wl-groupe-rail" aria-hidden="true">
-              <i style={{ width: `${part}%` }} />
-            </span>
+            {/* Vingt-quatre cellules : assez pour lire la part sans
+                que la ligne devienne un peigne. */}
+            <WishlistRail className="wl-groupe-rail" part={part} cellules={24} />
 
             {ouvert && (
               <div className="wl-postes">
