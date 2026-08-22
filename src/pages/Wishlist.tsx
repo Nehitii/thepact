@@ -514,6 +514,9 @@ export default function Wishlist() {
           {/* ── L en-tete ── */}
           <header className="wl-tete">
             <div className="wl-tete-id">
+              {/* L enseigne : une colonne verticale, une seule, a un
+                  seul endroit. 取得 — acquisition. */}
+              <span className="wl-colonne" aria-hidden="true">取得</span>
               <span className="wl-jeton" aria-hidden="true">₩</span>
               <span className="wl-tete-mots">
                 <b>{t("wishlist.tete.ref", "Bordereau // Acquisitions")}</b>

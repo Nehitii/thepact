@@ -27,7 +27,22 @@
    financer, et equerres de visee au survol.
    ═══════════════════════════════════════════════════════════════ */
 
+/* QUATRE SIGNES, MILLE QUATRE CENT SOIXANTE-DOUZE OCTETS.
+   L application heberge ses polices elle-meme ; on ne lui ajoute pas
+   une dependance a un serveur de fontes pour quatre caracteres. Ce
+   sous-ensemble ne contient que 取 得 契 自 — la plage unicode le
+   dit, et le navigateur ne le telecharge que s il en rencontre un. */
+@font-face {
+  font-family: 'Sceau JP';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/noto-sans-jp-sceau.woff2') format('woff2');
+  unicode-range: U+53d6, U+5951, U+5f97, U+81ea;
+}
+
 .wl, .wl-boite {
+  --wl-jp: 'Sceau JP', 'Yu Gothic UI', 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', sans-serif;
   --wl-sol: #F2F3F6;
   --wl-plaque: #FFFFFF;
   --wl-creux: #F7F8FA;
@@ -45,6 +60,13 @@
   --wl-noir: #0B0D10;
   --wl-jaune: #FCEE0A;
   --wl-vert: #00A855;
+  /* LE TROISIEME SENS. La page disait « paye » (vert) ou rien. Le
+     rouge donne un nom a ce qui reste du — sur un ecran qui parle
+     d argent, c est une information, pas une decoration. Il est
+     reserve a DEUX endroits : le montant restant et la tranche des
+     tuiles. Etendu aux prix ou aux fonds, il ne dirait plus rien. */
+  --wl-dette: #C8102E;
+  --wl-dette-creux: #F2C8CF;
   --wl-bleu: #0039FF;
   --wl-rouge: #E5003C;
 
@@ -99,6 +121,36 @@
 }
 
 .wl-tete-id { display: flex; align-items: center; gap: 13px; min-width: 0; }
+
+/* L EMPRUNT A L ENSEIGNE. Une colonne verticale, une seule, a un
+   seul endroit : elle situe la page d un coup d oeil sans rien
+   ajouter a lire. La banniere pleine hauteur de la proposition A a
+   ete abandonnee — elle serait venue se coller a la barre laterale
+   de l application, large de 280 pixels deployee. Deux bandes
+   verticales au meme bord font un desordre, pas une enseigne. */
+.wl-colonne {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  padding: 0 9px;
+  margin: -13px 0 -13px -4px;
+  font-family: var(--wl-jp);
+  font-weight: 700;
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 3px;
+  writing-mode: vertical-rl;
+  /* La colonne vit sur la bande NOIRE, dans les deux themes. Elle ne
+     peut donc pas prendre le rouge accorde au blanc : mesure,
+     #C8102E sur #0B0D10 plafonne a 3,31:1. Elle garde son propre
+     rouge, accorde au noir — 5,2:1 des deux cotes. */
+  color: #FF2E4D;
+  border-right: 1px solid rgb(255 46 77 / 0.42);
+}
+/* Sur telephone il ne reste que 273 pixels a la page : trente-sept
+   pour une enseigne, soit treize pour cent, c est trop cher payer
+   du decor. La signalitique est la premiere chose qui tombe quand
+   la place manque. */
+@media (max-width: 559px) { .wl-colonne { display: none; } }
 
 .wl-jeton {
   display: grid;
@@ -240,16 +292,15 @@
 .wl-mesure[data-veine="acquis"] b { color: var(--wl-vert); }
 .wl-mesure[data-veine="libre"] b { color: var(--wl-bleu); }
 
-/* Ce qui reste a payer porte les rayures de danger : un montant du
-   n est pas une statistique neutre. */
-.wl-mesure[data-veine="du"] b { position: relative; padding-bottom: 5px; }
+/* Ce qui reste a payer : un montant du n est pas une statistique
+   neutre. Il prend l encre de la dette et un filet plein dessous. */
+.wl-mesure[data-veine="du"] b { position: relative; padding-bottom: 6px; color: var(--wl-dette); }
 .wl-mesure[data-veine="du"] b::after {
   content: "";
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  height: 4px;
-  background: repeating-linear-gradient(45deg,
-    var(--wl-jaune) 0 5px, var(--wl-noir) 5px 10px);
+  height: 3px;
+  background: var(--wl-dette);
 }
 
 /* ── La jauge en cellules ──
@@ -257,10 +308,12 @@
    se denombrent d un regard. */
 .wl-jauge { flex: 1 1 220px; min-width: 190px; }
 .wl-rail { display: flex; gap: 2px; margin-top: 9px; }
+/* Les cellules eteintes ne sont plus « rien » : elles sont la part
+   qui reste due. La jauge nomme donc ses deux moities. */
 .wl-rail i {
   flex: 1;
   height: 10px;
-  background: var(--wl-trait);
+  background: var(--wl-dette-creux);
   transition: background 200ms linear;
 }
 .wl-rail i[data-on="1"] { background: var(--wl-encre); }
@@ -321,6 +374,24 @@
    meme repliee. A 375 de fenetre il ne reste que 273 pour la page ;
    en deux colonnes, les tuiles tombaient a 131 pixels — trop peu
    pour une vitrine. Une seule colonne tant qu on n a pas la place. */
+/* LE SOCLE — deux toles empilees plutot qu une carte plate.
+   Le chanfrein de la tuile est un clip-path, et un clip-path rogne
+   aussi les ombres : la plaque arriere ne pouvait donc pas etre
+   dessinee dans la tuile. Elle vit dans un socle qui l enveloppe,
+   et c est lui qui porte desormais la place dans la grille. */
+.wl-socle { position: relative; display: flex; }
+.wl-socle > * { flex: 1; min-width: 0; }
+.wl-socle::before {
+  content: "";
+  position: absolute;
+  inset: 6px -6px -6px 6px;
+  background: var(--wl-arriere, rgb(20 22 26 / 0.10));
+  clip-path: var(--wl-coupe);
+  pointer-events: none;
+}
+.wl-socle:hover { transform: translateY(-2px); }
+.wl-socle { transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+
 .wl-grille {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -330,8 +401,17 @@
 @media (min-width: 820px)  { .wl-grille { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 1100px) { .wl-grille { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
+/* LA TRANCHE N EST PAS ICI.
+   Elle devait dire « du » en rouge et « paye » en vert. Or la
+   grille de tuiles ne montre QUE les articles non acquis — les
+   payes partent dans le pli de l archive. Mesure : sur vingt-six
+   tuiles, vingt-six auraient porte du rouge. Un signal qui ne
+   prend jamais qu une valeur n est pas un signal, c est un decor.
+   La tranche vit donc dans le registre, ou les deux etats se
+   cotoient vraiment : trente payes contre vingt-quatre dus. */
 .wl-fiche {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   background: var(--wl-plaque);
@@ -341,18 +421,44 @@
               transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 /* Une photo achete une case de plus — des qu il y a plus d une
-   colonne a acheter. */
+   colonne a acheter. C est le socle qui occupe la grille. */
 @media (min-width: 560px) {
-  .wl-fiche[data-photo="oui"] { grid-column: span 2; }
+  .wl-socle[data-photo="oui"] { grid-column: span 2; }
 }
-.wl-fiche:hover { box-shadow: var(--wl-ombre-haute); transform: translateY(-2px); }
+.wl-fiche:hover { box-shadow: var(--wl-ombre-haute); }
 
 /* ── Le visuel ── */
+/* LA VITRE. Le plateau n est plus un fond : c est une surface.
+   Arete de lumiere en haut, ombre interne au pourtour, reflet
+   oblique par-dessus. L objet n est plus pose dessus — il est
+   dessous. */
 .wl-vignette {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
   background: linear-gradient(180deg, #FFFFFF 0%, var(--wl-creux) 100%);
+}
+.wl-fiche[data-photo="oui"] .wl-vignette {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 0 0 1px rgb(20 22 26 / 0.10),
+    inset 0 -14px 22px -14px rgb(20 22 26 / 0.16);
+}
+/* Le reflet, et la trame. Une ligne sur trois a cinq pour cent :
+   presque invisible, elle donne une matiere commune a des photos
+   d origines tres differentes. */
+.wl-vignette::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(128deg, rgb(255 255 255 / 0.30) 0%, transparent 32%),
+    repeating-linear-gradient(0deg, rgb(20 22 26 / 0.045) 0 1px, transparent 1px 3px);
+}
+.wl-fiche[data-photo="non"] .wl-vignette::before {
+  background: repeating-linear-gradient(0deg, rgb(20 22 26 / 0.05) 0 1px, transparent 1px 3px);
 }
 .wl-fiche[data-photo="oui"] .wl-vignette { aspect-ratio: 2 / 1.12; }
 
@@ -418,12 +524,16 @@
   font-variant-numeric: tabular-nums;
   transform: rotate(-2.2deg);
   transform-origin: 0 100%;
+  /* Elle est COLLEE sur la vitre, pas imprimee dedans : elle porte
+     donc une ombre des le repos. */
+  box-shadow: 0 4px 10px rgb(20 22 26 / 0.30);
   transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
               box-shadow 140ms linear;
+  z-index: 2;
 }
 .wl-fiche:hover .wl-prix {
   transform: rotate(0deg);
-  box-shadow: 3px 3px 0 rgb(20 22 26 / 0.18);
+  box-shadow: 3px 3px 0 var(--wl-dette), 0 6px 14px rgb(20 22 26 / 0.35);
 }
 .wl-fiche[data-acquis="oui"] .wl-prix {
   color: #FFFFFF;
@@ -447,15 +557,33 @@
 .wl-etat[data-etat="paye"] { color: #FFFFFF; background: var(--wl-noir); }
 .wl-etat[data-etat="etape"] { color: var(--wl-noir); background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--wl-noir); }
 
+/* LE CACHET DE PROPRIETE. Meme information que le code nu, une
+   identite en plus. Le sceau n emprunte pas une marque de fiction :
+   il dit ce que l article ENGAGE — 契 pour ce qui tient au pacte,
+   自 pour ce qui n engage que soi. Une marque qui porte un sens
+   vaut mieux qu une marque qui decore. */
 .wl-code {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 11px;
+  right: 11px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
   font-family: var(--wl-mono);
   font-size: max(8px, 0.5rem);
-  letter-spacing: 1.4px;
-  color: var(--wl-encre-3);
+  letter-spacing: 1.2px;
+  color: var(--wl-dette);
+  border: 1px solid color-mix(in srgb, var(--wl-dette) 45%, transparent);
+  background: color-mix(in srgb, var(--wl-plaque) 62%, transparent);
   font-variant-numeric: tabular-nums;
+}
+.wl-code b {
+  font-family: var(--wl-jp);
+  font-weight: 700;
+  font-size: 1.15em;
+  line-height: 1;
 }
 
 /* Les equerres de visee : elles n apparaissent qu au survol. */
@@ -712,22 +840,27 @@
 
 /* La jauge de l objectif, en cellules elle aussi. */
 .wl-groupe-rail { display: flex; gap: 2px; padding: 0 14px 11px; }
-.wl-groupe-rail i { flex: 1; height: 4px; background: var(--wl-trait); }
+.wl-groupe-rail i { flex: 1; height: 4px; background: var(--wl-dette-creux); }
 .wl-groupe-rail i[data-on="1"] { background: var(--wl-vert); }
 
 .wl-postes { display: flex; flex-direction: column; border-top: 1px solid var(--wl-trait); }
 
+/* LA TRANCHE. Trois pixels sur le flanc gauche : rouge tant que ce
+   n est pas paye, vert quand ca l est. Cinquante-quatre lignes se
+   lisent d un balayage, sans lire un seul mot — et ici les deux
+   etats se cotoient pour de bon. */
 .wl-poste {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 11px;
   padding: 9px 14px;
-  border-left: 3px solid transparent;
-  transition: background 120ms linear, border-color 120ms linear;
+  border-left: 3px solid var(--wl-dette);
+  transition: background 120ms linear;
 }
+.wl-poste[data-acquis="oui"] { border-left-color: var(--wl-vert); }
 .wl-poste + .wl-poste { border-top: 1px solid var(--wl-filet); }
-.wl-poste:hover { background: var(--wl-creux); border-left-color: var(--wl-jaune); }
+.wl-poste:hover { background: var(--wl-creux); }
 
 .wl-poste-nom {
   min-width: 0;
@@ -975,6 +1108,9 @@
   --wl-vert: #00FF88;
   --wl-bleu: #4D7BFF;
   --wl-rouge: #FF3355;
+  --wl-dette: #FF2244;
+  --wl-dette-creux: #35171F;
+  --wl-arriere: #0B0E13;
 
   --wl-ombre: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 22px rgb(0 0 0 / 0.4);
   --wl-ombre-haute: 0 2px 6px rgb(0 0 0 / 0.6), 0 20px 40px rgb(0 0 0 / 0.5);
@@ -1004,7 +1140,13 @@
    sombre. C est la seule regle qui distingue les deux. */
 :root.dark .wl-fiche[data-photo="oui"] .wl-vignette {
   background: linear-gradient(180deg, #F6F7F9 0%, #E7EAEF 100%);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+  /* De nuit la vitre a en plus un halo froid : c est la seule
+     surface allumee de la page, elle doit rayonner un peu. */
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.95),
+    inset 0 0 0 1px rgb(0 0 0 / 0.35),
+    inset 0 -16px 24px -16px rgb(20 22 26 / 0.30),
+    0 0 26px rgb(200 220 255 / 0.08);
 }
 :root.dark .wl-fiche[data-photo="non"] .wl-vignette {
   background: linear-gradient(180deg, var(--wl-creux) 0%, #0F1319 100%);
@@ -1033,7 +1175,7 @@
    lui faut sa propre encre sur le metal sombre. */
 /* Mesure : #6F7783 sur le plateau clair donnait 4,22:1, sous le
    seuil — et cette reference est en mono de huit pixels. */
-:root.dark .wl-fiche[data-photo="oui"] .wl-code { color: #5E6672; }
+:root.dark .wl-code { background: color-mix(in srgb, var(--wl-noir) 55%, transparent); }
 :root.dark .wl-fiche[data-photo="non"] .wl-code { color: var(--wl-encre-3); }
 
 /* Le tri retenu : inverse comme en clair, mais dans l autre sens. */
@@ -1043,11 +1185,12 @@
   border-color: #EAEEF4;
 }
 
-/* La jauge : les cellules eteintes doivent rester visibles. */
-:root.dark .wl-rail i { background: #262C36; }
+/* La jauge : de nuit aussi, une cellule eteinte est une part due,
+   pas un vide. L ancienne surcharge grise annulait le jeton. */
+:root.dark .wl-rail i { background: var(--wl-dette-creux); }
 :root.dark .wl-rail i[data-on="1"] { background: #EAEEF4; }
 :root.dark .wl-rail i[data-on="1"][data-part="acquis"] { background: var(--wl-vert); }
-:root.dark .wl-groupe-rail i { background: #262C36; }
+:root.dark .wl-groupe-rail i { background: var(--wl-dette-creux); }
 
 /* La coche verte tient sur le sombre ; son signe doit virer au noir. */
 :root.dark .wl-coche[aria-pressed="true"] { color: var(--wl-noir); }
@@ -1055,7 +1198,8 @@
 
 /* L etiquette de prix garde son jaune : c est elle, la signature. Son
    ombre portee, elle, doit s assombrir pour exister. */
-:root.dark .wl-fiche:hover .wl-prix { box-shadow: 3px 3px 0 rgb(0 0 0 / 0.55); }
+:root.dark .wl-prix { box-shadow: 0 5px 14px rgb(0 0 0 / 0.55); }
+:root.dark .wl-fiche:hover .wl-prix { box-shadow: 3px 3px 0 var(--wl-dette), 0 8px 18px rgb(0 0 0 / 0.6); }
 :root.dark .wl-fiche[data-acquis="oui"] .wl-prix { color: var(--wl-noir); background: #EAEEF4; }
 
 /* Les alertes de l import. */

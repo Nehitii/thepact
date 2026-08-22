@@ -1810,7 +1810,9 @@
       "voirEnLigne": "Voir en ligne",
       "remettre": "Remettre dans la liste",
       "marquerPaye": "Marquer payé",
-      "poserImage": "Poser une image"
+      "poserImage": "Poser une image",
+      "sceauPacte": "Pièce du pacte",
+      "sceauLibre": "Article libre"
     },
     "etat": {
       "parEtape": "Étape faite",

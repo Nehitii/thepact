@@ -1810,7 +1810,9 @@
       "voirEnLigne": "View online",
       "remettre": "Put back in the list",
       "marquerPaye": "Mark as paid",
-      "poserImage": "Add an image"
+      "poserImage": "Add an image",
+      "sceauPacte": "Pact piece",
+      "sceauLibre": "Free item"
     },
     "etat": {
       "parEtape": "Step done",

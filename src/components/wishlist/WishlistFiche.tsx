@@ -74,6 +74,10 @@ export function WishlistFiche({
     : "du";
 
   return (
+    /* Le socle porte la plaque arriere et la place dans la grille :
+       le chanfrein de la tuile est un clip-path, et un clip-path
+       rogne aussi ce qu on dessine autour. */
+    <div className="wl-socle" data-photo={photo ? "oui" : "non"} data-acquis={acquis ? "oui" : "non"}>
     <article className="wl-fiche" data-photo={photo ? "oui" : "non"} data-acquis={acquis ? "oui" : "non"}>
       <div className="wl-vignette">
         {photo ? (
@@ -106,10 +110,19 @@ export function WishlistFiche({
               : t("wishlist.etat.du", "À payer")}
         </span>
 
-        {/* La reference de l article, comme sur une etiquette de
-            magasin. Tiree de son identifiant : elle ne bouge pas
-            quand on change le tri. */}
-        <span className="wl-code">ART-{item.id.slice(0, 4).toUpperCase()}</span>
+        {/* LE CACHET. La reference de l article, et le signe de ce
+            qu il engage : 契 — le pacte — pour une piece d objectif,
+            自 — soi — pour une envie libre. Le sceau porte donc une
+            information au lieu d emprunter une marque de fiction. */}
+        <span className="wl-code">
+          <b aria-hidden="true">{duPacte ? "契" : "自"}</b>
+          <span className="sr-only">
+            {duPacte
+              ? t("wishlist.fiche.sceauPacte", "Pièce du pacte")
+              : t("wishlist.fiche.sceauLibre", "Article libre")}
+          </span>
+          {item.id.slice(0, 4).toUpperCase()}
+        </span>
 
         <span className="wl-prix">{formatCurrency(Number(item.estimated_cost || 0), currency)}</span>
       </div>
@@ -181,5 +194,6 @@ export function WishlistFiche({
         </div>
       </div>
     </article>
+    </div>
   );
 }
