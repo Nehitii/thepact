@@ -1,10 +1,12 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDailyJournalPrompt } from "@/hooks/useJournalPrompt";
+import { useDailyJournalPrompt, useEnregistrerOrientation } from "@/hooks/useJournalPrompt";
+import { useProfile } from "@/hooks/useProfile";
+import { FAMILLES, famillesRetenues } from "@/lib/journal/familles";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
 interface Props {
@@ -45,13 +47,12 @@ interface Props {
  * qui apparait signe par signe se regarde jusqu au bout, la ou un cadre
  * ne fait que se voir.
  */
-const FAMILLE: Record<string, string> = {
-  reflection: "journal.prompt.famille.reflection",
-  gratitude: "journal.prompt.famille.gratitude",
-  cbt: "journal.prompt.famille.cbt",
-  visualization: "journal.prompt.famille.visualization",
-  stoic: "journal.prompt.famille.stoic",
-};
+/* La table des cinq categories heritees — reflection, gratitude, cbt,
+   visualization, stoic — vivait ici en dur. Les familles sont
+   desormais declarees une seule fois, dans lib/journal/familles. */
+const NOM_DE_FAMILLE: Record<string, string> = Object.fromEntries(
+  FAMILLES.map((f) => [f.cle, f.nom]),
+);
 
 /** La frappe, signe par signe. Rendue d un coup si l on veut moins de mouvement. */
 function useFrappe(texte: string, actif: boolean) {
@@ -81,6 +82,10 @@ export function DailyPromptBanner({ onUse }: Props) {
   const locale = useDateFnsLocale();
   const sobre = useReducedMotion();
   const { data: prompt, isLoading } = useDailyJournalPrompt(user?.id);
+  const { data: profil } = useProfile(user?.id);
+  const enregistrerOrientation = useEnregistrerOrientation(user?.id);
+  const [orientationOuverte, setOrientationOuverte] = useState(false);
+  const retenues = famillesRetenues(profil?.journal_prompt_families);
   const dayKey = new Date().toDateString();
   const storageKey = `journal-prompt-dismissed-${dayKey}`;
   const [dismissed, setDismissed] = useState(false);
@@ -103,8 +108,17 @@ export function DailyPromptBanner({ onUse }: Props) {
 
   /* « CBT » et « RFL » n apprenaient rien : personne ne sait ce que
      veut dire CBT. La famille se dit en toutes lettres. */
-  const cle = FAMILLE[prompt.category];
+  const cle = NOM_DE_FAMILLE[prompt.category];
   const famille = cle ? t(cle, prompt.category) : prompt.category;
+
+  /* Decocher la derniere famille ne doit pas vider le journal :
+     famillesRetenues traite l ensemble vide comme « toutes ». */
+  const basculer = (f: string) => {
+    const suivantes = retenues.includes(f)
+      ? retenues.filter((x) => x !== f)
+      : [...retenues, f];
+    enregistrerOrientation.mutate(suivantes);
+  };
 
   const jour = new Date();
 
@@ -134,7 +148,19 @@ export function DailyPromptBanner({ onUse }: Props) {
           <span className="jr-q-meta">{famille}</span>
           <button
             type="button"
+            className="jr-q-orienter"
+            aria-expanded={orientationOuverte}
+            onClick={() => setOrientationOuverte((v) => !v)}
+            title={t("journal.prompt.orienter")}
+            aria-label={t("journal.prompt.orienter")}
+            style={{ marginLeft: "auto" }}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             className="jr-q-fermer"
+            style={{ marginLeft: 6 }}
             onClick={() => {
               localStorage.setItem(storageKey, "1");
               setDismissed(true);
@@ -144,6 +170,24 @@ export function DailyPromptBanner({ onUse }: Props) {
             <X className="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         </header>
+
+        {orientationOuverte && (
+          <div className="jr-q-familles" role="group" aria-label={t("journal.prompt.orienter")}>
+            {FAMILLES.map((f) => (
+              <button
+                key={f.cle}
+                type="button"
+                className="jr-q-famille"
+                aria-pressed={retenues.includes(f.cle)}
+                title={t(f.quoi)}
+                onClick={() => basculer(f.cle)}
+              >
+                {t(f.nom)}
+              </button>
+            ))}
+            <p>{t("journal.prompt.orienterAide")}</p>
+          </div>
+        )}
 
         {/* Le texte complet reste lisible par les technologies
             d assistance : elles n ont pas a attendre la frappe. */}

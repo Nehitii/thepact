@@ -25,6 +25,10 @@ export interface ProfileSettings {
      donc a travers un « as any » sur un objet qui ne l a jamais porte,
      et la condition « pas encore choisi » etait toujours vraie. */
   active_pact_id: string | null;
+  /* Les familles de questions du journal retenues. Null = jamais
+     choisi, tableau vide = tout decoche : famillesRetenues() traite
+     les deux comme « toutes ». */
+  journal_prompt_families: string[] | null;
 }
 
 export function useProfile(userId: string | undefined) {
@@ -35,7 +39,7 @@ export function useProfile(userId: string | undefined) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country, goal_unlock_code, active_pact_id")
+        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country, goal_unlock_code, active_pact_id, journal_prompt_families")
         .eq("id", userId)
         .maybeSingle();
 

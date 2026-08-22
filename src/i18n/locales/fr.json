@@ -2185,13 +2185,8 @@
       "dismiss": "Masquer la question du jour",
       "aujourdhui": "Aujourd’hui",
       "aEcrire": "À écrire",
-      "famille": {
-        "reflection": "Réflexion",
-        "gratitude": "Gratitude",
-        "cbt": "Recadrage",
-        "visualization": "Projection",
-        "stoic": "Stoïcisme"
-      }
+      "orienter": "Orienter mes questions",
+      "orienterAide": "Tout décoché revient à tout garder"
     },
     "spine": "Journal — Archive",
     "dossier": "Dossier",
@@ -2267,7 +2262,41 @@
       "lecture_other": "{{count}} min de lecture",
       "italiqueDoc": "Le document est en italique — ceci redresse le passage"
     },
-    "energy": "Énergie"
+    "energy": "Énergie",
+    "familles": {
+      "derniersMots": {
+        "nom": "Les derniers mots",
+        "quoi": "Ce qu’on dirait s’il ne restait qu’une phrase"
+      },
+      "leTu": {
+        "nom": "Ce que tu tais",
+        "quoi": "Ce qu’on évite de regarder"
+      },
+      "lesAutres": {
+        "nom": "Les autres",
+        "quoi": "Ce qu’on doit, ce qu’on cache, et à qui"
+      },
+      "ceQueTuCrois": {
+        "nom": "Ce que tu crois",
+        "quoi": "Ce qu’on défendrait même seul"
+      },
+      "leTemps": {
+        "nom": "Le temps",
+        "quoi": "L’enfant qu’on était, celui qu’on sera"
+      },
+      "lePacte": {
+        "nom": "Le pacte",
+        "quoi": "Tes objectifs, sans conseil"
+      },
+      "sensible": {
+        "nom": "Le monde sensible",
+        "quoi": "Le soleil, la pluie, une odeur, une lumière"
+      },
+      "lOrdinaire": {
+        "nom": "L’ordinaire",
+        "quoi": "La texture d’une journée"
+      }
+    }
   },
   "onboarding": {
     "welcome": "Bienvenue dans Le Pacte",

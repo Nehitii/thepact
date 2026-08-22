@@ -3190,6 +3190,7 @@ export type Database = {
           goal_unlock_code: string | null
           height: number | null
           id: string
+          journal_prompt_families: string[] | null
           language: string | null
           last_seen_at: string | null
           particles_enabled: boolean
@@ -3239,6 +3240,7 @@ export type Database = {
           goal_unlock_code?: string | null
           height?: number | null
           id: string
+          journal_prompt_families?: string[] | null
           language?: string | null
           last_seen_at?: string | null
           particles_enabled?: boolean
@@ -3288,6 +3290,7 @@ export type Database = {
           goal_unlock_code?: string | null
           height?: number | null
           id?: string
+          journal_prompt_families?: string[] | null
           language?: string | null
           last_seen_at?: string | null
           particles_enabled?: boolean

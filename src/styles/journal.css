@@ -395,6 +395,47 @@
 .jr-q-fermer:hover { color: var(--jr-signal); border-color: rgb(var(--jr-halo) / 0.5); }
 .jr-q-fermer:focus-visible { outline: 1px solid var(--jr-signal); outline-offset: 2px; }
 
+/* ── L ORIENTATION ─────────────────────────────────────────
+   Huit familles, et l on choisit lesquelles tombent. Le panneau se
+   deplie SOUS l en-tete plutot que dans une fenetre : le reglage
+   appartient a la question, il n a pas a l occulter pour se montrer. */
+.jr-q-orienter {
+  display: grid; place-items: center; width: 26px; height: 26px;
+  cursor: pointer; background: transparent;
+  border: 1px solid rgb(var(--jr-halo) / 0.18); color: rgb(var(--jr-halo) / 0.5);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.jr-q-orienter:hover { color: var(--jr-signal); border-color: rgb(var(--jr-halo) / 0.5); }
+.jr-q-orienter:focus-visible { outline: 1px solid var(--jr-signal); outline-offset: 2px; }
+.jr-q-orienter[aria-expanded="true"] { color: var(--jr-signal); border-color: var(--jr-signal); }
+
+.jr-q-familles {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 0 0 15px; padding: 13px 0 0;
+  border-top: 1px solid rgb(var(--jr-halo) / 0.14);
+}
+.jr-q-famille {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  padding: 6px 10px; cursor: pointer; background: transparent;
+  border: 1px solid rgb(var(--jr-halo) / 0.2);
+  font-family: var(--jr-mono); font-size: max(9px, 0.563rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgb(var(--jr-halo) / 0.45);
+  transition: color 140ms linear, border-color 140ms linear, background 140ms linear;
+}
+.jr-q-famille:hover { color: var(--jr-q-encre); border-color: rgb(var(--jr-halo) / 0.45); }
+.jr-q-famille[aria-pressed="true"] {
+  color: var(--jr-signal); border-color: var(--jr-signal);
+  background: rgb(var(--jr-halo) / 0.1);
+}
+.jr-q-famille:focus-visible { outline: 1px solid var(--jr-signal); outline-offset: 2px; }
+.jr-q-familles > p {
+  flex-basis: 100%; margin: 2px 0 0;
+  font-family: var(--jr-mono); font-size: max(8.5px, 0.531rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgb(var(--jr-halo) / 0.34);
+}
+
 /* ── La question ── */
 .jr-q-texte {
   margin: 0 0 15px; max-width: 40ch;

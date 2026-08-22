@@ -2185,13 +2185,8 @@
       "dismiss": "Dismiss the daily prompt",
       "aujourdhui": "Today",
       "aEcrire": "To write",
-      "famille": {
-        "reflection": "Reflection",
-        "gratitude": "Gratitude",
-        "cbt": "Reframing",
-        "visualization": "Projection",
-        "stoic": "Stoicism"
-      }
+      "orienter": "Steer my questions",
+      "orienterAide": "Unchecking everything keeps everything"
     },
     "spine": "Journal — Archive",
     "dossier": "File",
@@ -2267,7 +2262,41 @@
       "lecture_other": "{{count}} min read",
       "italiqueDoc": "The document is set in italics — this sets the passage upright"
     },
-    "energy": "Energy"
+    "energy": "Energy",
+    "familles": {
+      "derniersMots": {
+        "nom": "Last words",
+        "quoi": "What you’d say if only one sentence were left"
+      },
+      "leTu": {
+        "nom": "What you keep quiet",
+        "quoi": "What you avoid looking at"
+      },
+      "lesAutres": {
+        "nom": "Other people",
+        "quoi": "What you owe, what you hide, and from whom"
+      },
+      "ceQueTuCrois": {
+        "nom": "What you believe",
+        "quoi": "What you’d defend even alone"
+      },
+      "leTemps": {
+        "nom": "Time",
+        "quoi": "The child you were, the one you’ll be"
+      },
+      "lePacte": {
+        "nom": "The pact",
+        "quoi": "Your goals, without advice"
+      },
+      "sensible": {
+        "nom": "The sensory world",
+        "quoi": "The sun, the rain, a smell, a light"
+      },
+      "lOrdinaire": {
+        "nom": "The ordinary",
+        "quoi": "The texture of a day"
+      }
+    }
   },
   "onboarding": {
     "welcome": "Welcome to The Pact",
