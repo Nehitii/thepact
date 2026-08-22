@@ -138,11 +138,16 @@ export function LigneAffiche({
         </span>
       </span>
 
-      {/* Verrouillee, la ligne ne porte AUCUN outil — pas des outils
-          desactives. Un bouton grise invite quand meme a cliquer, et
-          la deception est pire que l absence. */}
-      {!verrouille && (
-      <span className="cy-aff-outils">
+      {/* LA COLONNE RESTE, LES OUTILS PARTENT.
+          Ne rien rendre du tout faisait s effondrer la cinquieme
+          colonne de la grille : 86 pixels disparaissaient, et TOUS les
+          montants des deux listes glissaient lateralement a chaque
+          changement de mois. Le pire mouvement de la page, et le plus
+          facile a eviter.
+          « visibility: hidden » garde la place ET retire les boutons du
+          parcours de tabulation : ils ne sont donc pas grises-mais-
+          cliquables, ils ne sont plus la du tout. */}
+      <span className="cy-aff-outils" data-verrouille={verrouille ? '1' : '0'} aria-hidden={verrouille || undefined}>
         {onToggleActive && (
           <button
             type="button"
@@ -165,7 +170,6 @@ export function LigneAffiche({
           <Trash2 aria-hidden="true" />
         </button>
       </span>
-      )}
     </motion.li>
   );
 }

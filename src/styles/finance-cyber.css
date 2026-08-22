@@ -913,7 +913,8 @@
    Il faut donc quelles sannoncent cliquables. */
 .cy-palm-bande button {
   cursor: pointer;
-  transition: transform 120ms ease, filter 120ms linear;
+  transition: transform 120ms ease, filter 120ms linear,
+              border-color 200ms linear, box-shadow 240ms ease, background 200ms linear;
   padding: 0;
   font: inherit;
   flex: 1; height: 30px; position: relative; transform-origin: bottom;
@@ -1005,7 +1006,13 @@
 
 /* L appel a valider : la serie se gagne la, pas deux ecrans plus bas. */
 .cy-palm-appel {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  /* GRILLE ET NON FLEX, POUR QUE RIEN NE SAUTE.
+     En flex avec retour a la ligne, une phrase longue faisait passer
+     les boutons en dessous et le pied grandissait — toute la page en
+     dessous descendait de six pixels a chaque changement de mois. Deux
+     colonnes qui ne se replient jamais, et une hauteur reservee. */
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; gap: 14px; min-height: 55px;
   margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--cy-trait);
 }
 .cy-palm-appel p {
@@ -1037,7 +1044,7 @@
 .cy-palm-appel .cy-palm-retour {
   background: transparent; color: var(--cy-encre-2);
   border: 1px solid var(--cy-trait); box-shadow: none;
-  clip-path: none; min-height: 36px; padding: 0 13px;
+  clip-path: none; min-height: 42px; padding: 0 13px;
   font-size: max(9.5px, 0.594rem); letter-spacing: 0.12em;
 }
 .cy-palm-appel .cy-palm-retour:hover {
@@ -1239,7 +1246,7 @@
 .cy-palm-appel .cy-palm-refaire {
   background: transparent; color: var(--cy-encre-2);
   border: 1px solid var(--cy-trait); box-shadow: none;
-  clip-path: none; min-height: 36px; padding: 0 13px;
+  clip-path: none; min-height: 42px; padding: 0 13px;
   font-size: max(9.5px, 0.594rem); letter-spacing: 0.12em;
 }
 .cy-palm-appel .cy-palm-refaire:hover {
@@ -3038,6 +3045,12 @@
 .cy-aff-poids i { display: block; height: 100%; }
 
 .cy-aff-outils { display: flex; gap: 1px; }
+/* Verrouillee, la colonne garde sa largeur : sans elle, les 86 pixels
+   qu elle occupe disparaissaient de la grille et tous les montants des
+   deux listes glissaient a chaque changement de mois. `visibility`
+   plutot que `display` — la place reste, les boutons sortent aussi du
+   parcours de tabulation. */
+.cy-aff-outils[data-verrouille="1"] { visibility: hidden; }
 .cy-aff-outils button {
   display: grid;
   place-items: center;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   AlertTriangle, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight,
   CornerUpLeft, Eye, Flame, Lock, Rocket, Trophy,
@@ -101,6 +101,9 @@ export function MoisPalmares({
   /* Sans locale, date-fns rend « Jul 2026 » dans une interface
      francaise. Le hook existe : il suffisait de s en servir. */
   const locale = useDateFnsLocale();
+  /* Qui a demande moins de mouvement en aura moins : les etats
+     changent quand meme, ils changent seulement sans glisser. */
+  const sobre = useReducedMotion();
 
   /* L annee regardee. On ouvre sur celle en cours — c est la reponse a
      « et apres ? », qui est la question du jour. */
@@ -346,41 +349,93 @@ export function MoisPalmares({
           quand on en regardait un autre : deux appels a l action se
           contredisaient. Elle parle desormais du mois qu on regarde,
           dit ou l on est, et ne propose que ce qui est permis. */}
+      {/* CE QUI CHANGE DOIT SE VOIR CHANGER.
+          La barre passait d un etat a l autre d un seul cadre : la
+          phrase se substituait, les boutons apparaissaient et
+          disparaissaient, et l ensemble donnait l impression d un
+          rafraichissement rate plutot que d une transition.
+
+          La hauteur, elle, ne bouge plus du tout — c est le CSS qui
+          s en charge, en reservant la place. L animation ne masque
+          donc aucun saut : elle accompagne seulement ce qui change
+          vraiment, ce qui est tout l inverse. */}
       <div className="cy-palm-appel" data-etat={etat}>
-        <p>
-          <Icone aria-hidden="true" />
-          {phrase}
-        </p>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={`${etat}-${format(moisAffiche, 'yyyy-MM')}`}
+            initial={sobre ? false : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={sobre ? { opacity: 0 } : { opacity: 0, y: -5 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Icone aria-hidden="true" />
+            {phrase}
+          </motion.p>
+        </AnimatePresence>
 
-        <div className="cy-palm-gestes">
-          {!estCourant && (
-            <button type="button" className="cy-palm-retour" onClick={onRevenirAuMoisCourant}>
-              <CornerUpLeft aria-hidden="true" />
-              {t('finance.palmares.revenirAuMois', { mois: nomDuMoisCourant, defaultValue: nomDuMoisCourant })}
-            </button>
-          )}
+        {/* « popLayout » sort le bouton du flux AVANT que les autres ne
+            se replacent : sans lui, ils sauteraient a sa place au lieu
+            d y glisser. */}
+        <motion.div className="cy-palm-gestes" layout={!sobre} transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!estCourant && (
+              <motion.button
+                key="retour"
+                layout={!sobre}
+                initial={sobre ? false : { opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={sobre ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                type="button"
+                className="cy-palm-retour"
+                onClick={onRevenirAuMoisCourant}
+              >
+                <CornerUpLeft aria-hidden="true" />
+                {t('finance.palmares.revenirAuMois', { mois: nomDuMoisCourant, defaultValue: nomDuMoisCourant })}
+              </motion.button>
+            )}
 
-          {/* VERROUILLE, ET NON DISPARU.
-              Un mois clos ne se remodifie pas — mais un pointage se
-              fait a la main, donc il se trompe. Sans issue, une coche
-              erronee fausserait le palmares pour toujours. La porte
-              existe, elle demande confirmation, et elle est la seule. */}
-          {etat === 'valide' && (
-            <button type="button" className="cy-palm-refaire" onClick={onCorriger}>
-              <Lock aria-hidden="true" />
-              {t('finance.palmares.corrigerLeMois', 'Corriger ce mois')}
-            </button>
-          )}
+            {/* VERROUILLE, ET NON DISPARU.
+                Un mois clos ne se remodifie pas — mais un pointage se
+                fait a la main, donc il se trompe. Sans issue, une coche
+                erronee fausserait le palmares pour toujours. La porte
+                existe, elle demande confirmation, et elle est la seule. */}
+            {etat === 'valide' && (
+              <motion.button
+                key="corriger"
+                layout={!sobre}
+                initial={sobre ? false : { opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={sobre ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                type="button"
+                className="cy-palm-refaire"
+                onClick={onCorriger}
+              >
+                <Lock aria-hidden="true" />
+                {t('finance.palmares.corrigerLeMois', 'Corriger ce mois')}
+              </motion.button>
+            )}
 
-          {peutPointer(etat) && (
-            <button type="button" onClick={onPointer}>
-              {etat === 'cours'
-                ? t('finance.palmares.validerLeMois')
-                : t('finance.palmares.pointerLeMois', { mois: nomDuMoisAffiche, defaultValue: `Pointer ${nomDuMoisAffiche}` })}
-              <ArrowRight aria-hidden="true" />
-            </button>
-          )}
-        </div>
+            {peutPointer(etat) && (
+              <motion.button
+                key="pointer"
+                layout={!sobre}
+                initial={sobre ? false : { opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={sobre ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                type="button"
+                onClick={onPointer}
+              >
+                {etat === 'cours'
+                  ? t('finance.palmares.validerLeMois')
+                  : t('finance.palmares.pointerLeMois', { mois: nomDuMoisAffiche, defaultValue: `Pointer ${nomDuMoisAffiche}` })}
+                <ArrowRight aria-hidden="true" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   );
