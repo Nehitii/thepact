@@ -82,8 +82,10 @@ export interface VictoryReel {
 export interface CompletedGoal {
   id: string;
   name: string;
-  type: string;
-  difficulty: string;
+  /* Nullables en base. Le « as any[] » sur la requete masquait l ecart
+     avec cette declaration, qui les annoncait obligatoires. */
+  type: string | null;
+  difficulty: string | null;
   start_date: string | null;
   completion_date: string | null;
 }
@@ -91,9 +93,11 @@ export interface CompletedGoal {
 export interface UserGoal {
   id: string;
   name: string;
-  type: string;
-  difficulty: string;
-  status: string;
+  /* Nullables en base. Le « as any[] » sur la requete masquait l ecart
+     avec cette declaration, qui les annoncait obligatoires. */
+  type: string | null;
+  difficulty: string | null;
+  status: string | null;
   start_date: string | null;
   completion_date: string | null;
 }
@@ -115,9 +119,9 @@ export function useCommunityPosts(
     queryKey: ["community-posts", filter, sort],
     queryFn: async ({ pageParam }: { pageParam: string | null }) => {
       let q = (supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .select("*")
-        .eq("is_public", true) as any);
+        .eq("is_public", true));
 
       if (filter !== 'all') {
         q = q.eq("post_type", filter);
@@ -141,30 +145,30 @@ export function useCommunityPosts(
       if (postsError) throw postsError;
       if (!posts || posts.length === 0) return { posts: [], nextCursor: null };
 
-      const userIds = [...new Set(posts.map((p: any) => p.user_id))] as string[];
-      const postIds = posts.map((p: any) => p.id) as string[];
+      const userIds = [...new Set(posts.map((p) => p.user_id))] as string[];
+      const postIds = posts.map((p) => p.id) as string[];
 
       const [profilesRes, repliesRes, userReactionsRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
-          .in("id", userIds) as any,
-        supabase.from("community_replies" as any).select("post_id").in("post_id", postIds) as any,
+          .in("id", userIds),
+        supabase.from("community_replies").select("post_id").in("post_id", postIds),
         user
-          ? (supabase.from("community_reactions" as any).select("post_id, reaction_type").eq("user_id", user.id).in("post_id", postIds) as any)
+          ? (supabase.from("community_reactions").select("post_id, reaction_type").eq("user_id", user.id).in("post_id", postIds))
           : Promise.resolve({ data: [], error: null })
       ]);
 
-      const profilesMap = new Map<string, any>();
-      (profilesRes.data || []).forEach((p: any) => profilesMap.set(p.id, p));
+      const profilesMap = new Map<string, NonNullable<typeof profilesRes.data>[number]>();
+      (profilesRes.data || []).forEach((p) => profilesMap.set(p.id, p));
 
       const repliesMap = new Map<string, number>();
-      (repliesRes.data || []).forEach((r: any) => {
+      (repliesRes.data || []).forEach((r) => {
         repliesMap.set(r.post_id, (repliesMap.get(r.post_id) || 0) + 1);
       });
 
       const userReactionsMap = new Map<string, string[]>();
-      (userReactionsRes.data || []).forEach((r: any) => {
+      (userReactionsRes.data || []).forEach((r) => {
         if (!r.post_id) return;
         if (!userReactionsMap.has(r.post_id)) {
           userReactionsMap.set(r.post_id, []);
@@ -172,7 +176,7 @@ export function useCommunityPosts(
         userReactionsMap.get(r.post_id)!.push(r.reaction_type);
       });
 
-      const enrichedPosts = posts.map((post: any) => ({
+      const enrichedPosts = posts.map((post) => ({
         ...post,
         post_type: post.post_type as CommunityPost['post_type'],
         profile: profilesMap.get(post.user_id),
@@ -231,24 +235,24 @@ export function usePostReplies(postId: string | undefined) {
       if (!postId) return [];
 
       const { data: replies, error } = await (supabase
-        .from("community_replies" as any)
+        .from("community_replies")
         .select("*")
         .eq("post_id", postId)
-        .order("created_at", { ascending: true }) as any);
+        .order("created_at", { ascending: true }));
 
       if (error) throw error;
       if (!replies || replies.length === 0) return [];
 
-      const userIds = [...new Set(replies.map((r: any) => r.user_id))] as string[];
+      const userIds = [...new Set(replies.map((r) => r.user_id))] as string[];
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, display_name, avatar_url, community_profile_discoverable")
         .in("id", userIds);
 
-      const profilesMap = new Map<string, any>();
-      (profiles || []).forEach((p: any) => profilesMap.set(p.id, p));
+      const profilesMap = new Map<string, NonNullable<typeof profiles>[number]>();
+      (profiles || []).forEach((p) => profilesMap.set(p.id, p));
 
-      return replies.map((reply: any) => ({
+      return replies.map((reply) => ({
         ...reply,
         profile: profilesMap.get(reply.user_id)
       })) as CommunityReply[];
@@ -272,7 +276,7 @@ export function useCreatePost() {
       if (!user) throw new Error("Must be logged in");
 
       const { data: post, error } = await (supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .insert({
           user_id: user.id,
           content: data.content,
@@ -282,7 +286,7 @@ export function useCreatePost() {
           is_public: true
         })
         .select()
-        .single() as any);
+        .single());
 
       if (error) throw error;
       return post;
@@ -306,10 +310,10 @@ export function useUpdatePost() {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await (supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .update({ content: data.content, updated_at: new Date().toISOString() })
         .eq("id", data.id)
-        .eq("user_id", user.id) as any);
+        .eq("user_id", user.id));
 
       if (error) throw error;
     },
@@ -329,10 +333,10 @@ export function useDeletePost() {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await (supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .delete()
         .eq("id", postId)
-        .eq("user_id", user.id) as any);
+        .eq("user_id", user.id));
 
       if (error) throw error;
     },
@@ -356,13 +360,13 @@ export function useAddReaction() {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await (supabase
-        .from("community_reactions" as any)
+        .from("community_reactions")
         .insert({
           user_id: user.id,
           post_id: data.post_id || null,
           reel_id: data.reel_id || null,
           reaction_type: data.reaction_type
-        }) as any);
+        }));
 
       if (error) throw error;
     },
@@ -391,10 +395,10 @@ export function useRemoveReaction() {
       if (!user) throw new Error("Must be logged in");
 
       let query = supabase
-        .from("community_reactions" as any)
+        .from("community_reactions")
         .delete()
         .eq("user_id", user.id)
-        .eq("reaction_type", data.reaction_type) as any;
+        .eq("reaction_type", data.reaction_type);
 
       if (data.post_id) {
         query = query.eq("post_id", data.post_id);
@@ -427,14 +431,14 @@ export function useAddReply() {
       if (!user) throw new Error("Must be logged in");
 
       const { data: reply, error } = await (supabase
-        .from("community_replies" as any)
+        .from("community_replies")
         .insert({
           user_id: user.id,
           post_id: data.post_id,
           content: data.content
         })
         .select()
-        .single() as any);
+        .single());
 
       if (error) throw error;
       return reply;
@@ -456,10 +460,10 @@ export function useDeleteReply() {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await (supabase
-        .from("community_replies" as any)
+        .from("community_replies")
         .delete()
         .eq("id", data.replyId)
-        .eq("user_id", user.id) as any);
+        .eq("user_id", user.id));
 
       if (error) throw error;
     },
@@ -483,14 +487,14 @@ export function useReportContent() {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await (supabase
-        .from("community_reports" as any)
+        .from("community_reports")
         .insert({
           reporter_id: user.id,
           post_id: data.post_id || null,
           reel_id: data.reel_id || null,
           reply_id: data.reply_id || null,
           reason: data.reason,
-        }) as any);
+        }));
 
       if (error) throw error;
     }
@@ -505,18 +509,18 @@ export function useVictoryReels() {
     queryKey: ["victory-reels"],
     queryFn: async () => {
       const { data: reels, error } = await (supabase
-        .from("victory_reels" as any)
+        .from("victory_reels")
         .select("*")
         .eq("is_public", true)
         .order("created_at", { ascending: false })
-        .limit(50) as any);
+        .limit(50));
 
       if (error) throw error;
       if (!reels || reels.length === 0) return [];
 
-      const userIds = [...new Set(reels.map((r: any) => r.user_id))] as string[];
-      const goalIds = [...new Set(reels.map((r: any) => r.goal_id))] as string[];
-      const reelIds = reels.map((r: any) => r.id) as string[];
+      const userIds = [...new Set(reels.map((r) => r.user_id))] as string[];
+      const goalIds = [...new Set(reels.map((r) => r.goal_id))] as string[];
+      const reelIds = reels.map((r) => r.id) as string[];
 
       // Goals query goes through pacts — but RLS blocks other users' goals
       // So we only fetch goals the current user owns (for their own reels)
@@ -524,21 +528,21 @@ export function useVictoryReels() {
         supabase
           .from("profiles")
           .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
-          .in("id", userIds) as any,
-        supabase.from("goals").select("id, name, type, start_date, completion_date").in("id", goalIds) as any,
+          .in("id", userIds),
+        supabase.from("goals").select("id, name, type, start_date, completion_date").in("id", goalIds),
         user
-          ? (supabase.from("community_reactions" as any).select("reel_id, reaction_type").eq("user_id", user.id).in("reel_id", reelIds) as any)
+          ? (supabase.from("community_reactions").select("reel_id, reaction_type").eq("user_id", user.id).in("reel_id", reelIds))
           : Promise.resolve({ data: [], error: null })
       ]);
 
-      const profilesMap = new Map<string, any>();
-      (profilesRes.data || []).forEach((p: any) => profilesMap.set(p.id, p));
+      const profilesMap = new Map<string, NonNullable<typeof profilesRes.data>[number]>();
+      (profilesRes.data || []).forEach((p) => profilesMap.set(p.id, p));
 
-      const goalsMap = new Map<string, any>();
-      (goalsRes.data || []).forEach((g: any) => goalsMap.set(g.id, g));
+      const goalsMap = new Map<string, NonNullable<typeof goalsRes.data>[number]>();
+      (goalsRes.data || []).forEach((g) => goalsMap.set(g.id, g));
 
       const userReactionsMap = new Map<string, string[]>();
-      (userReactionsRes.data || []).forEach((r: any) => {
+      (userReactionsRes.data || []).forEach((r) => {
         if (!r.reel_id) return;
         if (!userReactionsMap.has(r.reel_id)) {
           userReactionsMap.set(r.reel_id, []);
@@ -547,7 +551,7 @@ export function useVictoryReels() {
       });
 
       // Generate signed URLs for private bucket videos
-      const signedUrlPromises = reels.map(async (reel: any) => {
+      const signedUrlPromises = reels.map(async (reel) => {
         // Extract path from stored URL or use as-is
         const videoPath = reel.video_url.includes('/storage/v1/')
           ? reel.video_url.split('/victory-reels/').pop()
@@ -577,7 +581,7 @@ export function useVictoryReels() {
 
       const signedUrls = await Promise.all(signedUrlPromises);
 
-      return reels.map((reel: any, i: number) => ({
+      return reels.map((reel, i) => ({
         ...reel,
         video_url: signedUrls[i],
         profile: profilesMap.get(reel.user_id),
@@ -610,7 +614,7 @@ export function useCreateVictoryReel() {
       if (!user) throw new Error("Must be logged in");
 
       const { data: reel, error } = await (supabase
-        .from("victory_reels" as any)
+        .from("victory_reels")
         .insert({
           user_id: user.id,
           goal_id: data.goal_id,
@@ -621,7 +625,7 @@ export function useCreateVictoryReel() {
           is_public: true
         })
         .select()
-        .single() as any);
+        .single());
 
       if (error) throw error;
       return reel;
@@ -636,7 +640,7 @@ export function useCreateVictoryReel() {
 export function useIncrementReelView() {
   return useMutation({
     mutationFn: async (reelId: string) => {
-      const { error } = await supabase.rpc("increment_reel_view", { p_reel_id: reelId } as any);
+      const { error } = await supabase.rpc("increment_reel_view", { p_reel_id: reelId });
       if (error) console.warn("Failed to increment view count:", error);
     }
   });
@@ -663,13 +667,13 @@ export function useCompletedGoals() {
       const { data: goals, error } = await (supabase
         .from("goals")
         .select("id, name, type, difficulty, start_date, completion_date, status")
-        .eq("pact_id", pact.id) as any);
+        .eq("pact_id", pact.id));
 
       if (error) throw error;
 
-      return ((goals as any[]) || [])
-        .filter((g: any) => g.status === "fully_completed" || g.status === "validated")
-        .map((g: any) => ({
+      return ((goals ?? []))
+        .filter((g) => g.status === "fully_completed" || g.status === "validated")
+        .map((g) => ({
           id: g.id,
           name: g.name,
           type: g.type,
@@ -703,11 +707,11 @@ export function useUserGoals() {
         .from("goals")
         .select("id, name, type, difficulty, status, start_date, completion_date")
         .eq("pact_id", pact.id)
-        .order("created_at", { ascending: false }) as any);
+        .order("created_at", { ascending: false }));
 
       if (error) throw error;
 
-      return ((goals as any[]) || []).map((g: any) => ({
+      return ((goals ?? [])).map((g) => ({
         id: g.id,
         name: g.name,
         type: g.type,
@@ -730,16 +734,16 @@ export function useCommunityStats() {
 
       const [postsRes, membersRes] = await Promise.all([
         (supabase
-          .from("community_posts" as any)
+          .from("community_posts")
           .select("id", { count: "exact", head: true })
-          .gte("created_at", oneWeekAgo) as any),
+          .gte("created_at", oneWeekAgo)),
         (supabase
-          .from("community_posts" as any)
+          .from("community_posts")
           .select("user_id")
-          .gte("created_at", oneWeekAgo) as any),
+          .gte("created_at", oneWeekAgo)),
       ]);
 
-      const uniqueMembers = new Set((membersRes.data || []).map((m: any) => m.user_id)).size;
+      const uniqueMembers = new Set((membersRes.data || []).map((m) => m.user_id)).size;
 
       return {
         postsThisWeek: postsRes.count || 0,
