@@ -156,14 +156,19 @@ export function WishlistRegistre({
                   const piece = item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined;
                   return (
                     <div className="wl-poste" key={item.id} data-acquis={item.acquired ? "oui" : "non"}>
+                      {/* Meme regle que la fiche d objectif : une etape
+                          validee a deja paye sa piece. */}
                       <button
                         type="button"
                         className="wl-coche"
                         aria-pressed={item.acquired}
+                        disabled={piece?.etapeFaite === true}
                         onClick={() => onToggleAcquired(item.id, !item.acquired)}
-                        title={item.acquired
-                          ? t("wishlist.fiche.remettre", "Remettre dans la liste")
-                          : t("wishlist.fiche.marquerPaye", "Marquer payé")}
+                        title={piece?.etapeFaite
+                          ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
+                          : item.acquired
+                            ? t("wishlist.fiche.remettre", "Remettre dans la liste")
+                            : t("wishlist.fiche.marquerPaye", "Marquer payé")}
                       >
                         <Check aria-hidden="true" />
                       </button>

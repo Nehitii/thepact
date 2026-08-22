@@ -126,6 +126,12 @@ export function useAcquerirPieces() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cost-items-pacte"] });
       queryClient.invalidateQueries({ queryKey: ["cost-items"] });
+      /* La wishlist montre les memes pieces sous un autre jour : sans
+         cela, un achat marque ici restait « a payer » la-bas jusqu au
+         rechargement suivant. */
+      queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
+      queryClient.invalidateQueries({ queryKey: ["wishlist-pieces"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail"] });
     },
   });
 }

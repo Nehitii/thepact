@@ -688,7 +688,10 @@
       "goPrevious": "Previous: {{nom}}",
       "goNext": "Next: {{nom}}",
       "noPrevious": "No goal before this one",
-      "noNext": "No goal after this one"
+      "noNext": "No goal after this one",
+      "paidByStep": "Paid by validating the step",
+      "buy": "Mark as bought",
+      "unbuy": "Mark as not bought"
     },
     "views": {
       "grid": "Grid",

@@ -161,14 +161,20 @@ export function WishlistFiche({
             </button>
           </div>
 
+          {/* Une etape validee a deja paye sa piece : la case le
+              montre et se verrouille, ici comme sur la fiche de
+              l objectif. Une seule regle, deux ecrans. */}
           <button
             type="button"
             className="wl-coche"
             aria-pressed={acquis}
+            disabled={piece?.etapeFaite === true}
             onClick={basculer}
-            title={acquis
-              ? t("wishlist.fiche.remettre", "Remettre dans la liste")
-              : t("wishlist.fiche.marquerPaye", "Marquer payé")}
+            title={piece?.etapeFaite
+              ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
+              : acquis
+                ? t("wishlist.fiche.remettre", "Remettre dans la liste")
+                : t("wishlist.fiche.marquerPaye", "Marquer payé")}
           >
             <Check aria-hidden="true" />
           </button>

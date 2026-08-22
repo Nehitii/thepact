@@ -155,13 +155,15 @@ export const DossierEtapes = React.memo(function DossierEtapes({
 /* ── Le registre ────────────────────────────────────────────────── */
 
 export const DossierRegistre = React.memo(function DossierRegistre({
-  postes, etapes, teinte, devise, coutEstime,
+  postes, etapes, teinte, devise, coutEstime, onAcquerir,
 }: {
   postes: PosteDossier[];
   etapes: EtapeDossier[];
   teinte: string;
   devise: string;
   coutEstime: number;
+  /** Marquer une piece achetee, sans toucher a son etape. */
+  onAcquerir?: (id: string, acquis: boolean) => void;
 }) {
   const { t } = useTranslation();
 
@@ -171,14 +173,22 @@ export const DossierRegistre = React.memo(function DossierRegistre({
     return m;
   }, [etapes]);
 
-  /* Un poste est finance de deux facons, et les deux comptent : son
-     etape est validee — c est ce que la fiche mesurait deja — ou la
-     piece a ete acquise depuis l arbitrage de la page Finance. */
-  const estFinance = React.useCallback((p: PosteDossier) => {
-    if (p.acquired_at) return true;
-    if (!p.step_id) return false;
-    return etapes.some((e) => e.id === p.step_id && e.status === "completed");
-  }, [etapes]);
+  /* Une piece est payee de deux facons, et les deux comptent : son
+     etape a ete validee, ou elle a ete achetee pour elle-meme.
+
+     ACHETER N EST PAS FAIRE. On achete l epilateur avant de
+     commencer a s epiler ; le materiel de tir avant le premier tir.
+     Lier l achat a la validation de l etape obligeait a declarer
+     faite une etape qui ne l est pas — une donnee fausse pour en
+     corriger une autre. */
+  const payeParEtape = React.useCallback((p: PosteDossier) => (
+    Boolean(p.step_id) && etapes.some((e) => e.id === p.step_id && e.status === "completed")
+  ), [etapes]);
+
+  const estFinance = React.useCallback(
+    (p: PosteDossier) => Boolean(p.acquired_at) || payeParEtape(p),
+    [payeParEtape],
+  );
 
   const total = coutEstime > 0
     ? coutEstime
@@ -212,6 +222,25 @@ export const DossierRegistre = React.memo(function DossierRegistre({
                 )}
               </span>
               <span className="gd-prix">{formatCurrency(Number(p.price || 0), devise)}</span>
+              {onAcquerir && (
+                /* Une etape validee a deja paye sa piece : la case le
+                   montre et se verrouille, plutot que d offrir un
+                   geste qui contredirait l etape. */
+                <button
+                  type="button"
+                  className="gd-case"
+                  aria-pressed={estFinance(p)}
+                  disabled={payeParEtape(p)}
+                  title={payeParEtape(p)
+                    ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
+                    : p.acquired_at
+                      ? t("goals.detail.unbuy", "Marquer non acheté")
+                      : t("goals.detail.buy", "Marquer acheté")}
+                  onClick={() => onAcquerir(p.id, !p.acquired_at)}
+                >
+                  {estFinance(p) && <Check className="gd-case-coche" aria-hidden="true" />}
+                </button>
+              )}
             </div>
           );
         })}

@@ -688,7 +688,10 @@
       "goPrevious": "Précédent : {{nom}}",
       "goNext": "Suivant : {{nom}}",
       "noPrevious": "Aucun objectif avant celui-ci",
-      "noNext": "Aucun objectif après celui-ci"
+      "noNext": "Aucun objectif après celui-ci",
+      "paidByStep": "Payé par la validation de l’étape",
+      "buy": "Marquer acheté",
+      "unbuy": "Marquer non acheté"
     },
     "views": {
       "grid": "Grille",

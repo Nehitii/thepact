@@ -386,9 +386,11 @@
 /* ── Le registre ──
    Un poste designe son etape par son numero. Un poste deja finance
    se barre : la ligne reste lisible, son montant sort du restant. */
+/* Une quatrieme colonne pour la case d achat : marquer une piece
+   achetee ne doit pas passer par la validation de son etape. */
 .gd-poste {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 8px;
   min-height: 32px;
@@ -439,6 +441,14 @@
   font-variant-numeric: tabular-nums;
 }
 .gd-poste[data-finance="1"] .gd-prix { color: var(--gd-vert); }
+
+/* La case du registre : meme forme que celle des etapes, mais elle
+   dit « achete », pas « fait ». */
+.gd-poste .gd-case { margin-left: 8px; }
+.gd-poste[data-finance="1"] .gd-case { background: var(--gd-vert); border-color: var(--gd-vert); }
+.gd-poste .gd-case:disabled { cursor: default; opacity: 0.55; }
+.gd-poste .gd-case:disabled:hover { border-color: var(--gd-vert); }
+.gd-case-coche { width: 11px; height: 11px; }
 
 .gd-somme {
   display: grid;

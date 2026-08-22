@@ -629,6 +629,9 @@
   background: var(--wl-vert);
   border-color: var(--wl-vert);
 }
+/* Verrouillee : l etape l a deja payee, il n y a rien a decider. */
+.wl-coche:disabled { cursor: default; opacity: 0.6; }
+.wl-coche:disabled:hover { border-color: var(--wl-vert); color: #FFFFFF; }
 .wl-coche svg { width: 13px; height: 13px; }
 
 /* ═══════════════════════════════════════════════════════════════

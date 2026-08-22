@@ -16,7 +16,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
-import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
+import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
@@ -135,6 +135,9 @@ export default function GoalDetail() {
   const editInitialStateRef = useRef<string>("");
 
   const { data: costItems = [] } = useCostItems(id);
+  /* Acheter une piece ne demande pas de valider son etape : on
+     achete l epilateur avant de commencer a s epiler. */
+  const acquerirPieces = useAcquerirPieces();
   const saveCostItems = useSaveCostItems();
   const { data: goalTagsData = [] } = useGoalTags(id);
   const saveGoalTags = useSaveGoalTags();
@@ -602,6 +605,7 @@ export default function GoalDetail() {
               teinte={difficultyColor}
               devise={currency}
               coutEstime={goal.estimated_cost || 0}
+              onAcquerir={(id, acquis) => acquerirPieces.mutate({ ids: [id], acquis })}
             />
           )}
         </div>
