@@ -2048,8 +2048,17 @@
     "prompt": {
       "region": "Question du jour",
       "label": "Question du jour",
-      "use": ">> Utiliser",
-      "dismiss": "Masquer la question du jour"
+      "use": "Répondre à cette question",
+      "dismiss": "Masquer la question du jour",
+      "aujourdhui": "Aujourd’hui",
+      "aEcrire": "À écrire",
+      "famille": {
+        "reflection": "Réflexion",
+        "gratitude": "Gratitude",
+        "cbt": "Recadrage",
+        "visualization": "Projection",
+        "stoic": "Stoïcisme"
+      }
     },
     "spine": "Journal — Archive",
     "dossier": "Dossier",

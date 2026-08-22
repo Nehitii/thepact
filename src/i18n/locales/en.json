@@ -2048,8 +2048,17 @@
     "prompt": {
       "region": "Daily prompt",
       "label": "Daily prompt",
-      "use": ">> Use it",
-      "dismiss": "Dismiss the daily prompt"
+      "use": "Answer this question",
+      "dismiss": "Dismiss the daily prompt",
+      "aujourdhui": "Today",
+      "aEcrire": "To write",
+      "famille": {
+        "reflection": "Reflection",
+        "gratitude": "Gratitude",
+        "cbt": "Reframing",
+        "visualization": "Projection",
+        "stoic": "Stoicism"
+      }
     },
     "spine": "Journal — Archive",
     "dossier": "File",

@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Sparkles, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyJournalPrompt } from "@/hooks/useJournalPrompt";
 
@@ -9,18 +10,44 @@ interface Props {
   onUse?: (prompt: string) => void;
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  reflection: "RFL",
-  gratitude: "GRT",
-  cbt: "CBT",
-  visualization: "VIZ",
-  stoic: "STO",
+/**
+ * LA PIECE NON ECRITE.
+ *
+ * La question du jour etait un bandeau : un cadre, un fond teinte, une
+ * croix de fermeture, une etiquette « CBT ». Tout ce qu on pose SUR un
+ * document quand on veut interrompre celui qui le lit.
+ *
+ * Or la page est un dossier. Les entrees n ont pas de cadre : elles se
+ * suivent, separees par un filet, avec leur cote a gauche — date,
+ * heure, reference, nombre de mots — et leurs lignes numerotees. Le
+ * bandeau etait la seule boite d une page qui n en contient aucune, et
+ * il se lisait donc comme une notification tombee par erreur dans une
+ * archive. Sa largeur ne servait a rien non plus : sept cents pixels
+ * de cadre pour une question de quarante-cinq signes, et un
+ * « >> UTILISER » orphelin tout en bas.
+ *
+ * Elle devient la premiere piece du dossier : celle qui n est pas
+ * encore ecrite. Meme colonne de cote, mais elle porte « AUJOURD HUI »
+ * et « A ECRIRE » la ou les autres portent une heure et un nombre de
+ * mots. La question prend la place du titre — c est le texte le plus
+ * important de la page a cet instant, il n avait pas a en etre le plus
+ * petit.
+ *
+ * L INVITATION EST DANS LA FORME, PLUS DANS UN BOUTON.
+ *
+ * Sous la question, la ligne 01 attend, exactement comme dans une
+ * entree ecrite. Elle dit ou le texte irait sans avoir a le demander,
+ * et toute sa surface ouvre l editeur — on clique la ligne, pas un
+ * lien perdu dessous.
+ */
+const FAMILLE: Record<string, string> = {
+  reflection: "journal.prompt.famille.reflection",
+  gratitude: "journal.prompt.famille.gratitude",
+  cbt: "journal.prompt.famille.cbt",
+  visualization: "journal.prompt.famille.visualization",
+  stoic: "journal.prompt.famille.stoic",
 };
 
-/**
- * Rotating daily prompt banner displayed at the top of the Journal feed.
- * Hidden after dismissal for the current day (localStorage flag).
- */
 export function DailyPromptBanner({ onUse }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -42,49 +69,57 @@ export function DailyPromptBanner({ onUse }: Props) {
 
   if (isLoading || !prompt || dismissed) return null;
 
-  const tag = CATEGORY_LABEL[prompt.category] ?? "PRP";
+  /* « CBT » et « RFL » n apprenaient rien : personne ne sait ce que
+     veut dire CBT. La famille se dit en toutes lettres. */
+  const cle = FAMILLE[prompt.category];
+  const famille = cle ? t(cle, prompt.category) : prompt.category;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
+    <motion.article
+      className="jr-entree jr-question"
+      initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-3 border border-primary/30 bg-primary/5 px-4 py-3"
-      style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}
-      role="region"
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       aria-label={t("journal.prompt.region")}
     >
-      <div className="flex items-start gap-3">
-        <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" aria-hidden />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary">
+      <div className="jr-entete">
+        <div className="jr-cote">
+          <b>{format(new Date(), "yyyy.MM.dd")}</b>
+          <span>{t("journal.prompt.aujourdhui", "Aujourd’hui")}</span>
+          <span>{famille}</span>
+          <span>{t("journal.prompt.aEcrire", "À écrire")}</span>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            <span className="jr-bande jr-question-bande">
               {t("journal.prompt.label")}
             </span>
-            <span className="ds-t-label font-mono px-1.5 py-0.5 border border-primary/30 text-primary/80">
-              {tag}
-            </span>
-          </div>
-          <p className="text-sm text-foreground leading-snug">{prompt.prompt}</p>
-          {onUse && (
             <button
-              onClick={() => onUse(prompt.prompt)}
-              className="mt-2 ds-t-label font-mono uppercase tracking-widest text-primary hover:text-primary/80 transition-colors min-h-[44px] inline-flex items-center"
+              type="button"
+              className="jr-menu"
+              onClick={() => {
+                localStorage.setItem(storageKey, "1");
+                setDismissed(true);
+              }}
+              aria-label={t("journal.prompt.dismiss")}
             >
-              {t("journal.prompt.use")}
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
-          )}
+          </div>
+
+          {/* La question prend la place du titre d une entree. */}
+          <h2 className="jr-titre jr-question-texte">{prompt.prompt}</h2>
+
+          <button type="button" className="jr-question-ligne" onClick={() => onUse?.(prompt.prompt)}>
+            <span className="jr-question-num" aria-hidden="true">01</span>
+            <span className="jr-question-appel">
+              {t("journal.prompt.use")}
+              <ArrowRight aria-hidden="true" />
+            </span>
+          </button>
         </div>
-        <button
-          onClick={() => {
-            localStorage.setItem(storageKey, "1");
-            setDismissed(true);
-          }}
-          aria-label={t("journal.prompt.dismiss")}
-          className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center min-w-[44px] min-h-[44px] -m-2"
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }

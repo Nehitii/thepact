@@ -280,6 +280,82 @@
   font-size: clamp(19px, 2.4vw, 25px); line-height: 1.14;
   letter-spacing: 0.01em; color: var(--jr-encre);
 }
+/* ══════════════════════════════════════════════════════════════
+   LA PIECE NON ECRITE
+
+   La question du jour etait un bandeau encadre, seule boite d une page
+   qui n en contient aucune : les entrees se suivent, separees par un
+   filet, avec leur cote a gauche et leurs lignes numerotees. Un cadre
+   au milieu de ca ne se lit pas comme une invitation, il se lit comme
+   une notification tombee par erreur dans une archive.
+
+   Elle reprend donc `.jr-entree` telle quelle — meme filet, meme
+   colonne, meme rythme — et ne se distingue que par ce qui la rend
+   differente : elle n est pas encore ecrite.
+   ══════════════════════════════════════════════════════════════ */
+.jr-question .jr-cote b { color: var(--jr-encre-3); }
+/* La cote d une piece non ecrite est en creux : le pointille dit
+   « emplacement reserve » sans qu on ait a l ecrire. */
+.jr-question .jr-cote {
+  border-left: 1px dashed var(--jr-trait);
+  padding-left: 11px; margin-left: -12px;
+}
+
+/* L etiquette s inverse : les entrees ont une bande pleine, celle-ci
+   est creuse. Meme place, meme taille, statut different. */
+.jr-question-bande {
+  background: transparent !important;
+  color: var(--jr-encre-2) !important;
+  border: 1px solid var(--jr-trait);
+}
+
+/* La question EST le titre. Elle garde la taille d un titre d entree —
+   c est le texte le plus important de la page a cet instant — mais en
+   italique : ce n est pas un titre qu on a ecrit, c est un titre qu on
+   nous pose. */
+.jr-question-texte {
+  /* PAS DE CAPITALES ICI, ET C EST LA SEULE EXCEPTION DE LA PAGE.
+     `.jr-titre` met les titres en capitales, et c est juste pour des
+     titres : « TEST », « DAN MORI », trois mots qui font une etiquette.
+     Une question fait soixante signes — en capitales elle hurle, et
+     surtout elle se lit mal, parce qu on perd la silhouette des mots
+     qui permet de balayer une phrase.
+     Le poids descend d un cran pour la meme raison : 700 sur une
+     phrase longue pese, la ou il tenait une etiquette. */
+  text-transform: none;
+  font-weight: 600;
+  font-style: italic;
+  max-width: 40ch;
+  margin-bottom: 14px;
+}
+
+/* LA LIGNE 01 QUI ATTEND.
+   Elle reprend exactement la numerotation des entrees — meme mono,
+   meme accent a demi-opacite — et toute sa surface ouvre l editeur.
+   Un lien pose dessous aurait dit la meme chose ; la ligne le MONTRE. */
+.jr-question-ligne {
+  display: flex; align-items: baseline; gap: 14px;
+  width: 100%; padding: 7px 0; cursor: pointer;
+  background: transparent; border: 0; text-align: left;
+  border-top: 1px dashed var(--jr-trait);
+  transition: opacity 140ms linear;
+}
+.jr-question-num {
+  font-family: var(--jr-mono); font-size: max(13px, 0.813rem);
+  color: var(--jr-rouge); opacity: 0.5; flex-shrink: 0;
+}
+.jr-question-appel {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--jr-mono); font-size: max(11px, 0.688rem);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--jr-encre-3); transition: color 140ms linear;
+}
+.jr-question-appel svg { width: 13px; height: 13px; }
+.jr-question-ligne:hover .jr-question-appel,
+.jr-question-ligne:focus-visible .jr-question-appel { color: var(--jr-encre); }
+.jr-question-ligne:hover .jr-question-num { opacity: 1; }
+.jr-question-ligne:focus-visible { outline: 1px solid var(--jr-encre-3); outline-offset: 3px; }
+
 .jr-html { color: var(--jr-encre-2); font-size: max(15.5px, 0.97rem); line-height: 1.72; max-width: 66ch; }
 .jr-html p { margin: 0 0 0.85em; }
 .jr-html p:last-child { margin-bottom: 0; }
