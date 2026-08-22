@@ -40,6 +40,8 @@ interface Props {
   /** Le montant de la ligne la plus lourde du bloc : l echelle de la barre. */
   sommet: number;
   rang: number;
+  /** Hors du mois en cours : la ligne se lit, elle ne se touche pas. */
+  verrouille?: boolean;
   onEdit: (item: FinancialItem) => void;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
@@ -63,7 +65,7 @@ const enChiffres = (montant: number, devise: string) =>
   `${AVEC_CENTIMES.format(montant)} ${devise.toUpperCase() === 'EUR' ? '€' : '$'}`;
 
 export function LigneAffiche({
-  item, isExpense, currency, moisCourant, sommet, rang,
+  item, isExpense, currency, moisCourant, sommet, rang, verrouille = false,
   onEdit, onDelete, onToggleActive,
 }: Props) {
   const { t } = useTranslation();
@@ -136,6 +138,10 @@ export function LigneAffiche({
         </span>
       </span>
 
+      {/* Verrouillee, la ligne ne porte AUCUN outil — pas des outils
+          desactives. Un bouton grise invite quand meme a cliquer, et
+          la deception est pire que l absence. */}
+      {!verrouille && (
       <span className="cy-aff-outils">
         {onToggleActive && (
           <button
@@ -159,6 +165,7 @@ export function LigneAffiche({
           <Trash2 aria-hidden="true" />
         </button>
       </span>
+      )}
     </motion.li>
   );
 }

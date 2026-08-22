@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Flame, Lock, Rocket, Trophy,
+  AlertTriangle, ArrowRight, CheckCircle2, ChevronLeft, ChevronRight,
+  CornerUpLeft, Eye, Flame, Lock, Rocket, Trophy,
 } from 'lucide-react';
 import { format, startOfMonth, subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,7 @@ import { formatCurrency } from '@/lib/currency';
 import { useMonthlyValidations } from '@/hooks/useFinance';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 import { totalDuMois, montantDuMois, tombeEn } from '@/lib/finance/cadence';
+import { peutPointer, estLeMoisCourant, type EtatDuMois } from '@/lib/finance/moisAffiche';
 import type { FinancialItem } from '@/types/finance';
 
 /* LE PALMARES DU MOIS
@@ -67,16 +69,19 @@ interface MoisPalmaresProps {
   /** Les lignes, pour prevoir le poids des mois a venir. */
   expenses: FinancialItem[];
   income: FinancialItem[];
-  /* OUVRE LE PARCOURS D UN MOIS.
-      Le bouton n etait qu un ascenseur vers un module en pied de page :
-      il fallait defiler tout l ecran pour valider, et le module restait
-      la une fois le mois fait, sans plus rien a dire. Il ouvre
-      desormais le parcours lui-meme.
-
-      La frise s en sert aussi : cliquer une case ouvre le parcours de
-      ce mois-la. C est ce qui permet de retirer l historique en pied de
-      page — un an de tenue, et chaque case est sa propre porte. */
-  onOuvrirParcours: (mois: string) => void;
+  /* LA FRISE CHOISIT, ELLE N OUVRE PLUS.
+      Chaque case etait une porte vers le pointage — pour un mois clos
+      comme pour un mois qui n avait pas eu lieu. On cliquait donc pour
+      REGARDER et on se retrouvait a VALIDER.
+      Une case designe desormais le mois que la page affiche. Le
+      pointage redevient un geste volontaire, propose ci-dessous et
+      seulement quand le mois se pointe. */
+  moisAffiche: Date;
+  etat: EtatDuMois;
+  onChoisirMois: (mois: Date) => void;
+  onPointer: () => void;
+  onCorriger: () => void;
+  onRevenirAuMoisCourant: () => void;
 }
 
 const CASES = 12;
@@ -86,7 +91,8 @@ const estMensuelle = (l: FinancialItem) =>
   (l.periode_mois ?? 1) === 1 && l.echeances == null;
 
 export function MoisPalmares({
-  netPrevu, restantPacte, expenses, income, onOuvrirParcours,
+  netPrevu, restantPacte, expenses, income,
+  moisAffiche, etat, onChoisirMois, onPointer, onCorriger, onRevenirAuMoisCourant,
 }: MoisPalmaresProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -100,11 +106,10 @@ export function MoisPalmares({
      « et apres ? », qui est la question du jour. */
   const [annee, setAnnee] = useState(() => new Date().getFullYear());
 
-  /* Le mois en cours : c est lui que le panneau plus bas valide, et
-     c est lui qui fera monter la serie affichee juste au-dessus. */
-  const moisCourant = format(startOfMonth(new Date()), 'yyyy-MM');
-  const validationCourante = validations.find((v) => v.month.slice(0, 7) === moisCourant);
-  const moisValide = !!validationCourante?.validated_at;
+  /* Quand le mois affiche change par un autre chemin que la frise — le
+     retour au mois courant, par exemple — la frise doit le suivre,
+     sinon elle designe une case invisible. */
+  useEffect(() => { setAnnee(moisAffiche.getFullYear()); }, [moisAffiche]);
 
   const valides = useMemo(
     () => new Set(validations.filter((v) => v.validated_at).map((v) => v.month.slice(0, 7))),
@@ -136,6 +141,7 @@ export function MoisPalmares({
       const v = validations.find((x) => x.month.slice(0, 7) === cle);
       const valide = valides.has(cle);
       const encours = cle === cleCourante;
+      const choisi = cle === format(moisAffiche, 'yyyy-MM');
       const passe = cle < cleCourante;
 
       /* LE REEL D ABORD, LA PREVISION ENSUITE.
@@ -159,6 +165,7 @@ export function MoisPalmares({
 
       return {
         cle,
+        date: d,
         premier: format(d, 'yyyy-MM-01'),
         lettre: format(d, 'MMM', { locale }).slice(0, 1).toUpperCase(),
         libelle: format(d, 'MMM yyyy', { locale }),
@@ -166,11 +173,38 @@ export function MoisPalmares({
         reel,
         valide,
         encours,
+        choisi,
         passe,
         surcharge,
       };
     });
-  }, [annee, valides, validations, expenses, income, particulieres, locale]);
+  }, [annee, valides, validations, expenses, income, particulieres, locale, moisAffiche]);
+
+  /* LA PHRASE ET SON ICONE, PAR ETAT.
+     Chacune dit la situation ET sa consequence : « rien n est
+     modifiable » vaut mieux qu un bouton absent sans explication. */
+  const nomDuMoisAffiche = format(moisAffiche, 'MMMM', { locale });
+  const nomDuMoisCourant = format(new Date(), 'MMMM', { locale });
+  const estCourant = estLeMoisCourant(moisAffiche, new Date());
+
+  const [Icone, phrase] = ((): [typeof Flame, string] => {
+    switch (etat) {
+      case 'valide':
+        return [CheckCircle2, t('finance.palmares.moisValide', { mois: nomDuMoisAffiche })];
+      case 'venir':
+        return [Eye, t('finance.palmares.moisAVenir', {
+          mois: nomDuMoisAffiche,
+          defaultValue: `${nomDuMoisAffiche} n’a pas encore eu lieu — prévisionnel, rien n’est modifiable.`,
+        })];
+      case 'retard':
+        return [AlertTriangle, t('finance.palmares.moisEnRetard', {
+          mois: nomDuMoisAffiche,
+          defaultValue: `${nomDuMoisAffiche} n’a jamais été validé.`,
+        })];
+      default:
+        return [Flame, t('finance.palmares.moisAValider', { mois: nomDuMoisAffiche })];
+    }
+  })();
 
   const versement = Math.max(0, netPrevu);
   const part = restantPacte > 0 ? Math.min(100, (versement / restantPacte) * 100) : 0;
@@ -269,6 +303,10 @@ export function MoisPalmares({
             type="button"
             data-valide={m.valide ? '1' : '0'}
             data-encours={m.encours ? '1' : '0'}
+            /* « Aujourd hui » et « ce que je regarde » sont deux
+               notions differentes qui partageaient la meme case. */
+            data-choisi={m.choisi ? '1' : '0'}
+            aria-current={m.choisi ? 'true' : undefined}
             /* Un solde constate et un solde suppose ne se lisent pas
                pareil : la case le dit, le style s en sert. */
             data-reel={m.reel ? '1' : '0'}
@@ -287,7 +325,7 @@ export function MoisPalmares({
                 : null,
             ].filter(Boolean).join(' — ')}
             aria-label={t('finance.palmares.ouvrirMois', { mois: m.libelle, defaultValue: m.libelle })}
-            onClick={() => onOuvrirParcours(m.premier)}
+            onClick={() => onChoisirMois(m.date)}
             initial={{ opacity: 0, scaleY: 0.4 }}
             animate={{ opacity: 1, scaleY: 1 }}
             transition={{ delay: 0.2 + i * 0.03, duration: 0.26 }}
@@ -303,42 +341,46 @@ export function MoisPalmares({
 
       {/* La boucle se ferme ici : c est la validation qui fait monter
           la serie, elle ne doit pas etre a deux ecrans de son chiffre. */}
-      <div className="cy-palm-appel" data-fait={moisValide ? '1' : '0'}>
-{moisValide ? (
-          <>
-            <p>
-              <CheckCircle2 aria-hidden="true" />
-              {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM', { locale }) })}
-            </p>
-            {/* VERROUILLE, ET NON DISPARU.
-                Un bouton qui s efface une fois le geste fait laisse
-                croire qu on ne peut plus revenir dessus. Il reste, dit
-                qu il n y a plus rien a faire, et rouvre quand meme —
-                une erreur de pointage se corrige. */}
-            <button
-              type="button"
-              className="cy-palm-refaire"
-              onClick={() => onOuvrirParcours(format(startOfMonth(new Date()), 'yyyy-MM-01'))}
-            >
-              <Lock aria-hidden="true" />
-              {t('finance.palmares.revoirLeMois', 'Revoir')}
+      {/* LA BARRE D ETAT DU MOIS AFFICHE.
+          Elle disait toujours la meme chose du mois courant, meme
+          quand on en regardait un autre : deux appels a l action se
+          contredisaient. Elle parle desormais du mois qu on regarde,
+          dit ou l on est, et ne propose que ce qui est permis. */}
+      <div className="cy-palm-appel" data-etat={etat}>
+        <p>
+          <Icone aria-hidden="true" />
+          {phrase}
+        </p>
+
+        <div className="cy-palm-gestes">
+          {!estCourant && (
+            <button type="button" className="cy-palm-retour" onClick={onRevenirAuMoisCourant}>
+              <CornerUpLeft aria-hidden="true" />
+              {t('finance.palmares.revenirAuMois', { mois: nomDuMoisCourant, defaultValue: nomDuMoisCourant })}
             </button>
-          </>
-        ) : (
-          <>
-            <p>
-              <Flame aria-hidden="true" />
-              {t('finance.palmares.moisAValider', { mois: format(new Date(), 'MMMM', { locale }) })}
-            </p>
-            <button
-              type="button"
-              onClick={() => onOuvrirParcours(format(startOfMonth(new Date()), 'yyyy-MM-01'))}
-            >
-              {t('finance.palmares.validerLeMois')}
+          )}
+
+          {/* VERROUILLE, ET NON DISPARU.
+              Un mois clos ne se remodifie pas — mais un pointage se
+              fait a la main, donc il se trompe. Sans issue, une coche
+              erronee fausserait le palmares pour toujours. La porte
+              existe, elle demande confirmation, et elle est la seule. */}
+          {etat === 'valide' && (
+            <button type="button" className="cy-palm-refaire" onClick={onCorriger}>
+              <Lock aria-hidden="true" />
+              {t('finance.palmares.corrigerLeMois', 'Corriger ce mois')}
+            </button>
+          )}
+
+          {peutPointer(etat) && (
+            <button type="button" onClick={onPointer}>
+              {etat === 'cours'
+                ? t('finance.palmares.validerLeMois')
+                : t('finance.palmares.pointerLeMois', { mois: nomDuMoisAffiche, defaultValue: `Pointer ${nomDuMoisAffiche}` })}
               <ArrowRight aria-hidden="true" />
             </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );

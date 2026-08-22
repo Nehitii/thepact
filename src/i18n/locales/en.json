@@ -927,7 +927,8 @@
       "compteLignes_one": "{{count}} line",
       "compteLignes_other": "{{count}} lines",
       "expensesOfMonth": "This Month's Expenses",
-      "incomeOfMonth": "This Month's Income"
+      "incomeOfMonth": "This Month's Income",
+      "verrouille": "A recurring line applies to every month: edit it from the current month."
     },
     "categories": {
       "housing": "Housing",
@@ -1109,7 +1110,16 @@
       "anneeSuivante": "Year {{annee}}",
       "moisCharge": "including {{montant}} of one-off charges",
       "bandeAide_one": "{{count}} month validated in {{annee}}",
-      "bandeAide_other": "{{count}} months validated in {{annee}}"
+      "bandeAide_other": "{{count}} months validated in {{annee}}",
+      "moisAVenir": "{{mois}} hasn’t happened yet — forecast, nothing can be edited.",
+      "moisEnRetard": "{{mois}} was never validated.",
+      "revenirAuMois": "Back to {{mois}}",
+      "pointerLeMois": "Check off {{mois}}",
+      "corrigerLeMois": "Correct this month",
+      "corrigerTitre": "Reopen {{mois}}?",
+      "corrigerAvertissement": "Its validation will be cancelled and the streak recalculated. Existing check-offs are kept: you pick up where you left off.",
+      "corrigerConfirmer": "Reopen the month",
+      "moisRouvert": "The month is reopened."
     },
     "particulieres": {
       "titre": "Irregular charges",

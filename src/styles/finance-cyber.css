@@ -951,6 +951,24 @@
 }
 .cy-palm-bande button[data-avenir="1"] u { color: color-mix(in oklab, var(--cy-cyan) 65%, var(--cy-encre-3)); }
 
+/* « AUJOURD HUI » ET « CE QUE JE REGARDE » SONT DEUX CHOSES.
+   Elles partageaient la meme case, donc le meme trait jaune, et
+   choisir un autre mois ne se voyait pas. Le mois courant garde son
+   pointille ; le mois SELECTIONNE prend un cadre plein et un socle,
+   qui se lisent comme « on est ici ». Sur le mois courant les deux se
+   superposent, et rien ne change a l oeil — ce qui est correct : c est
+   bien le meme mois. */
+.cy-palm-bande button[data-choisi="1"] {
+  border-color: var(--cy-encre);
+  border-style: solid;
+  box-shadow: inset 0 -3px 0 -1px var(--cy-encre), 0 0 16px -6px var(--cy-encre);
+}
+.cy-palm-bande button[data-choisi="1"] u { color: var(--cy-encre); font-weight: 700; }
+/* Sauf quand la case dit deja quelque chose : sa couleur d etat prime
+   sur l encre neutre, sinon on perdrait « validé » ou « à venir ». */
+.cy-palm-bande button[data-choisi="1"][data-valide="1"] u { color: var(--cy-vert); }
+.cy-palm-bande button[data-choisi="1"][data-encours="1"] u { color: var(--cy-jaune); }
+
 /* LE POINT QUI PREVIENT.
    Il marque les mois ou tombe une charge particuliere. Pose en haut a
    droite plutot qu au centre : la lettre du mois reste lisible, et
@@ -996,8 +1014,36 @@
   color: var(--cy-encre-2);
 }
 .cy-palm-appel p svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--cy-jaune); }
-.cy-palm-appel[data-fait="1"] p { color: var(--cy-vert); }
-.cy-palm-appel[data-fait="1"] p svg { color: var(--cy-vert); }
+/* LA BARRE PREND LE TON DE L ETAT DU MOIS.
+   Quatre situations, quatre encres, et la couleur porte le sens avant
+   la phrase : vert un mois tenu, jaune un mois a tenir, ambre un mois
+   qu on a laisse filer, cyan un mois qui n a pas eu lieu. */
+.cy-palm-appel[data-etat="valide"] p,
+.cy-palm-appel[data-etat="valide"] p svg { color: var(--cy-vert); }
+.cy-palm-appel[data-etat="retard"] p,
+.cy-palm-appel[data-etat="retard"] p svg { color: hsl(var(--signal-ambre)); }
+.cy-palm-appel[data-etat="venir"] p,
+.cy-palm-appel[data-etat="venir"] p svg { color: var(--cy-cyan); }
+
+/* Les gestes se rangent a droite, du plus discret au plus engageant :
+   le retour d abord, l action principale en dernier. */
+.cy-palm-gestes {
+  margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.cy-palm-appel .cy-palm-gestes button { margin-left: 0; }
+
+/* Le retour au mois courant n est pas une action, c est une sortie :
+   il se lit comme un lien, pas comme un bouton plein. */
+.cy-palm-appel .cy-palm-retour {
+  background: transparent; color: var(--cy-encre-2);
+  border: 1px solid var(--cy-trait); box-shadow: none;
+  clip-path: none; min-height: 36px; padding: 0 13px;
+  font-size: max(9.5px, 0.594rem); letter-spacing: 0.12em;
+}
+.cy-palm-appel .cy-palm-retour:hover {
+  color: var(--cy-jaune); border-color: var(--cy-jaune);
+  filter: none; box-shadow: none;
+}
 
 .cy-palm-appel button {
   margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
@@ -1172,6 +1218,34 @@
 .cy-ligne-actions button.est-rouge:hover { color: var(--cy-rouge-encre); border-color: var(--cy-rouge-encre); }
 .cy-ligne-actions button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 1px; }
 @media (pointer: coarse) { .cy-ligne-actions button { width: 44px; height: 44px; } }
+
+/* LE VERROU PREND LA PLACE DE L INVITATION.
+   Hors du mois en cours, « Ajouter » disparait — et un bouton qui
+   s efface sans rien dire se lit comme une panne. Le motif occupe donc
+   exactement sa place, dans un ton qui n appelle pas : ce n est pas un
+   avertissement, c est une explication. */
+.cy-verrou {
+  display: flex; align-items: center; gap: 10px; margin: 0;
+  min-height: 46px; padding: 0 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--cy-trait);
+  font-family: var(--cy-titre); font-size: max(12.5px, 0.781rem);
+  line-height: 1.35; color: var(--cy-encre-3);
+}
+.cy-verrou svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Rouvrir un mois clos n est pas l action principale de la barre :
+   elle se propose, elle ne se reclame pas. */
+.cy-palm-appel .cy-palm-refaire {
+  background: transparent; color: var(--cy-encre-2);
+  border: 1px solid var(--cy-trait); box-shadow: none;
+  clip-path: none; min-height: 36px; padding: 0 13px;
+  font-size: max(9.5px, 0.594rem); letter-spacing: 0.12em;
+}
+.cy-palm-appel .cy-palm-refaire:hover {
+  color: var(--cy-vert); border-color: var(--cy-vert);
+  filter: none; box-shadow: none;
+}
 
 /* L invitation a ajouter : franche, pas un pointille timide. */
 .cy-ajouter {

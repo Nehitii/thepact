@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Plus } from 'lucide-react';
+import { ChevronDown, Lock, Plus } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { totalDuMois, montantDuMois } from '@/lib/finance/cadence';
@@ -27,6 +27,11 @@ interface FinancialBlockProps {
      a 0,00 € : retenues parce qu elles tombent en octobre, chiffrees
      sur un aout ou elles ne tombent pas. */
   moisCourant: Date;
+  /* HORS DU MOIS EN COURS, ON REGARDE SANS TOUCHER.
+     Non par prudence : une ligne recurrente vaut pour les douze mois,
+     donc la modifier en regardant octobre reecrirait janvier. Le geste
+     a une portee qui ne se voit pas — c est ca qu on ferme. */
+  verrouille?: boolean;
   categories: FinanceCategory[];
   isLoading: boolean;
   onAdd: (v: ValeursLigne) => Promise<void>;
@@ -41,6 +46,7 @@ export function FinancialBlock({
   type,
   items,
   moisCourant,
+  verrouille = false,
   categories,
   isLoading,
   onAdd,
@@ -158,10 +164,20 @@ export function FinancialBlock({
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="px-6 pb-6 space-y-4">
-              <button type="button" className="cy-ajouter" onClick={ouvrirAjout}>
-                <Plus aria-hidden="true" />
-                {t(`finance.ligne.titreAjout.${type}`)}
-              </button>
+              {/* UN BOUTON QUI DISPARAIT SANS RAISON INQUIETE.
+                  A sa place, le motif — sinon on croit a une panne. */}
+              {verrouille ? (
+                <p className="cy-verrou">
+                  <Lock aria-hidden="true" />
+                  {t('finance.recurring.verrouille',
+                    'Une ligne récurrente vaut pour tous les mois : elle se modifie depuis le mois en cours.')}
+                </p>
+              ) : (
+                <button type="button" className="cy-ajouter" onClick={ouvrirAjout}>
+                  <Plus aria-hidden="true" />
+                  {t(`finance.ligne.titreAjout.${type}`)}
+                </button>
+              )}
 
               {/* PLUS D ASCENSEUR DANS LA CARTE.
                   Le bloc portait son propre defilement, borne a 450px :
@@ -192,6 +208,7 @@ export function FinancialBlock({
                         currency={currency}
                         moisCourant={moisCourant}
                         sommet={sommet}
+                        verrouille={verrouille}
                         onEdit={ouvrirEdition}
                         onDelete={onDelete}
                         onToggleActive={onToggleActive}

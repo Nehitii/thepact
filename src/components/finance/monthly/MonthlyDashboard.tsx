@@ -12,7 +12,10 @@ import {
   useDeleteRecurringExpense,
   useDeleteRecurringIncome,
 } from '@/hooks/useFinance';
+import { format, startOfMonth } from 'date-fns';
 import { totalDuMois, provisionMensuelle, tombeEn } from '@/lib/finance/cadence';
+import { etatDuMois, peutModifier } from '@/lib/finance/moisAffiche';
+import { CorrigerLeMois } from './CorrigerLeMois';
 import { placeDisponible, LIGNES_MAX } from '@/lib/finance/garde';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 import { EcheancesParticulieres } from './EcheancesParticulieres';
@@ -28,7 +31,7 @@ import {
   calculateActiveTotal,
 } from '@/lib/financeCategories';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings } from '@/hooks/useFinance';
+import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings, useMonthlyValidations } from '@/hooks/useFinance';
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;
@@ -86,9 +89,40 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * total. Six cents euros annuels valent cinquante euros de
    * provision.
    */
-  const moisCourant = useMemo(() => new Date(), []);
-  const totalExpenses = totalDuMois(expenses, moisCourant);
-  const totalIncome = totalDuMois(income, moisCourant);
+  /* LE MOIS QU ON REGARDE N EST PAS LE MOIS QU ON VIT.
+   *
+   * La page ne connaissait qu une date : aujourd hui. Regarder octobre
+   * n etait donc pas possible — la frise ne savait qu ouvrir le
+   * pointage, ce qui repondait a une question qu on ne posait pas.
+   *
+   * Deux dates desormais. « aujourdHui » ancre ce qui appartient au
+   * present : la serie, le rattrapage, le droit de modifier. Et
+   * « moisAffiche » commande tout ce qui se lit : soldes, listes, poche.
+   */
+  const aujourdHui = useMemo(() => new Date(), []);
+  const [moisAffiche, setMoisAffiche] = useState(() => startOfMonth(new Date()));
+
+  const { data: validations = [] } = useMonthlyValidations(user?.id);
+  const validationAffichee = useMemo(
+    () => validations.find((v) => v.month.slice(0, 7) === format(moisAffiche, 'yyyy-MM')),
+    [validations, moisAffiche],
+  );
+  const etat = etatDuMois(moisAffiche, aujourdHui, !!validationAffichee?.validated_at);
+  /* Une ligne recurrente vaut pour les douze mois : la modifier depuis
+     octobre reecrirait janvier. Le verrou n est donc pas une precaution,
+     c est ce qui empeche un geste dont la portee ne se voit pas. */
+  const verrouille = !peutModifier(etat);
+
+  /* LE CONSTATE PREND LE PAS SUR LE PREVU.
+     Un mois valide a ete pointe ligne a ligne : ses totaux sont des
+     faits. Continuer d afficher la prevision effacerait justement ce
+     que le pointage avait servi a etablir. */
+  const totalExpenses = etat === 'valide'
+    ? (validationAffichee?.actual_total_expenses ?? 0)
+    : totalDuMois(expenses, moisAffiche);
+  const totalIncome = etat === 'valide'
+    ? (validationAffichee?.actual_total_income ?? 0)
+    : totalDuMois(income, moisAffiche);
 
   /* DEUX PANNEAUX, PARCE QUE CE NE SONT PAS LES MEMES CHARGES.
    *
@@ -122,14 +156,14 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * il repond a « qu est-ce qui m attend », pas a « que dois-je ce
    * mois-ci ». Les deux questions sont distinctes, et une charge peut
    * legitimement apparaitre dans les deux. */
-  const tombeCeMois = (l: FinancialItem) => estMensuelle(l) || tombeEn(l, moisCourant);
+  const tombeCeMois = (l: FinancialItem) => estMensuelle(l) || tombeEn(l, moisAffiche);
   const depensesDuMois = useMemo(
     () => expenses.filter(tombeCeMois),
-    [expenses, moisCourant],
+    [expenses, moisAffiche],
   );
   const revenusDuMois = useMemo(
     () => income.filter(tombeCeMois),
-    [income, moisCourant],
+    [income, moisAffiche],
   );
 
   const poche = provisionMensuelle(depensesParticulieres);
@@ -137,6 +171,9 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
   /* Le panneau particulier a besoin de la meme fenetre de saisie que
      les blocs. Elle est montee ici plutot que dupliquee dedans : une
      seule fenetre, un seul comportement. */
+  /* Rouvrir un mois clos se demande, se confirme, et n arrive donc
+     jamais par megarde. */
+  const [moisACorriger, setMoisACorriger] = useState<string | null>(null);
   const [fenetreParticuliere, setFenetreParticuliere] = useState(false);
   const [ligneParticuliere, setLigneParticuliere] = useState<FinancialItem | null>(null);
 
@@ -209,7 +246,12 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
         restantPacte={restantPacte}
         expenses={expenses}
         income={income}
-        onOuvrirParcours={setMoisAPointer}
+        moisAffiche={moisAffiche}
+        etat={etat}
+        onChoisirMois={setMoisAffiche}
+        onPointer={() => setMoisAPointer(format(moisAffiche, 'yyyy-MM-01'))}
+        onCorriger={() => setMoisACorriger(format(moisAffiche, 'yyyy-MM-01'))}
+        onRevenirAuMoisCourant={() => setMoisAffiche(startOfMonth(new Date()))}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -218,7 +260,8 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
             title={t('finance.recurring.expensesOfMonth', 'Dépenses du mois')}
             type="expense"
             items={depensesDuMois}
-            moisCourant={moisCourant}
+            moisCourant={moisAffiche}
+            verrouille={verrouille}
             categories={EXPENSE_CATEGORIES}
             isLoading={expensesLoading}
             onAdd={handleAddExpense}
@@ -233,7 +276,8 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
             title={t('finance.recurring.incomeOfMonth', 'Revenus du mois')}
             type="income"
             items={revenusDuMois}
-            moisCourant={moisCourant}
+            moisCourant={moisAffiche}
+            verrouille={verrouille}
             categories={INCOME_CATEGORIES}
             isLoading={incomeLoading}
             onAdd={handleAddIncome}
@@ -271,6 +315,20 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
           else await handleAddExpense(v);
         }}
         enCours={addExpense.isPending || updateExpense.isPending}
+      />
+
+      <CorrigerLeMois
+        mois={moisACorriger}
+        onAnnuler={() => setMoisACorriger(null)}
+        onConfirmer={async () => {
+          const mois = moisACorriger;
+          setMoisACorriger(null);
+          if (!mois) return;
+          try {
+            await upsertValidation.mutateAsync({ month: mois, validated_at: null });
+            toast.success(t('finance.palmares.moisRouvert', 'Le mois est rouvert.'));
+          } catch { toast.error(t('finance.recurring.updateFailed')); }
+        }}
       />
 
       {/* Le parcours du mois. Porte hors de larbre, il recouvre lecran :

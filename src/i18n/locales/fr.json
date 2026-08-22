@@ -927,7 +927,8 @@
       "compteLignes_one": "{{count}} ligne",
       "compteLignes_other": "{{count}} lignes",
       "expensesOfMonth": "Dépenses du mois",
-      "incomeOfMonth": "Revenus du mois"
+      "incomeOfMonth": "Revenus du mois",
+      "verrouille": "Une ligne récurrente vaut pour tous les mois : elle se modifie depuis le mois en cours."
     },
     "categories": {
       "housing": "Logement",
@@ -1109,7 +1110,16 @@
       "anneeSuivante": "Année {{annee}}",
       "moisCharge": "dont {{montant}} de charges particulières",
       "bandeAide_one": "{{count}} mois validé en {{annee}}",
-      "bandeAide_other": "{{count}} mois validés en {{annee}}"
+      "bandeAide_other": "{{count}} mois validés en {{annee}}",
+      "moisAVenir": "{{mois}} n’a pas encore eu lieu — prévisionnel, rien n’est modifiable.",
+      "moisEnRetard": "{{mois}} n’a jamais été validé.",
+      "revenirAuMois": "Revenir à {{mois}}",
+      "pointerLeMois": "Pointer {{mois}}",
+      "corrigerLeMois": "Corriger ce mois",
+      "corrigerTitre": "Rouvrir {{mois}} ?",
+      "corrigerAvertissement": "Sa validation sera annulée et la série recalculée. Les pointages déjà faits sont conservés : tu reprends là où tu en étais.",
+      "corrigerConfirmer": "Rouvrir le mois",
+      "moisRouvert": "Le mois est rouvert."
     },
     "particulieres": {
       "titre": "Échéances particulières",
