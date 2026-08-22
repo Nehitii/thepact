@@ -29,7 +29,10 @@ export function GoalsPagination({ currentPage, totalPages, onPageChange }: Goals
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      /* L etat initial ne porte que le deplacement : une animation
+         qui ne demarre pas — onglet en arriere-plan — laisserait
+         sinon la pagination invisible. */
+      initial={{ y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className="flex items-center justify-center gap-2 pt-6"

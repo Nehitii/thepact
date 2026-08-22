@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
-import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import {
   SuperGoalCard,
@@ -42,13 +41,23 @@ interface GoalsListProps {
   unlockCode?: string;
 }
 
+/* JAMAIS D OPACITE DANS L ETAT INITIAL.
+   Une animation d entree qui part de zero laisse la page vide si
+   elle ne demarre pas — et elle ne demarre pas dans un onglet
+   d arriere-plan, ou le navigateur suspend les images par seconde.
+   Mesure sur cette page : huit cartes a opacite zero, quatorze
+   animations en pause. La wishlist, dans le meme onglet et au meme
+   moment, s affichait entierement : elle n a plus d animation
+   d entree.
+   L etat initial ne porte donc plus que le deplacement. Si
+   l animation ne joue pas, le contenu est simplement la, en place. */
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { y: 12 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } },
 };
 
@@ -214,12 +223,11 @@ export function GoalsList({
       onToggleFocus: toggleFocus,
     };
 
-    const CardComponent =
-      displayMode === "grid"
-        ? GridViewGoalCard
-        : displayMode === "bookmark"
-          ? UIVerseGoalCard
-          : BarViewGoalCard;
+    /* « bookmark » n arrive jamais ici : la branche de rendu l envoie
+       vers GoalsRegistre bien avant. La carte qui lui etait associee
+       — UIVerseGoalCard, 376 lignes — etait donc importee, choisie,
+       et jamais montee. Elle est supprimee. */
+    const CardComponent = displayMode === "grid" ? GridViewGoalCard : BarViewGoalCard;
 
     return (
       <motion.div key={goal.id} variants={itemVariants}>
@@ -338,7 +346,7 @@ export function GoalsList({
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}

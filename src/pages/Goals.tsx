@@ -24,8 +24,18 @@ import { GoalsSkeleton } from "@/components/goals/GoalsSkeleton";
 import { motion } from "framer-motion";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 
+/* JAMAIS D OPACITE DANS L ETAT INITIAL.
+   Une animation d entree qui part de zero laisse la page vide si
+   elle ne demarre pas — et elle ne demarre pas dans un onglet
+   d arriere-plan, ou le navigateur suspend les images par seconde.
+   Mesure sur cette page : huit cartes a opacite zero, quatorze
+   animations en pause. La wishlist, dans le meme onglet et au meme
+   moment, s affichait entierement : elle n a plus d animation
+   d entree.
+   L etat initial ne porte donc plus que le deplacement. Si
+   l animation ne joue pas, le contenu est simplement la, en place. */
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { y: 12 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } },
 };
 
@@ -145,7 +155,7 @@ export default function Goals() {
       <motion.div
         initial="hidden"
         animate="visible"
-        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
+        variants={{ hidden: {}, visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
         className="space-y-6"
       >
         <motion.div variants={itemVariants}>
