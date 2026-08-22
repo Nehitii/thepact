@@ -1697,52 +1697,19 @@
     }
   },
   "wishlist": {
-    "title": "LISTE DE SOUHAITS",
-    "subtitle": "Des rêves en attente de devenir réalité",
-    "addItem": "Ajouter un article",
-    "editItem": "Modifier l'article",
-    "noItems": "Ta liste de souhaits est vide",
-    "noItemsDesc": "Ajoute des articles que tu veux acquérir",
     "form": {
-      "itemName": "Nom de l'article",
-      "itemNamePlaceholder": "Que veux-tu ?",
-      "estimatedCost": "Coût estimé",
-      "category": "Catégorie",
       "notes": "Notes",
-      "notesPlaceholder": "Ajoute des notes...",
-      "linkToGoal": "Associer à un objectif",
-      "linkToGoalHint": "Associe cet article à un objectif",
       "nouveau": "Nouvel article",
       "modifier": "Modifier l’article",
       "nom": "Nom",
       "prix": "Prix estimé",
-      "categorie": "Catégorie",
       "objectif": "Objectif lié",
       "aucunObjectif": "Aucun",
-      "priorite": "Priorité",
       "lien": "Lien vers la boutique",
       "image": "Image",
       "requis": "Requis pour le pacte",
       "requisAide": "Une nécessité, pas une envie.",
       "ajouter": "Ajouter"
-    },
-    "categories": {
-      "tech": "Tech",
-      "fashion": "Mode",
-      "home": "Maison",
-      "travel": "Voyage",
-      "experience": "Expérience",
-      "other": "Autre"
-    },
-    "status": {
-      "acquired": "Acquis",
-      "pending": "En attente",
-      "markAcquired": "Marquer comme acquis"
-    },
-    "stats": {
-      "totalItems": "Total articles",
-      "totalValue": "Valeur totale",
-      "acquired": "Acquis"
     },
     "delete": {
       "title": "Supprimer",
@@ -1796,12 +1763,6 @@
       "libreAide": "Un article hors pacte est une envie qui ne pèse sur aucun objectif.",
       "tout": "Tout est acquis."
     },
-    "priorite": {
-      "low": "Basse",
-      "med": "Moyenne",
-      "high": "Haute",
-      "critical": "Critique"
-    },
     "merge": {
       "done": "Doublon fusionné"
     },
@@ -1815,7 +1776,9 @@
       "sceauPacte": "Pièce du pacte",
       "sceauLibre": "Article libre",
       "corrigerPrix": "Corriger le prix",
-      "collerLien": "Coller l’adresse de la boutique"
+      "collerLien": "Coller l’adresse de la boutique",
+      "imageMorte": "L’image n’est plus disponible — en poser une autre",
+      "imageIndisponible": "Image indisponible"
     },
     "etat": {
       "parEtape": "Étape faite",
@@ -1846,7 +1809,6 @@
       "luSur": "Lu sur {{domaine}}",
       "lu": "lu",
       "nonTrouve": "non trouvé",
-      "sansImage": "Aucune image sur la page",
       "entrera": "Entrera pour {{montant}}",
       "devise": "La page annonce des {{lue}} ; ce compte tient ses montants en {{tienne}}. Rien ne convertit ce montant.",
       "deviseAssume": "Je garde ce montant tel quel",
@@ -1877,7 +1839,8 @@
     },
     "finance": {
       "ajoute": "Ajouté aux dépenses de {{mois}}"
-    }
+    },
+    "saut": "Aller à l’archive"
   },
   "inbox": {
     "title": "Boîte de réception",

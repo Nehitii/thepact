@@ -740,6 +740,15 @@ export default function Wishlist() {
             )}
           </div>
 
+          {/* Cent trente tabulations separaient l en-tete de
+              l archive : ce lien les enjambe, et ne se montre qu au
+              clavier. */}
+          {vus.acquis.length > 0 && vue !== "pacte" && (
+            <a className="wl-saut" href="#wl-archive">
+              {t("wishlist.saut", "Aller à l’archive")}
+            </a>
+          )}
+
           {/* ── Le corps ── */}
           {isLoading ? (
             <div className="wl-vide"><small>{t("common.loading", "Chargement…")}</small></div>

@@ -107,10 +107,21 @@ export function WishlistFiche({
           <button
             type="button"
             className="wl-plaque"
+            data-morte={imageMorte ? "oui" : "non"}
             onClick={() => onEdit(item)}
-            title={t("wishlist.fiche.poserImage", "Poser une image")}
+            title={imageMorte
+              ? t("wishlist.fiche.imageMorte", "L’image n’est plus disponible — en poser une autre")
+              : t("wishlist.fiche.poserImage", "Poser une image")}
           >
             <span>{initiales(item.name)}</span>
+            {/* L article a une image en base, mais son adresse ne
+                repond plus : le dire vaut mieux qu un monogramme
+                muet qu on prend pour une absence. */}
+            {imageMorte && (
+              <span className="wl-plaque-morte">
+                {t("wishlist.fiche.imageIndisponible", "Image indisponible")}
+              </span>
+            )}
             <i><ImagePlus aria-hidden="true" /> {t("wishlist.fiche.poserImage", "Poser une image")}</i>
           </button>
         )}
@@ -231,7 +242,12 @@ export function WishlistFiche({
                 ? t("wishlist.fiche.remettre", "Remettre dans la liste")
                 : t("wishlist.fiche.marquerPaye", "Marquer payé")}
           >
-            <Check aria-hidden="true" />
+            {/* MESURE : vingt-cinq cases sur vingt-cinq portaient un
+                signe, cochees ou non. Gris, il se lit comme fait —
+                « Voyage 0/2 » montrait deux cases qui avaient l air
+                validees. Une case vide est un etat, pas un oubli :
+                la fiche d objectif le fait deja ainsi. */}
+            {acquis && <Check aria-hidden="true" />}
           </button>
         </div>
       </div>

@@ -250,7 +250,8 @@ export function WishlistRegistre({
                             ? t("wishlist.fiche.remettre", "Remettre dans la liste")
                             : t("wishlist.fiche.marquerPaye", "Marquer payé")}
                       >
-                        <Check aria-hidden="true" />
+                        {/* Une case vide est un etat, pas un oubli. */}
+                        {item.acquired && <Check aria-hidden="true" />}
                       </button>
 
                       <span className="wl-poste-nom">

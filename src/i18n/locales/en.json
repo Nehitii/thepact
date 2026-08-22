@@ -1697,52 +1697,19 @@
     }
   },
   "wishlist": {
-    "title": "WISHLIST",
-    "subtitle": "Dreams waiting to become reality",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
-    "noItems": "Your wishlist is empty",
-    "noItemsDesc": "Add items you want to acquire",
     "form": {
-      "itemName": "Item Name",
-      "itemNamePlaceholder": "What do you want?",
-      "estimatedCost": "Estimated Cost",
-      "category": "Category",
       "notes": "Notes",
-      "notesPlaceholder": "Add any notes...",
-      "linkToGoal": "Link to Goal",
-      "linkToGoalHint": "Associate this item with a goal",
       "nouveau": "New item",
       "modifier": "Edit item",
       "nom": "Name",
       "prix": "Estimated price",
-      "categorie": "Category",
       "objectif": "Linked goal",
       "aucunObjectif": "None",
-      "priorite": "Priority",
       "lien": "Shop link",
       "image": "Image",
       "requis": "Required for the pact",
       "requisAide": "A necessity, not a wish.",
       "ajouter": "Add"
-    },
-    "categories": {
-      "tech": "Tech",
-      "fashion": "Fashion",
-      "home": "Home",
-      "travel": "Travel",
-      "experience": "Experience",
-      "other": "Other"
-    },
-    "status": {
-      "acquired": "Acquired",
-      "pending": "Pending",
-      "markAcquired": "Mark as Acquired"
-    },
-    "stats": {
-      "totalItems": "Total Items",
-      "totalValue": "Total Value",
-      "acquired": "Acquired"
     },
     "delete": {
       "title": "Delete",
@@ -1796,12 +1763,6 @@
       "libreAide": "An item outside the pact is a wish that weighs on no goal.",
       "tout": "Everything is acquired."
     },
-    "priorite": {
-      "low": "Low",
-      "med": "Medium",
-      "high": "High",
-      "critical": "Critical"
-    },
     "merge": {
       "done": "Duplicate merged"
     },
@@ -1815,7 +1776,9 @@
       "sceauPacte": "Pact piece",
       "sceauLibre": "Free item",
       "corrigerPrix": "Correct the price",
-      "collerLien": "Paste the shop address"
+      "collerLien": "Paste the shop address",
+      "imageMorte": "The image is no longer available — add another",
+      "imageIndisponible": "Image unavailable"
     },
     "etat": {
       "parEtape": "Step done",
@@ -1846,7 +1809,6 @@
       "luSur": "Read on {{domaine}}",
       "lu": "read",
       "nonTrouve": "not found",
-      "sansImage": "No image on the page",
       "entrera": "Will enter as {{montant}}",
       "devise": "The page quotes {{lue}}; this account keeps its amounts in {{tienne}}. Nothing converts this amount.",
       "deviseAssume": "I keep this amount as is",
@@ -1877,7 +1839,8 @@
     },
     "finance": {
       "ajoute": "Added to {{mois}} expenses"
-    }
+    },
+    "saut": "Skip to the archive"
   },
   "inbox": {
     "title": "Inbox",

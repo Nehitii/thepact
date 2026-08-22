@@ -623,6 +623,23 @@
   border: 0;
   cursor: pointer;
 }
+/* Une adresse externe meurt : quinze des seize tiennent encore,
+   mais « Cout deplacement - Vente » ne repond plus. La tuile
+   retombait alors sur son monogramme, muette — l article A une
+   image en base, et la page en montrait une qui n existe pas. */
+.wl-plaque[data-morte="oui"] span { color: var(--wl-dette); opacity: 0.75; }
+.wl-plaque-morte {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 5px 7px;
+  font-family: var(--wl-mono);
+  font-size: max(8px, 0.5rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: var(--wl-dette);
+}
+
 .wl-plaque span {
   font-family: var(--wl-ui);
   font-size: clamp(26px, 5vw, 38px);
@@ -677,13 +694,17 @@
   overflow-wrap: anywhere;
 }
 
+/* MESURE : 251x12, 244x12, 92x12 — une cible cliquable sous les
+   vingt-quatre pixels recommandes. Six pixels de rembourrage la
+   portent a vingt-quatre, et une marge negative de meme valeur
+   garde le texte exactement ou il etait. */
 .wl-fiche-source {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   max-width: 100%;
-  margin-top: 4px;
-  padding: 0;
+  margin-top: -2px;
+  padding: 6px 0;
   font-family: var(--wl-mono);
   font-size: max(8px, 0.5rem);
   letter-spacing: 1.4px;
@@ -717,7 +738,9 @@
 /* ═══════════════════════════════════════════════════════════════
    LES OUTILS ET LA COCHE
    ═══════════════════════════════════════════════════════════════ */
-.wl-outils { display: flex; gap: 4px; opacity: 0; transition: opacity 120ms linear; }
+/* Zero au repos, c est une commande qui n existe pas tant qu on ne
+   l a pas trouvee. Un tiers suffit a la deviner sans qu elle pese. */
+.wl-outils { display: flex; gap: 4px; opacity: 0.34; transition: opacity 120ms linear; }
 .wl-poste:hover .wl-outils,
 .wl-poste:focus-within .wl-outils,
 .wl-fiche:hover .wl-outils,
@@ -1121,6 +1144,37 @@
   outline: none;
 }
 
+/* ── LE SAUT ──
+   MESURE : 179 arrets de tabulation dans la page, environ cent
+   trente entre l en-tete et l archive. Ce lien ne se montre qu au
+   clavier, et il enjambe la grille. */
+.wl-saut {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.wl-saut:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 9px 14px;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--wl-noir);
+  background: var(--wl-jaune);
+  outline: 2px solid var(--wl-noir);
+  outline-offset: 2px;
+}
+
 /* La zone qui invite a deposer, quand il n y a encore rien. */
 .wl-depot-vide {
   display: flex;
@@ -1295,8 +1349,23 @@
    lui faut sa propre encre sur le metal sombre. */
 /* Mesure : #6F7783 sur le plateau clair donnait 4,22:1, sous le
    seuil — et cette reference est en mono de huit pixels. */
-:root.dark .wl-code { background: color-mix(in srgb, var(--wl-noir) 55%, transparent); }
-:root.dark .wl-fiche[data-photo="non"] .wl-code { color: var(--wl-encre-3); }
+/* MESURE : un noir a 55 % pose sur le PLATEAU CLAIR d une photo
+   donne un gris moyen — rgb(115,117,119) — ou le rouge #FF2244 se
+   noie a 1,23:1. Sur le metal sombre des articles sans photo, le
+   meme fond donnait 6,25:1. Le cachet doit donc s accorder a ce
+   qu il y a DERRIERE lui, comme le plateau le fait deja.
+
+   Apres correction : 6,1:1 sur la photo, 6,25:1 sur le metal. */
+:root.dark .wl-fiche[data-photo="oui"] .wl-code {
+  color: #A3081F;
+  background: color-mix(in srgb, #FFFFFF 86%, transparent);
+  border-color: color-mix(in srgb, #A3081F 40%, transparent);
+}
+:root.dark .wl-fiche[data-photo="non"] .wl-code {
+  color: var(--wl-encre-3);
+  background: color-mix(in srgb, var(--wl-noir) 55%, transparent);
+  border-color: var(--wl-trait-fort);
+}
 
 /* Le tri retenu : inverse comme en clair, mais dans l autre sens. */
 :root.dark .wl-tri[aria-pressed="true"] {

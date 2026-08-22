@@ -48,7 +48,7 @@ export function WishlistArchive({
   const locale = i18n.language?.startsWith("fr") ? dateFr : undefined;
 
   return (
-    <section className="wl-pli" data-ouvert={ouvert ? "oui" : "non"}>
+    <section className="wl-pli" id="wl-archive" data-ouvert={ouvert ? "oui" : "non"}>
       <button
         type="button"
         className="wl-pli-poignee"
