@@ -12,7 +12,7 @@ import {
   useDeleteRecurringExpense,
   useDeleteRecurringIncome,
 } from '@/hooks/useFinance';
-import { totalDuMois, provisionMensuelle } from '@/lib/finance/cadence';
+import { totalDuMois, provisionMensuelle, tombeEn } from '@/lib/finance/cadence';
 import { placeDisponible, LIGNES_MAX } from '@/lib/finance/garde';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 import { EcheancesParticulieres } from './EcheancesParticulieres';
@@ -104,8 +104,33 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * une seconde. */
     const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
     (l.periode_mois ?? 1) === 1 && l.echeances == null;
-  const depensesMensuelles = useMemo(() => expenses.filter(estMensuelle), [expenses]);
   const depensesParticulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
+
+  /* MAIS LE MOIS OU ELLE TOMBE, UNE CHARGE PARTICULIERE EST DU MOIS.
+   *
+   * L exclure toute l annee revenait a mentir douze fois pour eviter
+   * de deranger onze fois. Le mois ou PayPal se preleve, il se
+   * preleve : il doit figurer dans la liste qu on lit pour savoir ce
+   * qu on paie, au meme titre que le loyer.
+   *
+   * La regle est donc temporelle et non structurelle : la liste
+   * montre CE QUI TOMBE CE MOIS-CI. Une trimestrielle y parait quatre
+   * fois par an et disparait le reste du temps — ce qui est
+   * exactement ce qu elle fait sur le compte en banque.
+   *
+   * Le panneau des echeances particulieres, lui, garde toute l annee :
+   * il repond a « qu est-ce qui m attend », pas a « que dois-je ce
+   * mois-ci ». Les deux questions sont distinctes, et une charge peut
+   * legitimement apparaitre dans les deux. */
+  const tombeCeMois = (l: FinancialItem) => estMensuelle(l) || tombeEn(l, moisCourant);
+  const depensesDuMois = useMemo(
+    () => expenses.filter(tombeCeMois),
+    [expenses, moisCourant],
+  );
+  const revenusDuMois = useMemo(
+    () => income.filter(tombeCeMois),
+    [income, moisCourant],
+  );
 
   const poche = provisionMensuelle(depensesParticulieres);
 
@@ -188,9 +213,9 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
           <FinancialBlock
-            title={t('finance.recurring.expensesMonthly', 'Dépenses mensuelles récurrentes')}
+            title={t('finance.recurring.expensesOfMonth', 'Dépenses du mois')}
             type="expense"
-            items={depensesMensuelles}
+            items={depensesDuMois}
             categories={EXPENSE_CATEGORIES}
             isLoading={expensesLoading}
             onAdd={handleAddExpense}
@@ -202,9 +227,9 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
           <FinancialBlock
-            title={t('finance.recurring.income')}
+            title={t('finance.recurring.incomeOfMonth', 'Revenus du mois')}
             type="income"
-            items={income}
+            items={revenusDuMois}
             categories={INCOME_CATEGORIES}
             isLoading={incomeLoading}
             onAdd={handleAddIncome}

@@ -2814,6 +2814,29 @@
   color: var(--cy-encre-3);
 }
 
+/* LA CADENCE, QUAND ELLE N EST PAS MENSUELLE.
+ *
+ * Elle suit la categorie sur la meme ligne, separee par une barre
+ * verticale. Volontairement dans l ambre du signal plutot que dans le
+ * gris de la categorie : ce n est pas une etiquette de plus, c est un
+ * avertissement — cette somme ne revient pas tous les mois, et la
+ * lire comme un abonnement fausse le budget de l annee.
+ *
+ * Le separateur est en ::before pour qu il disparaisse avec elle. */
+.cy-aff-cadence {
+  font-style: normal;
+  color: hsl(var(--signal-ambre));
+}
+.cy-aff-cadence::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.85em;
+  margin: 0 6px -0.1em;
+  background: currentColor;
+  opacity: 0.45;
+}
+
 .cy-aff-chiffres { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 .cy-aff-val {
   font-family: var(--cy-titre);

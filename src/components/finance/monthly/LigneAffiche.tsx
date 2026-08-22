@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import { getCategoryLabel, getExpenseCategory, getIncomeCategory } from '@/lib/financeCategories';
 import { couleurDe } from '@/lib/finance/marque';
-import { montantDuMois } from '@/lib/finance/cadence';
+import { montantDuMois, cadenceDe } from '@/lib/finance/cadence';
 import type { FinancialItem } from '@/types/finance';
 import { MarqueCreancier } from './MarqueCreancier';
 
@@ -69,6 +69,7 @@ export function LigneAffiche({
   const { t } = useTranslation();
 
   const montant = montantDuMois(item, moisCourant);
+  const cadence = cadenceDe(item);
   const couleur = couleurDe(item.category);
   const categorie = isExpense ? getExpenseCategory(item.category) : getIncomeCategory(item.category);
   const part = sommet > 0 ? Math.max(1, Math.round((montant / sommet) * 100)) : 0;
@@ -106,7 +107,18 @@ export function LigneAffiche({
 
       <span className="cy-aff-ident">
         <b className="cy-aff-nom" title={item.name}>{item.name}</b>
-        <u className="cy-aff-cat">{getCategoryLabel(categorie, t)}</u>
+        <u className="cy-aff-cat">
+          {getCategoryLabel(categorie, t)}
+          {/* CE MOIS-CI N EST PAS TOUS LES MOIS.
+              Une charge qui ne revient pas chaque mois figure dans la
+              liste le mois ou elle tombe. Sans le dire, elle se lit
+              comme un abonnement — et on croit devoir cette somme
+              douze fois par an. La cadence tient en un mot, il suffit
+              de l ecrire. */}
+          {cadence !== 'mensuel' && (
+            <em className="cy-aff-cadence">{t(`finance.cadence.${cadence}`, cadence)}</em>
+          )}
+        </u>
       </span>
 
       <span className="cy-aff-chiffres">

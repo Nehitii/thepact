@@ -925,7 +925,9 @@
       "deactivate": "Désactiver cet élément",
       "activate": "Activer cet élément",
       "compteLignes_one": "{{count}} ligne",
-      "compteLignes_other": "{{count}} lignes"
+      "compteLignes_other": "{{count}} lignes",
+      "expensesOfMonth": "Dépenses du mois",
+      "incomeOfMonth": "Revenus du mois"
     },
     "categories": {
       "housing": "Logement",
