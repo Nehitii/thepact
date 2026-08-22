@@ -88,6 +88,11 @@ export function WishlistRegistre({
   /* Le premier etat, calcule une seule fois, quand les donnees
      arrivent. Un ref plutot qu un effet : pas de rendu intermediaire
      ou tout serait replie. */
+  /* Deux facons de lire un registre, et la seconde manquait :
+     « ou reste-t-il le plus a faire » (le defaut), et « qu est-ce que
+     je peux solder tout de suite ». */
+  const [ordre, setOrdre] = useState<"reste" | "proche">("reste");
+
   const premierEtat = useRef<Set<string> | null>(null);
   if (premierEtat.current === null && groupes.length > 0) {
     premierEtat.current = new Set(
@@ -96,6 +101,42 @@ export function WishlistRegistre({
   }
   const [ouverts, setOuverts] = useState<Set<string> | null>(null);
   const etat = ouverts ?? premierEtat.current ?? new Set<string>();
+
+  /* CE QU UN ACHAT DEBLOQUE.
+     La page annonce ce qui reste — quatorze mille euros, un mur. Elle
+     ne disait jamais que deux cents euros soldent un objectif entier.
+     Pire : le registre range par reste decroissant, donc les
+     objectifs presque soldes tombaient tout en bas, hors de vue.
+     Les trois plus proches du solde remontent en tete. Pas de seuil
+     invente : ce sont simplement les trois plus proches. */
+  const aPortee = useMemo(
+    () => groupes
+      .filter((g) => g.total - g.acquis > 0)
+      .sort((a, b) => (a.total - a.acquis) - (b.total - b.acquis))
+      .slice(0, 3),
+    [groupes],
+  );
+
+  const ranges = useMemo(() => {
+    if (ordre === "reste") return groupes;
+    return [...groupes].sort((a, b) => {
+      const ra = a.total - a.acquis, rb = b.total - b.acquis;
+      /* Les objectifs soldes n ont plus rien a debloquer : ils
+         ferment la marche au lieu d ouvrir la liste avec un zero. */
+      if (ra === 0 && rb === 0) return b.total - a.total;
+      if (ra === 0) return 1;
+      if (rb === 0) return -1;
+      return ra - rb;
+    });
+  }, [groupes, ordre]);
+
+  const ouvrirEtRejoindre = (cle: string) => {
+    setOuverts(() => new Set([...etat, cle]));
+    /* On laisse le rendu poser la section avant d aller la chercher. */
+    window.requestAnimationFrame(() => {
+      document.getElementById(`wl-groupe-${cle}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  };
 
   const basculer = (cle: string) => {
     setOuverts(() => {
@@ -109,13 +150,52 @@ export function WishlistRegistre({
 
   return (
     <div className="wl-registre">
-      {groupes.map((g, rang) => {
+      {aPortee.length > 0 && (
+        <section className="wl-portee">
+          <p className="wl-portee-tete">
+            {t("wishlist.portee.titre", "À portée")}
+            <b>{t("wishlist.portee.combien", "{{n}} objectifs se soldent pour moins de {{montant}}", {
+              n: aPortee.length,
+              montant: formatCurrency(aPortee[aPortee.length - 1].total - aPortee[aPortee.length - 1].acquis, currency),
+            })}</b>
+          </p>
+          <div className="wl-portee-liste">
+            {aPortee.map((g) => {
+              const restantes = g.postes.filter((p) => !p.acquired).length;
+              return (
+                <button type="button" key={g.cle} className="wl-portee-cible"
+                  onClick={() => ouvrirEtRejoindre(g.cle)}>
+                  <span className="wl-portee-nom">{g.nom}</span>
+                  <span className="wl-portee-reste">
+                    {t("wishlist.portee.pieces", "{{count}} pièce", { count: restantes })}
+                    {" · "}
+                    <b>{formatCurrency(g.total - g.acquis, currency)}</b>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <div className="wl-registre-ordre">
+        <button type="button" className="wl-tri" aria-pressed={ordre === "reste"}
+          onClick={() => setOrdre("reste")}>
+          {t("wishlist.registre.ordreReste", "Reste le plus gros")}
+        </button>
+        <button type="button" className="wl-tri" aria-pressed={ordre === "proche"}
+          onClick={() => setOrdre("proche")}>
+          {t("wishlist.registre.ordreProche", "Au plus proche du solde")}
+        </button>
+      </div>
+
+      {ranges.map((g, rang) => {
         const reste = g.total - g.acquis;
         const ouvert = etat.has(g.cle);
         const part = g.total > 0 ? g.acquis / g.total : 0;
 
         return (
-          <section className="wl-groupe" key={g.cle} data-ouvert={ouvert ? "oui" : "non"}>
+          <section className="wl-groupe" key={g.cle} id={`wl-groupe-${g.cle}`} data-ouvert={ouvert ? "oui" : "non"}>
             <div className="wl-groupe-entete">
               <button
                 type="button"

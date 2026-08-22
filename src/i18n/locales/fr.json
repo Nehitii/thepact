@@ -691,7 +691,8 @@
       "noNext": "Aucun objectif après celui-ci",
       "paidByStep": "Payé par la validation de l’étape",
       "buy": "Marquer acheté",
-      "unbuy": "Marquer non acheté"
+      "unbuy": "Marquer non acheté",
+      "paidByGoal": "Payé — l’objectif est terminé"
     },
     "views": {
       "grid": "Grille",
@@ -1822,7 +1823,9 @@
     "registre": {
       "sansObjectif": "Sans objectif",
       "complet": "complet",
-      "ouvrir": "Ouvrir l’objectif"
+      "ouvrir": "Ouvrir l’objectif",
+      "ordreReste": "Reste le plus gros",
+      "ordreProche": "Au plus proche du solde"
     },
     "archive": {
       "titre": "Archive des acquisitions",
@@ -1863,6 +1866,12 @@
       "typeAide": "JPG, PNG, WebP ou GIF.",
       "tropLourd": "Fichier trop lourd",
       "poidsAide": "5 Mo au maximum."
+    },
+    "portee": {
+      "titre": "À portée",
+      "combien": "{{n}} objectifs se soldent pour moins de {{montant}}",
+      "pieces_one": "{{count}} pièce",
+      "pieces_other": "{{count}} pièces"
     }
   },
   "inbox": {

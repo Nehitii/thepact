@@ -691,7 +691,8 @@
       "noNext": "No goal after this one",
       "paidByStep": "Paid by validating the step",
       "buy": "Mark as bought",
-      "unbuy": "Mark as not bought"
+      "unbuy": "Mark as not bought",
+      "paidByGoal": "Paid — the goal is complete"
     },
     "views": {
       "grid": "Grid",
@@ -1822,7 +1823,9 @@
     "registre": {
       "sansObjectif": "No goal",
       "complet": "complete",
-      "ouvrir": "Open the goal"
+      "ouvrir": "Open the goal",
+      "ordreReste": "Largest remainder",
+      "ordreProche": "Closest to settled"
     },
     "archive": {
       "titre": "Acquisition archive",
@@ -1863,6 +1866,12 @@
       "typeAide": "JPG, PNG, WebP or GIF.",
       "tropLourd": "File too large",
       "poidsAide": "5 MB maximum."
+    },
+    "portee": {
+      "titre": "Within reach",
+      "combien": "{{n}} goals settle for less than {{montant}}",
+      "pieces_one": "{{count}} piece",
+      "pieces_other": "{{count}} pieces"
     }
   },
   "inbox": {

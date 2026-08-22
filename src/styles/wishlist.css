@@ -774,6 +774,76 @@
    ═══════════════════════════════════════════════════════════════ */
 .wl-registre { display: flex; flex-direction: column; gap: 9px; }
 
+/* ═══════════════════════════════════════════════════════════════
+   A PORTEE
+
+   Le registre disait « il reste 14 216,49 € » — un mur. Il ne disait
+   jamais que 200 € soldent un objectif entier de 790. Et comme il
+   range par reste decroissant, les objectifs presque soldes
+   tombaient tout en bas, hors de vue.
+
+   Cette bande les remonte. Elle est verte, pas rouge : ce n est pas
+   une dette qu on signale, c est une porte ouverte.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-portee {
+  background: var(--wl-plaque);
+  box-shadow: var(--wl-ombre);
+  border-left: 3px solid var(--wl-vert);
+  clip-path: var(--wl-coupe);
+  padding: 12px 14px 13px;
+}
+
+.wl-portee-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 10px;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--wl-vert);
+}
+.wl-portee-tete b { font-weight: 500; color: var(--wl-encre-3); letter-spacing: 1.6px; }
+
+.wl-portee-liste { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.wl-portee-cible {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 12px;
+  text-align: left;
+  background: var(--wl-creux);
+  border: 1px solid var(--wl-trait);
+  cursor: pointer;
+  transition: border-color 120ms linear, background 120ms linear;
+}
+.wl-portee-cible:hover { border-color: var(--wl-vert); background: var(--wl-plaque); }
+.wl-portee-cible:focus-visible { outline: 2px solid var(--wl-jaune); outline-offset: 2px; }
+
+.wl-portee-nom {
+  font-family: var(--wl-ui);
+  font-size: max(14px, 0.875rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--wl-encre);
+  overflow-wrap: anywhere;
+}
+.wl-portee-reste {
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.wl-portee-reste b { font-weight: 700; color: var(--wl-vert); }
+
+.wl-registre-ordre { display: flex; flex-wrap: wrap; gap: 8px; }
+
 .wl-groupe {
   background: var(--wl-plaque);
   box-shadow: var(--wl-ombre);

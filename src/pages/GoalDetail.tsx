@@ -605,6 +605,12 @@ export default function GoalDetail() {
               teinte={difficultyColor}
               devise={currency}
               coutEstime={goal.estimated_cost || 0}
+              objectifTermine={
+                /* Un statut absent nest pas un objectif termine : on
+                   ne devine pas, on repond non. */
+                goal.status !== null && goal.status !== undefined
+                && ["completed", "fully_completed", "validated"].includes(goal.status)
+              }
               onAcquerir={(id, acquis) => acquerirPieces.mutate({ ids: [id], acquis })}
             />
           )}

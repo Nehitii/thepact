@@ -155,13 +155,15 @@ export const DossierEtapes = React.memo(function DossierEtapes({
 /* ── Le registre ────────────────────────────────────────────────── */
 
 export const DossierRegistre = React.memo(function DossierRegistre({
-  postes, etapes, teinte, devise, coutEstime, onAcquerir,
+  postes, etapes, teinte, devise, coutEstime, objectifTermine, onAcquerir,
 }: {
   postes: PosteDossier[];
   etapes: EtapeDossier[];
   teinte: string;
   devise: string;
   coutEstime: number;
+  /** Un objectif termine a tout paye, pieces cochees ou non. */
+  objectifTermine?: boolean;
   /** Marquer une piece achetee, sans toucher a son etape. */
   onAcquerir?: (id: string, acquis: boolean) => void;
 }) {
@@ -185,9 +187,17 @@ export const DossierRegistre = React.memo(function DossierRegistre({
     Boolean(p.step_id) && etapes.some((e) => e.id === p.step_id && e.status === "completed")
   ), [etapes]);
 
+  /* MESURE : deux pieces de l objectif « Vendre » — 250 € — etaient
+     comptees non financees alors que l objectif est termine. Elles
+     n ont pas d etape, donc le declencheur d etape ne pouvait rien,
+     et la synchronisation n avait marque que les lignes de wishlist.
+     Le compte du pacte, lui, tombait juste : il compte un objectif
+     termine EN ENTIER par un autre chemin. C etait donc la lecture
+     de cette fiche qui mentait, pas la donnee — et le correctif est
+     en lecture, sans toucher a une seule ligne. */
   const estFinance = React.useCallback(
-    (p: PosteDossier) => Boolean(p.acquired_at) || payeParEtape(p),
-    [payeParEtape],
+    (p: PosteDossier) => Boolean(objectifTermine) || Boolean(p.acquired_at) || payeParEtape(p),
+    [payeParEtape, objectifTermine],
   );
 
   const total = coutEstime > 0
@@ -230,8 +240,10 @@ export const DossierRegistre = React.memo(function DossierRegistre({
                   type="button"
                   className="gd-case"
                   aria-pressed={estFinance(p)}
-                  disabled={payeParEtape(p)}
-                  title={payeParEtape(p)
+                  disabled={payeParEtape(p) || Boolean(objectifTermine)}
+                  title={objectifTermine
+                    ? t("goals.detail.paidByGoal", "Payé — l’objectif est terminé")
+                    : payeParEtape(p)
                     ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
                     : p.acquired_at
                       ? t("goals.detail.unbuy", "Marquer non acheté")
