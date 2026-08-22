@@ -760,6 +760,16 @@
       "groupNoSteps": "A group has no steps: it counts its members, chosen from its page.",
       "habitShrink": "Shortening to {{duree}} days will erase {{perdus}} day(s) already kept beyond that.",
       "habitNoSteps": "A habit has no steps: it is checked off day by day."
+    },
+    "focus": {
+      "remove": "Remove from focus",
+      "set": "Set as focus"
+    },
+    "rule": {
+      "focus": "Focus",
+      "active": "Active",
+      "auto": "Auto: {{regles}}",
+      "autoAll": "Auto: all goals"
     }
   },
   "finance": {

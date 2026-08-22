@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { DIFFICULTY_OPTIONS, GOAL_TAGS, getDifficultyLabel, getTagLabel, getStatusLabel } from "@/lib/goalConstants";
 import { cn } from "@/lib/utils";
 import { SuperGoalRule, filterGoalsByRule } from "./types";
+import { useTranslation } from "react-i18next";
 
 interface Goal {
   id: string;
@@ -26,12 +27,6 @@ interface AutoBuildRuleEditorProps {
   customDifficultyActive?: boolean;
 }
 
-const STATUS_OPTIONS = [
-  { value: "not_started", label: "Not Started" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "fully_completed", label: "Completed" },
-  { value: "paused", label: "Paused" },
-];
 
 export function AutoBuildRuleEditor({
   rule,
@@ -40,6 +35,7 @@ export function AutoBuildRuleEditor({
   customDifficultyName = "",
   customDifficultyActive = false,
 }: AutoBuildRuleEditorProps) {
+  const { t } = useTranslation();
   // Filter out super goals from preview
   const availableGoals = useMemo(() => 
     goals.filter((g) => g.goal_type !== "super"),
@@ -92,7 +88,9 @@ export function AutoBuildRuleEditor({
         <div className="flex flex-wrap gap-2">
           {allDifficulties.map((diff) => {
             const isSelected = (rule.difficulties || []).includes(diff.value);
-            const label = diff.value === "custom" ? customDifficultyName || "Custom" : getDifficultyLabel(diff.value);
+            const label = diff.value === "custom"
+              ? customDifficultyName || t("goals.difficulties.custom", "Personnalisé")
+              : getDifficultyLabel(diff.value, t);
             return (
               <button
                 key={diff.value}
@@ -140,7 +138,7 @@ export function AutoBuildRuleEditor({
               >
                 <span className="flex items-center gap-1.5">
                   {isSelected && <Check className="h-3 w-3" />}
-                  {getTagLabel(tag.value)}
+                  {getTagLabel(tag.value, t)}
                 </span>
               </button>
             );

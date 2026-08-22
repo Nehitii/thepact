@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import type { SuperGoalRule } from "./types";
+import { useTranslation } from "react-i18next";
 
 interface SuperGoalBookmarkCardProps {
   id: string;
@@ -54,16 +55,15 @@ const withAlpha = (color: string, alpha: number): string => {
   return color;
 };
 
-const getDiffLabel = (diff: string, customName?: string): string => {
-  if (diff === "custom") return customName || "Custom";
-  return diff.charAt(0).toUpperCase() + diff.slice(1);
-};
+/* Le doublon local posait une majuscule sur le code anglais.
+   La fonction partagee traduit. */
 
 export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
   id, name, childCount, completedCount, honore, pret, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalBookmarkCardProps) {
+  const { t } = useTranslation();
   const { progress, difficultyColor, intensity, ruleLabel, isComplete } = useMemo(() => {
     const diff = difficulty || "medium";
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
@@ -71,10 +71,10 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
     let label = "";
     if (isDynamic && rule) {
       const parts: string[] = [];
-      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, undefined, customDifficultyName)).join(", "));
-      if (rule.focusOnly) parts.push("Focus");
-      if (rule.excludeCompleted) parts.push("Active");
-      label = parts.length > 0 ? `Auto: ${parts.join(" · ")}` : "Auto: All Goals";
+      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, t, customDifficultyName)).join(", "));
+      if (rule.focusOnly) parts.push(t("goals.rule.focus", "Focus"));
+      if (rule.excludeCompleted) parts.push(t("goals.rule.active", "Actifs"));
+      label = parts.length > 0 ? t("goals.rule.auto", "Auto : {{regles}}", { regles: parts.join(" · ") }) : t("goals.rule.autoAll", "Auto : tous les objectifs");
     }
     return {
       progress: prog,
@@ -83,7 +83,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
       ruleLabel: label,
       isComplete: !!honore,
     };
-  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
+  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor, t]);
 
   const getTierBackground = () => {
     switch (difficulty) {
@@ -143,7 +143,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
               borderRadius: "inherit",
             }}
           />
-          <span className="relative z-10">{getDiffLabel(difficulty, customDifficultyName)}</span>
+          <span className="relative z-10">{getDifficultyLabel(difficulty, t, customDifficultyName)}</span>
         </Badge>
 
         {/* Top Section - Image or placeholder */}

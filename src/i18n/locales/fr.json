@@ -760,6 +760,16 @@
       "groupNoSteps": "Un groupe n'a pas d'étapes : il compte ses membres, qui se choisissent depuis sa fiche.",
       "habitShrink": "Raccourcir à {{duree}} jours effacera {{perdus}} jour(s) déjà tenu(s) au-delà.",
       "habitNoSteps": "Une habitude n'a pas d'étapes : elle se coche jour après jour."
+    },
+    "focus": {
+      "remove": "Retirer du focus",
+      "set": "Mettre en focus"
+    },
+    "rule": {
+      "focus": "Focus",
+      "active": "Actifs",
+      "auto": "Auto : {{regles}}",
+      "autoAll": "Auto : tous les objectifs"
     }
   },
   "finance": {

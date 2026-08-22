@@ -4,6 +4,7 @@ import { getStatusLabel } from "@/lib/goalConstants";
 import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
+import { useTranslation } from "react-i18next";
 
 /* REGISTRE — la vue liste
  *
@@ -119,6 +120,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
   onNavigate,
   onToggleFocus,
 }: Props) {
+  const { t } = useTranslation();
   const [grouper, setGrouper] = useState<boolean>(() => {
     try { return localStorage.getItem(CLE_GROUPE) === "1"; } catch { return false; }
   });
@@ -211,7 +213,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
   }, [grouper, goals, allGoals]);
 
   const ligne = (g: Goal, indente = false) => {
-    const t = teinte(g, customDifficultyColor);
+    const couleur = teinte(g, customDifficultyColor);
     const membres = g.goal_type === "super" ? membresDuGroupe(g, allGoals) : undefined;
     const av = avancement(g, membres);
     const etat = etatDe(g, allGoals);
@@ -223,7 +225,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
       <div key={g.id} className={`rg-bloc${estOuvert ? " est-ouvert" : ""}`}>
         <div
           className={`rg-l${indente ? " rg-l--fils" : ""}`}
-          style={{ ["--t" as string]: t }}
+          style={{ ["--t" as string]: couleur }}
           role="button"
           tabIndex={0}
           onClick={() => onNavigate(g.id)}
@@ -270,21 +272,23 @@ export const GoalsRegistre = memo(function GoalsRegistre({
               ? "✦ Zénith"
               : etat === "pret"
                 ? "À honorer"
-                : getStatusLabel(g.status || "not_started")}
+                : getStatusLabel(g.status || "not_started", t)}
           </span>
           <button
             type="button"
             className={`rg-focus${g.is_focus ? " active" : ""}`}
             onClick={(e) => { e.stopPropagation(); onToggleFocus(g.id, !!g.is_focus, e); }}
-            aria-label={g.is_focus ? "Remove from focus" : "Set as focus"}
+            aria-label={g.is_focus
+              ? t("goals.focus.remove", "Retirer du focus")
+              : t("goals.focus.set", "Mettre en focus")}
           >
-            <Star size={12} fill={g.is_focus ? t : "none"} stroke={t} />
+            <Star size={12} fill={g.is_focus ? couleur : "none"} stroke={couleur} />
           </button>
         </div>
 
         {/* Le volet est toujours dans le DOM : c'est ce qui permet
             d'animer sa hauteur sans la mesurer en JavaScript. */}
-        <div className="rg-volet" style={{ ["--t" as string]: t }}>
+        <div className="rg-volet" style={{ ["--t" as string]: couleur }}>
           <div className="rg-volet-in">
             {(estOuvert || rendus.has(g.id)) && (
               g.goal_type === "super"

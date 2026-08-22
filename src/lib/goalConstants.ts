@@ -89,7 +89,7 @@ export const STATUS_CONFIG = {
 } as const;
 
 // Helper function: Get status label (with i18n support)
-export function getStatusLabel(status: string, t?: TFunction): string {
+export function getStatusLabel(status: string, t: TFunction): string {
   const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
   if (!config) {
     return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
@@ -125,7 +125,7 @@ export function getStatusBadgeClass(status: string): string {
 }
 
 // Helper function: Get difficulty label (with i18n support, handles custom difficulty name)
-export function getDifficultyLabel(difficulty: string, t?: TFunction, customName?: string): string {
+export function getDifficultyLabel(difficulty: string, t: TFunction, customName?: string): string {
   if (difficulty === "custom") return customName || (t ? t("goals.difficulties.custom") : "Custom");
   const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
   if (!found) return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
@@ -142,7 +142,7 @@ export function getDifficultyLabel(difficulty: string, t?: TFunction, customName
 }
 
 // Helper function: Get tag label (with i18n support)
-export function getTagLabel(type: string, t?: TFunction): string {
+export function getTagLabel(type: string, t: TFunction): string {
   const found = GOAL_TAGS.find(tag => tag.value === type);
   if (!found) return type.charAt(0).toUpperCase() + type.slice(1);
   if (t) return t(found.labelKey);

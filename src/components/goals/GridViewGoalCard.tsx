@@ -4,6 +4,8 @@ import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity, getGo
 import { cn } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
+import { useTranslation } from "react-i18next";
+import { getDifficultyLabel } from "@/lib/goalConstants";
 
 // --- Interfaces ---
 interface Goal {
@@ -64,10 +66,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   }
 };
 
-const getDifficultyLabel = (diff: string, customName?: string): string => {
-  if (diff === "custom") return customName || "Custom";
-  return diff.charAt(0).toUpperCase() + diff.slice(1);
-};
+/* Meme doublon que dans la vue barre : une majuscule posee sur le
+   code anglais tenait lieu de libelle. La fonction partagee traduit. */
 
 export function GridViewGoalCard({
   goal,
@@ -77,6 +77,7 @@ export function GridViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: GridViewGoalCardProps) {
+  const { t } = useTranslation();
   const derived = useMemo(() => {
     const diff = goal.difficulty || "easy";
     const goalType = goal.goal_type || "standard";
@@ -93,11 +94,13 @@ export function GridViewGoalCard({
       completedSteps: completed,
       progress: prog,
       theme: getDifficultyTheme(diff, customDifficultyColor),
-      statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
+      statusLabel: isCompleted
+        ? t("goals.statuses.fully_completed", "Terminé")
+        : getStatusLabel(goal.status || "not_started", t),
       displayTags: goal.tags?.slice(0, 2) || (goal.type ? [goal.type] : []),
       remainingTagsCount: Math.max(0, (goal.tags?.length || 0) - 2),
     };
-  }, [goal, isCompleted, customDifficultyColor]);
+  }, [goal, isCompleted, customDifficultyColor, t]);
 
   const {
     difficulty,
@@ -178,12 +181,12 @@ export function GridViewGoalCard({
         <span className="verre-flanc" aria-hidden="true" />
 
         {/* Bande inclinee : le palier traverse l'image. */}
-        <span className="verre-bande">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
+        <span className="verre-bande">{getDifficultyLabel(difficulty, t, customDifficultyName)}</span>
 
         {/* Socle d'affiche, teinte par le palier. */}
         <div className="verre-socle">
           <span className="verre-lettre" aria-hidden="true">
-            {getDifficultyLabel(difficulty, customDifficultyName).slice(0, 1)}
+            {getDifficultyLabel(difficulty, t, customDifficultyName).slice(0, 1)}
           </span>
 
           <h3 className="verre-nom">{goal.name}</h3>

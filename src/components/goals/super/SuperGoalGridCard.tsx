@@ -3,6 +3,7 @@ import { Crown, Zap, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
 import { type SuperGoalRule } from "./types";
+import { useTranslation } from "react-i18next";
 
 interface SuperGoalGridCardProps {
   id: string;
@@ -41,29 +42,28 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   }
 };
 
-const getDiffLabel = (diff: string, customName?: string): string => {
-  if (diff === "custom") return customName || "Custom";
-  return diff.charAt(0).toUpperCase() + diff.slice(1);
-};
+/* Le doublon local posait une majuscule sur le code anglais.
+   La fonction partagee traduit. */
 
 export const SuperGoalGridCard = memo(function SuperGoalGridCard({
   id, name, childCount, completedCount, honore, pret, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalGridCardProps) {
+  const { t } = useTranslation();
   const { progress, theme, ruleLabel } = useMemo(() => {
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
-    const t = getDifficultyTheme(difficulty, customDifficultyColor);
+    const teinte = getDifficultyTheme(difficulty, customDifficultyColor);
     let label = "";
     if (isDynamic && rule) {
       const parts: string[] = [];
-      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, undefined, customDifficultyName)).join(", "));
-      if (rule.focusOnly) parts.push("Focus");
-      if (rule.excludeCompleted) parts.push("Active");
-      label = parts.length > 0 ? `Auto: ${parts.join(" · ")}` : "Auto: All Goals";
+      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, t, customDifficultyName)).join(", "));
+      if (rule.focusOnly) parts.push(t("goals.rule.focus", "Focus"));
+      if (rule.excludeCompleted) parts.push(t("goals.rule.active", "Actifs"));
+      label = parts.length > 0 ? t("goals.rule.auto", "Auto : {{regles}}", { regles: parts.join(" · ") }) : t("goals.rule.autoAll", "Auto : tous les objectifs");
     }
-    return { progress: prog, theme: t, ruleLabel: label };
-  }, [childCount, completedCount, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
+    return { progress: prog, theme: teinte, ruleLabel: label };
+  }, [childCount, completedCount, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor, t]);
 
   /* Trois etats, et non deux.
    *
@@ -119,12 +119,12 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
         <span className="verre-flanc" aria-hidden="true" />
 
         <span className="verre-bande">
-          {getDiffLabel(difficulty, customDifficultyName)}
+          {getDifficultyLabel(difficulty, t, customDifficultyName)}
         </span>
 
         <div className="verre-socle">
           <span className="verre-lettre" aria-hidden="true">
-            {getDiffLabel(difficulty, customDifficultyName).slice(0, 1)}
+            {getDifficultyLabel(difficulty, t, customDifficultyName).slice(0, 1)}
           </span>
 
           <div className="verre-groupe-tags">

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { getDifficultyColor } from "@/lib/utils";
 import { getDifficultyLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 import type { SuperGoalChildInfo } from "./types";
+import { useTranslation } from "react-i18next";
 
 interface SuperGoalChildListProps {
   children: SuperGoalChildInfo[];
@@ -22,6 +23,7 @@ export const SuperGoalChildList = memo(function SuperGoalChildList({
   customDifficultyName = "",
   customDifficultyColor = "#a855f7",
 }: SuperGoalChildListProps) {
+  const { t } = useTranslation();
   const { completedCount, totalCount } = useMemo(() => {
     const valid = children.filter(c => !c.isMissing);
     return {
@@ -133,7 +135,7 @@ export const SuperGoalChildList = memo(function SuperGoalChildList({
                         backgroundColor: `${diffColor}15`,
                       }}
                     >
-                      {getDifficultyLabel(child.difficulty, undefined, customDifficultyName)}
+                      {getDifficultyLabel(child.difficulty, t, customDifficultyName)}
                     </Badge>
                   )}
                 </div>
@@ -171,7 +173,7 @@ export const SuperGoalChildList = memo(function SuperGoalChildList({
                       : "border-muted-foreground/30 text-muted-foreground"
                   )}
                 >
-                  {getStatusLabel(child.status)}
+                  {getStatusLabel(child.status, t)}
                 </Badge>
               )}
 

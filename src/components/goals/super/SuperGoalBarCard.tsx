@@ -3,6 +3,7 @@ import { Crown, Zap } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/lib/goalConstants";
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import { type SuperGoalRule } from "./types";
+import { useTranslation } from "react-i18next";
 
 interface SuperGoalBarCardProps {
   id: string;
@@ -41,37 +42,35 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   }
 };
 
-const getDiffLabel = (difficulty: string, customName: string): string => {
-  if (difficulty === "custom") return customName || "Custom";
-  const found = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty);
-  return found?.value ? found.value.charAt(0).toUpperCase() + found.value.slice(1) : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-};
+/* Le doublon local posait une majuscule sur le code anglais —
+   « Medium », « Hard ». La fonction partagee traduit. */
 
 export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   id, name, childCount, completedCount, honore, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
   imageUrl,
 }: SuperGoalBarCardProps) {
+  const { t } = useTranslation();
   const { theme, difficultyLabel, progressPercent, intensity, ruleLabel, isComplete } = useMemo(() => {
     const diff = difficulty || "medium";
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
     let label = "";
     if (isDynamic && rule) {
       const parts: string[] = [];
-      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, undefined, customDifficultyName)).join(", "));
-      if (rule.focusOnly) parts.push("Focus");
-      if (rule.excludeCompleted) parts.push("Active");
-      label = parts.length > 0 ? `Auto: ${parts.join(" · ")}` : "Auto: All Goals";
+      if (rule.difficulties?.length) parts.push(rule.difficulties.map(d => getDifficultyLabel(d, t, customDifficultyName)).join(", "));
+      if (rule.focusOnly) parts.push(t("goals.rule.focus", "Focus"));
+      if (rule.excludeCompleted) parts.push(t("goals.rule.active", "Actifs"));
+      label = parts.length > 0 ? t("goals.rule.auto", "Auto : {{regles}}", { regles: parts.join(" · ") }) : t("goals.rule.autoAll", "Auto : tous les objectifs");
     }
     return {
       theme: getDifficultyTheme(diff, customDifficultyColor),
-      difficultyLabel: getDiffLabel(diff, customDifficultyName),
+      difficultyLabel: getDifficultyLabel(diff, t, customDifficultyName),
       progressPercent: prog,
       intensity: getDifficultyIntensity(diff),
       ruleLabel: label,
       isComplete: !!honore,
     };
-  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor]);
+  }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor, t]);
 
   const cssVars = {
     "--accent": theme.color,

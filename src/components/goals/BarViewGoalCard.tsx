@@ -3,6 +3,8 @@ import { Star, Target, Trophy } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
+import { useTranslation } from "react-i18next";
+import { getDifficultyLabel } from "@/lib/goalConstants";
 
 interface Goal {
   id: string;
@@ -62,13 +64,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   }
 };
 
-const getDifficultyDisplayLabel = (difficulty: string, customName: string): string => {
-  if (difficulty === "custom") return customName || "Custom";
-  const found = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty);
-  return found?.value
-    ? found.value.charAt(0).toUpperCase() + found.value.slice(1)
-    : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-};
+/* Ce fichier fabriquait son propre libelle de palier en mettant la
+   premiere lettre du code anglais en majuscule — « Medium », « Hard ».
+   La fonction partagee sait le traduire ; il suffisait de lui donner
+   de quoi le faire. */
 
 export const BarViewGoalCard = memo(function BarViewGoalCard({
   goal,
@@ -78,6 +77,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
+  const { t } = useTranslation();
   const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo, kpi } =
     useMemo(() => {
       const diff = goal.difficulty || "easy";
@@ -111,16 +111,18 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
       return {
         theme: getDifficultyTheme(diff, customDifficultyColor),
-        difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
+        difficultyLabel: getDifficultyLabel(diff, t, customDifficultyName),
         progressPercent: percent,
-        statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
+        statusLabel: isCompleted
+          ? t("goals.statuses.fully_completed", "Terminé")
+          : getStatusLabel(goal.status || "not_started", t),
         totalSteps: total,
         completedSteps: completed,
         intensity: intensityVal,
         deadlineInfo,
         kpi,
       };
-    }, [goal, isCompleted, customDifficultyName, customDifficultyColor]);
+    }, [goal, isCompleted, customDifficultyName, customDifficultyColor, t]);
 
   const cssVars = {
     "--accent": theme.color,

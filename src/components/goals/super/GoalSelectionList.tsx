@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getDifficultyLabel, getTagLabel, getStatusLabel, DIFFICULTY_OPTIONS, GOAL_TAGS } from "@/lib/goalConstants";
 import { getDifficultyColor } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface Goal {
   id: string;
@@ -37,6 +38,7 @@ export function GoalSelectionList({
   customDifficultyName = "",
   customDifficultyColor = "#a855f7",
 }: GoalSelectionListProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
 
@@ -198,8 +200,8 @@ export function GoalSelectionList({
                 style={difficultyFilter === diff.value ? { background: diff.color } : {}}
               >
                 {diff.value === "custom"
-                  ? customDifficultyName || getDifficultyLabel("custom")
-                  : getDifficultyLabel(diff.value)}
+                  ? customDifficultyName || getDifficultyLabel("custom", t)
+                  : getDifficultyLabel(diff.value, t)}
               </button>
             ))}
           </div>
@@ -294,7 +296,7 @@ export function GoalSelectionList({
                           color: diffColor,
                         }}
                       >
-                        {getDifficultyLabel(goal.difficulty || "easy", undefined, customDifficultyName)}
+                        {getDifficultyLabel(goal.difficulty || "easy", t, customDifficultyName)}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         {progress}%
