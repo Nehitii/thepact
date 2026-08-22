@@ -308,47 +308,66 @@
   flex: 0 0 auto; margin-left: 0; align-items: center;
 }
 
+/* Le nom du rythme et ce qu il vient chercher. Le plancher de 240px
+   evite que la description ne soit affamee par les pastilles. */
+.hlt-bande-mots { flex: 1 1 240px; min-width: 0; }
+.hlt-bande-mots h3 {
+  margin: 0; font-family: var(--hlt-titre); font-weight: 600;
+  font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.hlt-bande-mots p {
+  margin: 3px 0 0; font-size: max(13px, 0.813rem); color: var(--hlt-encre-2);
+  max-width: 46ch; line-height: 1.55;
+}
+/* Deplie, la description quitte l ecran : on respire, on ne lit pas. */
+.hlt-protocole[data-actif="1"] .hlt-bande-mots p { display: none; }
+
 /* ── L IRIS ────────────────────────────────────────────────── */
 /* Le cercle lumineux est le cliche absolu de l application de
-   meditation. Six segments chanfreines qui s ouvrent et se referment :
-   un diaphragme d objectif, une piece de cyberware. C est la seule
-   forme qui parle la langue du dossier — et elle reste lisible a
-   soixante-six pixels dans la bande repliee.
+   meditation. Ici, six lames d objectif qui s ouvrent et se referment.
+
+   LA LAME PIVOTE EN S ECARTANT, et c est tout l enjeu. Une premiere
+   version contre-tournait chaque lame pour la garder d aplomb : ouverte
+   la rosette se lisait, mais fermee les six pieces s empilaient en un
+   pave sans articulation. Dans un vrai objectif, une lame ne se
+   contente pas de s ecarter — elle tourne en s ecartant, et c est ce
+   geste-la qu on reconnait sans savoir le nommer. Elle passe donc de
+   -26 degres fermee a +4 degres ouverte.
 
    UNE SEULE VARIABLE PILOTE LES SIX. --ouv vaut 1 a l inspiration et
-   pendant la retenue, 0 a l expiration et pendant la pause. Le rayon et
-   la taille des segments suivent l etat de la bande, ce qui evite de
+   pendant la retenue, 0 a l expiration et pendant la pause. Rayon et
+   dimensions de lame suivent l etat de la bande, ce qui evite de
    redecrire la geometrie deux fois. */
 .hlt-rond {
   position: relative; width: 66px; height: 66px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  --rayon: 21px; --seg: 16px;
+  --rayon: 22px; --lame-l: 24px; --lame-h: 13px;
   transition:
     width 420ms cubic-bezier(0.16, 1, 0.3, 1),
     height 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hlt-protocole[data-actif="1"] .hlt-rond {
   width: 208px; height: 208px;
-  --rayon: 42px; --seg: 46px;
+  --rayon: 53px; --lame-l: 74px; --lame-h: 41px;
 }
 
 .hlt-iris { position: absolute; inset: 0; }
 .hlt-iris i {
   position: absolute; left: 50%; top: 50%;
-  width: var(--seg); height: var(--seg);
+  width: var(--lame-l); height: var(--lame-h);
   background: linear-gradient(140deg,
     color-mix(in srgb, var(--hlt-cyan) 52%, transparent),
     color-mix(in srgb, var(--hlt-cyan) 10%, transparent));
   border: 1px solid color-mix(in srgb, var(--hlt-cyan) 68%, transparent);
-  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
-  /* Le double rotate remet chaque segment d aplomb apres l avoir place
-     sur son rayon : sans lui, ils tourneraient sur eux-memes. */
+  /* Un bord franc, un bord biseaute : c est la forme d une lame
+     d objectif, et c est elle qui fait la fermeture en spirale. */
+  clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
   transform:
     translate(-50%, -50%)
     rotate(var(--a))
-    translateY(calc(-1 * var(--rayon) * (0.45 + 0.55 * var(--ouv, 0.62))))
-    rotate(calc(var(--a) * -1))
-    scale(calc(0.7 + 0.3 * var(--ouv, 0.62)));
+    translateY(calc(-1 * var(--rayon) * (0.34 + 0.66 * var(--ouv, 0.62))))
+    rotate(calc(-26deg + 30deg * var(--ouv, 0.62)))
+    scale(calc(0.86 + 0.14 * var(--ouv, 0.62)));
   transition:
     transform var(--duree, 0.5s) var(--courbe, ease-in-out),
     width 420ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -381,26 +400,29 @@
   to { stroke-dashoffset: var(--circ); }
 }
 
-/* ── CE QUI S ECRIT AU CENTRE ──────────────────────────────── */
-.hlt-rond-texte {
-  position: relative; display: none; flex-direction: column;
-  align-items: center; gap: 3px; z-index: 3;
+/* ── CE QUI SE LIT SOUS LE MECANISME ───────────────────────── */
+/* Le texte etait au centre du cercle. Un diaphragme qui se ferme
+   couvre son centre : des que les lames se rejoignaient, le compteur
+   passait dessous et devenait illisible. On le descend, et l iris peut
+   aller au bout de sa fermeture. */
+.hlt-lecture {
+  display: none; flex-direction: column; align-items: center; gap: 2px;
 }
-.hlt-protocole[data-actif="1"] .hlt-rond-texte { display: flex; }
-.hlt-rond-texte b {
+.hlt-protocole[data-actif="1"] .hlt-lecture { display: flex; }
+.hlt-lecture b {
   font-family: var(--hlt-mono); font-size: max(10px, 0.625rem); font-weight: 500;
-  letter-spacing: 0.28em; text-transform: uppercase; color: var(--hlt-cyan);
+  letter-spacing: 0.3em; text-transform: uppercase; color: var(--hlt-cyan);
 }
-.hlt-rond-texte > span {
-  font-family: var(--hlt-chiffre); font-size: 34px; font-weight: 700;
-  line-height: 1; font-variant-numeric: tabular-nums; color: var(--hlt-encre);
+.hlt-lecture > span {
+  font-family: var(--hlt-chiffre); font-size: 44px; font-weight: 700;
+  line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--hlt-encre);
 }
-.hlt-rond-texte u {
+.hlt-lecture u {
   text-decoration: none; font-family: var(--hlt-mono);
-  font-size: max(9px, 0.563rem); letter-spacing: 0.16em; color: var(--hlt-encre-2);
+  font-size: max(9.5px, 0.594rem); letter-spacing: 0.2em; color: var(--hlt-encre-2);
   font-variant-numeric: tabular-nums;
 }
-.hlt-rond-texte u s { text-decoration: none; color: var(--hlt-encre-3); }
+.hlt-lecture u s { text-decoration: none; color: var(--hlt-encre-3); }
 
 /* La recolte : une seance qui atteint sa cible se clot d elle-meme. */
 .hlt-fini {

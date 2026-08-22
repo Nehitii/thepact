@@ -299,17 +299,23 @@ export function Respiration({ stress, chargeMentale }: Props) {
             ))}
           </div>
 
-          <span className="hlt-rond-texte">
-            {etat === "fini" ? (
-              <b className="hlt-fini"><Check aria-hidden="true" />{t("health.breath.done", "Séance close")}</b>
-            ) : actif ? (
-              <>
-                <b>{t(`health.breath.phase.${tempsCourant?.nom}`, tempsCourant?.nom ?? "")}</b>
-                <span>{reste}</span>
-                <u>{tours}<s>/{cible}</s></u>
-              </>
-            ) : null}
-          </span>
+        </div>
+
+        {/* LA LECTURE EST SORTIE DU CERCLE. Un vrai diaphragme couvre son
+            centre en se fermant — le compteur pose dessus devenait
+            illisible des que les lames se rejoignaient. Il se lit
+            maintenant sous le mecanisme, ce qui laisse l iris aller au
+            bout de sa fermeture. */}
+        <div className="hlt-lecture">
+          {etat === "fini" ? (
+            <b className="hlt-fini"><Check aria-hidden="true" />{t("health.breath.done", "Séance close")}</b>
+          ) : actif ? (
+            <>
+              <b>{t(`health.breath.phase.${tempsCourant?.nom}`, tempsCourant?.nom ?? "")}</b>
+              <span>{reste}</span>
+              <u>{tours}<s> / {cible}</s></u>
+            </>
+          ) : null}
         </div>
 
         <div className="hlt-bande-mots">
