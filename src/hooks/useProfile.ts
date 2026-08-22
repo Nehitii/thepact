@@ -20,6 +20,11 @@ export interface ProfileSettings {
   birthday: string | null;
   country: string | null;
   goal_unlock_code: string | null;
+  /* Le pacte actif choisi par l utilisateur. Il manquait a la fois de
+     cette interface ET du select ci-dessous : ProtectedRoute le lisait
+     donc a travers un « as any » sur un objet qui ne l a jamais porte,
+     et la condition « pas encore choisi » etait toujours vraie. */
+  active_pact_id: string | null;
 }
 
 export function useProfile(userId: string | undefined) {
@@ -30,7 +35,7 @@ export function useProfile(userId: string | undefined) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country, goal_unlock_code")
+        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country, goal_unlock_code, active_pact_id")
         .eq("id", userId)
         .maybeSingle();
 

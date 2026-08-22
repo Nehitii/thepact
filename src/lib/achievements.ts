@@ -447,9 +447,9 @@ export async function getUserAchievements(userId: string): Promise<Achievement[]
       unlocked: achievementMap.has(def.key),
       unlocked_at: achievementMap.get(def.key)?.unlocked_at,
       progress,
-      required_module: (def as any).required_module || null,
-      bond_reward: (def as any).bond_reward || 0,
-      points: (def as any).points || 0,
+      required_module: def.required_module || null,
+      bond_reward: def.bond_reward || 0,
+      points: def.points || 0,
     };
   }) as Achievement[];
 }

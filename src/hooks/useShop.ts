@@ -62,6 +62,11 @@ export interface CosmeticFrame {
   frame_scale?: number;
   frame_offset_x?: number;
   frame_offset_y?: number;
+  /* Presentes en base et rapportees par le select, mais absentes de
+     cette copie de l interface — celle de ProfileBoundedProfile les
+     declare. FittingRoom les lisait donc par transtypage. */
+  show_border?: boolean | null;
+  avatar_border_color?: string | null;
 }
 
 export interface CosmeticBanner {

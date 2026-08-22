@@ -101,9 +101,9 @@ export function ProfilePactSettings({
         .select("goal_unlock_code")
         .eq("id", userId)
         .maybeSingle();
-      if ((data as any)?.goal_unlock_code) {
+      if (data?.goal_unlock_code) {
         setExistingCodeSet(true);
-        setUnlockCode((data as any).goal_unlock_code);
+        setUnlockCode(data.goal_unlock_code);
       }
     };
     loadCode();

@@ -236,7 +236,7 @@ export default function AdminCosmeticsManager() {
     const q = searchQuery.toLowerCase();
     return items.filter(item => 
       (item.name?.toLowerCase().includes(q)) || 
-      ((item as any).title_text?.toLowerCase().includes(q))
+      (item.title_text?.toLowerCase().includes(q))
     );
   };
 

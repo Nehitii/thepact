@@ -51,7 +51,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (
     !exemptPaths.includes(location.pathname) &&
     profile &&
-    !(profile as any).active_pact_id &&
+    !profile.active_pact_id &&
     personalPact &&
     memberships.length > 0
   ) {

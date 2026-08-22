@@ -47,6 +47,10 @@ export interface StepData {
   /* L etape ultime : exclue de l avancement, une seule par objectif,
      elle ouvre le zenith une fois franchie. */
   is_ultimate?: boolean;
+  /* Exclue du tirage au sort. Elle manquait a cette interface alors que
+     le select est une etoile : la page la lisait donc a travers un
+     « as any » sur une donnee pourtant bien chargee. */
+  exclude_from_spin?: boolean;
   created_at?: string | null;
   updated_at?: string | null;
 }

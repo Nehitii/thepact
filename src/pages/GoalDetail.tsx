@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/hooks/useGoalContracts";
-import { useGoalDetail } from "@/hooks/useGoalDetail";
+import { useGoalDetail , type StepData } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useParticleEffect } from "@/components/ParticleEffect";
@@ -65,7 +65,11 @@ export default function GoalDetail() {
   const createWishlistItem = useCreatePactWishlistItem();
 
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [steps, setSteps] = useState<{ id: string; title: string; order: number; status: string | null; due_date: string | null; notes?: string | null }[]>([]);
+  /* StepData plutot qu un type anonyme de six champs : l etat etait
+     alimente par goalDetailData.steps, qui est deja un StepData[]
+     complet. Le retrecir jetait is_ultimate et exclude_from_spin, que
+     le code reprenait ensuite par transtypage. */
+  const [steps, setSteps] = useState<StepData[]>([]);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -180,7 +184,7 @@ export default function GoalDetail() {
       setEditNotes(g.notes || "");
       setEditDeadline((g as any).deadline || "");
       setSteps(goalDetailData.steps);
-      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false, estUltime: (s as any).is_ultimate ?? false })));
+      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false, estUltime: s.is_ultimate ?? false })));
       setEditMembresIds(g.child_goal_ids || []);
       setEditRegle((g.super_goal_rule as SuperGoalRule) || {});
       setEditVivant(!!g.is_dynamic_super);
@@ -442,7 +446,7 @@ export default function GoalDetail() {
   const estHonore = goal.status === "fully_completed" || goal.status === "validated";
   /* Le zenith se deduit : c est le fait que l etape ultime soit
      franchie. Aucune colonne a tenir d accord avec elle. */
-  const auZenith = steps.some((e) => (e as any).is_ultimate && e.status === "completed");
+  const auZenith = steps.some((e) => e.is_ultimate && e.status === "completed");
 
   const groupesPorteurs = allGoals
     .filter((g) => g.goal_type === "super")

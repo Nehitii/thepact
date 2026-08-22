@@ -81,9 +81,9 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
   // Check if notification has a claimable reward
   const hasReward = notification.reward_type && (
     (notification.reward_type === "bonds" && notification.reward_amount && notification.reward_amount > 0) ||
-    (notification.reward_type !== "bonds" && (notification as any).reward_cosmetic_id)
+    (notification.reward_type !== "bonds" && notification.reward_cosmetic_id)
   );
-  const isClaimed = (notification as any).reward_claimed === true;
+  const isClaimed = notification.reward_claimed === true;
 
   const handleClaim = async (e: React.MouseEvent) => {
     e.stopPropagation();

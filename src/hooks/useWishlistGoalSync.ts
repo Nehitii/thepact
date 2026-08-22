@@ -40,9 +40,9 @@ export function useWishlistGoalSync(
         const stepsMap = new Map((allSteps || []).map((s) => [s.id, s.status]));
 
         // Get existing synced items (source_type = 'goal_sync')
-        const syncedItems = wishlistItems.filter((w) => (w as any).source_type === "goal_sync");
+        const syncedItems = wishlistItems.filter((w) => w.source_type === "goal_sync");
         const syncedByCostId = new Map(
-          syncedItems.filter((w) => (w as any).source_goal_cost_id).map((w) => [(w as any).source_goal_cost_id, w]),
+          syncedItems.filter((w) => w.source_goal_cost_id).map((w) => [w.source_goal_cost_id, w]),
         );
         // Secondary lookup by normalized name + goal_id for fallback matching
         const syncedByNameGoal = new Map(syncedItems.map((w) => [`${w.name?.toLowerCase().trim()}|${w.goal_id}`, w]));
@@ -121,7 +121,7 @@ export function useWishlistGoalSync(
         const toDelete = syncedItems.filter(
           (w) =>
             !matchedWishlistIds.has(w.id) &&
-            (!(w as any).source_goal_cost_id || !seenCostIds.has((w as any).source_goal_cost_id)),
+            (!w.source_goal_cost_id || !seenCostIds.has(w.source_goal_cost_id)),
         );
 
         // Execute mutations

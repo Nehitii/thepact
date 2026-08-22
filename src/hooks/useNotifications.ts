@@ -18,6 +18,11 @@ export interface Notification {
   cta_url: string | null;
   reward_type: string | null;
   reward_amount: number | null;
+  /* Recompense cosmetique et son etat de reclamation. Absentes de cette
+     interface, elles etaient lues par transtypage — alors que le select
+     est une etoile et les rapporte depuis toujours. */
+  reward_cosmetic_id: string | null;
+  reward_claimed: boolean | null;
   module_key: string | null;
   is_read: boolean;
   expires_at: string | null;
