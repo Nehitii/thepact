@@ -51,7 +51,7 @@ export function usePointages(userId?: string, mois?: string) {
     queryFn: async () => {
       if (!userId || !mois) return [];
       const { data, error } = await supabase
-        .from('pointages_du_mois' as never)
+        .from('pointages_du_mois')
         .select('*')
         .eq('user_id', userId)
         .eq('mois', mois);
@@ -80,9 +80,9 @@ export function useEcrirePointage() {
     mutationFn: async (p: EcritureDePointage) => {
       if (!user) throw new Error('non authentifié');
       const { data, error } = await supabase
-        .from('pointages_du_mois' as never)
+        .from('pointages_du_mois')
         .upsert(
-          { ...p, user_id: user.id, updated_at: new Date().toISOString() } as never,
+          { ...p, user_id: user.id, updated_at: new Date().toISOString() },
           /* Une ligne, un mois : repointer corrige au lieu d empiler. */
           { onConflict: 'user_id,mois,ligne_id' },
         )
@@ -105,7 +105,7 @@ export function useEffacerPointage() {
     mutationFn: async ({ ligneId, mois }: { ligneId: string; mois: string }) => {
       if (!user) throw new Error('non authentifié');
       const { error } = await supabase
-        .from('pointages_du_mois' as never)
+        .from('pointages_du_mois')
         .delete()
         .eq('user_id', user.id)
         .eq('mois', mois)

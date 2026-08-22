@@ -3091,6 +3091,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pointages_du_mois: {
+        Row: {
+          created_at: string
+          genre: string
+          id: string
+          ligne_id: string | null
+          mois: string
+          montant_prevu: number
+          montant_reel: number
+          nom: string
+          pointe: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          genre: string
+          id?: string
+          ligne_id?: string | null
+          mois: string
+          montant_prevu?: number
+          montant_reel?: number
+          nom: string
+          pointe?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          genre?: string
+          id?: string
+          ligne_id?: string | null
+          mois?: string
+          montant_prevu?: number
+          montant_reel?: number
+          nom?: string
+          pointe?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pomodoro_sessions: {
         Row: {
           break_minutes: number

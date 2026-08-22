@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoalFilters } from "@/hooks/useGoalFilters";
+import type { Goal } from "@/hooks/useGoals";
 
 /* ═══════════════════════════════════════════════════════════════
    ALLER A L OBJECTIF D A COTE
@@ -26,7 +27,11 @@ import { useGoalFilters } from "@/hooks/useGoalFilters";
    le bout » sans un mot.
    ═══════════════════════════════════════════════════════════════ */
 
-interface ObjetMinimal { id: string; name: string }
+/* LE GENERIQUE ETAIT UNE FICTION. Ce hook se declarait ouvert a tout
+   objet portant un id et un nom, alors qu il passe sa liste a
+   useGoalFilters, qui exige un Goal complet — d ou les deux
+   transtypages qui masquaient l ecart. L unique appelant passe de toute
+   facon le resultat de useGoals. On demande donc ce dont on a besoin. */
 
 export interface Voisins<T> {
   precedent: T | null;
@@ -38,14 +43,14 @@ export interface Voisins<T> {
   allerAuSuivant: () => void;
 }
 
-export function useVoisinsDObjectif<T extends ObjetMinimal>(
-  tousLesObjectifs: T[],
+export function useVoisinsDObjectif(
+  tousLesObjectifs: Goal[],
   idCourant: string | undefined,
-): Voisins<T> {
+): Voisins<Goal> {
   const navigate = useNavigate();
-  const { sorted } = useGoalFilters(tousLesObjectifs as never);
+  const { sorted } = useGoalFilters(tousLesObjectifs);
 
-  const sequence = (sorted as unknown as T[]) ?? [];
+  const sequence = sorted ?? [];
   const i = useMemo(() => sequence.findIndex((g) => g.id === idCourant), [sequence, idCourant]);
 
   /* ON ARRIVE PARFOIS D AILLEURS.
