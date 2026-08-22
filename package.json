@@ -12,7 +12,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "i18n:check": "node scripts/verifier-i18n.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

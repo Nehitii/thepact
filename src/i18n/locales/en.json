@@ -681,7 +681,14 @@
       "undoTitle": "Undo this goal?",
       "undoBody": "\"{{etape}}\" is unchecked, and this honoured goal falls back to in progress.",
       "undoGroups": "The count of {{groupes}} will follow.",
-      "undoConfirm": "Uncheck"
+      "undoConfirm": "Uncheck",
+      "navigation": "Navigate between goals",
+      "previous": "Previous",
+      "next": "Next",
+      "goPrevious": "Previous: {{nom}}",
+      "goNext": "Next: {{nom}}",
+      "noPrevious": "No goal before this one",
+      "noNext": "No goal after this one"
     },
     "views": {
       "grid": "Grid",

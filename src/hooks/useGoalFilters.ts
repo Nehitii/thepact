@@ -305,6 +305,12 @@ export function useGoalFilters(goals: Goal[]) {
     // Derived
     hasSuperGoals,
     buckets,
+    /* LA SEQUENCE COMPLETE, ET PAS SEULEMENT LA PAGE.
+       La fiche d un objectif s en sert pour aller au precedent et au
+       suivant : s arreter au bord d une page ferait buter la fleche sur
+       un mur invisible, alors que rien a l ecran ne dit qu il y a une
+       pagination. */
+    sorted,
     paginated,
     currentPage,
     totalPages,

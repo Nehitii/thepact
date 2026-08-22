@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -35,6 +36,8 @@ import {
 import { membresDuGroupe, estFranchi, estPretAHonorer, synchroniserGroupes } from "@/lib/superGoals";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
+import { useVoisinsDObjectif } from "@/hooks/useVoisinsDObjectif";
+import { DossierNavigation } from "@/components/goals/DossierNavigation";
 import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
 import { GoalDetailEditOverlay } from "@/components/goals/detail";
 import {
@@ -121,6 +124,28 @@ export default function GoalDetail() {
   const { data: goalDetailData, isLoading: goalDetailLoading } = useGoalDetail(id, user?.id);
   const { data: pact } = usePact(user?.id);
   const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
+
+  /* ALLER A L OBJECTIF D A COTE.
+     Le hook rejoue le tri et les filtres de la liste — ils vivent en
+     localStorage — pour que la fleche suive l ordre qu on regardait, et
+     pose lui-meme l ecoute clavier. */
+  const voisins = useVoisinsDObjectif(allGoals, id);
+
+  /* LE GLISSEMENT EST UN GESTE TACTILE, PAS UNE HABITUDE DE BUREAU.
+     Rendre toute la fiche deplacable a la souris empecherait de
+     selectionner du texte, pour un geste que personne ne tenterait au
+     pointeur. Sur ecran tactile il est au contraire attendu ; au
+     clavier et a la souris, ce sont les fleches et les deux boutons
+     nommes qui servent. */
+  const [tactile, setTactile] = useState(false);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const m = window.matchMedia("(pointer: coarse)");
+    const lire = () => setTactile(m.matches);
+    lire();
+    m.addEventListener("change", lire);
+    return () => m.removeEventListener("change", lire);
+  }, []);
 
   /* Le pli des contrats affiche son compte sans etre deplie, et se
      retire tout seul quand le drapeau est baisse : un pli vide n aurait
@@ -447,7 +472,19 @@ export default function GoalDetail() {
       {/* Particles overlay — preserved at root level */}
       <ParticleEffects />
 
-      <div className="gd">
+      {/* Cent vingt pixels : assez pour qu un glissement soit
+          intentionnel, pas assez pour qu il soit penible. En dessous,
+          la fiche revient d elle-meme a sa place. */}
+      <motion.div
+        className="gd"
+        drag={tactile ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.14}
+        onDragEnd={(_, info) => {
+          if (info.offset.x < -120) voisins.allerAuSuivant();
+          else if (info.offset.x > 120) voisins.allerAuPrecedent();
+        }}
+      >
         <DossierBandeau
           goal={goal}
           teinte={difficultyColor}
@@ -554,7 +591,16 @@ export default function GoalDetail() {
 
         </div>
         )}
-      </div>
+
+        <DossierNavigation
+          precedent={voisins.precedent}
+          suivant={voisins.suivant}
+          rang={voisins.rang}
+          total={voisins.total}
+          onPrecedent={voisins.allerAuPrecedent}
+          onSuivant={voisins.allerAuSuivant}
+        />
+      </motion.div>
 
       <GoalDetailEditOverlay
         isOpen={editDialogOpen}

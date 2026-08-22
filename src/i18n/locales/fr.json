@@ -681,7 +681,14 @@
       "undoTitle": "Défaire cet objectif ?",
       "undoBody": "« {{etape}} » est décochée, et cet objectif honoré retombe en cours.",
       "undoGroups": "Le compte de {{groupes}} suivra.",
-      "undoConfirm": "Décocher"
+      "undoConfirm": "Décocher",
+      "navigation": "Naviguer entre les objectifs",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "goPrevious": "Précédent : {{nom}}",
+      "goNext": "Suivant : {{nom}}",
+      "noPrevious": "Aucun objectif avant celui-ci",
+      "noNext": "Aucun objectif après celui-ci"
     },
     "views": {
       "grid": "Grille",
