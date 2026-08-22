@@ -2728,7 +2728,26 @@
 
 .cy-aff {
   position: relative;
-  overflow: hidden;
+  /* CLIP, ET NON HIDDEN — SINON LA LIGNE PERD SON LISERE.
+   *
+   * Le filigrane deborde de 14px a droite (right: -14px). Avec
+   * `overflow: hidden`, la ligne devient donc une zone DEFILABLE de
+   * 14px : hidden masque la barre, il n interdit pas le defilement.
+   *
+   * Il suffit alors qu un enfant recoive le focus pour que le
+   * navigateur le fasse defiler dans la vue. C est exactement ce qui
+   * arrive en fermant la fiche d edition : le focus revient sur le
+   * crayon, la ligne glisse a scrollLeft: 14, et le liseré — premiere
+   * colonne de la grille — sort du cadre par la gauche.
+   *
+   * Le defaut etait durable et invisible a la relecture du code : la
+   * ligne restait sans liseré jusqu au rechargement, avec un CSS
+   * calcule rigoureusement identique a celui de ses voisines. Seul
+   * scrollLeft trahissait la difference.
+   *
+   * `clip` rogne pareil mais ne cree AUCUNE zone de defilement, donc
+   * rien ne peut plus la faire glisser. */
+  overflow: clip;
   display: grid;
   grid-template-columns: 3px 68px minmax(0, 1fr) auto auto;
   align-items: center;
