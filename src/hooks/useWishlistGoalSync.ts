@@ -60,7 +60,12 @@ export function useWishlistGoalSync(
           // Determine acquisition from step status
           const isGoalCompleted = goal && ["completed", "fully_completed", "validated"].includes(goal.status);
           const isStepCompleted = costItem.step_id ? stepsMap.get(costItem.step_id) === "completed" : false;
-          const shouldBeAcquired = isGoalCompleted || isStepCompleted;
+          /* La piece elle-meme fait foi. Sans cette ligne, une piece
+             marquee acquise a la main sur la fiche d objectif
+             — useCostItems y ecrit acquired_at — restait « a payer »
+             dans la wishlist : deux ecrans, deux verites. */
+          const pieceAcquise = Boolean(costItem.acquired_at);
+          const shouldBeAcquired = isGoalCompleted || isStepCompleted || pieceAcquise;
 
           // Try match by cost ID first, then fallback to name+goal
           let existing = syncedByCostId.get(costItem.id);

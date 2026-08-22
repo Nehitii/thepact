@@ -1845,7 +1845,8 @@
       "sansPrix": "Sans prix, l’article entrera à zéro et ne pèsera dans aucun total.",
       "valider": "Contrôler et ajouter",
       "suite": "Le formulaire s’ouvrira ensuite pour l’objectif, la priorité et les notes."
-    }
+    },
+    "erreurMaj": "Modification impossible"
   },
   "inbox": {
     "title": "Boîte de réception",

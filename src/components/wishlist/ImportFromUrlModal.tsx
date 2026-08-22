@@ -16,6 +16,28 @@ export interface ScrapedProduct {
   source_url: string;
 }
 
+/* Les parametres de campagne n identifient pas le produit. Mesure :
+   l article deja present portait l adresse complete du lien
+   publicitaire — wiz_medium, utm_source, gclid, gad_campaignid — et
+   la relecture de la meme page rendait l adresse propre. Compares
+   tels quels, deux liens vers LA MEME fiche ne se reconnaissaient
+   pas, et le garde-fou laissait passer le doublon. */
+const PISTAGE = /^(utm_|gcl|gad_|wiz_|mc_|ms_|fb|yc|_hs|pk_|piwik_|matomo_|igshid|mkt_|ref_?src)/i;
+
+function clefAdresse(brut: string | null | undefined): string | null {
+  if (!brut?.trim()) return null;
+  try {
+    const u = new URL(brut.trim());
+    const aRetirer: string[] = [];
+    u.searchParams.forEach((_, cle) => { if (PISTAGE.test(cle)) aRetirer.push(cle); });
+    aRetirer.forEach((cle) => u.searchParams.delete(cle));
+    u.hash = "";
+    return (u.host + u.pathname.replace(/\/+$/, "") + u.search).toLowerCase();
+  } catch {
+    return brut.trim().toLowerCase();
+  }
+}
+
 interface ArticleConnu {
   id: string;
   name: string;
@@ -78,12 +100,13 @@ export function ImportFromUrlModal({
   // Les valeurs relues, celles qui partiront vraiment.
   const [nom, setNom] = useState("");
   const [prix, setPrix] = useState("");
+  const [image, setImage] = useState("");
   const [prixRepris, setPrixRepris] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setUrl(""); setLu(null); setErreur(null);
-      setNom(""); setPrix(""); setPrixRepris(false);
+      setNom(""); setPrix(""); setImage(""); setPrixRepris(false);
     }
   }, [open]);
 
@@ -116,6 +139,7 @@ export function ImportFromUrlModal({
       setLu(produit);
       setNom(produit.name ?? "");
       setPrix(produit.price !== null ? String(produit.price) : "");
+      setImage(produit.image_url ?? "");
       setPrixRepris(false);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : t("wishlist.import.echec", "La page n’a rien livré."));
@@ -128,7 +152,8 @@ export function ImportFromUrlModal({
 
   const doublon = useMemo(() => {
     if (!lu) return null;
-    const parAdresse = items.find((i) => i.url && i.url.trim() === lu.source_url.trim());
+    const clef = clefAdresse(lu.source_url);
+    const parAdresse = clef ? items.find((i) => clefAdresse(i.url) === clef) : undefined;
     if (parAdresse) return { article: parAdresse, motif: "adresse" as const };
     const cible = nom.trim().toLowerCase().replace(/\s+/g, " ");
     if (!cible) return null;
@@ -154,6 +179,11 @@ export function ImportFromUrlModal({
     onImport({
       ...lu,
       name: nom.trim(),
+      /* L image est modifiable ici : un lecteur de page se trompe de
+         visuel plus souvent que de nom, et c est le seul endroit ou
+         l on voit ce qu il a choisi avant que ca entre dans la
+         liste. */
+      image_url: image.trim() || null,
       price: prixLisible ? prixNombre : null,
       /* Le montant part dans la devise du compte : soit l utilisateur
          l a reecrit, soit il a dit qu il le reprenait tel quel. */
@@ -223,14 +253,25 @@ export function ImportFromUrlModal({
               </p>
 
               <div className="wl-controle-corps">
-                {lu.image_url ? (
-                  <div className="wl-vignette wl-controle-image">
-                    <img src={lu.image_url} alt="" loading="lazy" decoding="async"
-                      onError={(e) => { (e.currentTarget.parentElement as HTMLElement | null)?.remove(); }} />
-                  </div>
-                ) : (
-                  <p className="wl-manque">{t("wishlist.import.sansImage", "Aucune image sur la page")}</p>
-                )}
+                <div className="space-y-2">
+                  <Label className="font-mono uppercase text-[10px] tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                    {t("wishlist.form.image", "Image")}
+                    {lu.image_url
+                      ? <span className="wl-lu"><Check aria-hidden="true" /> {t("wishlist.import.lu", "lu")}</span>
+                      : <span className="wl-manque">{t("wishlist.import.nonTrouve", "non trouvé")}</span>}
+                  </Label>
+                  <Input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://…"
+                    className="bg-transparent border-[var(--wl-trait)] font-mono text-xs" />
+                  {image.trim() ? (
+                    <div className="wl-vignette wl-controle-image">
+                      <img src={image.trim()} alt="" loading="lazy" decoding="async"
+                        onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+                        onLoad={(e) => { e.currentTarget.style.visibility = "visible"; }} />
+                    </div>
+                  ) : (
+                    <p className="wl-manque">{t("wishlist.import.sansImage", "Aucune image sur la page")}</p>
+                  )}
+                </div>
 
                 <div className="space-y-2">
                   <Label className="font-mono uppercase text-[10px] tracking-[0.2em] text-muted-foreground flex items-center gap-2">

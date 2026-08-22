@@ -123,8 +123,9 @@ export function useUpdatePactWishlistItem() {
       patch: TablesUpdate<"wishlist_items">;
     }) => {
       const patch = { ...input.patch };
-      if (typeof patch.acquired === "boolean") {
-        patch.acquired_at = patch.acquired ? new Date().toISOString() : null;
+      const marquage = typeof patch.acquired === "boolean" ? patch.acquired : null;
+      if (marquage !== null) {
+        patch.acquired_at = marquage ? new Date().toISOString() : null;
       }
 
       const { error } = await supabase
@@ -133,13 +134,55 @@ export function useUpdatePactWishlistItem() {
         .eq("id", input.id);
 
       if (error) throw error;
+
+      /* L ACQUISITION EST UNE SEULE VERITE, PAS DEUX.
+         Cocher « paye » ici n ecrivait que wishlist_items. Or le
+         financement du pacte compte les pieces qui portent
+         goal_cost_items.acquired_at : l argent ne bougeait pas.
+         Mesure : apres avoir coche « Appareil Epilation Laser »,
+         wishlist_items.acquired valait true et la piece de
+         l objectif avait toujours acquired_at a null.
+
+         acquired_via_step repasse a faux : c est une main qui
+         decide, pas une etape. Annuler l etape plus tard ne doit
+         donc pas defaire cette acquisition. */
+      if (marquage !== null) {
+        const { data: ligne } = await supabase
+          .from("wishlist_items")
+          .select("source_goal_cost_id")
+          .eq("id", input.id)
+          .maybeSingle();
+
+        if (ligne?.source_goal_cost_id) {
+          const { error: erreurPiece } = await supabase
+            .from("goal_cost_items")
+            .update({
+              acquired_at: marquage ? new Date().toISOString() : null,
+              acquired_via_step: false,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", ligne.source_goal_cost_id);
+          if (erreurPiece) throw erreurPiece;
+        }
+      }
+
       return true;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
+      /* La piece a peut-etre change de camp : le cout, le detail de
+         l objectif et le financement du pacte doivent le savoir. */
+      if (typeof vars.patch.acquired === "boolean") {
+        qc.invalidateQueries({ queryKey: ["cost-items"] });
+        qc.invalidateQueries({ queryKey: ["goals"] });
+        qc.invalidateQueries({ queryKey: ["goal-detail"] });
+        qc.invalidateQueries({ queryKey: ["wishlist-pieces"] });
+      }
     },
     onError: (e) => {
-      toast.error("Update failed", { description: e?.message ?? "Please try again." });
+      toast.error(i18next.t("wishlist.erreurMaj", "Modification impossible"), {
+        description: e?.message ?? "",
+      });
     },
   });
 }

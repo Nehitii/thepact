@@ -1845,7 +1845,8 @@
       "sansPrix": "Without a price, the item enters at zero and weighs in no total.",
       "valider": "Check and add",
       "suite": "The form will then open for the goal, priority and notes."
-    }
+    },
+    "erreurMaj": "Update failed"
   },
   "inbox": {
     "title": "Inbox",
