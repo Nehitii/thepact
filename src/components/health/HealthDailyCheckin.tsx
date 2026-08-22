@@ -160,7 +160,7 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: Props) {
       entry_date: cible,
       ...valeurs,
       notes: notes || null,
-    } as unknown as Parameters<typeof upsert.mutateAsync>[0]);
+    });
     onOpenChange(false);
   };
 

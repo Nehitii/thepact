@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
 import { toast } from "sonner";
+import i18next from "i18next";
 
 export interface HealthData {
   id: string;
@@ -40,6 +41,19 @@ export interface HealthSettings {
   updated_at: string;
 }
 
+/**
+ * CE QUE LE RELEVE PEUT ECRIRE.
+ *
+ * Ce type ignorait mood_level et les trois energy_*, alors que le
+ * formulaire les enregistre depuis toujours. Pour les faire passer, les
+ * appelants transtypaient en Record<string, unknown> — et un objet a
+ * signature d index fait echouer RejectExcessProperties de Supabase,
+ * qui ne peut plus prouver l absence de proprietes en trop. D ou les
+ * erreurs TS2345 que l on retrouve ailleurs dans le projet.
+ *
+ * Le trou etait dans le type, pas dans l appel : on le comble, et le
+ * transtypage disparait de lui-meme.
+ */
 export interface HealthDataInput {
   entry_date?: string;
   sleep_hours?: number | null;
@@ -51,6 +65,10 @@ export interface HealthDataInput {
   mental_load?: number | null;
   hydration_glasses?: number | null;
   meal_balance?: number | null;
+  mood_level?: number | null;
+  energy_morning?: number | null;
+  energy_afternoon?: number | null;
+  energy_evening?: number | null;
   notes?: string | null;
 }
 
@@ -182,12 +200,11 @@ export function useUpsertHealthData(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["health-today", userId] });
       queryClient.invalidateQueries({ queryKey: ["health-history", userId] });
-      queryClient.invalidateQueries({ queryKey: ["health-weekly", userId] });
-      toast.success("Health data saved");
+      toast.success(i18next.t("health.checkin.saved", "Relevé enregistré"));
     },
     onError: (error) => {
       console.error("Failed to save health data:", error);
-      toast.error("Failed to save health data");
+      toast.error(i18next.t("health.checkin.saveError", "Le relevé n’a pas pu être enregistré"));
     },
   });
 }

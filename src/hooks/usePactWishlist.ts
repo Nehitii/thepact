@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 export type PactWishlistItemType = "required" | "optional";
 export type WishlistPriority = "low" | "med" | "high" | "critical";
@@ -116,7 +117,9 @@ export function useUpdatePactWishlistItem() {
     mutationFn: async (input: {
       userId: string;
       id: string;
-      patch: Record<string, any>;
+      /* Le type de la table plutot qu un Record libre : voir
+         StepDetail, meme cause, meme erreur TS2345. */
+      patch: TablesUpdate<"wishlist_items">;
     }) => {
       const patch = { ...input.patch };
       if (typeof patch.acquired === "boolean") {

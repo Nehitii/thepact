@@ -28,6 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { synchroniserGroupes } from "@/lib/superGoals";
 import { getDifficultyColor } from "@/lib/utils";
 import { encreSurFond } from "@/components/goals/detail/dossier/encre";
@@ -79,7 +80,10 @@ export default function StepDetail() {
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("pending");
+  /* La colonne steps.status n accepte que ces deux valeurs. L etat
+     local etait une chaine libre, et le transtypage en Record cachait
+     l ecart : on pouvait envoyer n importe quoi a la base. */
+  const [status, setStatus] = useState<"pending" | "completed">("pending");
   const [excludeFromSpin, setExcludeFromSpin] = useState(false);
 
   const loadStepData = useCallback(async () => {
@@ -94,7 +98,7 @@ export default function StepDetail() {
       setStep(stepData);
       setTitle(stepData.title);
       setNotes(stepData.notes || "");
-      setStatus(stepData.status ?? "pending");
+      setStatus(stepData.status === "completed" ? "completed" : "pending");
       setExcludeFromSpin(stepData.exclude_from_spin ?? false);
 
       /* L objectif porteur, pour sa teinte et son nom : on ne modifie
@@ -158,7 +162,11 @@ export default function StepDetail() {
     if (!step || saving) return;
     try {
       setSaving(true);
-      const updates: Record<string, unknown> = {
+      /* Le type de la table, pas un Record libre : un objet a
+         signature d index fait echouer RejectExcessProperties de
+         Supabase, qui ne peut plus prouver l absence de proprietes en
+         trop. C est la cause de l erreur TS2345 qui trainait ici. */
+      const updates: TablesUpdate<"steps"> = {
         title,
         notes,
         status,
