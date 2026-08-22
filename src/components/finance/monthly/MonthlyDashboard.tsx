@@ -45,6 +45,17 @@ interface MonthlyDashboardProps {
    chaque rendu relancerait l effet de la fenetre sans fin. */
 const AUCUN_MOIS: number[] = [];
 
+/* Une charge est « particuliere » des qu elle ne tombe pas chaque
+   mois : une cadence longue, ou un nombre d echeances. C est la meme
+   frontiere que celle du calcul, ce qui evite d en inventer une
+   seconde.
+
+   Elle vit hors du composant parce qu elle ne capture rien : la
+   redeclarer a chaque rendu la rendait instable pour rien, et
+   compliquait les dependances de ce qui s en sert. */
+const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
+  (l.periode_mois ?? 1) === 1 && l.echeances == null;
+
 export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDashboardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -136,8 +147,6 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * mois : une cadence longue, ou un nombre d echeances. C est la
    * meme frontiere que celle du calcul, ce qui evite d en inventer
    * une seconde. */
-    const estMensuelle = (l: { periode_mois?: number | null; echeances?: number | null }) =>
-    (l.periode_mois ?? 1) === 1 && l.echeances == null;
   const depensesParticulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
 
   /* MAIS LE MOIS OU ELLE TOMBE, UNE CHARGE PARTICULIERE EST DU MOIS.
@@ -156,14 +165,24 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
    * il repond a « qu est-ce qui m attend », pas a « que dois-je ce
    * mois-ci ». Les deux questions sont distinctes, et une charge peut
    * legitimement apparaitre dans les deux. */
-  const tombeCeMois = (l: FinancialItem) => estMensuelle(l) || tombeEn(l, moisAffiche);
+  /* LE CALCUL ETAIT JUSTE, MAIS RIEN NE LE GARANTISSAIT. tombeCeMois
+     etait recreee a chaque rendu et absente des dependances des deux
+     memos ; ceux-ci listaient moisAffiche, qui se trouve etre
+     exactement ce que la fonction capture. Vrai par coincidence : lui
+     ajouter une dependance aurait fige les listes sans un bruit.
+     Declaree en useCallback, la relation devient verifiable — et le
+     linter la verifie. */
+  const tombeCeMois = useCallback(
+    (l: FinancialItem) => estMensuelle(l) || tombeEn(l, moisAffiche),
+    [moisAffiche],
+  );
   const depensesDuMois = useMemo(
     () => expenses.filter(tombeCeMois),
-    [expenses, moisAffiche],
+    [expenses, tombeCeMois],
   );
   const revenusDuMois = useMemo(
     () => income.filter(tombeCeMois),
-    [income, moisAffiche],
+    [income, tombeCeMois],
   );
 
   const poche = provisionMensuelle(depensesParticulieres);
