@@ -4,6 +4,7 @@ import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/lib/goalConstants"
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import { type SuperGoalRule } from "./types";
 import { useTranslation } from "react-i18next";
+import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 
 interface SuperGoalBarCardProps {
   id: string;
@@ -23,27 +24,9 @@ interface SuperGoalBarCardProps {
   imageUrl?: string | null;
 }
 
-const getDifficultyTheme = (difficulty: string, customColor?: string) => {
-  switch (difficulty) {
-    case "easy": return { color: "#22c55e", rgb: "34, 197, 94" };
-    case "medium": return { color: "#fbbf24", rgb: "251, 191, 36" };
-    case "hard": return { color: "#f97316", rgb: "249, 115, 22" };
-    case "extreme": return { color: "#ef4444", rgb: "239, 68, 68" };
-    case "impossible": return { color: "#d946ef", rgb: "217, 70, 239" };
-    case "custom": {
-      const base = customColor || "#a855f7";
-      const hex = base.replace("#", "");
-      const r = parseInt(hex.substring(0, 2), 16) || 168;
-      const g = parseInt(hex.substring(2, 4), 16) || 85;
-      const b = parseInt(hex.substring(4, 6), 16) || 247;
-      return { color: base, rgb: `${r}, ${g}, ${b}` };
-    }
-    default: return { color: "#94a3b8", rgb: "148, 163, 184" };
-  }
-};
-
-/* Le doublon local posait une majuscule sur le code anglais —
-   « Medium », « Hard ». La fonction partagee traduit. */
+/* Cinquieme copie de la meme palette — et la variante sombre, celle
+   de la vue barre. Un groupe « difficile » virait donc du #f97316 ici
+   au #fb923c dans la grille. teinteDuPalier n en garde qu une. */
 
 export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   id, name, childCount, completedCount, honore, isDynamic, rule,
@@ -63,7 +46,7 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
       label = parts.length > 0 ? t("goals.rule.auto", "Auto : {{regles}}", { regles: parts.join(" · ") }) : t("goals.rule.autoAll", "Auto : tous les objectifs");
     }
     return {
-      theme: getDifficultyTheme(diff, customDifficultyColor),
+      theme: teinteDuPalier(diff, customDifficultyColor),
       difficultyLabel: getDifficultyLabel(diff, t, customDifficultyName),
       progressPercent: prog,
       intensity: getDifficultyIntensity(diff),
@@ -73,7 +56,7 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   }, [childCount, completedCount, honore, isDynamic, rule, difficulty, customDifficultyName, customDifficultyColor, t]);
 
   const cssVars = {
-    "--accent": theme.color,
+    "--accent": theme.couleur,
     "--accent-rgb": theme.rgb,
     "--intensity": intensity,
     "--percent": `${progressPercent}%`,

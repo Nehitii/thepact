@@ -1,11 +1,10 @@
-import React, { useMemo } from "react";
-import { Star, Target, Zap, ImageOff, CheckCircle, Link2 } from "lucide-react";
-import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
+import React from "react";
+import { Star, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 import { useTranslation } from "react-i18next";
-import { getDifficultyLabel } from "@/lib/goalConstants";
+import { useCarteObjectif } from "@/hooks/useCarteObjectif";
 
 // --- Interfaces ---
 interface Goal {
@@ -40,34 +39,11 @@ interface GridViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
-// --- Helpers ---
-const getDifficultyTheme = (difficulty: string, customColor?: string) => {
-  switch (difficulty) {
-    case "easy":
-      return { color: "#4ade80", rgb: "74, 222, 128" };
-    case "medium":
-      return { color: "#facc15", rgb: "250, 204, 21" };
-    case "hard":
-      return { color: "#fb923c", rgb: "251, 146, 60" };
-    case "extreme":
-      return { color: "#f87171", rgb: "248, 113, 113" };
-    case "impossible":
-      return { color: "#c084fc", rgb: "192, 132, 252" };
-    case "custom": {
-      const base = customColor || "#a855f7";
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(base);
-      const rgb = result
-        ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-        : "168, 85, 247";
-      return { color: base, rgb };
-    }
-    default:
-      return { color: "#94a3b8", rgb: "148, 163, 184" };
-  }
-};
-
-/* Meme doublon que dans la vue barre : une majuscule posee sur le
-   code anglais tenait lieu de libelle. La fonction partagee traduit. */
+/* La palette qui vivait ici est devenue celle de tout le module :
+   c est la sienne — et celle du registre — qui a ete retenue, contre
+   celle de la vue barre. useCarteObjectif la sert maintenant aux
+   trois vues, et calcule avec elle les etapes, l avancement et les
+   libelles que ce fichier deduisait de son cote. */
 
 export function GridViewGoalCard({
   goal,
@@ -78,41 +54,18 @@ export function GridViewGoalCard({
   onToggleFocus,
 }: GridViewGoalCardProps) {
   const { t } = useTranslation();
-  const derived = useMemo(() => {
-    const diff = goal.difficulty || "easy";
-    const goalType = goal.goal_type || "standard";
-    const isHabit = goalType === "habit";
-
-    const total = isHabit ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
-    const completed = isHabit ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
-    const prog = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
-
-    return {
-      difficulty: diff,
-      isHabitGoal: isHabit,
-      totalSteps: total,
-      completedSteps: completed,
-      progress: prog,
-      theme: getDifficultyTheme(diff, customDifficultyColor),
-      statusLabel: isCompleted
-        ? t("goals.statuses.fully_completed", "Terminé")
-        : getStatusLabel(goal.status || "not_started", t),
-      displayTags: goal.tags?.slice(0, 2) || (goal.type ? [goal.type] : []),
-      remainingTagsCount: Math.max(0, (goal.tags?.length || 0) - 2),
-    };
-  }, [goal, isCompleted, customDifficultyColor, t]);
-
-  const {
-    difficulty,
-    isHabitGoal,
-    totalSteps,
-    completedSteps,
-    progress,
-    theme,
-    statusLabel,
-    displayTags,
-    remainingTagsCount,
-  } = derived;
+  /* « displayTags », « remainingTagsCount » et « isHabitGoal » etaient
+     calcules, extraits, puis jamais poses : aucune etiquette n apparait
+     sur cette carte, ni sur les deux autres vues. Avec eux partaient
+     six imports inutilises — quatre icones et deux fonctions
+     d etiquette. */
+  const { teinte, libellePalier, avancement, libelleEtat, etapesTotal, etapesFaites, intensite } =
+    useCarteObjectif(goal, {
+      t,
+      termine: isCompleted,
+      nomPersonnalise: customDifficultyName,
+      couleurPersonnalisee: customDifficultyColor,
+    });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -121,12 +74,11 @@ export function GridViewGoalCard({
     }
   };
 
-  const intensity = getDifficultyIntensity(difficulty);
   const cssVars = {
-    "--accent": theme.color,
-    "--accent-rgb": theme.rgb,
-    "--progress": `${progress}%`,
-    "--halo-intensity": intensity,
+    "--accent": teinte.couleur,
+    "--accent-rgb": teinte.rgb,
+    "--progress": `${avancement}%`,
+    "--halo-intensity": intensite,
   } as React.CSSProperties;
 
   /* ÉCLAT DE VERRE — silhouette brisée, socle d'affiche
@@ -181,12 +133,12 @@ export function GridViewGoalCard({
         <span className="verre-flanc" aria-hidden="true" />
 
         {/* Bande inclinee : le palier traverse l'image. */}
-        <span className="verre-bande">{getDifficultyLabel(difficulty, t, customDifficultyName)}</span>
+        <span className="verre-bande">{libellePalier}</span>
 
         {/* Socle d'affiche, teinte par le palier. */}
         <div className="verre-socle">
           <span className="verre-lettre" aria-hidden="true">
-            {getDifficultyLabel(difficulty, t, customDifficultyName).slice(0, 1)}
+            {libellePalier.slice(0, 1)}
           </span>
 
           <h3 className="verre-nom">{goal.name}</h3>
@@ -202,19 +154,19 @@ export function GridViewGoalCard({
             <span className="verre-honore">
               {goal.auZenith && <i className="verre-zenith-etoile" aria-hidden="true">✦</i>}
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
-              HONORÉ
+              {t("goals.carte.honore", "HONORÉ")}
               {goal.auZenith && <i className="verre-zenith-etoile" aria-hidden="true">✦</i>}
             </span>
           ) : (
             <div className="verre-bas">
-              <span className="verre-etat">{statusLabel}</span>
+              <span className="verre-etat">{libelleEtat}</span>
               <span className="verre-seg" aria-hidden="true">
                 {Array.from({ length: 10 }, (_, i) => (
-                  <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
+                  <u key={i} className={i < Math.round(avancement / 10) ? "on" : ""} />
                 ))}
               </span>
               <b className="verre-pct">
-                {totalSteps > 0 ? `${completedSteps}/${totalSteps}` : `${progress}%`}
+                {etapesTotal > 0 ? `${etapesFaites}/${etapesTotal}` : `${avancement}%`}
               </b>
             </div>
           )}
@@ -228,7 +180,7 @@ export function GridViewGoalCard({
             e.stopPropagation();
             onToggleFocus(goal.id, !!goal.is_focus, e);
           }}
-          aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
+          aria-label={goal.is_focus ? t("goals.carte.focusRetirer", "Retirer du focus") : t("goals.carte.focusPoser", "Mettre en focus")}
         >
           <Star
             className="w-4 h-4"

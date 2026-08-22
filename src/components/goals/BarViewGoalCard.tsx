@@ -1,10 +1,10 @@
-import React, { memo, useMemo } from "react";
+import React, { memo } from "react";
 import { Star, Target, Trophy } from "lucide-react";
-import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
+import { getGoalStatusIcon } from "@/lib/goalConstants";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 import { useTranslation } from "react-i18next";
-import { getDifficultyLabel } from "@/lib/goalConstants";
+import { useCarteObjectif } from "@/hooks/useCarteObjectif";
 
 interface Goal {
   id: string;
@@ -39,35 +39,12 @@ interface BarViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
-const getDifficultyTheme = (difficulty: string, customColor?: string) => {
-  switch (difficulty) {
-    case "easy":
-      return { color: "#22c55e", rgb: "34, 197, 94" };
-    case "medium":
-      return { color: "#fbbf24", rgb: "251, 191, 36" };
-    case "hard":
-      return { color: "#f97316", rgb: "249, 115, 22" };
-    case "extreme":
-      return { color: "#ef4444", rgb: "239, 68, 68" };
-    case "impossible":
-      return { color: "#d946ef", rgb: "217, 70, 239" };
-    case "custom": {
-      const base = customColor || "#a855f7";
-      const hex = base.replace("#", "");
-      const r = parseInt(hex.substring(0, 2), 16) || 168;
-      const g = parseInt(hex.substring(2, 4), 16) || 85;
-      const b = parseInt(hex.substring(4, 6), 16) || 247;
-      return { color: base, rgb: `${r}, ${g}, ${b}` };
-    }
-    default:
-      return { color: "#94a3b8", rgb: "148, 163, 184" };
-  }
-};
-
-/* Ce fichier fabriquait son propre libelle de palier en mettant la
-   premiere lettre du code anglais en majuscule — « Medium », « Hard ».
-   La fonction partagee sait le traduire ; il suffisait de lui donner
-   de quoi le faire. */
+/* Cette carte portait sa propre palette : « facile » y valait #22c55e
+   quand la grille et le registre affichaient #4ade80. Le meme objectif
+   changeait donc de couleur selon la vue ouverte. Tout ce que la carte
+   deduisait — palier, etapes, avancement, teinte, libelles — vient
+   desormais de useCarteObjectif, qui le calcule une fois pour les
+   trois vues. */
 
 export const BarViewGoalCard = memo(function BarViewGoalCard({
   goal,
@@ -78,58 +55,26 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onToggleFocus,
 }: BarViewGoalCardProps) {
   const { t } = useTranslation();
-  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo, kpi } =
-    useMemo(() => {
-      const diff = goal.difficulty || "easy";
-      const total = goal.totalStepsCount || 0;
-      const completed = goal.completedStepsCount || 0;
-      let deadlineInfo: { daysLeft: number; color: string } | null = null;
-      if (goal.deadline) {
-        const dl = new Date(goal.deadline);
-        const daysLeft = Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-        deadlineInfo = { daysLeft, color: daysLeft > 7 ? "#22c55e" : daysLeft > 0 ? "#f59e0b" : "#ef4444" };
-      }
-      const percent = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
-      const intensityVal = getDifficultyIntensity(diff);
-
-      // Derive a contextual KPI
-      let kpi: { value: React.ReactNode; label: string } = {
-        value: <>{intensityVal}<span className="unit">/5</span></>,
-        label: "Intensity",
-      };
-      if (isCompleted) {
-        kpi = { value: <Trophy size={24} strokeWidth={2.2} />, label: "Done" };
-      } else if (total > 0) {
-        kpi = { value: <>{percent}<span className="unit">%</span></>, label: "Progress" };
-      } else if (deadlineInfo) {
-        const d = deadlineInfo.daysLeft;
-        kpi = {
-          value: <>{Math.abs(d)}<span className="unit">d</span></>,
-          label: d > 0 ? "Remaining" : d === 0 ? "Today" : "Overdue",
-        };
-      }
-
-      return {
-        theme: getDifficultyTheme(diff, customDifficultyColor),
-        difficultyLabel: getDifficultyLabel(diff, t, customDifficultyName),
-        progressPercent: percent,
-        statusLabel: isCompleted
-          ? t("goals.statuses.fully_completed", "Terminé")
-          : getStatusLabel(goal.status || "not_started", t),
-        totalSteps: total,
-        completedSteps: completed,
-        intensity: intensityVal,
-        deadlineInfo,
-        kpi,
-      };
-    }, [goal, isCompleted, customDifficultyName, customDifficultyColor, t]);
+  /* Le bloc « kpi » qui vivait ici fabriquait une valeur et un libelle
+     — « Intensity », « Done », « Progress », « Remaining », « Today »,
+     « Overdue » — et le rendu ne s en servait nulle part : la refonte
+     « eclat » avait remplace l indicateur par la jauge du bas sans
+     retirer son calcul. Vingt lignes et six mots anglais qui
+     n atteignaient aucun ecran. */
+  const { teinte, libellePalier, avancement, libelleEtat, etapesTotal, etapesFaites, intensite, echeance } =
+    useCarteObjectif(goal, {
+      t,
+      termine: isCompleted,
+      nomPersonnalise: customDifficultyName,
+      couleurPersonnalisee: customDifficultyColor,
+    });
 
   const cssVars = {
-    "--accent": theme.color,
-    "--accent-rgb": theme.rgb,
-    "--intensity": intensity,
-    "--halo-intensity": intensity,
-    "--percent": `${progressPercent}%`,
+    "--accent": teinte.couleur,
+    "--accent-rgb": teinte.rgb,
+    "--intensity": intensite,
+    "--halo-intensity": intensite,
+    "--percent": `${avancement}%`,
   } as React.CSSProperties;
 
   const StatusIcon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
@@ -177,19 +122,19 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
       <div className="eclat-corps">
         <div className="eclat-tete">
-          <span className="eclat-palier">{difficultyLabel}</span>
+          <span className="eclat-palier">{libellePalier}</span>
           <span className="eclat-sep" aria-hidden="true" />
           <span className="eclat-etat">
             <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
-            {statusLabel}
+            {libelleEtat}
           </span>
-          {deadlineInfo && !isCompleted && (
-            <span className="eclat-delai" style={{ color: deadlineInfo.color }}>
-              {deadlineInfo.daysLeft > 0
-                ? `${deadlineInfo.daysLeft}d`
-                : deadlineInfo.daysLeft === 0
-                  ? "Today"
-                  : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+          {echeance && !isCompleted && (
+            <span className="eclat-delai" style={{ color: echeance.couleur }}>
+              {echeance.joursRestants > 0
+                ? t("goals.carte.restant", "J-{{n}}", { n: echeance.joursRestants })
+                : echeance.joursRestants === 0
+                  ? t("goals.carte.aujourdhui", "Aujourd'hui")
+                  : t("goals.carte.retard", "J+{{n}}", { n: Math.abs(echeance.joursRestants) })}
             </span>
           )}
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
@@ -199,14 +144,14 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
         <div className="eclat-bas">
           <span className="eclat-jauge">
-            <i style={{ width: `${progressPercent}%` }} />
+            <i style={{ width: `${avancement}%` }} />
           </span>
-          {totalSteps > 0 ? (
+          {etapesTotal > 0 ? (
             <span className="eclat-chiffre">
-              {completedSteps}<span className="eclat-fraction">/{totalSteps}</span>
+              {etapesFaites}<span className="eclat-fraction">/{etapesTotal}</span>
             </span>
           ) : (
-            <span className="eclat-chiffre">{isCompleted ? <Trophy size={15} /> : `${intensity}/5`}</span>
+            <span className="eclat-chiffre">{isCompleted ? <Trophy size={15} /> : `${intensite}/5`}</span>
           )}
         </div>
       </div>
@@ -216,14 +161,14 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
       <button
         type="button"
-        aria-label={goal.is_focus ? "Unset focus" : "Set as focus"}
+        aria-label={goal.is_focus ? t("goals.carte.focusRetirer", "Retirer du focus") : t("goals.carte.focusPoser", "Mettre en focus")}
         className={`eclat-focus${goal.is_focus ? " active" : ""}`}
         onClick={(e) => {
           e.stopPropagation();
           onToggleFocus(goal.id, !!goal.is_focus, e);
         }}
       >
-        <Star size={14} fill={goal.is_focus ? theme.color : "none"} stroke={theme.color} />
+        <Star size={14} fill={goal.is_focus ? teinte.couleur : "none"} stroke={teinte.couleur} />
       </button>
     </div>
   );

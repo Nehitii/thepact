@@ -1,6 +1,8 @@
 import React, { memo, useMemo, useState } from "react";
 import { ChevronRight, Crown, Lock, Star } from "lucide-react";
-import { getStatusLabel } from "@/lib/goalConstants";
+import type { TFunction } from "i18next";
+import { getStatusLabel, getDifficultyLabel } from "@/lib/goalConstants";
+import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
@@ -26,30 +28,22 @@ import { useTranslation } from "react-i18next";
  * que la page Constellation montre a 8px de texte.
  */
 
-const PALIER: Record<string, string> = {
-  easy: "#4ade80",
-  medium: "#facc15",
-  hard: "#fb923c",
-  extreme: "#f87171",
-  impossible: "#c084fc",
-};
+/* La table de couleurs qui vivait ici etait la bonne — c est elle qui
+   a ete promue dans teinteDuPalier, contre celle de la vue barre. Elle
+   n est plus recopiee, elle est importee.
 
-const NOM_PALIER: Record<string, string> = {
-  easy: "FACILE",
-  medium: "MOYEN",
-  hard: "DIFFICILE",
-  extreme: "EXTREME",
-  impossible: "IMPOSSIBLE",
-};
+   NOM_PALIER, en revanche, etait un defaut : « FACILE », « MOYEN »,
+   « DIFFICILE » ecrits en dur, donc affiches en francais quelle que
+   soit la langue choisie. Le registre etait la seule vue a ne pas
+   traduire son palier. getDifficultyLabel s en charge ; la majuscule
+   reste, c est le parti typographique de la vue. */
 
 function teinte(g: Goal, couleurCustom: string): string {
-  if (g.difficulty === "custom") return couleurCustom || "#a855f7";
-  return PALIER[g.difficulty] || "#94a3b8";
+  return teinteDuPalier(g.difficulty, couleurCustom).couleur;
 }
 
-function libellePalier(g: Goal, nomCustom: string): string {
-  if (g.difficulty === "custom") return (nomCustom || "CUSTOM").toUpperCase();
-  return NOM_PALIER[g.difficulty] || (g.difficulty || "").toUpperCase();
+function libellePalier(g: Goal, nomCustom: string, t: TFunction): string {
+  return getDifficultyLabel(g.difficulty || "", t, nomCustom).toUpperCase();
 }
 
 /** Avancement d'un objectif, quel que soit son type.
@@ -252,7 +246,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
             <span className="rg-chevron rg-chevron--vide" aria-hidden="true" />
           )}
 
-          <span className="rg-palier">{libellePalier(g, customDifficultyName)}</span>
+          <span className="rg-palier">{libellePalier(g, customDifficultyName, t)}</span>
           <span className="rg-nom">
             {g.goal_type === "super" && <Crown size={10} aria-hidden="true" />}
             {g.is_locked && <Lock size={10} aria-hidden="true" />}
@@ -439,6 +433,7 @@ function MembresDuGroupe({ membres, onNavigate, customDifficultyName, customDiff
   customDifficultyName: string;
   customDifficultyColor: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rg-membres">
       {membres.map((m) => {
@@ -447,7 +442,7 @@ function MembresDuGroupe({ membres, onNavigate, customDifficultyName, customDiff
           <button key={m.id} type="button" className="rg-membre"
             style={{ ["--t" as string]: teinte(m, customDifficultyColor) }}
             onClick={(e) => { e.stopPropagation(); onNavigate(m.id); }}>
-            <span className="rg-membre-p">{libellePalier(m, customDifficultyName)}</span>
+            <span className="rg-membre-p">{libellePalier(m, customDifficultyName, t)}</span>
             <span className="rg-membre-n">{m.name}</span>
             <span className="rg-membre-j" aria-hidden="true">
               {Array.from({ length: 10 }, (_, i) => (

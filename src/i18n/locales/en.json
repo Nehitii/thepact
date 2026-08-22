@@ -770,6 +770,16 @@
       "active": "Active",
       "auto": "Auto: {{regles}}",
       "autoAll": "Auto: all goals"
+    },
+    "carte": {
+      "restant": "{{n}}d left",
+      "aujourdhui": "Today",
+      "retard": "{{n}}d late",
+      "honore": "HONORED",
+      "aHonorer": "TO HONOR",
+      "focusPoser": "Set as focus",
+      "focusRetirer": "Remove from focus",
+      "membres": "Goals"
     }
   },
   "finance": {

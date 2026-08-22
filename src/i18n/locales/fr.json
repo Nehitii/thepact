@@ -770,6 +770,16 @@
       "active": "Actifs",
       "auto": "Auto : {{regles}}",
       "autoAll": "Auto : tous les objectifs"
+    },
+    "carte": {
+      "restant": "J-{{n}}",
+      "aujourdhui": "Aujourd'hui",
+      "retard": "J+{{n}}",
+      "honore": "HONORÉ",
+      "aHonorer": "À HONORER",
+      "focusPoser": "Mettre en focus",
+      "focusRetirer": "Retirer du focus",
+      "membres": "Objectifs"
     }
   },
   "finance": {

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
 import { type SuperGoalRule } from "./types";
 import { useTranslation } from "react-i18next";
+import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 
 interface SuperGoalGridCardProps {
   id: string;
@@ -23,27 +24,8 @@ interface SuperGoalGridCardProps {
   imageUrl?: string | null;
 }
 
-const getDifficultyTheme = (difficulty: string, customColor?: string) => {
-  switch (difficulty) {
-    case "easy": return { color: "#4ade80", rgb: "74, 222, 128" };
-    case "medium": return { color: "#facc15", rgb: "250, 204, 21" };
-    case "hard": return { color: "#fb923c", rgb: "251, 146, 60" };
-    case "extreme": return { color: "#f87171", rgb: "248, 113, 113" };
-    case "impossible": return { color: "#c084fc", rgb: "192, 132, 252" };
-    case "custom": {
-      const base = customColor || "#a855f7";
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(base);
-      const rgb = result
-        ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-        : "168, 85, 247";
-      return { color: base, rgb };
-    }
-    default: return { color: "#94a3b8", rgb: "148, 163, 184" };
-  }
-};
-
-/* Le doublon local posait une majuscule sur le code anglais.
-   La fonction partagee traduit. */
+/* Sixieme et derniere copie. Celle-ci portait les bonnes valeurs :
+   c est elle qui a ete promue dans teinteDuPalier. */
 
 export const SuperGoalGridCard = memo(function SuperGoalGridCard({
   id, name, childCount, completedCount, honore, pret, isDynamic, rule,
@@ -53,7 +35,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
   const { t } = useTranslation();
   const { progress, theme, ruleLabel } = useMemo(() => {
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
-    const teinte = getDifficultyTheme(difficulty, customDifficultyColor);
+    const teinte = teinteDuPalier(difficulty, customDifficultyColor);
     let label = "";
     if (isDynamic && rule) {
       const parts: string[] = [];
@@ -79,7 +61,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
   const isComplete = !!honore;
 
   const cssVars = {
-    "--accent": theme.color,
+    "--accent": theme.couleur,
     "--accent-rgb": theme.rgb,
     "--progress": `${progress}%`,
   } as React.CSSProperties;
@@ -158,14 +140,14 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
           {isComplete ? (
             <span className="verre-honore">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
-              HONORÉ
+              {t("goals.carte.honore", "HONORÉ")}
             </span>
           ) : pret ? (
             /* La meme bande, evidee : la forme est la, elle attend
                d'etre remplie. */
             <span className="verre-honore est-pret">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
-              À HONORER
+              {t("goals.carte.aHonorer", "À HONORER")}
             </span>
           ) : (
             <div className="verre-bas">

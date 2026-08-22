@@ -2,7 +2,7 @@ import React, { memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Crown, Zap, CheckCircle2, ImageOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
+import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import type { SuperGoalRule } from "./types";
 import { useTranslation } from "react-i18next";
@@ -37,11 +37,6 @@ const getDifficultyIntensity = (difficulty: string): number => {
 };
 
 const withAlpha = (color: string, alpha: number): string => {
-  if (color.startsWith("hsl(")) {
-    const inner = color.slice(4, -1).trim();
-    const base = inner.split("/")[0].trim();
-    return `hsl(${base} / ${alpha})`;
-  }
   if (color.startsWith("#")) {
     const hex = color.slice(1);
     const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
@@ -67,7 +62,12 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
   const { progress, difficultyColor, intensity, ruleLabel, isComplete } = useMemo(() => {
     const diff = difficulty || "medium";
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
-    const color = diff === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(diff);
+    /* Cette carte prenait sa couleur d une TROISIEME palette, celle en
+       HSL de lib/utils — alors qu elle s affiche dans le registre, a
+       cote de lignes teintees par la palette du module. Un groupe
+       « moyen » y etait hsl(45 95% 55%) quand ses membres, deux
+       centimetres plus bas, etaient #facc15. */
+    const color = teinteDuPalier(diff, customDifficultyColor).couleur;
     let label = "";
     if (isDynamic && rule) {
       const parts: string[] = [];
@@ -218,7 +218,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
           {/* Goals + Progress */}
           <div className="mt-1 space-y-2 px-1">
             <div className="flex items-center justify-between text-xs font-rajdhani">
-              <span style={{ color: "#7f8ca9" }}>Goals</span>
+              <span style={{ color: "#7f8ca9" }}>{t("goals.carte.membres", "Objectifs")}</span>
               <span className="font-bold" style={{ color: isComplete ? "#4ade80" : difficultyColor }}>
                 {completedCount}/{childCount} • {progress}%
               </span>
