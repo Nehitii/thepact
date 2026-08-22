@@ -1707,7 +1707,20 @@
       "notes": "Notes",
       "notesPlaceholder": "Ajoute des notes...",
       "linkToGoal": "Associer à un objectif",
-      "linkToGoalHint": "Associe cet article à un objectif"
+      "linkToGoalHint": "Associe cet article à un objectif",
+      "nouveau": "Nouvel article",
+      "modifier": "Modifier l’article",
+      "nom": "Nom",
+      "prix": "Prix estimé",
+      "categorie": "Catégorie",
+      "objectif": "Objectif lié",
+      "aucunObjectif": "Aucun",
+      "priorite": "Priorité",
+      "lien": "Lien",
+      "image": "Image",
+      "requis": "Requis pour le pacte",
+      "requisAide": "Une nécessité, pas une envie.",
+      "ajouter": "Ajouter"
     },
     "categories": {
       "tech": "Tech",
@@ -1739,6 +1752,75 @@
       "confirmPact": "Retirer des deux",
       "done": "Supprimé",
       "failed": "Suppression impossible"
+    },
+    "vue": {
+      "tout": "Global",
+      "pacte": "Le pacte",
+      "libre": "Hors pacte",
+      "aria": "Vues de la liste"
+    },
+    "tete": {
+      "ref": "Bordereau // Acquisitions",
+      "compte": "{{n}} articles",
+      "importer": "Importer",
+      "ajouter": "Ajouter"
+    },
+    "mesure": {
+      "reste": "Reste à acquérir",
+      "paye": "Déjà payé",
+      "articles": "Articles",
+      "repartition": "Pacte {{pacte}} · libre {{libre}}",
+      "restePacte": "Reste à financer",
+      "objectifs": "Objectifs concernés",
+      "coutObjectifs": "Coût des objectifs du pacte : {{montant}}",
+      "total": "Total"
+    },
+    "barre": {
+      "chercher": "Chercher un article, un objectif, une note…"
+    },
+    "tri": {
+      "recent": "Récent",
+      "cher": "Prix ↓",
+      "abordable": "Prix ↑"
+    },
+    "vide": {
+      "recherche": "Aucun article ne correspond à cette recherche.",
+      "pacte": "Aucun objectif du pacte n’a encore de dépense.",
+      "pacteAide": "Les dépenses ajoutées à un objectif apparaissent ici automatiquement.",
+      "libre": "Rien ici qui n’engage que toi.",
+      "libreAide": "Un article hors pacte est une envie qui ne pèse sur aucun objectif.",
+      "tout": "Tout est acquis."
+    },
+    "priorite": {
+      "low": "Basse",
+      "med": "Moyenne",
+      "high": "Haute",
+      "critical": "Critique"
+    },
+    "merge": {
+      "done": "Doublon fusionné"
+    },
+    "fiche": {
+      "ouvrirObjectif": "Ouvrir l’objectif",
+      "etape": "étape",
+      "voirEnLigne": "Voir en ligne",
+      "remettre": "Remettre dans la liste",
+      "marquerPaye": "Marquer payé"
+    },
+    "etat": {
+      "parEtape": "Étape faite",
+      "paye": "Payé"
+    },
+    "registre": {
+      "sansObjectif": "Sans objectif",
+      "complet": "complet",
+      "ouvrir": "Ouvrir l’objectif"
+    },
+    "archive": {
+      "titre": "Archive des acquisitions",
+      "compte": "{{n}} articles · {{montant}}",
+      "rendre": "Remettre dans la liste",
+      "libre": "hors pacte"
     }
   },
   "inbox": {

@@ -19,7 +19,12 @@ export function formatCurrency(
   return new Intl.NumberFormat(finalLocale, {
     style: 'currency',
     currency: currencyUpper === 'EUR' ? 'EUR' : 'USD',
-    minimumFractionDigits: 0,
+    /* Un montant rond se lit mieux sans centimes : « 300 € », pas
+       « 300,00 € ». Mais minimumFractionDigits a zero donnait aussi
+       « 268,5 € » et « 13 916,5 € » — un montant a un seul chiffre
+       apres la virgule, ce qui n existe pas en monnaie. Des qu il y
+       a des centimes, on en montre deux. */
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(amount);
 }

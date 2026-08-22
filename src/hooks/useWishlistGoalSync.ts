@@ -91,7 +91,11 @@ export function useWishlistGoalSync(
                 id: existing.id,
                 name: costItem.name,
                 estimated_cost: costItem.price,
-                notes: goal ? `Source: ${goal.name}` : null,
+                /* notes n est PAS reecrit. La synchro y ecrivait
+                   `Source: <objectif>` a chaque passage : la note de
+                   l utilisateur etait remplacee par une phrase de
+                   machine des que le nom, le prix ou l acquisition
+                   changeait. Ce champ appartient a l utilisateur. */
                 acquired: targetAcquired,
                 acquired_at: targetAcquired
                   ? existing.acquired
@@ -111,7 +115,11 @@ export function useWishlistGoalSync(
               goal_id: costItem.goal_id,
               source_type: "goal_sync",
               source_goal_cost_id: costItem.id,
-              notes: goal ? `Source: ${goal.name}` : null,
+              /* Pas de note non plus a la creation : goal_id porte
+                 deja la provenance, et l affiche en francais. La
+                 recopier en clair remplissait le seul champ libre de
+                 l article — soixante-neuf sur soixante-dix ne
+                 contenaient que ca. */
               acquired: shouldBeAcquired,
               acquired_at: shouldBeAcquired ? new Date().toISOString() : null,
             });

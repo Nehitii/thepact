@@ -1707,7 +1707,20 @@
       "notes": "Notes",
       "notesPlaceholder": "Add any notes...",
       "linkToGoal": "Link to Goal",
-      "linkToGoalHint": "Associate this item with a goal"
+      "linkToGoalHint": "Associate this item with a goal",
+      "nouveau": "New item",
+      "modifier": "Edit item",
+      "nom": "Name",
+      "prix": "Estimated price",
+      "categorie": "Category",
+      "objectif": "Linked goal",
+      "aucunObjectif": "None",
+      "priorite": "Priority",
+      "lien": "Link",
+      "image": "Image",
+      "requis": "Required for the pact",
+      "requisAide": "A necessity, not a wish.",
+      "ajouter": "Add"
     },
     "categories": {
       "tech": "Tech",
@@ -1739,6 +1752,75 @@
       "confirmPact": "Remove from both",
       "done": "Deleted",
       "failed": "Could not delete"
+    },
+    "vue": {
+      "tout": "All",
+      "pacte": "The pact",
+      "libre": "Outside the pact",
+      "aria": "List views"
+    },
+    "tete": {
+      "ref": "Manifest // Acquisitions",
+      "compte": "{{n}} items",
+      "importer": "Import",
+      "ajouter": "Add"
+    },
+    "mesure": {
+      "reste": "Left to acquire",
+      "paye": "Already paid",
+      "articles": "Items",
+      "repartition": "Pact {{pacte}} · free {{libre}}",
+      "restePacte": "Left to fund",
+      "objectifs": "Goals involved",
+      "coutObjectifs": "Cost of the pact’s goals: {{montant}}",
+      "total": "Total"
+    },
+    "barre": {
+      "chercher": "Search an item, a goal, a note…"
+    },
+    "tri": {
+      "recent": "Recent",
+      "cher": "Price ↓",
+      "abordable": "Price ↑"
+    },
+    "vide": {
+      "recherche": "No item matches this search.",
+      "pacte": "No goal in the pact has any expense yet.",
+      "pacteAide": "Expenses added to a goal show up here automatically.",
+      "libre": "Nothing here that binds only you.",
+      "libreAide": "An item outside the pact is a wish that weighs on no goal.",
+      "tout": "Everything is acquired."
+    },
+    "priorite": {
+      "low": "Low",
+      "med": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "merge": {
+      "done": "Duplicate merged"
+    },
+    "fiche": {
+      "ouvrirObjectif": "Open the goal",
+      "etape": "step",
+      "voirEnLigne": "View online",
+      "remettre": "Put back in the list",
+      "marquerPaye": "Mark as paid"
+    },
+    "etat": {
+      "parEtape": "Step done",
+      "paye": "Paid"
+    },
+    "registre": {
+      "sansObjectif": "No goal",
+      "complet": "complete",
+      "ouvrir": "Open the goal"
+    },
+    "archive": {
+      "titre": "Acquisition archive",
+      "compte": "{{n}} items · {{montant}}",
+      "rendre": "Put back in the list",
+      "libre": "outside the pact"
     }
   },
   "inbox": {

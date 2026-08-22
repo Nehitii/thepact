@@ -1,0 +1,664 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE BORDEREAU — LA WISHLIST
+
+   La page melangeait soixante-dix articles dans une grille unique.
+   Or ils sont de DEUX NATURES, et la mesure le dit sans ambiguite :
+   soixante-neuf viennent des objectifs, un seul a ete ajoute a la
+   main.
+
+   Une piece du pacte est une LIGNE DE BUDGET : elle appartient a un
+   objectif, elle pese dans son cout, la supprimer retire de l argent
+   quelque part. Elle se lit donc en REGISTRE, rangee sous l objectif
+   qui la reclame. Veine jaune — la couleur de ce qui engage.
+
+   Un article libre est un OBJET DESIRE : il n engage rien, il porte
+   une image et un lien. Il se lit donc en FICHE. Veine cyan — la
+   couleur de ce qui n appartient qu a soi.
+
+   Meme langue que le dossier d objectif : chanfreins, filets plutot
+   que cadres, mono espacee pour les etiquettes. Le theme clair ne
+   change que les jetons ; aucune regle de composant ne connait le
+   theme.
+   ═══════════════════════════════════════════════════════════════ */
+
+.wl {
+  --wl-encre: #eaf6ff;
+  --wl-encre-2: #cfe4f5;
+  --wl-encre-3: var(--nexus-text-dimmer);
+  --wl-trait: var(--nexus-border);
+  --wl-trait-doux: rgb(255 255 255 / 0.06);
+  --wl-plaque: rgb(255 255 255 / 0.02);
+  --wl-creux: rgb(0 0 0 / 0.22);
+  --wl-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Les deux veines. Le jaune de l enseigne est un FOND, jamais une
+     encre en theme clair : #FCEE0A sur blanc plafonne a 1,1:1. */
+  --wl-pacte: var(--cp-jaune);
+  --wl-libre: var(--cp-cyan);
+  --wl-acquis: #00ff88;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+:root:not(.dark) .wl {
+  --wl-encre: hsl(212 42% 13%);
+  --wl-encre-2: hsl(212 24% 27%);
+  --wl-encre-3: hsl(212 16% 38%);
+  --wl-trait-doux: rgb(0 0 0 / 0.09);
+  --wl-plaque: rgb(0 0 0 / 0.02);
+  --wl-creux: rgb(0 0 0 / 0.04);
+  --wl-acquis: #0a7a45;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES ONGLETS
+
+   Trois vues, et le compte dans l onglet : on sait avant de cliquer
+   si la vue a quelque chose a montrer.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-onglets {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 1px solid var(--wl-trait);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.wl-onglets::-webkit-scrollbar { display: none; }
+
+.wl-onglet {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.wl-onglet:hover { color: var(--wl-encre-2); }
+.wl-onglet[aria-selected="true"] { color: var(--wl-encre); }
+.wl-onglet:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+
+/* La barre de l onglet retenu prend la couleur de ce qu il montre. */
+.wl-onglet[aria-selected="true"][data-veine="tout"] { border-bottom-color: var(--wl-encre-2); }
+.wl-onglet[aria-selected="true"][data-veine="pacte"] { border-bottom-color: var(--wl-pacte); }
+.wl-onglet[aria-selected="true"][data-veine="libre"] { border-bottom-color: var(--wl-libre); }
+
+.wl-onglet b {
+  font-weight: 500;
+  font-size: 0.92em;
+  color: var(--wl-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.wl-onglet[aria-selected="true"] b { color: var(--wl-encre-2); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE BANDEAU DE MESURES
+
+   Cinq tuiles alignees dont l une ne parlait pas de la meme chose
+   que les autres. Ici les mesures se lisent sur une ligne, et la
+   jauge dit d un coup ce qui est paye et ce qui reste.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-bandeau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 30px;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid var(--wl-trait);
+}
+
+.wl-mesure { display: flex; flex-direction: column; gap: 4px; }
+.wl-mesure u {
+  text-decoration: none;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+}
+.wl-mesure b {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--wl-encre);
+  font-variant-numeric: tabular-nums;
+}
+.wl-mesure b s { text-decoration: none; font-size: 0.52em; color: var(--wl-encre-3); margin-left: 3px; }
+.wl-mesure[data-veine="pacte"] b { color: var(--wl-pacte); }
+.wl-mesure[data-veine="libre"] b { color: var(--wl-libre); }
+.wl-mesure[data-veine="acquis"] b { color: var(--wl-acquis); }
+
+/* La jauge prend la place qui reste. */
+.wl-jauge { flex: 1 1 200px; min-width: 170px; }
+.wl-rail {
+  display: flex;
+  height: 4px;
+  margin-top: 8px;
+  background: var(--wl-trait);
+  overflow: hidden;
+}
+.wl-rail i { display: block; height: 100%; transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.wl-rail i[data-part="acquis"] { background: var(--wl-acquis); }
+.wl-rail i[data-part="pacte"] { background: var(--wl-pacte); }
+.wl-rail i[data-part="libre"] { background: var(--wl-libre); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LA BARRE — recherche et tri
+   ═══════════════════════════════════════════════════════════════ */
+.wl-barre { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.wl-barre > :first-child { flex: 1 1 240px; }
+
+.wl-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 1px solid var(--wl-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.wl-tri:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.5); }
+.wl-tri[aria-pressed="true"] { color: var(--wl-encre); border-color: hsl(var(--primary) / 0.55); }
+.wl-tri:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE REGISTRE — la vue du pacte
+
+   Soixante-neuf pieces en grandes cartes font une page sans fin.
+   Rangees sous leur objectif, elles redeviennent ce qu elles sont :
+   la liste de courses d un objectif, avec son compte.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-registre { display: flex; flex-direction: column; gap: 10px; }
+
+.wl-groupe {
+  border: 1px solid var(--wl-trait);
+  background: var(--wl-plaque);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+/* La veine jaune tient sur la rangee entiere : le titre bascule le
+   pli, le second bouton ouvre l objectif. Deux gestes distincts, donc
+   deux boutons — un lien niche dans un bouton n est pas du HTML. */
+.wl-groupe-entete {
+  display: flex;
+  align-items: stretch;
+  border-left: 2px solid var(--wl-pacte);
+}
+
+.wl-groupe-tete {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 14px;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background 120ms linear;
+}
+.wl-groupe-tete:hover { background: var(--wl-trait-doux); }
+.wl-groupe-tete:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+
+.wl-groupe-lien { align-self: center; margin-right: 12px; border-color: var(--wl-trait); }
+
+.wl-groupe-fleche { width: 13px; height: 13px; transition: transform 180ms linear; }
+.wl-groupe[data-ouvert="oui"] .wl-groupe-fleche { transform: rotate(180deg); }
+
+.wl-groupe-num {
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1px;
+  color: var(--wl-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.wl-groupe-nom {
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(15px, 1.8vw, 18px);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--wl-encre);
+  overflow-wrap: anywhere;
+}
+.wl-groupe-chiffres {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1px;
+  color: var(--wl-encre-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.wl-groupe-chiffres b { font-weight: 500; color: var(--wl-encre); }
+.wl-groupe-chiffres em { font-style: normal; color: var(--wl-acquis); }
+
+/* La jauge de l objectif court sous la rangee, sur toute sa largeur. */
+.wl-groupe-rail {
+  display: flex;
+  height: 3px;
+  background: var(--wl-trait);
+  overflow: hidden;
+}
+.wl-groupe-rail i { display: block; height: 100%; background: var(--wl-acquis); transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+.wl-postes { display: flex; flex-direction: column; border-top: 1px solid var(--wl-trait); }
+
+/* ── UN POSTE ──
+   Une ligne : etat, nom, provenance, prix, outils au survol. */
+.wl-poste {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px 9px 12px;
+  border-left: 2px solid transparent;
+  transition: background 120ms linear, border-color 120ms linear;
+}
+.wl-poste + .wl-poste { border-top: 1px solid var(--wl-trait-doux); }
+.wl-poste:hover { background: var(--wl-trait-doux); border-left-color: var(--wl-pacte); }
+
+.wl-poste-nom {
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: max(14px, 0.875rem);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--wl-encre);
+  overflow-wrap: anywhere;
+}
+.wl-poste-source {
+  display: block;
+  margin-top: 1px;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+}
+.wl-poste-prix {
+  font-family: var(--wl-mono);
+  font-size: max(12px, 0.75rem);
+  font-weight: 500;
+  color: var(--wl-encre-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.wl-poste[data-acquis="oui"] .wl-poste-nom { color: var(--wl-encre-3); }
+.wl-poste[data-acquis="oui"] .wl-poste-prix { color: var(--wl-acquis); }
+
+/* La coche : le seul geste qu on fait cinquante fois sur cette page. */
+.wl-coche {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 1px solid var(--wl-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.wl-coche:hover { border-color: var(--wl-acquis); color: var(--wl-acquis); }
+.wl-coche:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.wl-coche[aria-pressed="true"] {
+  color: #04160c;
+  background: var(--wl-acquis);
+  border-color: var(--wl-acquis);
+}
+:root:not(.dark) .wl-coche[aria-pressed="true"] { color: #fff; }
+.wl-coche svg { width: 12px; height: 12px; }
+
+/* ── Les outils, discrets jusqu au survol ── */
+.wl-outils { display: flex; gap: 4px; opacity: 0; transition: opacity 120ms linear; }
+.wl-poste:hover .wl-outils,
+.wl-poste:focus-within .wl-outils,
+.wl-fiche:hover .wl-outils,
+.wl-fiche:focus-within .wl-outils { opacity: 1; }
+@media (hover: none) { .wl-outils { opacity: 1; } }
+
+.wl-outil {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 1px solid var(--wl-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.wl-outil:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.wl-outil--danger:hover { color: var(--cp-rouge); border-color: hsl(var(--destructive) / 0.55); }
+.wl-outil:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.wl-outil svg { width: 13px; height: 13px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LES FICHES — la vue globale et la vue hors pacte
+
+   Cinquante-cinq cartes n ont pas d image : leur source n en porte
+   pas. Reserver cent quatre-vingt-douze pixels de vide sous chacune
+   etait la vraie raison du sentiment que « les images ont saute ».
+   La vignette n existe que s il y a une image.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 12px;
+}
+
+.wl-fiche {
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--wl-trait);
+  border-left: 2px solid var(--wl-veine, var(--wl-trait));
+  background: var(--wl-plaque);
+  overflow: hidden;
+  transition: border-color 120ms linear, background 120ms linear;
+}
+.wl-fiche[data-veine="pacte"] { --wl-veine: var(--wl-pacte); }
+.wl-fiche[data-veine="libre"] { --wl-veine: var(--wl-libre); }
+.wl-fiche:hover { background: var(--wl-trait-doux); }
+
+.wl-vignette {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--wl-creux);
+  border-bottom: 1px solid var(--wl-trait);
+}
+.wl-vignette img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wl-fiche:hover .wl-vignette img { transform: scale(1.03); }
+
+.wl-fiche-corps { display: flex; flex-direction: column; gap: 7px; flex: 1; padding: 12px 13px; }
+
+/* Le nom d un article est du CONTENU, pas une etiquette. La regle
+   globale des titres le passait en capitales espacees : « LXR SE
+   125CC EURO 5 - LEXMOTO FRANCE » se lit moins bien que le vrai nom,
+   et le dossier reserve les capitales mono aux libelles. */
+.wl-fiche-nom {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: max(16px, 1rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wl-encre);
+  overflow-wrap: anywhere;
+}
+
+.wl-fiche-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 0;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear;
+}
+.wl-fiche[data-veine="pacte"] .wl-fiche-source { color: var(--wl-pacte); opacity: 0.78; }
+.wl-fiche-source:hover { color: var(--cp-cyan); opacity: 1; }
+.wl-fiche-source:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.wl-fiche-source span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-fiche-source svg { width: 10px; height: 10px; flex-shrink: 0; }
+
+.wl-fiche-note {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: max(12px, 0.75rem);
+  line-height: 1.45;
+  color: var(--wl-encre-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wl-fiche-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--wl-trait-doux);
+}
+.wl-fiche-prix {
+  font-family: var(--wl-mono);
+  font-size: max(14px, 0.875rem);
+  font-weight: 700;
+  color: var(--wl-encre);
+  font-variant-numeric: tabular-nums;
+}
+.wl-fiche[data-acquis="oui"] .wl-fiche-prix { color: var(--wl-acquis); }
+.wl-fiche[data-acquis="oui"] .wl-fiche-nom { color: var(--wl-encre-2); }
+
+.wl-fiche-gestes { display: flex; align-items: center; gap: 6px; }
+
+/* ── L etat, dit en toutes lettres ── */
+.wl-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  border: 1px solid var(--wl-trait);
+  color: var(--wl-encre-3);
+  white-space: nowrap;
+}
+.wl-etat[data-etat="paye"] { color: var(--wl-acquis); border-color: color-mix(in srgb, var(--wl-acquis) 40%, transparent); }
+.wl-etat[data-etat="etape"] { color: var(--wl-pacte); border-color: color-mix(in srgb, var(--wl-pacte) 45%, transparent); }
+.wl-etat svg { width: 10px; height: 10px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE PLI — l archive
+
+   Quarante-cinq articles sur soixante-dix sont acquis. Ouverts, ils
+   sont les deux tiers de la page ; ce sont pourtant les seuls dont
+   on n a plus rien a faire. Le pli annonce son compte et son
+   montant, et ne s ouvre que si on le demande.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-pli { border: 1px dashed var(--wl-trait); }
+.wl-pli[data-ouvert="oui"] { border-style: solid; }
+
+.wl-pli-poignee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 15px;
+  text-align: left;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear;
+}
+.wl-pli-poignee:hover { color: var(--wl-encre-2); background: var(--wl-trait-doux); }
+.wl-pli-poignee:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.wl-pli-poignee b { font-weight: 500; color: var(--wl-acquis); font-variant-numeric: tabular-nums; }
+.wl-pli-poignee svg { width: 14px; height: 14px; transition: transform 180ms linear; }
+.wl-pli[data-ouvert="oui"] .wl-pli-poignee svg { transform: rotate(180deg); }
+
+.wl-pli-corps { padding: 0 15px 15px; border-top: 1px solid var(--wl-trait); padding-top: 15px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LES VIDES
+
+   Une vue vide doit dire pourquoi elle est vide et ce qu on peut y
+   mettre — pas afficher « no items ».
+   ═══════════════════════════════════════════════════════════════ */
+.wl-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 42px 20px;
+  text-align: center;
+  border: 1px dashed var(--wl-trait);
+}
+.wl-vide p {
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: max(15px, 0.9375rem);
+  color: var(--wl-encre-2);
+  max-width: 46ch;
+}
+.wl-vide small {
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  max-width: 52ch;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ACCESSIBILITE
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .wl-rail i,
+  .wl-groupe-rail i,
+  .wl-vignette img,
+  .wl-groupe-fleche,
+  .wl-pli-poignee svg { transition: none; }
+  .wl-fiche:hover .wl-vignette img { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   L EN-TETE
+
+   Meme forme que l en-tete du dossier de sante : un jeton chanfreine,
+   la reference, l etat. Pas de titre geant en trois couleurs.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--wl-trait);
+}
+
+.wl-tete-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.wl-jeton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  font-family: var(--wl-mono);
+  font-size: max(13px, 0.8125rem);
+  font-weight: 700;
+  color: #07080a;
+  background: var(--cp-jaune-plein);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.wl-tete-mots { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wl-tete-mots b {
+  font-family: var(--wl-mono);
+  font-size: max(12px, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 2.6px;
+  text-transform: uppercase;
+  color: var(--wl-encre);
+  overflow-wrap: anywhere;
+}
+.wl-tete-mots i {
+  font-style: normal;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+}
+
+.wl-tete-gestes { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.wl-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-2);
+  background: transparent;
+  border: 1px solid var(--wl-trait);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+}
+.wl-bouton:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); background: hsl(var(--primary) / 0.06); }
+.wl-bouton:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.wl-bouton svg { width: 14px; height: 14px; }
+.wl-bouton--fort {
+  color: #07080a;
+  background: var(--cp-jaune-plein);
+  border-color: var(--cp-jaune-plein);
+}
+.wl-bouton--fort:hover { color: #07080a; background: var(--cp-jaune-plein); border-color: var(--cp-jaune-plein); filter: brightness(1.08); }
+
+/* Dans l archive, la colonne de la coche porte un simple jeton :
+   ces articles sont deja payes, il n y a rien a cocher. */
+.wl-poste-jeton {
+  width: 6px;
+  height: 6px;
+  margin: 0 7px;
+  background: var(--wl-acquis);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
