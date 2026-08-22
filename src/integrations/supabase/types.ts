@@ -1497,6 +1497,7 @@ export type Database = {
       goal_cost_items: {
         Row: {
           acquired_at: string | null
+          acquired_via_step: boolean
           category: string | null
           created_at: string
           goal_id: string
@@ -1508,6 +1509,7 @@ export type Database = {
         }
         Insert: {
           acquired_at?: string | null
+          acquired_via_step?: boolean
           category?: string | null
           created_at?: string
           goal_id: string
@@ -1519,6 +1521,7 @@ export type Database = {
         }
         Update: {
           acquired_at?: string | null
+          acquired_via_step?: boolean
           category?: string | null
           created_at?: string
           goal_id?: string
