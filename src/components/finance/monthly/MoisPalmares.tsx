@@ -1,12 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle2, Flame, Lock, Rocket, Trophy } from 'lucide-react';
+import {
+  ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Flame, Lock, Rocket, Trophy,
+} from 'lucide-react';
 import { format, startOfMonth, subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { useMonthlyValidations } from '@/hooks/useFinance';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+import { totalDuMois, montantDuMois, tombeEn } from '@/lib/finance/cadence';
+import type { FinancialItem } from '@/types/finance';
 
 /* LE PALMARES DU MOIS
  *
@@ -24,6 +29,34 @@ import { useMonthlyValidations } from '@/hooks/useFinance';
  * Et une bande de douze cases : un an de tenue, d un coup d oeil. Le
  * mois en cours ne casse pas la serie tant qu il n est pas fini — on
  * ne valide pas un mois qui n a pas eu lieu.
+ *
+ * LA BANDE REGARDE DEVANT, PAS SEULEMENT DERRIERE.
+ *
+ * Elle montrait les douze DERNIERS mois : un registre, tourne vers le
+ * passe. On y lisait ce qu on avait tenu, jamais ce qui arrivait — et
+ * c est pourtant la question qu on se pose en regardant ses comptes.
+ *
+ * Elle couvre donc l ANNEE CIVILE, de janvier a decembre. La moitie
+ * gauche reste un registre : les mois valides gardent leur solde
+ * REEL, celui qu on a constate en pointant. La moitie droite devient
+ * une prevision : ce que le mois pesera si rien ne change.
+ *
+ * LES DEUX NE SE MELANGENT PAS. Un solde constate et un solde suppose
+ * ne valent pas la meme chose, et les confondre ferait croire a une
+ * tenue qu on n a pas. Les cases a venir sont donc marquees comme
+ * telles, et leur chiffre se lit comme une annonce, pas comme un
+ * resultat.
+ *
+ * UN MOIS CHARGE SE VOIT AVANT D Y ETRE.
+ *
+ * Octobre porte les deux coproprietes et la derniere echeance PayPal —
+ * neuf cent cinquante-quatre euros de plus qu un mois ordinaire. Le
+ * savoir en aout change ce qu on fait en septembre. La case le dit.
+ *
+ * ET L ANNEE SE CHANGE, parce qu une annee civile enferme : en
+ * janvier, tout le registre de l an passe sortirait du cadre. Les
+ * fleches le ramenent — meme geste que le calendrier des echeances,
+ * qui les a deja pour la meme raison.
  */
 
 interface MoisPalmaresProps {
@@ -31,6 +64,9 @@ interface MoisPalmaresProps {
   netPrevu: number;
   /** Ce qu il reste a financer sur le pacte. */
   restantPacte: number;
+  /** Les lignes, pour prevoir le poids des mois a venir. */
+  expenses: FinancialItem[];
+  income: FinancialItem[];
   /* OUVRE LE PARCOURS D UN MOIS.
       Le bouton n etait qu un ascenseur vers un module en pied de page :
       il fallait defiler tout l ecran pour valider, et le module restait
@@ -45,11 +81,24 @@ interface MoisPalmaresProps {
 
 const CASES = 12;
 
-export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisPalmaresProps) {
-  const { t } = useTranslation();
+/** Une charge est « particuliere » des qu elle ne tombe pas chaque mois. */
+const estMensuelle = (l: FinancialItem) =>
+  (l.periode_mois ?? 1) === 1 && l.echeances == null;
+
+export function MoisPalmares({
+  netPrevu, restantPacte, expenses, income, onOuvrirParcours,
+}: MoisPalmaresProps) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
   const { data: validations = [] } = useMonthlyValidations(user?.id);
+  /* Sans locale, date-fns rend « Jul 2026 » dans une interface
+     francaise. Le hook existe : il suffisait de s en servir. */
+  const locale = useDateFnsLocale();
+
+  /* L annee regardee. On ouvre sur celle en cours — c est la reponse a
+     « et apres ? », qui est la question du jour. */
+  const [annee, setAnnee] = useState(() => new Date().getFullYear());
 
   /* Le mois en cours : c est lui que le panneau plus bas valide, et
      c est lui qui fera monter la serie affichee juste au-dessus. */
@@ -75,24 +124,53 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
     return n;
   }, [valides]);
 
+  /* Les charges qui ne tombent pas chaque mois : ce sont elles qui
+     font les mois lourds, et elles seules meritent l alerte. */
+  const particulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
+
   const bande = useMemo(() => {
-    const debut = startOfMonth(new Date());
+    const cleCourante = format(startOfMonth(new Date()), 'yyyy-MM');
     return Array.from({ length: CASES }, (_, i) => {
-      const d = subMonths(debut, CASES - 1 - i);
+      const d = new Date(annee, i, 1);
       const cle = format(d, 'yyyy-MM');
       const v = validations.find((x) => x.month.slice(0, 7) === cle);
-      const solde = v ? (v.actual_total_income ?? 0) - (v.actual_total_expenses ?? 0) : null;
+      const valide = valides.has(cle);
+      const encours = cle === cleCourante;
+      const passe = cle < cleCourante;
+
+      /* LE REEL D ABORD, LA PREVISION ENSUITE.
+         Un mois valide a un solde CONSTATE : c est celui qu on montre,
+         meme s il s ecarte de ce que la cadence prevoyait — c est
+         justement l ecart qui a de la valeur.
+         Un mois passe sans validation n a rien a dire : on ne va pas
+         lui inventer un resultat apres coup.
+         Le reste — le mois en cours et ceux d apres — se calcule. */
+      const reel = valide && !!v;
+      const solde = reel
+        ? (v.actual_total_income ?? 0) - (v.actual_total_expenses ?? 0)
+        : passe
+          ? null
+          : totalDuMois(income, d) - totalDuMois(expenses, d);
+
+      /* Ce que le mois porte d exceptionnel, et qui le rend lourd. */
+      const surcharge = particulieres
+        .filter((l) => tombeEn(l, d))
+        .reduce((s, l) => s + montantDuMois(l, d), 0);
+
       return {
         cle,
         premier: format(d, 'yyyy-MM-01'),
-        lettre: format(d, 'MMM').slice(0, 1).toUpperCase(),
-        libelle: format(d, 'MMM yyyy'),
+        lettre: format(d, 'MMM', { locale }).slice(0, 1).toUpperCase(),
+        libelle: format(d, 'MMM yyyy', { locale }),
         solde,
-        valide: valides.has(cle),
-        encours: cle === format(debut, 'yyyy-MM'),
+        reel,
+        valide,
+        encours,
+        passe,
+        surcharge,
       };
     });
-  }, [valides, validations]);
+  }, [annee, valides, validations, expenses, income, particulieres, locale]);
 
   const versement = Math.max(0, netPrevu);
   const part = restantPacte > 0 ? Math.min(100, (versement / restantPacte) * 100) : 0;
@@ -103,7 +181,11 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
       cle: 'versement',
       icone: Rocket,
       valeur: formatCurrency(versement, currency),
-      aide: t('finance.palmares.versementAide', { pct: part.toFixed(1) }),
+      /* toFixed rend « 7.0 » dans une interface francaise, ou le
+         separateur decimal est la virgule. */
+      aide: t('finance.palmares.versementAide', {
+        pct: part.toLocaleString(i18n.language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+      }),
     },
     {
       cle: 'serie',
@@ -148,16 +230,62 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
           chose, et le plus discret etait le mieux place. Les cases
           ouvrent donc le parcours du mois qu elles designent, et
           l historique disparait. */}
-      <div className="cy-palm-bande" role="group" aria-label={t('finance.palmares.bandeAide', { count: valides.size })}>
+      {/* L ANNEE, ET SES DEUX FLECHES.
+          Elles ne sont pas un ornement : une annee civile enferme, et
+          sans elles le registre de l an passe deviendrait inatteignable
+          des le 1er janvier. */}
+      <div className="cy-palm-annee">
+        <button
+          type="button"
+          onClick={() => setAnnee((a) => a - 1)}
+          aria-label={t('finance.palmares.anneePrecedente', { annee: annee - 1, defaultValue: String(annee - 1) })}
+        >
+          <ChevronLeft aria-hidden="true" />
+        </button>
+        <b>{annee}</b>
+        <button
+          type="button"
+          onClick={() => setAnnee((a) => a + 1)}
+          aria-label={t('finance.palmares.anneeSuivante', { annee: annee + 1, defaultValue: String(annee + 1) })}
+        >
+          <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* La bande ne couvre plus « les douze derniers mois » mais une
+          annee datee : son resume doit compter DANS cette annee, sinon
+          il annonce un total qui ne correspond a rien de visible. */}
+      <div
+        className="cy-palm-bande"
+        role="group"
+        aria-label={t('finance.palmares.bandeAide', {
+          count: bande.filter((m) => m.valide).length,
+          annee,
+        })}
+      >
         {bande.map((m, i) => (
           <motion.button
             key={m.cle}
             type="button"
             data-valide={m.valide ? '1' : '0'}
             data-encours={m.encours ? '1' : '0'}
-            title={m.solde !== null
-              ? `${m.libelle} — ${formatCurrency(m.solde, currency)}`
-              : t('finance.palmares.ouvrirMois', { mois: m.libelle, defaultValue: m.libelle })}
+            /* Un solde constate et un solde suppose ne se lisent pas
+               pareil : la case le dit, le style s en sert. */
+            data-reel={m.reel ? '1' : '0'}
+            data-avenir={!m.passe && !m.encours ? '1' : '0'}
+            data-charge={m.surcharge > 0 ? '1' : '0'}
+            title={[
+              m.libelle,
+              m.solde === null
+                ? null
+                : `${m.reel ? '' : '≈ '}${formatCurrency(m.solde, currency)}`,
+              m.surcharge > 0
+                ? t('finance.palmares.moisCharge', {
+                    montant: formatCurrency(m.surcharge, currency),
+                    defaultValue: `dont ${formatCurrency(m.surcharge, currency)} de charges particulières`,
+                  })
+                : null,
+            ].filter(Boolean).join(' — ')}
             aria-label={t('finance.palmares.ouvrirMois', { mois: m.libelle, defaultValue: m.libelle })}
             onClick={() => onOuvrirParcours(m.premier)}
             initial={{ opacity: 0, scaleY: 0.4 }}
@@ -165,6 +293,10 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
             transition={{ delay: 0.2 + i * 0.03, duration: 0.26 }}
           >
             <u>{m.lettre}</u>
+            {/* Le point qui previent. Il ne porte pas de chiffre : la
+                case est trop petite pour en lire un, et l infobulle le
+                donne. Il dit seulement « regarde ce mois-la ». */}
+            {m.surcharge > 0 && <i className="cy-palm-alerte" aria-hidden="true" />}
           </motion.button>
         ))}
       </div>
@@ -176,7 +308,7 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
           <>
             <p>
               <CheckCircle2 aria-hidden="true" />
-              {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM') })}
+              {t('finance.palmares.moisValide', { mois: format(new Date(), 'MMMM', { locale }) })}
             </p>
             {/* VERROUILLE, ET NON DISPARU.
                 Un bouton qui s efface une fois le geste fait laisse
@@ -196,7 +328,7 @@ export function MoisPalmares({ netPrevu, restantPacte, onOuvrirParcours }: MoisP
           <>
             <p>
               <Flame aria-hidden="true" />
-              {t('finance.palmares.moisAValider', { mois: format(new Date(), 'MMMM') })}
+              {t('finance.palmares.moisAValider', { mois: format(new Date(), 'MMMM', { locale }) })}
             </p>
             <button
               type="button"

@@ -1100,12 +1100,16 @@
       "rythmeValeur_other": "{{count}} months",
       "rythmeAide": "At this balance, the pact closes.",
       "rythmeVide": "The month leaves nothing to pay in.",
-      "bandeAide": "{{count}} months validated out of the last twelve",
       "moisAValider": "{{mois}} is not validated yet.",
       "moisValide": "{{mois}} is validated.",
       "validerLeMois": "Validate the month",
       "ouvrirMois": "Open {{mois}}",
-      "revoirLeMois": "Review"
+      "revoirLeMois": "Review",
+      "anneePrecedente": "Year {{annee}}",
+      "anneeSuivante": "Year {{annee}}",
+      "moisCharge": "including {{montant}} of one-off charges",
+      "bandeAide_one": "{{count}} month validated in {{annee}}",
+      "bandeAide_other": "{{count}} months validated in {{annee}}"
     },
     "particulieres": {
       "titre": "Irregular charges",

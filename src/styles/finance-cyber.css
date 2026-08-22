@@ -939,6 +939,52 @@
 }
 .cy-palm-bande button[data-encours="1"] u { color: var(--cy-jaune); }
 
+/* CE QUI N A PAS ENCORE EU LIEU SE LIT PLUS BAS.
+   Un mois a venir porte une prevision, pas un resultat. Il ne doit ni
+   crier comme un mois valide, ni se confondre avec un mois passe qu on
+   aurait laisse filer : un fond a peine tenu, un trait discontinu, une
+   encre sourde. La difference se voit sans qu on ait a l expliquer. */
+.cy-palm-bande button[data-avenir="1"] {
+  background: color-mix(in oklab, var(--cy-cyan) 7%, #0A0E13);
+  border-color: color-mix(in oklab, var(--cy-cyan) 30%, transparent);
+  border-style: dotted;
+}
+.cy-palm-bande button[data-avenir="1"] u { color: color-mix(in oklab, var(--cy-cyan) 65%, var(--cy-encre-3)); }
+
+/* LE POINT QUI PREVIENT.
+   Il marque les mois ou tombe une charge particuliere. Pose en haut a
+   droite plutot qu au centre : la lettre du mois reste lisible, et
+   l oeil accroche quand meme. En ambre — la meme encre que la cadence
+   dans la liste, pour que le signal soit le meme partout. */
+.cy-palm-alerte {
+  position: absolute; top: 3px; right: 3px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: hsl(var(--signal-ambre));
+  box-shadow: 0 0 6px hsl(var(--signal-ambre) / 0.9);
+}
+
+/* L ANNEE, ENTRE SES DEUX FLECHES. */
+.cy-palm-annee {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--cy-trait);
+}
+.cy-palm-annee + .cy-palm-bande { margin-top: 9px; padding-top: 0; border-top: 0; }
+.cy-palm-annee b {
+  font-family: var(--cy-chiffre, var(--cy-mono));
+  font-size: max(12px, 0.75rem); letter-spacing: 0.16em;
+  color: var(--cy-encre-2); min-width: 4ch; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.cy-palm-annee button {
+  display: grid; place-items: center; width: 22px; height: 22px;
+  padding: 0; cursor: pointer; color: var(--cy-encre-3);
+  background: transparent; border: 1px solid var(--cy-trait);
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.cy-palm-annee button:hover { color: var(--cy-jaune); border-color: var(--cy-jaune); }
+.cy-palm-annee button:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 2px; }
+.cy-palm-annee button svg { width: 13px; height: 13px; }
+
 /* L appel a valider : la serie se gagne la, pas deux ecrans plus bas. */
 .cy-palm-appel {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;

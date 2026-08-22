@@ -50,6 +50,7 @@ import { usePointages, useEcrirePointage, useEffacerPointage } from '@/hooks/use
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/lib/finance/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/lib/finance/garde';
 import { MarqueCreancier } from './MarqueCreancier';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 import type { FinancialItem } from '@/types/finance';
 
 type Etape = 'expense' | 'income' | 'bilan';
@@ -77,6 +78,7 @@ interface Rang {
 
 export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   const { t, i18n } = useTranslation();
+  const locale = useDateFnsLocale();
   const { user } = useAuth();
   const { currency } = useCurrency();
 
@@ -310,7 +312,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
       aria-label={t('finance.parcours.titre', 'Valider le mois')}
     >
       <header className="cy-parc-tete">
-        <span className="cy-parc-mois">{format(dateMois, 'MMMM yyyy')}</span>
+        <span className="cy-parc-mois">{format(dateMois, 'MMMM yyyy', { locale })}</span>
         <h2>{t('finance.parcours.titre', 'Valider le mois')}</h2>
         <ol className="cy-parc-fil">
           {ETAPES.map((e, i) => (

@@ -207,6 +207,8 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
       <MoisPalmares
         netPrevu={totalIncome - totalExpenses}
         restantPacte={restantPacte}
+        expenses={expenses}
+        income={income}
         onOuvrirParcours={setMoisAPointer}
       />
 
