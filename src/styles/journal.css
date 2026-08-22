@@ -328,7 +328,13 @@
   grid-template-columns: 118px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
-  margin: 2px 0 30px;
+  /* ELLE TOUCHAIT LA RANGEE DE FILTRES — un pixel de chevauchement,
+     mesure. Et trente-trois pixels en dessous : l espacement etait
+     asymetrique dans le mauvais sens.
+     Un objet qui flotte demande PLUS d air qu un bloc pose, pas moins :
+     son ombre et son halo debordent de la boite, et venaient buter dans
+     le trait de selection juste au-dessus. */
+  margin: 26px 0 30px;
   padding: 20px 22px 19px;
 
   /* LA LEVITATION. Une plaque sombre quel que soit le theme, une ombre
