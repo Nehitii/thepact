@@ -1443,6 +1443,68 @@
     "actions": {
       "breathing": "Respiration",
       "checkin": "Point du jour"
+    },
+    "body": {
+      "title": "Le corps",
+      "weight": "Poids",
+      "height": "Taille",
+      "bmi": "Indice de masse corporelle",
+      "adjust": "Régler",
+      "needsBoth": "Renseigne ta taille et ton poids.",
+      "range": {
+        "maigreur": "Maigreur",
+        "normal": "Corpulence normale",
+        "surpoids": "Surpoids",
+        "obesite": "Obésité"
+      }
+    },
+    "log": {
+      "title": "Le relevé",
+      "pending": "en attente",
+      "done": "Hier est relevé.",
+      "todo": "Comment s’est passée ta journée d’hier ?",
+      "doneHint": "Tu peux le rouvrir pour corriger. Le prochain relevé sera demain matin.",
+      "todoHint": "Une journée finie se raconte, elle ne se devine pas — c’est pour ça que le relevé porte sur la veille.",
+      "catchUp": "Rattraper",
+      "open": "Relever",
+      "review": "Revoir"
+    },
+    "day": {
+      "yesterday": "hier",
+      "dayBefore": "avant-hier"
+    },
+    "breath": {
+      "title": "Respirer",
+      "ready": "Prêt",
+      "start": "Commencer",
+      "pause": "Pause",
+      "reset": "Reprendre",
+      "cycles": "Cycles",
+      "choose": "Choisir un rythme",
+      "phase": {
+        "inspire": "Inspire",
+        "retiens": "Retiens",
+        "expire": "Expire",
+        "pause": "Pause"
+      },
+      "pattern": {
+        "coherence": {
+          "nom": "Cohérence",
+          "quoi": "Cinq secondes dedans, cinq dehors. Le rythme qui pose le cœur — celui qu’on prend quand on n’a rien de particulier à régler."
+        },
+        "boite": {
+          "nom": "Carrée",
+          "quoi": "Quatre temps égaux, retenue comprise. Se concentrer avant quelque chose de difficile."
+        },
+        "apaiser": {
+          "nom": "Apaiser",
+          "quoi": "L’expiration plus longue que l’inspiration : c’est elle qui fait retomber la tension."
+        },
+        "dormir": {
+          "nom": "Dormir",
+          "quoi": "Quatre, sept, huit. Long et lent, pour laisser venir le sommeil."
+        }
+      }
     }
   },
   "shop": {

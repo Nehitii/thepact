@@ -19,6 +19,8 @@ import { Telemetrie } from "@/components/ds/Telemetrie";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
+import { useHealthHistory } from "@/hooks/useHealth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { formatCurrency } from "@/lib/currency";
@@ -150,6 +152,28 @@ function Compteur({ valeur, unite, libelle, teinte, pct }: {
 
 export default function Analytics() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  /* LA COURBE D ENERGIE VIENT DE LA PAGE SANTE.
+     Elle y etait enfermee dans un HUDFrame avec scanline — un langage
+     etranger a celui-ci, exactement ce que cette page a ete refondue
+     pour eliminer. On reprend donc la DONNEE, pas le composant : trois
+     moments de la journee, moyennes sur la quinzaine, dans le meme
+     panneau que tout le reste. */
+  const { data: releves = [] } = useHealthHistory(user?.id, 14);
+  const energie = useMemo(() => {
+    const moyenne = (champ: "energy_morning" | "energy_afternoon" | "energy_evening") => {
+      const vals = releves
+        .map((r) => (r as unknown as Record<string, number | null>)[champ])
+        .filter((v): v is number => typeof v === "number");
+      return vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null;
+    };
+    return [
+      { moment: "Matin", niveau: moyenne("energy_morning") },
+      { moment: "Après-midi", niveau: moyenne("energy_afternoon") },
+      { moment: "Soir", niveau: moyenne("energy_evening") },
+    ].filter((p) => p.niveau !== null);
+  }, [releves]);
+
   const { section, period, setSection, setPeriod } = useAnalyticsState({
     section: "trajectoire",
     period: "all",
@@ -512,6 +536,26 @@ export default function Analytics() {
                 </ResponsiveContainer>
               </Panneau>
             </div>
+
+            <Panneau
+              titre="Énergie dans la journée"
+              droite={energie.length ? `moyenne sur ${releves.length} relevés` : undefined}
+              vide={energie.length < 2}
+              messageVide="Pas assez de relevés"
+            >
+              <ResponsiveContainer width="100%" height={175}>
+                <LineChart data={energie}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="moment" tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={26} domain={[0, 5]} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Line
+                    type="monotone" dataKey="niveau" name="Énergie"
+                    stroke={AMBRE} strokeWidth={1.8} dot={{ r: 3, fill: AMBRE }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Panneau>
 
             <Panneau
               titre="Tâches accomplies"

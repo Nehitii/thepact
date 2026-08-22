@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodayHealth, useUpsertHealthData, useHealthSettings, useHealthByDate } from "@/hooks/useHealth";
-import { format, subDays } from "date-fns";
+import { format, subDays, parseISO } from "date-fns";
 import { useUpdateHealthStreak } from "@/hooks/useHealthStreak";
 import { HealthMoodSelector } from "./HealthMoodSelector";
 import { useTranslation } from "react-i18next";
@@ -21,11 +21,19 @@ import { useTranslation } from "react-i18next";
 interface HealthDailyCheckinProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /* LA JOURNEE QU ON RACONTE, ET NON CELLE OU L ON SE TROUVE.
+     Le releve portait sur AUJOURD HUI, derriere un reglage qui valait
+     « today » par defaut : on le remplissait donc le matin, en notant
+     un sommeil qu on venait de finir a cote d une activite qui n avait
+     pas eu lieu. La moitie des champs etaient des suppositions.
+     La date vient maintenant d en haut : la veille par defaut, ou l un
+     des jours manques qu on rattrape. */
+  date?: string;
 }
 
 const CHAMFER = "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)";
 
-export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinProps) {
+export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyCheckinProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
@@ -33,11 +41,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [bootProgress, setBootProgress] = useState(0);
   
   const { data: settings } = useHealthSettings(user?.id);
-  const checkinMode = (settings as any)?.checkin_mode || "today";
-  const targetDate = checkinMode === "yesterday"
-    ? format(subDays(new Date(), 1), "yyyy-MM-dd")
-    : format(new Date(), "yyyy-MM-dd");
-  const targetDateLabel = checkinMode === "yesterday" ? "Hier" : "Aujourd'hui";
+  const targetDate = date ?? format(subDays(new Date(), 1), "yyyy-MM-dd");
+  const estLaVeille = targetDate === format(subDays(new Date(), 1), "yyyy-MM-dd");
+  const targetDateLabel = estLaVeille ? "Hier" : format(parseISO(targetDate), "dd.MM");
   
   const { data: todayData } = useHealthByDate(user?.id, targetDate);
   const upsertHealth = useUpsertHealthData(user?.id);

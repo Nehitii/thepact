@@ -1,0 +1,266 @@
+/* ═══════════════════════════════════════════════════════════════
+   SANTE — LE TERMINAL BIOMETRIQUE
+
+   La page etait un tableau de bord : trois onglets, douze panneaux,
+   cinq cartes de metrique, deux graphes, des defis, des « insights ».
+   On y arrivait sans savoir quoi regarder, et l on en repartait sans
+   avoir rien fait.
+
+   Elle ne repond plus qu a trois questions, dans cet ordre :
+     ou j en suis        — le corps, en trois chiffres
+     qu ai-je a relever  — la veille, et les jours manques
+     que puis-je faire   — respirer, tout de suite
+
+   Le reste est parti : les graphes rejoignent Analytics, ou vivent
+   deja tous les autres, et les defis comme les analyses automatiques
+   ont ete retires.
+
+   L AIR FAIT PARTIE DU DESSIN. Trois blocs sur une page entiere, des
+   filets plutot que des cadres, et le jaune employe avec parcimonie —
+   il ne designe que ce qui appelle une action.
+   ═══════════════════════════════════════════════════════════════ */
+
+.hlt {
+  --hlt-fond: #08090B;
+  --hlt-plaque: #0E1014;
+  --hlt-creux: #121519;
+  --hlt-trait: #262B33;
+  --hlt-trait-fort: #3A424E;
+
+  --hlt-jaune: #FCEE0A;
+  --hlt-cyan: #00E5FF;
+  --hlt-rouge: #FF3B4E;
+  --hlt-vert: #2BFF88;
+
+  --hlt-encre: #EDF1F5;
+  --hlt-encre-2: #9AA4B0;
+  --hlt-encre-3: #656F7C;
+
+  --hlt-mono: "JetBrains Mono", ui-monospace, monospace;
+  --hlt-titre: "Rajdhani", system-ui, sans-serif;
+  --hlt-chiffre: "Orbitron", "Rajdhani", sans-serif;
+
+  display: flex; flex-direction: column; gap: 34px;
+  color: var(--hlt-encre);
+  font-family: var(--hlt-titre);
+}
+
+/* En theme clair, seuls les jetons changent : aucune regle ci-dessous
+   ne connait la couleur du sol. */
+:root:not(.dark) .hlt {
+  --hlt-fond: #F4F6F8;
+  --hlt-plaque: #FFFFFF;
+  --hlt-creux: #EDF0F3;
+  --hlt-trait: #D5DBE2;
+  --hlt-trait-fort: #B3BCC7;
+  --hlt-jaune: #8A7F00;
+  --hlt-cyan: #0B6E86;
+  --hlt-rouge: #C41E32;
+  --hlt-vert: #0B7A44;
+  --hlt-encre: #12161B;
+  --hlt-encre-2: #444E59;
+  --hlt-encre-3: #6B7581;
+}
+
+/* ── LE TITRE D UN BLOC ────────────────────────────────────── */
+.hlt-titre {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 16px;
+  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.3em; text-transform: uppercase; color: var(--hlt-encre-3);
+}
+/* Le filet qui court jusqu au bord : c est lui qui remplace le cadre. */
+.hlt-titre::after {
+  content: ""; flex: 1; height: 1px; background: var(--hlt-trait);
+}
+.hlt-titre b { color: var(--hlt-jaune); font-weight: 400; }
+
+/* ── LE CORPS : TROIS CHIFFRES ─────────────────────────────── */
+.hlt-corps {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px; background: var(--hlt-trait);
+  border: 1px solid var(--hlt-trait);
+}
+.hlt-mesure {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 20px 22px 22px; background: var(--hlt-plaque);
+}
+.hlt-mesure > u {
+  text-decoration: none; font-family: var(--hlt-mono);
+  font-size: max(9.5px, 0.594rem); letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--hlt-encre-3);
+}
+.hlt-mesure > b {
+  font-family: var(--hlt-chiffre); font-size: clamp(30px, 4vw, 40px);
+  font-weight: 700; line-height: 1; letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.hlt-mesure > b i { font-style: normal; font-size: 0.42em; color: var(--hlt-encre-3); margin-left: 5px; }
+.hlt-mesure > span { font-size: max(13px, 0.813rem); color: var(--hlt-encre-2); }
+.hlt-mesure[data-vide="1"] > b { color: var(--hlt-encre-3); }
+
+/* L echelle de l IMC : les quatre tranches, et ou l on tombe. */
+.hlt-echelle { margin-top: 10px; }
+.hlt-echelle-barre {
+  position: relative; height: 5px; display: flex; gap: 1px;
+}
+.hlt-echelle-barre i { flex: 1; background: var(--hlt-trait-fort); }
+.hlt-echelle-barre i[data-t="ici"] { background: var(--ton, var(--hlt-jaune)); }
+.hlt-echelle-curseur {
+  position: absolute; top: -4px; width: 2px; height: 13px;
+  background: var(--hlt-encre); transform: translateX(-1px);
+}
+.hlt-echelle-mots {
+  display: flex; justify-content: space-between; margin-top: 7px;
+  font-family: var(--hlt-mono); font-size: max(8.5px, 0.531rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hlt-encre-3);
+}
+
+/* Le bouton qui ouvre les reglages du corps. */
+.hlt-regler {
+  align-self: flex-start; margin-top: 8px; padding: 6px 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--hlt-encre-2);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-regler:hover { color: var(--hlt-jaune); border-color: var(--hlt-jaune); }
+
+/* ── LE RELEVE : LA VEILLE, ET LES JOURS MANQUES ───────────── */
+.hlt-releve {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 22px;
+  align-items: center; padding: 24px 24px 24px 0;
+  border-left: 3px solid var(--hlt-jaune);
+  padding-left: 24px; background: var(--hlt-plaque);
+}
+.hlt-releve[data-fait="1"] { border-left-color: var(--hlt-vert); }
+.hlt-releve[data-fait="1"] .hlt-releve-appel { color: var(--hlt-vert); }
+
+.hlt-releve-jour {
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--hlt-encre-3);
+  margin-bottom: 8px;
+}
+.hlt-releve-appel {
+  margin: 0 0 6px; font-family: var(--hlt-titre); font-weight: 600;
+  font-size: clamp(20px, 2.6vw, 27px); line-height: 1.16; color: var(--hlt-jaune);
+}
+.hlt-releve-aide { margin: 0; font-size: max(13.5px, 0.844rem); color: var(--hlt-encre-2); max-width: 52ch; }
+
+.hlt-bouton {
+  display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
+  min-height: 46px; padding: 0 20px; cursor: pointer; border: 0;
+  background: var(--hlt-jaune); color: #07080A;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  font-family: var(--hlt-chiffre); font-size: max(10.5px, 0.656rem);
+  font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  transition: filter 160ms linear, box-shadow 160ms linear;
+}
+.hlt-bouton svg { width: 15px; height: 15px; }
+.hlt-bouton:hover { filter: brightness(1.08); box-shadow: 0 0 26px -6px var(--hlt-jaune); }
+.hlt-bouton[data-ton="sobre"] {
+  background: transparent; color: var(--hlt-encre-2);
+  border: 1px solid var(--hlt-trait-fort); clip-path: none; min-height: 38px;
+}
+.hlt-bouton[data-ton="sobre"]:hover {
+  color: var(--hlt-jaune); border-color: var(--hlt-jaune); box-shadow: none; filter: none;
+}
+
+/* La file des jours en attente. */
+.hlt-attente { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.hlt-attente > u {
+  text-decoration: none; font-family: var(--hlt-mono); font-size: max(9px, 0.563rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--hlt-encre-3); margin-right: 4px;
+}
+.hlt-jour {
+  padding: 5px 11px; cursor: pointer; background: transparent;
+  border: 1px dashed var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.1em; color: var(--hlt-encre-2);
+  transition: color 140ms linear, border-color 140ms linear, background 140ms linear;
+}
+.hlt-jour:hover {
+  color: #07080A; background: var(--hlt-jaune); border-color: var(--hlt-jaune); border-style: solid;
+}
+
+/* ── LA RESPIRATION, MISE EN AVANT ─────────────────────────── */
+.hlt-souffle {
+  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 34px;
+  align-items: center; padding: 30px 26px;
+  background:
+    radial-gradient(70% 90% at 18% 50%, color-mix(in srgb, var(--hlt-cyan) 9%, transparent), transparent 70%),
+    var(--hlt-plaque);
+  border: 1px solid var(--hlt-trait);
+}
+@media (max-width: 760px) {
+  .hlt-souffle { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+
+/* LE CERCLE EST L EXERCICE, pas son illustration : c est sa taille qui
+   dit quand inspirer, et c est en le suivant qu on respire. */
+.hlt-rond {
+  position: relative; width: 220px; height: 220px; justify-self: center;
+  display: grid; place-items: center;
+}
+.hlt-rond-halo {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 34%, transparent);
+}
+.hlt-rond-noyau {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hlt-cyan) 26%, transparent), color-mix(in srgb, var(--hlt-cyan) 6%, transparent) 70%);
+  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 55%, transparent);
+  box-shadow: 0 0 40px -12px var(--hlt-cyan);
+}
+.hlt-rond-texte {
+  position: absolute; inset: 0; display: grid; place-items: center; gap: 4px;
+  text-align: center; pointer-events: none;
+}
+.hlt-rond-texte b {
+  font-family: var(--hlt-mono); font-size: max(11px, 0.688rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--hlt-cyan);
+}
+.hlt-rond-texte span {
+  font-family: var(--hlt-chiffre); font-size: 34px; font-weight: 700;
+  color: var(--hlt-encre); font-variant-numeric: tabular-nums;
+}
+
+.hlt-souffle-nom {
+  margin: 0 0 8px; font-family: var(--hlt-titre); font-weight: 600;
+  font-size: clamp(20px, 2.6vw, 26px); line-height: 1.16;
+}
+.hlt-souffle-quoi { margin: 0 0 18px; font-size: max(13.5px, 0.844rem); color: var(--hlt-encre-2); max-width: 46ch; }
+
+/* Les schemas : on choisit ce qu on vient chercher, pas un reglage. */
+.hlt-schemas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.hlt-schema {
+  padding: 8px 13px; cursor: pointer; background: transparent;
+  border: 1px solid var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre-2);
+  transition: color 140ms linear, border-color 140ms linear, background 140ms linear;
+}
+.hlt-schema:hover { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
+.hlt-schema[aria-pressed="true"] {
+  color: var(--hlt-cyan); border-color: var(--hlt-cyan);
+  background: color-mix(in srgb, var(--hlt-cyan) 10%, transparent);
+}
+.hlt-souffle-gestes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.hlt-souffle-gestes .hlt-bouton:not([data-ton]) { background: var(--hlt-cyan); }
+.hlt-souffle-gestes .hlt-bouton:not([data-ton]):hover { box-shadow: 0 0 26px -6px var(--hlt-cyan); }
+.hlt-tours {
+  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre-3);
+}
+.hlt-tours b { color: var(--hlt-encre); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* ── LA NOTE DE PIED ───────────────────────────────────────── */
+.hlt-note {
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--hlt-encre-3); text-align: center; line-height: 1.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hlt-rond-noyau { transition: none !important; }
+}

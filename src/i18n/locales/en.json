@@ -1443,6 +1443,68 @@
     "actions": {
       "breathing": "Breathing",
       "checkin": "Check-in"
+    },
+    "body": {
+      "title": "The body",
+      "weight": "Weight",
+      "height": "Height",
+      "bmi": "Body mass index",
+      "adjust": "Adjust",
+      "needsBoth": "Set your height and weight.",
+      "range": {
+        "maigreur": "Underweight",
+        "normal": "Normal range",
+        "surpoids": "Overweight",
+        "obesite": "Obese"
+      }
+    },
+    "log": {
+      "title": "The log",
+      "pending": "pending",
+      "done": "Yesterday is logged.",
+      "todo": "How did yesterday go?",
+      "doneHint": "You can reopen it to correct. The next log is tomorrow morning.",
+      "todoHint": "A finished day can be told; a day that’s starting can only be guessed — that’s why the log covers yesterday.",
+      "catchUp": "Catch up",
+      "open": "Log it",
+      "review": "Review"
+    },
+    "day": {
+      "yesterday": "yesterday",
+      "dayBefore": "the day before"
+    },
+    "breath": {
+      "title": "Breathe",
+      "ready": "Ready",
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Restart",
+      "cycles": "Cycles",
+      "choose": "Choose a rhythm",
+      "phase": {
+        "inspire": "Breathe in",
+        "retiens": "Hold",
+        "expire": "Breathe out",
+        "pause": "Rest"
+      },
+      "pattern": {
+        "coherence": {
+          "nom": "Coherence",
+          "quoi": "Five seconds in, five out. The rhythm that settles the heart — the one for when nothing in particular needs fixing."
+        },
+        "boite": {
+          "nom": "Box",
+          "quoi": "Four equal counts, hold included. To focus before something hard."
+        },
+        "apaiser": {
+          "nom": "Calm",
+          "quoi": "A longer out-breath than in-breath: that’s what lets the tension drop."
+        },
+        "dormir": {
+          "nom": "Sleep",
+          "quoi": "Four, seven, eight. Long and slow, to let sleep come."
+        }
+      }
     }
   },
   "shop": {
