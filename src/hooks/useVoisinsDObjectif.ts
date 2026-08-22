@@ -50,7 +50,10 @@ export function useVoisinsDObjectif(
   const navigate = useNavigate();
   const { sorted } = useGoalFilters(tousLesObjectifs);
 
-  const sequence = sorted ?? [];
+  /* Le « ?? [] » fabriquait un tableau neuf a chaque rendu des que
+     sorted etait nul : les dependances du memo ci-dessous changeaient
+     donc a chaque passage, et il ne memorisait rien. */
+  const sequence = useMemo(() => sorted ?? [], [sorted]);
   const i = useMemo(() => sequence.findIndex((g) => g.id === idCourant), [sequence, idCourant]);
 
   /* ON ARRIVE PARFOIS D AILLEURS.
