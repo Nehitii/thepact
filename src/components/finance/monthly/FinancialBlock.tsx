@@ -18,6 +18,15 @@ interface FinancialBlockProps {
   title: string;
   type: 'expense' | 'income';
   items: FinancialItem[];
+  /* LE MOIS VIENT D EN HAUT, IL NE SE REDECIDE PAS ICI.
+     Le bloc fabriquait son propre `new Date()`. Tant que le parent
+     faisait de meme, les deux tombaient d accord par coincidence — mais
+     c est le parent qui CHOISIT desormais quelles lignes entrent dans
+     la liste, en filtrant sur le mois. Deux horloges pour une seule
+     question, et le jour ou elles divergent le bloc affiche des lignes
+     a 0,00 € : retenues parce qu elles tombent en octobre, chiffrees
+     sur un aout ou elles ne tombent pas. */
+  moisCourant: Date;
   categories: FinanceCategory[];
   isLoading: boolean;
   onAdd: (v: ValeursLigne) => Promise<void>;
@@ -31,6 +40,7 @@ export function FinancialBlock({
   title,
   type,
   items,
+  moisCourant,
   categories,
   isLoading,
   onAdd,
@@ -47,7 +57,6 @@ export function FinancialBlock({
   const [ligneEditee, setLigneEditee] = useState<FinancialItem | null>(null);
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const moisCourant = useMemo(() => new Date(), []);
   const totalAmount = totalDuMois(items, moisCourant);
   const isExpense = type === 'expense';
 

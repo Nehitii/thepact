@@ -78,6 +78,12 @@ export function LigneAffiche({
     <motion.li
       className="cy-aff"
       data-actif={item.is_active ? '1' : '0'}
+      /* CELLE-CI NE REVIENDRA PAS LE MOIS PROCHAIN.
+         Elle est melee aux mensuelles parce qu elle tombe ce mois-ci,
+         et rien dans la liste ne l en distingue au premier coup d oeil.
+         Le halo s en charge : on repere les exceptions avant d avoir
+         lu un seul mot. */
+      data-ponctuelle={cadence !== 'mensuel' ? '1' : '0'}
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.28, delay: Math.min(rang * 0.035, 0.3) }}

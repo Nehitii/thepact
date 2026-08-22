@@ -218,6 +218,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
             title={t('finance.recurring.expensesOfMonth', 'Dépenses du mois')}
             type="expense"
             items={depensesDuMois}
+            moisCourant={moisCourant}
             categories={EXPENSE_CATEGORIES}
             isLoading={expensesLoading}
             onAdd={handleAddExpense}
@@ -232,6 +233,7 @@ export function MonthlyDashboard({ salaryPaymentDay, restantPacte }: MonthlyDash
             title={t('finance.recurring.incomeOfMonth', 'Revenus du mois')}
             type="income"
             items={revenusDuMois}
+            moisCourant={moisCourant}
             categories={INCOME_CATEGORIES}
             isLoading={incomeLoading}
             onAdd={handleAddIncome}

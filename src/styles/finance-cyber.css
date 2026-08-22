@@ -2807,6 +2807,69 @@
 .cy-aff:hover { background: hsl(var(--primary) / 0.08); border-color: hsl(var(--primary) / 0.34); }
 .cy-aff[data-actif="0"] { opacity: 0.42; }
 
+/* ═══════════════════════════════════════════════════════════════
+   LA LIGNE PONCTUELLE RESPIRE
+
+   Une charge qui ne tombe qu une fois est desormais melee aux
+   mensuelles, puisqu elle appartient bien a ce mois-ci. Mais rien ne
+   l en distinguait : dans une colonne de onze lignes identiques, la
+   seule exception passait inapercue, et c est justement celle qu il
+   fallait voir.
+
+   TROIS COUCHES, ET AUCUNE N EST DECORATIVE.
+
+   Le fond ambre a six pour cent tiedit la plaque : c est ce qui la
+   fait sortir dans un balayage rapide, avant meme la lecture.
+   Le liseré interieur dessine son contour sans epaissir la bordure —
+   une bordure plus grosse decalerait la grille d un pixel et casserait
+   l alignement de la colonne.
+   Le bloom exterieur, lui, deborde legerement : c est la seule couche
+   qui fasse vraiment LUMIERE plutot que couleur.
+
+   ON NE TOUCHE PAS AU RAIL. Il porte la categorie — logement, impots,
+   transport — et cette information-la n a pas a ceder la place. Le
+   halo dit « exception », le rail dit « de quoi il s agit » : deux
+   questions, deux signaux, aucun conflit.
+
+   LE SOUFFLE EST LENT ET SYNCHRONE.
+
+   Quatre secondes et demie, sans decalage entre les lignes : trois
+   plaques qui palpitent en desordre feraient une guirlande. Ensemble
+   et lentement, elles respirent. L amplitude reste faible — le but est
+   qu on les repere, pas qu on les surveille.
+   ═══════════════════════════════════════════════════════════════ */
+.cy-aff[data-ponctuelle="1"] {
+  border-color: hsl(var(--halo-ambre) / 0.40);
+  background: hsl(var(--halo-ambre) / 0.06);
+  box-shadow:
+    inset 0 0 12px -4px hsl(var(--halo-ambre) / 0.28),
+    0 0 18px -7px hsl(var(--halo-ambre) / 0.52);
+  animation: cy-aff-souffle 4.5s ease-in-out infinite;
+}
+.cy-aff[data-ponctuelle="1"]:hover {
+  background: hsl(var(--halo-ambre) / 0.11);
+  border-color: hsl(var(--halo-ambre) / 0.62);
+}
+
+@keyframes cy-aff-souffle {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 12px -4px hsl(var(--halo-ambre) / 0.22),
+      0 0 16px -8px hsl(var(--halo-ambre) / 0.42);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 14px -3px hsl(var(--halo-ambre) / 0.34),
+      0 0 24px -6px hsl(var(--halo-ambre) / 0.66);
+  }
+}
+
+/* Le halo reste, le souffle s arrete : c est le repere qui compte, le
+   mouvement n en est que l accent. */
+@media (prefers-reduced-motion: reduce) {
+  .cy-aff[data-ponctuelle="1"] { animation: none; }
+}
+
 /* LE FILIGRANE.
    C est ici que l identite se joue sans couter un pixel de hauteur :
    la marque deborde dans le fond de sa propre ligne, tres basse. Onze

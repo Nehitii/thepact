@@ -236,6 +236,15 @@ All colors MUST be HSL.
     --signal-jaune:  48 96% 26%;
     --signal-rouge:  352 85% 42%;
 
+    /* LE HALO N'EST PAS LE SIGNAL.
+       Un texte doit passer 4,5 sur du blanc : l'ambre du signal est
+       donc descendu à 30 % de luminosité. Mais une lueur dessinée avec
+       cette teinte-là ne brille pas, elle SALIT — sur un fond clair,
+       du brun étalé se lit comme une ombre, jamais comme une lumière.
+       Le halo garde donc l'éclat que le texte a dû céder. Il ne porte
+       aucun mot, donc il n'a aucun contraste à tenir. */
+    --halo-ambre: 40 98% 52%;
+
     /* Le troisieme rang de lecture : lisible sans appeler. */
     --encre-discrete: 210 18% 45%;
     --accent-ambre: 35 100% 27%;
@@ -403,6 +412,9 @@ All colors MUST be HSL.
     --signal-cyan:   187 85% 53%;
     --signal-jaune:  54 97% 62%;
     --signal-rouge:  351 95% 71%;
+    /* Sur du noir, le signal brille deja : le halo reprend sa teinte
+       telle quelle. C est en clair que les deux divergent. */
+    --halo-ambre:    43 96% 58%;
     --encre-discrete: 208 22% 62%;
     --accent-ambre: 42 100% 62%;
 
