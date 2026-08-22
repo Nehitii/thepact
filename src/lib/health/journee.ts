@@ -51,6 +51,38 @@ export function joursARelever(
   return manques;
 }
 
+/** Une ligne du journal : une journee close, relevee ou non. */
+export interface PageDuJournal {
+  /** La date, au format yyyy-MM-dd. */
+  cle: string;
+  relevee: boolean;
+}
+
+/**
+ * LE JOURNAL : TOUTE LA FENETRE, PAS SEULEMENT LA DETTE.
+ *
+ * joursARelever ne rend que ce qui manque — c est ce qu il faut pour
+ * appeler a l action, mais pas pour tenir un dossier. Un dossier montre
+ * aussi ce qui a ete fait : sans les lignes relevees, on ne lit que ses
+ * manquements, jamais sa regularite.
+ *
+ * De la plus recente a la plus ancienne, aujourd hui exclu — la journee
+ * n est pas finie.
+ */
+export function pagesDuJournal(
+  datesRelevees: string[],
+  aujourdHui = new Date(),
+  fenetre = FENETRE_RATTRAPAGE,
+): PageDuJournal[] {
+  const faites = new Set(datesRelevees.map((d) => d.slice(0, 10)));
+  const pages: PageDuJournal[] = [];
+  for (let i = 1; i <= fenetre; i++) {
+    const cle = cleDuJour(subDays(aujourdHui, i));
+    pages.push({ cle, relevee: faites.has(cle) });
+  }
+  return pages;
+}
+
 /** Le releve de la veille est-il fait ? */
 export const veilleRelevee = (datesRelevees: string[], aujourdHui = new Date()): boolean =>
   datesRelevees.map((d) => d.slice(0, 10)).includes(cleDuJour(laVeille(aujourdHui)));

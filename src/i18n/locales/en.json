@@ -1504,7 +1504,23 @@
           "nom": "Sleep",
           "quoi": "Four, seven, eight. Long and slow, to let sleep come."
         }
-      }
+      },
+      "protocol": "Protocol"
+    },
+    "file": {
+      "ref": "Bio file",
+      "classification": "Health",
+      "updated": "UPD",
+      "missing_one": "{{count}} missing entry",
+      "missing_other": "{{count}} missing entries",
+      "upToDate": "File up to date"
+    },
+    "journal": {
+      "title": "The log",
+      "empty": "Empty",
+      "filled": "Logged",
+      "openDay": "Log {{jour}}",
+      "reviewDay": "Review {{jour}}"
     }
   },
   "shop": {

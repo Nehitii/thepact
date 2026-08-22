@@ -1504,7 +1504,23 @@
           "nom": "Dormir",
           "quoi": "Quatre, sept, huit. Long et lent, pour laisser venir le sommeil."
         }
-      }
+      },
+      "protocol": "Protocole"
+    },
+    "file": {
+      "ref": "Dossier bio",
+      "classification": "Santé",
+      "updated": "MAJ",
+      "missing_one": "{{count}} entrée manquante",
+      "missing_other": "{{count}} entrées manquantes",
+      "upToDate": "Dossier à jour"
+    },
+    "journal": {
+      "title": "Le journal",
+      "empty": "Vide",
+      "filled": "Relevé",
+      "openDay": "Relever le {{jour}}",
+      "reviewDay": "Revoir le {{jour}}"
     }
   },
   "shop": {

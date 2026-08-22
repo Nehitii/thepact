@@ -1,31 +1,32 @@
 /* ═══════════════════════════════════════════════════════════════
-   SANTE — LE TERMINAL BIOMETRIQUE
+   SANTE — LE DOSSIER BIOMETRIQUE
 
-   La page etait un tableau de bord : trois onglets, douze panneaux,
-   cinq cartes de metrique, deux graphes, des defis, des « insights ».
-   On y arrivait sans savoir quoi regarder, et l on en repartait sans
-   avoir rien fait.
+   L interface la plus reconnaissable de Cyberpunk 2077 n est pas le
+   HUD de combat : c est la fiche de personnage. Dense, chanfreinee,
+   technique — une colonne de statistiques figees a gauche, un journal
+   qui court a droite, et des etiquettes en mono espacee.
 
-   Elle ne repond plus qu a trois questions, dans cet ordre :
-     ou j en suis        — le corps, en trois chiffres
-     qu ai-je a relever  — la veille, et les jours manques
-     que puis-je faire   — respirer, tout de suite
+   La page n est donc plus une page : c est un dossier qu on ouvre a
+   son nom. Il dit a qui il appartient, ce qui y manque, ce qu on peut
+   y faire.
 
-   Le reste est parti : les graphes rejoignent Analytics, ou vivent
-   deja tous les autres, et les defis comme les analyses automatiques
-   ont ete retires.
+     LA BANDE      a qui, quand, et combien d entrees manquent
+     LA FICHE      poids, taille, IMC — ce qui ne bouge pas d un jour
+                   a l autre, donc fige au defilement
+     LE JOURNAL    la quinzaine entiere, relevee ou vide, datee
+     LE PROTOCOLE  respirer, en pied, deplie quand on commence
 
-   L AIR FAIT PARTIE DU DESSIN. Trois blocs sur une page entiere, des
-   filets plutot que des cadres, et le jaune employe avec parcimonie —
-   il ne designe que ce qui appelle une action.
+   L AIR FAIT PARTIE DU DESSIN. Des filets plutot que des cadres, et le
+   jaune employe avec parcimonie — il ne designe que ce qui appelle une
+   action ou ce qui manque.
    ═══════════════════════════════════════════════════════════════ */
 
 .hlt {
   --hlt-fond: #08090B;
   --hlt-plaque: #0E1014;
-  --hlt-creux: #121519;
-  --hlt-trait: #262B33;
-  --hlt-trait-fort: #3A424E;
+  --hlt-creux: #0A0C0F;
+  --hlt-trait: #23272E;
+  --hlt-trait-fort: #39414D;
 
   --hlt-jaune: #FCEE0A;
   --hlt-cyan: #00E5FF;
@@ -40,7 +41,7 @@
   --hlt-titre: "Rajdhani", system-ui, sans-serif;
   --hlt-chiffre: "Orbitron", "Rajdhani", sans-serif;
 
-  display: flex; flex-direction: column; gap: 34px;
+  display: flex; flex-direction: column;
   color: var(--hlt-encre);
   font-family: var(--hlt-titre);
 }
@@ -62,6 +63,78 @@
   --hlt-encre-3: #6B7581;
 }
 
+/* ── LA BANDE DE DOSSIER ───────────────────────────────────── */
+.hlt-tete {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; flex-wrap: wrap;
+  padding: 14px 0 15px;
+  border-bottom: 1px solid var(--hlt-trait-fort);
+}
+.hlt-tete-id { display: flex; align-items: center; gap: 13px; min-width: 0; }
+
+/* Le jeton chanfreine : la seule surface pleine de l en-tete. */
+.hlt-jeton {
+  flex-shrink: 0; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--hlt-jaune); color: #07080A;
+  font-family: var(--hlt-titre); font-weight: 700; font-size: 18px; line-height: 1;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.hlt-tete-mots { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hlt-tete-mots b {
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem); font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--hlt-encre-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hlt-tete-mots i {
+  font-style: normal;
+  font-family: var(--hlt-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre);
+}
+
+.hlt-tete-etat { display: flex; align-items: center; gap: 12px; }
+.hlt-etat {
+  padding: 6px 11px;
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.hlt-etat[data-ton="du"] {
+  color: var(--hlt-jaune);
+  border: 1px solid color-mix(in srgb, var(--hlt-jaune) 40%, transparent);
+}
+.hlt-etat[data-ton="ok"] {
+  color: var(--hlt-vert);
+  border: 1px solid color-mix(in srgb, var(--hlt-vert) 35%, transparent);
+}
+.hlt-engrenage {
+  flex-shrink: 0; width: 32px; height: 32px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--hlt-trait-fort);
+  color: var(--hlt-encre-3);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-engrenage svg { width: 15px; height: 15px; }
+.hlt-engrenage:hover { color: var(--hlt-jaune); border-color: var(--hlt-jaune); }
+
+/* ── LES DEUX COLONNES ─────────────────────────────────────── */
+.hlt-dossier {
+  display: grid; grid-template-columns: 296px minmax(0, 1fr);
+  align-items: start;
+}
+/* Le filet qui separe la fiche du journal court sur toute la hauteur
+   de la plus longue des deux colonnes. */
+.hlt-journal {
+  border-left: 1px solid var(--hlt-trait);
+  padding: 24px 0 34px 30px; min-width: 0;
+}
+.hlt-fiche { padding: 24px 30px 34px 0; position: sticky; top: 18px; }
+
+@media (max-width: 900px) {
+  .hlt-dossier { grid-template-columns: minmax(0, 1fr); }
+  .hlt-fiche { position: static; padding: 22px 0 26px; }
+  .hlt-journal { border-left: 0; border-top: 1px solid var(--hlt-trait); padding: 22px 0 30px; }
+}
+
 /* ── LE TITRE D UN BLOC ────────────────────────────────────── */
 .hlt-titre {
   display: flex; align-items: center; gap: 12px;
@@ -70,83 +143,210 @@
   letter-spacing: 0.3em; text-transform: uppercase; color: var(--hlt-encre-3);
 }
 /* Le filet qui court jusqu au bord : c est lui qui remplace le cadre. */
-.hlt-titre::after {
-  content: ""; flex: 1; height: 1px; background: var(--hlt-trait);
-}
-.hlt-titre b { color: var(--hlt-jaune); font-weight: 400; }
+.hlt-titre::after { content: ""; flex: 1; height: 1px; background: var(--hlt-trait); }
+.hlt-titre b { color: var(--hlt-jaune); font-weight: 400; white-space: nowrap; }
 
-/* ── LE CORPS : TROIS CHIFFRES ─────────────────────────────── */
-.hlt-corps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px; background: var(--hlt-trait);
-  border: 1px solid var(--hlt-trait);
-}
-.hlt-mesure {
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 20px 22px 22px; background: var(--hlt-plaque);
-}
-.hlt-mesure > u {
+/* ── LA FICHE : CE QUI NE BOUGE PAS ────────────────────────── */
+.hlt-fiche-plaque { display: flex; flex-direction: column; }
+
+.hlt-ligne { display: flex; flex-direction: column; gap: 5px; padding-bottom: 18px; }
+.hlt-ligne > u,
+.hlt-imc > u {
   text-decoration: none; font-family: var(--hlt-mono);
   font-size: max(9.5px, 0.594rem); letter-spacing: 0.24em;
   text-transform: uppercase; color: var(--hlt-encre-3);
 }
-.hlt-mesure > b {
-  font-family: var(--hlt-chiffre); font-size: clamp(30px, 4vw, 40px);
+.hlt-ligne > b {
+  font-family: var(--hlt-chiffre); font-size: 32px;
   font-weight: 700; line-height: 1; letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
-.hlt-mesure > b i { font-style: normal; font-size: 0.42em; color: var(--hlt-encre-3); margin-left: 5px; }
-.hlt-mesure > span { font-size: max(13px, 0.813rem); color: var(--hlt-encre-2); }
-.hlt-mesure[data-vide="1"] > b { color: var(--hlt-encre-3); }
+.hlt-ligne > b i {
+  font-style: normal; font-family: var(--hlt-mono);
+  font-size: 0.34em; color: var(--hlt-encre-3); margin-left: 6px;
+}
+.hlt-ligne[data-vide="1"] > b { color: var(--hlt-encre-3); }
 
-/* L echelle de l IMC : les quatre tranches, et ou l on tombe. */
-.hlt-echelle { margin-top: 10px; }
-.hlt-echelle-barre {
-  position: relative; height: 5px; display: flex; gap: 1px;
+/* L IMC : le chiffre du dossier, et sa jauge. */
+.hlt-imc {
+  display: flex; flex-direction: column; gap: 9px;
+  border-top: 1px solid var(--hlt-trait); padding-top: 18px;
 }
-.hlt-echelle-barre i { flex: 1; background: var(--hlt-trait-fort); }
-.hlt-echelle-barre i[data-t="ici"] { background: var(--ton, var(--hlt-jaune)); }
-.hlt-echelle-curseur {
-  position: absolute; top: -4px; width: 2px; height: 13px;
-  background: var(--hlt-encre); transform: translateX(-1px);
+.hlt-imc-corps { display: flex; align-items: flex-start; gap: 18px; }
+/* Nomme, pas designe par son tag : un selecteur > div attrapait aussi
+   la jauge et lui imposait sa direction. */
+.hlt-imc-mots { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.hlt-imc-corps b {
+  font-family: var(--hlt-chiffre); font-size: 40px;
+  font-weight: 700; line-height: 1; letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
 }
-.hlt-echelle-mots {
-  display: flex; justify-content: space-between; margin-top: 7px;
+.hlt-imc-corps span { font-size: max(13px, 0.813rem); color: var(--hlt-encre-2); }
+.hlt-imc[data-vide="1"] b { color: var(--hlt-encre-3); }
+
+/* La jauge est verticale parce que c est une jauge : on y lit une
+   hauteur, pas une progression. */
+.hlt-jauge { display: flex; gap: 9px; flex-shrink: 0; }
+.hlt-jauge-barre {
+  position: relative; width: 4px; height: 116px;
+  display: flex; flex-direction: column-reverse; gap: 1px;
+}
+.hlt-jauge-barre i { background: var(--hlt-trait-fort); }
+.hlt-jauge-curseur {
+  position: absolute; left: -4px; width: 12px; height: 2px;
+  background: var(--hlt-encre); transform: translateY(1px);
+}
+.hlt-jauge-mots {
+  display: flex; flex-direction: column; justify-content: space-between;
+  height: 116px;
   font-family: var(--hlt-mono); font-size: max(8.5px, 0.531rem);
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hlt-encre-3);
+  letter-spacing: 0.1em; color: var(--hlt-encre-3);
 }
 
-/* Le bouton qui ouvre les reglages du corps. */
 .hlt-regler {
-  align-self: flex-start; margin-top: 8px; padding: 6px 12px; cursor: pointer;
+  margin-top: 20px; padding: 9px 12px; cursor: pointer; width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background: transparent; border: 1px solid var(--hlt-trait-fort);
   font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
   letter-spacing: 0.2em; text-transform: uppercase; color: var(--hlt-encre-2);
   transition: color 140ms linear, border-color 140ms linear;
 }
+.hlt-regler svg { width: 12px; height: 12px; }
 .hlt-regler:hover { color: var(--hlt-jaune); border-color: var(--hlt-jaune); }
 
-/* ── LE RELEVE : LA VEILLE, ET LES JOURS MANQUES ───────────── */
-.hlt-releve {
+/* ── LE JOURNAL : LA VEILLE, PUIS LA QUINZAINE ─────────────── */
+.hlt-veille {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 22px;
-  align-items: center; padding: 24px 24px 24px 0;
-  border-left: 3px solid var(--hlt-jaune);
-  padding-left: 24px; background: var(--hlt-plaque);
+  align-items: center; padding: 22px 24px 22px 22px;
+  border-left: 3px solid var(--hlt-jaune); background: var(--hlt-plaque);
 }
-.hlt-releve[data-fait="1"] { border-left-color: var(--hlt-vert); }
-.hlt-releve[data-fait="1"] .hlt-releve-appel { color: var(--hlt-vert); }
+.hlt-veille[data-fait="1"] { border-left-color: var(--hlt-vert); }
+.hlt-veille[data-fait="1"] .hlt-veille-appel { color: var(--hlt-vert); }
 
-.hlt-releve-jour {
+.hlt-veille-jour {
   font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
   letter-spacing: 0.26em; text-transform: uppercase; color: var(--hlt-encre-3);
   margin-bottom: 8px;
 }
-.hlt-releve-appel {
+.hlt-veille-appel {
   margin: 0 0 6px; font-family: var(--hlt-titre); font-weight: 600;
-  font-size: clamp(20px, 2.6vw, 27px); line-height: 1.16; color: var(--hlt-jaune);
+  font-size: clamp(20px, 2.4vw, 26px); line-height: 1.16; color: var(--hlt-jaune);
 }
-.hlt-releve-aide { margin: 0; font-size: max(13.5px, 0.844rem); color: var(--hlt-encre-2); max-width: 52ch; }
+.hlt-veille-aide { margin: 0; font-size: max(13.5px, 0.844rem); color: var(--hlt-encre-2); max-width: 52ch; }
 
+/* Les lignes de dossier : une par journee close. */
+.hlt-lignes { list-style: none; margin: 8px 0 0; padding: 0; }
+.hlt-lignes-jour {
+  width: 100%; cursor: pointer; background: transparent; border: 0;
+  display: grid; grid-template-columns: 108px minmax(0, 1fr) auto;
+  gap: 14px; align-items: center; padding: 10px 4px 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--hlt-trait) 62%, transparent);
+  text-align: left;
+  transition: background 140ms linear, padding-left 140ms linear;
+}
+.hlt-lignes-jour time {
+  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hlt-encre-2);
+}
+/* Le filet qui relie la date a son etat : c est lui qui fait la ligne
+   de dossier, et il ne coute rien. */
+.hlt-lignes-jour > span { height: 1px; background: var(--hlt-trait); }
+.hlt-lignes-jour u {
+  text-decoration: none; font-family: var(--hlt-mono);
+  font-size: max(9px, 0.563rem); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--hlt-jaune);
+}
+.hlt-lignes-jour[data-fait="1"] { opacity: 0.62; }
+.hlt-lignes-jour[data-fait="1"] u { color: var(--hlt-vert); }
+.hlt-lignes-jour:hover { background: var(--hlt-creux); padding-left: 10px; opacity: 1; }
+.hlt-lignes-jour:hover time { color: var(--hlt-encre); }
+
+/* ── LE PROTOCOLE : RESPIRER, EN PIED ──────────────────────── */
+.hlt-protocole { padding: 26px 0 0; border-top: 1px solid var(--hlt-trait-fort); }
+
+/* Une bande, pas une grille. Les quatre pieces n ont pas des largeurs
+   comparables : trois pistes auto dimensionnees sur leur contenu
+   affamaient la colonne de texte, reduite a trente pixels — la
+   description tombait un mot par ligne. En flex, elle garde un
+   plancher de 240px et les rythmes passent a la ligne au besoin. */
+.hlt-bande {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px;
+  padding: 16px 20px;
+  background:
+    radial-gradient(58% 130% at 6% 50%, color-mix(in srgb, var(--hlt-cyan) 8%, transparent), transparent 70%),
+    var(--hlt-plaque);
+  border: 1px solid var(--hlt-trait);
+  transition: padding 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* LA BANDE SE DEPLIE. Au repos c est une ligne du dossier ; des qu on
+   commence, le cercle prend la place qu il lui faut. */
+.hlt-protocole[data-actif="1"] .hlt-bande {
+  flex-direction: column; justify-content: center; text-align: center;
+  padding: 34px 20px 30px; gap: 18px;
+}
+.hlt-protocole[data-actif="1"] .hlt-bande-mots,
+.hlt-protocole[data-actif="1"] .hlt-gestes { flex: 0 0 auto; margin-left: 0; }
+
+.hlt-rond {
+  position: relative; width: 66px; height: 66px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1), height 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hlt-protocole[data-actif="1"] .hlt-rond { width: 208px; height: 208px; }
+
+.hlt-rond-halo {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 46%, transparent);
+  box-shadow: 0 0 40px -14px var(--hlt-cyan);
+}
+.hlt-rond-noyau {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hlt-cyan) 22%, transparent), transparent 68%);
+}
+.hlt-rond-texte {
+  position: relative; display: none; flex-direction: column;
+  align-items: center; gap: 5px;
+}
+.hlt-protocole[data-actif="1"] .hlt-rond-texte { display: flex; }
+.hlt-rond-texte b {
+  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem); font-weight: 500;
+  letter-spacing: 0.28em; text-transform: uppercase; color: var(--hlt-cyan);
+}
+.hlt-rond-texte span {
+  font-family: var(--hlt-chiffre); font-size: 30px; font-weight: 700;
+  line-height: 1; font-variant-numeric: tabular-nums; color: var(--hlt-encre);
+}
+
+.hlt-bande-mots { flex: 1 1 240px; min-width: 0; }
+.hlt-bande-mots h3 {
+  margin: 0; font-family: var(--hlt-titre); font-weight: 600;
+  font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.hlt-bande-mots p {
+  margin: 3px 0 0; font-size: max(13px, 0.813rem); color: var(--hlt-encre-2);
+  max-width: 46ch; line-height: 1.55;
+}
+/* Deplie, la description quitte l ecran : on respire, on ne lit pas. */
+.hlt-protocole[data-actif="1"] .hlt-bande-mots p { display: none; }
+
+.hlt-schemas { display: flex; flex-wrap: wrap; gap: 6px; }
+.hlt-schema {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  padding: 7px 11px; cursor: pointer; background: transparent;
+  border: 1px solid var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre-2);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-schema i { font-style: normal; font-size: 0.86em; color: var(--hlt-encre-3); }
+.hlt-schema:hover { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
+.hlt-schema[aria-pressed="true"] { color: var(--hlt-cyan); border-color: var(--hlt-cyan); }
+.hlt-schema[aria-pressed="true"] i { color: color-mix(in srgb, var(--hlt-cyan) 70%, transparent); }
+
+/* Pousse les gestes contre le bord droit de la bande. */
+.hlt-gestes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-left: auto; }
+
+/* ── LE BOUTON ─────────────────────────────────────────────── */
 .hlt-bouton {
   display: inline-flex; align-items: center; gap: 10px; white-space: nowrap;
   min-height: 46px; padding: 0 20px; cursor: pointer; border: 0;
@@ -158,96 +358,19 @@
 }
 .hlt-bouton svg { width: 15px; height: 15px; }
 .hlt-bouton:hover { filter: brightness(1.08); box-shadow: 0 0 26px -6px var(--hlt-jaune); }
+
+.hlt-bouton[data-ton="souffle"] { background: var(--hlt-cyan); }
+.hlt-bouton[data-ton="souffle"]:hover { box-shadow: 0 0 26px -6px var(--hlt-cyan); }
+
 .hlt-bouton[data-ton="sobre"] {
   background: transparent; color: var(--hlt-encre-2);
   border: 1px solid var(--hlt-trait-fort); clip-path: none; min-height: 38px;
 }
+.hlt-bouton[data-ton="sobre"] svg { width: 13px; height: 13px; }
 .hlt-bouton[data-ton="sobre"]:hover {
   color: var(--hlt-jaune); border-color: var(--hlt-jaune); box-shadow: none; filter: none;
 }
 
-/* La file des jours en attente. */
-.hlt-attente { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.hlt-attente > u {
-  text-decoration: none; font-family: var(--hlt-mono); font-size: max(9px, 0.563rem);
-  letter-spacing: 0.2em; text-transform: uppercase; color: var(--hlt-encre-3); margin-right: 4px;
-}
-.hlt-jour {
-  padding: 5px 11px; cursor: pointer; background: transparent;
-  border: 1px dashed var(--hlt-trait-fort);
-  font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
-  letter-spacing: 0.1em; color: var(--hlt-encre-2);
-  transition: color 140ms linear, border-color 140ms linear, background 140ms linear;
-}
-.hlt-jour:hover {
-  color: #07080A; background: var(--hlt-jaune); border-color: var(--hlt-jaune); border-style: solid;
-}
-
-/* ── LA RESPIRATION, MISE EN AVANT ─────────────────────────── */
-.hlt-souffle {
-  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 34px;
-  align-items: center; padding: 30px 26px;
-  background:
-    radial-gradient(70% 90% at 18% 50%, color-mix(in srgb, var(--hlt-cyan) 9%, transparent), transparent 70%),
-    var(--hlt-plaque);
-  border: 1px solid var(--hlt-trait);
-}
-@media (max-width: 760px) {
-  .hlt-souffle { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-}
-
-/* LE CERCLE EST L EXERCICE, pas son illustration : c est sa taille qui
-   dit quand inspirer, et c est en le suivant qu on respire. */
-.hlt-rond {
-  position: relative; width: 220px; height: 220px; justify-self: center;
-  display: grid; place-items: center;
-}
-.hlt-rond-halo {
-  position: absolute; inset: 0; border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 34%, transparent);
-}
-.hlt-rond-noyau {
-  width: 100%; height: 100%; border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--hlt-cyan) 26%, transparent), color-mix(in srgb, var(--hlt-cyan) 6%, transparent) 70%);
-  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 55%, transparent);
-  box-shadow: 0 0 40px -12px var(--hlt-cyan);
-}
-.hlt-rond-texte {
-  position: absolute; inset: 0; display: grid; place-items: center; gap: 4px;
-  text-align: center; pointer-events: none;
-}
-.hlt-rond-texte b {
-  font-family: var(--hlt-mono); font-size: max(11px, 0.688rem);
-  letter-spacing: 0.26em; text-transform: uppercase; color: var(--hlt-cyan);
-}
-.hlt-rond-texte span {
-  font-family: var(--hlt-chiffre); font-size: 34px; font-weight: 700;
-  color: var(--hlt-encre); font-variant-numeric: tabular-nums;
-}
-
-.hlt-souffle-nom {
-  margin: 0 0 8px; font-family: var(--hlt-titre); font-weight: 600;
-  font-size: clamp(20px, 2.6vw, 26px); line-height: 1.16;
-}
-.hlt-souffle-quoi { margin: 0 0 18px; font-size: max(13.5px, 0.844rem); color: var(--hlt-encre-2); max-width: 46ch; }
-
-/* Les schemas : on choisit ce qu on vient chercher, pas un reglage. */
-.hlt-schemas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
-.hlt-schema {
-  padding: 8px 13px; cursor: pointer; background: transparent;
-  border: 1px solid var(--hlt-trait-fort);
-  font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre-2);
-  transition: color 140ms linear, border-color 140ms linear, background 140ms linear;
-}
-.hlt-schema:hover { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
-.hlt-schema[aria-pressed="true"] {
-  color: var(--hlt-cyan); border-color: var(--hlt-cyan);
-  background: color-mix(in srgb, var(--hlt-cyan) 10%, transparent);
-}
-.hlt-souffle-gestes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.hlt-souffle-gestes .hlt-bouton:not([data-ton]) { background: var(--hlt-cyan); }
-.hlt-souffle-gestes .hlt-bouton:not([data-ton]):hover { box-shadow: 0 0 26px -6px var(--hlt-cyan); }
 .hlt-tours {
   font-family: var(--hlt-mono); font-size: max(10px, 0.625rem);
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--hlt-encre-3);
@@ -256,11 +379,40 @@
 
 /* ── LA NOTE DE PIED ───────────────────────────────────────── */
 .hlt-note {
+  margin: 30px 0 0;
   font-family: var(--hlt-mono); font-size: max(9.5px, 0.594rem);
   letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--hlt-encre-3); text-align: center; line-height: 1.8;
 }
 
+/* ── LE MOUVEMENT ──────────────────────────────────────────── */
+/* Les deux colonnes entrent chacune de son cote ; les lignes du
+   journal se posent l une apres l autre, comme un dossier qu on
+   feuillette.
+
+   AUCUNE OPACITE DANS CES IMAGES-CLES, ET C EST VOLONTAIRE. Une
+   animation mise en pause — c est le cas dans un onglet en arriere-plan,
+   ou le navigateur les gele — continue d appliquer son etat de depart.
+   Une entree qui part d opacity: 0 laisse donc la page BLANCHE tant que
+   l onglet n a pas ete affiche. Mesure faite : visibilityState hidden,
+   dix-sept animations paused a currentTime 0, .hlt-fiche a opacity 0.
+
+   On n anime donc que la translation. Gelee, elle laisse le contenu
+   lisible a quatorze pixels de sa place — personne ne le remarque, et
+   rien ne disparait. */
+@media (prefers-reduced-motion: no-preference) {
+  .hlt-fiche { animation: hlt-venu-gauche 460ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .hlt-journal { animation: hlt-venu-droite 460ms 60ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .hlt-lignes li {
+    animation: hlt-pose 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(220ms + var(--i, 0) * 40ms);
+  }
+  @keyframes hlt-venu-gauche { from { transform: translateX(-14px); } }
+  @keyframes hlt-venu-droite { from { transform: translateX(14px); } }
+  @keyframes hlt-pose { from { transform: translateY(-6px); } }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hlt-rond-noyau { transition: none !important; }
+  .hlt-rond, .hlt-bande { transition: none; }
 }

@@ -1,42 +1,47 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { Settings as SettingsIcon } from "lucide-react";
-import { DSPageShell, DSBackground, DSPageLoader, DSPageHeader } from "@/components/ds";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { useHealthSettings, useHealthHistory } from "@/hooks/useHealth";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
-import { cleDuJour, laVeille, FENETRE_RATTRAPAGE } from "@/lib/health/journee";
+import { joursARelever, FENETRE_RATTRAPAGE } from "@/lib/health/journee";
+import { EnTeteDossier } from "@/components/health/EnTeteDossier";
 import { Corps } from "@/components/health/Corps";
-import { ReleveDuJour } from "@/components/health/ReleveDuJour";
+import { JournalDuCorps } from "@/components/health/JournalDuCorps";
 import { Respiration } from "@/components/health/Respiration";
 import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
 import { HealthSettingsModal } from "@/components/health/HealthSettingsModal";
 import "@/styles/health.css";
 
 /**
- * SANTE.
+ * SANTE — LE DOSSIER.
  *
  * La page etait un tableau de bord : trois onglets, douze panneaux,
  * cinq cartes de metrique, deux graphes, des defis et des analyses
- * automatiques. On y arrivait sans savoir quoi regarder, et l on en
- * repartait sans avoir rien fait.
+ * automatiques. On y arrivait sans savoir quoi regarder.
  *
- * Elle ne repond plus qu a trois questions, dans cet ordre :
+ * Elle est devenue trois blocs — puis ces trois blocs portaient encore
+ * l en-tete partage par les onze autres pages : deux anneaux qui
+ * tournent, un point qui pulse, SANTE en quarante pixels au centre.
+ * Deux cent cinquante pixels pour repeter ce que la barre laterale
+ * surligne deja, dans une autre langue graphique que la page.
  *
- *   OU J EN SUIS        le corps, en trois chiffres — et l IMC arrondi
- *                       au dixieme, la ou il en affichait quinze.
- *   QU AI-JE A RELEVER  la veille, parce qu une journee close se
- *                       raconte quand une journee qui commence se
- *                       devine. Et les jours manques, qui attendent.
- *   QUE PUIS-JE FAIRE   respirer, tout de suite, sans ouvrir une
- *                       fenetre.
+ * Ce n est plus une page, c est UN DOSSIER qu on ouvre a son nom :
  *
- * CE QUI EST PARTI, ET OU.
+ *   LA BANDE      a qui il appartient, sa date, et — seule chose qui
+ *                 vaille d etre lue en haut — ce qui y manque
+ *   LA FICHE      poids, taille, IMC. Ce qui ne bouge pas d un jour a
+ *                 l autre n a rien a faire dans le flux : colonne de
+ *                 gauche, figee au defilement
+ *   LE JOURNAL    la quinzaine entiere, datee, relevee ou vide. La
+ *                 veille garde sa carte : c est le seul appel a
+ *                 l action de la page
+ *   LE PROTOCOLE  respirer, en pied, deplie des qu on commence
  *
- * Les graphes — semaine, courbe d energie, historique — rejoignent
- * Analytics, ou vivent deja tous les autres graphes de l app : ils y
- * sont a leur place, et ici ils encombraient. Les defis hebdomadaires
- * et les analyses automatiques sont retires.
+ * CE QUI EST PARTI, ET OU. Les graphes — semaine, courbe d energie,
+ * historique — rejoignent Analytics, ou vivent deja tous les autres
+ * graphes de l app. Les defis hebdomadaires et les analyses
+ * automatiques sont retires.
  */
 export default function Health() {
   const { t } = useTranslation();
@@ -57,37 +62,25 @@ export default function Health() {
   if (isLoading) return <DSPageLoader variant="verbose" message={t("health.loading")} />;
 
   const datesRelevees = historique.map((h) => h.entry_date);
+  const enAttente = joursARelever(datesRelevees).length;
 
   return (
     <DSPageShell width="lg" background={<DSBackground variant="cyber" />}>
-      <DSPageHeader
-        variant="hud"
-        systemLabel={`HLT.SYS // ${cleDuJour(laVeille()).replace(/-/g, ".")}`}
-        title="SAN"
-        titleAccent="TÉ"
-        actions={
-          <button
-            onClick={() => setReglagesOuverts(true)}
-            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-border/60 transition-colors"
-            title={t("common.settings")}
-            aria-label={t("common.settings")}
-          >
-            <SettingsIcon className="h-4 w-4" />
-          </button>
-        }
-      />
-
       <div className="hlt">
-        <Corps
-          tailleCm={settings?.height_cm}
-          poidsKg={settings?.weight_kg}
-          onRegler={() => setReglagesOuverts(true)}
-        />
+        <EnTeteDossier enAttente={enAttente} onReglages={() => setReglagesOuverts(true)} />
 
-        <ReleveDuJour
-          datesRelevees={datesRelevees}
-          onOuvrir={(d) => setJourneeOuverte(d)}
-        />
+        <div className="hlt-dossier">
+          <Corps
+            tailleCm={settings?.height_cm}
+            poidsKg={settings?.weight_kg}
+            onRegler={() => setReglagesOuverts(true)}
+          />
+
+          <JournalDuCorps
+            datesRelevees={datesRelevees}
+            onOuvrir={(d) => setJourneeOuverte(d)}
+          />
+        </div>
 
         <Respiration />
 

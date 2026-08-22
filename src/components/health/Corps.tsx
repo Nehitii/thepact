@@ -8,8 +8,14 @@ interface Props {
   onRegler: () => void;
 }
 
-/* Les quatre tranches de l OMS, dans l ordre de l echelle. */
-const TRANCHES: TrancheIMC[] = ["maigreur", "normal", "surpoids", "obesite"];
+/* Les quatre tranches de l OMS, du bas de l echelle vers le haut, avec
+   la part qu elles occupent entre 15 et 35. */
+const TRANCHES: { id: TrancheIMC; part: number }[] = [
+  { id: "maigreur", part: 17.5 },
+  { id: "normal", part: 32.5 },
+  { id: "surpoids", part: 25 },
+  { id: "obesite", part: 25 },
+];
 
 const TON: Record<TrancheIMC, string> = {
   maigreur: "var(--hlt-cyan)",
@@ -19,16 +25,17 @@ const TON: Record<TrancheIMC, string> = {
 };
 
 /**
- * OU J EN SUIS, EN TROIS CHIFFRES.
+ * LA COLONNE FIGEE DU DOSSIER.
  *
- * L IMC s affichait brut : 23.148148148148149. Quinze decimales pour
- * une mesure qui n en supporte pas une seconde — et le reste de la
- * page se lisait a l avenant.
+ * Poids et taille ne changent pas d un jour a l autre : ils n ont rien
+ * a faire dans le flux du journal. Ils tiennent la colonne de gauche,
+ * collante au defilement — la partie du dossier qu on ne remplit pas,
+ * qu on consulte.
  *
- * Trois nombres suffisent : ce qu on pese, ce qu on mesure, et ce que
- * les deux donnent. L echelle sous l IMC dit la tranche sans qu on ait
- * a connaitre les bornes par coeur — et sans jamais parler de
- * diagnostic, parce que ce n en est pas un.
+ * L IMC s affichait brut : 23.148148148148149. Il est arrondi au
+ * dixieme et formate selon la langue, donc 21,7 en francais. La jauge
+ * est verticale parce que c est une jauge, pas une frise : on y lit une
+ * hauteur, pas une progression.
  */
 export function Corps({ tailleCm, poidsKg, onRegler }: Props) {
   const { t, i18n } = useTranslation();
@@ -38,55 +45,62 @@ export function Corps({ tailleCm, poidsKg, onRegler }: Props) {
   const place = placeSurEchelle(valeur);
 
   return (
-    <section>
+    <aside className="hlt-fiche">
       <h2 className="hlt-titre">{t("health.body.title", "Le corps")}</h2>
 
-      <div className="hlt-corps">
-        <div className="hlt-mesure" data-vide={poidsKg ? "0" : "1"}>
+      <div className="hlt-fiche-plaque">
+        <div className="hlt-ligne" data-vide={poidsKg ? "0" : "1"}>
           <u>{t("health.body.weight", "Poids")}</u>
           <b>{poidsKg ?? "—"}<i>kg</i></b>
         </div>
 
-        <div className="hlt-mesure" data-vide={tailleCm ? "0" : "1"}>
+        <div className="hlt-ligne" data-vide={tailleCm ? "0" : "1"}>
           <u>{t("health.body.height", "Taille")}</u>
           <b>{tailleCm ?? "—"}<i>cm</i></b>
         </div>
 
-        <div className="hlt-mesure" data-vide={valeur === null ? "1" : "0"} style={{ gridColumn: "span 2" }}>
-          <u>{t("health.body.bmi", "Indice de masse corporelle")}</u>
-          <b style={tranche ? { color: TON[tranche] } : undefined}>
-            {/* 21.7 en francais s ecrit 21,7 : toLocaleString le sait,
-                le rendu direct d un nombre non. */}
-            {valeur === null ? "—" : valeur.toLocaleString(i18n.language, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-          </b>
-          <span>
-            {tranche
-              ? t(`health.body.range.${tranche}`, tranche)
-              : t("health.body.needsBoth", "Renseigne ta taille et ton poids.")}
-          </span>
+        <div className="hlt-imc" data-vide={valeur === null ? "1" : "0"}>
+          <u>{t("health.bmi.title", "IMC")}</u>
 
-          {valeur !== null && (
-            <div className="hlt-echelle" aria-hidden="true">
-              <div className="hlt-echelle-barre">
-                {TRANCHES.map((tr) => (
-                  <i key={tr} data-t={tr === tranche ? "ici" : undefined} style={{ ["--ton" as string]: TON[tr] }} />
-                ))}
-                {/* Le curseur dit la position exacte, la ou les quatre
-                    pavés ne disent que la tranche. */}
-                <span className="hlt-echelle-curseur" style={{ left: `${place}%` }} />
-              </div>
-              <div className="hlt-echelle-mots">
-                <span>15</span><span>18,5</span><span>25</span><span>30</span><span>35</span>
-              </div>
+          <div className="hlt-imc-corps">
+            <div className="hlt-imc-mots">
+              <b style={tranche ? { color: TON[tranche] } : undefined}>
+                {valeur === null
+                  ? "—"
+                  : valeur.toLocaleString(i18n.language, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+              </b>
+              <span>
+                {tranche
+                  ? t(`health.body.range.${tranche}`, tranche)
+                  : t("health.body.needsBoth", "Renseigne ta taille et ton poids.")}
+              </span>
             </div>
-          )}
 
-          <button type="button" className="hlt-regler" onClick={onRegler}>
-            <SlidersHorizontal aria-hidden="true" style={{ width: 12, height: 12, display: "inline", marginRight: 7, verticalAlign: -1 }} />
-            {t("health.body.adjust", "Régler")}
-          </button>
+            {valeur !== null && (
+              <div className="hlt-jauge" aria-hidden="true">
+                <div className="hlt-jauge-barre">
+                  {/* Empilees du bas vers le haut : colonne inversee. */}
+                  {TRANCHES.map((tr) => (
+                    <i
+                      key={tr.id}
+                      style={{ flex: tr.part, background: tr.id === tranche ? TON[tr.id] : undefined }}
+                    />
+                  ))}
+                  <span className="hlt-jauge-curseur" style={{ bottom: `${place}%` }} />
+                </div>
+                <div className="hlt-jauge-mots">
+                  <span>35</span><span>30</span><span>25</span><span>18,5</span><span>15</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
+        <button type="button" className="hlt-regler" onClick={onRegler}>
+          <SlidersHorizontal aria-hidden="true" />
+          {t("health.body.adjust", "Régler")}
+        </button>
       </div>
-    </section>
+    </aside>
   );
 }
