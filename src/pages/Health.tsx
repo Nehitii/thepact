@@ -62,6 +62,8 @@ export default function Health() {
   if (isLoading) return <DSPageLoader variant="verbose" message={t("health.loading")} />;
 
   const datesRelevees = historique.map((h) => h.entry_date);
+  /* L historique est trie du plus recent au plus ancien. */
+  const dernierReleve = historique[0] ?? null;
   const enAttente = joursARelever(datesRelevees).length;
 
   return (
@@ -82,7 +84,12 @@ export default function Health() {
           />
         </div>
 
-        <Respiration />
+        {/* Le dernier releve nourrit la suggestion de rythme : tendu
+            hier, on propose d apaiser ; le soir, de dormir. */}
+        <Respiration
+          stress={dernierReleve?.stress_level}
+          chargeMentale={dernierReleve?.mental_load}
+        />
 
         <p className="hlt-note">{t("health.disclaimer")}</p>
       </div>

@@ -1478,7 +1478,6 @@
       "ready": "Prêt",
       "start": "Commencer",
       "pause": "Pause",
-      "reset": "Reprendre",
       "cycles": "Cycles",
       "choose": "Choisir un rythme",
       "phase": {
@@ -1505,7 +1504,24 @@
           "quoi": "Quatre, sept, huit. Long et lent, pour laisser venir le sommeil."
         }
       },
-      "protocol": "Protocole"
+      "protocol": "Protocole",
+      "streak_one": "série {{count}} j",
+      "streak_other": "série {{count}} j",
+      "target": "Cycles visés",
+      "resume": "Reprendre",
+      "stop": "Terminer",
+      "done": "Séance close",
+      "breathed": "Respiré",
+      "hoursMinutes": "{{heures}} h {{minutes}}",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "soundOn": "Activer le repère sonore",
+      "soundOff": "Couper le repère sonore",
+      "why": {
+        "soir": "Il est tard — ce rythme aide à venir au sommeil.",
+        "tension": "Ton dernier relevé indique une tension élevée.",
+        "defaut": "Le rythme d’équilibre, quand rien de particulier ne se règle."
+      }
     },
     "file": {
       "ref": "Dossier bio",

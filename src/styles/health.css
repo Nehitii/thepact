@@ -264,11 +264,11 @@
 /* ── LE PROTOCOLE : RESPIRER, EN PIED ──────────────────────── */
 .hlt-protocole { padding: 26px 0 0; border-top: 1px solid var(--hlt-trait-fort); }
 
-/* Une bande, pas une grille. Les quatre pieces n ont pas des largeurs
-   comparables : trois pistes auto dimensionnees sur leur contenu
+/* Une bande, pas une grille. Les pieces n ont pas des largeurs
+   comparables : des pistes auto dimensionnees sur leur contenu
    affamaient la colonne de texte, reduite a trente pixels — la
    description tombait un mot par ligne. En flex, elle garde un
-   plancher de 240px et les rythmes passent a la ligne au besoin. */
+   plancher de 240px et le reste passe a la ligne au besoin. */
 .hlt-bande {
   display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px;
   padding: 16px 20px;
@@ -276,8 +276,26 @@
     radial-gradient(58% 130% at 6% 50%, color-mix(in srgb, var(--hlt-cyan) 8%, transparent), transparent 70%),
     var(--hlt-plaque);
   border: 1px solid var(--hlt-trait);
-  transition: padding 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    padding 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 1600ms ease-in-out,
+    border-color 1600ms ease-in-out,
+    box-shadow 1600ms ease-in-out;
 }
+
+/* LE DOSSIER RESPIRE AVEC TOI. Le fond et le lisere de la bande suivent
+   le temps en cours : ils montent a l inspiration et pendant la
+   retenue, se retirent a l expiration. Amplitude volontairement faible
+   — cela doit se sentir, pas se regarder. */
+.hlt-protocole[data-temps="inspire"] .hlt-bande,
+.hlt-protocole[data-temps="retiens"] .hlt-bande {
+  background:
+    radial-gradient(72% 150% at 50% 50%, color-mix(in srgb, var(--hlt-cyan) 16%, transparent), transparent 72%),
+    var(--hlt-plaque);
+  border-color: color-mix(in srgb, var(--hlt-cyan) 36%, var(--hlt-trait));
+  box-shadow: 0 0 70px -34px var(--hlt-cyan);
+}
+
 /* LA BANDE SE DEPLIE. Au repos c est une ligne du dossier ; des qu on
    commence, le cercle prend la place qu il lui faut. */
 .hlt-protocole[data-actif="1"] .hlt-bande {
@@ -285,49 +303,114 @@
   padding: 34px 20px 30px; gap: 18px;
 }
 .hlt-protocole[data-actif="1"] .hlt-bande-mots,
-.hlt-protocole[data-actif="1"] .hlt-gestes { flex: 0 0 auto; margin-left: 0; }
+.hlt-protocole[data-actif="1"] .hlt-reglages,
+.hlt-protocole[data-actif="1"] .hlt-gestes {
+  flex: 0 0 auto; margin-left: 0; align-items: center;
+}
 
+/* ── L IRIS ────────────────────────────────────────────────── */
+/* Le cercle lumineux est le cliche absolu de l application de
+   meditation. Six segments chanfreines qui s ouvrent et se referment :
+   un diaphragme d objectif, une piece de cyberware. C est la seule
+   forme qui parle la langue du dossier — et elle reste lisible a
+   soixante-six pixels dans la bande repliee.
+
+   UNE SEULE VARIABLE PILOTE LES SIX. --ouv vaut 1 a l inspiration et
+   pendant la retenue, 0 a l expiration et pendant la pause. Le rayon et
+   la taille des segments suivent l etat de la bande, ce qui evite de
+   redecrire la geometrie deux fois. */
 .hlt-rond {
   position: relative; width: 66px; height: 66px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1), height 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  --rayon: 21px; --seg: 16px;
+  transition:
+    width 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.hlt-protocole[data-actif="1"] .hlt-rond { width: 208px; height: 208px; }
+.hlt-protocole[data-actif="1"] .hlt-rond {
+  width: 208px; height: 208px;
+  --rayon: 42px; --seg: 46px;
+}
 
-.hlt-rond-halo {
-  position: absolute; inset: 0; border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 46%, transparent);
-  box-shadow: 0 0 40px -14px var(--hlt-cyan);
+.hlt-iris { position: absolute; inset: 0; }
+.hlt-iris i {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--seg); height: var(--seg);
+  background: linear-gradient(140deg,
+    color-mix(in srgb, var(--hlt-cyan) 52%, transparent),
+    color-mix(in srgb, var(--hlt-cyan) 10%, transparent));
+  border: 1px solid color-mix(in srgb, var(--hlt-cyan) 68%, transparent);
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  /* Le double rotate remet chaque segment d aplomb apres l avoir place
+     sur son rayon : sans lui, ils tourneraient sur eux-memes. */
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--a))
+    translateY(calc(-1 * var(--rayon) * (0.45 + 0.55 * var(--ouv, 0.62))))
+    rotate(calc(var(--a) * -1))
+    scale(calc(0.7 + 0.3 * var(--ouv, 0.62)));
+  transition:
+    transform var(--duree, 0.5s) var(--courbe, ease-in-out),
+    width 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.hlt-rond-noyau {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--hlt-cyan) 22%, transparent), transparent 68%);
+
+/* ── LES DEUX ANNEAUX ──────────────────────────────────────── */
+.hlt-rond svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: rotate(-90deg); overflow: visible;
 }
+.hlt-arc-fond { fill: none; stroke: var(--hlt-trait); stroke-width: 1.4; }
+
+/* OU L ON EN EST DE LA CIBLE. Il se remplit d un cycle a l autre : la
+   seance a une fin, et on la voit venir. */
+.hlt-arc-seance {
+  fill: none; stroke: color-mix(in srgb, var(--hlt-cyan) 55%, transparent);
+  stroke-width: 2.4; stroke-linecap: round;
+  transition: stroke-dashoffset 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* COMBIEN IL RESTE DE CE TEMPS-CI. Sans lui, les sept secondes de
+   retention d un 4-7-8 paraissent sans fin. */
+.hlt-arc-phase {
+  fill: none; stroke: var(--hlt-cyan); stroke-width: 1.1; stroke-linecap: round;
+  animation: hlt-vider linear forwards;
+}
+@keyframes hlt-vider {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: var(--circ); }
+}
+
+/* ── CE QUI S ECRIT AU CENTRE ──────────────────────────────── */
 .hlt-rond-texte {
   position: relative; display: none; flex-direction: column;
-  align-items: center; gap: 5px;
+  align-items: center; gap: 3px; z-index: 3;
 }
 .hlt-protocole[data-actif="1"] .hlt-rond-texte { display: flex; }
 .hlt-rond-texte b {
   font-family: var(--hlt-mono); font-size: max(10px, 0.625rem); font-weight: 500;
   letter-spacing: 0.28em; text-transform: uppercase; color: var(--hlt-cyan);
 }
-.hlt-rond-texte span {
-  font-family: var(--hlt-chiffre); font-size: 30px; font-weight: 700;
+.hlt-rond-texte > span {
+  font-family: var(--hlt-chiffre); font-size: 34px; font-weight: 700;
   line-height: 1; font-variant-numeric: tabular-nums; color: var(--hlt-encre);
 }
+.hlt-rond-texte u {
+  text-decoration: none; font-family: var(--hlt-mono);
+  font-size: max(9px, 0.563rem); letter-spacing: 0.16em; color: var(--hlt-encre-2);
+  font-variant-numeric: tabular-nums;
+}
+.hlt-rond-texte u s { text-decoration: none; color: var(--hlt-encre-3); }
 
-.hlt-bande-mots { flex: 1 1 240px; min-width: 0; }
-.hlt-bande-mots h3 {
-  margin: 0; font-family: var(--hlt-titre); font-weight: 600;
-  font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase;
+/* La recolte : une seance qui atteint sa cible se clot d elle-meme. */
+.hlt-fini {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--hlt-vert) !important; letter-spacing: 0.2em !important;
 }
-.hlt-bande-mots p {
-  margin: 3px 0 0; font-size: max(13px, 0.813rem); color: var(--hlt-encre-2);
-  max-width: 46ch; line-height: 1.55;
-}
-/* Deplie, la description quitte l ecran : on respire, on ne lit pas. */
-.hlt-protocole[data-actif="1"] .hlt-bande-mots p { display: none; }
+.hlt-fini svg { width: 15px; height: 15px; }
+
+/* ── LES REGLAGES : LE RYTHME, PUIS LA CIBLE ───────────────── */
+.hlt-reglages { display: flex; flex-direction: column; gap: 10px; }
 
 .hlt-schemas { display: flex; flex-wrap: wrap; gap: 6px; }
 .hlt-schema {
@@ -343,8 +426,45 @@
 .hlt-schema[aria-pressed="true"] { color: var(--hlt-cyan); border-color: var(--hlt-cyan); }
 .hlt-schema[aria-pressed="true"] i { color: color-mix(in srgb, var(--hlt-cyan) 70%, transparent); }
 
-/* Pousse les gestes contre le bord droit de la bande. */
+/* LE RYTHME SUGGERE. La base sait deja le stress de la veille, la
+   charge mentale et l heure qu il est. Le pointille propose ; il ne
+   selectionne jamais a la place de l utilisateur. */
+.hlt-schema[data-suggere="1"] {
+  border-style: dashed; border-color: var(--hlt-jaune); color: var(--hlt-jaune);
+}
+.hlt-schema[data-suggere="1"] i { color: color-mix(in srgb, var(--hlt-jaune) 70%, transparent); }
+
+.hlt-cibles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.hlt-cibles > u {
+  text-decoration: none; font-family: var(--hlt-mono);
+  font-size: max(9px, 0.563rem); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--hlt-encre-3); margin-right: 3px;
+}
+.hlt-cible {
+  min-width: 34px; padding: 6px 9px; cursor: pointer; background: transparent;
+  border: 1px solid var(--hlt-trait-fort);
+  font-family: var(--hlt-chiffre); font-size: max(11px, 0.688rem); font-weight: 700;
+  color: var(--hlt-encre-2); font-variant-numeric: tabular-nums;
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-cible:hover:not(:disabled) { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
+.hlt-cible[aria-pressed="true"] { color: var(--hlt-cyan); border-color: var(--hlt-cyan); }
+.hlt-cible:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .hlt-gestes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-left: auto; }
+
+/* Le repere sonore, coupe par defaut : il sert a fermer les yeux, ce
+   qui est quand meme l objectif. */
+.hlt-son {
+  width: 38px; height: 38px; cursor: pointer; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--hlt-trait-fort);
+  color: var(--hlt-encre-3);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-son svg { width: 15px; height: 15px; }
+.hlt-son:hover { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
+.hlt-son[aria-pressed="true"] { color: var(--hlt-cyan); border-color: var(--hlt-cyan); }
 
 /* ── LE BOUTON ─────────────────────────────────────────────── */
 .hlt-bouton {
@@ -413,6 +533,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hlt-rond-noyau { transition: none !important; }
-  .hlt-rond, .hlt-bande { transition: none; }
+  /* L iris garde sa position ouverte a mi-course : la forme reste
+     lisible, elle cesse simplement de bouger. */
+  .hlt-iris i, .hlt-rond, .hlt-bande, .hlt-arc-seance { transition: none !important; }
+  .hlt-arc-phase { animation: none; stroke-dashoffset: 0; }
 }

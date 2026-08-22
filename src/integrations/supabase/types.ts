@@ -3614,6 +3614,45 @@ export type Database = {
         }
         Relationships: []
       }
+      seances_de_souffle: {
+        Row: {
+          achevee: boolean
+          commencee_a: string
+          created_at: string
+          cycles_tenus: number
+          cycles_vises: number
+          duree_secondes: number
+          id: string
+          rythme: string
+          terminee_a: string
+          user_id: string
+        }
+        Insert: {
+          achevee?: boolean
+          commencee_a?: string
+          created_at?: string
+          cycles_tenus?: number
+          cycles_vises?: number
+          duree_secondes?: number
+          id?: string
+          rythme: string
+          terminee_a?: string
+          user_id: string
+        }
+        Update: {
+          achevee?: boolean
+          commencee_a?: string
+          created_at?: string
+          cycles_tenus?: number
+          cycles_vises?: number
+          duree_secondes?: number
+          id?: string
+          rythme?: string
+          terminee_a?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       season_rewards: {
         Row: {
           cosmetic_id: string

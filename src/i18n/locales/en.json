@@ -1478,7 +1478,6 @@
       "ready": "Ready",
       "start": "Start",
       "pause": "Pause",
-      "reset": "Restart",
       "cycles": "Cycles",
       "choose": "Choose a rhythm",
       "phase": {
@@ -1505,7 +1504,24 @@
           "quoi": "Four, seven, eight. Long and slow, to let sleep come."
         }
       },
-      "protocol": "Protocol"
+      "protocol": "Protocol",
+      "streak_one": "streak {{count}} d",
+      "streak_other": "streak {{count}} d",
+      "target": "Target cycles",
+      "resume": "Resume",
+      "stop": "Finish",
+      "done": "Session closed",
+      "breathed": "Breathed",
+      "hoursMinutes": "{{heures}}h {{minutes}}",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "soundOn": "Turn on the sound cue",
+      "soundOff": "Turn off the sound cue",
+      "why": {
+        "soir": "It is late — this rhythm helps sleep come.",
+        "tension": "Your last log shows high tension.",
+        "defaut": "The balancing rhythm, when nothing in particular needs settling."
+      }
     },
     "file": {
       "ref": "Bio file",
