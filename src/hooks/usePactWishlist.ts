@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import i18next from "i18next";
 export type PactWishlistItemType = "required" | "optional";
 export type WishlistPriority = "low" | "med" | "high" | "critical";
 
@@ -143,20 +144,74 @@ export function useUpdatePactWishlistItem() {
   });
 }
 
+/**
+ * SUPPRIMER UNE PIECE DU PACTE LA SUPPRIME AUSSI DE L OBJECTIF.
+ *
+ * Elle n effacait que la ligne de wishlist. Or la synchronisation
+ * recree tout article dont la piece d objectif existe encore :
+ * supprimer un article synchronise etait donc FUTILE — il revenait au
+ * passage suivant. L application le savait d ailleurs, et s en
+ * excusait dans sa fenetre de confirmation : « it may be re-created on
+ * next sync ».
+ *
+ * On supprime desormais la piece a la source, puis l article. Dans cet
+ * ordre : si la seconde suppression echouait, la synchronisation
+ * retirerait d elle-meme l article devenu orphelin.
+ *
+ * ET LE COUT DE L OBJECTIF SUIT. goals.estimated_cost est la somme de
+ * ses pieces — le laisser tel quel apres en avoir retire une ferait
+ * mentir le financement du pacte dans l autre sens.
+ */
 export function useDeletePactWishlistItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { userId: string; id: string }) => {
+    mutationFn: async (input: {
+      userId: string;
+      id: string;
+      /** Renseigne pour un article venu d un objectif. */
+      sourceGoalCostId?: string | null;
+      goalId?: string | null;
+    }) => {
+      if (input.sourceGoalCostId) {
+        const { error: erreurPiece } = await supabase
+          .from("goal_cost_items")
+          .delete()
+          .eq("id", input.sourceGoalCostId);
+        if (erreurPiece) throw erreurPiece;
+
+        if (input.goalId) {
+          const { data: restantes, error: erreurLecture } = await supabase
+            .from("goal_cost_items")
+            .select("price")
+            .eq("goal_id", input.goalId);
+          if (erreurLecture) throw erreurLecture;
+
+          const total = (restantes ?? []).reduce((s, p) => s + Number(p.price || 0), 0);
+          const { error: erreurObjectif } = await supabase
+            .from("goals")
+            .update({ estimated_cost: total })
+            .eq("id", input.goalId);
+          if (erreurObjectif) throw erreurObjectif;
+        }
+      }
+
       const { error } = await supabase.from("wishlist_items").delete().eq("id", input.id);
       if (error) throw error;
       return true;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
-      toast.success("Removed", { description: "Wishlist item deleted." });
+      /* L objectif, ses pieces et le compte du pacte ont bouge. */
+      if (vars.sourceGoalCostId) {
+        qc.invalidateQueries({ queryKey: ["cost-items"] });
+        qc.invalidateQueries({ queryKey: ["goals"] });
+        qc.invalidateQueries({ queryKey: ["goal-detail"] });
+      }
+      toast.success(i18next.t("wishlist.delete.done", "Supprimé"));
     },
-    onError: (e) => {
-      toast.error("Delete failed", { description: e?.message ?? "Please try again." });
+    onError: (e: Error) => {
+      toast.error(i18next.t("wishlist.delete.failed", "Suppression impossible"), { description: e?.message });
     },
   });
 }
+

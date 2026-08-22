@@ -1726,6 +1726,19 @@
       "totalItems": "Total Items",
       "totalValue": "Total Value",
       "acquired": "Acquired"
+    },
+    "delete": {
+      "title": "Delete",
+      "titlePact": "Remove from the pact",
+      "question": "Delete",
+      "fromList": " from your list?",
+      "alsoGoal": "This piece comes from the goal",
+      "alsoGoalEnd": "It will be removed from it too.",
+      "costDrop": "That goal’s cost will drop by",
+      "confirm": "Delete",
+      "confirmPact": "Remove from both",
+      "done": "Deleted",
+      "failed": "Could not delete"
     }
   },
   "inbox": {

@@ -131,7 +131,13 @@ export default function Wishlist() {
 
   // Delete confirmation
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; isSynced: boolean } | null>(null);
+  /* La cible porte de quoi ecrire un avertissement VRAI : le nom de
+     l objectif touche et le montant qui va quitter son cout. */
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string; name: string;
+    sourceGoalCostId: string | null; goalId: string | null;
+    goalName: string | null; cost: number;
+  } | null>(null);
 
   // Bulk select
   const [bulkMode, setBulkMode] = useState(false);
@@ -347,13 +353,31 @@ export default function Wishlist() {
   const handleDeleteRequest = (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
-    setDeleteTarget({ id, name: item.name, isSynced: item.source_type === "goal_sync" });
+    /* L avertissement decrit la PROPAGATION, pas le rattachement. Un
+       article cree a la main peut porter un goal_id sans avoir de piece
+       dans le cout de l objectif : le supprimer n enleve alors rien a
+       cet objectif. On ne nomme donc l objectif que si une piece part
+       reellement avec l article — sinon la fenetre annoncerait une
+       consequence qui n arrive pas. */
+    const pieceLiee = item.source_goal_cost_id ?? null;
+    setDeleteTarget({
+      id, name: item.name,
+      sourceGoalCostId: pieceLiee,
+      goalId: item.goal_id ?? null,
+      goalName: pieceLiee ? item.goal?.name ?? null : null,
+      cost: Number(item.estimated_cost || 0),
+    });
     setDeleteConfirmOpen(true);
   };
 
   const handleDeleteConfirm = () => {
     if (!user || !deleteTarget) return;
-    deleteItem.mutate({ userId: user.id, id: deleteTarget.id });
+    deleteItem.mutate({
+      userId: user.id,
+      id: deleteTarget.id,
+      sourceGoalCostId: deleteTarget.sourceGoalCostId,
+      goalId: deleteTarget.goalId,
+    });
     setDeleteConfirmOpen(false);
     setDeleteTarget(null);
   };
@@ -450,7 +474,11 @@ export default function Wishlist() {
 
       <DeleteConfirmDialog
         open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}
-        itemName={deleteTarget?.name ?? ""} isSynced={deleteTarget?.isSynced} onConfirm={handleDeleteConfirm}
+        itemName={deleteTarget?.name ?? ""}
+        goalName={deleteTarget?.goalName ?? null}
+        cost={deleteTarget?.cost ?? 0}
+        currency={currency}
+        onConfirm={handleDeleteConfirm}
       />
 
       {/* Edit modal */}
