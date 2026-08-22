@@ -281,80 +281,184 @@
   letter-spacing: 0.01em; color: var(--jr-encre);
 }
 /* ══════════════════════════════════════════════════════════════
-   LA PIECE NON ECRITE
+   L EPHEMERIDE
 
-   La question du jour etait un bandeau encadre, seule boite d une page
-   qui n en contient aucune : les entrees se suivent, separees par un
-   filet, avec leur cote a gauche et leurs lignes numerotees. Un cadre
-   au milieu de ca ne se lit pas comme une invitation, il se lit comme
-   une notification tombee par erreur dans une archive.
+   Trois tentatives avant celle-ci. Un bandeau encadre — la seule boite
+   d une page qui n en contient aucune. Une piece du dossier — si bien
+   integree qu elle disparaissait. Une plaque de verre balayee — le
+   verre etait juste, le balayage non : une decoration qui boucle sans
+   rien dire.
 
-   Elle reprend donc `.jr-entree` telle quelle — meme filet, meme
-   colonne, meme rythme — et ne se distingue que par ce qui la rend
-   differente : elle n est pas encore ecrite.
+   LA DATE FAIT LE GRAPHISME.
+
+   Un chiffre de soixante pixels a gauche, et « question du jour »
+   cesse d etre une etiquette qu on ecrit : c est la date qui le dit,
+   et l on comprend sans un mot qu elle changera demain.
+
+   DEUX COULEURS, ET LE PARTAGE TIENT TOUT.
+
+   Le bloc est en ENCRE, pas dans le rouge du journal : le rouge sert
+   deja aux numeros de ligne quinze centimetres plus bas, et deux
+   rouges se disputent.
+
+   Le cyan ne sert qu a ce qui PARLE — le canal, la diode, l
+   invitation. C est la couleur dont l app se sert partout pour se
+   designer elle-meme, jamais celle du journal. L encre pour le temps,
+   le cyan pour la voix.
    ══════════════════════════════════════════════════════════════ */
-.jr-question .jr-cote b { color: var(--jr-encre-3); }
-/* La cote d une piece non ecrite est en creux : le pointille dit
-   « emplacement reserve » sans qu on ait a l ecrire. */
-.jr-question .jr-cote {
-  border-left: 1px dashed var(--jr-trait);
-  padding-left: 11px; margin-left: -12px;
+
+/* UNE SEULE PAIRE, ET C EST VOULU.
+   J avais donne au signal une valeur par theme, comme aux autres
+   jetons du journal. Erreur : ceux-la changent parce que le PAPIER
+   change, alors que cette plaque est sombre dans les deux cas. En
+   theme clair, le bloc de date se retrouvait donc en encre foncee sur
+   du verre noir — illisible — et le cyan tombait a un bleu-vert trop
+   sourd pour ressortir.
+   Ce qui se pose sur la plaque est donc regle POUR LA PLAQUE, une fois
+   pour toutes. */
+[data-jr] {
+  --jr-signal: #4FEAFF;
+  --jr-halo: 0 229 255;
+  --jr-verre: 5 18 24;
+  --jr-q-encre: #EDE7DA;
 }
 
-/* L etiquette s inverse : les entrees ont une bande pleine, celle-ci
-   est creuse. Meme place, meme taille, statut different. */
-.jr-question-bande {
-  background: transparent !important;
-  color: var(--jr-encre-2) !important;
-  border: 1px solid var(--jr-trait);
+.jr-q {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin: 2px 0 30px;
+  padding: 20px 22px 19px;
+
+  /* LA LEVITATION. Une plaque sombre quel que soit le theme, une ombre
+     qui tombe SUR le papier — c est elle qui dit que l objet n est pas
+     dans le plan du document — et un halo qui deborde. */
+  background: linear-gradient(180deg, rgb(var(--jr-verre) / 0.93), rgb(var(--jr-verre) / 0.99));
+  border: 1px solid rgb(var(--jr-halo) / 0.2);
+  box-shadow:
+    0 18px 38px -24px rgba(0, 0, 0, 0.8),
+    0 0 30px -14px rgb(var(--jr-halo) / 0.45);
+  animation: jr-q-souffle 7s ease-in-out infinite;
 }
 
-/* La question EST le titre. Elle garde la taille d un titre d entree —
-   c est le texte le plus important de la page a cet instant — mais en
-   italique : ce n est pas un titre qu on a ecrit, c est un titre qu on
-   nous pose. */
-.jr-question-texte {
-  /* PAS DE CAPITALES ICI, ET C EST LA SEULE EXCEPTION DE LA PAGE.
-     `.jr-titre` met les titres en capitales, et c est juste pour des
-     titres : « TEST », « DAN MORI », trois mots qui font une etiquette.
-     Une question fait soixante signes — en capitales elle hurle, et
-     surtout elle se lit mal, parce qu on perd la silhouette des mots
-     qui permet de balayer une phrase.
-     Le poids descend d un cran pour la meme raison : 700 sur une
-     phrase longue pese, la ou il tenait une etiquette. */
-  text-transform: none;
-  font-weight: 600;
-  font-style: italic;
-  max-width: 40ch;
-  margin-bottom: 14px;
+/* LE BLOC DU JOUR. En encre pleine : c est le contraste qui le detache,
+   pas un effet. Le coin coupe est le vocabulaire de l app, qui chanfreine
+   tout — la date appartient au systeme, pas au papier. */
+.jr-q-jour {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 12px 6px 13px;
+  background: var(--jr-q-encre); color: #0C0B09;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 13px), calc(100% - 13px) 100%, 0 100%);
+}
+.jr-q-jour b {
+  font-family: var(--jr-titre); font-weight: 700;
+  font-size: clamp(44px, 5.6vw, 60px); line-height: 0.86;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.jr-q-jour span {
+  margin-top: 7px; font-family: var(--jr-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: #6A6257;
 }
 
-/* LA LIGNE 01 QUI ATTEND.
-   Elle reprend exactement la numerotation des entrees — meme mono,
-   meme accent a demi-opacite — et toute sa surface ouvre l editeur.
-   Un lien pose dessous aurait dit la meme chose ; la ligne le MONTRE. */
-.jr-question-ligne {
-  display: flex; align-items: baseline; gap: 14px;
-  width: 100%; padding: 7px 0; cursor: pointer;
-  background: transparent; border: 0; text-align: left;
-  border-top: 1px dashed var(--jr-trait);
-  transition: opacity 140ms linear;
-}
-.jr-question-num {
-  font-family: var(--jr-mono); font-size: max(13px, 0.813rem);
-  color: var(--jr-rouge); opacity: 0.5; flex-shrink: 0;
-}
-.jr-question-appel {
+.jr-q-corps { min-width: 0; }
+
+/* ── L en-tete : la voix, la famille, la sortie ── */
+.jr-q-tete { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 11px; }
+.jr-q-canal {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--jr-mono); font-size: max(11px, 0.688rem);
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--jr-encre-3); transition: color 140ms linear;
+  font-family: var(--jr-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--jr-signal); text-shadow: 0 0 12px rgb(var(--jr-halo) / 0.55);
 }
-.jr-question-appel svg { width: 13px; height: 13px; }
-.jr-question-ligne:hover .jr-question-appel,
-.jr-question-ligne:focus-visible .jr-question-appel { color: var(--jr-encre); }
-.jr-question-ligne:hover .jr-question-num { opacity: 1; }
-.jr-question-ligne:focus-visible { outline: 1px solid var(--jr-encre-3); outline-offset: 3px; }
+.jr-q-diode {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--jr-signal); box-shadow: 0 0 8px 1px rgb(var(--jr-halo) / 0.9);
+  animation: jr-q-diode 2.4s ease-in-out infinite;
+}
+.jr-q-meta {
+  font-family: var(--jr-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: rgb(var(--jr-halo) / 0.42);
+}
+.jr-q-fermer {
+  margin-left: auto; display: grid; place-items: center; width: 26px; height: 26px;
+  cursor: pointer; background: transparent;
+  border: 1px solid rgb(var(--jr-halo) / 0.18); color: rgb(var(--jr-halo) / 0.5);
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.jr-q-fermer:hover { color: var(--jr-signal); border-color: rgb(var(--jr-halo) / 0.5); }
+.jr-q-fermer:focus-visible { outline: 1px solid var(--jr-signal); outline-offset: 2px; }
+
+/* ── La question ── */
+.jr-q-texte {
+  margin: 0 0 15px; max-width: 40ch;
+  font-family: var(--jr-titre); font-weight: 600;
+  font-size: clamp(20px, 2.5vw, 27px); line-height: 1.22;
+  color: #F2FBFF; text-shadow: 0 0 22px rgb(var(--jr-halo) / 0.3);
+  min-height: 1.22em;
+}
+
+.jr-q-curseur {
+  display: inline-block; width: 0.5em; height: 1em;
+  margin-left: 0.12em; vertical-align: -0.12em;
+  background: var(--jr-signal); box-shadow: 0 0 10px rgb(var(--jr-halo) / 0.8);
+  animation: jr-q-clignote 1.05s steps(1) infinite;
+}
+
+/* ── L invitation, en invite de terminal ── */
+.jr-q-repondre {
+  display: inline-flex; align-items: center; gap: 9px; padding: 9px 15px; cursor: pointer;
+  background: rgb(var(--jr-halo) / 0.07); border: 1px solid rgb(var(--jr-halo) / 0.3);
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--jr-signal);
+  transition: background 160ms linear, border-color 160ms linear, box-shadow 160ms linear;
+}
+.jr-q-repondre .jr-q-curseur { width: 0.42em; height: 0.95em; margin-left: 2px; }
+.jr-q-repondre:hover {
+  background: rgb(var(--jr-halo) / 0.14); border-color: var(--jr-signal);
+  box-shadow: 0 0 20px -6px rgb(var(--jr-halo) / 0.8);
+}
+.jr-q-repondre:focus-visible { outline: 1px solid var(--jr-signal); outline-offset: 3px; }
+
+/* Sur etroit, le bloc passe au-dessus : cent dix-huit pixels de date
+   plus une question, ca ne tient pas sur un telephone. */
+@media (max-width: 640px) {
+  .jr-q { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .jr-q-jour {
+    flex-direction: row; gap: 12px; align-items: baseline; justify-content: flex-start;
+    padding: 9px 14px;
+  }
+  .jr-q-jour b { font-size: 34px; }
+  .jr-q-jour span { margin-top: 0; }
+}
+
+@keyframes jr-q-souffle {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 18px 38px -24px rgba(0,0,0,0.8), 0 0 30px -14px rgb(var(--jr-halo) / 0.45);
+  }
+  50% {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 44px -24px rgba(0,0,0,0.85), 0 0 38px -12px rgb(var(--jr-halo) / 0.62);
+  }
+}
+@keyframes jr-q-diode {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px 1px rgb(var(--jr-halo) / 0.9); }
+  50% { opacity: 0.55; box-shadow: 0 0 4px 0 rgb(var(--jr-halo) / 0.5); }
+}
+@keyframes jr-q-clignote {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Le halo reste, le mouvement s arrete : c est l objet qui doit
+   attirer, pas son agitation. */
+@media (prefers-reduced-motion: reduce) {
+  .jr-q, .jr-q-diode, .jr-q-curseur { animation: none; }
+}
+.jr-q[data-sobre="1"],
+.jr-q[data-sobre="1"] .jr-q-diode,
+.jr-q[data-sobre="1"] .jr-q-curseur { animation: none; }
 
 .jr-html { color: var(--jr-encre-2); font-size: max(15.5px, 0.97rem); line-height: 1.72; max-width: 66ch; }
 .jr-html p { margin: 0 0 0.85em; }

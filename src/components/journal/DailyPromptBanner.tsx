@@ -1,44 +1,49 @@
-import { motion } from "framer-motion";
-import { ArrowRight, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyJournalPrompt } from "@/hooks/useJournalPrompt";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
 interface Props {
   onUse?: (prompt: string) => void;
 }
 
 /**
- * LA PIECE NON ECRITE.
+ * L EPHEMERIDE.
  *
- * La question du jour etait un bandeau : un cadre, un fond teinte, une
- * croix de fermeture, une etiquette « CBT ». Tout ce qu on pose SUR un
- * document quand on veut interrompre celui qui le lit.
+ * TROIS TENTATIVES AVANT CELLE-CI, ET CHACUNE A APPRIS QUELQUE CHOSE.
  *
- * Or la page est un dossier. Les entrees n ont pas de cadre : elles se
- * suivent, separees par un filet, avec leur cote a gauche — date,
- * heure, reference, nombre de mots — et leurs lignes numerotees. Le
- * bandeau etait la seule boite d une page qui n en contient aucune, et
- * il se lisait donc comme une notification tombee par erreur dans une
- * archive. Sa largeur ne servait a rien non plus : sept cents pixels
- * de cadre pour une question de quarante-cinq signes, et un
- * « >> UTILISER » orphelin tout en bas.
+ * Un bandeau encadre d abord : la seule boite d une page qui n en
+ * contient aucune, donc une notification tombee par erreur dans une
+ * archive.
  *
- * Elle devient la premiere piece du dossier : celle qui n est pas
- * encore ecrite. Meme colonne de cote, mais elle porte « AUJOURD HUI »
- * et « A ECRIRE » la ou les autres portent une heure et un nombre de
- * mots. La question prend la place du titre — c est le texte le plus
- * important de la page a cet instant, il n avait pas a en etre le plus
- * petit.
+ * Puis une piece du dossier — meme cote, meme filet, meme rythme. Elle
+ * ne derangeait plus rien, et c etait le probleme : elle disparaissait.
+ * On ne repond pas a une question qu on ne voit pas.
  *
- * L INVITATION EST DANS LA FORME, PLUS DANS UN BOUTON.
+ * Puis une plaque de verre balayee par un scanline. Le verre etait
+ * juste ; le balayage ne l etait pas — une decoration qui boucle sans
+ * rien dire, et qui finit par agacer.
  *
- * Sous la question, la ligne 01 attend, exactement comme dans une
- * entree ecrite. Elle dit ou le texte irait sans avoir a le demander,
- * et toute sa surface ouvre l editeur — on clique la ligne, pas un
- * lien perdu dessous.
+ * CE QUI RESTE : LA DATE FAIT LE GRAPHISME.
+ *
+ * Un chiffre de soixante pixels a gauche, et « question du jour » cesse
+ * d etre une etiquette qu on ecrit : c est la date qui le dit, et l on
+ * comprend sans un mot qu elle changera demain. Le bloc est en ENCRE et
+ * non dans le rouge du journal — le rouge sert deja aux numeros de
+ * ligne quinze centimetres plus bas, et deux rouges se disputent.
+ *
+ * Le cyan, lui, ne sert qu a ce qui PARLE : le canal, la diode, l
+ * invitation. C est la couleur dont l app se sert partout pour se
+ * designer elle-meme, jamais celle du journal. Ce partage tient tout :
+ * l encre pour le temps, le cyan pour la voix.
+ *
+ * LA QUESTION S ECRIT DEVANT TOI, et c est ce qui attire — une phrase
+ * qui apparait signe par signe se regarde jusqu au bout, la ou un cadre
+ * ne fait que se voir.
  */
 const FAMILLE: Record<string, string> = {
   reflection: "journal.prompt.famille.reflection",
@@ -48,9 +53,33 @@ const FAMILLE: Record<string, string> = {
   stoic: "journal.prompt.famille.stoic",
 };
 
+/** La frappe, signe par signe. Rendue d un coup si l on veut moins de mouvement. */
+function useFrappe(texte: string, actif: boolean) {
+  const [n, setN] = useState(actif ? 0 : texte.length);
+
+  useEffect(() => {
+    if (!actif) { setN(texte.length); return; }
+    setN(0);
+    /* Dix-huit millisecondes : assez lent pour qu on VOIE la phrase
+       s ecrire, assez rapide pour qu on n attende pas. Une question de
+       soixante signes prend une seconde. */
+    const t = setInterval(() => {
+      setN((v) => {
+        if (v >= texte.length) { clearInterval(t); return v; }
+        return v + 1;
+      });
+    }, 18);
+    return () => clearInterval(t);
+  }, [texte, actif]);
+
+  return { visible: texte.slice(0, n), fini: n >= texte.length };
+}
+
 export function DailyPromptBanner({ onUse }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const locale = useDateFnsLocale();
+  const sobre = useReducedMotion();
   const { data: prompt, isLoading } = useDailyJournalPrompt(user?.id);
   const dayKey = new Date().toDateString();
   const storageKey = `journal-prompt-dismissed-${dayKey}`;
@@ -67,6 +96,9 @@ export function DailyPromptBanner({ onUse }: Props) {
     } catch { /* stockage indisponible */ }
   }, [storageKey]);
 
+  const texte = prompt?.prompt ?? "";
+  const { visible, fini } = useFrappe(texte, !!prompt && !sobre);
+
   if (isLoading || !prompt || dismissed) return null;
 
   /* « CBT » et « RFL » n apprenaient rien : personne ne sait ce que
@@ -74,52 +106,59 @@ export function DailyPromptBanner({ onUse }: Props) {
   const cle = FAMILLE[prompt.category];
   const famille = cle ? t(cle, prompt.category) : prompt.category;
 
+  const jour = new Date();
+
   return (
-    <motion.article
-      className="jr-entree jr-question"
-      initial={{ opacity: 0, y: -6 }}
+    <motion.section
+      className="jr-q"
+      data-sobre={sobre ? "1" : "0"}
+      initial={sobre ? { opacity: 0 } : { opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
       aria-label={t("journal.prompt.region")}
     >
-      <div className="jr-entete">
-        <div className="jr-cote">
-          <b>{format(new Date(), "yyyy.MM.dd")}</b>
-          <span>{t("journal.prompt.aujourdhui", "Aujourd’hui")}</span>
-          <span>{famille}</span>
-          <span>{t("journal.prompt.aEcrire", "À écrire")}</span>
-        </div>
-
-        <div className="min-w-0">
-          <div className="flex items-start gap-3">
-            <span className="jr-bande jr-question-bande">
-              {t("journal.prompt.label")}
-            </span>
-            <button
-              type="button"
-              className="jr-menu"
-              onClick={() => {
-                localStorage.setItem(storageKey, "1");
-                setDismissed(true);
-              }}
-              aria-label={t("journal.prompt.dismiss")}
-            >
-              <X className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* La question prend la place du titre d une entree. */}
-          <h2 className="jr-titre jr-question-texte">{prompt.prompt}</h2>
-
-          <button type="button" className="jr-question-ligne" onClick={() => onUse?.(prompt.prompt)}>
-            <span className="jr-question-num" aria-hidden="true">01</span>
-            <span className="jr-question-appel">
-              {t("journal.prompt.use")}
-              <ArrowRight aria-hidden="true" />
-            </span>
-          </button>
-        </div>
+      {/* LE BLOC DU JOUR. Il porte la date en entier pour les lecteurs
+          d ecran ; a l oeil, seul le chiffre compte. */}
+      <div className="jr-q-jour">
+        <span className="sr-only">{format(jour, "d MMMM yyyy", { locale })}</span>
+        <b aria-hidden="true">{format(jour, "d")}</b>
+        <span aria-hidden="true">{format(jour, "MMM", { locale }).replace(".", "")}</span>
       </div>
-    </motion.article>
+
+      <div className="jr-q-corps">
+        <header className="jr-q-tete">
+          <span className="jr-q-canal">
+            <i className="jr-q-diode" aria-hidden="true" />
+            {t("journal.prompt.label")}
+          </span>
+          <span className="jr-q-meta">{famille}</span>
+          <button
+            type="button"
+            className="jr-q-fermer"
+            onClick={() => {
+              localStorage.setItem(storageKey, "1");
+              setDismissed(true);
+            }}
+            aria-label={t("journal.prompt.dismiss")}
+          >
+            <X className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        </header>
+
+        {/* Le texte complet reste lisible par les technologies
+            d assistance : elles n ont pas a attendre la frappe. */}
+        <p className="jr-q-texte">
+          <span aria-hidden="true">{visible}</span>
+          <span className="sr-only">{texte}</span>
+          {!fini && <i className="jr-q-curseur" aria-hidden="true" />}
+        </p>
+
+        <button type="button" className="jr-q-repondre" onClick={() => onUse?.(prompt.prompt)}>
+          <span aria-hidden="true">&gt;</span>
+          {t("journal.prompt.use")}
+          <i className="jr-q-curseur" aria-hidden="true" />
+        </button>
+      </div>
+    </motion.section>
   );
 }
