@@ -143,11 +143,3 @@ export function useUpdateHealthStreak(userId: string | undefined) {
 /**
  * Check if user has checked in today
  */
-export function useHasCheckedInToday(userId: string | undefined) {
-  const { data: streak } = useHealthStreak(userId);
-  
-  if (!streak?.last_checkin_date) return false;
-  
-  const today = format(new Date(), "yyyy-MM-dd");
-  return streak.last_checkin_date === today;
-}
