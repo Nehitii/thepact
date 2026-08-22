@@ -43,6 +43,5 @@ export { DSLoadingState } from "./DSLoadingState";
  * Prism sub-components for Analytics) coexist legitimately — they
  * encode module identity that DSPanel doesn't aim to absorb.
  * ───────────────────────────────────────────────────────────── */
-export { HUDFrame } from "@/components/health/HUDFrame";
 export { ModuleHeader } from "@/components/layout/ModuleHeader";
 export type { ModuleHeaderBadge } from "@/components/layout/ModuleHeader";

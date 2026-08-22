@@ -1,19 +1,15 @@
 import { CyberBackground } from "@/components/CyberBackground";
 import { AuraBackground } from "@/components/finance/aura/AuraBackground";
-import { HealthBioMesh } from "@/components/health/HealthBioMesh";
 
 export type DSBackgroundVariant =
   | "none"
   | "cyber"
   | "cyber-grid"
   | "aura"
-  | "bio"
   | "corners";
 
 interface DSBackgroundProps {
   variant: DSBackgroundVariant;
-  /** For variant="bio" : score 0-100 that influences colors/intensity */
-  bioScore?: number;
   /** Override accent token, default uses --ds-accent-primary */
   accent?: "primary" | "success" | "warning" | "critical" | "special";
 }
@@ -22,7 +18,7 @@ interface DSBackgroundProps {
  * Unified background layer. Phase 1 wraps legacy backgrounds — extraction to pure CSS
  * utilities comes in Phase 5.
  */
-export function DSBackground({ variant, bioScore = 75 }: DSBackgroundProps) {
+export function DSBackground({ variant }: DSBackgroundProps) {
   if (variant === "none") return <div className="absolute inset-0" />;
 
   if (variant === "cyber") {
@@ -41,14 +37,6 @@ export function DSBackground({ variant, bioScore = 75 }: DSBackgroundProps) {
 
   if (variant === "aura") {
     return <AuraBackground />;
-  }
-
-  if (variant === "bio") {
-    return (
-      <div className="absolute inset-0">
-        <HealthBioMesh score={bioScore} />
-      </div>
-    );
   }
 
   if (variant === "corners") {
