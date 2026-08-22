@@ -41,7 +41,14 @@ export function TodoAdvancedStats() {
   const dateLocale = useDateFnsLocale();
   const { stats, history, tasks } = useTodoList();
 
-  const dayNames = (t('common.daysShort', { returnObjects: true }) as unknown as string[]) || ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  /* t() avec returnObjects rend un tableau NEUF a chaque appel, et le
+     « || » en fabrique un autre en repli : la liste changeait donc
+     d identite a chaque rendu, et le memo qui en depend recalculait
+     systematiquement. */
+  const dayNames = useMemo(
+    () => (t('common.daysShort', { returnObjects: true }) as unknown as string[]) || ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    [t],
+  );
 
   // Monthly completion data (last 6 months)
   const monthlyData = useMemo(() => {
@@ -62,7 +69,10 @@ export function TodoAdvancedStats() {
         completed: count,
       };
     });
-  }, [history]);
+    /* dateLocale manquait : changer de langue laissait les mois dans
+       l ancienne jusqu a ce que l historique bouge, donc un graphe en
+       anglais au milieu d une page en francais. */
+  }, [history, dateLocale]);
 
   // Priority distribution
   const priorityData = useMemo(() => {
@@ -107,32 +117,36 @@ export function TodoAdvancedStats() {
     }));
   }, [history, dayNames]);
 
-  // Time of day analysis
+  /* LES CRENEAUX SE COMPTENT SUR DES CLES STABLES, PAS SUR LEURS
+     LIBELLES. L objet etait bati avec les chaines TRADUITES en guise de
+     cles — d ou une relecture par Object.keys() et quatre « as any »
+     pour l indexer, TypeScript ne pouvant rien savoir de cles calculees
+     a l execution. Et si deux traductions se retrouvaient identiques,
+     ou repliaient sur la meme valeur par defaut, deux creneaux
+     fusionnaient sans un bruit. On compte donc en interne et l on
+     traduit au dernier moment. */
   const timeOfDayData = useMemo(() => {
-    const periods = {
-      [t('todo.advanced.morning', { defaultValue: 'Morning (6-12)' })]: 0,
-      [t('todo.advanced.afternoon', { defaultValue: 'Afternoon (12-18)' })]: 0,
-      [t('todo.advanced.evening', { defaultValue: 'Evening (18-24)' })]: 0,
-      [t('todo.advanced.night', { defaultValue: 'Night (0-6)' })]: 0,
-    };
-    
+    const compte = { matin: 0, apresMidi: 0, soir: 0, nuit: 0 };
+
     history.forEach((h) => {
-      const hour = getHours(new Date(h.completed_at));
-      const keys = Object.keys(periods);
-      const morning = keys[0];
-      const afternoon = keys[1];
-      const evening = keys[2];
-      const night = keys[3];
-      if (hour >= 6 && hour < 12) (periods as any)[morning]++;
-      else if (hour >= 12 && hour < 18) (periods as any)[afternoon]++;
-      else if (hour >= 18) (periods as any)[evening]++;
-      else (periods as any)[night]++;
+      const heure = getHours(new Date(h.completed_at));
+      if (heure >= 6 && heure < 12) compte.matin++;
+      else if (heure >= 12 && heure < 18) compte.apresMidi++;
+      else if (heure >= 18) compte.soir++;
+      else compte.nuit++;
     });
-    
-    return Object.entries(periods).map(([period, count]) => ({
-      period,
-      tasks: count,
-      fullMark: Math.max(...Object.values(periods)) + 5,
+
+    const sommet = Math.max(...Object.values(compte)) + 5;
+
+    return [
+      { cle: 'morning', defaut: 'Morning (6-12)', n: compte.matin },
+      { cle: 'afternoon', defaut: 'Afternoon (12-18)', n: compte.apresMidi },
+      { cle: 'evening', defaut: 'Evening (18-24)', n: compte.soir },
+      { cle: 'night', defaut: 'Night (0-6)', n: compte.nuit },
+    ].map(({ cle, defaut, n }) => ({
+      period: t(`todo.advanced.${cle}`, { defaultValue: defaut }),
+      tasks: n,
+      fullMark: sommet,
     }));
   }, [history, t]);
 

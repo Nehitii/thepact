@@ -72,6 +72,10 @@ const PRIORITY_OPTIONS: { value: WishlistPriority; label: string; icon: any; col
   { value: "critical", label: "Critical", icon: Flame, colorClass: "text-fuchsia-400" },
 ];
 
+/* L ordre des priorites ne depend de rien : le declarer dans le
+   rendu le recreait a chaque passage et faisait recalculer le tri. */
+const priorityOrder: Record<string, number> = { critical: 0, high: 1, med: 2, low: 3 };
+
 export default function Wishlist() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -207,7 +211,6 @@ export default function Wishlist() {
     return goals.reduce((sum, g) => sum + Number(g.estimated_cost || 0), 0);
   }, [goals]);
 
-  const priorityOrder: Record<string, number> = { critical: 0, high: 1, med: 2, low: 3 };
 
   const derived = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();

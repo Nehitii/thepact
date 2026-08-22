@@ -8,21 +8,6 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, TablesUpdate } from "@/integrations/supabase/types";
 
-/* LES DEUX COLONNES SONT DES ENUMS POSTGRES, PAS DES CHAINES.
-   Le « as any » sur le lot de mises a jour laissait passer n importe
-   quoi : difficulty venait d un useState("") libre, et type du PREMIER
-   TAG de l objectif — du texte saisi par l utilisateur. Une valeur hors
-   liste etait refusee par la base a l execution, sans que rien ne
-   l annonce. Les valeurs viennent de pg_enum. */
-type TypeObjectif = NonNullable<TablesUpdate<"goals">["type"]>;
-
-const TYPES_OBJECTIF = [
-  "personal", "professional", "health", "creative",
-  "financial", "learning", "other", "relationship", "diy",
-] as const satisfies readonly TypeObjectif[];
-
-const estTypeObjectif = (t: string): t is TypeObjectif =>
-  (TYPES_OBJECTIF as readonly string[]).includes(t);
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/hooks/useGoalContracts";
@@ -69,6 +54,22 @@ import "@/styles/cyberpunk.css";
 import "@/styles/goal-dossier.css";
 
 import type { GoalDetailData as Goal } from "@/hooks/useGoalDetail";
+
+/* LES DEUX COLONNES SONT DES ENUMS POSTGRES, PAS DES CHAINES.
+   Le « as any » sur le lot de mises a jour laissait passer n importe
+   quoi : difficulty venait d un useState("") libre, et type du PREMIER
+   TAG de l objectif — du texte saisi par l utilisateur. Une valeur hors
+   liste etait refusee par la base a l execution, sans que rien ne
+   l annonce. Les valeurs viennent de pg_enum. */
+type TypeObjectif = NonNullable<TablesUpdate<"goals">["type"]>;
+
+const TYPES_OBJECTIF = [
+  "personal", "professional", "health", "creative",
+  "financial", "learning", "other", "relationship", "diy",
+] as const satisfies readonly TypeObjectif[];
+
+const estTypeObjectif = (t: string): t is TypeObjectif =>
+  (TYPES_OBJECTIF as readonly string[]).includes(t);
 
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
@@ -260,11 +261,21 @@ export default function GoalDetail() {
     }
   }, [costItems]);
 
-  // Edit overlay unsaved changes guard
+  /* LA PHOTOGRAPHIE DE DEPART, ET RIEN D AUTRE.
+   *
+   * Cet effet fige l etat du formulaire AU MOMENT OU L ON OUVRE, pour
+   * pouvoir comparer ensuite et savoir si quelque chose a bouge.
+   *
+   * Le linter reclame les treize champs edit* en dependances. Les
+   * ajouter reprendrait la photo a chaque frappe : l etat « initial »
+   * suivrait l etat courant, ils seraient toujours egaux, et le
+   * garde-fou des modifications non enregistrees ne se declencherait
+   * PLUS JAMAIS. L omission n est pas un oubli, c est le mecanisme. */
   useEffect(() => {
     if (editDialogOpen) {
       editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems, editMembresIds, editRegle, editVivant, editDuree });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editDialogOpen]);
 
   const hasUnsavedChanges = useCallback(() => {
@@ -398,7 +409,7 @@ export default function GoalDetail() {
         toast.success("Goal Updated", { description: "Changes saved successfully" });
       }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
-  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
+  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient]);
 
   // Handle super goal save
 

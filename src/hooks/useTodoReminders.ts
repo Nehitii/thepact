@@ -105,16 +105,21 @@ export function useTodoReminders() {
   });
 
   // Auto-process reminders on mount and when waiting tasks change
+  const { mutate: lancerRappels } = processReminders;
+
   useEffect(() => {
     if (userId && waitingTasks.length > 0) {
       // Small delay to avoid running on every render
       const timeoutId = setTimeout(() => {
-        processReminders.mutate();
+        lancerRappels();
       }, 2000);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [userId, waitingTasks.length]);
+    /* mutate est memorise par React Query : le citer ne relance pas
+       l effet a chaque rendu, contrairement a l objet de mutation
+       entier. La dependance est donc declarable, et declaree. */
+  }, [userId, waitingTasks.length, lancerRappels]);
 
   return {
     waitingTasksWithReminders: waitingTasks,
