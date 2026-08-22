@@ -1350,6 +1350,17 @@
         "moderate": "Moderate",
         "high": "High",
         "overwhelming": "Overwhelming"
+      },
+      "step": "Step",
+      "yesterday": "Yesterday",
+      "scan": {
+        "sleep": "Sleep telemetry",
+        "activity": "Activity scan",
+        "stress": "Stress analysis",
+        "hydration": "Hydration level",
+        "mood": "Mood telemetry",
+        "energy": "Energy curve",
+        "notes": "System notes"
       }
     },
     "mood": {
@@ -1536,7 +1547,14 @@
       "empty": "Empty",
       "filled": "Logged",
       "openDay": "Log {{jour}}",
-      "reviewDay": "Review {{jour}}"
+      "reviewDay": "Review {{jour}}",
+      "streak_one": "streak {{count}} d",
+      "streak_other": "streak {{count}} d"
+    },
+    "reminder": {
+      "title": "Yesterday’s log is waiting",
+      "body": "Yesterday isn’t logged. A finished day tells itself — two minutes is enough.",
+      "cta": "Log it now"
     }
   },
   "shop": {

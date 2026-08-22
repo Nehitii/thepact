@@ -83,6 +83,27 @@ export function pagesDuJournal(
   return pages;
 }
 
+/* ── LA SERIE DE JOURS ────────────────────────────────────────
+   Jours consecutifs avec au moins une seance. Le regroupement se fait
+   ici, dans le fuseau du navigateur, et non en SQL : une seance de
+   vingt-trois heures compte pour le jour ou on l a faite, pas pour le
+   lendemain UTC. */
+export function serieDeJours(jours: string[], aujourdHui = new Date()): number {
+  const faits = new Set(jours);
+  const cle = cleDuJour;
+
+  /* On part d aujourd hui s il compte deja, sinon d hier : une serie ne
+     se casse pas parce qu il n est que huit heures du matin. */
+  let curseur = faits.has(cle(aujourdHui)) ? aujourdHui : subDays(aujourdHui, 1);
+
+  let n = 0;
+  while (faits.has(cle(curseur))) {
+    n++;
+    curseur = subDays(curseur, 1);
+  }
+  return n;
+}
+
 /** Le releve de la veille est-il fait ? */
 export const veilleRelevee = (datesRelevees: string[], aujourdHui = new Date()): boolean =>
   datesRelevees.map((d) => d.slice(0, 10)).includes(cleDuJour(laVeille(aujourdHui)));

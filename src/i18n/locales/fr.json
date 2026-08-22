@@ -1350,6 +1350,17 @@
         "moderate": "Modéré",
         "high": "Élevé",
         "overwhelming": "Intense"
+      },
+      "step": "Étape",
+      "yesterday": "Hier",
+      "scan": {
+        "sleep": "Télémétrie du sommeil",
+        "activity": "Balayage d’activité",
+        "stress": "Analyse du stress",
+        "hydration": "Niveau d’hydratation",
+        "mood": "Télémétrie de l’humeur",
+        "energy": "Courbe d’énergie",
+        "notes": "Notes système"
       }
     },
     "mood": {
@@ -1536,7 +1547,14 @@
       "empty": "Vide",
       "filled": "Relevé",
       "openDay": "Relever le {{jour}}",
-      "reviewDay": "Revoir le {{jour}}"
+      "reviewDay": "Revoir le {{jour}}",
+      "streak_one": "série {{count}} j",
+      "streak_other": "série {{count}} j"
+    },
+    "reminder": {
+      "title": "Le relevé d’hier attend",
+      "body": "Hier n’est pas relevé. Une journée close se raconte — deux minutes suffisent.",
+      "cta": "Relever maintenant"
     }
   },
   "shop": {

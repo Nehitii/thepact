@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useTodayHealth, useUpsertHealthData, useHealthSettings, useHealthByDate } from "@/hooks/useHealth";
 import { format, subDays, parseISO } from "date-fns";
-import { useUpdateHealthStreak } from "@/hooks/useHealthStreak";
 import { HealthMoodSelector } from "./HealthMoodSelector";
 import { useTranslation } from "react-i18next";
 
@@ -37,82 +36,79 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
   const { t } = useTranslation();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
-  const [booting, setBooting] = useState(true);
-  const [bootProgress, setBootProgress] = useState(0);
   
   const { data: settings } = useHealthSettings(user?.id);
   const targetDate = date ?? format(subDays(new Date(), 1), "yyyy-MM-dd");
   const estLaVeille = targetDate === format(subDays(new Date(), 1), "yyyy-MM-dd");
-  const targetDateLabel = estLaVeille ? "Hier" : format(parseISO(targetDate), "dd.MM");
+  const targetDateLabel = estLaVeille ? t("health.checkin.yesterday", "Hier") : format(parseISO(targetDate), "dd.MM");
   
   const { data: todayData } = useHealthByDate(user?.id, targetDate);
   const upsertHealth = useUpsertHealthData(user?.id);
-  const updateStreak = useUpdateHealthStreak(user?.id);
   
-  const [sleepHours, setSleepHours] = useState<number>(7);
-  const [sleepQuality, setSleepQuality] = useState<number>(3);
-  const [wakeEnergy, setWakeEnergy] = useState<number>(3);
-  const [activityLevel, setActivityLevel] = useState<number>(3);
-  const [movementMinutes, setMovementMinutes] = useState<number>(30);
-  const [stressLevel, setStressLevel] = useState<number>(3);
-  const [mentalLoad, setMentalLoad] = useState<number>(3);
-  const [hydrationGlasses, setHydrationGlasses] = useState<number>(4);
-  const [mealBalance, setMealBalance] = useState<number>(3);
-  const [moodLevel, setMoodLevel] = useState<number>(3);
+  /* AUCUNE VALEUR PAR DEFAUT, ET C EST LE POINT.
+     Chaque champ s ouvrait pre-rempli d une mesure inventee — sommeil a
+     sept heures, tout le reste a trois, hydratation a quatre verres,
+     mouvement a trente minutes. Enchainer les sept etapes sans rien
+     toucher inscrivait quinze mesures imaginaires comme si elles
+     avaient ete constatees, et c est exactement ce qui arrive quand on
+     rattrape treize jours a la chaine.
+     Toute la refonte tenait sur une phrase : une journee finie SE
+     RACONTE, elle ne se devine pas. Un champ qu on n a pas touche reste
+     donc nul, et la colonne l accepte. */
+  const [sleepHours, setSleepHours] = useState<number | null>(null);
+  const [sleepQuality, setSleepQuality] = useState<number | null>(null);
+  const [wakeEnergy, setWakeEnergy] = useState<number | null>(null);
+  const [activityLevel, setActivityLevel] = useState<number | null>(null);
+  const [movementMinutes, setMovementMinutes] = useState<number | null>(null);
+  const [stressLevel, setStressLevel] = useState<number | null>(null);
+  const [mentalLoad, setMentalLoad] = useState<number | null>(null);
+  const [hydrationGlasses, setHydrationGlasses] = useState<number | null>(null);
+  const [mealBalance, setMealBalance] = useState<number | null>(null);
+  const [moodLevel, setMoodLevel] = useState<number | null>(null);
   const [moodJournal, setMoodJournal] = useState<string>("");
-  const [energyMorning, setEnergyMorning] = useState<number>(3);
-  const [energyAfternoon, setEnergyAfternoon] = useState<number>(3);
-  const [energyEvening, setEnergyEvening] = useState<number>(3);
+  const [energyMorning, setEnergyMorning] = useState<number | null>(null);
+  const [energyAfternoon, setEnergyAfternoon] = useState<number | null>(null);
+  const [energyEvening, setEnergyEvening] = useState<number | null>(null);
   const [notes, setNotes] = useState<string>("");
 
-  // Boot sequence on open
+  /* LA FENETRE S OUVRE SUR LA PREMIERE ETAPE, ET C EST TOUT.
+     Une sequence de demarrage factice tenait l ecran 850 ms avant
+     chaque ouverture — treize increments de 50 ms puis 200 ms
+     d attente — pour afficher « Initializing Biometric Scan ».
+     Rattraper treize jours, c etait onze secondes de theatre. */
   useEffect(() => {
-    if (open) {
-      setBooting(true);
-      setBootProgress(0);
-      setCurrentStep(0);
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 8;
-        setBootProgress(Math.min(progress, 100));
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setBooting(false), 200);
-        }
-      }, 50);
-      return () => clearInterval(interval);
-    }
+    if (open) setCurrentStep(0);
   }, [open]);
 
   useEffect(() => {
     if (todayData) {
-      setSleepHours(todayData.sleep_hours ?? 7);
-      setSleepQuality(todayData.sleep_quality ?? 3);
-      setWakeEnergy(todayData.wake_energy ?? 3);
-      setActivityLevel(todayData.activity_level ?? 3);
-      setMovementMinutes(todayData.movement_minutes ?? 30);
-      setStressLevel(todayData.stress_level ?? 3);
-      setMentalLoad(todayData.mental_load ?? 3);
-      setHydrationGlasses(todayData.hydration_glasses ?? 4);
-      setMealBalance(todayData.meal_balance ?? 3);
+      setSleepHours(todayData.sleep_hours ?? null);
+      setSleepQuality(todayData.sleep_quality ?? null);
+      setWakeEnergy(todayData.wake_energy ?? null);
+      setActivityLevel(todayData.activity_level ?? null);
+      setMovementMinutes(todayData.movement_minutes ?? null);
+      setStressLevel(todayData.stress_level ?? null);
+      setMentalLoad(todayData.mental_load ?? null);
+      setHydrationGlasses(todayData.hydration_glasses ?? null);
+      setMealBalance(todayData.meal_balance ?? null);
       const extData = todayData as unknown as { mood_level?: number; mood_journal?: string; energy_morning?: number; energy_afternoon?: number; energy_evening?: number };
-      setMoodLevel(extData.mood_level ?? 3);
+      setMoodLevel(extData.mood_level ?? null);
       setMoodJournal(extData.mood_journal ?? "");
-      setEnergyMorning(extData.energy_morning ?? 3);
-      setEnergyAfternoon(extData.energy_afternoon ?? 3);
-      setEnergyEvening(extData.energy_evening ?? 3);
+      setEnergyMorning(extData.energy_morning ?? null);
+      setEnergyAfternoon(extData.energy_afternoon ?? null);
+      setEnergyEvening(extData.energy_evening ?? null);
       setNotes(todayData.notes ?? "");
     }
   }, [todayData]);
 
   const steps = [
-    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), label: "SLEEP TELEMETRY" },
-    { key: "activity", icon: Activity, title: t("health.metrics.activity"), label: "ACTIVITY SCAN" },
-    { key: "stress", icon: Brain, title: t("health.metrics.stress"), label: "STRESS ANALYSIS" },
-    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), label: "HYDRATION LEVEL" },
-    { key: "mood", icon: Smile, title: t("health.mood.title"), label: "MOOD TELEMETRY" },
-    { key: "energy", icon: Zap, title: t("health.energy.title"), label: "ENERGY CURVE" },
-    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), label: "SYSTEM NOTES" },
+    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), label: t("health.checkin.scan.sleep") },
+    { key: "activity", icon: Activity, title: t("health.metrics.activity"), label: t("health.checkin.scan.activity") },
+    { key: "stress", icon: Brain, title: t("health.metrics.stress"), label: t("health.checkin.scan.stress") },
+    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), label: t("health.checkin.scan.hydration") },
+    { key: "mood", icon: Smile, title: t("health.mood.title"), label: t("health.checkin.scan.mood") },
+    { key: "energy", icon: Zap, title: t("health.energy.title"), label: t("health.checkin.scan.energy") },
+    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), label: t("health.checkin.scan.notes") },
   ];
 
   const qualityLabels = [
@@ -153,13 +149,27 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
       energy_evening: energyEvening,
       notes: notes || null,
     } as Record<string, unknown>);
-    await updateStreak.mutateAsync();
     onOpenChange(false);
     setCurrentStep(0);
   };
 
   const currentStepData = steps[currentStep];
   const Icon = currentStepData.icon;
+
+  /* LES CLASSES SONT ECRITES EN TOUTES LETTRES, ET C EST OBLIGATOIRE.
+     Elles etaient construites par interpolation, et Tailwind — qui lit
+     le source sans l executer — ne les a donc jamais generees. Mesure
+     faite dans le navigateur sur un bouton selectionne : text-blue-400
+     et border-2 s appliquaient bien, parce qu ils existent ailleurs en
+     litteral, mais bg-blue-400/20 et border-blue-400 non — fond
+     transparent, bordure restee au jeton par defaut. Le bouton n avait
+     l air qu a moitie coche, ce qui explique que ca soit passe. */
+  const ACCENTS: Record<string, string> = {
+    "hud-phosphor": "bg-hud-phosphor/20 text-hud-phosphor border-hud-phosphor",
+    "blue-400": "bg-blue-400/20 text-blue-400 border-blue-400",
+    "hud-amber": "bg-hud-amber/20 text-hud-amber border-hud-amber",
+    "orange-400": "bg-orange-400/20 text-orange-400 border-orange-400",
+  };
 
   // Chamfered selection button
   const ChamferedBtn = ({ selected, onClick, children, accentColor = "hud-phosphor" }: { selected: boolean; onClick: () => void; children: React.ReactNode; accentColor?: string }) => (
@@ -168,7 +178,7 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
       className={cn(
         "flex-1 py-3 transition-all text-sm font-mono",
         selected
-          ? `bg-${accentColor}/20 text-${accentColor} border-2 border-${accentColor}`
+          ? cn("border-2", ACCENTS[accentColor] ?? ACCENTS["hud-phosphor"])
           : "border border-border text-muted-foreground hover:border-hud-phosphor/50"
       )}
       style={{ clipPath: CHAMFER }}
@@ -185,8 +195,8 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.howDidYouSleep")}</Label>
               <div className="flex items-center gap-4">
-                <Slider value={[sleepHours]} onValueChange={(v) => setSleepHours(v[0])} min={0} max={12} step={0.5} className="flex-1" />
-                <span className="text-2xl font-bold text-blue-400 w-16 text-right font-orbitron">{sleepHours}h</span>
+                <Slider value={[sleepHours ?? 7]} onValueChange={(v) => setSleepHours(v[0])} min={0} max={12} step={0.5} className="flex-1" />
+                <span className="text-2xl font-bold text-blue-400 w-16 text-right font-orbitron">{sleepHours === null ? "—" : `${sleepHours}h`}</span>
               </div>
             </div>
             <div>
@@ -227,8 +237,8 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.movementMinutes")}</Label>
               <div className="flex items-center gap-4">
-                <Slider value={[movementMinutes]} onValueChange={(v) => setMovementMinutes(v[0])} min={0} max={180} step={5} className="flex-1" />
-                <span className="text-2xl font-bold text-hud-phosphor w-20 text-right font-orbitron">{movementMinutes}m</span>
+                <Slider value={[movementMinutes ?? 30]} onValueChange={(v) => setMovementMinutes(v[0])} min={0} max={180} step={5} className="flex-1" />
+                <span className="text-2xl font-bold text-hud-phosphor w-20 text-right font-orbitron">{movementMinutes === null ? "—" : `${movementMinutes}m`}</span>
               </div>
             </div>
           </div>
@@ -264,8 +274,8 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.hydrationLevel")}</Label>
               <div className="flex items-center gap-4">
-                <Slider value={[hydrationGlasses]} onValueChange={(v) => setHydrationGlasses(v[0])} min={0} max={16} step={1} className="flex-1" />
-                <span className="text-2xl font-bold text-cyan-400 w-20 text-right font-orbitron">{hydrationGlasses} 🥛</span>
+                <Slider value={[hydrationGlasses ?? 4]} onValueChange={(v) => setHydrationGlasses(v[0])} min={0} max={16} step={1} className="flex-1" />
+                <span className="text-2xl font-bold text-cyan-400 w-20 text-right font-orbitron">{hydrationGlasses === null ? "—" : `${hydrationGlasses} 🥛`}</span>
               </div>
               <p className="text-xs text-muted-foreground/50 mt-2 font-mono">
                 {t("health.settings.hydrationGoal")}: {settings?.hydration_goal_glasses || 8} {t("health.settings.glasses")}
@@ -323,33 +333,7 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg bg-popover border-hud-phosphor/20">
-        <AnimatePresence mode="wait">
-          {booting ? (
-            <motion.div
-              key="boot"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="py-12 text-center"
-            >
-              <p className="font-mono text-hud-phosphor text-sm uppercase tracking-widest mb-4 animate-pulse">
-                Initializing Biometric Scan...
-              </p>
-              <div className="w-full h-1 bg-muted/30 overflow-hidden">
-                <motion.div
-                  className="h-full bg-hud-phosphor"
-                  initial={{ width: "0%" }}
-                  animate={{ width: `${bootProgress}%` }}
-                  transition={{ duration: 0.05 }}
-                  style={{ boxShadow: "0 0 8px hsl(var(--hud-phosphor))" }}
-                />
-              </div>
-              <p className="font-mono ds-t-label text-muted-foreground/50 mt-3 uppercase tracking-wider">
-                LOADING SUBSYSTEMS · CALIBRATING SENSORS
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
                   <div className="p-2 bg-hud-phosphor/20" style={{ clipPath: CHAMFER }}>
@@ -361,7 +345,7 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
               
               {/* System boot bar */}
               <div className="flex items-center gap-3 mb-4 font-mono ds-t-label uppercase tracking-wider text-muted-foreground">
-                <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
+                <span className="text-hud-phosphor">{t("health.checkin.step", "Étape")} {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
                 <span className="text-muted-foreground/40">::</span>
                 <span>{currentStepData.label}</span>
                 <span className="text-muted-foreground/40">::</span>
@@ -401,9 +385,7 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyChec
                   </Button>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );

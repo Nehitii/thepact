@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { serieDeJours, totalSecondes } from "@/lib/health/souffle";
+import { totalSecondes } from "@/lib/health/souffle";
+import { serieDeJours } from "@/lib/health/journee";
 
 /* ═══════════════════════════════════════════════════════════════
    CE QUE LA RESPIRATION LAISSE DERRIERE ELLE

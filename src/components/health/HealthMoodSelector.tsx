@@ -8,7 +8,9 @@ import { useTranslation } from "react-i18next";
 import { MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 
 interface HealthMoodSelectorProps {
-  value: number;
+  /* Nul tant que rien n a ete choisi : un releve ne devine pas
+     l humeur qu on n a pas saisie. */
+  value: number | null;
   onChange: (value: number) => void;
   journal?: string;
   onJournalChange?: (value: string) => void;

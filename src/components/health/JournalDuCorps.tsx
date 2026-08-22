@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 import { ClipboardCheck, Check } from "lucide-react";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cleDuJour, laVeille, pagesDuJournal, veilleRelevee } from "@/lib/health/journee";
+import { cleDuJour, laVeille, pagesDuJournal, veilleRelevee, serieDeJours } from "@/lib/health/journee";
 
 interface Props {
   /** Les dates deja relevees, au format yyyy-MM-dd. */
@@ -38,11 +38,27 @@ export function JournalDuCorps({ datesRelevees, onOuvrir }: Props) {
     [datesRelevees, veille],
   );
 
+  /* LA SERIE SE CALCULE, ELLE NE SE STOCKE PLUS.
+     health_streaks tenait un compteur incremente a chaque
+     enregistrement, contre la date du jour et non contre la date
+     relevee : rattraper treize jours l avancait d un cran, et la table
+     mesurait « les jours ou j ai appuye sur enregistrer » plutot que
+     « les jours dont j ai le releve ». On la lit desormais dans les
+     dates elles-memes, ou elle ne peut pas mentir. */
+  const serie = useMemo(
+    () => serieDeJours(datesRelevees.map((d) => d.slice(0, 10))),
+    [datesRelevees],
+  );
+
   return (
     <section className="hlt-journal">
-      {/* Pas de compte ici : la bande de dossier l annonce deja, a
-          quatre cents pixels au-dessus. Le repeter est du bruit. */}
-      <h2 className="hlt-titre">{t("health.journal.title", "Le journal")}</h2>
+      {/* Pas de compte des manquants ici : la bande de dossier
+          l annonce deja, quatre cents pixels au-dessus. La serie, elle,
+          n est affichee nulle part ailleurs. */}
+      <h2 className="hlt-titre">
+        {t("health.journal.title", "Le journal")}
+        {serie > 0 && <b>{t("health.journal.streak", { count: serie })}</b>}
+      </h2>
 
       <div className="hlt-veille" data-fait={faite ? "1" : "0"}>
         <div>
