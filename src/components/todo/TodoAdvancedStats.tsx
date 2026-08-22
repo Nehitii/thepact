@@ -22,6 +22,7 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { categorieDe } from '@/lib/todo/categories';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 const PRIORITY_COLORS = {
@@ -30,14 +31,10 @@ const PRIORITY_COLORS = {
   high: '#f59e0b',
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  work: '#3b82f6',
-  health: '#ef4444',
-  personal: '#a855f7',
-  study: '#10b981',
-  admin: '#6b7280',
-  general: '#8b5cf6',
-};
+/* Ces couleurs ne correspondaient PAS a celles du formulaire :
+   #ef4444 contre #ff4d5e pour la sante, #6b7280 contre #94a3b8 pour
+   l admin, et un violet contre un bleu clair pour « general ». La meme
+   tache changeait donc de couleur selon l ecran. */
 
 export function TodoAdvancedStats() {
   const { t } = useTranslation();
@@ -92,7 +89,7 @@ export function TodoAdvancedStats() {
     return Object.entries(counts).map(([name, value]) => ({
       name: t(`todo.categories.${name}`),
       value,
-      color: CATEGORY_COLORS[name] || '#8b5cf6',
+      color: categorieDe(name).couleur,
     }));
   }, [history, t]);
 

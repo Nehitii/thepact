@@ -302,7 +302,13 @@
       "personal": "Personnel",
       "study": "Études",
       "admin": "Admin",
-      "general": "Général"
+      "general": "Général",
+      "finance": "Finances",
+      "home": "Maison",
+      "errands": "Courses",
+      "social": "Relations",
+      "creative": "Créatif",
+      "sport": "Sport"
     },
     "taskTypes": {
       "flexible": "Flexible",

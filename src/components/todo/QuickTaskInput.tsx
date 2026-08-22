@@ -3,6 +3,7 @@ import { CornerDownLeft } from "lucide-react";
 import { TodoPriority, CreateTaskInput, TodoTaskType } from "@/hooks/useTodoList";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { IDS_CATEGORIE } from "@/lib/todo/categories";
 import { addDays } from "date-fns";
 
 /* L INVITE
@@ -27,7 +28,8 @@ const PRIORITE = /!(high|med|low)\b/gi;
 const CATEGORIE = /#(\w+)\b/g;
 const ECHEANCE = /@(today|tomorrow|nextweek)\b/gi;
 
-const CATEGORIES = ["work", "health", "personal", "study", "admin", "general"];
+/* Les identifiants viennent de la liste unique : sans ca, une
+   categorie ajoutee au formulaire n aurait pas ete reconnue ici. */
 
 function analyser(brut: string) {
   let priority: TodoPriority = "medium";
@@ -44,7 +46,7 @@ function analyser(brut: string) {
   const c = brut.match(CATEGORIE);
   if (c) {
     const v = c[0].slice(1).toLowerCase();
-    if (CATEGORIES.includes(v)) category = v;
+    if (IDS_CATEGORIE.includes(v)) category = v;
   }
 
   const e = brut.match(ECHEANCE);

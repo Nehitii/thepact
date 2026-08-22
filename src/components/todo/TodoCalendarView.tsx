@@ -20,6 +20,7 @@ import { TodoTask } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { categorieDe, fondDe } from '@/lib/todo/categories';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 interface TodoCalendarViewProps {
@@ -27,14 +28,11 @@ interface TodoCalendarViewProps {
   onTaskClick?: (taskId: string) => void;
 }
 
-const categoryConfig: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
-  work: { icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/20' },
-  health: { icon: Heart, color: 'text-red-400', bg: 'bg-red-500/20' },
-  personal: { icon: User, color: 'text-purple-400', bg: 'bg-purple-500/20' },
-  study: { icon: BookOpen, color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
-  admin: { icon: Cog, color: 'text-gray-400', bg: 'bg-gray-500/20' },
-  general: { icon: Tag, color: 'text-muted-foreground', bg: 'bg-muted/30' },
-};
+/* La carte etait ecrite en classes Tailwind — donc impossible a
+   generer depuis une teinte, et condamnee a etre tenue a la main a
+   cote des trois autres listes. Les couleurs viennent maintenant de la
+   liste unique, posees en style : une categorie ajoutee la-bas
+   s affiche ici sans une ligne de plus. */
 
 const priorityDot: Record<string, string> = {
   low: 'bg-emerald-400',
@@ -176,17 +174,13 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                 {/* Task indicators */}
                 <div className="space-y-1">
                   {dayTasks.slice(0, 3).map((task) => {
-                    const category = task.category || 'general';
-                    const config = categoryConfig[category] || categoryConfig.general;
+                    const cat = categorieDe(task.category);
                     
                     return (
                       <div
                         key={task.id}
-                        className={cn(
-                          'flex items-center gap-1 px-1.5 py-0.5 rounded ds-t-label truncate',
-                          config.bg,
-                          config.color
-                        )}
+                        className="flex items-center gap-1 px-1.5 py-0.5 rounded ds-t-label truncate"
+                        style={{ background: fondDe(cat.id, 20), color: cat.couleur }}
                         onClick={(e) => {
                           e.stopPropagation();
                           onTaskClick?.(task.id);
@@ -252,24 +246,19 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
               ) : (
                 <div className="space-y-2">
                   {selectedDayTasks.map((task) => {
-                    const category = task.category || 'general';
-                    const config = categoryConfig[category] || categoryConfig.general;
-                    const CategoryIcon = config.icon;
+                    const cat = categorieDe(task.category);
+                    const CategoryIcon = cat.icone;
 
                     return (
                       <motion.div
                         key={task.id}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className={cn(
-                          'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all',
-                          'hover:bg-card/50',
-                          config.bg,
-                          'border-border/50'
-                        )}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border/50 cursor-pointer transition-all hover:brightness-125"
+                        style={{ background: fondDe(cat.id, 16) }}
                         onClick={() => onTaskClick?.(task.id)}
                       >
-                        <CategoryIcon className={cn('w-4 h-4 flex-shrink-0', config.color)} />
+                        <CategoryIcon className="w-4 h-4 flex-shrink-0" style={{ color: cat.couleur }} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{task.name}</p>
                           <div className="flex items-center gap-2 mt-1">

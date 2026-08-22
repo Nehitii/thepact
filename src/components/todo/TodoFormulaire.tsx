@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { CATEGORIES_TACHE } from "@/lib/todo/categories";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 import type { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from "@/hooks/useTodoList";
@@ -41,14 +42,9 @@ interface TodoFormulaireProps {
   entier?: boolean;
 }
 
-const CATEGORIES = [
-  { id: "work", icone: Briefcase, c: "#3b82f6" },
-  { id: "health", icone: Heart, c: "#ff4d5e" },
-  { id: "personal", icone: User, c: "#a855f7" },
-  { id: "study", icone: BookOpen, c: "#10b981" },
-  { id: "admin", icone: Cog, c: "#94a3b8" },
-  { id: "general", icone: Tag, c: "#7dd3fc" },
-] as const;
+/* La liste vit dans lib/todo/categories.ts : elle etait ecrite ici,
+   dans la saisie rapide, dans le calendrier et dans les statistiques —
+   et les quatre avaient deja diverge. */
 
 const TYPES: { id: TodoTaskType; icone: typeof Sparkles; c: string }[] = [
   { id: "flexible", icone: Sparkles, c: "#22d3ee" },
@@ -181,14 +177,14 @@ export function TodoFormulaire({
           {/* 02 — l affectation */}
           <Section variants={bloc} bouge={!immobile} n="02" titre={t("todo.create.category")}>
             <div className="tsk-f-grille est-3" role="group" aria-label={t("todo.create.category")}>
-              {CATEGORIES.map(({ id, icone: Icone, c }) => (
+              {CATEGORIES_TACHE.map(({ id, icone: Icone, couleur }) => (
                 <button
                   key={id}
                   type="button"
                   aria-pressed={category === id}
                   onClick={() => setCategory(id)}
                   className="tsk-f-chip"
-                  style={{ ["--tsk-c" as string]: c } as React.CSSProperties}
+                  style={{ ["--tsk-c" as string]: couleur } as React.CSSProperties}
                 >
                   <Icone className="w-4 h-4 tsk-f-chip-i" aria-hidden="true" />
                   {t(`todo.categories.${id}`)}
