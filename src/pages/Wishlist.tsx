@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
+import { format, startOfMonth } from "date-fns";
+import { fr as dateFr } from "date-fns/locale";
+import { useEcrirePointage, useEffacerPointage } from "@/hooks/usePointages";
 import { Globe, Plus, Search } from "lucide-react";
 import {
   PactWishlistItemType,
@@ -103,6 +106,15 @@ export default function Wishlist() {
   const { data: goals = [] } = useGoals(pact?.id);
 
   useWishlistGoalSync(user?.id, pact?.id, items);
+
+  /* LA PASSERELLE VERS FINANCE.
+     Un article hors pacte paye ne laissait aucune trace dans les
+     comptes : le mois ou l achat tombe ne le savait pas. Les pieces
+     du pacte, elles, sont deja comptees par le financement du
+     pacte — les ajouter ici les compterait deux fois. La passerelle
+     ne concerne donc QUE ce qui n engage que soi. */
+  const ecrirePointage = useEcrirePointage();
+  const effacerPointage = useEffacerPointage();
 
   /* La provenance des pieces : quelle etape les paie, et laquelle a
      ete cochee par la validation de cette etape. */
@@ -278,6 +290,39 @@ export default function Wishlist() {
   const basculerAcquis = (id: string, acquired: boolean) => {
     if (!user) return;
     updateItem.mutate({ userId: user.id, id, patch: { acquired } });
+
+    const item = items.find((i) => i.id === id);
+    /* Seulement hors pacte, et seulement si le montant existe : une
+       depense a zero euro n apprend rien au mois. */
+    if (!item || item.source_goal_cost_id) return;
+    const montant = Number(item.estimated_cost || 0);
+    if (!(montant > 0)) return;
+
+    const mois = format(startOfMonth(new Date()), "yyyy-MM-dd");
+    const moisLisible = format(startOfMonth(new Date()), "MMMM yyyy", { locale: dateFr });
+
+    if (acquired) {
+      ecrirePointage.mutate({
+        mois,
+        /* L identifiant de l article sert de cle : repointer corrige
+           au lieu d empiler, et decocher retrouve la bonne ligne. */
+        ligne_id: id,
+        genre: "expense",
+        /* La contrainte de la table refuse un nom vide et coupe a
+           cent vingt caracteres. */
+        nom: (item.name.trim() || "Achat").slice(0, 120),
+        montant_prevu: montant,
+        montant_reel: montant,
+        pointe: true,
+      }, {
+        onSuccess: () => toast.success(
+          t("wishlist.finance.ajoute", "Ajouté aux dépenses de {{mois}}", { mois: moisLisible }),
+          { description: formatCurrency(montant, currency) },
+        ),
+      });
+    } else {
+      effacerPointage.mutate({ ligneId: id, mois });
+    }
   };
 
   const demanderSuppression = (id: string) => {

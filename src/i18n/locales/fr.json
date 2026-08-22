@@ -1874,6 +1874,9 @@
       "combien": "{{n}} objectifs se soldent pour moins de {{montant}}",
       "pieces_one": "{{count}} pièce",
       "pieces_other": "{{count}} pièces"
+    },
+    "finance": {
+      "ajoute": "Ajouté aux dépenses de {{mois}}"
     }
   },
   "inbox": {

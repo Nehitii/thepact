@@ -1874,6 +1874,9 @@
       "combien": "{{n}} goals settle for less than {{montant}}",
       "pieces_one": "{{count}} piece",
       "pieces_other": "{{count}} pieces"
+    },
+    "finance": {
+      "ajoute": "Added to {{mois}} expenses"
     }
   },
   "inbox": {
