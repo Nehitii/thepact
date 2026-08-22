@@ -519,6 +519,138 @@
 }
 .hlt-tours b { color: var(--hlt-encre); font-weight: 400; font-variant-numeric: tabular-nums; }
 
+
+/* ── LE RELEVE : UNE FEUILLE, PLUS UN ASSISTANT ────────────── */
+/* Sept ecrans a enchainer chaque matin, personne ne tient — et
+   rattraper treize jours, c etait quatre-vingt-onze ecrans. Les six
+   champs qui nourrissent Analytics et le rythme suggere tiennent
+   maintenant sur un seul ecran ; les neuf autres attendent derriere un
+   pli qu on ouvre les jours ou l on veut bien.
+
+   LE RELEVE RAPIDE EST COMPLET EN SOI. Le pli n est pas une seconde
+   moitie a finir, c est un supplement : on valide sans l avoir ouvert
+   et le releve compte. */
+.hlt-fenetre {
+  background: var(--hlt-plaque) !important;
+  border: 1px solid var(--hlt-trait-fort) !important;
+  max-width: 620px !important;
+  gap: 0;
+}
+
+.hlt-releve-tete {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-family: var(--hlt-mono); font-size: max(9px, 0.563rem);
+  letter-spacing: 0.28em; text-transform: uppercase; color: var(--hlt-encre-3);
+}
+.hlt-releve-tete b { color: var(--hlt-jaune); font-weight: 400; }
+.hlt-releve-tete b[data-fait="1"] { color: var(--hlt-vert); }
+
+.hlt-releve-q {
+  margin: 12px 0 22px; font-family: var(--hlt-titre); font-weight: 600;
+  font-size: clamp(19px, 2.4vw, 24px); line-height: 1.16; color: var(--hlt-jaune);
+}
+
+.hlt-grille { display: grid; gap: 16px 24px; }
+@media (min-width: 560px) { .hlt-grille { grid-template-columns: 1fr 1fr; } }
+.hlt-grille[data-colonnes="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+.hlt-champ > u {
+  text-decoration: none; display: block;
+  font-family: var(--hlt-mono); font-size: max(8.5px, 0.531rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--hlt-encre-3);
+  margin-bottom: 7px;
+}
+
+/* Les cinq crans d une echelle. Rien n est preselectionne : un champ
+   qu on n a pas touche reste nul. */
+.hlt-crans { display: flex; gap: 4px; }
+.hlt-cran {
+  flex: 1; min-width: 0; padding: 8px 3px; cursor: pointer;
+  background: transparent; border: 1px solid var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(8px, 0.5rem);
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--hlt-encre-2);
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  transition: color 120ms linear, border-color 120ms linear, background 120ms linear;
+  line-height: 1.2; text-align: center; hyphens: none;
+}
+.hlt-cran:hover { color: var(--hlt-encre); border-color: var(--hlt-encre-3); }
+.hlt-cran[aria-pressed="true"] {
+  color: var(--hlt-cyan); border-color: var(--hlt-cyan);
+  background: color-mix(in srgb, var(--hlt-cyan) 14%, transparent);
+}
+.hlt-cran em { font-style: normal; display: block; font-size: 1.35em; line-height: 1.1; }
+
+/* Un nombre : le rail, et la valeur. « — » tant qu on n y a pas
+   touche — le curseur se pose a une position neutre mais la valeur
+   retenue reste nulle. */
+.hlt-nombre { display: flex; align-items: center; gap: 14px; }
+.hlt-nombre [data-orientation="horizontal"] > span:first-child {
+  height: 3px; border-radius: 0; background: var(--hlt-trait);
+}
+.hlt-nombre [data-orientation="horizontal"] > span:first-child > span {
+  background: var(--hlt-cyan);
+}
+.hlt-nombre [role="slider"] {
+  width: 13px; height: 13px; border: 0; border-radius: 0;
+  background: var(--hlt-encre);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+}
+.hlt-nombre [role="slider"]:focus-visible { outline: 1px solid var(--hlt-cyan); outline-offset: 2px; }
+.hlt-nombre > span:first-child { flex: 1; min-width: 0; }
+.hlt-nombre b {
+  font-family: var(--hlt-chiffre); font-size: 17px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--hlt-encre);
+  min-width: 62px; text-align: right; white-space: nowrap;
+}
+.hlt-nombre b[data-vide="1"] { color: var(--hlt-encre-3); }
+.hlt-nombre b i { font-style: normal; font-size: 0.55em; color: var(--hlt-encre-3); margin-left: 4px; }
+.hlt-champ > s {
+  text-decoration: none; display: block; margin-top: 6px;
+  font-family: var(--hlt-mono); font-size: max(8px, 0.5rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hlt-encre-3);
+}
+
+/* ── LE PLI ────────────────────────────────────────────────── */
+.hlt-pli {
+  width: 100%; margin-top: 20px; padding: 11px 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  background: transparent; border: 1px dashed var(--hlt-trait-fort);
+  font-family: var(--hlt-mono); font-size: max(8.5px, 0.531rem);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--hlt-encre-3);
+  text-align: left;
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.hlt-pli:hover { color: var(--hlt-encre-2); border-color: var(--hlt-encre-3); }
+.hlt-pli b { color: var(--hlt-jaune); font-weight: 400; white-space: nowrap; }
+.hlt-pli-corps { margin-top: 18px; display: flex; flex-direction: column; gap: 18px; }
+
+.hlt-section {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--hlt-mono); font-size: max(8px, 0.5rem);
+  letter-spacing: 0.28em; text-transform: uppercase; color: var(--hlt-encre-3);
+  margin-bottom: 10px;
+}
+.hlt-section::after { content: ""; flex: 1; height: 1px; background: var(--hlt-trait); }
+
+.hlt-mot {
+  width: 100%; min-height: 84px; padding: 11px 13px; resize: vertical;
+  background: var(--hlt-creux); border: 1px solid var(--hlt-trait-fort);
+  color: var(--hlt-encre); font-family: var(--hlt-titre); font-size: 14px;
+}
+.hlt-mot::placeholder { color: var(--hlt-encre-3); }
+.hlt-mot:focus-visible { outline: none; border-color: var(--hlt-cyan); }
+
+/* ── LE PIED ───────────────────────────────────────────────── */
+.hlt-releve-pied {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--hlt-trait);
+}
+.hlt-releve-pied .hlt-note-champ {
+  font-family: var(--hlt-mono); font-size: max(8px, 0.5rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hlt-encre-3);
+  margin-left: auto; text-align: right;
+}
+
 /* ── LA NOTE DE PIED ───────────────────────────────────────── */
 .hlt-note {
   margin: 30px 0 0;

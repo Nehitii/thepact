@@ -23,7 +23,6 @@ export { Respiration } from "./Respiration";
 /* Les fenetres. */
 export { HealthDailyCheckin } from "./HealthDailyCheckin";
 export { HealthSettingsModal } from "./HealthSettingsModal";
-export { HealthMoodSelector } from "./HealthMoodSelector";
 
 /* Deux pieces qui vivent ici mais servent le design system : DSPanel
    pour l une, DSBackground pour l autre. Leur place serait plutot dans

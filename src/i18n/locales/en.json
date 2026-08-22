@@ -1333,9 +1333,9 @@
     "checkin": {
       "howDidYouSleep": "How many hours did you sleep?",
       "howDoYouFeel": "How do you feel?",
-      "stressLevel": "Stress level today",
-      "hydrationLevel": "Glasses of water today",
-      "todaysNotes": "Notes (Optional)",
+      "stressLevel": "Stress level",
+      "hydrationLevel": "Glasses of water",
+      "todaysNotes": "A word about the day",
       "notesPlaceholder": "How are you feeling? Any observations about your wellness today...",
       "quality": {
         "poor": "Poor",
@@ -1361,7 +1361,16 @@
         "mood": "Mood telemetry",
         "energy": "Energy curve",
         "notes": "System notes"
-      }
+      },
+      "detail": "The detail",
+      "unfold": "Unfold",
+      "fold": "Fold",
+      "logged": "logged",
+      "notLogged": "not logged",
+      "emptyStays": "A field left empty stays empty",
+      "sectionEnergy": "Energy through the day",
+      "sectionSleep": "Sleep",
+      "sectionBody": "The body"
     },
     "mood": {
       "title": "Mood",
@@ -1371,9 +1380,6 @@
       "neutral": "Neutral",
       "good": "Good",
       "great": "Great",
-      "addNote": "Add a note about your mood",
-      "journalPlaceholder": "What's on your mind? Any thoughts or feelings...",
-      "journalHint": "This is private and helps you track patterns",
       "feedback": {
         "1": "It's okay to have hard days. Remember: this too shall pass.",
         "2": "Acknowledge how you feel. Small steps forward still count.",

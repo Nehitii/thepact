@@ -1333,9 +1333,9 @@
     "checkin": {
       "howDidYouSleep": "Combien d'heures as-tu dormi ?",
       "howDoYouFeel": "Comment te sens-tu ?",
-      "stressLevel": "Niveau de stress aujourd'hui",
-      "hydrationLevel": "Verres d'eau aujourd'hui",
-      "todaysNotes": "Notes (Optionnel)",
+      "stressLevel": "Niveau de stress",
+      "hydrationLevel": "Verres d’eau",
+      "todaysNotes": "Le mot du jour",
       "notesPlaceholder": "Comment te sens-tu ? Des observations sur ton bien-être aujourd'hui...",
       "quality": {
         "poor": "Faible",
@@ -1361,7 +1361,16 @@
         "mood": "Télémétrie de l’humeur",
         "energy": "Courbe d’énergie",
         "notes": "Notes système"
-      }
+      },
+      "detail": "Le détail",
+      "unfold": "Déplier",
+      "fold": "Replier",
+      "logged": "relevé",
+      "notLogged": "non relevé",
+      "emptyStays": "Un champ laissé vide reste vide",
+      "sectionEnergy": "L’énergie, dans la journée",
+      "sectionSleep": "Le sommeil",
+      "sectionBody": "Le corps"
     },
     "mood": {
       "title": "Humeur",
@@ -1371,9 +1380,6 @@
       "neutral": "Neutre",
       "good": "Bien",
       "great": "Super",
-      "addNote": "Ajouter une note sur ton humeur",
-      "journalPlaceholder": "Qu'as-tu en tête ? Des pensées ou des émotions...",
-      "journalHint": "C'est privé et t'aide à suivre tes tendances",
       "feedback": {
         "1": "C'est normal d'avoir des jours difficiles. Souviens-toi : ça passera.",
         "2": "Reconnais ce que tu ressens. Les petits pas comptent aussi.",

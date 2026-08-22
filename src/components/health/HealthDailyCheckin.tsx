@@ -1,391 +1,272 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { 
-  Moon, Activity, Brain, Droplets, Smile, Zap, ChevronRight, ChevronLeft, Check, Sparkles,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useTodayHealth, useUpsertHealthData, useHealthSettings, useHealthByDate } from "@/hooks/useHealth";
-import { format, subDays, parseISO } from "date-fns";
-import { HealthMoodSelector } from "./HealthMoodSelector";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { format, parseISO } from "date-fns";
+import { ClipboardCheck, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useHealthByDate, useHealthSettings, useUpsertHealthData } from "@/hooks/useHealth";
+import { cleDuJour, laVeille } from "@/lib/health/journee";
+import "@/styles/health.css";
 
-interface HealthDailyCheckinProps {
+/* ═══════════════════════════════════════════════════════════════
+   LE RELEVE, A DEUX VITESSES
+
+   Sept ecrans a enchainer chaque matin, quinze champs, et une langue
+   graphique qui n etait plus celle de la page. Rattraper treize jours,
+   c etait quatre-vingt-onze ecrans.
+
+   Avant de discuter du nombre d etapes, on a regarde a quoi sert chaque
+   champ. Sur quinze : dix nourrissent Analytics ou le rythme suggere,
+   trois ne ressortent que dans l export CSV, et mood_journal — « qu
+   as-tu en tete ? » — n etait lu par personne, pas meme par l export.
+   Ce qu on y ecrivait tombait dans le vide ; il est retire, le module
+   Journal faisant deja cela avec un editeur et une recherche.
+
+   LE RELEVE RAPIDE TIENT SUR UN ECRAN. Six champs — ceux qui nourrissent
+   Analytics et la suggestion de rythme. Trente secondes.
+
+   LE DETAIL EST UN SUPPLEMENT, PAS UNE SECONDE MOITIE. On valide sans
+   jamais l ouvrir et le releve compte. La courbe d energie d Analytics
+   s affiche donc les jours ou le pli a ete ouvert, et se tait les
+   autres — plus honnete qu une courbe faite de valeurs par defaut.
+
+   ET RIEN N EST PRESELECTIONNE. Chaque champ partait d une valeur
+   inventee : sommeil a sept heures, tout le reste a trois. Enchainer
+   les etapes sans rien toucher inscrivait quinze mesures imaginaires
+   comme si elles avaient ete constatees. Une journee finie SE RACONTE.
+   ═══════════════════════════════════════════════════════════════ */
+
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /* LA JOURNEE QU ON RACONTE, ET NON CELLE OU L ON SE TROUVE.
-     Le releve portait sur AUJOURD HUI, derriere un reglage qui valait
-     « today » par defaut : on le remplissait donc le matin, en notant
-     un sommeil qu on venait de finir a cote d une activite qui n avait
-     pas eu lieu. La moitie des champs etaient des suppositions.
-     La date vient maintenant d en haut : la veille par defaut, ou l un
-     des jours manques qu on rattrape. */
+  /** La journee relevee. La veille par defaut. */
   date?: string;
 }
 
-const CHAMFER = "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)";
+const CHAMPS = [
+  "sleep_quality", "mood_level", "stress_level", "activity_level",
+  "hydration_glasses", "mental_load",
+  "energy_morning", "energy_afternoon", "energy_evening",
+  "sleep_hours", "wake_energy", "movement_minutes", "meal_balance",
+] as const;
 
-export function HealthDailyCheckin({ open, onOpenChange, date }: HealthDailyCheckinProps) {
+type Champ = (typeof CHAMPS)[number];
+type Valeurs = Record<Champ, number | null>;
+
+const VIDE: Valeurs = CHAMPS.reduce((o, c) => ({ ...o, [c]: null }), {} as Valeurs);
+
+export function HealthDailyCheckin({ open, onOpenChange, date }: Props) {
   const { t } = useTranslation();
+  const locale = useDateFnsLocale();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
-  
+
   const { data: settings } = useHealthSettings(user?.id);
-  const targetDate = date ?? format(subDays(new Date(), 1), "yyyy-MM-dd");
-  const estLaVeille = targetDate === format(subDays(new Date(), 1), "yyyy-MM-dd");
-  const targetDateLabel = estLaVeille ? t("health.checkin.yesterday", "Hier") : format(parseISO(targetDate), "dd.MM");
-  
-  const { data: todayData } = useHealthByDate(user?.id, targetDate);
-  const upsertHealth = useUpsertHealthData(user?.id);
-  
-  /* AUCUNE VALEUR PAR DEFAUT, ET C EST LE POINT.
-     Chaque champ s ouvrait pre-rempli d une mesure inventee — sommeil a
-     sept heures, tout le reste a trois, hydratation a quatre verres,
-     mouvement a trente minutes. Enchainer les sept etapes sans rien
-     toucher inscrivait quinze mesures imaginaires comme si elles
-     avaient ete constatees, et c est exactement ce qui arrive quand on
-     rattrape treize jours a la chaine.
-     Toute la refonte tenait sur une phrase : une journee finie SE
-     RACONTE, elle ne se devine pas. Un champ qu on n a pas touche reste
-     donc nul, et la colonne l accepte. */
-  const [sleepHours, setSleepHours] = useState<number | null>(null);
-  const [sleepQuality, setSleepQuality] = useState<number | null>(null);
-  const [wakeEnergy, setWakeEnergy] = useState<number | null>(null);
-  const [activityLevel, setActivityLevel] = useState<number | null>(null);
-  const [movementMinutes, setMovementMinutes] = useState<number | null>(null);
-  const [stressLevel, setStressLevel] = useState<number | null>(null);
-  const [mentalLoad, setMentalLoad] = useState<number | null>(null);
-  const [hydrationGlasses, setHydrationGlasses] = useState<number | null>(null);
-  const [mealBalance, setMealBalance] = useState<number | null>(null);
-  const [moodLevel, setMoodLevel] = useState<number | null>(null);
-  const [moodJournal, setMoodJournal] = useState<string>("");
-  const [energyMorning, setEnergyMorning] = useState<number | null>(null);
-  const [energyAfternoon, setEnergyAfternoon] = useState<number | null>(null);
-  const [energyEvening, setEnergyEvening] = useState<number | null>(null);
-  const [notes, setNotes] = useState<string>("");
+  const cible = date ?? cleDuJour(laVeille());
+  const { data: existant } = useHealthByDate(user?.id, cible);
+  const upsert = useUpsertHealthData(user?.id);
 
-  /* LA FENETRE S OUVRE SUR LA PREMIERE ETAPE, ET C EST TOUT.
-     Une sequence de demarrage factice tenait l ecran 850 ms avant
-     chaque ouverture — treize increments de 50 ms puis 200 ms
-     d attente — pour afficher « Initializing Biometric Scan ».
-     Rattraper treize jours, c etait onze secondes de theatre. */
-  useEffect(() => {
-    if (open) setCurrentStep(0);
-  }, [open]);
+  const [valeurs, setValeurs] = useState<Valeurs>(VIDE);
+  const [notes, setNotes] = useState("");
+  const [detailOuvert, setDetailOuvert] = useState(false);
 
   useEffect(() => {
-    if (todayData) {
-      setSleepHours(todayData.sleep_hours ?? null);
-      setSleepQuality(todayData.sleep_quality ?? null);
-      setWakeEnergy(todayData.wake_energy ?? null);
-      setActivityLevel(todayData.activity_level ?? null);
-      setMovementMinutes(todayData.movement_minutes ?? null);
-      setStressLevel(todayData.stress_level ?? null);
-      setMentalLoad(todayData.mental_load ?? null);
-      setHydrationGlasses(todayData.hydration_glasses ?? null);
-      setMealBalance(todayData.meal_balance ?? null);
-      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string; energy_morning?: number; energy_afternoon?: number; energy_evening?: number };
-      setMoodLevel(extData.mood_level ?? null);
-      setMoodJournal(extData.mood_journal ?? "");
-      setEnergyMorning(extData.energy_morning ?? null);
-      setEnergyAfternoon(extData.energy_afternoon ?? null);
-      setEnergyEvening(extData.energy_evening ?? null);
-      setNotes(todayData.notes ?? "");
+    if (!existant) return;
+    const rempli = { ...VIDE };
+    for (const c of CHAMPS) {
+      const v = (existant as unknown as Record<string, number | null>)[c];
+      rempli[c] = v ?? null;
     }
-  }, [todayData]);
+    setValeurs(rempli);
+    setNotes(existant.notes ?? "");
+    /* Si la journee porte deja du detail, on ouvre le pli : sinon on
+       cacherait a l utilisateur ce qu il a lui-meme saisi. */
+    const detail: Champ[] = ["energy_morning", "energy_afternoon", "energy_evening",
+      "sleep_hours", "wake_energy", "movement_minutes", "meal_balance"];
+    if (detail.some((c) => rempli[c] !== null)) setDetailOuvert(true);
+  }, [existant]);
 
-  const steps = [
-    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), label: t("health.checkin.scan.sleep") },
-    { key: "activity", icon: Activity, title: t("health.metrics.activity"), label: t("health.checkin.scan.activity") },
-    { key: "stress", icon: Brain, title: t("health.metrics.stress"), label: t("health.checkin.scan.stress") },
-    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), label: t("health.checkin.scan.hydration") },
-    { key: "mood", icon: Smile, title: t("health.mood.title"), label: t("health.checkin.scan.mood") },
-    { key: "energy", icon: Zap, title: t("health.energy.title"), label: t("health.checkin.scan.energy") },
-    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), label: t("health.checkin.scan.notes") },
-  ];
+  const poser = (champ: Champ, valeur: number | null) =>
+    /* Recliquer sur le cran deja choisi le relache : on peut defaire
+       une erreur sans avoir a fermer la fenetre. */
+    setValeurs((v) => ({ ...v, [champ]: v[champ] === valeur ? null : valeur }));
 
-  const qualityLabels = [
-    t("health.checkin.quality.poor", "Poor"),
-    t("health.checkin.quality.fair", "Fair"),
-    t("health.checkin.quality.okay", "Okay"),
-    t("health.checkin.quality.good", "Good"),
-    t("health.checkin.quality.great", "Great"),
-  ];
-  
-  const stressLabels = [
-    t("health.checkin.stress.minimal", "Minimal"),
-    t("health.checkin.stress.low", "Low"),
-    t("health.checkin.stress.moderate", "Moderate"),
-    t("health.checkin.stress.high", "High"),
-    t("health.checkin.stress.overwhelming", "Overwhelming"),
-  ];
+  const qualite = useMemo(() => [
+    t("health.checkin.quality.poor"), t("health.checkin.quality.fair"),
+    t("health.checkin.quality.okay"), t("health.checkin.quality.good"),
+    t("health.checkin.quality.great"),
+  ], [t]);
 
-  const handleNext = () => { if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1); };
-  const handleBack = () => { if (currentStep > 0) setCurrentStep(currentStep - 1); };
+  const tension = useMemo(() => [
+    t("health.checkin.stress.minimal"), t("health.checkin.stress.low"),
+    t("health.checkin.stress.moderate"), t("health.checkin.stress.high"),
+    t("health.checkin.stress.overwhelming"),
+  ], [t]);
 
-  const handleSubmit = async () => {
-    await upsertHealth.mutateAsync({
-      entry_date: targetDate,
-      sleep_hours: sleepHours,
-      sleep_quality: sleepQuality,
-      wake_energy: wakeEnergy,
-      activity_level: activityLevel,
-      movement_minutes: movementMinutes,
-      stress_level: stressLevel,
-      mental_load: mentalLoad,
-      hydration_glasses: hydrationGlasses,
-      meal_balance: mealBalance,
-      mood_level: moodLevel,
-      mood_journal: moodJournal || null,
-      energy_morning: energyMorning,
-      energy_afternoon: energyAfternoon,
-      energy_evening: energyEvening,
-      notes: notes || null,
-    } as Record<string, unknown>);
-    onOpenChange(false);
-    setCurrentStep(0);
-  };
+  const humeur = useMemo(() => [
+    t("health.mood.veryLow"), t("health.mood.low"), t("health.mood.neutral"),
+    t("health.mood.good"), t("health.mood.great"),
+  ], [t]);
 
-  const currentStepData = steps[currentStep];
-  const Icon = currentStepData.icon;
+  const VISAGES = ["\u{1F614}", "\u{1F615}", "\u{1F610}", "\u{1F642}", "\u{1F60A}"];
 
-  /* LES CLASSES SONT ECRITES EN TOUTES LETTRES, ET C EST OBLIGATOIRE.
-     Elles etaient construites par interpolation, et Tailwind — qui lit
-     le source sans l executer — ne les a donc jamais generees. Mesure
-     faite dans le navigateur sur un bouton selectionne : text-blue-400
-     et border-2 s appliquaient bien, parce qu ils existent ailleurs en
-     litteral, mais bg-blue-400/20 et border-blue-400 non — fond
-     transparent, bordure restee au jeton par defaut. Le bouton n avait
-     l air qu a moitie coche, ce qui explique que ca soit passe. */
-  const ACCENTS: Record<string, string> = {
-    "hud-phosphor": "bg-hud-phosphor/20 text-hud-phosphor border-hud-phosphor",
-    "blue-400": "bg-blue-400/20 text-blue-400 border-blue-400",
-    "hud-amber": "bg-hud-amber/20 text-hud-amber border-hud-amber",
-    "orange-400": "bg-orange-400/20 text-orange-400 border-orange-400",
-  };
-
-  // Chamfered selection button
-  const ChamferedBtn = ({ selected, onClick, children, accentColor = "hud-phosphor" }: { selected: boolean; onClick: () => void; children: React.ReactNode; accentColor?: string }) => (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex-1 py-3 transition-all text-sm font-mono",
-        selected
-          ? cn("border-2", ACCENTS[accentColor] ?? ACCENTS["hud-phosphor"])
-          : "border border-border text-muted-foreground hover:border-hud-phosphor/50"
-      )}
-      style={{ clipPath: CHAMFER }}
-    >
-      {children}
-    </button>
+  /* Des fonctions, pas des composants : un composant defini dans le
+     rendu est remonte a chaque frappe, et le champ perd son focus. */
+  const echelle = (champ: Champ, libelles: string[], visages?: string[]) => (
+    <div className="hlt-crans" role="group" aria-label={libelles.join(", ")}>
+      {libelles.map((libelle, i) => (
+        <button
+          key={libelle}
+          type="button"
+          className="hlt-cran"
+          aria-pressed={valeurs[champ] === i + 1}
+          onClick={() => poser(champ, i + 1)}
+        >
+          {visages && <em aria-hidden="true">{visages[i]}</em>}
+          {libelle}
+        </button>
+      ))}
+    </div>
   );
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <div className="space-y-6">
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.howDidYouSleep")}</Label>
-              <div className="flex items-center gap-4">
-                <Slider value={[sleepHours ?? 7]} onValueChange={(v) => setSleepHours(v[0])} min={0} max={12} step={0.5} className="flex-1" />
-                <span className="text-2xl font-bold text-blue-400 w-16 text-right font-orbitron">{sleepHours === null ? "—" : `${sleepHours}h`}</span>
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.sleepQuality")}</Label>
-              <div className="flex gap-2">
-                {[1,2,3,4,5].map(v => (
-                  <ChamferedBtn key={v} selected={sleepQuality === v} onClick={() => setSleepQuality(v)} accentColor="blue-400">
-                    {qualityLabels[v-1]}
-                  </ChamferedBtn>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.wakeEnergy")}</Label>
-              <div className="flex gap-2">
-                {[1,2,3,4,5].map(v => (
-                  <ChamferedBtn key={v} selected={wakeEnergy === v} onClick={() => setWakeEnergy(v)} accentColor="blue-400">
-                    {qualityLabels[v-1]}
-                  </ChamferedBtn>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.activityLevel")}</Label>
-              <div className="flex gap-2">
-                {[1,2,3,4,5].map(v => (
-                  <ChamferedBtn key={v} selected={activityLevel === v} onClick={() => setActivityLevel(v)}>
-                    {qualityLabels[v-1]}
-                  </ChamferedBtn>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.movementMinutes")}</Label>
-              <div className="flex items-center gap-4">
-                <Slider value={[movementMinutes ?? 30]} onValueChange={(v) => setMovementMinutes(v[0])} min={0} max={180} step={5} className="flex-1" />
-                <span className="text-2xl font-bold text-hud-phosphor w-20 text-right font-orbitron">{movementMinutes === null ? "—" : `${movementMinutes}m`}</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.stressLevel")}</Label>
-              <div className="flex gap-2">
-                {[1,2,3,4,5].map(v => (
-                  <ChamferedBtn key={v} selected={stressLevel === v} onClick={() => setStressLevel(v)} accentColor="hud-amber">
-                    {stressLabels[v-1]}
-                  </ChamferedBtn>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mentalLoad")}</Label>
-              <div className="flex gap-2">
-                {[1,2,3,4,5].map(v => (
-                  <ChamferedBtn key={v} selected={mentalLoad === v} onClick={() => setMentalLoad(v)} accentColor="hud-amber">
-                    {stressLabels[v-1]}
-                  </ChamferedBtn>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div>
-              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.hydrationLevel")}</Label>
-              <div className="flex items-center gap-4">
-                <Slider value={[hydrationGlasses ?? 4]} onValueChange={(v) => setHydrationGlasses(v[0])} min={0} max={16} step={1} className="flex-1" />
-                <span className="text-2xl font-bold text-cyan-400 w-20 text-right font-orbitron">{hydrationGlasses === null ? "—" : `${hydrationGlasses} 🥛`}</span>
-              </div>
-              <p className="text-xs text-muted-foreground/50 mt-2 font-mono">
-                {t("health.settings.hydrationGoal")}: {settings?.hydration_goal_glasses || 8} {t("health.settings.glasses")}
-              </p>
-            </div>
-            {settings?.show_nutrition && (
-              <div>
-                <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mealBalance")}</Label>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(v => (
-                    <ChamferedBtn key={v} selected={mealBalance === v} onClick={() => setMealBalance(v)} accentColor="orange-400">
-                      {qualityLabels[v-1]}
-                    </ChamferedBtn>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      case 4:
-        return <HealthMoodSelector value={moodLevel} onChange={setMoodLevel} journal={moodJournal} onJournalChange={setMoodJournal} showJournal={true} />;
-      case 5:
-        return (
-          <div className="space-y-6">
-            {[
-              { label: t("health.energy.morning"), value: energyMorning, setter: setEnergyMorning },
-              { label: t("health.energy.afternoon"), value: energyAfternoon, setter: setEnergyAfternoon },
-              { label: t("health.energy.evening"), value: energyEvening, setter: setEnergyEvening },
-            ].map(({ label, value, setter }) => (
-              <div key={label}>
-                <Label className="text-sm text-muted-foreground mb-3 block font-mono">{label}</Label>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(v => (
-                    <ChamferedBtn key={v} selected={value === v} onClick={() => setter(v)} accentColor="hud-amber">
-                      {qualityLabels[v-1]}
-                    </ChamferedBtn>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      case 6:
-        return (
-          <div className="space-y-4">
-            <Label className="text-sm text-muted-foreground block font-mono">{t("health.checkin.todaysNotes")}</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("health.checkin.notesPlaceholder")} className="min-h-[120px] bg-muted/30 font-mono" />
-            <p className="text-xs text-muted-foreground/50 font-mono">{t("common.optional")}</p>
-          </div>
-        );
-      default: return null;
-    }
+  const nombre = (champ: Champ, min: number, max: number, pas: number, unite: string, defaut: number) => (
+    <div className="hlt-nombre">
+      <span>
+        <Slider
+          value={[valeurs[champ] ?? defaut]}
+          onValueChange={(v) => setValeurs((x) => ({ ...x, [champ]: v[0] }))}
+          min={min} max={max} step={pas}
+          aria-label={unite}
+        />
+      </span>
+      <b data-vide={valeurs[champ] === null ? "1" : "0"}>
+        {valeurs[champ] === null ? "—" : valeurs[champ]}
+        <i>{unite}</i>
+      </b>
+    </div>
+  );
+
+  const champ = (titre: string, controle: React.ReactNode, aide?: string) => (
+    <div className="hlt-champ">
+      <u>{titre}</u>
+      {controle}
+      {aide && <s>{aide}</s>}
+    </div>
+  );
+
+  const enregistrer = async () => {
+    await upsert.mutateAsync({
+      entry_date: cible,
+      ...valeurs,
+      notes: notes || null,
+    } as unknown as Parameters<typeof upsert.mutateAsync>[0]);
+    onOpenChange(false);
   };
+
+  const dejaReleve = Boolean(existant);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-popover border-hud-phosphor/20">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-3">
-                  <div className="p-2 bg-hud-phosphor/20" style={{ clipPath: CHAMFER }}>
-                    <Icon className="w-5 h-5 text-hud-phosphor" />
-                  </div>
-                  {currentStepData.title}
-                </DialogTitle>
-              </DialogHeader>
-              
-              {/* System boot bar */}
-              <div className="flex items-center gap-3 mb-4 font-mono ds-t-label uppercase tracking-wider text-muted-foreground">
-                <span className="text-hud-phosphor">{t("health.checkin.step", "Étape")} {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
-                <span className="text-muted-foreground/40">::</span>
-                <span>{currentStepData.label}</span>
-                <span className="text-muted-foreground/40">::</span>
-                <span className="text-hud-amber">{targetDateLabel}</span>
-              </div>
+      <DialogContent className="hlt hlt-fenetre max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{t("health.dailyCheckin")}</DialogTitle>
+        </DialogHeader>
 
-              {/* Step progress bar */}
-              <div className="flex gap-1 mb-4">
-                {steps.map((_, i) => (
-                  <div key={i} className={cn("flex-1 h-[2px] transition-all", i <= currentStep ? "bg-hud-phosphor" : "bg-muted")} />
-                ))}
+        <div className="hlt-releve-tete">
+          {format(parseISO(cible), "EEEE d MMMM", { locale })}
+          <b data-fait={dejaReleve ? "1" : "0"}>
+            {dejaReleve ? t("health.checkin.logged", "relevé") : t("health.checkin.notLogged", "non relevé")}
+          </b>
+        </div>
+
+        <p className="hlt-releve-q">{t("health.log.todo")}</p>
+
+        {/* LES SIX QUI COMPTENT. Ce sont exactement ceux que lisent
+            Analytics et la suggestion de rythme. */}
+        <div className="hlt-grille">
+          {champ(t("health.metrics.sleepQuality"), echelle("sleep_quality", qualite))}
+          {champ(t("health.metrics.activityLevel"), echelle("activity_level", qualite))}
+          {champ(t("health.mood.title"), echelle("mood_level", humeur, VISAGES))}
+          {champ(t("health.checkin.stressLevel"), echelle("stress_level", tension))}
+          {champ(t("health.metrics.mentalLoad"), echelle("mental_load", tension))}
+          {champ(
+            t("health.checkin.hydrationLevel"),
+            nombre("hydration_glasses", 0, 16, 1, t("health.settings.glasses"), 4),
+            `${t("health.settings.hydrationGoal")} ${settings?.hydration_goal_glasses || 8}`,
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="hlt-pli"
+          aria-expanded={detailOuvert}
+          onClick={() => setDetailOuvert((v) => !v)}
+        >
+          <span>
+            {t("health.checkin.detail", "Le détail")} — {t("common.optional")}
+          </span>
+          <b>
+            {detailOuvert ? t("health.checkin.fold", "Replier") : t("health.checkin.unfold", "Déplier")}
+            <ChevronDown
+              aria-hidden="true"
+              style={{
+                width: 12, height: 12, display: "inline", marginLeft: 6, verticalAlign: -2,
+                transform: detailOuvert ? "rotate(180deg)" : "none",
+              }}
+            />
+          </b>
+        </button>
+
+        {detailOuvert && (
+          <div className="hlt-pli-corps">
+            <div>
+              <div className="hlt-section">{t("health.checkin.sectionEnergy", "L’énergie, dans la journée")}</div>
+              <div className="hlt-grille" data-colonnes="3">
+                {champ(t("health.energy.morning"), echelle("energy_morning", ["1", "2", "3", "4", "5"]))}
+                {champ(t("health.energy.afternoon"), echelle("energy_afternoon", ["1", "2", "3", "4", "5"]))}
+                {champ(t("health.energy.evening"), echelle("energy_evening", ["1", "2", "3", "4", "5"]))}
               </div>
-              
-              <AnimatePresence mode="wait">
-                <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="py-4">
-                  {renderStepContent()}
-                </motion.div>
-              </AnimatePresence>
-              
-              <div className="flex justify-between pt-4 border-t border-border">
-                <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0} className="text-muted-foreground font-mono">
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  {t("common.back")}
-                </Button>
-                {currentStep < steps.length - 1 ? (
-                  <Button onClick={handleNext} className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 font-mono"
-                    style={{ clipPath: CHAMFER }}>
-                    {t("common.next")}
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                ) : (
-                  <Button onClick={handleSubmit} disabled={upsertHealth.isPending}
-                    className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 animate-neon-pulse font-mono"
-                    style={{ clipPath: CHAMFER }}>
-                    {upsertHealth.isPending ? t("common.saving") : t("common.save")}
-                    <Check className="w-4 h-4 ml-1" />
-                  </Button>
-                )}
+            </div>
+
+            <div>
+              <div className="hlt-section">{t("health.checkin.sectionSleep", "Le sommeil")}</div>
+              <div className="hlt-grille">
+                {champ(t("health.metrics.sleepHours"), nombre("sleep_hours", 0, 12, 0.5, t("health.settings.hours"), 7))}
+                {champ(t("health.metrics.wakeEnergy"), echelle("wake_energy", qualite))}
               </div>
-        </motion.div>
+            </div>
+
+            <div>
+              <div className="hlt-section">{t("health.checkin.sectionBody", "Le corps")}</div>
+              <div className="hlt-grille">
+                {champ(t("health.metrics.movementMinutes"), nombre("movement_minutes", 0, 180, 5, t("health.settings.minutes"), 30))}
+                {settings?.show_nutrition && champ(t("health.metrics.mealBalance"), echelle("meal_balance", qualite))}
+              </div>
+            </div>
+
+            <div>
+              <div className="hlt-section">{t("health.checkin.todaysNotes")}</div>
+              <textarea
+                className="hlt-mot"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t("health.checkin.notesPlaceholder")}
+                aria-label={t("health.checkin.todaysNotes")}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="hlt-releve-pied">
+          <button type="button" className="hlt-bouton" disabled={upsert.isPending} onClick={enregistrer}>
+            <ClipboardCheck aria-hidden="true" />
+            {upsert.isPending ? t("common.saving") : t("health.log.open")}
+          </button>
+          <span className="hlt-note-champ">
+            {t("health.checkin.emptyStays", "Un champ laissé vide reste vide")}
+          </span>
+        </div>
       </DialogContent>
     </Dialog>
   );
