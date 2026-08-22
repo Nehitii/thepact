@@ -1821,6 +1821,27 @@
       "compte": "{{n}} items · {{montant}}",
       "rendre": "Put back in the list",
       "libre": "outside the pact"
+    },
+    "import": {
+      "titre": "Import from a page",
+      "adresse": "Page address",
+      "lire": "Read",
+      "urlInvalide": "That is not an address.",
+      "urlHttps": "Only https addresses are read.",
+      "urlLocale": "This address does not point to a public site.",
+      "echec": "The page returned nothing.",
+      "luSur": "Read on {{domaine}}",
+      "lu": "read",
+      "nonTrouve": "not found",
+      "sansImage": "No image on the page",
+      "entrera": "Will enter as {{montant}}",
+      "devise": "The page quotes {{lue}}; this account keeps its amounts in {{tienne}}. Nothing converts this amount.",
+      "deviseAssume": "I keep this amount as is",
+      "doublonAdresse": "This page is already in your list, as “{{nom}}”.",
+      "doublonNom": "“{{nom}}” is already in your list.",
+      "sansPrix": "Without a price, the item enters at zero and weighs in no total.",
+      "valider": "Check and add",
+      "suite": "The form will then open for the goal, priority and notes."
     }
   },
   "inbox": {

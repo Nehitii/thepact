@@ -1821,6 +1821,27 @@
       "compte": "{{n}} articles · {{montant}}",
       "rendre": "Remettre dans la liste",
       "libre": "hors pacte"
+    },
+    "import": {
+      "titre": "Importer depuis une page",
+      "adresse": "Adresse de la page",
+      "lire": "Lire",
+      "urlInvalide": "Ce n’est pas une adresse.",
+      "urlHttps": "Seules les adresses https sont lues.",
+      "urlLocale": "Cette adresse ne désigne pas un site public.",
+      "echec": "La page n’a rien livré.",
+      "luSur": "Lu sur {{domaine}}",
+      "lu": "lu",
+      "nonTrouve": "non trouvé",
+      "sansImage": "Aucune image sur la page",
+      "entrera": "Entrera pour {{montant}}",
+      "devise": "La page annonce des {{lue}} ; ce compte tient ses montants en {{tienne}}. Rien ne convertit ce montant.",
+      "deviseAssume": "Je garde ce montant tel quel",
+      "doublonAdresse": "Cette page est déjà dans ta liste, sous « {{nom}} ».",
+      "doublonNom": "« {{nom}} » est déjà dans ta liste.",
+      "sansPrix": "Sans prix, l’article entrera à zéro et ne pèsera dans aucun total.",
+      "valider": "Contrôler et ajouter",
+      "suite": "Le formulaire s’ouvrira ensuite pour l’objectif, la priorité et les notes."
     }
   },
   "inbox": {

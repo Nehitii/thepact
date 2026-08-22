@@ -438,7 +438,13 @@ export default function Wishlist() {
         isBusy={mergeBusy} onMerge={fusionner} onKeepBoth={garderLesDeux}
       />
 
-      <ImportFromUrlModal open={importOpen} onOpenChange={setImportOpen} onImport={importer} />
+      {/* Le controle d import a besoin de la liste pour reconnaitre un
+          doublon avant d ecrire, et de la devise pour dire dans
+          laquelle le montant va entrer. */}
+      <ImportFromUrlModal
+        open={importOpen} onOpenChange={setImportOpen} onImport={importer}
+        items={items} currency={currency}
+      />
 
       <DeleteConfirmDialog
         open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}
@@ -733,7 +739,7 @@ function FormulaireArticle(p: FormulaireArticleProps) {
 
   return (
     <Dialog open={p.open} onOpenChange={p.onOpenChange}>
-      <DialogContent className="wl bg-card/95 backdrop-blur-2xl border-[var(--wl-trait)] max-h-[88vh] overflow-y-auto">
+      <DialogContent className="wl-boite bg-card/95 backdrop-blur-2xl border-[var(--wl-trait)] max-h-[88vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-mono uppercase text-sm tracking-[0.2em] text-foreground">
             {p.titre}

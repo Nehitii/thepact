@@ -21,7 +21,13 @@
    theme.
    ═══════════════════════════════════════════════════════════════ */
 
-.wl {
+/* LES JETONS D UN COTE, LA MISE EN PAGE DE L AUTRE.
+   .wl portait les deux, et les fenetres l utilisaient pour heriter
+   des couleurs — en heritant aussi de « position: relative », qui
+   ecrase le « fixed » de la fenetre : le dialogue partait a deux
+   mille pixels sous l ecran. Une fenetre prend .wl-boite : les memes
+   couleurs, aucune mise en page. */
+.wl, .wl-boite {
   --wl-encre: #eaf6ff;
   --wl-encre-2: #cfe4f5;
   --wl-encre-3: var(--nexus-text-dimmer);
@@ -36,14 +42,18 @@
   --wl-pacte: var(--cp-jaune);
   --wl-libre: var(--cp-cyan);
   --wl-acquis: #00ff88;
+}
 
+/* La mise en page n appartient qu a la page. */
+.wl {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-:root:not(.dark) .wl {
+:root:not(.dark) .wl,
+:root:not(.dark) .wl-boite {
   --wl-encre: hsl(212 42% 13%);
   --wl-encre-2: hsl(212 24% 27%);
   --wl-encre-3: hsl(212 16% 38%);
@@ -662,3 +672,80 @@
   background: var(--wl-acquis);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE CONTROLE D IMPORT
+
+   L import devine ; le controle fait relire. Ce qui a ete lu porte
+   une coche, ce qui manque le dit, et ce qui doit etre tranche
+   bloque le bouton tant qu on n a pas tranche.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-controle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--wl-trait);
+  background: var(--wl-plaque);
+}
+
+.wl-controle-tete {
+  margin: 0;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+}
+
+.wl-controle-corps { display: flex; flex-direction: column; gap: 12px; }
+.wl-controle-image { max-width: 180px; align-self: flex-start; }
+
+.wl-controle-note {
+  margin: 0;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.2px;
+  color: var(--wl-encre-3);
+}
+
+/* Ce que la page a donne, et ce qu elle n a pas donne. */
+.wl-lu, .wl-manque {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--wl-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.wl-lu { color: var(--wl-acquis); }
+.wl-manque { color: var(--wl-encre-3); margin: 0; }
+.wl-lu svg, .wl-manque svg { width: 10px; height: 10px; }
+
+/* ── Les alertes ──
+   Un refus arrete ; une attention previent. */
+.wl-alerte {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.45;
+  border: 1px solid;
+}
+.wl-alerte svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.wl-alerte > span { display: block; min-width: 0; }
+.wl-alerte[data-ton="refus"] {
+  color: var(--cp-rouge);
+  border-color: color-mix(in srgb, var(--cp-rouge) 35%, transparent);
+  background: color-mix(in srgb, var(--cp-rouge) 5%, transparent);
+}
+.wl-alerte[data-ton="attention"] {
+  color: var(--wl-encre-2);
+  border-color: color-mix(in srgb, var(--wl-pacte) 32%, transparent);
+  background: color-mix(in srgb, var(--wl-pacte) 4%, transparent);
+}
+.wl-alerte[data-ton="attention"] svg { color: var(--wl-pacte); }
