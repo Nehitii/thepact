@@ -1719,7 +1719,7 @@
       "objectif": "Objectif lié",
       "aucunObjectif": "Aucun",
       "priorite": "Priorité",
-      "lien": "Lien",
+      "lien": "Lien vers la boutique",
       "image": "Image",
       "requis": "Requis pour le pacte",
       "requisAide": "Une nécessité, pas une envie.",
@@ -1851,7 +1851,19 @@
       "valider": "Contrôler et ajouter",
       "suite": "Le formulaire s’ouvrira ensuite pour l’objectif, la priorité et les notes."
     },
-    "erreurMaj": "Modification impossible"
+    "erreurMaj": "Modification impossible",
+    "depot": {
+      "adresseOuFichier": "https://… ou dépose un fichier",
+      "deposer": "Déposer un fichier",
+      "retirer": "Retirer l’image",
+      "vide": "Coller une adresse, ou déposer un fichier",
+      "pose": "Image déposée",
+      "echec": "Dépôt impossible",
+      "typeRefuse": "Format non accepté",
+      "typeAide": "JPG, PNG, WebP ou GIF.",
+      "tropLourd": "Fichier trop lourd",
+      "poidsAide": "5 Mo au maximum."
+    }
   },
   "inbox": {
     "title": "Boîte de réception",

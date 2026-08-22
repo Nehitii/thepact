@@ -1719,7 +1719,7 @@
       "objectif": "Linked goal",
       "aucunObjectif": "None",
       "priorite": "Priority",
-      "lien": "Link",
+      "lien": "Shop link",
       "image": "Image",
       "requis": "Required for the pact",
       "requisAide": "A necessity, not a wish.",
@@ -1851,7 +1851,19 @@
       "valider": "Check and add",
       "suite": "The form will then open for the goal, priority and notes."
     },
-    "erreurMaj": "Update failed"
+    "erreurMaj": "Update failed",
+    "depot": {
+      "adresseOuFichier": "https://… or drop a file",
+      "deposer": "Upload a file",
+      "retirer": "Remove the image",
+      "vide": "Paste an address, or drop a file",
+      "pose": "Image uploaded",
+      "echec": "Upload failed",
+      "typeRefuse": "Format not accepted",
+      "typeAide": "JPG, PNG, WebP or GIF.",
+      "tropLourd": "File too large",
+      "poidsAide": "5 MB maximum."
+    }
   },
   "inbox": {
     "title": "Inbox",

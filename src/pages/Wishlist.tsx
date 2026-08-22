@@ -26,6 +26,8 @@ import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useWishlistGoalSync } from "@/hooks/useWishlistGoalSync";
 import { useWishlistPieces } from "@/hooks/useWishlistPieces";
+import { useDepotImages } from "@/hooks/useDepotImages";
+import { cheminDuDepot } from "@/lib/wishlistDepot";
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
 import { ImportFromUrlModal, type ScrapedProduct } from "@/components/wishlist/ImportFromUrlModal";
 import { DeleteConfirmDialog } from "@/components/wishlist/DeleteConfirmDialog";
@@ -33,6 +35,7 @@ import { WishlistFiche } from "@/components/wishlist/WishlistFiche";
 import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
 import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
 import { WishlistRail } from "@/components/wishlist/WishlistRail";
+import { ChampImage } from "@/components/wishlist/ChampImage";
 import "@/styles/wishlist.css";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -108,6 +111,19 @@ export default function Wishlist() {
     [items],
   );
   const { data: pieces } = useWishlistPieces(user?.id, idsPieces);
+
+  /* Les images deposees sont rangees en chemin, pas en adresse : le
+     depot est prive. On les signe toutes en une requete. */
+  const cheminsDepot = useMemo(
+    () => items.map((i) => cheminDuDepot(i.image_url)).filter((v): v is string => Boolean(v)),
+    [items],
+  );
+  const { data: depot } = useDepotImages(user?.id, cheminsDepot);
+  const adresseImage = (item: PactWishlistItem) => {
+    const chemin = cheminDuDepot(item.image_url);
+    if (chemin) return depot?.get(chemin) ?? null;
+    return item.image_url?.trim() || null;
+  };
 
   /* La vue retenue survit a la visite, comme le mois de Finance. */
   const [vue, setVue] = useState<Vue>(() => {
@@ -461,7 +477,7 @@ export default function Wishlist() {
           laquelle le montant va entrer. */}
       <ImportFromUrlModal
         open={importOpen} onOpenChange={setImportOpen} onImport={importer}
-        items={items} currency={currency}
+        items={items} currency={currency} userId={user?.id}
       />
 
       <DeleteConfirmDialog
@@ -485,6 +501,7 @@ export default function Wishlist() {
         type={newType} setType={setNewType}
         priority={newPriority} setPriority={setNewPriority}
         goals={goals}
+        userId={user?.id}
         onSubmit={() => creer()}
         submitLabel={t("wishlist.form.ajouter", "Ajouter")}
         busy={createItem.isPending}
@@ -503,6 +520,7 @@ export default function Wishlist() {
         priority={editPriority} setPriority={setEditPriority}
         notes={editNotes} setNotes={setEditNotes}
         goals={goals}
+        userId={user?.id}
         onSubmit={() => enregistrerEdition()}
         submitLabel={t("common.save", "Enregistrer")}
         busy={updateItem.isPending}
@@ -697,6 +715,7 @@ export default function Wishlist() {
                     <WishlistFiche
                       key={item.id}
                       item={item}
+                      src={adresseImage(item)}
                       currency={currency}
                       piece={item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined}
                       onEdit={ouvrirEdition}
@@ -739,6 +758,7 @@ interface FormulaireArticleProps {
   priority: WishlistPriority; setPriority: (v: WishlistPriority) => void;
   notes?: string; setNotes?: (v: string) => void;
   goals: Array<{ id: string; name: string }>;
+  userId: string | undefined;
   onSubmit: () => void;
   submitLabel: string;
   busy: boolean;
@@ -746,13 +766,6 @@ interface FormulaireArticleProps {
 
 function FormulaireArticle(p: FormulaireArticleProps) {
   const { t } = useTranslation();
-
-  const PRIORITES: Array<{ cle: WishlistPriority; mot: string }> = [
-    { cle: "low", mot: t("wishlist.priorite.low", "Basse") },
-    { cle: "med", mot: t("wishlist.priorite.med", "Moyenne") },
-    { cle: "high", mot: t("wishlist.priorite.high", "Haute") },
-    { cle: "critical", mot: t("wishlist.priorite.critical", "Critique") },
-  ];
 
   const champ = "bg-transparent border-[var(--wl-trait)] font-rajdhani";
   const etiquette = "font-mono uppercase text-[10px] tracking-[0.2em] text-muted-foreground";
@@ -772,16 +785,20 @@ function FormulaireArticle(p: FormulaireArticleProps) {
             <Input value={p.name} onChange={(e) => p.setName(e.target.value)} className={champ} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className={etiquette}>{t("wishlist.form.prix", "Prix estimé")}</Label>
-              <Input value={p.cost} onChange={(e) => p.setCost(e.target.value)} inputMode="decimal"
-                className={`${champ} font-mono`} />
-            </div>
-            <div className="space-y-2">
-              <Label className={etiquette}>{t("wishlist.form.categorie", "Catégorie")}</Label>
-              <Input value={p.category} onChange={(e) => p.setCategory(e.target.value)} className={champ} />
-            </div>
+          {/* DEUX CHAMPS QUE PERSONNE NE REMPLIT.
+              Mesure : sur soixante-et-onze articles, soixante-neuf
+              portent la categorie « Goal Equipment » et soixante-huit
+              sur soixante-dix la priorite « basse » — les deux ecrites
+              par la synchronisation, aucune par une main. Aucun
+              article n a jamais porte « haute » ni « critique ».
+              Ce qui decide de l ordre d achat, c est le prix et
+              l objectif ; le formulaire cesse de demander le reste.
+              Les valeurs existantes sont relues et reecrites telles
+              quelles : rien n est efface. */}
+          <div className="space-y-2">
+            <Label className={etiquette}>{t("wishlist.form.prix", "Prix estimé")}</Label>
+            <Input value={p.cost} onChange={(e) => p.setCost(e.target.value)} inputMode="decimal"
+              className={`${champ} font-mono`} />
           </div>
 
           <div className="space-y-2">
@@ -798,41 +815,15 @@ function FormulaireArticle(p: FormulaireArticleProps) {
           </div>
 
           <div className="space-y-2">
-            <Label className={etiquette}>{t("wishlist.form.priorite", "Priorité")}</Label>
-            <div className="flex flex-wrap gap-1.5">
-              {PRIORITES.map((o) => (
-                <button
-                  key={o.cle}
-                  type="button"
-                  className="wl-tri"
-                  aria-pressed={p.priority === o.cle}
-                  onClick={() => p.setPriority(o.cle)}
-                >
-                  {o.mot}
-                </button>
-              ))}
-            </div>
+            <Label className={etiquette}>{t("wishlist.form.lien", "Lien vers la boutique")}</Label>
+            <Input value={p.url} onChange={(e) => p.setUrl(e.target.value)} placeholder="https://…"
+              className={`${champ} font-mono text-xs`} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className={etiquette}>{t("wishlist.form.lien", "Lien")}</Label>
-              <Input value={p.url} onChange={(e) => p.setUrl(e.target.value)} placeholder="https://…"
-                className={`${champ} font-mono text-xs`} />
-            </div>
-            <div className="space-y-2">
-              <Label className={etiquette}>{t("wishlist.form.image", "Image")}</Label>
-              <Input value={p.imageUrl} onChange={(e) => p.setImageUrl(e.target.value)} placeholder="https://…"
-                className={`${champ} font-mono text-xs`} />
-            </div>
+          <div className="space-y-2">
+            <Label className={etiquette}>{t("wishlist.form.image", "Image")}</Label>
+            <ChampImage value={p.imageUrl} onChange={p.setImageUrl} userId={p.userId} />
           </div>
-
-          {p.imageUrl && (
-            <div className="wl-vignette" style={{ maxWidth: 160 }}>
-              <img src={p.imageUrl} alt="" loading="lazy" decoding="async"
-                onError={(e) => { (e.currentTarget.parentElement as HTMLElement | null)?.remove(); }} />
-            </div>
-          )}
 
           {p.setNotes && (
             <div className="space-y-2">

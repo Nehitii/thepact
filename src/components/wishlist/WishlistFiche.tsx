@@ -8,6 +8,11 @@ import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
 
 interface WishlistFicheProps {
   item: PactWishlistItem;
+  /* L adresse reellement affichable. Une image deposee est rangee en
+     base sous forme de CHEMIN — le depot est prive, il faut signer.
+     La page resout tous les chemins d un coup et passe le resultat
+     ici. */
+  src?: string | null;
   currency: string;
   piece?: PieceDeLEtape;
   onEdit: (item: PactWishlistItem) => void;
@@ -46,7 +51,7 @@ function initiales(nom: string) {
  * qui propose au survol d en poser une.
  */
 export function WishlistFiche({
-  item, currency, piece, onEdit, onDelete, onToggleAcquired,
+  item, src, currency, piece, onEdit, onDelete, onToggleAcquired,
 }: WishlistFicheProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -54,7 +59,12 @@ export function WishlistFiche({
 
   const duPacte = Boolean(item.source_goal_cost_id);
   const acquis = item.acquired;
+  /* La MISE EN PAGE suit l intention — l article a-t-il une image —
+     et l AFFICHAGE suit la source resolue. Sans cette distinction, la
+     tuile changeait de taille quand les signatures arrivaient, et la
+     grille entiere sautait. */
   const photo = Boolean(item.image_url) && !imageMorte;
+  const adresse = src ?? null;
 
   /* La synchronisation ecrivait « Source: <objectif> » dans les notes
      de chaque piece : la carte affichait le nom de l objectif deux
@@ -81,15 +91,15 @@ export function WishlistFiche({
     <article className="wl-fiche" data-photo={photo ? "oui" : "non"} data-acquis={acquis ? "oui" : "non"}>
       <div className="wl-vignette">
         {photo ? (
-          <img
-            src={item.image_url ?? ""}
+          adresse ? <img
+            src={adresse}
             alt=""
             loading="lazy"
             decoding="async"
             /* Une image morte laisserait un cadre vide qu on prend
                pour un bug : la tuile repasse sur sa plaque gravee. */
             onError={() => setImageMorte(true)}
-          />
+          /> : null
         ) : (
           <button
             type="button"

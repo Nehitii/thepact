@@ -1024,6 +1024,29 @@
   color: var(--wl-encre);
 }
 
+/* La zone qui invite a deposer, quand il n y a encore rien. */
+.wl-depot-vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 12px;
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--wl-encre-3);
+  background: var(--wl-creux);
+  border: 1px dashed var(--wl-trait-fort);
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+.wl-depot-vide:hover { color: var(--wl-encre-2); border-color: var(--wl-encre-3); }
+.wl-depot-vide:focus-visible { outline: 2px solid var(--wl-jaune); outline-offset: 2px; }
+.wl-depot-vide svg { width: 14px; height: 14px; }
+.wl-depot-vide:disabled { cursor: default; opacity: 0.6; }
+
 /* ═══════════════════════════════════════════════════════════════
    LES VIDES
    ═══════════════════════════════════════════════════════════════ */

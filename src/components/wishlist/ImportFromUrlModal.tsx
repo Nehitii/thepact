@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, Globe, Loader2, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { ChampImage } from "@/components/wishlist/ChampImage";
 
 export interface ScrapedProduct {
   name: string | null;
@@ -52,6 +53,8 @@ interface ImportFromUrlModalProps {
   items?: ArticleConnu[];
   /** La devise dans laquelle ce compte tient ses montants. */
   currency?: string;
+  /** Pour deposer un fichier a la place de l image devinee. */
+  userId?: string;
 }
 
 /**
@@ -88,7 +91,7 @@ interface ImportFromUrlModalProps {
  *    valide pas une supposition : on valide ce qu on a relu.
  */
 export function ImportFromUrlModal({
-  open, onOpenChange, onImport, items = [], currency = "EUR",
+  open, onOpenChange, onImport, items = [], currency = "EUR", userId,
 }: ImportFromUrlModalProps) {
   const { t } = useTranslation();
 
@@ -260,17 +263,10 @@ export function ImportFromUrlModal({
                       ? <span className="wl-lu"><Check aria-hidden="true" /> {t("wishlist.import.lu", "lu")}</span>
                       : <span className="wl-manque">{t("wishlist.import.nonTrouve", "non trouvé")}</span>}
                   </Label>
-                  <Input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://…"
-                    className="bg-transparent border-[var(--wl-trait)] font-mono text-xs" />
-                  {image.trim() ? (
-                    <div className="wl-vignette wl-controle-image">
-                      <img src={image.trim()} alt="" loading="lazy" decoding="async"
-                        onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
-                        onLoad={(e) => { e.currentTarget.style.visibility = "visible"; }} />
-                    </div>
-                  ) : (
-                    <p className="wl-manque">{t("wishlist.import.sansImage", "Aucune image sur la page")}</p>
-                  )}
+                  {/* Le lecteur devine mal une image plus souvent qu un
+                      nom. On peut donc corriger l adresse, ou deposer
+                      son propre fichier a la place. */}
+                  <ChampImage value={image} onChange={setImage} userId={userId} />
                 </div>
 
                 <div className="space-y-2">
