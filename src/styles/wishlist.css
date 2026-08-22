@@ -1094,6 +1094,33 @@
   color: var(--wl-encre);
 }
 
+/* ── MODIFIER SUR PLACE ──
+   L etiquette de prix devient un champ a sa propre place, sans
+   changer de taille ni deplacer ce qui l entoure. */
+.wl-prix--champ {
+  width: 7ch;
+  min-width: 0;
+  outline: none;
+  cursor: text;
+  transform: rotate(0deg);
+  box-shadow: 0 0 0 2px var(--wl-noir);
+}
+.wl-lien-champ {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 52px;
+  z-index: 3;
+  height: 30px;
+  padding: 0 9px;
+  font-family: var(--wl-mono);
+  font-size: max(11px, 0.6875rem);
+  color: var(--wl-encre);
+  background: var(--wl-plaque);
+  border: 2px solid var(--wl-noir);
+  outline: none;
+}
+
 /* La zone qui invite a deposer, quand il n y a encore rien. */
 .wl-depot-vide {
   display: flex;

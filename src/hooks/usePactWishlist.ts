@@ -146,14 +146,41 @@ export function useUpdatePactWishlistItem() {
          acquired_via_step repasse a faux : c est une main qui
          decide, pas une etape. Annuler l etape plus tard ne doit
          donc pas defaire cette acquisition. */
-      if (marquage !== null) {
+      /* LE PRIX AUSSI EST UNE SEULE VERITE.
+         Corriger le prix ici n ecrivait que wishlist_items — et la
+         synchronisation le REECRIT depuis la piece au passage
+         suivant : « estimated_cost: costItem.price ». La correction
+         etait donc futile sur les soixante-neuf articles issus d un
+         objectif. Le prix descend maintenant jusqu a la piece, et le
+         cout de l objectif — qui est la somme de ses pieces — suit. */
+      const nouveauPrix = typeof patch.estimated_cost === "number" ? patch.estimated_cost : null;
+
+      if (marquage !== null || nouveauPrix !== null) {
         const { data: ligne } = await supabase
           .from("wishlist_items")
-          .select("source_goal_cost_id")
+          .select("source_goal_cost_id, goal_id")
           .eq("id", input.id)
           .maybeSingle();
 
-        if (ligne?.source_goal_cost_id) {
+        if (ligne?.source_goal_cost_id && nouveauPrix !== null) {
+          const { error: erreurPrix } = await supabase
+            .from("goal_cost_items")
+            .update({ price: nouveauPrix, updated_at: new Date().toISOString() })
+            .eq("id", ligne.source_goal_cost_id);
+          if (erreurPrix) throw erreurPrix;
+
+          if (ligne.goal_id) {
+            const { data: restantes, error: erreurLecture } = await supabase
+              .from("goal_cost_items").select("price").eq("goal_id", ligne.goal_id);
+            if (erreurLecture) throw erreurLecture;
+            const total = (restantes ?? []).reduce((s, p) => s + Number(p.price || 0), 0);
+            const { error: erreurObjectif } = await supabase
+              .from("goals").update({ estimated_cost: total }).eq("id", ligne.goal_id);
+            if (erreurObjectif) throw erreurObjectif;
+          }
+        }
+
+        if (ligne?.source_goal_cost_id && marquage !== null) {
           const { error: erreurPiece } = await supabase
             .from("goal_cost_items")
             .update({
@@ -172,7 +199,7 @@ export function useUpdatePactWishlistItem() {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
       /* La piece a peut-etre change de camp : le cout, le detail de
          l objectif et le financement du pacte doivent le savoir. */
-      if (typeof vars.patch.acquired === "boolean") {
+      if (typeof vars.patch.acquired === "boolean" || typeof vars.patch.estimated_cost === "number") {
         qc.invalidateQueries({ queryKey: ["cost-items"] });
         qc.invalidateQueries({ queryKey: ["goals"] });
         qc.invalidateQueries({ queryKey: ["goal-detail"] });

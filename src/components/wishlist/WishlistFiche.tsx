@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, ExternalLink, ImagePlus, Pencil, Target, Trash2 } from "lucide-react";
+import { Check, ExternalLink, ImagePlus, Link2, Pencil, Target, Trash2 } from "lucide-react";
+import { ChampSurPlace } from "@/components/wishlist/ChampSurPlace";
 import { formatCurrency } from "@/lib/currency";
 import type { PactWishlistItem } from "@/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
@@ -18,6 +19,8 @@ interface WishlistFicheProps {
   onEdit: (item: PactWishlistItem) => void;
   onDelete: (id: string) => void;
   onToggleAcquired: (id: string, acquired: boolean) => void;
+  /** Corriger une valeur sans ouvrir de fenetre. */
+  onCorriger?: (id: string, champ: "prix" | "lien", valeur: string) => void;
 }
 
 /** Deux lettres tirees du nom, pour la plaque gravee. */
@@ -51,7 +54,7 @@ function initiales(nom: string) {
  * qui propose au survol d en poser une.
  */
 export function WishlistFiche({
-  item, src, currency, piece, onEdit, onDelete, onToggleAcquired,
+  item, src, currency, piece, onEdit, onDelete, onToggleAcquired, onCorriger,
 }: WishlistFicheProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -134,7 +137,20 @@ export function WishlistFiche({
           {item.id.slice(0, 4).toUpperCase()}
         </span>
 
-        <span className="wl-prix">{formatCurrency(Number(item.estimated_cost || 0), currency)}</span>
+        {/* L etiquette se corrige sur place : c est le seul chiffre
+            dont dependent le cout de l objectif, le financement du
+            pacte et les trois totaux de la page. */}
+        <ChampSurPlace
+          className="wl-prix"
+          classeChamp="wl-prix wl-prix--champ"
+          valeur={String(item.estimated_cost ?? 0)}
+          inputMode="decimal"
+          titre={t("wishlist.fiche.corrigerPrix", "Corriger le prix")}
+          desactive={!onCorriger}
+          onValider={(v) => onCorriger?.(item.id, "prix", v)}
+        >
+          {formatCurrency(Number(item.estimated_cost || 0), currency)}
+        </ChampSurPlace>
       </div>
 
       <div className="wl-fiche-corps">
@@ -163,7 +179,7 @@ export function WishlistFiche({
 
         <div className="wl-fiche-gestes">
           <div className="wl-outils">
-            {item.url && (
+            {item.url ? (
               <a
                 className="wl-outil"
                 href={item.url}
@@ -173,7 +189,23 @@ export function WishlistFiche({
               >
                 <ExternalLink aria-hidden="true" />
               </a>
-            )}
+            ) : onCorriger ? (
+              /* Deux articles sur soixante-et-onze portent une adresse
+                 de boutique : les soixante-neuf pieces venues des
+                 objectifs n en ont pas, et on ne sait donc pas ou les
+                 acheter. Elle se colle ici, sans ouvrir de fenetre. */
+              <ChampSurPlace
+                className="wl-outil"
+                classeChamp="wl-lien-champ"
+                valeur=""
+                inputMode="url"
+                placeholder={t("wishlist.fiche.collerLien", "Coller l’adresse de la boutique")}
+                titre={t("wishlist.fiche.collerLien", "Coller l’adresse de la boutique")}
+                onValider={(v) => onCorriger(item.id, "lien", v)}
+              >
+                <Link2 aria-hidden="true" />
+              </ChampSurPlace>
+            ) : null}
             <button type="button" className="wl-outil" onClick={() => onEdit(item)}
               title={t("common.edit", "Modifier")}>
               <Pencil aria-hidden="true" />

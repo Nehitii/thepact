@@ -259,6 +259,22 @@ export default function Wishlist() {
     setEditOpen(true);
   };
 
+  /* CORRIGER SANS OUVRIR DE FENETRE.
+     Un prix illisible ne devient pas zero : on refuse l ecriture
+     plutot que d inventer un montant. */
+  const corriger = (id: string, champ: "prix" | "lien", valeur: string) => {
+    if (!user) return;
+    if (champ === "prix") {
+      const nombre = Number(valeur.replace(",", ".").trim());
+      if (!Number.isFinite(nombre) || nombre < 0) return;
+      updateItem.mutate({ userId: user.id, id, patch: { estimated_cost: nombre } });
+      return;
+    }
+    const adresse = valeur.trim();
+    if (adresse && !/^https?:\/\//i.test(adresse)) return;
+    updateItem.mutate({ userId: user.id, id, patch: { url: adresse || null } });
+  };
+
   const basculerAcquis = (id: string, acquired: boolean) => {
     if (!user) return;
     updateItem.mutate({ userId: user.id, id, patch: { acquired } });
@@ -721,6 +737,7 @@ export default function Wishlist() {
                       onEdit={ouvrirEdition}
                       onDelete={demanderSuppression}
                       onToggleAcquired={basculerAcquis}
+                      onCorriger={corriger}
                     />
                   ))}
                 </div>

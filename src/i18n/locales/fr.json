@@ -1813,7 +1813,9 @@
       "marquerPaye": "Marquer payé",
       "poserImage": "Poser une image",
       "sceauPacte": "Pièce du pacte",
-      "sceauLibre": "Article libre"
+      "sceauLibre": "Article libre",
+      "corrigerPrix": "Corriger le prix",
+      "collerLien": "Coller l’adresse de la boutique"
     },
     "etat": {
       "parEtape": "Étape faite",

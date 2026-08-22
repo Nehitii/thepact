@@ -1813,7 +1813,9 @@
       "marquerPaye": "Mark as paid",
       "poserImage": "Add an image",
       "sceauPacte": "Pact piece",
-      "sceauLibre": "Free item"
+      "sceauLibre": "Free item",
+      "corrigerPrix": "Correct the price",
+      "collerLien": "Paste the shop address"
     },
     "etat": {
       "parEtape": "Step done",
