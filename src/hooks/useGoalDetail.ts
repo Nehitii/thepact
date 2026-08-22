@@ -5,12 +5,18 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json, Tables } from "@/integrations/supabase/types";
+
+/** L enum goal_difficulty, tel que la base le definit. */
+export type Difficulte = NonNullable<Tables<"goals">["difficulty"]>;
 
 export interface GoalDetailData {
   id: string;
   name: string;
   type: string | null;
-  difficulty: string | null;
+  /* Enum en base : le declarer « string » laissait passer n importe
+     quelle valeur jusqu au refus de la base. */
+  difficulty: Difficulte | null;
   status: string | null;
   validated_steps: number | null;
   total_steps: number | null;
@@ -25,7 +31,8 @@ export interface GoalDetailData {
   habit_duration_days?: number | null;
   habit_checks?: boolean[] | null;
   child_goal_ids?: string[] | null;
-  super_goal_rule?: any | null;
+  /* Json en base, comme le declarent les types generes. */
+  super_goal_rule?: Json | null;
   is_dynamic_super?: boolean | null;
   pact_id?: string;
   created_at?: string | null;

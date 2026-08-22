@@ -106,7 +106,7 @@ export default function StepDetail() {
       const { data: goalData } = await supabase
         .from("goals").select("id, name, difficulty").eq("id", stepData.goal_id).maybeSingle();
       if (goalData) setObjectif(goalData as ObjectifPorteur);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error loading step:", error);
       toast.error("Error", { description: "Failed to load step details" });
     } finally {
@@ -191,9 +191,9 @@ export default function StepDetail() {
 
       toast.success("Success", { description: "Step updated successfully" });
       navigate(`/goals/${step.goal_id}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving step:", error);
-      toast.error("Error", { description: error.message });
+      toast.error("Error", { description: error instanceof Error ? error.message : String(error) });
     } finally {
       setSaving(false);
     }

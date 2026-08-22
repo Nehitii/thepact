@@ -1,5 +1,6 @@
 // Handler functions for GoalDetail - extracted for better code organization
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { trackGoalCompleted } from "@/lib/achievements";
 
 export async function handleFullyComplete(
@@ -68,13 +69,10 @@ export async function handleUpdateGoal(
   /** Conserve pour la compatibilite de l appel ; plus lu depuis que
    *  la reconciliation des etapes a ete retiree. */
   _currentTotalSteps: number,
-  updates: {
-    name?: string;
-    total_steps?: number;
-    start_date?: string;
-    completion_date?: string;
-    image_url?: string;
-  },
+  /* Le type de la table, pas une liste de cinq champs. L appelant en
+      assigne seize — deadline, difficulty, type, super_goal_rule et le
+      reste — et transtypait en « any » pour les faire passer. */
+  updates: TablesUpdate<"goals">,
   onSuccess: () => void,
   onError: (message: string) => void
 ) {

@@ -5045,6 +5045,7 @@ export type Database = {
       }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
+      resynchroniser_compteurs_succes: { Args: never; Returns: undefined }
       settle_contract: {
         Args: { _contract_id: string; _outcome: string }
         Returns: Json

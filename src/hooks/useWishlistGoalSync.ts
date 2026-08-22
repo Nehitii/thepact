@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useGoals, type Goal } from "@/hooks/useGoals";
 import type { PactWishlistItem } from "@/hooks/usePactWishlist";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
 export function useWishlistGoalSync(
   userId: string | undefined,
@@ -47,8 +48,8 @@ export function useWishlistGoalSync(
         // Secondary lookup by normalized name + goal_id for fallback matching
         const syncedByNameGoal = new Map(syncedItems.map((w) => [`${w.name?.toLowerCase().trim()}|${w.goal_id}`, w]));
 
-        const toInsert: any[] = [];
-        const toUpdate: any[] = [];
+        const toInsert: TablesInsert<"wishlist_items">[] = [];
+        const toUpdate: (TablesUpdate<"wishlist_items"> & { id: string })[] = [];
         const seenCostIds = new Set<string>();
         const matchedWishlistIds = new Set<string>();
 
@@ -125,7 +126,7 @@ export function useWishlistGoalSync(
         );
 
         // Execute mutations
-        const promises: PromiseLike<any>[] = [];
+        const promises: PromiseLike<unknown>[] = [];
 
         if (toInsert.length > 0) {
           // Batched upsert: silently skip rows already covered by the partial unique

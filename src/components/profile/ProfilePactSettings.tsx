@@ -117,7 +117,7 @@ export function ProfilePactSettings({
     setSavingCode(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ goal_unlock_code: unlockCode } as any)
+      .update({ goal_unlock_code: unlockCode })
       .eq("id", userId);
     setSavingCode(false);
     if (error) {
@@ -133,7 +133,7 @@ export function ProfilePactSettings({
     setSavingCode(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ goal_unlock_code: null } as any)
+      .update({ goal_unlock_code: null })
       .eq("id", userId);
     setSavingCode(false);
     if (error) {

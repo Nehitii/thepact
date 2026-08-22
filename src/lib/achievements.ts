@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 export type AchievementCategory =
@@ -29,6 +30,20 @@ export type AchievementRarity =
   | "legendary"
   | "mythic";
 
+/**
+ * CE QUE PORTE UNE CONDITION DE SUCCES.
+ *
+ * La colonne est du Json : elle ne peut pas etre typee par la base. Mais
+ * le code n en lit que deux champs, et les asserter nommement vaut mieux
+ * que de tout rendre opaque avec un « as any » — qui laissait passer
+ * n importe quelle faute de frappe sur condition.type.
+ */
+export interface ConditionSucces {
+  type: string;
+  value?: number;
+  [autre: string]: unknown;
+}
+
 export interface Achievement {
   id: string;
   key: string;
@@ -39,7 +54,9 @@ export interface Achievement {
   rarity: AchievementRarity;
   icon_key: string;
   is_hidden: boolean;
-  conditions: any;
+  /* Json en base. La condition n est lue que par ses deux champs
+     ci-dessous — voir ConditionSucces. */
+  conditions: Json;
   unlocked?: boolean;
   unlocked_at?: string;
   progress?: number;
@@ -80,7 +97,7 @@ export const categoryIcons: Record<string, string> = {
 
 // Initialize tracking for a new user (via SECURITY DEFINER RPC)
 export async function initializeAchievementTracking(_userId: string) {
-  await supabase.rpc('init_achievement_tracking' as any);
+  await supabase.rpc('init_achievement_tracking');
 }
 
 // Track login event
@@ -101,7 +118,7 @@ export async function trackLogin(userId: string) {
     return checkAchievements(userId);
   }
 
-  const updates: Record<string, any> = {};
+  const updates: Record<string, Json> = {};
 
   const lastLogin = tracking.last_login_date;
   if (lastLogin === today) return;
@@ -133,7 +150,7 @@ export async function trackLogin(userId: string) {
     updates.midnight_logins_count = (tracking.midnight_logins_count || 0) + 1;
   }
 
-  await supabase.rpc('update_achievement_tracking' as any, { p_updates: updates });
+  await supabase.rpc('update_achievement_tracking', { p_updates: updates });
   await checkAchievements(userId);
 }
 
@@ -154,7 +171,7 @@ export async function trackLogin(userId: string) {
  * soit le nombre de fois qu on le valide et qu on le devalide.
  */
 export async function resynchroniserCompteurs(userId: string) {
-  await supabase.rpc('resynchroniser_compteurs_succes' as any);
+  await supabase.rpc('resynchroniser_compteurs_succes');
   await checkAchievements(userId);
 }
 
@@ -171,7 +188,7 @@ export async function trackGoalCompleted(userId: string, difficulty: string, cre
   const hoursDiff = timeDiff / (1000 * 60 * 60);
   const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
 
-  await supabase.rpc('resynchroniser_compteurs_succes' as any);
+  await supabase.rpc('resynchroniser_compteurs_succes');
 
   /* Ces quatre-la se jugent sur le temps mis, pas sur un decompte :
      elles restent attachees a l instant du franchissement. */
@@ -190,121 +207,121 @@ export async function trackStepCompleted(userId: string) {
 
 // Track pact creation
 export async function trackPactCreated(userId: string) {
-  await supabase.rpc('update_achievement_tracking' as any, { p_updates: { has_pact: true } });
+  await supabase.rpc('update_achievement_tracking', { p_updates: { has_pact: true } });
   await unlockAchievement(userId, 'the_sealed_pact');
 }
 
 // Track pact edit
 export async function trackPactEdited(userId: string) {
-  await supabase.rpc('update_achievement_tracking' as any, { p_updates: { has_edited_pact: true } });
+  await supabase.rpc('update_achievement_tracking', { p_updates: { has_edited_pact: true } });
   await unlockAchievement(userId, 'keeper_of_the_oath');
 }
 
 // ── New tracking functions ──
 
 export async function trackTodoCompleted(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'todos_completed', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackPomodoroCompleted(userId: string, durationMinutes: number) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'pomodoro_sessions', p_increment: 1
   });
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'pomodoro_total_minutes', p_increment: durationMinutes
   });
   await checkAchievements(userId);
 }
 
 export async function trackJournalEntry(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'journal_entries', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackFriendAdded(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'friends_count', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackGuildJoined(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'guilds_joined', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackGuildMessageSent(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'guild_messages_sent', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackCommunityPost(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'community_posts', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackCalendarEventCreated(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'calendar_events_created', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackWishlistItemAdded(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'wishlist_items_added', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackWishlistItemAcquired(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'wishlist_items_acquired', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackModulePurchased(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'modules_purchased', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackCosmeticPurchased(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'cosmetics_owned', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackBondsSpent(userId: string, amount: number) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'bonds_spent_total', p_increment: amount
   });
   await checkAchievements(userId);
 }
 
 export async function trackTransactionLogged(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'transactions_logged', p_increment: 1
   });
   await checkAchievements(userId);
 }
 
 export async function trackFinanceMonthValidated(userId: string) {
-  await supabase.rpc('increment_tracking_counter' as any, {
+  await supabase.rpc('increment_tracking_counter', {
     p_user_id: userId, p_field: 'finance_months_validated', p_increment: 1
   });
   await checkAchievements(userId);
@@ -322,7 +339,17 @@ const TRACKABLE_FIELDS = [
   "community_posts", "wishlist_items_added", "wishlist_items_acquired",
   "modules_purchased", "cosmetics_owned", "calendar_events_created",
   "bonds_spent_total", "bonds_earned_total", "finance_months_validated", "transactions_logged",
-];
+] as const;
+
+/* Le controle d execution et le typage disent la meme chose.
+   TRACKABLE_FIELDS etait un string[] : le compilateur ne pouvait rien en
+   tirer, donc l indexation de la ligne rendait l union de TOUTES ses
+   colonnes — dates et booleens compris — que le code comparait ensuite
+   avec « >= ». En « as const » plus garde de type, l index se restreint
+   aux seules colonnes suivies. */
+type ChampSuivi = (typeof TRACKABLE_FIELDS)[number];
+const estChampSuivi = (cle: string): cle is ChampSuivi =>
+  (TRACKABLE_FIELDS as readonly string[]).includes(cle);
 
 async function checkAchievements(userId: string) {
   const { data: tracking } = await supabase
@@ -349,12 +376,12 @@ async function checkAchievements(userId: string) {
   for (const def of definitions) {
     if (unlockedKeys.has(def.key)) continue;
 
-    const condition = def.conditions as any;
+    const condition = def.conditions as unknown as ConditionSucces;
     let shouldUnlock = false;
 
     // Check if it's a simple trackable field comparison
-    if (TRACKABLE_FIELDS.includes(condition.type)) {
-      const val = (tracking as any)[condition.type];
+    if (estChampSuivi(condition.type)) {
+      const val = tracking[condition.type];
       shouldUnlock = (val || 0) >= (condition.value as number);
     } else {
       switch (condition.type) {
@@ -395,7 +422,7 @@ export async function unlockAchievement(
   achievementName?: string,
   rarity?: AchievementRarity
 ) {
-  const { data } = await supabase.rpc('grant_achievement' as any, {
+  const { data } = await supabase.rpc('grant_achievement', {
     p_achievement_key: achievementKey
   });
 
@@ -434,10 +461,10 @@ export async function getUserAchievements(userId: string): Promise<Achievement[]
   );
 
   return definitions.map(def => {
-    const condition = def.conditions as any;
+    const condition = def.conditions as unknown as ConditionSucces;
     let progress = 0;
-    if (tracking && TRACKABLE_FIELDS.includes(condition.type)) {
-      progress = (tracking as any)[condition.type] || 0;
+    if (tracking && estChampSuivi(condition.type)) {
+      progress = tracking[condition.type] ?? 0;
     }
 
     return {

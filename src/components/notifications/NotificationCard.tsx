@@ -96,8 +96,12 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
       const { data: claimResult, error: claimError } = await supabase
         .rpc("claim_notification_reward", { p_notification_id: notification.id });
       if (claimError) throw claimError;
-      if (claimResult && (claimResult as any).success === false) {
-        throw new Error((claimResult as any).error || "Claim failed");
+      /* Le RPC rend du Json. On l assertit vers la forme lue plutot
+          que vers any : sinon une faute de frappe sur « success »
+          passerait sans bruit. */
+      const resultat = claimResult as unknown as { success?: boolean; error?: string } | null;
+      if (resultat && resultat.success === false) {
+        throw new Error(resultat.error || "Claim failed");
       }
 
       // Invalidate queries

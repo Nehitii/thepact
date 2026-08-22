@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 export interface BondBalance {
   id: string;
@@ -42,7 +43,8 @@ export interface SpecialOffer {
   price_eur: number | null;
   original_price_bonds: number | null;
   original_price_eur: number | null;
-  items: any[] | null;
+  /* Json en base. */
+  items: Json | null;
   starts_at: string | null;
   ends_at: string | null;
   is_active: boolean;

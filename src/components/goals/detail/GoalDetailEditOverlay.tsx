@@ -22,6 +22,7 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import type { Difficulte } from "@/hooks/useGoalDetail";
 import {
   ArrowLeft, Check, X, Target, Tag, ListOrdered, Calendar, Receipt,
   StickyNote, Sparkles, Crown, Filter, HandIcon, Zap, TriangleAlert,
@@ -55,7 +56,9 @@ interface GoalDetailEditOverlayProps {
   userId: string | undefined;
   steps: Step[];
   editName: string; setEditName: (v: string) => void;
-  editDifficulty: string; setEditDifficulty: (v: string) => void;
+  /* Le selecteur ne propose que des paliers valides : le type le dit,
+     au lieu d accepter n importe quelle chaine. */
+  editDifficulty: string; setEditDifficulty: (v: Difficulte) => void;
   editTags: string[]; toggleEditTag: (tag: string) => void;
   editNotes: string; setEditNotes: (v: string) => void;
   editStartDate: string; setEditStartDate: (v: string) => void;

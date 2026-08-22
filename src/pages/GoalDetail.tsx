@@ -6,10 +6,27 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json, TablesUpdate } from "@/integrations/supabase/types";
+
+/* LES DEUX COLONNES SONT DES ENUMS POSTGRES, PAS DES CHAINES.
+   Le « as any » sur le lot de mises a jour laissait passer n importe
+   quoi : difficulty venait d un useState("") libre, et type du PREMIER
+   TAG de l objectif — du texte saisi par l utilisateur. Une valeur hors
+   liste etait refusee par la base a l execution, sans que rien ne
+   l annonce. Les valeurs viennent de pg_enum. */
+type TypeObjectif = NonNullable<TablesUpdate<"goals">["type"]>;
+
+const TYPES_OBJECTIF = [
+  "personal", "professional", "health", "creative",
+  "financial", "learning", "other", "relationship", "diy",
+] as const satisfies readonly TypeObjectif[];
+
+const estTypeObjectif = (t: string): t is TypeObjectif =>
+  (TYPES_OBJECTIF as readonly string[]).includes(t);
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/hooks/useGoalContracts";
-import { useGoalDetail , type StepData } from "@/hooks/useGoalDetail";
+import { useGoalDetail , type StepData, type Difficulte } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useParticleEffect } from "@/components/ParticleEffect";
@@ -78,7 +95,7 @@ export default function GoalDetail() {
   const [editStartDate, setEditStartDate] = useState("");
   const [editCompletionDate, setEditCompletionDate] = useState("");
   const [editImage, setEditImage] = useState("");
-  const [editDifficulty, setEditDifficulty] = useState("");
+  const [editDifficulty, setEditDifficulty] = useState<Difficulte | "">("");
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editNotes, setEditNotes] = useState("");
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
@@ -182,7 +199,7 @@ export default function GoalDetail() {
       setEditImage(g.image_url || "");
       setEditDifficulty(g.difficulty || "medium");
       setEditNotes(g.notes || "");
-      setEditDeadline((g as any).deadline || "");
+      setEditDeadline(g.deadline || "");
       setSteps(goalDetailData.steps);
       setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false, estUltime: s.is_ultimate ?? false })));
       setEditMembresIds(g.child_goal_ids || []);
@@ -277,7 +294,7 @@ export default function GoalDetail() {
     setSaving(true);
     try {
       const { handleUpdateGoal } = await import("@/lib/goalDetailHandlers");
-      const updates: Record<string, unknown> = {};
+      const updates: TablesUpdate<"goals"> = {};
       if (editName !== goal.name) updates.name = editName;
       /* L etape ultime ne compte pas dans l avancement : le total
          qu on ecrit est celui des etapes ordinaires. */
@@ -287,14 +304,16 @@ export default function GoalDetail() {
       } else if (goal.goal_type !== "normal" && editSteps !== goal.total_steps) {
         updates.total_steps = editSteps;
       }
-      if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
+      if (editDifficulty && editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
       const primaryTag = editTags[0] || "personal";
-      if (primaryTag !== goal.type) updates.type = primaryTag;
+      /* Un tag qui ne correspond a aucun type connu n est pas ecrit :
+         la base le refuserait de toute facon. */
+      if (primaryTag !== goal.type && estTypeObjectif(primaryTag)) updates.type = primaryTag;
       if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
       if (editStartDate && editStartDate !== goal.start_date?.split("T")[0]) updates.start_date = new Date(editStartDate).toISOString();
       if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0]) updates.completion_date = new Date(editCompletionDate).toISOString();
       if (editImage !== goal.image_url) updates.image_url = editImage;
-      const currentDeadline = (goal as any).deadline || "";
+      const currentDeadline = goal.deadline || "";
       if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
 
       /* CHANGER LA DUREE D UNE HABITUDE REDIMENSIONNE SES CASES.
@@ -330,7 +349,8 @@ export default function GoalDetail() {
             editRegle,
           ).map((g) => g.id);
           updates.child_goal_ids = editVivant ? null : apparies;
-          updates.super_goal_rule = editRegle;
+          /* La colonne est du Json ; la forme est validee en amont. */
+          updates.super_goal_rule = editRegle as unknown as Json;
           updates.is_dynamic_super = editVivant;
         }
       }
@@ -340,7 +360,7 @@ export default function GoalDetail() {
         try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast.error("Error", { description: "Failed to save tags" }); }
       }
 
-      handleUpdateGoal(goal.id, goal.total_steps ?? 0, updates as any, async () => {
+      handleUpdateGoal(goal.id, goal.total_steps ?? 0, updates, async () => {
         const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
         if (updatedGoal) { setGoal(updatedGoal); setEditName(updatedGoal.name); setEditSteps(updatedGoal.total_steps || 0); setEditNotes(updatedGoal.notes || ""); }
 
@@ -365,7 +385,7 @@ export default function GoalDetail() {
         }
 
         const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
-        if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false, estUltime: s.is_ultimate ?? false }))); }
+        if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false, estUltime: s.is_ultimate ?? false }))); }
 
         /* La modification peut retirer les etapes qui restaient : le
            declencheur en base fait alors basculer l objectif, et les

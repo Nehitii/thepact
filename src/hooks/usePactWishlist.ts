@@ -58,7 +58,7 @@ export function usePactWishlistItems(userId: string | undefined) {
 
       if (error) throw error;
 
-      return (data ?? []).map((d: any) => ({
+      return (data ?? []).map((d) => ({
         ...d,
         priority: d.priority || "low",
         sort_order: d.sort_order ?? 0,
@@ -94,7 +94,7 @@ export function useCreatePactWishlistItem() {
           notes: input.notes ?? null,
           url: input.url ?? null,
           image_url: input.imageUrl ?? null,
-        } as any)
+        })
         .select("id")
         .single();
 
@@ -105,7 +105,7 @@ export function useCreatePactWishlistItem() {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
       toast.success("Added to Wishlist", { description: "Item saved. You can refine it anytime." });
     },
-    onError: (e: any) => {
+    onError: (e) => {
       toast.error("Could not add item", { description: e?.message ?? "Please try again." });
     },
   });
@@ -137,7 +137,7 @@ export function useUpdatePactWishlistItem() {
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
     },
-    onError: (e: any) => {
+    onError: (e) => {
       toast.error("Update failed", { description: e?.message ?? "Please try again." });
     },
   });
@@ -155,7 +155,7 @@ export function useDeletePactWishlistItem() {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
       toast.success("Removed", { description: "Wishlist item deleted." });
     },
-    onError: (e: any) => {
+    onError: (e) => {
       toast.error("Delete failed", { description: e?.message ?? "Please try again." });
     },
   });
