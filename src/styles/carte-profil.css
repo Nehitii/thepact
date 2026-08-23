@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════════════════
+   LA CARTE DE PROFIL PUBLIC
+   ═══════════════════════════════════════════════════════════════
+   Le meme objet que dans les reglages « Profil public » : une
+   banniere, un avatar encadre pose sur la limite du degrade, un nom,
+   un titre, un rang.
+
+   Elle vivait la-bas en Tailwind, melangee au formulaire d edition qui
+   la produisait. Ici elle est une CARTE : des donnees entrent, une
+   image sort. On peut donc la montrer pour quelqu un d autre — au
+   survol d un membre de guilde, par exemple — sans trainer derriere
+   elle six requetes et un bouton « changer d avatar ».
+
+   Elle ne depend pas des variables de Community : elle apparait aussi
+   au-dessus de pages qui ne les chargent pas. Ses couleurs sont donc
+   posees ici, et la teinte vivante arrive par le style en ligne. */
+
+.cp {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #07070c;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 22px 48px -16px rgb(0 0 0 / 0.7);
+  isolation: isolate;
+  font-family: "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #E9EBEE;
+}
+.cp[data-compacte] { width: 280px; }
+
+/* ── La banniere ── */
+.cp-fond {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 168px;
+}
+.cp[data-compacte] .cp-fond { height: 132px; }
+.cp-fond img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Le texte repose toujours sur du fond, jamais sur la photo : sans ce
+   voile, une banniere claire rendrait le nom illisible — et personne
+   ne choisit sa banniere en pensant a la lisibilite du nom. */
+.cp-voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(7 7 12 / 0.15) 0%, transparent 34%, rgb(7 7 12 / 0.88) 74%, #07070c 100%);
+}
+
+.cp-pacte {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(0 0 0 / 0.42);
+  backdrop-filter: blur(6px);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: rgb(255 255 255 / 0.78);
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Le contenu ── */
+.cp-corps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 104px 18px 18px;
+  text-align: center;
+}
+.cp[data-compacte] .cp-corps { padding: 80px 16px 16px; gap: 7px; }
+
+.cp-lueur {
+  position: absolute;
+  top: 92px;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  filter: blur(34px);
+  opacity: 0.42;
+  z-index: -1;
+}
+.cp[data-compacte] .cp-lueur { top: 72px; width: 72px; height: 72px; }
+
+.cp-nom {
+  margin: 4px 0 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  font-family: inherit;
+  color: #fff;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.cp[data-compacte] .cp-nom { font-size: 18px; }
+
+.cp-titre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cp-titre svg { width: 12px; height: 12px; }
+
+.cp-phrase {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-style: italic;
+  color: rgb(233 235 238 / 0.62);
+  overflow-wrap: anywhere;
+}
+
+/* ── Le pied : rang, XP, objectifs ── */
+.cp-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 0.10);
+}
+.cp-rang {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-rang svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.cp-faits { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.cp-chiffre {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: rgb(233 235 238 / 0.9);
+}
+.cp-chiffre svg { width: 12px; height: 12px; opacity: 0.6; }
+.cp-chiffre small { font-size: 10px; opacity: 0.55; }
+
+.cp-jauge {
+  width: 100%;
+  height: 3px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.10);
+  overflow: hidden;
+}
+.cp-jauge i {
+  display: block;
+  height: 100%;
+  transition: width 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cp-suivant {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: rgb(233 235 238 / 0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE SURVOL
+   ═══════════════════════════════════════════════════════════════ */
+
+.cp-ancre { position: relative; }
+
+.cp-bulle {
+  position: absolute;
+  z-index: 60;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: cp-parait 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Sous la ligne par defaut ; au-dessus quand le bas manque de place. */
+.cp-bulle[data-sens="bas"] { top: calc(100% + 8px); }
+.cp-bulle[data-sens="haut"] { bottom: calc(100% + 8px); }
+
+@keyframes cp-parait {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-bulle { animation: none; }
+  .cp-jauge i { transition: none; }
+}
+
+.cp-attente {
+  width: 280px;
+  height: 210px;
+  border-radius: 16px;
+  background: #07070c;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 22px 48px -16px rgb(0 0 0 / 0.7);
+}
+
+.cp-muette {
+  width: 280px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #07070c;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 22px 48px -16px rgb(0 0 0 / 0.7);
+  font-family: "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: rgb(233 235 238 / 0.6);
+}
+
+/* Un survol n existe pas au doigt : sur un ecran tactile, la carte
+   n apparait pas et la ligne garde son comportement habituel. */
+@media (hover: none) {
+  .cp-bulle { display: none; }
+}

@@ -3131,7 +3131,11 @@
     "codeExpires": "expires {{quand}}",
     "copyCode": "Copy the code",
     "copied": "Copied",
-    "revokeCode": "Deactivate this code"
+    "revokeCode": "Deactivate this code",
+    "unranked": "Unranked",
+    "toNextRank": "{{n}} XP to {{rang}}",
+    "profileGone": "This profile no longer exists.",
+    "profileHidden": "This person keeps their profile to themselves."
   },
   "analytics": {
     "period": {

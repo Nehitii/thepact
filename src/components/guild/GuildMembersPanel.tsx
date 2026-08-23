@@ -7,6 +7,7 @@ import { nomAffichable } from "@/components/community/vocabulaire";
 import { useCadres } from "@/hooks/community/useCadres";
 import { useFriends } from "@/hooks/useFriends";
 import { useRangs } from "@/hooks/useRangs";
+import { SurvolProfil } from "@/components/profile/SurvolProfil";
 import { useGuildMembers, useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
 
 /* LES MEMBRES D UNE GUILDE.
@@ -167,7 +168,10 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
           const rang = rangs?.get(m.user_id);
 
           return (
-            <div className="co-post gu-ligne" key={m.id}>
+            /* Survoler un membre montre sa carte de profil public — la
+               meme que dans les reglages, mais pour quelqu un d autre. */
+            <SurvolProfil userId={m.user_id} key={m.id}>
+            <div className="co-post gu-ligne">
               <Pastille identifiant={m.user_id} nom={nom} image={m.avatar_url} cadre={cadres?.get(m.user_id)} />
 
               <div className="co-post-corps">
@@ -236,6 +240,7 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
                 ) : null}
               </div>
             </div>
+            </SurvolProfil>
           );
         })
       )}

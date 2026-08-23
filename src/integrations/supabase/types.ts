@@ -4979,6 +4979,7 @@ export type Database = {
         Args: { p_cosmetic_id: string; p_user_id: string }
         Returns: Json
       }
+      carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
       check_and_increment_ai_quota: {
         Args: { _daily_limit?: number; _function_name: string }
         Returns: Json
