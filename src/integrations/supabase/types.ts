@@ -5025,6 +5025,21 @@ export type Database = {
           taches: number
         }[]
       }
+      cordee: {
+        Args: { p_user_id: string }
+        Returns: {
+          couleur: string
+          devise: string
+          etapes: number
+          nom: string
+          objectifs: number
+          place: number
+          rang: string
+          serie: number
+          vu_il_y_a_h: number
+          xp: number
+        }[]
+      }
       create_guild_with_owner: {
         Args: {
           p_color?: string

@@ -2569,7 +2569,18 @@
     "you": "(YOU)",
     "xp": "XP",
     "goals": "Goals",
-    "noAgents": "No agents on the leaderboard yet"
+    "noAgents": "No agents on the leaderboard yet",
+    "heading": "Leaderboard",
+    "world": "The world",
+    "rope": "The rope",
+    "ropeWhat": "Simulated climbers, calibrated on your pact: the first has cleared 90 % of what you set yourself. They do not move — you do.",
+    "worldEmpty": "Nobody else has points yet. In the meantime, the rope gives you bearings.",
+    "yourStanding": "Where you stand",
+    "outOf": "of {{n}}",
+    "nextUp": "Just ahead",
+    "gap": "{{n}} XP to close",
+    "steps": "Steps",
+    "streak": "Streak days"
   },
   "focus": {
     "title": "FOCUS",

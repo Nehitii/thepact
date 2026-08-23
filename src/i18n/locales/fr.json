@@ -2569,7 +2569,18 @@
     "you": "(TOI)",
     "xp": "XP",
     "goals": "Objectifs",
-    "noAgents": "Aucun agent dans le classement pour le moment"
+    "noAgents": "Aucun agent dans le classement pour le moment",
+    "heading": "Classement",
+    "world": "Le monde",
+    "rope": "La cordée",
+    "ropeWhat": "Des grimpeurs simulés, calibrés sur votre pacte : le premier a franchi 90 % de ce que vous vous êtes fixé. Ils ne bougent pas — c’est vous qui montez.",
+    "worldEmpty": "Personne d’autre n’a encore de points. En attendant, la cordée vous donne des repères.",
+    "yourStanding": "Où vous en êtes",
+    "outOf": "sur {{n}}",
+    "nextUp": "Juste devant",
+    "gap": "{{n}} XP à reprendre",
+    "steps": "Étapes",
+    "streak": "Jours de série"
   },
   "focus": {
     "title": "FOCUS",
