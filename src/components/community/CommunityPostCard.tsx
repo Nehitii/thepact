@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   Check,
   Flag,
@@ -54,7 +54,18 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const CORPS_MAX = 4;
 
-export function CommunityPostCard({ post }: { post: CommunityPost }) {
+/* MEMOISEE.
+ *
+ * Aucun composant du module ne l etait. Le fil se recharge a chaque
+ * publication et a chaque arrivee en direct ; sans memoisation, les
+ * vingt cartes se redessinent entierement — listes de reponses
+ * comprises — meme quand une seule publication a change.
+ *
+ * La comparaison par defaut suffit : le hook rend un nouvel objet
+ * seulement pour les publications reellement modifiees, les autres
+ * gardent leur reference. C est aussi ce qui rend la reaction
+ * optimiste bon marche : une seule carte se redessine. */
+export const CommunityPostCard = memo(function CommunityPostCard({ post }: { post: CommunityPost }) {
   const { t } = useTranslation();
   const locale = useDateFnsLocale();
   const { user } = useAuth();
@@ -341,4 +352,4 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
       />
     </article>
   );
-}
+});

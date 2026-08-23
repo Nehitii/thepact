@@ -740,6 +740,7 @@ export type Database = {
           inspired_count: number
           is_public: boolean
           post_type: string
+          replies_count: number
           respect_count: number
           support_count: number
           updated_at: string
@@ -754,6 +755,7 @@ export type Database = {
           inspired_count?: number
           is_public?: boolean
           post_type?: string
+          replies_count?: number
           respect_count?: number
           support_count?: number
           updated_at?: string
@@ -768,6 +770,7 @@ export type Database = {
           inspired_count?: number
           is_public?: boolean
           post_type?: string
+          replies_count?: number
           respect_count?: number
           support_count?: number
           updated_at?: string

@@ -11,6 +11,7 @@ import { ChoixObjectif } from "./ChoixObjectif";
 import {
   useCommunityPosts,
   useCreatePost,
+  useFilEnDirect,
   type PostFilterType,
   type PostSortOption,
 } from "@/hooks/useCommunity";
@@ -74,6 +75,10 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     staleTime: 60 * 1000,
   });
 
+  /* L abonnement au direct vivait dans useCommunityPosts, un hook de
+     requete qui ouvrait un canal. Il a le sien, et c est le fil qui
+     l installe. */
+  useFilEnDirect();
   const publier = useCreatePost();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useCommunityPosts(filtre, tri);
