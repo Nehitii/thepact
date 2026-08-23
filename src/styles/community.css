@@ -1048,3 +1048,116 @@
   .co-ligne-rang { grid-template-columns: 28px 36px 1fr auto; gap: 10px; }
   .co-ligne-rang-grade { display: none; }
 }
+
+/* ═══════════════ LE CHOIX D UN OBJECTIF ═══════════════
+
+   Le <select> natif ouvrait une liste BLANCHE dessinee par le
+   systeme, au milieu d une page noire, que nulle feuille de style ne
+   pouvait atteindre. C etait le seul endroit ou le theme s arretait.
+   Ce panneau est de la page : meme fond, meme filet, meme fonte. */
+
+.co-choix { position: relative; }
+
+.co-choix-declencheur { max-width: 260px; }
+.co-choix-nom {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.co-choix-panneau {
+  position: absolute;
+  z-index: 40;
+  /* VERS LE BAS, ET NON VERS LE HAUT.
+     Le declencheur est au pied du composeur : un panneau qui s ouvre
+     au-dessus recouvre exactement le texte qu on vient d ecrire, et
+     l on choisit son objectif sans plus voir sa publication. Vers le
+     bas, il ne masque que le fil, qu on relira apres. */
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(340px, 78vw);
+  border: 1px solid var(--co-filet-fort);
+  border-radius: 12px;
+  background: var(--co-fond-eleve);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+              0 2px 6px rgb(0 0 0 / 0.28),
+              0 18px 44px -18px rgb(0 0 0 / 0.7);
+  overflow: hidden;
+}
+
+.co-choix-recherche {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--co-filet);
+}
+.co-choix-recherche svg { width: 15px; height: 15px; stroke-width: 2; color: var(--co-texte-3); flex-shrink: 0; }
+.co-choix-recherche input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: var(--co-fonte);
+  font-size: 14px;
+  color: var(--co-texte);
+}
+.co-choix-recherche input::placeholder { color: var(--co-texte-3); }
+.co-choix-recherche input:focus { outline: none; }
+
+.co-choix-liste {
+  max-height: 264px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+}
+
+.co-choix-ligne {
+  display: grid;
+  grid-template-columns: 8px 1fr auto auto;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 9px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--co-fonte);
+}
+/* Un seul etat de mise en avant, pose par le clavier comme par la
+   souris : deux surbrillances concurrentes rendent la position
+   illisible des qu on melange les deux. */
+.co-choix-ligne[data-vise="oui"] { background: var(--co-fond-creux); }
+
+.co-choix-palier {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.co-choix-titre {
+  font-size: 14px;
+  color: var(--co-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.co-choix-etat {
+  font-family: var(--co-fonte-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--co-texte-3);
+  white-space: nowrap;
+}
+.co-choix-coche { width: 14px; height: 14px; stroke-width: 2.4; color: var(--co-accent); }
+
+.co-choix-message {
+  padding: 16px 12px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--co-texte-2);
+  text-align: center;
+}

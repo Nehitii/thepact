@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CircleCheck, MessagesSquare, Target } from "lucide-react";
+import { CircleCheck, MessagesSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -7,10 +7,10 @@ import { CommunityPostCard } from "./CommunityPostCard";
 import { PostFilters } from "./PostFilters";
 import { NATURES, libelleNature, type NaturePost } from "./vocabulaire";
 import { Pastille } from "./Pastille";
+import { ChoixObjectif } from "./ChoixObjectif";
 import {
   useCommunityPosts,
   useCreatePost,
-  useUserGoals,
   type PostFilterType,
   type PostSortOption,
 } from "@/hooks/useCommunity";
@@ -56,7 +56,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
 
   const [texte, setTexte] = useState("");
   const [nature, setNature] = useState<NaturePost>("reflection");
-  const [objectifId, setObjectifId] = useState<string>("");
+  const [objectif, setObjectif] = useState<{ id: string; nom: string | null }>({ id: "", nom: null });
   const [deploye, setDeploye] = useState(false);
 
   const { data: profil } = useQuery({
@@ -74,7 +74,6 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     staleTime: 60 * 1000,
   });
 
-  const { data: objectifs = [] } = useUserGoals();
   const publier = useCreatePost();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useCommunityPosts(filtre, tri);
@@ -93,18 +92,17 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
   const envoyer = () => {
     const propre = texte.trim();
     if (!propre || propre.length > LIMITE) return;
-    const objectif = objectifs.find((o) => o.id === objectifId);
     publier.mutate(
       {
         content: propre,
         post_type: nature,
-        goal_id: objectif?.id,
-        goal_name: objectif?.name,
+        goal_id: objectif.id || undefined,
+        goal_name: objectif.nom || undefined,
       },
       {
         onSuccess: () => {
           setTexte("");
-          setObjectifId("");
+          setObjectif({ id: "", nom: null });
           setDeploye(false);
           if (champ.current) champ.current.style.height = "auto";
           toast.success(t("community.feed.published", "Publié"));
@@ -153,29 +151,10 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                 </div>
 
                 <div className="co-composeur-pied">
-                  {objectifs.length > 0 && (
-                    <label className="co-objectif" style={{ marginTop: 0, cursor: "pointer" }}>
-                      <Target aria-hidden="true" />
-                      <select
-                        value={objectifId}
-                        onChange={(e) => setObjectifId(e.target.value)}
-                        aria-label={t("community.create.attachGoal", "Associer un objectif")}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "inherit",
-                          font: "inherit",
-                          maxWidth: 180,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <option value="">{t("community.create.noGoal", "Aucun objectif")}</option>
-                        {objectifs.map((o) => (
-                          <option key={o.id} value={o.id}>{o.name}</option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
+                  <ChoixObjectif
+                    valeur={objectif.id}
+                    onChoisir={(id, nom) => setObjectif({ id, nom })}
+                  />
 
                   {reste <= SEUIL_ALERTE && (
                     <span
