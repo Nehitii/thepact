@@ -1,4 +1,46 @@
 /* ═══════════════════════════════════════════════════════════════
+   SWITZER — la voix de cette page
+   ═══════════════════════════════════════════════════════════════
+
+   Le titre et le texte etaient dans la meme famille : celle du
+   systeme. C est, par definition, ce a quoi ressemble n importe
+   quelle page. X a fait dessiner Chirp, Instagram a la sienne — le
+   premium d un reseau social passe d abord par sa police.
+
+   Switzer est un grotesque suisse contemporain (Indian Type
+   Foundry, licence libre). Trois graisses, 55,7 Ko au total, en
+   local comme Orbitron et Rajdhani : aucune requete externe a
+   l execution, le produit reste hors-ligne d abord.
+
+   Trois graisses et pas cinq : 600 et 800 n existent pas dans les
+   fichiers, le navigateur les aurait FABRIQUEES en epaississant le
+   trait — un faux gras, visible et sale. Les valeurs de la feuille
+   sont ramenees sur 400, 500 et 700, ce qui fait aussi un systeme
+   plutot qu une derive. */
+
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Switzer";
+  src: url("/fonts/switzer-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    COMMUNITY — un vrai reseau, pas une maquette
    ═══════════════════════════════════════════════════════════════
 
@@ -80,8 +122,8 @@
   --co-soutien:     #12855A;
 
   /* ── Typographie ── */
-  --co-fonte: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-              "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --co-fonte: "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI",
+              Roboto, "Helvetica Neue", Arial, sans-serif;
   --co-fonte-ui: "Rajdhani", var(--co-fonte);
   --co-fonte-chiffre: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
@@ -247,7 +289,7 @@
   cursor: pointer;
   font-family: var(--co-fonte);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--co-texte-2);
   transition: background-color 120ms linear, color 120ms linear;
 }
@@ -397,7 +439,7 @@
   cursor: pointer;
   font-family: var(--co-fonte);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--co-texte-2);
   white-space: nowrap;
   transition: border-color 120ms linear, color 120ms linear, background-color 120ms linear;
@@ -500,7 +542,7 @@
   gap: 5px;
   font-family: var(--co-fonte-ui);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--co-nature-teinte, var(--co-texte-2));
 }
@@ -533,7 +575,7 @@
   max-width: 100%;
 }
 .co-objectif svg { width: 13px; height: 13px; stroke-width: 2; color: var(--co-texte-3); flex-shrink: 0; }
-.co-objectif b { font-weight: 600; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-objectif b { font-weight: 500; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ═══════════════ LES ACTIONS ═══════════════ */
 
@@ -671,7 +713,7 @@
 .co-bloc-titre {
   font-family: var(--co-fonte);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--co-texte);
   margin: 0;
@@ -750,7 +792,7 @@
   text-align: center;
 }
 .co-rang[data-podium="oui"] .co-rang-place { color: var(--co-respect); font-weight: 700; }
-.co-rang-nom { font-size: 14px; font-weight: 600; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-rang-nom { font-size: 14px; font-weight: 500; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .co-rang-xp {
   font-family: var(--co-fonte-chiffre);
   font-size: 13px;
@@ -790,7 +832,7 @@
   text-align: center;
 }
 .co-vide svg { width: 30px; height: 30px; stroke-width: 1.5; color: var(--co-texte-3); margin-bottom: 14px; }
-.co-vide h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; color: var(--co-texte); }
+.co-vide h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; color: var(--co-texte); }
 .co-vide p { font-size: 14px; color: var(--co-texte-2); margin: 0 auto 18px; max-width: 44ch; line-height: 1.5; }
 
 /* Le squelette de chargement : la forme exacte d un post, pour que
@@ -887,7 +929,7 @@
   text-align: center;
 }
 .co-ligne-rang[data-podium="oui"] .co-ligne-rang-place { color: var(--co-respect); font-weight: 700; }
-.co-ligne-rang-grade { font-family: var(--co-fonte-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--co-texte-3); }
+.co-ligne-rang-grade { font-family: var(--co-fonte-ui); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--co-texte-3); }
 .co-ligne-rang-chiffre { font-family: var(--co-fonte-chiffre); font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; }
 .co-ligne-rang-chiffre small { display: block; font-family: var(--co-fonte-ui); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--co-texte-3); }
 
