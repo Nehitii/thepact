@@ -37,6 +37,10 @@ export interface Succes {
   obtenu: boolean;
   obtenu_le: string | null;
   avancement: number;
+  /* Pourquoi il ne bouge pas, quand la raison n est pas « vous n avez
+     pas encore commence » : module manquant, personne autour, ou une
+     partie du produit ou rien n a jamais ete enregistre. */
+  sommeil: "module" | "personne" | "inactif" | null;
 }
 
 export interface Coffre {

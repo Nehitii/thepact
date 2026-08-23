@@ -2346,7 +2346,18 @@
     "trophiesWon_one": "{{count}} trophée",
     "trophiesWon_other": "{{count}} trophées",
     "justUnlocked": "Succès débloqué",
-    "remaining": "encore {{n}}"
+    "remaining": "encore {{n}}",
+    "secretWhere": "Quelque part du côté de « {{ou}} ».",
+    "asleepModule": "En sommeil · module non possédé",
+    "asleepAlone": "En sommeil · il faut du monde",
+    "asleepIdle": "En sommeil · rien d’enregistré ici",
+    "collection": "Collection",
+    "chronicle": "Chronique",
+    "overMonths": "sur {{n}} mois",
+    "noHistory": "Rien encore inscrit",
+    "noHistoryWhat": "Le premier succès ouvrira la chronique.",
+    "nextOne": "Suivant · encore {{n}}",
+    "gotIt": "Bien reçu"
   },
   "journal": {
     "title": "Journal",

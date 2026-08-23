@@ -649,3 +649,368 @@
   .su-icone { width: 44px; height: 44px; }
   .su-icone svg { width: 20px; height: 20px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   1 · LA TAILLE SUIT LA RARETE
+   ═══════════════════════════════════════════════════════════════
+   Un legendaire a mille points occupait exactement la meme surface
+   qu un commun a vingt-cinq. La hierarchie existait dans les donnees
+   et nulle part a l ecran.
+
+   Les deux rangs du haut prennent deux colonnes et respirent : on
+   sent le poids avant de lire le chiffre. */
+
+.su-carte[data-large] {
+  grid-column: span 2;
+  padding: 20px;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: 18px;
+}
+.su-carte[data-large] .su-icone { width: 68px; height: 68px; border-radius: 16px; }
+.su-carte[data-large] .su-icone svg { width: 30px; height: 30px; }
+.su-carte[data-large] .su-nom { font-size: 1rem; }
+.su-carte[data-large] .su-saveur { font-size: 0.88rem; margin-top: 9px; }
+
+/* Une seule colonne : la carte large redevient normale. */
+@media (max-width: 720px) {
+  .su-carte[data-large] { grid-column: span 1; padding: 16px; }
+}
+
+/* Ce qui dort s efface encore un peu plus que ce qui est verrouille :
+   c est un mur, pas une etape. */
+.su-carte[data-dort] { opacity: 0.62; }
+.su-carte[data-dort]:hover { opacity: 1; }
+
+.su-sommeil {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: "Rajdhani", var(--co-fonte, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #FAC775;
+  background: hsl(38 92% 55% / 0.12);
+  box-shadow: inset 0 0 0 1px hsl(38 92% 55% / 0.3);
+}
+.su-sommeil svg { width: 12px; height: 12px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   3 · L ETAGERE A TROPHEES
+   ═══════════════════════════════════════════════════════════════
+   Vingt pastilles de meme taille, dont une seule est gagnee : la
+   collection ne se lisait pas, elle se comptait. Les trophees passent
+   devant, en grand ; le reste recule. */
+
+.su-trophee[data-complet] {
+  width: 118px;
+  padding: 15px 8px 13px;
+}
+.su-trophee[data-complet] .su-trophee-anneau { width: 70px; height: 70px; }
+.su-trophee[data-complet] .su-trophee-signe svg { width: 27px; height: 27px; }
+.su-trophee[data-complet] .su-trophee-nom { font-size: 0.78rem; }
+.su-trophee[data-complet] .su-trophee-compte {
+  color: var(--su-legendary);
+  font-size: 0.68rem;
+}
+
+/* Ceux qui restent a faire reculent : plus petits, plus discrets. Ils
+   ne disparaissent pas — on doit savoir ce qui reste. */
+.su-trophee:not([data-complet]):not(.su-trophee--tout) {
+  width: 80px;
+  padding: 9px 5px 8px;
+  opacity: 0.86;
+}
+.su-trophee:not([data-complet]):not(.su-trophee--tout) .su-trophee-anneau {
+  width: 44px;
+  height: 44px;
+}
+.su-trophee:not([data-complet]):not(.su-trophee--tout) .su-trophee-chiffre {
+  font-size: 0.8rem;
+}
+.su-trophee:not([data-complet]):not(.su-trophee--tout):hover { opacity: 1; }
+
+.su-coffres { align-items: flex-end; }
+
+/* ═══════════════════════════════════════════════════════════════
+   2 · LE MOMENT DE GLOIRE
+   ═══════════════════════════════════════════════════════════════
+   Gagner un legendaire produisait le meme bandeau de coin d ecran
+   qu un commun. Un pantheon sans moment n est qu un inventaire.
+
+   Rien ne se ferme tout seul : on ne rate pas la seule chose qu on
+   est venu voir. */
+
+.su-gloire {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: hsl(220 60% 2% / 0.78);
+  backdrop-filter: blur(8px);
+  animation: su-voile 260ms ease-out both;
+}
+@keyframes su-voile { from { opacity: 0; } to { opacity: 1; } }
+
+.su-gloire-carte {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 34px 28px 26px;
+  border-radius: 20px;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(170deg,
+    color-mix(in srgb, var(--su-teinte) 16%, hsl(220 60% 7%)), hsl(220 60% 6%) 62%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 55%, transparent),
+    0 0 60px -12px var(--su-teinte),
+    0 30px 60px -30px hsl(220 80% 2% / 0.9);
+  animation: su-monte 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --su-teinte: var(--su-common);
+}
+.su-gloire-carte[data-rarete="uncommon"]  { --su-teinte: var(--su-uncommon); }
+.su-gloire-carte[data-rarete="rare"]      { --su-teinte: var(--su-rare); }
+.su-gloire-carte[data-rarete="epic"]      { --su-teinte: var(--su-epic); }
+.su-gloire-carte[data-rarete="mythic"]    { --su-teinte: var(--su-mythic); }
+.su-gloire-carte[data-rarete="legendary"] { --su-teinte: var(--su-legendary); }
+
+@keyframes su-monte {
+  from { transform: translateY(16px) scale(0.96); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* Le halo derriere l icone — la seule lueur de la page qui ait le
+   droit d etre franche. */
+.su-gloire-halo {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  width: 260px;
+  height: 260px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--su-teinte) 40%, transparent), transparent 66%);
+  filter: blur(34px);
+  pointer-events: none;
+}
+
+.su-gloire-fermer {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: hsl(0 0% 100% / 0.07);
+  color: hsl(215 20% 76%);
+  cursor: pointer;
+  transition: background 160ms, color 160ms;
+}
+.su-gloire-fermer:hover { background: hsl(0 0% 100% / 0.14); color: #fff; }
+.su-gloire-fermer svg { width: 15px; height: 15px; }
+
+.su-gloire-icone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  border-radius: 24px;
+  color: var(--su-teinte);
+  background: color-mix(in srgb, var(--su-teinte) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 60%, transparent);
+  animation: su-arrive 620ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+.su-gloire-icone svg { width: 42px; height: 42px; }
+@keyframes su-arrive {
+  from { transform: scale(0.6) rotate(-12deg); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+.su-gloire-quoi {
+  margin: 0 0 6px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--su-teinte) 80%, #fff);
+}
+.su-gloire-nom {
+  margin: 0 0 8px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #F8FAFC;
+  text-wrap: balance;
+}
+.su-gloire-rarete {
+  margin: 0 0 16px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--su-teinte);
+}
+.su-gloire-saveur {
+  margin: 0 0 18px;
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: hsl(215 20% 72%);
+}
+
+.su-gloire-gains {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.su-gloire-gains span {
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--su-teinte) 85%, #fff);
+  background: color-mix(in srgb, var(--su-teinte) 13%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 32%, transparent);
+}
+
+.su-gloire-suite {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: 12px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(220 60% 6%);
+  background: var(--su-teinte);
+  cursor: pointer;
+  transition: filter 160ms, transform 160ms;
+}
+.su-gloire-suite:hover { filter: brightness(1.1); }
+.su-gloire-suite:active { transform: scale(0.985); }
+
+/* ═══════════════════════════════════════════════════════════════
+   5 · LA CHRONIQUE
+   ═══════════════════════════════════════════════════════════════
+   Les dates existaient et n etaient montrees nulle part. Rangees par
+   mois, elles racontent l annee — et un pantheon est d abord un
+   recit. */
+
+.su-chronique { display: grid; gap: 26px; }
+
+.su-mois-titre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(214 100% 70% / 0.85);
+}
+.su-mois-titre::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, hsl(214 70% 70% / 0.22), transparent);
+}
+.su-mois-titre span {
+  order: 2;
+  flex-shrink: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: hsl(215 16% 58%);
+  background: hsl(214 60% 70% / 0.1);
+}
+
+.su-mois-liste {
+  display: grid;
+  gap: 2px;
+  /* Le fil du temps : une ligne verticale que les points traversent. */
+  border-left: 1px solid hsl(214 70% 70% / 0.16);
+  padding-left: 18px;
+  margin-left: 5px;
+}
+
+.su-trace {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 4px;
+  --su-teinte: var(--su-common);
+}
+.su-trace[data-rarete="uncommon"]  { --su-teinte: var(--su-uncommon); }
+.su-trace[data-rarete="rare"]      { --su-teinte: var(--su-rare); }
+.su-trace[data-rarete="epic"]      { --su-teinte: var(--su-epic); }
+.su-trace[data-rarete="mythic"]    { --su-teinte: var(--su-mythic); }
+.su-trace[data-rarete="legendary"] { --su-teinte: var(--su-legendary); }
+
+.su-trace-point {
+  position: absolute;
+  left: -23px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--su-teinte);
+  box-shadow: 0 0 0 3px hsl(220 60% 6%), 0 0 10px -1px var(--su-teinte);
+}
+
+.su-trace-icone {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--su-teinte);
+  background: color-mix(in srgb, var(--su-teinte) 12%, transparent);
+}
+.su-trace-icone svg { width: 14px; height: 14px; }
+
+.su-trace-nom {
+  font-size: 0.9rem;
+  color: #E2E8F0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.su-trace-jour {
+  font-family: "Orbitron", var(--co-fonte, sans-serif);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: hsl(215 16% 50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .su-gloire,
+  .su-gloire-carte,
+  .su-gloire-icone { animation: none; }
+}

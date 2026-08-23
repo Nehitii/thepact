@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Check, Lock, Sparkles, Trophy } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Check, Clock, Lock, Moon, Sparkles, Trophy, Users, X } from "lucide-react";
+import { format } from "date-fns";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import "@/styles/pantheon.css";
 import "@/styles/succes.css";
@@ -84,10 +86,15 @@ function Carte({ s, neuf, libelleRarete }: { s: Succes; neuf: boolean; libelleRa
   const pourcent = Math.round(s.avancement * 100);
 
   return (
+    /* 1 · UN LEGENDAIRE A MILLE POINTS OCCUPAIT LA MEME SURFACE
+       qu un commun a vingt-cinq. La carte s elargit avec la rarete :
+       la hierarchie se sent avant de se lire. */
     <article
       className="su-carte"
       data-rarete={s.rarete}
+      data-large={rangDeRarete(s.rarete) >= 4 ? "" : undefined}
       data-obtenu={s.obtenu ? "" : undefined}
+      data-dort={s.sommeil ? "" : undefined}
       data-neuf={neuf ? "" : undefined}
     >
       <span className="su-icone" aria-hidden="true">
@@ -99,13 +106,34 @@ function Carte({ s, neuf, libelleRarete }: { s: Succes; neuf: boolean; libelleRa
           {masque ? t("achievements.secret", "Succès secret") : s.nom}
           {neuf && <span className="su-neuf">{t("achievements.new", "nouveau")}</span>}
         </p>
+        {/* UN SECRET SANS PISTE N INTRIGUE PAS, IL ENNUIE. Cinq
+            cadenas identiques ne donnaient aucune prise. La categorie
+            et la rarete restent visibles — assez pour savoir ou
+            chercher, pas assez pour gacher la trouvaille. */}
         <p className="su-quoi">
           {masque
-            ? t("achievements.secretWhat", "Il se révélera au moment où vous le gagnerez.")
+            ? t("achievements.secretWhere", "Quelque part du côté de « {{ou}} ».", {
+                ou: t(`achievements.category.${s.categorie}`, s.categorie),
+              })
             : s.description}
         </p>
 
-        {!s.obtenu && !masque && s.seuil !== null && s.seuil > 1 && (
+        {/* 6 · CE QUI DORT, ET POURQUOI. Un mur qu on sait etre un mur
+            cesse d etre frustrant. */}
+        {!s.obtenu && s.sommeil && (
+          <span className="su-sommeil" data-raison={s.sommeil}>
+            {s.sommeil === "module" ? <Lock aria-hidden="true" />
+              : s.sommeil === "personne" ? <Users aria-hidden="true" />
+              : <Moon aria-hidden="true" />}
+            {s.sommeil === "module"
+              ? t("achievements.asleepModule", "En sommeil · module non possédé")
+              : s.sommeil === "personne"
+                ? t("achievements.asleepAlone", "En sommeil · il faut du monde")
+                : t("achievements.asleepIdle", "En sommeil · rien d’enregistré ici")}
+          </span>
+        )}
+
+        {!s.obtenu && !masque && !s.sommeil && s.seuil !== null && s.seuil > 1 && (
           <div className="su-avance">
             <span className="su-jauge" aria-hidden="true">
               <i style={{ width: `${pourcent}%` }} />
@@ -130,6 +158,75 @@ function Carte({ s, neuf, libelleRarete }: { s: Succes; neuf: boolean; libelleRa
         )}
       </div>
     </article>
+  );
+}
+
+/* 2 · GAGNER UN LEGENDAIRE PRODUISAIT LE MEME BANDEAU QU UN COMMUN.
+ *
+ * Un pantheon sans moment n est qu un inventaire. La carte se pose au
+ * milieu de l ecran, a la couleur de sa rarete, et attend qu on la
+ * congedie — c est ce qui distingue un fait acquis d une nouvelle.
+ *
+ * Elle se ferme au clic, a Echap, ou par le bouton. Rien ne se ferme
+ * tout seul : on ne rate pas la seule chose qu on est venu voir. */
+function MomentDeGloire({
+  s, reste, onSuivant,
+}: {
+  s: Succes; reste: number; onSuivant: () => void;
+}) {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const surTouche = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onSuivant();
+      }
+    };
+    window.addEventListener("keydown", surTouche);
+    return () => window.removeEventListener("keydown", surTouche);
+  }, [onSuivant]);
+
+  return (
+    <div className="su-gloire" role="dialog" aria-modal="true" onClick={onSuivant}>
+      <article
+        className="su-gloire-carte"
+        data-rarete={s.rarete}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="su-gloire-fermer"
+          onClick={onSuivant}
+          aria-label={t("common.close", "Fermer")}
+        >
+          <X aria-hidden="true" />
+        </button>
+
+        <span className="su-gloire-halo" aria-hidden="true" />
+
+        <span className="su-gloire-icone" aria-hidden="true">
+          <DynamicLucideIcon name={s.icone || "Award"} />
+        </span>
+
+        <p className="su-gloire-quoi">{t("achievements.justUnlocked", "Succès débloqué")}</p>
+        <h2 className="su-gloire-nom">{s.nom}</h2>
+        <p className="su-gloire-rarete">{t(`achievements.rarity.${s.rarete}`, s.rarete)}</p>
+
+        {s.saveur && <p className="su-gloire-saveur">« {s.saveur} »</p>}
+
+        <div className="su-gloire-gains">
+          <span>+{s.points.toLocaleString()} {t("achievements.points", "points")}</span>
+          {s.bonds > 0 && <span>+{s.bonds.toLocaleString()} bonds</span>}
+        </div>
+
+        <button type="button" className="su-gloire-suite" onClick={onSuivant}>
+          {reste > 1
+            ? t("achievements.nextOne", "Suivant · encore {{n}}", { n: reste - 1 })
+            : t("achievements.gotIt", "Bien reçu")}
+        </button>
+      </article>
+    </div>
   );
 }
 
@@ -159,17 +256,55 @@ export default function Achievements() {
 
   const [categorie, setCategorie] = useState<string>(TOUT);
   const [cacherObtenus, setCacherObtenus] = useState(false);
+  const [vue, setVue] = useState<"collection" | "chronique">("collection");
+  const [aCongedier, setACongedier] = useState<string[]>([]);
+  const locale = useDateFnsLocale();
 
   /* Les nouveaux ne sont annonces qu une fois. Sans ce marquage, les
      vingt succes rattrapes d un coup se re-annonceraient a chaque
      visite, indefiniment. */
   const cles = useMemo(() => [...(neufs ?? [])], [neufs]);
   const marquer = marquerVus.mutate;
+
+  /* Les nouveaux passent par le moment, du plus rare au plus commun :
+     on ouvre par le plus beau. Ils etaient jusqu ici marques vus au
+     bout de cinq secondes, ce qui revenait a ne rien annoncer. */
+  /* PLAFONNE A TROIS. Le rattrapage a accorde trente-six succes d un
+     coup ; trente-six fenetres a congedier seraient une punition, pas
+     une celebration. On montre les trois plus rares — ceux qu on
+     aurait voulu voir — et les autres rejoignent la collection sans
+     ceremonie. */
+  const AU_PLUS = 3;
+  /* CE QUI A DEJA ETE CELEBRE NE REVIENT PAS. Congedier le dernier
+     marque les succes comme vus, ce qui invalide « succes-neufs » ; le
+     refetch changeait « cles », et l effet refaisait la file — la
+     fenetre reapparaissait en boucle. Ce registre ne survit pas au
+     montage, et n a pas a le faire : le drapeau « seen » s en charge
+     d une visite a l autre. */
+  const dejaCelebres = useRef(new Set<string>());
   useEffect(() => {
-    if (!cles.length) return;
-    const minuterie = window.setTimeout(() => marquer(cles), 5000);
-    return () => window.clearTimeout(minuterie);
-  }, [cles, marquer]);
+    if (!cles.length || !succes.length) return;
+    const frais = cles.filter((c) => !dejaCelebres.current.has(c));
+    if (!frais.length) return;
+    const rang = new Map(succes.map((x) => [x.cle, rangDeRarete(x.rarete)]));
+    const file = frais
+      .sort((a, b) => (rang.get(b) ?? 0) - (rang.get(a) ?? 0))
+      .slice(0, AU_PLUS);
+    for (const c of cles) dejaCelebres.current.add(c);
+    setACongedier(file);
+  }, [cles, succes]);
+
+  const congedier = () => {
+    setACongedier((f) => {
+      const reste = f.slice(1);
+      if (!reste.length && cles.length) marquer(cles);
+      return reste;
+    });
+  };
+
+  const enGloire = aCongedier.length
+    ? succes.find((x) => x.cle === aCongedier[0]) ?? null
+    : null;
 
   const libelleCategorie = (c: string) => t(`achievements.category.${c}`, c);
   const libelleRarete = (r: string) => t(`achievements.rarity.${r}`, r);
@@ -200,6 +335,31 @@ export default function Achievements() {
     }
     return null;
   }, [succes]);
+
+  /* 5 · LES DATES EXISTENT, LA PAGE NE LES MONTRAIT NULLE PART.
+     Rangees par mois, elles racontent l annee — et un pantheon est
+     d abord un recit. */
+  const chronique = useMemo(() => {
+    const par = new Map<string, { titre: string; quand: Date; succes: Succes[] }>();
+    for (const x of succes) {
+      if (!x.obtenu || !x.obtenu_le) continue;
+      const d = new Date(x.obtenu_le);
+      const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const groupe = par.get(cle) ?? {
+        titre: format(d, "LLLL yyyy", { locale }),
+        quand: new Date(d.getFullYear(), d.getMonth(), 1),
+        succes: [],
+      };
+      groupe.succes.push(x);
+      par.set(cle, groupe);
+    }
+    return [...par.values()]
+      .map((g) => ({
+        ...g,
+        succes: g.succes.sort((a, b) => rangDeRarete(b.rarete) - rangDeRarete(a.rarete)),
+      }))
+      .sort((a, b) => b.quand.getTime() - a.quand.getTime());
+  }, [succes, locale]);
 
   const proches = useMemo(
     () => succes
@@ -345,13 +505,34 @@ export default function Achievements() {
           <button
             type="button"
             className="su-filtre"
-            aria-pressed={cacherObtenus}
-            onClick={() => setCacherObtenus((v) => !v)}
+            aria-pressed={vue === "collection"}
+            onClick={() => setVue("collection")}
           >
-            {t("achievements.hideDone", "Masquer les obtenus")}
+            {t("achievements.collection", "Collection")}
           </button>
+          <button
+            type="button"
+            className="su-filtre"
+            aria-pressed={vue === "chronique"}
+            onClick={() => setVue("chronique")}
+          >
+            <Clock aria-hidden="true" style={{ width: 13, height: 13, marginRight: 6, verticalAlign: -2 }} />
+            {t("achievements.chronicle", "Chronique")}
+          </button>
+          {vue === "collection" && (
+            <button
+              type="button"
+              className="su-filtre"
+              aria-pressed={cacherObtenus}
+              onClick={() => setCacherObtenus((v) => !v)}
+            >
+              {t("achievements.hideDone", "Masquer les obtenus")}
+            </button>
+          )}
           <span className="su-compte">
-            {t("achievements.showing", "{{n}} affichés", { n: listee.length })}
+            {vue === "collection"
+              ? t("achievements.showing", "{{n}} affichés", { n: listee.length })
+              : t("achievements.overMonths", "sur {{n}} mois", { n: chronique.length })}
           </span>
         </div>
 
@@ -359,6 +540,39 @@ export default function Achievements() {
           <div className="su-liste" aria-busy="true">
             {[0, 1, 2, 3].map((i) => <div className="su-os" key={i} />)}
           </div>
+        ) : vue === "chronique" ? (
+          chronique.length === 0 ? (
+            <div className="su-vide">
+              <Clock aria-hidden="true" />
+              <h3>{t("achievements.noHistory", "Rien encore inscrit")}</h3>
+              <p>{t("achievements.noHistoryWhat", "Le premier succès ouvrira la chronique.")}</p>
+            </div>
+          ) : (
+            <div className="su-chronique">
+              {chronique.map((mois) => (
+                <section className="su-mois" key={mois.titre}>
+                  <h3 className="su-mois-titre">
+                    {mois.titre}
+                    <span>{mois.succes.length}</span>
+                  </h3>
+                  <div className="su-mois-liste">
+                    {mois.succes.map((x) => (
+                      <div className="su-trace" key={x.cle} data-rarete={x.rarete}>
+                        <span className="su-trace-point" aria-hidden="true" />
+                        <span className="su-trace-icone" aria-hidden="true">
+                          <DynamicLucideIcon name={x.icone || "Award"} />
+                        </span>
+                        <span className="su-trace-nom">{x.nom}</span>
+                        <span className="su-trace-jour">
+                          {x.obtenu_le ? format(new Date(x.obtenu_le), "d MMM", { locale }) : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )
         ) : listee.length === 0 ? (
           <div className="su-vide">
             <Trophy aria-hidden="true" />
@@ -378,6 +592,14 @@ export default function Achievements() {
           </div>
         )}
       </div>
+
+      {enGloire && (
+        <MomentDeGloire
+          s={enGloire}
+          reste={aCongedier.length}
+          onSuivant={congedier}
+        />
+      )}
     </DSPageShell>
   );
 }

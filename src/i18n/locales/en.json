@@ -2346,7 +2346,18 @@
     "trophiesWon_one": "{{count}} trophy",
     "trophiesWon_other": "{{count}} trophies",
     "justUnlocked": "Achievement unlocked",
-    "remaining": "{{n}} to go"
+    "remaining": "{{n}} to go",
+    "secretWhere": "Somewhere around « {{ou}} ».",
+    "asleepModule": "Asleep · module not owned",
+    "asleepAlone": "Asleep · needs other people",
+    "asleepIdle": "Asleep · nothing recorded here",
+    "collection": "Collection",
+    "chronicle": "Chronicle",
+    "overMonths": "across {{n}} months",
+    "noHistory": "Nothing recorded yet",
+    "noHistoryWhat": "The first achievement opens the chronicle.",
+    "nextOne": "Next · {{n}} to go",
+    "gotIt": "Got it"
   },
   "journal": {
     "title": "Journal",

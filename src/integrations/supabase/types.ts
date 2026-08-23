@@ -5345,6 +5345,7 @@ export type Database = {
           rarete: string
           saveur: string
           seuil: number
+          sommeil: string
           valeur: number
         }[]
       }
