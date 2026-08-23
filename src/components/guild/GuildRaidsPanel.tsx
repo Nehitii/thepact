@@ -262,7 +262,7 @@ function Composer({ guildId, fermer }: { guildId: string; fermer: () => void }) 
 
       <div>
         <p className="gu-etiquette">{t("guild.raidDuration", "Durée")}</p>
-        <div className="fr-barre" style={{ padding: 0, border: "none" }}>
+        <div className="gu-barre" style={{ padding: 0, border: "none" }}>
           {[7, 14, 30].map((j) => (
             <button
               key={j}
@@ -381,7 +381,7 @@ export function GuildRaidsPanel({ guildId, canManage }: Props) {
     <>
       {canManage && (
         <>
-          <div className="fr-barre">
+          <div className="gu-barre">
             <button type="button" className="co-bouton" onClick={() => setComposer((v) => !v)}>
               <Swords aria-hidden="true" />
               {t("guild.raidNew", "Lancer un raid")}

@@ -5193,6 +5193,16 @@ export type Database = {
         Args: { p_item_id: string; p_item_type: string; p_price: number }
         Returns: Json
       }
+      rangs_des_membres: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          couleur: string
+          rang: string
+          seuil: number
+          user_id: string
+          xp: number
+        }[]
+      }
       rate_template: {
         Args: { _rating: number; _review?: string; _template_id: string }
         Returns: Json
@@ -5253,6 +5263,7 @@ export type Database = {
         Args: { _date: string; _goal_id: string }
         Returns: Json
       }
+      xp_du_membre: { Args: { p_user_id: string }; Returns: number }
     }
     Enums: {
       app_role: "user" | "admin"

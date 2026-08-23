@@ -106,15 +106,19 @@
 /* ── LA BARRE DE SECTIONS ──
    Horizontale, elle défile si elle déborde — et le fondu ne masque
    plus une commande, faute qu'il y en ait au bout. */
+/* SIX SECTIONS DEMANDENT 687px. La barre defilait donc
+   horizontalement, barre de defilement masquee — c est-a-dire qu elle
+   COUPAIT « Parametres » en deux sans rien dire, et sans laisser
+   deviner qu il y avait quelque chose a droite. Un menu de navigation
+   ne se cache pas : il passe a la ligne. Deux rangees valent mieux
+   qu une entree tronquee. */
 .gu-sections {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 8px var(--co-gouttiere);
   border-bottom: 1px solid var(--co-filet);
-  overflow-x: auto;
-  scrollbar-width: none;
 }
-.gu-sections::-webkit-scrollbar { display: none; }
 
 /* ── LES BLOCS D'UNE SECTION ── */
 .gu-bloc { border-bottom: 1px solid var(--co-filet); }
@@ -659,4 +663,111 @@
   .gu-raid-corps { grid-template-columns: 56px 1fr; gap: 12px; }
   .gu-anneau { width: 56px; height: 56px; }
   .gu-anneau-chiffre { font-size: 14px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES CLASSES QUE LA GUILDE EMPRUNTAIT
+   ═══════════════════════════════════════════════════════════════
+   Le module guilde utilisait .fr-barre, .fr-chercher, .fr-ligne,
+   .fr-mesures, .fr-grade et .fr-actions — des classes de friends.css.
+   Mais GuildPage n importe que community.css et guild.css : AUCUNE de
+   ces regles n arrivait jusqu a la page.
+
+   Pire, .fr-ligne est declaree DEUX FOIS dans le projet — dans
+   friends.css et dans front.css, qui partagent le meme prefixe. La
+   page de guilde recevait donc la definition de front.css, celle d une
+   toute autre fonctionnalite, par pur hasard de chargement.
+
+   La guilde prend ses propres classes. Chaque module reste maitre de
+   sa feuille, et la collision de prefixe cesse de pouvoir la toucher. */
+
+.gu-barre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+.gu-chercher {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+  background: var(--co-fond-eleve);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+}
+.gu-chercher > svg { width: 16px; height: 16px; stroke-width: 2; color: var(--co-texte-3); flex-shrink: 0; }
+.gu-chercher input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: var(--co-fonte);
+  font-size: 15px;
+  color: var(--co-texte);
+}
+.gu-chercher input::placeholder { color: var(--co-texte-3); }
+.gu-chercher input:focus { outline: none; }
+/* C est le champ entier qui s allume, pas le seul input : le halo
+   global de :focus-visible tombait sinon au milieu de la barre. */
+.gu-chercher:focus-within {
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+              inset 0 0 0 1px color-mix(in srgb, var(--co-accent) 45%, transparent);
+}
+
+.gu-ligne {
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  cursor: default;
+}
+.gu-ligne[role="button"] { cursor: pointer; }
+
+.gu-mesures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 3px;
+}
+.gu-mesure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--co-texte-2);
+}
+.gu-mesure svg { width: 13px; height: 13px; stroke-width: 2; color: var(--co-texte-3); }
+/* Le rang porte la couleur choisie par la personne : son pictogramme
+   la suit, au lieu de rester gris comme les autres mesures. */
+.gu-mesure[data-teinte] svg { color: currentColor; }
+
+/* Un XP est un chiffre : il s aligne en colonnes et ne change pas de
+   largeur en passant de 999 a 1000. */
+.gu-chiffre {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--co-texte-3);
+}
+
+.gu-grade {
+  font-family: var(--co-fonte-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--co-texte-3);
+}
+
+.gu-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .gu-ligne { grid-template-columns: 40px 1fr; }
+  .gu-actions { grid-column: 1 / -1; margin-top: 8px; }
 }

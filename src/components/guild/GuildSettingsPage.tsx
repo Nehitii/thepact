@@ -87,7 +87,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
 
   return (
     <>
-      <div className="fr-barre">
+      <div className="gu-barre">
         {VUES.map((v) => (
           <button
             key={v}
@@ -128,7 +128,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
 
             <div>
               <p className="gu-etiquette">{t("friends.icon", "Blason")}</p>
-              <div className="fr-barre" style={{ padding: 0, border: "none" }}>
+              <div className="gu-barre" style={{ padding: 0, border: "none" }}>
                 {iconOptions.map((opt) => (
                   <button
                     key={opt.key}

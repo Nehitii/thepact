@@ -122,7 +122,7 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
     <>
       {isOfficer && (
         <>
-          <div className="fr-barre">
+          <div className="gu-barre">
             <button type="button" className="co-bouton" onClick={() => setShowCreate(!showCreate)}>
               <Plus aria-hidden="true" />
               {t("guild.createEvent", "Créer un événement")}
@@ -203,28 +203,28 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
             <div className="gu-evenement" data-passe={passe ? "oui" : "non"} key={ev.id}>
               <div className="gu-objectif-tete">
                 <span className="co-nom">{ev.title}</span>
-                {passe && <span className="fr-grade">{t("guild.eventPast", "Passé")}</span>}
+                {passe && <span className="gu-grade">{t("guild.eventPast", "Passé")}</span>}
               </div>
 
               {ev.description && <p className="gu-mot">{ev.description}</p>}
 
-              <div className="fr-mesures">
-                <span className="fr-mesure">
+              <div className="gu-mesures">
+                <span className="gu-mesure">
                   <CalendarDays aria-hidden="true" />
                   {format(new Date(ev.event_date), "PPp", { locale })}
                 </span>
-                <span className="fr-mesure">
+                <span className="gu-mesure">
                   <Clock aria-hidden="true" />
                   {t("guild.eventMinutes", "{{n}} min", { n: ev.duration_minutes })}
                 </span>
-                <span className="fr-mesure">
+                <span className="gu-mesure">
                   <Users aria-hidden="true" />
                   {presents}{ev.max_participants ? " / " + ev.max_participants : ""}
                 </span>
               </div>
 
               {!passe && (
-                <div className="fr-actions" style={{ marginTop: 10, justifyContent: "flex-start" }}>
+                <div className="gu-actions" style={{ marginTop: 10, justifyContent: "flex-start" }}>
                   {REPONSES.map((statut) => {
                     const Icone = ICONE_REPONSE[statut];
                     return (
