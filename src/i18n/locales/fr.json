@@ -3039,7 +3039,19 @@
     "ownerCantLeave": "Transfère la propriété avant de quitter.",
     "general": "Général",
     "inviteCodes": "Codes d'invitation",
-    "dangerZone": "Zone Dangereuse"
+    "dangerZone": "Zone Dangereuse",
+    "notFoundWhy": "Elle a peut-être été dissoute, ou elle est privée et vous n'en êtes pas membre.",
+    "level": "Niveau {{n}}",
+    "sections": "Sections de la guilde",
+    "postAnnouncement": "Publier une annonce",
+    "announcementHint": "Ce que la guilde doit savoir…",
+    "noAnnouncement": "Aucune annonce",
+    "noActivity": "Aucune activité pour le moment",
+    "deleteAnnouncement": "Supprimer l'annonce",
+    "xpGained": "{{name}} a gagné {{amount}} XP",
+    "ranking": "Classement",
+    "membersOf_one": "1 membre sur {{max}}",
+    "membersOf_other": "{{count}} membres sur {{max}}"
   },
   "analytics": {
     "period": {

@@ -1,13 +1,37 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useGuilds, type Guild, type GuildAnnouncement, type GuildActivity } from "@/hooks/useGuilds";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Pin, Send, Trash2, Megaphone } from "lucide-react";
-import { toast } from "sonner";
+import { Megaphone, Pin, Send, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { CyberEmpty } from "@/components/ui/cyber-states";
-import { DSPanel, DSDivider } from "@/components/ds";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { Pastille } from "@/components/community/Pastille";
+import { nomAffichable } from "@/components/community/vocabulaire";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import {
+  useAnnouncements,
+  useGuildActivity,
+  useGuilds,
+  type Guild,
+  type GuildActivity,
+} from "@/hooks/useGuilds";
+
+/* LA VUE D ENSEMBLE D UNE GUILDE : ce qu on annonce, ce qui s y passe.
+ *
+ * TROIS TITRES ETAIENT EN ANGLAIS, entre crochets, sur une page dont
+ * tout le reste etait traduit : « [ POST ANNOUNCEMENT ] »,
+ * « [ ANNOUNCEMENTS ] », « [ RECENT ACTIVITY ] ». Et l en-tete de
+ * chaque annonce donnait « [ NEHITI · 5 MONTHS AGO ] » — le nom en
+ * capitales et la date en anglais, juste au-dessus de lignes
+ * d activite ecrites en francais.
+ *
+ * LES DATES ETAIENT SANS LOCALE. formatDistanceToNow rendait donc
+ * « 5 months ago » a un lecteur francais, exactement comme le fil de
+ * Community avant sa passe.
+ *
+ * ET UN CAS DU JOURNAL restait en dur : « X earned N XP » ecrit
+ * directement dans le switch, entre cinq autres cas traduits.
+ *
+ * Les deux hooks de donnees etaient tires de useGuilds ; ils vivent
+ * maintenant au niveau du module et s importent directement. */
 
 interface Props {
   guild: Guild;
@@ -15,145 +39,133 @@ interface Props {
   isOfficer: boolean;
 }
 
+const LIMITE = 500;
+
 export function GuildOverview({ guild, userId, isOfficer }: Props) {
   const { t } = useTranslation();
-  const { useAnnouncements, useGuildActivity, createAnnouncement, deleteAnnouncement } = useGuilds();
-  const { data: announcements = [] } = useAnnouncements(guild.id);
-  const { data: activity = [] } = useGuildActivity(guild.id);
-  const [motd, setMotd] = useState("");
+  const locale = useDateFnsLocale();
+  const { createAnnouncement, deleteAnnouncement } = useGuilds();
+  const { data: annonces = [] } = useAnnouncements(guild.id);
+  const { data: activite = [] } = useGuildActivity(guild.id);
+  const [texte, setTexte] = useState("");
 
-  const handlePostAnnouncement = async () => {
-    if (!motd.trim()) return;
+  const publier = async () => {
+    const propre = texte.trim();
+    if (!propre) return;
     try {
-      await createAnnouncement.mutateAsync({ guildId: guild.id, content: motd.trim(), pinned: false });
-      toast.success(t("friends.announcementPosted"));
-      setMotd("");
+      await createAnnouncement.mutateAsync({ guildId: guild.id, content: propre, pinned: false });
+      toast.success(t("friends.announcementPosted", "Annonce publiée"));
+      setTexte("");
     } catch {
-      toast.error(t("friends.announcementFailed"));
+      toast.error(t("friends.announcementFailed", "La publication a échoué"));
     }
   };
 
-  const activityLabel = (a: GuildActivity) => {
+  const libelleActivite = (a: GuildActivity) => {
+    const nom = a.display_name || "?";
+    const combien = (a.metadata as { amount?: number } | null)?.amount || 0;
     switch (a.action_type) {
-      case "guild_created": return t("friends.activityCreated", { name: a.display_name || "?" });
-      case "member_joined": return t("friends.activityJoined", { name: a.display_name || "?" });
-      case "member_left": return t("friends.activityLeft", { name: a.display_name || "?" });
-      case "goal_contribution": return t("friends.activityContributed", { name: a.display_name || "?", amount: (a.metadata as any)?.amount || 0 });
-      case "xp_gained": return `${a.display_name || "?"} earned ${(a.metadata as any)?.amount || 0} XP`;
-      default: return `${a.display_name || "?"}: ${a.action_type}`;
+      case "guild_created": return t("friends.activityCreated", { name: nom });
+      case "member_joined": return t("friends.activityJoined", { name: nom });
+      case "member_left": return t("friends.activityLeft", { name: nom });
+      case "goal_contribution": return t("friends.activityContributed", { name: nom, amount: combien });
+      case "xp_gained": return t("guild.xpGained", "{{name}} a gagné {{amount}} XP", { name: nom, amount: combien });
+      default: return `${nom} · ${a.action_type}`;
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Post Announcement (Officer only) */}
+    <>
       {isOfficer && (
-        <div className="flex flex-col gap-2">
-          <span className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
-            [ POST ANNOUNCEMENT ]
-          </span>
-          <DSPanel tier="muted" hideBrackets className="!p-3">
-            <div className="flex gap-2">
-              <Textarea
-                placeholder={t("friends.writeAnnouncement")}
-                value={motd}
-                onChange={(e) => setMotd(e.target.value)}
-                className="resize-none h-16 text-xs bg-[hsl(var(--ds-surface-2)/0.5)] border-[hsl(var(--ds-border-default)/0.3)] font-rajdhani"
-                maxLength={500}
-              />
-              <Button
-                size="sm"
-                onClick={handlePostAnnouncement}
-                disabled={!motd.trim() || createAnnouncement.isPending}
-                className="self-end h-9 px-3 font-orbitron ds-t-label tracking-[0.2em] uppercase border"
-                style={{
-                  color: "hsl(var(--ds-accent-primary))",
-                  background: "hsl(var(--ds-accent-primary) / 0.1)",
-                  borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
-                }}
-              >
-                <Send className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </DSPanel>
+        <div className="gu-ecrire">
+          <textarea
+            value={texte}
+            maxLength={LIMITE}
+            onChange={(e) => setTexte(e.target.value)}
+            placeholder={t("guild.announcementHint", "Ce que la guilde doit savoir…")}
+            aria-label={t("guild.postAnnouncement", "Publier une annonce")}
+          />
+          <div className="gu-ecrire-pied">
+            <button
+              type="button"
+              className="co-bouton"
+              onClick={publier}
+              disabled={!texte.trim() || createAnnouncement.isPending}
+            >
+              <Send aria-hidden="true" />
+              {t("guild.postAnnouncement", "Publier une annonce")}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Announcements */}
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
-            [ ANNOUNCEMENTS ]
-          </h3>
-          <DSDivider accent="warning" />
+      <section className="gu-bloc">
+        <div className="gu-bloc-tete">
+          <h2 className="gu-bloc-titre">{t("guild.announcements", "Annonces")}</h2>
+          {annonces.length > 0 && <span className="gu-bloc-compte">{annonces.length}</span>}
         </div>
-        {announcements.length === 0 ? (
-          <CyberEmpty icon={Megaphone} title={t("friends.noAnnouncements")} subtitle={t("friends.noAnnouncementsDesc")} />
-        ) : (
-          <div className="space-y-2">
-            {announcements.slice(0, 5).map((a: GuildAnnouncement) => (
-              <DSPanel key={a.id} tier="secondary" accent="warning" hideBrackets className="!p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))] flex items-center gap-1.5">
-                    {a.pinned && <Pin className="h-3 w-3" style={{ color: "hsl(var(--ds-accent-warning))" }} />}
-                    [ {a.author_name?.toUpperCase() || "?"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true }).toUpperCase()} ]
-                  </span>
-                  {(a.author_id === userId || isOfficer) && (
+        <div className="gu-corps">
+          {annonces.length === 0 ? (
+            <p className="co-choix-message" style={{ textAlign: "left", padding: "6px 0" }}>
+              {t("guild.noAnnouncement", "Aucune annonce")}
+            </p>
+          ) : (
+            annonces.map((a) => {
+              const nom = nomAffichable(a.author_name, "?");
+              return (
+                <article className="gu-annonce" key={a.id}>
+                  <Pastille identifiant={a.author_id} nom={nom} image={a.author_avatar} petite />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="co-post-tete">
+                      <span className="co-nom" style={{ fontSize: 14 }}>{nom}</span>
+                      {a.pinned && <Pin aria-hidden="true" style={{ width: 12, height: 12, color: "var(--co-respect)" }} />}
+                      <span className="co-sep" aria-hidden="true">·</span>
+                      <time className="co-quand" style={{ fontSize: 13 }} dateTime={a.created_at}>
+                        {formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale })}
+                      </time>
+                    </div>
+                    <p className="gu-annonce-texte">{a.content}</p>
+                  </div>
+                  {(isOfficer || a.author_id === userId) && (
                     <button
-                      onClick={() => deleteAnnouncement.mutateAsync({ id: a.id, guildId: guild.id })}
-                      className="text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-critical))] transition-colors"
-                      aria-label="Delete announcement"
+                      type="button"
+                      className="co-action"
+                      data-reaction="more"
+                      aria-label={t("guild.deleteAnnouncement", "Supprimer l'annonce")}
+                      onClick={() => deleteAnnouncement.mutate({ id: a.id, guildId: guild.id })}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <i className="co-action-rond"><Trash2 aria-hidden="true" /></i>
                     </button>
                   )}
-                </div>
-                <p className="text-xs text-[hsl(var(--ds-text-primary))] font-rajdhani leading-relaxed">{a.content}</p>
-              </DSPanel>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent Activity */}
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <h3 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
-            [ RECENT ACTIVITY ]
-          </h3>
-          <DSDivider accent="primary" />
+                </article>
+              );
+            })
+          )}
         </div>
-        {activity.length === 0 ? (
-          <DSPanel tier="muted" hideBrackets className="!p-3">
-            <p className="font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))]">
-              // {t("friends.noActivity")}
+      </section>
+
+      <section className="gu-bloc">
+        <div className="gu-bloc-tete">
+          <Megaphone aria-hidden="true" style={{ width: 15, height: 15, color: "var(--co-texte-3)" }} />
+          <h2 className="gu-bloc-titre">{t("guild.recentActivity", "Activité récente")}</h2>
+        </div>
+        <div className="gu-corps">
+          {activite.length === 0 ? (
+            <p className="co-choix-message" style={{ textAlign: "left", padding: "6px 0" }}>
+              {t("guild.noActivity", "Aucune activité pour le moment")}
             </p>
-          </DSPanel>
-        ) : (
-          <DSPanel tier="muted" hideBrackets className="!p-3">
-            <div className="space-y-1.5">
-              {activity.slice(0, 8).map((a) => (
-                <div key={a.id} className="flex items-center gap-2 ds-t-label">
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{
-                      background: "hsl(var(--ds-accent-primary))",
-                      boxShadow: "0 0 4px hsl(var(--ds-accent-primary) / 0.6)",
-                      animation: "ds-pulse-dot 1.8s ease-in-out infinite",
-                    }}
-                  />
-                  <span className="flex-1 text-[hsl(var(--ds-text-secondary))] font-rajdhani truncate">
-                    {activityLabel(a)}
-                  </span>
-                  <span className="font-mono ds-t-label tabular-nums uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.7)] shrink-0">
-                    {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </DSPanel>
-        )}
-      </div>
-    </div>
+          ) : (
+            activite.map((a) => (
+              <p className="gu-trace" key={a.id}>
+                {libelleActivite(a)}
+                <time dateTime={a.created_at}>
+                  {formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale })}
+                </time>
+              </p>
+            ))
+          )}
+        </div>
+      </section>
+    </>
   );
 }

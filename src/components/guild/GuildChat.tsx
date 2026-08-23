@@ -16,7 +16,9 @@ interface GuildMessage {
   reply_to_id: string | null;
   created_at: string;
   display_name?: string;
-  avatar_url?: string;
+  /* Nullable en base : l annotation « any » sur la requete masquait
+     l ecart, comme partout ailleurs dans ce module. */
+  avatar_url?: string | null;
 }
 
 interface Props {
@@ -41,10 +43,10 @@ export function GuildChat({ guildId, userId }: Props) {
         .limit(200);
       if (error) throw error;
       if (!data?.length) return [];
-      const userIds = [...new Set(data.map((m: any) => m.user_id))];
+      const userIds = [...new Set(data.map((m) => m.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", userIds);
-      const pm = new Map(profiles?.map((p: any) => [p.id, p]) || []);
-      return data.map((m: any) => ({
+      const pm = new Map(profiles?.map((p) => [p.id, p]) || []);
+      return data.map((m) => ({
         ...m,
         display_name: pm.get(m.user_id)?.display_name || "?",
         avatar_url: pm.get(m.user_id)?.avatar_url,
@@ -74,7 +76,7 @@ export function GuildChat({ guildId, userId }: Props) {
         guild_id: guildId,
         user_id: userId,
         content,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["guild-chat", guildId] }),

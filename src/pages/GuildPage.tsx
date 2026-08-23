@@ -1,131 +1,207 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import {
+  ArrowLeft, CalendarDays, Crown, Home, LogOut,
+  MessageSquare, Settings, Shield, Target, Users,
+} from "lucide-react";
+import { toast } from "sonner";
+import "@/styles/community.css";
+import "@/styles/guild.css";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGuilds } from "@/hooks/useGuilds";
-import { GuildHeader } from "@/components/guild/GuildHeader";
-import { GuildSidebar, type GuildSection } from "@/components/guild/GuildSidebar";
+import { useGuild, useGuildMembers, useGuilds } from "@/hooks/useGuilds";
 import { GuildOverview } from "@/components/guild/GuildOverview";
 import { GuildMembersPanel } from "@/components/guild/GuildMembersPanel";
 import { GuildChat } from "@/components/guild/GuildChat";
 import { GuildGoalsPanel } from "@/components/friends/GuildGoalsPanel";
 import { GuildEventsPanel } from "@/components/guild/GuildEventsPanel";
-import { GuildLeaderboard } from "@/components/friends/GuildLeaderboard";
 import { GuildSettingsPage } from "@/components/guild/GuildSettingsPage";
-import { CyberLoader } from "@/components/ui/cyber-states";
-import { Button } from "@/components/ui/button";
-import { LogOut, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { DSCornerBrackets, DSDataNoise } from "@/components/ds";
+
+/* LA PAGE D UNE GUILDE.
+ *
+ * UN DEFAUT DE FOND, D ABORD. La guilde etait cherchee dans « mes
+ * guildes » — guilds.find((g) => g.id === id). Une guilde trouvee par
+ * la decouverte s affichait donc « introuvable » : on pouvait la voir
+ * dans la liste, jamais la consulter. Elle est maintenant demandee a
+ * la base, et c est RLS qui tranche.
+ *
+ * LE FAUX TERMINAL EST PARTI. « SEQ.7B3 » en haut de page,
+ * « [ FACTION · C723C109 ] » — un mot anglais suivi des huit premiers
+ * caracteres de l identifiant technique —, « MBR · 1/25 », et un menu
+ * dont chaque entree portait son numero de console, NAV.01 a NAV.07.
+ * Rien de tout cela ne disait quoi que ce soit sur la guilde.
+ *
+ * SEPT SECTIONS DEVIENNENT SIX. Le classement etait la liste des
+ * membres, triee. C est la meme liste : elle a rejoint l onglet
+ * Membres plutot que d occuper une septieme entree pour une guilde
+ * qui en compte un.
+ *
+ * Le vocabulaire est celui de Friends — guilde, jamais faction — et
+ * il vient du fichier de langue. */
+
+type Section = "apercu" | "membres" | "discussion" | "objectifs" | "evenements" | "reglages";
 
 export default function GuildPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { guilds, guildsLoading, useGuildMembers, leaveGuild } = useGuilds();
-  const [section, setSection] = useState<GuildSection>("overview");
 
-  const guild = guilds.find((g) => g.id === id);
-  const { data: members = [], isLoading: membersLoading } = useGuildMembers(id || "");
+  const { data: guilde, isLoading: chargement } = useGuild(id);
+  const { data: membres = [], isLoading: membresEnCours } = useGuildMembers(id || "");
+  const { leaveGuild } = useGuilds();
+  const [section, setSection] = useState<Section>("apercu");
 
-  if (guildsLoading || membersLoading) {
+  if (chargement || membresEnCours) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <CyberLoader rows={3} label={t("common.loading")} />
+      <div className="co">
+        <div className="co-grille">
+          <main className="co-colonne" aria-busy="true">
+            {[0, 1, 2].map((i) => (
+              <div className="co-fantome" key={i}>
+                <span className="co-os co-os--rond" />
+                <span className="co-os" style={{ height: 14, alignSelf: "center" }} />
+              </div>
+            ))}
+          </main>
+        </div>
       </div>
     );
   }
 
-  if (!guild || !user) {
+  if (!guilde || !user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-sm text-muted-foreground">{t("guild.notFound")}</p>
-        <Button variant="outline" size="sm" onClick={() => navigate("/friends")}>{t("common.back")}</Button>
+      <div className="co">
+        <div className="co-grille">
+          <main className="co-colonne">
+            <div className="co-vide">
+              <Shield aria-hidden="true" />
+              <h3>{t("guild.notFound", "Cette guilde est introuvable")}</h3>
+              <p>{t("guild.notFoundWhy", "Elle a peut-être été dissoute, ou elle est privée et vous n'en êtes pas membre.")}</p>
+              <button type="button" className="co-bouton co-bouton--discret" onClick={() => navigate("/friends")}>
+                <ArrowLeft aria-hidden="true" />
+                {t("common.back", "Retour")}
+              </button>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
 
-  const myMembership = members.find((m) => m.user_id === user.id);
-  const isOwner = guild.owner_id === user.id;
-  const isOfficer = isOwner || myMembership?.role === "officer";
+  const monRole = membres.find((m) => m.user_id === user.id);
+  const estFondateur = guilde.owner_id === user.id;
+  const estOfficier = estFondateur || monRole?.role === "officer";
+  const estMembre = !!monRole;
 
-  const handleLeave = async () => {
-    if (isOwner) {
-      toast.error(t("guild.ownerCantLeave"));
+  const quitter = async () => {
+    if (estFondateur) {
+      toast.error(t("guild.ownerCantLeave", "Un fondateur ne peut pas quitter sa guilde"));
       return;
     }
     try {
-      await leaveGuild.mutateAsync(guild.id);
-      toast.success(t("friends.leftGuild"));
+      await leaveGuild.mutateAsync(guilde.id);
+      toast.success(t("friends.leftGuild", "Guilde quittée"));
       navigate("/friends");
     } catch {
-      toast.error(t("friends.leaveFailed"));
+      toast.error(t("friends.leaveFailed", "Impossible de quitter la guilde"));
     }
   };
 
-  const renderSection = () => {
-    switch (section) {
-      case "overview":
-        return <GuildOverview guild={guild} userId={user.id} isOfficer={isOfficer} />;
-      case "members":
-        return <GuildMembersPanel guild={guild} userId={user.id} isOfficer={isOfficer} isOwner={isOwner} />;
-      case "chat":
-        return <GuildChat guildId={guild.id} userId={user.id} />;
-      case "goals":
-        return <GuildGoalsPanel guildId={guild.id} canManage={isOfficer} />;
-      case "events":
-        return <GuildEventsPanel guildId={guild.id} userId={user.id} isOfficer={isOfficer} />;
-      case "leaderboard":
-        return <GuildLeaderboard guildId={guild.id} />;
-      case "settings":
-        return <GuildSettingsPage guild={guild} userId={user.id} isOwner={isOwner} />;
-      default:
-        return null;
-    }
-  };
+  const TOUTES: { cle: Section; libelle: string; Icone: typeof Home; officier?: boolean }[] = [
+    { cle: "apercu", libelle: t("guild.overview", "Vue d'ensemble"), Icone: Home },
+    { cle: "membres", libelle: t("guild.members", "Membres"), Icone: Users },
+    { cle: "discussion", libelle: t("guild.chat", "Discussion"), Icone: MessageSquare },
+    { cle: "objectifs", libelle: t("guild.goals", "Objectifs"), Icone: Target },
+    { cle: "evenements", libelle: t("guild.events", "Événements"), Icone: CalendarDays },
+    { cle: "reglages", libelle: t("common.settings", "Réglages"), Icone: Settings, officier: true },
+  ];
+  const sections = TOUTES.filter((s) => !s.officier || estOfficier);
+
+  const max = guilde.max_members || 25;
+  const xp = guilde.total_xp || 0;
+  const niveau = Math.floor(xp / 100);
+  const dansLeNiveau = xp % 100;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
-      <DSDataNoise count={12} />
+    <div className="co">
+      <div className="co-grille">
+        <main className="co-colonne">
+          <div style={{ padding: "10px var(--co-gouttiere) 0" }}>
+            <button type="button" className="co-puce" onClick={() => navigate("/friends")}>
+              <ArrowLeft aria-hidden="true" />
+              {t("friends.tabGuilds", "Guildes")}
+            </button>
+          </div>
 
-      <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 py-6 relative z-10">
-        <div className="relative bg-[hsl(var(--ds-surface-1)/0.55)] border border-[hsl(var(--ds-border-default)/0.25)] rounded-sm shadow-2xl">
-          <DSCornerBrackets size={16} color="hsl(var(--ds-accent-primary) / 0.6)" />
-          <div
-            className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-            style={{ background: "linear-gradient(to right, transparent, hsl(var(--ds-accent-primary) / 0.5), transparent)" }}
-            aria-hidden="true"
-          />
+          <header className="gu-tete">
+            <span className="gu-blason" style={{ color: guilde.color || "var(--co-accent)" }}>
+              {estFondateur ? <Crown aria-hidden="true" /> : <Shield aria-hidden="true" />}
+            </span>
 
-          <div className="p-4 sm:p-6 space-y-6">
-            <GuildHeader guild={guild} memberCount={members.length} />
-
-            <div className="flex gap-4 sm:gap-6">
-              <div className="w-14 lg:w-52 shrink-0">
-                <div className="sticky top-20 space-y-2">
-                  <GuildSidebar active={section} onChange={setSection} isOfficer={isOfficer} />
-                  {!isOwner && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full h-8 font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-accent-critical))] hover:text-[hsl(var(--ds-accent-critical))] hover:bg-[hsl(var(--ds-accent-critical)/0.08)]"
-                      onClick={handleLeave}
-                      disabled={leaveGuild.isPending}
-                    >
-                      {leaveGuild.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <LogOut className="h-3 w-3 mr-1" />}
-                      <span className="hidden lg:inline">{t("friends.leaveGuild")}</span>
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                {renderSection()}
+            <div style={{ minWidth: 0 }}>
+              <h1 className="gu-nom">{guilde.name}</h1>
+              {guilde.description && <p className="gu-mot">{guilde.description}</p>}
+              <div className="gu-faits">
+                <span className="gu-fait">
+                  <Users aria-hidden="true" />
+                  {t("guild.membersOf", { count: membres.length, max, defaultValue: "{{count}} membres sur {{max}}" })}
+                </span>
+                {estFondateur && (
+                  <span className="gu-fait">
+                    <Crown aria-hidden="true" />
+                    {t("friends.owner", "Fondateur")}
+                  </span>
+                )}
               </div>
             </div>
+
+            {estMembre && !estFondateur && (
+              <button type="button" className="co-puce" onClick={quitter} disabled={leaveGuild.isPending}>
+                <LogOut aria-hidden="true" />
+                {t("friends.leaveGuild", "Quitter")}
+              </button>
+            )}
+          </header>
+
+          <div className="gu-xp">
+            <span className="gu-xp-niveau">{t("guild.level", "Niveau {{n}}", { n: niveau })}</span>
+            <span className="co-jauge" style={{ flex: 1 }} aria-hidden="true">
+              <i style={{ width: `${dansLeNiveau}%` }} />
+            </span>
+            <span className="gu-xp-chiffre">{dansLeNiveau} / 100 XP</span>
           </div>
-        </div>
+
+          <nav className="gu-sections" aria-label={t("guild.sections", "Sections de la guilde")}>
+            {sections.map(({ cle, libelle, Icone }) => (
+              <button
+                key={cle}
+                type="button"
+                className="co-puce"
+                aria-pressed={section === cle}
+                onClick={() => setSection(cle)}
+              >
+                <Icone aria-hidden="true" />
+                {libelle}
+              </button>
+            ))}
+          </nav>
+
+          <div>
+            {section === "apercu" && <GuildOverview guild={guilde} userId={user.id} isOfficer={estOfficier} />}
+            {section === "membres" && (
+              <GuildMembersPanel guild={guilde} userId={user.id} isOfficer={estOfficier} isOwner={estFondateur} />
+            )}
+            {section === "discussion" && <GuildChat guildId={guilde.id} userId={user.id} />}
+            {section === "objectifs" && <GuildGoalsPanel guildId={guilde.id} canManage={estOfficier} />}
+            {section === "evenements" && (
+              <GuildEventsPanel guildId={guilde.id} userId={user.id} isOfficer={estOfficier} />
+            )}
+            {section === "reglages" && (
+              <GuildSettingsPage guild={guilde} userId={user.id} isOwner={estFondateur} />
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

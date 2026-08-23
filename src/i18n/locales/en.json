@@ -3026,7 +3026,7 @@
     "events": "Events",
     "leaderboard": "Leaderboard",
     "announcements": "Announcements",
-    "recentActivity": "Recent Activity",
+    "recentActivity": "Recent activity",
     "noChatMessages": "No messages yet. Say hello!",
     "typeMessage": "Type a message…",
     "createEvent": "Create Event",
@@ -3039,7 +3039,19 @@
     "ownerCantLeave": "Transfer ownership before leaving.",
     "general": "General",
     "inviteCodes": "Invite Codes",
-    "dangerZone": "Danger Zone"
+    "dangerZone": "Danger Zone",
+    "notFoundWhy": "It may have been disbanded, or it is private and you are not a member.",
+    "level": "Level {{n}}",
+    "sections": "Guild sections",
+    "postAnnouncement": "Post an announcement",
+    "announcementHint": "What the guild should know…",
+    "noAnnouncement": "No announcement",
+    "noActivity": "No activity yet",
+    "deleteAnnouncement": "Delete the announcement",
+    "xpGained": "{{name}} earned {{amount}} XP",
+    "ranking": "Ranking",
+    "membersOf_one": "1 member of {{max}}",
+    "membersOf_other": "{{count}} members of {{max}}"
   },
   "analytics": {
     "period": {

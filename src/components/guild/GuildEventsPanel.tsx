@@ -84,7 +84,7 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
         duration_minutes: parseInt(duration) || 60,
         created_by: userId,
         max_participants: maxP ? parseInt(maxP) : null,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -103,10 +103,10 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
         if (existing.status === status) {
           await supabase.from("guild_event_rsvps").delete().eq("id", existing.id);
         } else {
-          await supabase.from("guild_event_rsvps").update({ status } as any).eq("id", existing.id);
+          await supabase.from("guild_event_rsvps").update({ status }).eq("id", existing.id);
         }
       } else {
-        await supabase.from("guild_event_rsvps").insert({ event_id: eventId, user_id: userId, status } as any);
+        await supabase.from("guild_event_rsvps").insert({ event_id: eventId, user_id: userId, status });
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["guild-rsvps", guildId] }),

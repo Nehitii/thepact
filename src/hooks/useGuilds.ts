@@ -242,6 +242,40 @@ export const useInviteCodes = (guildId: string) =>
     enabled: !!guildId,
   });
 
+/* UNE GUILDE PAR SON IDENTIFIANT.
+ *
+ * La page de guilde la cherchait dans « mes guildes » :
+ *   const guild = guilds.find((g) => g.id === id)
+ * Ouvrir une guilde trouvee par la decouverte affichait donc
+ * « introuvable » — on pouvait la voir dans la liste, pas la
+ * consulter. Ici on la demande a la base, et RLS decide : une guilde
+ * publique s ouvre, une guilde privee dont on n est pas membre ne
+ * s ouvre pas.
+ */
+export function useGuild(guildId: string | undefined) {
+  return useQuery({
+    queryKey: ["guild", guildId],
+    enabled: !!guildId,
+    staleTime: 30_000,
+    queryFn: async (): Promise<Guild | null> => {
+      const { data, error } = await supabase
+        .from("guilds")
+        .select("*")
+        .eq("id", guildId!)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+
+      const { count } = await supabase
+        .from("guild_members")
+        .select("id", { count: "exact", head: true })
+        .eq("guild_id", guildId!);
+
+      return { ...data, member_count: count || 0 } as Guild;
+    },
+  });
+}
+
 export function useGuilds() {
   const { user } = useAuth();
   const qc = useQueryClient();
