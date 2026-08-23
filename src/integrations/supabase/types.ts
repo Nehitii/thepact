@@ -21,15 +21,18 @@ export type Database = {
           conditions: Json
           created_at: string | null
           description: string
+          description_fr: string | null
           flavor_text: string | null
           icon_key: string
           id: string
           is_hidden: boolean | null
           key: string
           name: string
+          nom_fr: string | null
           points: number | null
           rarity: string
           required_module: string | null
+          saveur_fr: string | null
         }
         Insert: {
           bond_reward?: number | null
@@ -37,15 +40,18 @@ export type Database = {
           conditions: Json
           created_at?: string | null
           description: string
+          description_fr?: string | null
           flavor_text?: string | null
           icon_key: string
           id?: string
           is_hidden?: boolean | null
           key: string
           name: string
+          nom_fr?: string | null
           points?: number | null
           rarity: string
           required_module?: string | null
+          saveur_fr?: string | null
         }
         Update: {
           bond_reward?: number | null
@@ -53,15 +59,18 @@ export type Database = {
           conditions?: Json
           created_at?: string | null
           description?: string
+          description_fr?: string | null
           flavor_text?: string | null
           icon_key?: string
           id?: string
           is_hidden?: boolean | null
           key?: string
           name?: string
+          nom_fr?: string | null
           points?: number | null
           rarity?: string
           required_module?: string | null
+          saveur_fr?: string | null
         }
         Relationships: []
       }
@@ -5284,7 +5293,7 @@ export type Database = {
         Returns: number
       }
       succes_du_membre: {
-        Args: { p_user_id: string }
+        Args: { p_langue?: string; p_user_id: string }
         Returns: {
           avancement: number
           bonds: number
