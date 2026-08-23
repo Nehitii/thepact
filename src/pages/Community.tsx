@@ -8,6 +8,7 @@ import { ClassementLigne } from "@/components/community/ClassementLigne";
 import { NATURES, libelleNature, type NaturePost } from "@/components/community/vocabulaire";
 import { useCommunityStats, type PostFilterType, type PostSortOption } from "@/hooks/useCommunity";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
+import { useCadres } from "@/hooks/community/useCadres";
 import { useAuth } from "@/contexts/AuthContext";
 
 /* COMMUNITY — la coque.
@@ -56,6 +57,9 @@ function Rail({ onFiltrer }: { onFiltrer: (n: NaturePost) => void }) {
   const { user } = useAuth();
   const { data: stats } = useCommunityStats();
   const { data: classement = [] } = useLeaderboard();
+  /* Une seule requete pour tous les membres visibles, plutot qu une
+     par pastille. */
+  const { data: cadres } = useCadres(classement.slice(0, 5).map((e) => e.user_id));
 
   /* On ne montre que les natures qui existent vraiment dans le fil.
      Une liste de six lignes a zero serait du remplissage. */
@@ -96,6 +100,7 @@ function Rail({ onFiltrer }: { onFiltrer: (n: NaturePost) => void }) {
             entree={entree}
             place={i + 1}
             estMoi={entree.user_id === user?.id}
+            cadre={cadres?.get(entree.user_id)}
             forme="rail"
           />
         ))}
@@ -113,6 +118,7 @@ function PanneauClassement() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: entrees = [], isLoading } = useLeaderboard();
+  const { data: cadres } = useCadres(entrees.map((e) => e.user_id));
   const maPlace = entrees.findIndex((e) => e.user_id === user?.id) + 1;
 
   if (isLoading) {
@@ -155,6 +161,7 @@ function PanneauClassement() {
           entree={entree}
           place={i + 1}
           estMoi={entree.user_id === user?.id}
+          cadre={cadres?.get(entree.user_id)}
         />
       ))}
     </>

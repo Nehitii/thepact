@@ -7,6 +7,7 @@ import { CommunityPostCard } from "./CommunityPostCard";
 import { PostFilters } from "./PostFilters";
 import { NATURES, libelleNature, type NaturePost } from "./vocabulaire";
 import { Pastille } from "./Pastille";
+import { useCadres } from "@/hooks/community/useCadres";
 import { ChoixObjectif } from "./ChoixObjectif";
 import {
   useCommunityPosts,
@@ -84,6 +85,9 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     useCommunityPosts(filtre, tri);
 
   const posts = data?.pages.flatMap((p) => p.posts) || [];
+  /* Une requete pour tous les auteurs visibles, et le sien pour le
+     composeur. */
+  const { data: cadres } = useCadres([...posts.map((p) => p.user_id), user?.id]);
   const monNom = profil?.display_name || t("community.post.you", "Vous");
   const reste = LIMITE - texte.length;
 
@@ -121,7 +125,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     <>
       {user && (
         <div className="co-composeur">
-          <Pastille identifiant={user.id} nom={monNom} image={profil?.avatar_url} />
+          <Pastille identifiant={user.id} nom={monNom} image={profil?.avatar_url} cadre={cadres?.get(user.id)} />
 
           <div style={{ minWidth: 0 }}>
             <textarea
@@ -212,7 +216,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
       ) : posts.length > 0 ? (
         <>
           {posts.map((post) => (
-            <CommunityPostCard key={post.id} post={post} />
+            <CommunityPostCard key={post.id} post={post} cadre={cadres?.get(post.user_id)} />
           ))}
           {!hasNextPage && posts.length > 2 && (
             <p className="co-fin">

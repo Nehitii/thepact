@@ -1161,3 +1161,48 @@
   color: var(--co-texte-2);
   text-align: center;
 }
+
+/* ═══════════════ LES CADRES D AVATAR ═══════════════
+
+   La decoration deborde volontairement du rond — c est le principe
+   d un cadre cosmetique : elle est mise a l echelle par
+   computeFrameTransform, la meme que la boutique et le profil. Le
+   conteneur ne la coupe donc pas, et la pastille garde sa taille de
+   grille : le cadre ne doit pas pousser le nom a cote. */
+
+.co-cadre {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+.co-cadre--petit { width: 32px; height: 32px; }
+
+.co-cadre-lueur {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  filter: blur(7px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.co-cadre-rond {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.co-cadre-deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 2;
+}

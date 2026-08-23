@@ -17,6 +17,7 @@ import { PostTypeTag } from "./PostTypeTag";
 import { ReportModal } from "./ReportModal";
 import { nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
 import { Pastille } from "./Pastille";
+import type { Cadre } from "@/hooks/community/useCadres";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import {
   CommunityPost,
@@ -65,7 +66,7 @@ const CORPS_MAX = 4;
  * seulement pour les publications reellement modifiees, les autres
  * gardent leur reference. C est aussi ce qui rend la reaction
  * optimiste bon marche : une seule carte se redessine. */
-export const CommunityPostCard = memo(function CommunityPostCard({ post }: { post: CommunityPost }) {
+export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }: { post: CommunityPost; cadre?: Cadre | null }) {
   const { t } = useTranslation();
   const locale = useDateFnsLocale();
   const { user } = useAuth();
@@ -137,7 +138,7 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post }: { pos
 
   return (
     <article className="co-post" onClick={() => !enEdition && setReponsesOuvertes((v) => !v)}>
-      <Pastille identifiant={decouvrable ? post.user_id : nom} nom={nom} image={avatar} />
+      <Pastille identifiant={decouvrable ? post.user_id : nom} nom={nom} image={avatar} cadre={decouvrable ? cadre : null} />
 
       <div className="co-post-corps">
         <div className="co-post-tete">

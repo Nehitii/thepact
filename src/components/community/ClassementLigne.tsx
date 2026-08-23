@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { LeaderboardEntry } from "@/hooks/useLeaderboard";
+import type { Cadre } from "@/hooks/community/useCadres";
 import { nomAffichable } from "./vocabulaire";
 import { Pastille } from "./Pastille";
 
@@ -24,11 +25,12 @@ interface Props {
   place: number;
   estMoi: boolean;
   /** « rail » pour la colonne de droite, « plein » pour l onglet. */
+  cadre?: Cadre | null;
   forme?: "rail" | "plein";
   onOuvrir?: (userId: string) => void;
 }
 
-export function ClassementLigne({ entree, place, estMoi, forme = "plein", onOuvrir }: Props) {
+export function ClassementLigne({ entree, place, estMoi, cadre, forme = "plein", onOuvrir }: Props) {
   const { t } = useTranslation();
   const nom = nomAffichable(entree.display_name, t("leaderboard.anonymousAgent", "Agent Anonyme"));
   const podium = place <= 3 ? "oui" : "non";
@@ -37,7 +39,7 @@ export function ClassementLigne({ entree, place, estMoi, forme = "plein", onOuvr
     return (
       <div className="co-rang" data-podium={podium} data-moi={estMoi ? "oui" : "non"}>
         <span className="co-rang-place">{place}</span>
-        <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} petite />
+        <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} cadre={cadre} petite />
         <span className="co-rang-nom">{nom}</span>
         <span className="co-rang-xp">{entree.points.toLocaleString()}</span>
       </div>
@@ -60,7 +62,7 @@ export function ClassementLigne({ entree, place, estMoi, forme = "plein", onOuvr
       }}
     >
       <span className="co-ligne-rang-place">{place}</span>
-      <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} />
+      <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} cadre={cadre} />
       <span style={{ minWidth: 0 }}>
         <span className="co-rang-nom" style={{ display: "block" }}>
           {nom}
