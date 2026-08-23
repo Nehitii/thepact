@@ -1,130 +1,162 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Shield, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import "@/styles/community.css";
+import "@/styles/friends.css";
+import { PanneauAllies } from "@/components/friends/PanneauAllies";
+import { PanneauGuildes } from "@/components/friends/PanneauGuildes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends } from "@/hooks/useFriends";
-import { useGuilds } from "@/hooks/useGuilds";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { UserCheck, Clock, Search, Shield } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useFriendsPresence } from "@/hooks/useFriendsPresence";
-import { useAllianceDensity } from "@/hooks/useAllianceDensity";
+import { useGuilds } from "@/hooks/useGuilds";
 
-import { FriendsTab } from "@/components/friends/FriendsTab";
-import { RequestsTab } from "@/components/friends/RequestsTab";
-import { SearchTab } from "@/components/friends/SearchTab";
-import { GuildsTab } from "@/components/friends/GuildsTab";
-import { AllianceInsightStrip } from "@/components/friends/AllianceInsightStrip";
-import { AllianceTabs } from "@/components/friends/AllianceTabs";
-import { AllianceModuleHeader } from "@/components/friends/AllianceModuleHeader";
-import { AllianceDensityToggle } from "@/components/friends/AllianceDensityToggle";
+/* FRIENDS — la coque.
+ *
+ * CE QUI A ETE RETIRE, ET POURQUOI.
+ *
+ * — QUATRE ONGLETS, DONT TROIS VIDES. Amis, Demandes, Guildes,
+ *   Recherche — pour une table friendships qui contient zero ligne.
+ *   Demandes et Amis sont le meme objet a deux etats ; Recherche n est
+ *   pas une destination mais un champ. Il en reste deux.
+ *
+ * — LE SUR-TITRE « ALLIANCE_GRID // SYS.ACTIVE » et le titre
+ *   « FRIENDS » decoupe en deux pour colorer ses dernieres lettres.
+ *   Un sur-titre ne dit rien que le titre ne dise, et celui-ci etait
+ *   en anglais au-dessus d onglets francais.
+ *
+ * — LE BANDEAU A HUIT ETIQUETTES. Quatre indicateurs, chacun nomme
+ *   DEUX FOIS et dans DEUX LANGUES : ALLIES au-dessus de ACTIFS,
+ *   ONLINE au-dessus de EN LIGNE, SIGNALS au-dessus de EN ATTENTE,
+ *   GUILDS au-dessus de REJOINTS. Trois de leurs quatre valeurs
+ *   etaient des tirets, faute d amis. Ce qui se mesure vraiment est
+ *   passe dans le rail.
+ *
+ * — LE BOUTON DE DENSITE, qui proposait de resserrer une liste vide.
+ *
+ * UN SEUL VOCABULAIRE, ET IL VIENT DU FICHIER DE LANGUE. La page
+ * s appelait Friends, ses composants Alliance, son onglet guildes
+ * « Active Factions », et ses onglets Amis et Guildes : quatre mots
+ * pour deux choses. Tout passe desormais par t() — changer de langue
+ * renomme reellement, y compris les deux onglets. */
+
+type Onglet = "allies" | "guildes";
+const ONGLETS: Onglet[] = ["allies", "guildes"];
+
+function Rail() {
+  const { t } = useTranslation();
+  const { friends } = useFriends();
+  const { onlineCount } = useFriendsPresence(friends.map((f) => f.friend_id));
+  const { guilds } = useGuilds();
+
+  return (
+    <aside className="co-rail">
+      <section className="co-bloc">
+        <h2 className="co-bloc-titre">{t("friends.yourNetwork", "Votre réseau")}</h2>
+        <div className="co-mesures">
+          <div className="co-mesure">
+            <span className="co-mesure-valeur">{friends.length}</span>
+            <span className="co-mesure-quoi">{t("friends.alliesLabel", "alliés")}</span>
+          </div>
+          <div className="co-mesure">
+            <span className="co-mesure-valeur">{onlineCount}</span>
+            <span className="co-mesure-quoi">{t("friends.onlineLabel", "en ligne")}</span>
+          </div>
+        </div>
+      </section>
+
+      {guilds.length > 0 && (
+        <section className="co-bloc">
+          <h2 className="co-bloc-titre">{t("friends.myGuilds", "Mes guildes")}</h2>
+          {guilds.map((g) => (
+            <div className="co-rang" key={g.id}>
+              <span className="co-rang-place">
+                <Shield aria-hidden="true" style={{ width: 13, height: 13 }} />
+              </span>
+              <span />
+              <span className="co-rang-nom">{g.name}</span>
+              <span className="co-rang-xp">{g.member_count ?? 0}</span>
+            </div>
+          ))}
+        </section>
+      )}
+    </aside>
+  );
+}
 
 export default function Friends() {
-  const { user } = useAuth();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("friends");
-  const { density, toggle: toggleDensity } = useAllianceDensity();
+  const { user } = useAuth();
+  const [onglet, setOnglet] = useState<Onglet>("allies");
+  const [colle, setColle] = useState(false);
+  const sentinelle = useRef<HTMLDivElement>(null);
 
-  const {
-    friends, pendingRequests, sentRequests, friendsLoading, requestsLoading,
-    pendingCount, sendRequest, acceptRequest, declineRequest, removeFriend,
-    cancelSentRequest, getFriendshipStatus, searchProfiles,
-  } = useFriends();
+  const { pendingCount } = useFriends();
+  const { guilds } = useGuilds();
 
-  const { guilds, guildsLoading, invites, createGuild, respondToInvite } = useGuilds();
-
-  // Living Network — realtime presence map for friends
-  const friendIds = friends.map((f) => f.friend_id);
-  const { lastSeenMap, onlineCount } = useFriendsPresence(friendIds);
+  useEffect(() => {
+    const cible = sentinelle.current;
+    if (!cible) return;
+    const observateur = new IntersectionObserver(
+      ([entree]) => setColle(!entree.isIntersecting),
+      { threshold: 1 },
+    );
+    observateur.observe(cible);
+    return () => observateur.disconnect();
+  }, []);
 
   if (!user) return null;
 
+  const onglets: { cle: Onglet; libelle: string; Icone: typeof Users; compte?: number }[] = [
+    { cle: "allies", libelle: t("friends.tabFriends", "Alliés"), Icone: Users, compte: pendingCount },
+    { cle: "guildes", libelle: t("friends.tabGuilds", "Guildes"), Icone: Shield, compte: guilds.length },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
-      {/* A11y: skip link to bypass header + tabs and jump to active panel */}
-      <a href="#alliance-main" className="ds-skip-link">
-        Skip to alliance content
-      </a>
+    <div className="co">
+      <div className="co-grille">
+        <main className="co-colonne">
+          <div ref={sentinelle} aria-hidden="true" style={{ height: 1 }} />
 
-      <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
-        <AllianceModuleHeader
-          title="FRIEN"
-          titleAccent="DS"
-          toolbar={
-            <AllianceDensityToggle density={density} onToggle={toggleDensity} />
-          }
-        />
-
-        {/* Main Shell — minimal, no border, breathes */}
-        <div className="flex-1 flex flex-col min-h-0 relative">
-          <AllianceInsightStrip
-            alliesCount={friends.length}
-            onlineCount={onlineCount}
-            pendingCount={pendingCount}
-            guildsCount={guilds.length}
-          />
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
-            <AllianceTabs
-              activeTab={activeTab}
-              items={[
-                { value: "friends", icon: UserCheck, label: t("friends.tabFriends"), count: friends.length, accent: "primary" },
-                { value: "requests", icon: Clock, label: t("friends.tabRequests"), count: pendingCount, accent: "special" },
-                { value: "guilds", icon: Shield, label: t("friends.tabGuilds"), count: guilds.length, accent: "warning" },
-                { value: "search", icon: Search, label: t("friends.tabSearch"), accent: "primary" },
-              ]}
-            />
-
+          <div className="co-tete" data-colle={colle ? "oui" : "non"}>
+            <h1 className="sr-only">{t("friends.heading", "Alliés")}</h1>
             <div
-              id="alliance-main"
-              className="flex-1 relative overflow-hidden"
-              role="region"
-              aria-live="polite"
-              aria-label={`Alliance ${activeTab} panel`}
+              className="co-onglets"
+              role="tablist"
+              aria-label={t("friends.heading", "Alliés")}
+              style={{
+                ["--co-nb" as string]: onglets.length,
+                ["--co-actif" as string]: ONGLETS.indexOf(onglet),
+              }}
             >
-              <TabsContent value="friends" className="h-full m-0 data-[state=inactive]:hidden">
-                <FriendsTab
-                  friends={friends}
-                  loading={friendsLoading}
-                  onRemove={async (id) => { await removeFriend.mutateAsync(id); }}
-                  userId={user.id}
-                  onSwitchToSearch={() => setActiveTab("search")}
-                  density={density}
-                  lastSeenMap={lastSeenMap}
-                />
-              </TabsContent>
-
-              <TabsContent value="requests" className="h-full m-0 data-[state=inactive]:hidden">
-                <RequestsTab
-                  pendingRequests={pendingRequests}
-                  sentRequests={sentRequests}
-                  loading={requestsLoading}
-                  onAccept={async (id) => { await acceptRequest.mutateAsync(id); }}
-                  onDecline={async (id) => { await declineRequest.mutateAsync(id); }}
-                  onCancelSent={async (id) => { await cancelSentRequest.mutateAsync(id); }}
-                />
-              </TabsContent>
-
-              <TabsContent value="search" className="h-full m-0 data-[state=inactive]:hidden">
-                <SearchTab
-                  onSearch={searchProfiles}
-                  onSendRequest={async (id) => { await sendRequest.mutateAsync(id); }}
-                  sendingRequest={sendRequest.isPending}
-                  getFriendshipStatus={getFriendshipStatus}
-                />
-              </TabsContent>
-
-              <TabsContent value="guilds" className="h-full m-0 data-[state=inactive]:hidden">
-                <GuildsTab
-                  guilds={guilds}
-                  guildsLoading={guildsLoading}
-                  invites={invites}
-                  userId={user.id}
-                  createGuild={createGuild}
-                  respondToInvite={respondToInvite}
-                />
-              </TabsContent>
+              {onglets.map(({ cle, libelle, Icone, compte }) => (
+                <button
+                  key={cle}
+                  type="button"
+                  role="tab"
+                  id={`fr-onglet-${cle}`}
+                  aria-selected={onglet === cle}
+                  aria-controls={`fr-panneau-${cle}`}
+                  className="co-onglet"
+                  onClick={() => setOnglet(cle)}
+                >
+                  <Icone aria-hidden="true" />
+                  {libelle}
+                  {compte !== undefined && compte > 0 && (
+                    <span className="co-onglet-compte">{compte}</span>
+                  )}
+                </button>
+              ))}
+              <span className="co-onglets-trait" aria-hidden="true" />
             </div>
-          </Tabs>
-        </div>
+          </div>
+
+          <div role="tabpanel" id={`fr-panneau-${onglet}`} aria-labelledby={`fr-onglet-${onglet}`}>
+            {onglet === "allies" && <PanneauAllies />}
+            {onglet === "guildes" && <PanneauGuildes />}
+          </div>
+        </main>
+
+        <Rail />
       </div>
     </div>
   );

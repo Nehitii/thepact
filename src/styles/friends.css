@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════
+   FRIENDS — ce que Community ne fournissait pas
+   ═══════════════════════════════════════════════════════════════
+
+   La page reprend le monde de community.css : mêmes jetons, même
+   colonne bordée, mêmes puces, même Switzer. Elle n'invente pas un
+   troisième dialecte après le cyberpunk du reste de l'app et le
+   registre sombre de Community.
+
+   Ne vit ici que ce qui lui est propre : une ligne de membre, la
+   pastille de présence, un champ de recherche en tête, et la carte
+   d'une guilde. Tout le reste — boutons, puces, vides, squelettes,
+   rail — vient de community.css.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LA LIGNE D'UN MEMBRE ──
+   Elle hérite de .co-post : mêmes gouttières, même filet, même
+   survol. Une colonne s'ajoute à droite pour les actions. */
+.fr-ligne {
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  cursor: default;
+}
+.fr-ligne[role="button"] { cursor: pointer; }
+
+/* ── LA PASTILLE DE PRÉSENCE ──
+   Un point vert posé sur le bord de l'avatar, découpé dans celui-ci
+   plutôt qu'ajouté par-dessus : sans ce trou, le point se confond
+   avec l'image quand elle est claire. */
+.fr-pastille { position: relative; display: inline-flex; }
+.fr-pastille[data-en-ligne="oui"]::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--co-support);
+  box-shadow: 0 0 0 2.5px var(--co-fond);
+  z-index: 3;
+}
+
+/* ── CE QU'UNE LIGNE RACONTE ── */
+.fr-mesures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 3px;
+}
+.fr-mesure {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--co-texte-2);
+}
+.fr-mesure svg { width: 13px; height: 13px; stroke-width: 2; color: var(--co-texte-3); }
+
+.fr-grade {
+  font-family: var(--co-fonte-ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--co-texte-3);
+}
+
+.fr-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── LE CHAMP DE RECHERCHE, EN TÊTE ──
+   L'ancienne page le rangeait en quatrième onglet ; c'est pourtant le
+   seul geste par lequel un réseau vide cesse de l'être. */
+.fr-chercher {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+  background: var(--co-fond-eleve);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+}
+.fr-chercher > svg { width: 16px; height: 16px; stroke-width: 2; color: var(--co-texte-3); flex-shrink: 0; }
+.fr-chercher input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: var(--co-fonte);
+  font-size: 15px;
+  color: var(--co-texte);
+}
+.fr-chercher input::placeholder { color: var(--co-texte-3); }
+.fr-chercher input:focus { outline: none; }
+.fr-chercher:focus-within {
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+              inset 0 0 0 1px color-mix(in srgb, var(--co-accent) 45%, transparent);
+}
+
+/* ── LES SECTIONS DE LA LISTE ──
+   Demandes reçues, demandes envoyées, alliés : trois sections d'une
+   MÊME liste, là où c'étaient trois onglets. */
+.fr-section {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0;
+  padding: 16px var(--co-gouttiere) 8px;
+  font-family: var(--co-fonte);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--co-texte-2);
+  border-bottom: 1px solid var(--co-filet);
+}
+.fr-section-compte {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-3);
+}
+
+/* ── LA BARRE D'ACTIONS DES GUILDES ── */
+.fr-barre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+/* ── LA CARTE D'UNE GUILDE ── */
+.fr-guilde { grid-template-columns: 40px 1fr; align-items: start; }
+
+.fr-guilde-blason {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--co-fond-creux);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  flex-shrink: 0;
+}
+.fr-guilde-blason svg { width: 18px; height: 18px; stroke-width: 1.9; color: var(--co-texte-2); }
+
+.fr-guilde-mot {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--co-texte-2);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .fr-ligne { grid-template-columns: 40px 1fr; }
+  .fr-actions { grid-column: 1 / -1; margin-top: 8px; }
+}
