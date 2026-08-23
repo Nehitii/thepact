@@ -2341,7 +2341,10 @@
       "epic": "Épique",
       "mythic": "Mythique",
       "legendary": "Légendaire"
-    }
+    },
+    "byCategory": "Par catégorie",
+    "trophiesWon_one": "{{count}} trophée",
+    "trophiesWon_other": "{{count}} trophées"
   },
   "journal": {
     "title": "Journal",

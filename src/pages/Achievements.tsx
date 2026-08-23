@@ -1,39 +1,33 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Check, Lock, Sparkles, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import "@/styles/community.css";
+import "@/styles/pantheon.css";
 import "@/styles/succes.css";
 import { useAuth } from "@/contexts/AuthContext";
+import { DSPageShell } from "@/components/ds";
 import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
 import {
-  rangDeRarete, useCoffres, useMarquerVus, useNeufs, useSucces,
+  RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs, useSucces,
   type Succes,
 } from "@/hooks/useSucces";
 
-/* LE PANTHEON.
+/* LE HALL DE L ETERNITE.
  *
- * L AUDIT A TROUVE TROIS CHOSES, dans l ordre de gravite.
+ * LE FOND A ETE REPARE, PAS L HABILLAGE. L audit avait trouve trois
+ * defauts de fond — des compteurs derives qui privaient de vingt
+ * succes merites, sept succes de sante qui ne pouvaient pas s ouvrir,
+ * neuf inatteignables faute de filtre — et je les avais corriges en
+ * emportant le decor avec.
  *
- * 1. LES SUCCES ETAIENT JUGES SUR DES COMPTEURS QUI AVAIENT DERIVE.
- *    todos_created a zero pour soixante-sept taches, guilds_joined a
- *    zero pour une guilde fondee, pomodoro_sessions a vingt-neuf pour
- *    une table vide. Vingt succes merites n avaient jamais ete
- *    accordes. La base les juge desormais sur les tables sources.
+ * C etait une erreur de jugement. Ailleurs dans ce produit, retirer le
+ * cyberpunk sert la lecture : un fil de discussion, une liste d amis
+ * ou un classement se lisent mieux sobres. UN PANTHEON, NON. C est la
+ * salle des trophees : le seul endroit ou le spectacle est le sujet,
+ * et non un ornement pose dessus.
  *
- * 2. LES SEPT SUCCES DE SANTE NE POUVAIENT PAS S OUVRIR. Leurs
- *    conditions portent « count » et « days » la ou les
- *    quatre-vingt-treize autres portent « value » : du code qui lit
- *    conditions.value n y voyait rien. Aucun ne s etait jamais
- *    declenche.
- *
- * 3. NEUF SUCCES ETAIENT INATTEIGNABLES DANS L INTERFACE. La liste des
- *    filtres oubliait « health » (sept) et « Series » (deux) : aucun
- *    onglet ne menait a eux. Ici la liste vient des donnees, pas d un
- *    tableau ecrit a la main — elle ne peut plus en oublier.
- *
- * ET LES TROPHEES. Cent cases a cocher ne font pas une collection :
- * une categorie entierement franchie vaut un trophee, et c est lui
- * qu on vient chercher. */
+ * Le decor d origine revient donc — lumiere celeste, champ d etoiles,
+ * sol qui fuit vers l horizon — et la couche fonctionnelle reparee
+ * vient vivre dedans. */
 
 const TOUT = "__tout__";
 
@@ -44,7 +38,7 @@ function Trophee({
   actif: boolean; onChoisir: () => void; libelle: string;
 }) {
   const part = total > 0 ? obtenus / total : 0;
-  const R = 21;
+  const R = 25;
   const tour = 2 * Math.PI * R;
 
   return (
@@ -56,11 +50,11 @@ function Trophee({
       onClick={onChoisir}
     >
       <span className="su-trophee-anneau">
-        <svg viewBox="0 0 48 48" aria-hidden="true">
-          <circle className="su-trophee-fond" cx="24" cy="24" r={R} />
+        <svg viewBox="0 0 56 56" aria-hidden="true">
+          <circle className="su-trophee-fond" cx="28" cy="28" r={R} />
           <circle
             className="su-trophee-part"
-            cx="24" cy="24" r={R}
+            cx="28" cy="28" r={R}
             strokeDasharray={tour}
             strokeDashoffset={tour * (1 - part)}
           />
@@ -89,7 +83,6 @@ function Carte({ s, neuf, libelleRarete }: { s: Succes; neuf: boolean; libelleRa
       data-rarete={s.rarete}
       data-obtenu={s.obtenu ? "" : undefined}
       data-neuf={neuf ? "" : undefined}
-      style={{ "--su-rang": rangDeRarete(s.rarete) } as CSSProperties}
     >
       <span className="su-icone" aria-hidden="true">
         {masque ? <Lock /> : <DynamicLucideIcon name={s.icone || "Award"} />}
@@ -152,7 +145,7 @@ export default function Achievements() {
   const marquer = marquerVus.mutate;
   useEffect(() => {
     if (!cles.length) return;
-    const minuterie = window.setTimeout(() => marquer(cles), 4000);
+    const minuterie = window.setTimeout(() => marquer(cles), 5000);
     return () => window.clearTimeout(minuterie);
   }, [cles, marquer]);
 
@@ -164,8 +157,6 @@ export default function Achievements() {
       .filter((s) => categorie === TOUT || s.categorie === categorie)
       .filter((s) => !cacherObtenus || !s.obtenu)
       .sort((a, b) =>
-        /* Les neufs en tete, puis ce qui est le plus proche d etre
-           gagne : c est ce qui donne envie de continuer. */
         Number(neufs?.has(b.cle) ?? false) - Number(neufs?.has(a.cle) ?? false)
         || Number(a.obtenu) - Number(b.obtenu)
         || b.avancement - a.avancement
@@ -175,139 +166,182 @@ export default function Achievements() {
   const obtenus = succes.filter((s) => s.obtenu).length;
   const points = succes.filter((s) => s.obtenu).reduce((n, s) => n + s.points, 0);
   const trophees = coffres.filter((c) => c.complet).length;
+  const part = succes.length ? Math.round((obtenus / succes.length) * 100) : 0;
+
+  /* Le rang affichait « Élite » en dur, quel que soit l avancement :
+     une statistique fictive posee entre deux vraies. On montre la
+     rarete la plus haute effectivement obtenue — un fait verifiable a
+     l ecran. */
+  const plusHauteRarete = useMemo(() => {
+    for (let i = RARETES.length - 1; i >= 0; i--) {
+      if (succes.some((s) => s.obtenu && s.rarete === RARETES[i])) return RARETES[i];
+    }
+    return null;
+  }, [succes]);
+
+  const proches = useMemo(
+    () => succes
+      .filter((s) => !s.obtenu && !s.cache && s.avancement > 0)
+      .sort((a, b) => b.avancement - a.avancement)
+      .slice(0, 3),
+    [succes],
+  );
 
   return (
-    <div className="co">
-      <div className="co-grille">
-        <main className="co-colonne">
-          <header className="su-tete">
-            <h1 className="su-titre">{t("achievements.heading", "Panthéon")}</h1>
-            <p className="su-sous">
-              {t("achievements.summary", "{{n}} succès sur {{total}}", {
-                n: obtenus, total: succes.length,
-              })}
-            </p>
-          </header>
-
-          {/* LES TROPHEES DE CATEGORIE. */}
-          <section className="su-coffres">
-            <button
-              type="button"
-              className="su-trophee su-trophee--tout"
-              aria-pressed={categorie === TOUT}
-              onClick={() => setCategorie(TOUT)}
-            >
-              <span className="su-trophee-nom">{t("achievements.all", "Tout")}</span>
-              <span className="su-trophee-compte">{obtenus}/{succes.length}</span>
-            </button>
-
-            {coffres.map((c) => (
-              <Trophee
-                key={c.categorie}
-                libelle={libelleCategorie(c.categorie)}
-                obtenus={c.obtenus}
-                total={c.total}
-                complet={c.complet}
-                actif={categorie === c.categorie}
-                onChoisir={() => setCategorie(categorie === c.categorie ? TOUT : c.categorie)}
-              />
-            ))}
-          </section>
-
-          <div className="su-barre">
-            <button
-              type="button"
-              className="co-puce"
-              aria-pressed={cacherObtenus}
-              onClick={() => setCacherObtenus((v) => !v)}
-            >
-              {t("achievements.hideDone", "Masquer les obtenus")}
-            </button>
-            <span className="su-compte">
-              {t("achievements.showing", "{{n}} affichés", { n: listee.length })}
-            </span>
+    <DSPageShell
+      width="xl"
+      className="pantheon-wrapper !px-0 !pt-0 !pb-0"
+      background={
+        <>
+          {/* Le decor occupe la fenetre entiere, pas la colonne de
+              contenu : DSPageShell rend cette couche en dehors du
+              <main>, qui est centre et borne en largeur. */}
+          <div className="pantheon-backdrop" />
+          <div className="pantheon-stars" />
+          <div className="celestial-light" />
+          {/* La scene porte la perspective, la grille porte la
+              rotation : une transform 3D ne cree pas sa profondeur. */}
+          <div className="ground-stage">
+            <div className="ground-grid" />
+            <div className="ground-horizon" />
           </div>
+          <div className="pantheon-vignette" />
+        </>
+      }
+    >
+      <div className="su-hall">
+        <header className="su-hero">
+          <span className="su-hero-coupe" aria-hidden="true">
+            <Trophy />
+          </span>
 
-          {isLoading ? (
-            <div aria-busy="true">
-              {[0, 1, 2, 3].map((i) => (
-                <div className="co-fantome" key={i}>
-                  <span className="co-os co-os--rond" />
-                  <span className="co-os" style={{ height: 14, alignSelf: "center" }} />
-                </div>
-              ))}
-            </div>
-          ) : listee.length === 0 ? (
-            <div className="co-vide">
-              <Trophy aria-hidden="true" />
-              <h3>{t("achievements.noneHere", "Rien à montrer ici")}</h3>
-              <p>{t("achievements.noneHereWhat", "Changez de catégorie, ou réaffichez les succès obtenus.")}</p>
-            </div>
-          ) : (
-            <div className="su-liste">
-              {listee.map((s) => (
-                <Carte
-                  key={s.cle}
-                  s={s}
-                  neuf={neufs?.has(s.cle) ?? false}
-                  libelleRarete={libelleRarete(s.rarete)}
-                />
-              ))}
-            </div>
-          )}
-        </main>
+          <h1 className="su-hero-titre">
+            {t("achievements.hallTitle", "Hall de")}{" "}
+            <span>{t("achievements.eternity", "l’Éternité")}</span>
+          </h1>
+          <p className="su-hero-devise">
+            « {t("achievements.tagline", "Ton héritage est gravé dans les étoiles")} »
+          </p>
 
-        <aside className="co-rail">
-          <section className="co-bloc">
-            <h2 className="co-bloc-titre">{t("achievements.yourHoard", "Votre butin")}</h2>
-            <div className="su-rail-corps">
-              <div className="su-rail-grand">
-                <span className="su-rail-chiffre">{points.toLocaleString()}</span>
-                <span className="su-rail-mot">{t("achievements.points", "points")}</span>
-              </div>
-              <span className="su-jauge" aria-hidden="true">
-                <i style={{ width: `${succes.length ? (obtenus / succes.length) * 100 : 0}%` }} />
+          <div className="su-monuments">
+            <div className="stat-monument su-monument">
+              <span className="su-monument-quoi">{t("achievements.completion", "Progression")}</span>
+              <span className="su-monument-valeur">{part}%</span>
+              <span className="su-monument-sous">{obtenus} / {succes.length}</span>
+            </div>
+
+            <div className="stat-monument su-monument" data-rarete={plusHauteRarete ?? undefined}>
+              <span className="su-monument-quoi">{t("achievements.legacyRank", "Rang Héritage")}</span>
+              <span className="su-monument-valeur su-monument-rarete">
+                {plusHauteRarete ? libelleRarete(plusHauteRarete) : "—"}
+              </span>
+              <span className="su-monument-sous">
+                {plusHauteRarete
+                  ? t("achievements.highestUnlocked", "Plus haute rareté débloquée")
+                  : t("achievements.noneYet", "Aucun succès débloqué")}
               </span>
             </div>
-            <div className="co-mesures">
-              <div className="co-mesure">
-                <span className="co-mesure-valeur">{obtenus}</span>
-                <span className="co-mesure-quoi">{t("achievements.unlockedWord", "obtenus")}</span>
-              </div>
-              <div className="co-mesure">
-                <span className="co-mesure-valeur">{trophees}</span>
-                <span className="co-mesure-quoi">{t("achievements.trophies", "trophées")}</span>
-              </div>
-            </div>
-          </section>
 
-          {/* Ce qui est le plus proche d etre gagne. Un succes verrouille
-              sans jauge ne dit pas s il est a portee ; celui-la le dit. */}
-          <section className="co-bloc">
-            <h2 className="co-bloc-titre su-rail-titre">
+            <div className="stat-monument su-monument">
+              <span className="su-monument-quoi">{t("achievements.expedition", "Expédition")}</span>
+              <span className="su-monument-valeur">{points.toLocaleString()}</span>
+              <span className="su-monument-sous">
+                {t("achievements.trophiesWon", { count: trophees, defaultValue: "{{count}} trophée" })}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* LES TROPHEES DE CATEGORIE.
+            Cent cases a cocher ne font pas une collection : une
+            categorie entierement franchie vaut un trophee, et c est
+            lui qu on vient chercher. */}
+        <section className="su-coffres" aria-label={t("achievements.byCategory", "Par catégorie")}>
+          <button
+            type="button"
+            className="su-trophee su-trophee--tout"
+            aria-pressed={categorie === TOUT}
+            onClick={() => setCategorie(TOUT)}
+          >
+            <span className="su-trophee-nom">{t("achievements.all", "Tout")}</span>
+            <span className="su-trophee-compte">{obtenus}/{succes.length}</span>
+          </button>
+
+          {coffres.map((c) => (
+            <Trophee
+              key={c.categorie}
+              libelle={libelleCategorie(c.categorie)}
+              obtenus={c.obtenus}
+              total={c.total}
+              complet={c.complet}
+              actif={categorie === c.categorie}
+              onChoisir={() => setCategorie(categorie === c.categorie ? TOUT : c.categorie)}
+            />
+          ))}
+        </section>
+
+        {/* A PORTEE. Un succes verrouille sans jauge ne dit pas s il est
+            a portee ou hors d atteinte, et c est pourtant la seule
+            chose qui donne envie de continuer. */}
+        {proches.length > 0 && (
+          <section className="su-portee">
+            <h2 className="su-portee-titre">
               <Sparkles aria-hidden="true" />
               {t("achievements.closest", "À portée")}
             </h2>
-            <div className="su-rail-corps">
-              {succes
-                .filter((s) => !s.obtenu && !s.cache && s.avancement > 0)
-                .sort((a, b) => b.avancement - a.avancement)
-                .slice(0, 4)
-                .map((s) => (
-                  <div className="su-proche" key={s.cle}>
-                    <span className="su-proche-nom">{s.nom}</span>
-                    <span className="su-jauge" aria-hidden="true">
-                      <i style={{ width: `${Math.round(s.avancement * 100)}%` }} />
-                    </span>
-                    <span className="su-proche-reste">
-                      {(s.valeur ?? 0).toLocaleString()} / {(s.seuil ?? 0).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+            <div className="su-portee-liste">
+              {proches.map((s) => (
+                <div className="su-proche" key={s.cle} data-rarete={s.rarete}>
+                  <span className="su-proche-nom">{s.nom}</span>
+                  <span className="su-jauge" aria-hidden="true">
+                    <i style={{ width: `${Math.round(s.avancement * 100)}%` }} />
+                  </span>
+                  <span className="su-proche-reste">
+                    {(s.valeur ?? 0).toLocaleString()} / {(s.seuil ?? 0).toLocaleString()}
+                  </span>
+                </div>
+              ))}
             </div>
           </section>
-        </aside>
+        )}
+
+        <div className="su-barre">
+          <button
+            type="button"
+            className="su-filtre"
+            aria-pressed={cacherObtenus}
+            onClick={() => setCacherObtenus((v) => !v)}
+          >
+            {t("achievements.hideDone", "Masquer les obtenus")}
+          </button>
+          <span className="su-compte">
+            {t("achievements.showing", "{{n}} affichés", { n: listee.length })}
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="su-liste" aria-busy="true">
+            {[0, 1, 2, 3].map((i) => <div className="su-os" key={i} />)}
+          </div>
+        ) : listee.length === 0 ? (
+          <div className="su-vide">
+            <Trophy aria-hidden="true" />
+            <h3>{t("achievements.noneHere", "Rien à montrer ici")}</h3>
+            <p>{t("achievements.noneHereWhat", "Changez de catégorie, ou réaffichez les succès obtenus.")}</p>
+          </div>
+        ) : (
+          <div className="su-liste">
+            {listee.map((s) => (
+              <Carte
+                key={s.cle}
+                s={s}
+                neuf={neufs?.has(s.cle) ?? false}
+                libelleRarete={libelleRarete(s.rarete)}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </DSPageShell>
   );
 }
