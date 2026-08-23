@@ -137,7 +137,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
 
             {(deploye || texte) && (
               <>
-                <div className="co-filtres" style={{ padding: "8px 0 0", borderBottom: "none" }}>
+                <div className="co-composeur-natures">
                   {NATURES.map((n) => (
                     <button
                       key={n}

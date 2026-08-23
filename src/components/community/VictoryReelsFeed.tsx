@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Clapperboard, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Clapperboard, Plus, Target, Trophy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VictoryReelCard } from "./VictoryReelCard";
 import { CreateReelModal } from "./CreateReelModal";
-import { useVictoryReels } from "@/hooks/useCommunity";
+import { useCompletedGoals, useVictoryReels } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
 
 /* LA PILE DE VIDEOS.
@@ -23,6 +23,7 @@ export function VictoryReelsFeed() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: reels, isLoading } = useVictoryReels();
+  const { data: accomplis = [] } = useCompletedGoals();
   const [index, setIndex] = useState(0);
   const [modale, setModale] = useState(false);
   const scene = useRef<HTMLDivElement>(null);
@@ -82,18 +83,45 @@ export function VictoryReelsFeed() {
     );
   }
 
+  /* L ETAT VIDE FAIT SON TRAVAIL.
+     Il ne disait rien de ce qu est une video de victoire, ni de ce
+     qu il faut pour en publier une — un objectif accompli, sans quoi
+     le formulaire s ouvre sur rien. Il montre desormais ce qu on a :
+     le nombre d objectifs deja franchis, ou le chemin pour en
+     franchir un. */
   if (total === 0) {
+    const peutPublier = accomplis.length > 0;
     return (
       <>
         <div className="co-vide">
           <Clapperboard aria-hidden="true" />
           <h3>{t("community.reels.noReelsTitle", "Pas encore de vidéos de victoire")}</h3>
-          <p>{t("community.reels.noReelsDesc", "Partage tes objectifs accomplis avec la communauté")}</p>
+          <p>
+            {t(
+              "community.reels.what",
+              "Une vidéo de victoire est un format vertical, court, rattaché à un objectif que vous avez mené à son terme. C'est la preuve qui accompagne le chiffre.",
+            )}
+          </p>
+
           {user && (
+            <p className="co-vide-etat">
+              {peutPublier ? <Trophy aria-hidden="true" /> : <Target aria-hidden="true" />}
+              {peutPublier
+                ? t("community.reels.ready", { count: accomplis.length, defaultValue: "{{count}} objectifs accomplis, prêts à être racontés" })
+                : t("community.reels.needGoal", "Il faut d'abord mener un objectif à son terme")}
+            </p>
+          )}
+
+          {user && peutPublier && (
             <button type="button" className="co-bouton" onClick={() => setModale(true)}>
               <Plus aria-hidden="true" />
               {t("community.reels.createReel", "Créer une vidéo")}
             </button>
+          )}
+          {user && !peutPublier && (
+            <a className="co-bouton co-bouton--discret" href="/goals">
+              {t("community.reels.goToGoals", "Voir mes objectifs")}
+            </a>
           )}
         </div>
         <CreateReelModal isOpen={modale} onClose={() => setModale(false)} />

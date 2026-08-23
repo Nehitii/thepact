@@ -201,10 +201,38 @@
 .co ::-webkit-scrollbar-track { background: transparent; }
 .co ::-webkit-scrollbar-thumb { background: var(--co-filet-fort); border-radius: 4px; }
 .co ::-webkit-scrollbar-thumb:hover { background: var(--co-texte-3); }
-.co :focus-visible {
+/* L ANNEAU DE FOCUS.
+   Le produit pose un :focus-visible global — un trait cyan et un halo
+   de trois pixels en --ds-accent-primary. Ma regle avait la meme
+   specificite que la sienne et ne gagnait donc pas, et surtout elle
+   ne disait rien du halo : le champ de saisie s entourait d un neon
+   cyan, exactement ce qu on avait chasse de cette page. On monte la
+   specificite et on eteint le halo. */
+.co :focus-visible,
+.co button:focus-visible,
+.co a:focus-visible,
+.co [tabindex]:focus-visible {
   outline: 2px solid var(--co-accent);
   outline-offset: 2px;
-  border-radius: 3px;
+  box-shadow: none;
+  border-radius: 4px;
+}
+
+/* Le champ de saisie ne porte pas d anneau : c est le COMPOSEUR qui
+   s allume, comme sur X. Un anneau autour d une zone de texte deja
+   posee dans un plan surelevé fait deux cadres l un dans l autre. */
+.co .co-composeur-champ:focus,
+.co .co-composeur-champ:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+/* Un anneau complet d un pixel, pas une barre coloree sur le flanc :
+   un liseré de deux pixels sur un seul bord est un tic decoratif, et
+   il ne dit pas « cette surface est active » aussi clairement qu un
+   contour ferme. */
+.co-composeur:focus-within {
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+              inset 0 0 0 1px color-mix(in srgb, var(--co-accent) 45%, transparent);
 }
 .co a { color: var(--co-accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
@@ -343,6 +371,17 @@
 .co-composeur-champ::placeholder { color: var(--co-texte-3); }
 .co-composeur-champ:focus { outline: none; }
 
+/* Les six natures debordaient de l encadre : 631px de contenu pour
+   515px, « Encouragement » sortant de cent pixels hors du composeur.
+   Elles vont a la ligne — le composeur a de la hauteur, pas de la
+   largeur. */
+.co-composeur-natures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 10px;
+}
+
 .co-composeur-pied {
   display: flex;
   align-items: center;
@@ -351,7 +390,18 @@
   margin-top: 4px;
   border-top: 1px solid var(--co-filet);
 }
-.co-composeur:focus-within .co-composeur-pied { border-top-color: var(--co-filet); }
+.co-composeur:focus-within /* Les six natures debordaient de l encadre : 631px de contenu pour
+   515px, « Encouragement » sortant de cent pixels hors du composeur.
+   Elles vont a la ligne — le composeur a de la hauteur, pas de la
+   largeur. */
+.co-composeur-natures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.co-composeur-pied { border-top-color: var(--co-filet); }
 
 .co-composeur-reste {
   margin-left: auto;
@@ -384,7 +434,7 @@
 }
 .co-bouton:hover:not(:disabled) { background: var(--co-accent-vif); }
 .co-bouton:disabled { opacity: 0.45; cursor: not-allowed; }
-.co-bouton svg { width: 15px; height: 15px; stroke-width: 2.2; }
+.co-bouton svg { display: block; width: 15px; height: 15px; stroke-width: 2.2; flex-shrink: 0; }
 
 .co-bouton--discret {
   background: none;
@@ -395,36 +445,46 @@
 
 /* ═══════════════ LES FILTRES ═══════════════ */
 
-/* LE TRI RESTE VISIBLE.
-   Les sept natures et les deux tris tenaient dans une seule rangee
-   qui defilait : mesure sur la page, 927px de contenu pour 599px de
-   cadre — le tri etait donc a 328px hors du champ, atteignable
-   seulement en faisant defiler une barre dont rien n indiquait
-   qu elle defilait. Les natures gardent leur defilement ; le tri
-   sort de ce flux et se tient au bout, toujours la. */
+/* RIEN NE DEFILE PLUS SOUS RIEN.
+   Premiere tentative : les sept natures defilaient dans un cadre et
+   le tri se tenait au bout. Mesure sur la page : 687px de contenu
+   pour 471px de cadre — « Besoin d aide » etait coupe a 80px, a
+   moitie efface par le fondu et colle au bouton de tri, illisible et
+   difficile a viser ; « Encouragement » etait entierement dehors.
+   Un fondu qui masque une commande n est pas une affordance, c est
+   un defaut.
+
+   Les six natures passent donc derriere un bouton « Filtrer » qui
+   deplie une rangee complete, sur autant de lignes qu il faut. La
+   barre ne porte plus que ce qui tient : le filtre actif et le tri.
+   Aucun element ne peut plus en sortir. */
 .co-filtres {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 10px var(--co-gouttiere);
   border-bottom: 1px solid var(--co-filet);
 }
 
-.co-filtres-defile {
-  display: flex;
-  gap: 6px;
-  min-width: 0;
-  flex: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
-  /* Un fondu au bord dit qu il reste des puces derriere. */
-  mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
-}
-.co-filtres-defile::-webkit-scrollbar { display: none; }
-.co-filtres::-webkit-scrollbar { display: none; }
+.co-tri { margin-left: auto; flex-shrink: 0; }
 
-.co-tri { flex-shrink: 0; }
+/* La rangee depliee : elle occupe toute la largeur et va a la ligne. */
+.co-filtres-tout {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+/* La puce qui porte le filtre actif, avec sa croix. */
+.co-puce-fermer {
+  display: inline-flex;
+  margin: 0 -4px 0 2px;
+  opacity: 0.7;
+}
+.co-puce-fermer svg { width: 12px; height: 12px; }
 
 .co-puce {
   flex-shrink: 0;
@@ -831,9 +891,47 @@
   padding: 56px 32px;
   text-align: center;
 }
-.co-vide svg { width: 30px; height: 30px; stroke-width: 1.5; color: var(--co-texte-3); margin-bottom: 14px; }
+/* DEUX DEFAUTS TENAIENT DANS CETTE LIGNE.
+   « .co-vide svg » attrapait AUSSI le « + » du bouton pose dans
+   l etat vide : meme specificite que « .co-bouton svg », declaree
+   plus bas, donc gagnante — l icone du bouton passait de 15 a 30px
+   et debordait presque de la pastille. Le selecteur ne vise plus que
+   l enfant direct.
+   Et l icone elle-meme n etait pas centree : le prereglage de
+   Tailwind met les svg en display:block, et un bloc ignore
+   text-align. Mesure : centre de l icone a 562px, centre du cadre a
+   814px. Il lui fallait ses marges automatiques. */
+.co-vide > svg {
+  display: block;
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.5;
+  color: var(--co-texte-3);
+  margin: 0 auto 14px;
+}
 .co-vide h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; color: var(--co-texte); }
-.co-vide p { font-size: 14px; color: var(--co-texte-2); margin: 0 auto 18px; max-width: 44ch; line-height: 1.5; }
+.co-vide p { font-size: 14px; color: var(--co-texte-2); margin: 0 auto 18px; max-width: 46ch; line-height: 1.55; }
+
+/* Ce que l on a deja, dit avant de demander quoi que ce soit. */
+/* En inline-flex, ce bandeau partageait sa ligne avec le bouton
+   place juste apres, et poussait celui-ci a 174px du centre. Un flex
+   est de niveau bloc : il prend sa propre ligne, « width: fit-content »
+   lui garde sa forme de pastille et les marges automatiques le
+   centrent. */
+.co-vide-etat {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  margin: 0 auto 18px !important;
+  border: 1px solid var(--co-filet);
+  border-radius: 999px;
+  background: var(--co-fond-eleve);
+  font-size: 13px;
+  color: var(--co-texte) !important;
+}
+.co-vide-etat svg { width: 15px; height: 15px; stroke-width: 2; color: var(--co-respect); flex-shrink: 0; }
 
 /* Le squelette de chargement : la forme exacte d un post, pour que
    rien ne saute quand les donnees arrivent. */

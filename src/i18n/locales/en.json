@@ -1698,7 +1698,12 @@
       "pause": "Pause",
       "mute": "Mute",
       "unmute": "Unmute",
-      "uploadFailed": "Video upload failed"
+      "uploadFailed": "Video upload failed",
+      "what": "A victory reel is a short vertical video attached to a goal you carried through. It is the proof that comes with the number.",
+      "needGoal": "You need to carry a goal through first",
+      "goToGoals": "See my goals",
+      "ready_one": "1 completed goal, waiting to be told",
+      "ready_other": "{{count}} completed goals, waiting to be told"
     },
     "post": {
       "like": "Like",
@@ -1751,7 +1756,9 @@
     },
     "filters": {
       "title": "Filter the feed",
-      "all": "All"
+      "all": "All",
+      "clear": "Clear the filter",
+      "open": "Filter"
     },
     "sort": {
       "recent": "Recent",

@@ -1698,7 +1698,12 @@
       "pause": "Pause",
       "mute": "Couper le son",
       "unmute": "Activer le son",
-      "uploadFailed": "Le téléversement de la vidéo a échoué"
+      "uploadFailed": "Le téléversement de la vidéo a échoué",
+      "what": "Une vidéo de victoire est un format vertical, court, rattaché à un objectif que vous avez mené à son terme. C'est la preuve qui accompagne le chiffre.",
+      "needGoal": "Il faut d'abord mener un objectif à son terme",
+      "goToGoals": "Voir mes objectifs",
+      "ready_one": "1 objectif accompli, prêt à être raconté",
+      "ready_other": "{{count}} objectifs accomplis, prêts à être racontés"
     },
     "post": {
       "like": "J'aime",
@@ -1751,7 +1756,9 @@
     },
     "filters": {
       "title": "Filtrer le fil",
-      "all": "Tout"
+      "all": "Tout",
+      "clear": "Retirer le filtre",
+      "open": "Filtrer"
     },
     "sort": {
       "recent": "Récents",
