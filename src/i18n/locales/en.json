@@ -1681,7 +1681,8 @@
       "placeholder": "What is happening with your pact?",
       "published": "Published",
       "publishFailed": "Could not publish",
-      "more": "Show more"
+      "more": "Show more",
+      "end": "You are all caught up"
     },
     "reels": {
       "createReel": "Create Reel",
@@ -1762,7 +1763,8 @@
       "posts": "posts",
       "authors": "posted",
       "reactions": "reactions",
-      "replies": "replies"
+      "replies": "replies",
+      "topics": "Topics"
     }
   },
   "wishlist": {

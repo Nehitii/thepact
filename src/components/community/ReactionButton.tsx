@@ -47,7 +47,7 @@ export function ReactionButton({ type, count, isActive, onToggle, variante = "fi
         onToggle();
       }}
     >
-      <Icone aria-hidden="true" />
+      <i className="co-action-rond"><Icone aria-hidden="true" /></i>
       <span>{count > 0 ? count : ""}</span>
       {variante === "scene" && <em style={{ fontStyle: "normal", fontSize: 11 }}>{libelle}</em>}
     </button>

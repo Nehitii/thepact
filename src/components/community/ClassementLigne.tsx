@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { LeaderboardEntry } from "@/hooks/useLeaderboard";
-import { Initiales, nomAffichable } from "./vocabulaire";
+import { nomAffichable } from "./vocabulaire";
+import { Pastille } from "./Pastille";
 
 /* LE CLASSEMENT, EN UN SEUL EXEMPLAIRE.
  *
@@ -17,14 +18,6 @@ import { Initiales, nomAffichable } from "./vocabulaire";
  * Les medailles ont disparu avec le doublon : trois icones pour dire
  * 1, 2 et 3 quand le chiffre est deja la. La place se colore, et
  * c est tout. */
-
-function Pastille({ entree, taille }: { entree: LeaderboardEntry; taille: "co-avatar" | "co-avatar co-avatar--petit" }) {
-  return entree.avatar_url ? (
-    <img className={taille} src={entree.avatar_url} alt="" loading="lazy" />
-  ) : (
-    <span className={taille} aria-hidden="true">{Initiales(nomAffichable(entree.display_name, "··"))}</span>
-  );
-}
 
 interface Props {
   entree: LeaderboardEntry;
@@ -44,7 +37,7 @@ export function ClassementLigne({ entree, place, estMoi, forme = "plein", onOuvr
     return (
       <div className="co-rang" data-podium={podium} data-moi={estMoi ? "oui" : "non"}>
         <span className="co-rang-place">{place}</span>
-        <Pastille entree={entree} taille="co-avatar co-avatar--petit" />
+        <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} petite />
         <span className="co-rang-nom">{nom}</span>
         <span className="co-rang-xp">{entree.points.toLocaleString()}</span>
       </div>
@@ -67,7 +60,7 @@ export function ClassementLigne({ entree, place, estMoi, forme = "plein", onOuvr
       }}
     >
       <span className="co-ligne-rang-place">{place}</span>
-      <Pastille entree={entree} taille="co-avatar" />
+      <Pastille identifiant={entree.user_id} nom={entree.display_name} image={entree.avatar_url} />
       <span style={{ minWidth: 0 }}>
         <span className="co-rang-nom" style={{ display: "block" }}>
           {nom}

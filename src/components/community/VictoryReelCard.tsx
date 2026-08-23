@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Eye, Pause, Play, Target, Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ReactionButton } from "./ReactionButton";
-import { Initiales, nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
+import { nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
+import { Pastille } from "./Pastille";
 import {
   VictoryReel,
   useAddReaction,
@@ -106,18 +107,19 @@ export function VictoryReelCard({ reel, isActive }: { reel: VictoryReel; isActiv
           />
         ))}
         <span className="co-action" style={{ flexDirection: "column", gap: 3, color: "#fff", height: "auto" }}>
-          <Eye aria-hidden="true" />
+          <i className="co-action-rond"><Eye aria-hidden="true" /></i>
           <span>{reel.view_count || 0}</span>
         </span>
       </div>
 
       <div className="co-scene-bas">
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-          {decouvrable && reel.profile?.avatar_url ? (
-            <img className="co-avatar co-avatar--petit" src={reel.profile.avatar_url} alt="" />
-          ) : (
-            <span className="co-avatar co-avatar--petit" aria-hidden="true">{Initiales(nom)}</span>
-          )}
+          <Pastille
+            identifiant={decouvrable ? reel.user_id : nom}
+            nom={nom}
+            image={decouvrable ? reel.profile?.avatar_url : null}
+            petite
+          />
           <p className="co-scene-titre">{nom}</p>
         </div>
 

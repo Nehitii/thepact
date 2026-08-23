@@ -67,3 +67,27 @@ export function nomAffichable(nom: string | null | undefined, repli: string): st
   const avant = propre.split("@")[0].trim();
   return avant.length >= 2 ? avant : repli;
 }
+
+/* LA TEINTE D UN AVATAR SANS IMAGE.
+ *
+ * Trois profils sur quatre n ont pas de photo, et affichaient deux
+ * lettres grises sur du gris — quatre pastilles identiques dans le
+ * rail, impossibles a distinguer d un coup d oeil. Slack, Linear et
+ * Instagram derivent tous une teinte de l identifiant : elle est
+ * stable dans le temps, differente d un membre a l autre, et ne
+ * demande aucune donnee de plus.
+ *
+ * Douze teintes reparties sur le cercle, en evitant les jaunes ou le
+ * texte clair ne passerait pas. Le fond reste sombre et le texte
+ * clair dans la meme teinte : le contraste tient sans avoir a le
+ * mesurer cas par cas. */
+export function teinteAvatar(identifiant: string | null | undefined): { fond: string; texte: string } {
+  const cle = identifiant || "";
+  let somme = 0;
+  for (let i = 0; i < cle.length; i++) somme = (somme * 31 + cle.charCodeAt(i)) >>> 0;
+  const teinte = (somme % 12) * 30;
+  return {
+    fond: `hsl(${teinte} 34% 22%)`,
+    texte: `hsl(${teinte} 62% 76%)`,
+  };
+}

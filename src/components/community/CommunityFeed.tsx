@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { MessagesSquare, Target } from "lucide-react";
+import { CircleCheck, MessagesSquare, Target } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CommunityPostCard } from "./CommunityPostCard";
 import { PostFilters } from "./PostFilters";
-import { Initiales, NATURES, libelleNature, type NaturePost } from "./vocabulaire";
+import { NATURES, libelleNature, type NaturePost } from "./vocabulaire";
+import { Pastille } from "./Pastille";
 import {
   useCommunityPosts,
   useCreatePost,
@@ -39,7 +40,16 @@ import { supabase } from "@/integrations/supabase/client";
 const LIMITE = 500;
 const SEUIL_ALERTE = 60;
 
-export function CommunityFeed() {
+/* Le filtre et le tri viennent de la page : le bloc « Sujets » du
+   rail doit pouvoir les poser, et le rail n est pas dans le fil. */
+interface Props {
+  filtre: PostFilterType;
+  onFiltre: (f: PostFilterType) => void;
+  tri: PostSortOption;
+  onTri: (s: PostSortOption) => void;
+}
+
+export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const champ = useRef<HTMLTextAreaElement>(null);
@@ -48,8 +58,6 @@ export function CommunityFeed() {
   const [nature, setNature] = useState<NaturePost>("reflection");
   const [objectifId, setObjectifId] = useState<string>("");
   const [deploye, setDeploye] = useState(false);
-  const [filtre, setFiltre] = useState<PostFilterType>("all");
-  const [tri, setTri] = useState<PostSortOption>("recent");
 
   const { data: profil } = useQuery({
     queryKey: ["my-community-profile", user?.id],
@@ -110,11 +118,7 @@ export function CommunityFeed() {
     <>
       {user && (
         <div className="co-composeur">
-          {profil?.avatar_url ? (
-            <img className="co-avatar" src={profil.avatar_url} alt="" />
-          ) : (
-            <span className="co-avatar" aria-hidden="true">{Initiales(monNom)}</span>
-          )}
+          <Pastille identifiant={user.id} nom={monNom} image={profil?.avatar_url} />
 
           <div style={{ minWidth: 0 }}>
             <textarea
@@ -203,9 +207,9 @@ export function CommunityFeed() {
 
       <PostFilters
         activeFilter={filtre}
-        onFilterChange={setFiltre}
+        onFilterChange={onFiltre}
         activeSort={tri}
-        onSortChange={setTri}
+        onSortChange={onTri}
       />
 
       {isLoading ? (
@@ -226,6 +230,12 @@ export function CommunityFeed() {
           {posts.map((post) => (
             <CommunityPostCard key={post.id} post={post} />
           ))}
+          {!hasNextPage && posts.length > 2 && (
+            <p className="co-fin">
+              <CircleCheck aria-hidden="true" style={{ width: 15, height: 15 }} />
+              {t("community.feed.end", "Vous êtes à jour")}
+            </p>
+          )}
           {hasNextPage && (
             <div style={{ padding: 16, textAlign: "center", borderBottom: "1px solid var(--co-filet)" }}>
               <button

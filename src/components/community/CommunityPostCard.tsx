@@ -9,13 +9,14 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ReactionButton } from "./ReactionButton";
 import { PostTypeTag } from "./PostTypeTag";
 import { ReportModal } from "./ReportModal";
-import { Initiales, nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
+import { nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
+import { Pastille } from "./Pastille";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import {
   CommunityPost,
@@ -125,18 +126,23 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
 
   return (
     <article className="co-post" onClick={() => !enEdition && setReponsesOuvertes((v) => !v)}>
-      {avatar ? (
-        <img className="co-avatar" src={avatar} alt="" loading="lazy" />
-      ) : (
-        <span className="co-avatar" aria-hidden="true">{Initiales(nom)}</span>
-      )}
+      <Pastille identifiant={decouvrable ? post.user_id : nom} nom={nom} image={avatar} />
 
       <div className="co-post-corps">
         <div className="co-post-tete">
           <span className="co-nom">{nom}</span>
+          {/* La nature remonte sur la ligne d en-tete : le lecteur sait
+              de quoi il s agit AVANT de lire, au lieu de l apprendre
+              une fois le texte parcouru. */}
+          <PostTypeTag type={post.post_type} />
           <span className="co-sep" aria-hidden="true">·</span>
           <time className="co-quand" dateTime={post.created_at}>
-            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale })}
+            <span className="co-quand--relatif">
+              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale })}
+            </span>
+            <span className="co-quand--exact">
+              {format(new Date(post.created_at), "d MMMM yyyy, HH:mm", { locale })}
+            </span>
           </time>
           {post.updated_at !== post.created_at && (
             <span className="co-edite">{t("community.post.edited", "modifié")}</span>
@@ -152,7 +158,7 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
                 aria-expanded={menu}
                 onClick={(e) => { e.stopPropagation(); setMenu((v) => !v); }}
               >
-                <MoreHorizontal aria-hidden="true" />
+                <i className="co-action-rond"><MoreHorizontal aria-hidden="true" /></i>
               </button>
             )}
           </span>
@@ -221,9 +227,6 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
         ) : (
           <>
             <p className="co-post-texte">{post.content}</p>
-            <div style={{ marginTop: 6 }}>
-              <PostTypeTag type={post.post_type} />
-            </div>
           </>
         )}
 
@@ -252,7 +255,7 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
             aria-label={t("community.post.comments", "Réponses")}
             onClick={() => setReponsesOuvertes((v) => !v)}
           >
-            <MessageCircle aria-hidden="true" />
+            <i className="co-action-rond"><MessageCircle aria-hidden="true" /></i>
             <span>{post.replies_count || ""}</span>
           </button>
         </div>
@@ -273,11 +276,12 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
                 const rNom = rDecouvrable ? nomAffichable(r.profile?.display_name, anonyme) : anonyme;
                 return (
                   <div className="co-reponse" key={r.id}>
-                    {rDecouvrable && r.profile?.avatar_url ? (
-                      <img className="co-avatar co-avatar--petit" src={r.profile.avatar_url} alt="" loading="lazy" />
-                    ) : (
-                      <span className="co-avatar co-avatar--petit" aria-hidden="true">{Initiales(rNom)}</span>
-                    )}
+                    <Pastille
+                      identifiant={rDecouvrable ? r.user_id : rNom}
+                      nom={rNom}
+                      image={rDecouvrable ? r.profile?.avatar_url : null}
+                      petite
+                    />
                     <div style={{ minWidth: 0 }}>
                       <div className="co-post-tete" style={{ marginBottom: 0 }}>
                         <span className="co-nom" style={{ fontSize: 14 }}>{rNom}</span>
@@ -307,7 +311,7 @@ export function CommunityPostCard({ post }: { post: CommunityPost }) {
 
             {user && (
               <div className="co-repondre">
-                <span className="co-avatar co-avatar--petit" aria-hidden="true">{Initiales(user.email)}</span>
+                <Pastille identifiant={user.id} nom={user.email} petite />
                 <input
                   value={texteReponse}
                   onChange={(e) => setTexteReponse(e.target.value)}

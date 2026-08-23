@@ -773,6 +773,8 @@ export function useUserGoals() {
  */
 export interface StatsCommunaute {
   postsSemaine: number;
+  /** Combien de posts par nature — alimente le bloc « Sujets » du rail. */
+  parNature: Record<CommunityPost["post_type"], number>;
   auteursSemaine: number;
   postsTotal: number;
   reactionsTotal: number;
@@ -788,17 +790,28 @@ export function useCommunityStats() {
       const compte = (table: "community_posts" | "community_reactions" | "community_replies" | "victory_reels") =>
         supabase.from(table).select("id", { count: "exact", head: true });
 
-      const [semaine, posts, reactions, reponses, reels] = await Promise.all([
+      const [semaine, posts, reactions, reponses, reels, natures] = await Promise.all([
         supabase.from("community_posts").select("user_id").gte("created_at", ilYaUneSemaine),
         compte("community_posts"),
         compte("community_reactions"),
         compte("community_replies"),
         compte("victory_reels"),
+        /* La repartition par nature. Le client compte lui-meme : le
+           SDK ne sait pas grouper. Plafonne a mille lignes — au-dela,
+           il faudra une fonction en base, et le bloc le dira. */
+        supabase.from("community_posts").select("post_type").limit(1000),
       ]);
+
+      const parNature = { reflection: 0, progress: 0, obstacle: 0, mindset: 0, help_request: 0, encouragement: 0 } as Record<CommunityPost["post_type"], number>;
+      for (const l of natures.data || []) {
+        const n = l.post_type as CommunityPost["post_type"];
+        if (n in parNature) parNature[n] += 1;
+      }
 
       const lignes = semaine.data || [];
       return {
         postsSemaine: lignes.length,
+        parNature,
         auteursSemaine: new Set(lignes.map((l) => l.user_id)).size,
         postsTotal: posts.count || 0,
         reactionsTotal: reactions.count || 0,

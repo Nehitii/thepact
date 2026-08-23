@@ -1681,7 +1681,8 @@
       "placeholder": "Quoi de neuf sur ton pacte ?",
       "published": "Publié",
       "publishFailed": "La publication a échoué",
-      "more": "Voir plus"
+      "more": "Voir plus",
+      "end": "Vous êtes à jour"
     },
     "reels": {
       "createReel": "Créer une vidéo",
@@ -1762,7 +1763,8 @@
       "posts": "publications",
       "authors": "ont publié",
       "reactions": "réactions",
-      "replies": "réponses"
+      "replies": "réponses",
+      "topics": "Sujets"
     }
   },
   "wishlist": {
