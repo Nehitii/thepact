@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, CalendarDays, Crown, Home, LogOut,
-  MessageSquare, Settings, Shield, Target, Users,
+  MessageSquare, Settings, Shield, Swords, Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import "@/styles/community.css";
@@ -13,7 +13,7 @@ import { useGuild, useGuildMembers, useGuilds } from "@/hooks/useGuilds";
 import { GuildOverview } from "@/components/guild/GuildOverview";
 import { GuildMembersPanel } from "@/components/guild/GuildMembersPanel";
 import { GuildChat } from "@/components/guild/GuildChat";
-import { GuildGoalsPanel } from "@/components/guild/GuildGoalsPanel";
+import { GuildRaidsPanel } from "@/components/guild/GuildRaidsPanel";
 import { GuildEventsPanel } from "@/components/guild/GuildEventsPanel";
 import { GuildSettingsPage } from "@/components/guild/GuildSettingsPage";
 
@@ -39,7 +39,7 @@ import { GuildSettingsPage } from "@/components/guild/GuildSettingsPage";
  * Le vocabulaire est celui de Friends — guilde, jamais faction — et
  * il vient du fichier de langue. */
 
-type Section = "apercu" | "membres" | "discussion" | "objectifs" | "evenements" | "reglages";
+type Section = "apercu" | "membres" | "discussion" | "raids" | "evenements" | "reglages";
 
 export default function GuildPage() {
   const { id } = useParams<{ id: string }>();
@@ -112,7 +112,7 @@ export default function GuildPage() {
     { cle: "apercu", libelle: t("guild.overview", "Vue d'ensemble"), Icone: Home },
     { cle: "membres", libelle: t("guild.members", "Membres"), Icone: Users },
     { cle: "discussion", libelle: t("guild.chat", "Discussion"), Icone: MessageSquare },
-    { cle: "objectifs", libelle: t("guild.goals", "Objectifs"), Icone: Target },
+    { cle: "raids", libelle: t("guild.raids", "Raids"), Icone: Swords },
     { cle: "evenements", libelle: t("guild.events", "Événements"), Icone: CalendarDays },
     { cle: "reglages", libelle: t("common.settings", "Réglages"), Icone: Settings, officier: true },
   ];
@@ -193,7 +193,7 @@ export default function GuildPage() {
               <GuildMembersPanel guild={guilde} userId={user.id} isOfficer={estOfficier} isOwner={estFondateur} />
             )}
             {section === "discussion" && <GuildChat guildId={guilde.id} userId={user.id} />}
-            {section === "objectifs" && <GuildGoalsPanel guildId={guilde.id} canManage={estOfficier} />}
+            {section === "raids" && <GuildRaidsPanel guildId={guilde.id} canManage={estOfficier} />}
             {section === "evenements" && (
               <GuildEventsPanel guildId={guilde.id} userId={user.id} isOfficer={estOfficier} />
             )}

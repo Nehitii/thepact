@@ -402,3 +402,261 @@
    ecrit en toutes lettres. */
 .gu-danger { background: var(--co-obstacle); }
 .gu-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--co-obstacle) 84%, #000); }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE RAID
+   ═══════════════════════════════════════════════════════════════
+   Un objectif de guilde nourri par l activite reelle de ses membres.
+   Quatre canaux mesures, un anneau de completion, une echeance.
+
+   Chaque metrique garde sa couleur d un bout a l autre — anneau,
+   barre, chiffre, repartition — pour qu on suive un canal du regard
+   sans relire les etiquettes. Les quatre teintes viennent du jeu
+   semantique deja en place ; aucune n est inventee pour l occasion. */
+
+.gu-raid {
+  border-top: 1px solid var(--co-filet);
+  padding: 16px 0;
+}
+.gu-raid:first-of-type { border-top: none; padding-top: 4px; }
+
+.gu-raid-tete {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 12px;
+}
+.gu-raid-titre {
+  font-family: var(--co-fonte);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  text-transform: none;
+  color: var(--co-texte);
+  margin: 0;
+  text-wrap: balance;
+}
+.gu-raid-intention {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--co-texte-2);
+}
+
+/* Le temps qui reste. Il devient rouge dans les vingt-quatre
+   dernieres heures — c est la seule alarme de la page, elle doit
+   donc rester rare pour vouloir dire quelque chose. */
+.gu-raid-temps {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--co-texte-3);
+  white-space: nowrap;
+}
+.gu-raid-temps svg { width: 12px; height: 12px; }
+.gu-raid-temps[data-urgent="true"] { color: var(--co-obstacle); }
+
+.gu-raid-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.gu-raid-verdict svg { width: 12px; height: 12px; }
+.gu-raid-verdict[data-reussi="true"] { color: var(--co-soutien); }
+.gu-raid-verdict[data-reussi="false"] { color: var(--co-texte-3); }
+
+/* ── L anneau ──
+   La part franchie est la MOYENNE des cibles demandees, pas leur
+   somme : un raid a moitie fait sur les quatre canaux vaut un raid
+   entierement fait sur deux. C est ce qui pousse a se repartir. */
+.gu-raid-corps {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+.gu-anneau { position: relative; width: 72px; height: 72px; }
+.gu-anneau svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.gu-anneau circle { fill: none; stroke-width: 5; }
+.gu-anneau .gu-anneau-fond { stroke: var(--co-filet); }
+.gu-anneau .gu-anneau-part {
+  stroke: var(--co-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 420ms var(--co-sortie);
+}
+
+.gu-anneau-chiffre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--co-texte);
+}
+
+/* ── Les quatre canaux ── */
+.gu-canaux { display: grid; gap: 9px; min-width: 0; }
+.gu-canal {
+  display: grid;
+  grid-template-columns: 15px 1fr auto;
+  align-items: center;
+  gap: 4px 9px;
+}
+.gu-canal-icone { width: 14px; height: 14px; }
+.gu-canal-nom {
+  font-size: 12.5px;
+  color: var(--co-texte-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gu-canal-compte {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--co-texte-3);
+}
+.gu-canal-compte b { font-weight: 500; color: var(--co-texte); }
+.gu-canal[data-fait="true"] .gu-canal-compte b { color: var(--co-soutien); }
+
+.gu-canal-barre {
+  grid-column: 2 / -1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--co-filet);
+  overflow: hidden;
+}
+.gu-canal-barre i {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  transition: width 420ms var(--co-sortie);
+}
+
+/* Un canal garde sa teinte du pictogramme jusqu a sa barre. */
+.gu-canal[data-canal="etapes"]    { color: var(--co-progression); }
+.gu-canal[data-canal="objectifs"] { color: var(--co-accent); }
+.gu-canal[data-canal="taches"]    { color: var(--co-soutien); }
+.gu-canal[data-canal="journal"]   { color: var(--co-reflexion); }
+.gu-canal-icone { color: currentColor; }
+
+/* ── Qui porte le raid ──
+   Le detail par membre n est pas un ornement : il montre quel canal
+   n est couvert par personne, ce qui est exactement l information qui
+   fait qu on va chercher quelqu un. */
+.gu-porteurs { margin-top: 14px; display: grid; gap: 8px; }
+/* QUATRE enfants — pastille, nom, repartition, total — donc quatre
+   colonnes. Avec trois, le total retombait a la ligne suivante, seul et
+   aligne a gauche sous l avatar. */
+.gu-porteur {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+.gu-porteur-nom {
+  font-size: 13px;
+  color: var(--co-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gu-porteur-part { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; justify-content: flex-end; max-width: 160px; }
+.gu-porteur-part i {
+  display: block;
+  width: 4px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--co-filet);
+}
+.gu-porteur-part i[data-canal="etapes"]    { background: var(--co-progression); }
+.gu-porteur-part i[data-canal="objectifs"] { background: var(--co-accent); }
+.gu-porteur-part i[data-canal="taches"]    { background: var(--co-soutien); }
+.gu-porteur-part i[data-canal="journal"]   { background: var(--co-reflexion); }
+.gu-porteur-total {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--co-texte-3);
+  min-width: 26px;
+  text-align: right;
+}
+
+/* ── Composer un raid ── */
+.gu-cibles { display: grid; gap: 10px; margin-top: 4px; }
+.gu-cible {
+  display: grid;
+  grid-template-columns: 15px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.gu-cible-icone { width: 14px; height: 14px; color: var(--co-texte-3); }
+.gu-cible-nom { font-size: 13px; color: var(--co-texte-2); }
+.gu-compteur { display: flex; align-items: center; gap: 2px; }
+.gu-compteur button {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--co-filet);
+  border-radius: 7px;
+  background: none;
+  color: var(--co-texte-2);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+.gu-compteur button svg { width: 13px; height: 13px; }
+/* Le bouton mesure 26px pour rester discret a cote du chiffre, mais
+   26px se rate au doigt. La zone de touche est elargie a 44px sans
+   toucher au dessin — le carre visible ne bouge pas. */
+.gu-compteur button { position: relative; }
+.gu-compteur button::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+.gu-compteur button:hover:not(:disabled) { border-color: var(--co-filet-fort); color: var(--co-texte); }
+.gu-compteur button:disabled { opacity: 0.35; cursor: default; }
+.gu-compteur span {
+  min-width: 34px;
+  text-align: center;
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+  color: var(--co-texte);
+}
+.gu-compteur span[data-zero="true"] { color: var(--co-texte-3); }
+
+.gu-raid-gain {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--co-filet);
+  font-size: 12.5px;
+  color: var(--co-texte-2);
+}
+.gu-raid-gain b {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--co-texte);
+}
+
+@media (max-width: 480px) {
+  .gu-raid-corps { grid-template-columns: 56px 1fr; gap: 12px; }
+  .gu-anneau { width: 56px; height: 56px; }
+  .gu-anneau-chiffre { font-size: 14px; }
+}

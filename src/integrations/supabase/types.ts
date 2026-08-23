@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.15"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       achievement_definitions: {
@@ -2211,6 +2186,68 @@ export type Database = {
           },
         ]
       }
+      guild_raids: {
+        Row: {
+          cible_etapes: number
+          cible_journal: number
+          cible_objectifs: number
+          cible_taches: number
+          clos_le: string | null
+          commence_le: string
+          created_at: string
+          cree_par: string
+          etat: string
+          finit_le: string
+          guild_id: string
+          id: string
+          intention: string | null
+          resultat: Json | null
+          titre: string
+        }
+        Insert: {
+          cible_etapes?: number
+          cible_journal?: number
+          cible_objectifs?: number
+          cible_taches?: number
+          clos_le?: string | null
+          commence_le?: string
+          created_at?: string
+          cree_par: string
+          etat?: string
+          finit_le: string
+          guild_id: string
+          id?: string
+          intention?: string | null
+          resultat?: Json | null
+          titre: string
+        }
+        Update: {
+          cible_etapes?: number
+          cible_journal?: number
+          cible_objectifs?: number
+          cible_taches?: number
+          clos_le?: string | null
+          commence_le?: string
+          created_at?: string
+          cree_par?: string
+          etat?: string
+          finit_le?: string
+          guild_id?: string
+          id?: string
+          intention?: string | null
+          resultat?: Json | null
+          titre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_raids_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guild_ranks: {
         Row: {
           color: string
@@ -3532,11 +3569,18 @@ export type Database = {
           amount: number
           category: string | null
           created_at: string
+          decalage_mois: number
+          echeances: number | null
+          icon_cadre: Json | null
           icon_emoji: string | null
           icon_url: string | null
           id: string
           is_active: boolean
+          jour_echeance: number | null
+          mois_ancre: string | null
+          montant_total: number | null
           name: string
+          periode_mois: number
           updated_at: string
           user_id: string
         }
@@ -3544,11 +3588,18 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          decalage_mois?: number
+          echeances?: number | null
+          icon_cadre?: Json | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
           is_active?: boolean
+          jour_echeance?: number | null
+          mois_ancre?: string | null
+          montant_total?: number | null
           name: string
+          periode_mois?: number
           updated_at?: string
           user_id: string
         }
@@ -3556,11 +3607,18 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          decalage_mois?: number
+          echeances?: number | null
+          icon_cadre?: Json | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
           is_active?: boolean
+          jour_echeance?: number | null
+          mois_ancre?: string | null
+          montant_total?: number | null
           name?: string
+          periode_mois?: number
           updated_at?: string
           user_id?: string
         }
@@ -3571,11 +3629,18 @@ export type Database = {
           amount: number
           category: string | null
           created_at: string
+          decalage_mois: number
+          echeances: number | null
+          icon_cadre: Json | null
           icon_emoji: string | null
           icon_url: string | null
           id: string
           is_active: boolean
+          jour_echeance: number | null
+          mois_ancre: string | null
+          montant_total: number | null
           name: string
+          periode_mois: number
           updated_at: string
           user_id: string
         }
@@ -3583,11 +3648,18 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          decalage_mois?: number
+          echeances?: number | null
+          icon_cadre?: Json | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
           is_active?: boolean
+          jour_echeance?: number | null
+          mois_ancre?: string | null
+          montant_total?: number | null
           name: string
+          periode_mois?: number
           updated_at?: string
           user_id: string
         }
@@ -3595,11 +3667,18 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          decalage_mois?: number
+          echeances?: number | null
+          icon_cadre?: Json | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
           is_active?: boolean
+          jour_echeance?: number | null
+          mois_ancre?: string | null
+          montant_total?: number | null
           name?: string
+          periode_mois?: number
           updated_at?: string
           user_id?: string
         }
@@ -4118,9 +4197,9 @@ export type Database = {
           description: string | null
           due_date: string | null
           exclude_from_spin: boolean
-          is_ultimate: boolean
           goal_id: string
           id: string
+          is_ultimate: boolean
           notes: string | null
           order: number
           status: Database["public"]["Enums"]["step_status"] | null
@@ -4134,9 +4213,9 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           exclude_from_spin?: boolean
-          is_ultimate?: boolean
           goal_id: string
           id?: string
+          is_ultimate?: boolean
           notes?: string | null
           order: number
           status?: Database["public"]["Enums"]["step_status"] | null
@@ -4150,9 +4229,9 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           exclude_from_spin?: boolean
-          is_ultimate?: boolean
           goal_id?: string
           id?: string
+          is_ultimate?: boolean
           notes?: string | null
           order?: number
           status?: Database["public"]["Enums"]["step_status"] | null
@@ -4706,7 +4785,7 @@ export type Database = {
           created_at?: string
           duration_seconds: number
           goal_id: string
-          goal_name: string | null
+          goal_name?: string | null
           id?: string
           inspired_count?: number
           is_public?: boolean
@@ -4906,6 +4985,36 @@ export type Database = {
         Returns: Json
       }
       claim_quest: { Args: { _quest_id: string }; Returns: Json }
+      clore_raid: { Args: { p_raid_id: string }; Returns: Json }
+      compter_le_reel: {
+        Args: { p_user_id: string }
+        Returns: {
+          crees: number
+          crees_custom: number
+          crees_easy: number
+          crees_extreme: number
+          crees_hard: number
+          crees_impossible: number
+          crees_medium: number
+          etapes: number
+          franchis: number
+          franchis_custom: number
+          franchis_easy: number
+          franchis_extreme: number
+          franchis_hard: number
+          franchis_impossible: number
+          franchis_medium: number
+        }[]
+      }
+      contribution_membre: {
+        Args: { p_debut: string; p_fin: string; p_user_id: string }
+        Returns: {
+          etapes: number
+          journal: number
+          objectifs: number
+          taches: number
+        }[]
+      }
       create_guild_with_owner: {
         Args: {
           p_color?: string
@@ -5030,6 +5139,7 @@ export type Database = {
         Args: { p_achievement_key: string }
         Returns: boolean
       }
+      guild_raid_avancement: { Args: { p_raid_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5309,9 +5419,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["user", "admin"],

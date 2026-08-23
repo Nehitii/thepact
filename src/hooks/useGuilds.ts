@@ -78,29 +78,6 @@ export interface GuildAnnouncement {
   author_avatar?: string | null;
 }
 
-export interface GuildGoal {
-  id: string;
-  guild_id: string;
-  title: string;
-  description: string | null;
-  target_value: number;
-  current_value: number;
-  deadline: string | null;
-  created_by: string;
-  status: string;
-  created_at: string;
-}
-
-export interface GuildGoalContribution {
-  id: string;
-  guild_goal_id: string;
-  user_id: string;
-  amount: number;
-  note: string | null;
-  created_at: string;
-  display_name?: string;
-}
-
 export interface GuildInviteCode {
   id: string;
   guild_id: string;
@@ -182,22 +159,6 @@ export const useAnnouncements = (guildId: string) =>
       const { data: profiles } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", authorIds);
       const pm = new Map(profiles?.map((p) => [p.id, p]) || []);
       return data.map((a) => ({ ...a, author_name: pm.get(a.author_id)?.display_name, author_avatar: pm.get(a.author_id)?.avatar_url }));
-    },
-    enabled: !!guildId,
-  });
-
-// ── Guild Goals ──
-export const useGuildGoals = (guildId: string) =>
-  useQuery({
-    queryKey: ["guild-goals", guildId],
-    queryFn: async (): Promise<GuildGoal[]> => {
-      const { data, error } = await supabase
-        .from("guild_goals")
-        .select("*")
-        .eq("guild_id", guildId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data || []) as GuildGoal[];
     },
     enabled: !!guildId,
   });
@@ -536,46 +497,6 @@ export function useGuilds() {
   });
 
   // ── Goal mutations ──
-  const createGuildGoal = useMutation({
-    mutationFn: async ({ guildId, title, description, targetValue, deadline }: {
-      guildId: string; title: string; description?: string; targetValue: number; deadline?: string;
-    }) => {
-      if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("guild_goals").insert({
-        guild_id: guildId, title, description: description || null,
-        target_value: targetValue, created_by: user.id,
-        deadline: deadline || null,
-      });
-      if (error) throw error;
-    },
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["guild-goals", v.guildId] }),
-  });
-
-  const contributeToGoal = useMutation({
-    mutationFn: async ({ goalId, amount, note, guildId }: { goalId: string; amount: number; note?: string; guildId: string }) => {
-      if (!user) throw new Error("Not authenticated");
-      const { error: cErr } = await supabase.from("guild_goal_contributions").insert({
-        guild_goal_id: goalId, user_id: user.id, amount, note: note || null,
-      });
-      if (cErr) throw cErr;
-      // Update current_value
-      const { error: uErr } = await supabase.rpc("log_guild_activity", {
-        p_guild_id: guildId, p_user_id: user.id, p_action: "goal_contribution",
-        p_metadata: { goal_id: goalId, amount },
-      });
-      if (uErr) console.error("Failed to log activity", uErr);
-      // Increment goal value
-      const { data: goal } = await supabase.from("guild_goals").select("current_value").eq("id", goalId).single();
-      if (goal) {
-        await supabase.from("guild_goals").update({ current_value: (goal.current_value || 0) + amount }).eq("id", goalId);
-      }
-    },
-    onSuccess: (_, v) => {
-      qc.invalidateQueries({ queryKey: ["guild-goals", v.guildId] });
-      qc.invalidateQueries({ queryKey: ["guild-activity", v.guildId] });
-    },
-  });
-
   // ── Invite Code mutations ──
   const createInviteCode = useMutation({
     mutationFn: async ({ guildId, maxUses, expiresInHours }: { guildId: string; maxUses?: number; expiresInHours?: number }) => {
@@ -611,7 +532,6 @@ export function useGuilds() {
     invitesLoading: invitesQuery.isLoading,
     useGuildMembers,
     useAnnouncements,
-    useGuildGoals,
     useGuildActivity,
     useInviteCodes,
     createGuild,
@@ -626,8 +546,6 @@ export function useGuilds() {
     updateGuild,
     createAnnouncement,
     deleteAnnouncement,
-    createGuildGoal,
-    contributeToGoal,
     createInviteCode,
     deactivateInviteCode,
   };
