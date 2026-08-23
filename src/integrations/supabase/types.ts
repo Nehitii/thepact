@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       achievement_definitions: {
         Row: {
+          actif: boolean
           bond_reward: number | null
           category: string
           conditions: Json
@@ -35,6 +36,7 @@ export type Database = {
           saveur_fr: string | null
         }
         Insert: {
+          actif?: boolean
           bond_reward?: number | null
           category: string
           conditions: Json
@@ -54,6 +56,7 @@ export type Database = {
           saveur_fr?: string | null
         }
         Update: {
+          actif?: boolean
           bond_reward?: number | null
           category?: string
           conditions?: Json
@@ -4458,6 +4461,36 @@ export type Database = {
         }
         Relationships: []
       }
+      trophees_gagnes: {
+        Row: {
+          bonds: number
+          categorie: string
+          gagne_le: string
+          id: string
+          succes_dans_la_categorie: number
+          user_id: string
+          vu: boolean
+        }
+        Insert: {
+          bonds: number
+          categorie: string
+          gagne_le?: string
+          id?: string
+          succes_dans_la_categorie: number
+          user_id: string
+          vu?: boolean
+        }
+        Update: {
+          bonds?: number
+          categorie?: string
+          gagne_le?: string
+          id?: string
+          succes_dans_la_categorie?: number
+          user_id?: string
+          vu?: boolean
+        }
+        Relationships: []
+      }
       user_2fa_settings: {
         Row: {
           created_at: string
@@ -4995,6 +5028,7 @@ export type Database = {
         Returns: Json
       }
       carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
+      categories_cosmetiques: { Args: never; Returns: number }
       check_and_increment_ai_quota: {
         Args: { _daily_limit?: number; _function_name: string }
         Returns: Json
@@ -5243,7 +5277,8 @@ export type Database = {
         Args: { _rating: number; _review?: string; _template_id: string }
         Returns: Json
       }
-      rattraper_les_succes: { Args: { p_user_id: string }; Returns: number }
+      rattraper_les_succes: { Args: { p_user_id: string }; Returns: Json }
+      reclamer_les_trophees: { Args: { p_user_id: string }; Returns: Json }
       record_todo_completion: {
         Args: {
           p_completion_date: string

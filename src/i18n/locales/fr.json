@@ -2345,7 +2345,8 @@
     "byCategory": "Par catégorie",
     "trophiesWon_one": "{{count}} trophée",
     "trophiesWon_other": "{{count}} trophées",
-    "justUnlocked": "Succès débloqué"
+    "justUnlocked": "Succès débloqué",
+    "remaining": "encore {{n}}"
   },
   "journal": {
     "title": "Journal",

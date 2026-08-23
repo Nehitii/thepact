@@ -140,3 +140,59 @@ export function useNeufs(userId: string | undefined) {
     },
   });
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LES TROPHEES DE CATEGORIE
+   ═══════════════════════════════════════════════════════════════
+   Franchir une categorie entiere etait le seul geste de la page qui
+   se merite vraiment, et le seul qui ne rapportait rien : l anneau
+   devenait dore, et c etait tout.
+
+   Le trophee est ENREGISTRE en base, pas deduit a la lecture. Un
+   succes desactive plus tard ne doit pas effacer un trophee deja
+   gagne : ce qui a ete fait a ete fait, meme si le jeu change. */
+
+export interface TropheeGagne {
+  categorie: string;
+  succes_dans_la_categorie: number;
+  bonds: number;
+  gagne_le: string;
+  vu: boolean;
+}
+
+export function useTrophees(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["trophees", userId],
+    enabled: !!userId,
+    staleTime: 60_000,
+    queryFn: async (): Promise<TropheeGagne[]> => {
+      const { data, error } = await supabase
+        .from("trophees_gagnes")
+        .select("categorie, succes_dans_la_categorie, bonds, gagne_le, vu")
+        .eq("user_id", userId!)
+        .order("gagne_le", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+}
+
+/* La reclamation est idempotente : un second passage ne verse rien.
+   On peut donc la lancer a chaque visite sans precaution. */
+export function useReclamerTrophees(userId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!userId) return { trophees_neufs: 0, bonds_verses: 0 };
+      const { data, error } = await supabase.rpc("reclamer_les_trophees", { p_user_id: userId });
+      if (error) throw error;
+      return (data ?? {}) as { trophees_neufs?: number; bonds_verses?: number };
+    },
+    onSuccess: (r) => {
+      if (r && (r.trophees_neufs ?? 0) > 0) {
+        qc.invalidateQueries({ queryKey: ["trophees", userId] });
+        qc.invalidateQueries({ queryKey: ["bond-balance", userId] });
+      }
+    },
+  });
+}

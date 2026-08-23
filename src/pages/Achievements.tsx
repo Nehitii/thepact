@@ -7,7 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DSPageShell } from "@/components/ds";
 import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
 import {
-  RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs, useSucces,
+  RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs,
+  useReclamerTrophees, useSucces, useTrophees,
   type Succes,
 } from "@/hooks/useSucces";
 
@@ -32,10 +33,11 @@ import {
 const TOUT = "__tout__";
 
 function Trophee({
-  obtenus, total, complet, actif, onChoisir, libelle,
+  obtenus, total, complet, actif, onChoisir, libelle, bonds,
 }: {
   obtenus: number; total: number; complet: boolean;
   actif: boolean; onChoisir: () => void; libelle: string;
+  bonds?: number;
 }) {
   const part = total > 0 ? obtenus / total : 0;
   const R = 25;
@@ -64,7 +66,11 @@ function Trophee({
         </span>
       </span>
       <span className="su-trophee-nom">{libelle}</span>
-      <span className="su-trophee-compte">{obtenus}/{total}</span>
+      {/* Une categorie franchie ne montre plus son compte — il est
+          plein — mais ce qu elle a rapporte. */}
+      <span className="su-trophee-compte">
+        {complet && bonds ? `+${bonds}` : `${obtenus}/${total}`}
+      </span>
     </button>
   );
 }
@@ -134,6 +140,22 @@ export default function Achievements() {
   const { data: neufs } = useNeufs(user?.id);
   const marquerVus = useMarquerVus(user?.id);
   const coffres = useCoffres(succes);
+  const { data: trophees_gagnes = [] } = useTrophees(user?.id);
+  const reclamer = useReclamerTrophees(user?.id);
+
+  /* Une categorie finie se paie. La reclamation est idempotente : un
+     second passage ne verse rien, on peut donc la lancer a chaque
+     visite sans precaution. */
+  const reclamerMaintenant = reclamer.mutate;
+  useEffect(() => {
+    if (!user?.id || !succes.length) return;
+    reclamerMaintenant();
+  }, [user?.id, succes.length, reclamerMaintenant]);
+
+  const bondsParCategorie = useMemo(
+    () => new Map(trophees_gagnes.map((t) => [t.categorie, t.bonds])),
+    [trophees_gagnes],
+  );
 
   const [categorie, setCategorie] = useState<string>(TOUT);
   const [cacherObtenus, setCacherObtenus] = useState(false);
@@ -274,6 +296,7 @@ export default function Achievements() {
               obtenus={c.obtenus}
               total={c.total}
               complet={c.complet}
+              bonds={bondsParCategorie.get(c.categorie)}
               actif={categorie === c.categorie}
               onChoisir={() => setCategorie(categorie === c.categorie ? TOUT : c.categorie)}
             />
@@ -293,11 +316,24 @@ export default function Achievements() {
               {proches.map((s) => (
                 <div className="su-proche" key={s.cle} data-rarete={s.rarete}>
                   <span className="su-proche-nom">{s.nom}</span>
+                  {/* LE NOM NE DIT PAS QUOI FAIRE. « Architecte
+                      d intention 38/50 » ne se comprend qu une fois
+                      qu on sait de quoi il compte trente-huit. La
+                      consigne accompagne le chiffre. */}
+                  <span className="su-proche-quoi">{s.description}</span>
                   <span className="su-jauge" aria-hidden="true">
                     <i style={{ width: `${Math.round(s.avancement * 100)}%` }} />
                   </span>
                   <span className="su-proche-reste">
                     {(s.valeur ?? 0).toLocaleString()} / {(s.seuil ?? 0).toLocaleString()}
+                    {s.seuil !== null && s.valeur !== null && (
+                      <b>
+                        {" · "}
+                        {t("achievements.remaining", "encore {{n}}", {
+                          n: Math.max(0, Math.ceil(s.seuil - s.valeur)).toLocaleString(),
+                        })}
+                      </b>
+                    )}
                   </span>
                 </div>
               ))}
