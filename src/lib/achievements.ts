@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
+import i18n from "@/i18n/i18n";
 
 export type AchievementCategory =
   | "Connection"
@@ -426,14 +427,41 @@ export async function unlockAchievement(
     p_achievement_key: achievementKey
   });
 
-  // Show notification only if actually unlocked (not already owned)
-  if (data === true && achievementName && rarity) {
-    const rarityLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1);
-    toast.success(`Achievement Unlocked!`, {
-      description: `${achievementName} (${rarityLabel})`,
-      duration: 5000,
-    });
+  if (data !== true) return;
+
+  /* L ANNONCE NE PARTAIT QUE SI L APPELANT AVAIT PENSE A PASSER LE NOM
+     ET LA RARETE. Six appels sur sept ne passent que la clef — ceux
+     des « instants », justement les plus rares : un objectif extreme
+     boucle en 48 heures se debloquait DANS LE SILENCE.
+     On va chercher ce qui manque plutot que de renoncer. */
+  let nom = achievementName;
+  let rarete = rarity;
+  if (!nom || !rarete) {
+    const { data: def } = await supabase
+      .from("achievement_definitions")
+      .select("name, nom_fr, rarity")
+      .eq("key", achievementKey)
+      .maybeSingle();
+    if (def) {
+      nom = nom || (estEnFrancais() ? def.nom_fr || def.name : def.name);
+      rarete = rarete || (def.rarity as AchievementRarity);
+    }
   }
+  if (!nom) return;
+
+  /* Et elle etait en anglais — « Achievement Unlocked! » — avec la
+     rarete rendue par une majuscule collee sur la clef brute. */
+  toast.success(i18n.t("achievements.justUnlocked", "Succès débloqué"), {
+    description: rarete
+      ? `${nom} · ${i18n.t(`achievements.rarity.${rarete}`, rarete)}`
+      : nom,
+    duration: 6000,
+  });
+}
+
+/** La langue courante, hors de tout composant React. */
+function estEnFrancais(): boolean {
+  return (i18n.language || "fr").toLowerCase().startsWith("fr");
 }
 
 // Get user achievements with definitions

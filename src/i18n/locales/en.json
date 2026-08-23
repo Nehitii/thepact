@@ -2344,7 +2344,8 @@
     },
     "byCategory": "By category",
     "trophiesWon_one": "{{count}} trophy",
-    "trophiesWon_other": "{{count}} trophies"
+    "trophiesWon_other": "{{count}} trophies",
+    "justUnlocked": "Achievement unlocked"
   },
   "journal": {
     "title": "Journal",
