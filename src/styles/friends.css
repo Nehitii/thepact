@@ -136,7 +136,32 @@
 }
 
 /* ── LA CARTE D'UNE GUILDE ── */
-.fr-guilde { grid-template-columns: 40px 1fr; align-items: start; }
+/* UNE GUILDE DANS LA LISTE.
+   Elle etait une grille de deux colonnes : un carre teinte portant
+   VOTRE role, et du texte a cote. Elle porte maintenant le blason de
+   la guilde, dessine par le meme composant que sa page — banniere
+   comprise. La carte n a donc plus a disposer quoi que ce soit, elle a
+   seulement a se tenir. */
+.fr-guilde {
+  border: 1px solid var(--co-filet);
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0 var(--co-gouttiere) 12px;
+  background: var(--co-fond);
+  cursor: pointer;
+  transition: border-color 160ms, transform 160ms var(--co-sortie);
+}
+.fr-guilde:hover {
+  border-color: var(--co-filet-fort);
+  transform: translateY(-2px);
+}
+.fr-guilde:focus-visible {
+  outline: none;
+  border-color: var(--co-accent);
+}
+/* Dans une liste, la banniere reste basse : c est une vignette, pas
+   une page. */
+.fr-guilde .gu-identite { --gu-banniere-h: 92px; }
 
 .fr-guilde-blason {
   width: 40px;

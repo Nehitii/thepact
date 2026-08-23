@@ -3032,7 +3032,7 @@
     "typeMessage": "Type a message…",
     "createEvent": "Create Event",
     "eventTitle": "Event title",
-    "eventDescription": "Description (optional)",
+    "eventDescription": "Description",
     "eventCreated": "Event created!",
     "noEvents": "No events scheduled",
     "noEventsDesc": "Officers can create events for the guild.",
@@ -3066,8 +3066,8 @@
       "member": "Member"
     },
     "eventPast": "Past",
-    "eventWhen": "Date and time",
-    "eventDuration": "Duration in minutes",
+    "eventWhen": "When",
+    "eventDuration": "Length",
     "eventMax": "Seats",
     "eventMinutes": "{{n}} min",
     "rsvp": {
@@ -3135,7 +3135,27 @@
     "unranked": "Unranked",
     "toNextRank": "{{n}} XP to {{rang}}",
     "profileGone": "This profile no longer exists.",
-    "profileHidden": "This person keeps their profile to themselves."
+    "profileHidden": "This person keeps their profile to themselves.",
+    "standing": "Where the guild stands",
+    "levelWord": "level",
+    "toNextLevel": "{{n}} XP to level {{niveau}}",
+    "membersWord": "members",
+    "raidsWon": "raids won",
+    "noRaidNow": "No raid is running right now.",
+    "whoCarries": "Who carries it",
+    "raidDone": "{{n}} % done",
+    "placement": "Blazon placement",
+    "placeCorner": "Corner",
+    "placeCenter": "Centred",
+    "placeRibbon": "Ribbon",
+    "emblemBg": "Emblem background",
+    "emblemBgNone": "None — neutral plate",
+    "deviseWhat": "What the guild is after, in one line",
+    "devise": "Motto",
+    "eventTitleWhat": "A shared session, a checkpoint…",
+    "eventDescWhat": "What is it about? — optional",
+    "minutes": "min",
+    "people": "ppl"
   },
   "analytics": {
     "period": {

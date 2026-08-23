@@ -3032,7 +3032,7 @@
     "typeMessage": "Écrire un message…",
     "createEvent": "Créer un événement",
     "eventTitle": "Titre de l'événement",
-    "eventDescription": "Description (optionnel)",
+    "eventDescription": "Description",
     "eventCreated": "Événement créé !",
     "noEvents": "Aucun événement prévu",
     "noEventsDesc": "Les officiers peuvent créer des événements pour la guilde.",
@@ -3066,8 +3066,8 @@
       "member": "Membre"
     },
     "eventPast": "Passé",
-    "eventWhen": "Date et heure",
-    "eventDuration": "Durée en minutes",
+    "eventWhen": "Quand",
+    "eventDuration": "Durée",
     "eventMax": "Places",
     "eventMinutes": "{{n}} min",
     "rsvp": {
@@ -3135,7 +3135,27 @@
     "unranked": "Sans rang",
     "toNextRank": "{{n}} XP avant {{rang}}",
     "profileGone": "Ce profil n’existe plus.",
-    "profileHidden": "Cette personne garde son profil pour elle."
+    "profileHidden": "Cette personne garde son profil pour elle.",
+    "standing": "Où en est la guilde",
+    "levelWord": "niveau",
+    "toNextLevel": "{{n}} XP avant le niveau {{niveau}}",
+    "membersWord": "membres",
+    "raidsWon": "raids gagnés",
+    "noRaidNow": "Aucun raid ne court en ce moment.",
+    "whoCarries": "Qui la porte",
+    "raidDone": "{{n}} % franchi",
+    "placement": "Pose du blason",
+    "placeCorner": "Au coin",
+    "placeCenter": "Au centre",
+    "placeRibbon": "En ruban",
+    "emblemBg": "Fond de l’emblème",
+    "emblemBgNone": "Aucun — plaque neutre",
+    "deviseWhat": "Ce que la guilde poursuit, en une ligne",
+    "devise": "Devise",
+    "eventTitleWhat": "Séance commune, point d’étape…",
+    "eventDescWhat": "De quoi s’agit-il ? — facultatif",
+    "minutes": "min",
+    "people": "pers."
   },
   "analytics": {
     "period": {

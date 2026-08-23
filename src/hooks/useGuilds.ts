@@ -44,6 +44,10 @@ export interface Guild {
      affiche nulle part, et l embleme depose non plus. */
   emblem_url: string | null;
   motd: string | null;
+  /* Comment l embleme se pose sur la banniere, et ce qu il y a
+     derriere lui quand il est detoure. */
+  blason_pose: string;
+  emblem_bg: string | null;
   total_xp: number;
   updated_at?: string | null;
   member_count?: number;
@@ -480,7 +484,8 @@ export function useGuilds() {
          etre enregistres, alors que leurs colonnes existent. */
       updates: Partial<Pick<Guild,
         "name" | "description" | "icon" | "color" | "is_public"
-        | "max_members" | "banner_url" | "emblem_url" | "motd">>;
+        | "max_members" | "banner_url" | "emblem_url" | "motd"
+        | "blason_pose" | "emblem_bg">>;
     }) => {
       const { error } = await supabase.from("guilds").update(updates).eq("id", guildId);
       if (error) throw error;

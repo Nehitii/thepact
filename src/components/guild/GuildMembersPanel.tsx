@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Crown, Gem, MoreHorizontal, Search, Shield, User, UserMinus, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -160,7 +160,8 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
           </h3>
         </div>
       ) : (
-        listee.map((m) => {
+        listee.map((m, i) => {
+          const place = i + 1;
           const Icone = ICONE[m.role] || User;
           const nom = nomAffichable(m.display_name, t("friends.unknownAgent", "Agent Inconnu"));
           const cestMoi = m.user_id === userId;
@@ -171,7 +172,13 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
             /* Survoler un membre montre sa carte de profil public — la
                meme que dans les reglages, mais pour quelqu un d autre. */
             <SurvolProfil userId={m.user_id} key={m.id}>
-            <div className="co-post gu-ligne">
+            <div
+              className="co-post gu-ligne"
+              data-role={m.role}
+              data-podium={place <= 3 ? place : undefined}
+            >
+              <span className="gu-place" aria-hidden="true">{place}</span>
+
               <Pastille identifiant={m.user_id} nom={nom} image={m.avatar_url} cadre={cadres?.get(m.user_id)} />
 
               <div className="co-post-corps">
@@ -179,23 +186,28 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
                   <span className="co-nom">{nom}</span>
                   {cestMoi && <span className="gu-grade">{t("leaderboard.you", "(TOI)")}</span>}
                 </div>
+
                 <div className="gu-mesures">
-                  <span className="gu-mesure">
+                  {/* Trois traitements, du plus rare au plus commun.
+                      L or n est porte que par une personne : c est ce
+                      qui lui donne sa valeur. */}
+                  <span className="gu-role" data-role={m.role}>
                     <Icone aria-hidden="true" />
                     {libelleRole(m.role)}
                   </span>
-                  {/* Le rang porte la couleur que la personne a choisie
-                      pour son propre palier — chacun definit ses dix. */}
+
+                  {/* Le palier gagne porte la couleur que la personne a
+                      choisie pour lui — chacun definit ses dix. */}
                   {rang?.nom && (
                     <span
-                      className="gu-mesure"
-                      data-teinte={rang.couleur ? "" : undefined}
-                      style={{ color: rang.couleur || undefined }}
+                      className="gu-palier"
+                      style={{ "--gu-palier": rang.couleur || undefined } as CSSProperties}
                     >
                       <Gem aria-hidden="true" />
                       {rang.nom}
                     </span>
                   )}
+
                   {rang && rang.xp > 0 && (
                     <span className="gu-mesure gu-chiffre">
                       {rang.xp.toLocaleString()} {t("leaderboard.xp", "XP")}

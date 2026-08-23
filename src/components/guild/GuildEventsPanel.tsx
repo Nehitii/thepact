@@ -129,56 +129,92 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
             </button>
           </div>
 
+          {/* LE FORMULAIRE NE DISAIT PAS CE QU IL DEMANDAIT.
+              Deux champs numeriques nus, cote a cote, sans etiquette :
+              seul un « title » les nommait, c est-a-dire une infobulle
+              qu il faut savoir aller chercher a la souris — et qui
+              n existe pas au doigt. On voyait deux cases avec des
+              chiffres dedans, sans savoir lesquels.
+              Le textarea, lui, n avait AUCUNE classe : ni cadre, ni
+              fond, ni police — un rectangle blanc du navigateur au
+              milieu d un formulaire sombre.
+              Chaque champ porte maintenant son nom, et l unite est
+              ecrite a cote du chiffre plutot que devinee. */}
           {showCreate && (
             <div className="gu-ecrire">
-              <input
-                className="gu-champ"
-                value={title}
-                maxLength={100}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t("guild.eventTitle", "Titre de l’événement")}
-                aria-label={t("guild.eventTitle", "Titre de l’événement")}
-              />
-              <textarea
-                value={desc}
-                maxLength={500}
-                onChange={(e) => setDesc(e.target.value)}
-                placeholder={t("guild.eventDescription", "De quoi s’agit-il ?")}
-                aria-label={t("guild.eventDescription", "De quoi s’agit-il ?")}
-              />
-              <div className="gu-contribuer" style={{ marginTop: 0, flexWrap: "wrap" }}>
+              <label className="gu-champ-groupe">
+                <span className="gu-etiquette">{t("guild.eventTitle", "Titre de l’événement")}</span>
                 <input
                   className="gu-champ"
-                  style={{ width: "auto", flex: "1 1 190px" }}
-                  type="datetime-local"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  aria-label={t("guild.eventWhen", "Date et heure")}
+                  value={title}
+                  maxLength={100}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t("guild.eventTitleWhat", "Séance commune, point d’étape…")}
                 />
-                <input
-                  type="number"
-                  min={5}
-                  max={1440}
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  aria-label={t("guild.eventDuration", "Durée en minutes")}
-                  title={t("guild.eventDuration", "Durée en minutes")}
+              </label>
+
+              <label className="gu-champ-groupe">
+                <span className="gu-etiquette">{t("guild.eventDescription", "Description")}</span>
+                <textarea
+                  className="gu-champ"
+                  style={{ minHeight: 62, resize: "vertical" }}
+                  value={desc}
+                  maxLength={500}
+                  onChange={(e) => setDesc(e.target.value)}
+                  placeholder={t("guild.eventDescWhat", "De quoi s’agit-il ? — facultatif")}
                 />
-                <input
-                  type="number"
-                  min={1}
-                  value={maxP}
-                  onChange={(e) => setMaxP(e.target.value)}
-                  aria-label={t("guild.eventMax", "Places")}
-                  title={t("guild.eventMax", "Places")}
-                />
+              </label>
+
+              <div className="gu-champs">
+                <label className="gu-champ-groupe">
+                  <span className="gu-etiquette">{t("guild.eventWhen", "Quand")}</span>
+                  <input
+                    className="gu-champ"
+                    type="datetime-local"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </label>
+
+                <label className="gu-champ-groupe">
+                  <span className="gu-etiquette">{t("guild.eventDuration", "Durée")}</span>
+                  <span className="gu-champ-unite">
+                    <input
+                      className="gu-champ"
+                      type="number"
+                      min={5}
+                      max={1440}
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                    />
+                    <i>{t("guild.minutes", "min")}</i>
+                  </span>
+                </label>
+
+                <label className="gu-champ-groupe">
+                  <span className="gu-etiquette">{t("guild.eventMax", "Places")}</span>
+                  <span className="gu-champ-unite">
+                    <input
+                      className="gu-champ"
+                      type="number"
+                      min={1}
+                      value={maxP}
+                      onChange={(e) => setMaxP(e.target.value)}
+                    />
+                    <i>{t("guild.people", "pers.")}</i>
+                  </span>
+                </label>
+              </div>
+
+              <div>
                 <button
                   type="button"
                   className="co-bouton"
                   onClick={() => createEvent.mutate()}
                   disabled={!title.trim() || !date || createEvent.isPending}
                 >
-                  {t("common.create", "Créer")}
+                  <Plus aria-hidden="true" />
+                  {t("guild.createEvent", "Créer un événement")}
                 </button>
               </div>
             </div>

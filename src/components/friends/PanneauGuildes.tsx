@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Compass, Crown, KeyRound, Plus, Shield, Users } from "lucide-react";
+import { BlasonGuilde } from "@/components/guild/BlasonGuilde";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -18,6 +19,14 @@ import type { Guild } from "@/hooks/useGuilds";
  * Ici, un seul mot, et il vient du fichier de langue : changer de
  * langue renomme vraiment. */
 
+/* UNE GUILDE, DANS LA LISTE.
+ *
+ * Elle montrait une couronne ou un bouclier dans un carre teinte —
+ * c est-a-dire VOTRE role — alors que la guilde a un embleme et une
+ * banniere. Les deux etaient enregistres et invisibles ici.
+ *
+ * Elle porte maintenant son vrai blason, dessine par le meme composant
+ * que la page de guilde. */
 function CarteGuilde({ guilde, estFondateur, onOuvrir }: { guilde: Guild; estFondateur: boolean; onOuvrir: () => void }) {
   const { t } = useTranslation();
   const membres = guilde.member_count ?? 0;
@@ -25,33 +34,33 @@ function CarteGuilde({ guilde, estFondateur, onOuvrir }: { guilde: Guild; estFon
   const part = Math.min(100, Math.round((membres / max) * 100));
 
   return (
-    <div className="co-post fr-guilde" role="button" tabIndex={0}
+    <div className="fr-guilde" role="button" tabIndex={0}
       onClick={onOuvrir}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
     >
-      <span className="fr-guilde-blason" style={{ background: guilde.color ? `${guilde.color}22` : undefined }}>
-        {estFondateur ? <Crown aria-hidden="true" /> : <Shield aria-hidden="true" />}
-      </span>
-
-      <div className="co-post-corps">
-        <div className="co-post-tete">
-          <span className="co-nom">{guilde.name}</span>
-          {estFondateur && <span className="fr-grade">{t("friends.owner", "Fondateur")}</span>}
-        </div>
-
-        {guilde.description && <p className="fr-guilde-mot">{guilde.description}</p>}
-
-        <div className="fr-mesures">
-          <span className="fr-mesure">
-            <Users aria-hidden="true" />
-            {t("friends.membersOf", "{{n}} sur {{max}}", { n: membres, max })}
+      <BlasonGuilde
+        guilde={guilde}
+        taille="moyen"
+        aDroite={estFondateur ? (
+          <span className="gu-role" data-role="owner">
+            <Crown aria-hidden="true" />
+            {t("friends.owner", "Fondateur")}
           </span>
-        </div>
-
-        <span className="co-jauge" style={{ marginTop: 8 }} aria-hidden="true">
-          <i style={{ width: `${part}%` }} />
-        </span>
-      </div>
+        ) : undefined}
+        enfants={
+          <>
+            <div className="gu-faits">
+              <span className="gu-fait">
+                <Users aria-hidden="true" />
+                {t("friends.membersOf", "{{n}} sur {{max}}", { n: membres, max })}
+              </span>
+            </div>
+            <span className="co-jauge" style={{ marginTop: 8 }} aria-hidden="true">
+              <i style={{ width: `${part}%` }} />
+            </span>
+          </>
+        }
+      />
     </div>
   );
 }

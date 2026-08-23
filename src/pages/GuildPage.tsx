@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  ArrowLeft, CalendarDays, Crown, Home, LogOut, Megaphone,
+  ArrowLeft, CalendarDays, Crown, Home, LogOut,
   MessageSquare, Settings, Shield, Swords, Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +11,12 @@ import "@/styles/guild.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuild, useGuildMembers, useGuilds } from "@/hooks/useGuilds";
 import { emblemeDe, teinteDe } from "@/components/guild/blason";
+/* BlasonGuilde, et non « Blason » : blason.ts porte deja les emblemes
+   et les teintes. Deux fichiers qui ne different que par une majuscule
+   sont le meme fichier sur Windows et deux fichiers ailleurs — le
+   genre de piege qui ne se voit qu au deploiement. */
+import { BlasonGuilde } from "@/components/guild/BlasonGuilde";
+import { RailGuilde } from "@/components/guild/RailGuilde";
 import { GuildOverview } from "@/components/guild/GuildOverview";
 import { GuildMembersPanel } from "@/components/guild/GuildMembersPanel";
 import { GuildChat } from "@/components/guild/GuildChat";
@@ -120,10 +126,8 @@ export default function GuildPage() {
   const sections = TOUTES.filter((s) => !s.officier || estOfficier);
 
   const max = guilde.max_members || 25;
-  const xp = guilde.total_xp || 0;
-  const niveau = Math.floor(xp / 100);
-  const dansLeNiveau = xp % 100;
-
+  /* L embleme et la teinte servent au mot du jour ; le niveau, lui,
+     vit dans le rail, qui le tire de la meme colonne. */
   const Embleme = emblemeDe(guilde.icon);
   const teinte = teinteDe(guilde.color);
 
@@ -131,79 +135,64 @@ export default function GuildPage() {
     <div className="co">
       <div className="co-grille">
         <main className="co-colonne">
-          <div style={{ padding: "10px var(--co-gouttiere) 0" }}>
-            <button type="button" className="co-puce" onClick={() => navigate("/friends")}>
+          {/* LE RETOUR.
+              Il etait une petite puce grise posee au-dessus de la
+              banniere, dans dix pixels de marge — a l endroit exact ou
+              l oeil ne va pas, et de la meme taille que les puces de
+              filtre qui, elles, ne naviguent pas. Il devient une barre
+              a part entiere, qui dit d ou l on vient. */}
+          <div className="gu-retour">
+            <button type="button" className="gu-retour-bouton" onClick={() => navigate("/friends")}>
               <ArrowLeft aria-hidden="true" />
               {t("friends.tabGuilds", "Guildes")}
             </button>
+            <span className="gu-retour-fil" aria-hidden="true" />
+            <span className="gu-retour-ici">{guilde.name}</span>
           </div>
 
-          {/* L IDENTITE DE LA GUILDE, ENFIN AFFICHEE.
-              Le blason montrait « couronne si vous etes fondateur,
-              bouclier sinon » : votre role, jamais l embleme choisi
-              pour la guilde. guilds.icon etait ecrit par les reglages
-              et relu par personne.
-              La couleur, elle, etait un NOM de palette — « rose »,
-              « emerald », « amber » — injecte dans du CSS. Trois de ces
-              cinq mots ne sont pas des couleurs : le navigateur
-              rejetait la declaration et le blason heritait de la
-              couleur du texte. */}
-          <div className="gu-identite" style={{ "--gu-teinte": teinte } as CSSProperties}>
-            <div className="gu-banniere">
-              {guilde.banner_url && (
-                <img src={guilde.banner_url} alt="" aria-hidden="true" loading="lazy" />
-              )}
-            </div>
-
-            <header className="gu-tete">
-              <span className="gu-blason">
-                {guilde.emblem_url
-                  ? <img src={guilde.emblem_url} alt="" aria-hidden="true" />
-                  : <Embleme aria-hidden="true" />}
-              </span>
-
-              <div style={{ minWidth: 0 }}>
-                <h1 className="gu-nom">{guilde.name}</h1>
-                {guilde.description && <p className="gu-mot">{guilde.description}</p>}
-                <div className="gu-faits">
+          {/* L identite est dessinee par Blason, en un seul endroit :
+              la page, la liste des guildes, l apercu des reglages et la
+              modale de fondation la partagent. */}
+          <BlasonGuilde
+            guilde={guilde}
+            aDroite={estMembre && !estFondateur ? (
+              <button type="button" className="co-puce" onClick={quitter} disabled={leaveGuild.isPending}>
+                <LogOut aria-hidden="true" />
+                {t("friends.leaveGuild", "Quitter")}
+              </button>
+            ) : undefined}
+            enfants={
+              <div className="gu-faits">
+                <span className="gu-fait">
+                  <Users aria-hidden="true" />
+                  {t("guild.membersOf", { count: membres.length, max, defaultValue: "{{count}} membres sur {{max}}" })}
+                </span>
+                {estFondateur && (
                   <span className="gu-fait">
-                    <Users aria-hidden="true" />
-                    {t("guild.membersOf", { count: membres.length, max, defaultValue: "{{count}} membres sur {{max}}" })}
+                    <Crown aria-hidden="true" />
+                    {t("friends.owner", "Fondateur")}
                   </span>
-                  {estFondateur && (
-                    <span className="gu-fait">
-                      <Crown aria-hidden="true" />
-                      {t("friends.owner", "Fondateur")}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
+            }
+          />
 
-              {estMembre && !estFondateur && (
-                <button type="button" className="co-puce" onClick={quitter} disabled={leaveGuild.isPending}>
-                  <LogOut aria-hidden="true" />
-                  {t("friends.leaveGuild", "Quitter")}
-                </button>
-              )}
-            </header>
-
-            {/* Le mot du jour. La colonne motd existait deja en base et
-                n etait affichee nulle part. */}
-            {guilde.motd && (
-              <p className="gu-motd">
-                <Megaphone aria-hidden="true" />
-                {guilde.motd}
-              </p>
-            )}
-          </div>
-
-          <div className="gu-xp">
-            <span className="gu-xp-niveau">{t("guild.level", "Niveau {{n}}", { n: niveau })}</span>
-            <span className="co-jauge" style={{ flex: 1 }} aria-hidden="true">
-              <i style={{ width: `${dansLeNiveau}%` }} />
-            </span>
-            <span className="gu-xp-chiffre">{dansLeNiveau} / 100 XP</span>
-          </div>
+          {/* Le mot du jour. Il etait rendu comme une note de bas de
+              page — treize pixels et demi, gris — c est-a-dire le
+              traitement qu on reserve a ce qu on ne veut pas faire
+              lire. C est pourtant la seule phrase que la guilde
+              adresse aux siens. */}
+          {guilde.motd && (
+            <blockquote className="gu-motd" style={{ "--gu-teinte": teinte } as CSSProperties}>
+              <span className="gu-motd-signe" aria-hidden="true">
+                {guilde.emblem_url
+                  ? <img src={guilde.emblem_url} alt="" />
+                  : <Embleme />}
+              </span>
+              {guilde.motd}
+              <cite className="gu-motd-qui">{guilde.name}</cite>
+            </blockquote>
+          )}
 
           <nav className="gu-sections" aria-label={t("guild.sections", "Sections de la guilde")}>
             {sections.map(({ cle, libelle, Icone }) => (
@@ -231,10 +220,26 @@ export default function GuildPage() {
               <GuildEventsPanel guildId={guilde.id} userId={user.id} isOfficer={estOfficier} />
             )}
             {section === "reglages" && (
-              <GuildSettingsPage guild={guilde} userId={user.id} isOwner={estFondateur} />
+              <GuildSettingsPage
+                guild={guilde}
+                userId={user.id}
+                isOwner={estFondateur}
+                onFini={() => setSection("apercu")}
+              />
             )}
           </div>
         </main>
+
+        {/* LA GRILLE DECLARE DEUX COLONNES — six cents pixels et un rail
+            de trois cent vingt — et cette page ne remplissait que la
+            premiere. Le rail etait donc trois cent vingt pixels de vide
+            a droite de chaque ecran. */}
+        <RailGuilde
+          guilde={guilde}
+          membres={membres}
+          estFondateur={estFondateur}
+          onSection={setSection}
+        />
       </div>
     </div>
   );

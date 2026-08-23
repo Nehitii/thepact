@@ -2295,9 +2295,11 @@ export type Database = {
       guilds: {
         Row: {
           banner_url: string | null
+          blason_pose: string
           color: string | null
           created_at: string | null
           description: string | null
+          emblem_bg: string | null
           emblem_url: string | null
           icon: string | null
           id: string
@@ -2311,9 +2313,11 @@ export type Database = {
         }
         Insert: {
           banner_url?: string | null
+          blason_pose?: string
           color?: string | null
           created_at?: string | null
           description?: string | null
+          emblem_bg?: string | null
           emblem_url?: string | null
           icon?: string | null
           id?: string
@@ -2327,9 +2331,11 @@ export type Database = {
         }
         Update: {
           banner_url?: string | null
+          blason_pose?: string
           color?: string | null
           created_at?: string | null
           description?: string | null
+          emblem_bg?: string | null
           emblem_url?: string | null
           icon?: string | null
           id?: string

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useGuilds, type Guild } from "@/hooks/useGuilds";
@@ -8,13 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Megaphone, Trash2, UserCheck } from "lucide-react";
+import { Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { GuildInviteCodePanel } from "@/components/friends/GuildInviteCodePanel";
 import { DepotImage } from "@/components/guild/DepotImage";
 import {
-  CLES_EMBLEMES, EMBLEMES, TEINTES, emblemeDe, estUneTeinte, teinteDe,
+  CLES_EMBLEMES, EMBLEMES, TEINTES, estUneTeinte, teinteDe,
 } from "@/components/guild/blason";
+import { BlasonGuilde } from "@/components/guild/BlasonGuilde";
 
 /* LES DEUX LISTES QUI VIVAIENT ICI — trois emblemes et cinq noms de
    couleur — existaient a l identique dans GuildCreateModal. Elles sont
@@ -26,9 +27,14 @@ interface Props {
   guild: Guild;
   userId: string;
   isOwner: boolean;
+  /* Enregistrer refermait le formulaire sur lui-meme : on restait
+     devant les memes champs, sans savoir si quelque chose s etait
+     passe. Le panneau previent maintenant la page, qui ramene a la
+     vue d ensemble — la ou le changement se voit. */
+  onFini?: () => void;
 }
 
-export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
+export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { updateGuild, deleteGuild, transferOwnership, useGuildMembers } = useGuilds();
@@ -41,11 +47,54 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
   const [banniere, setBanniere] = useState(guild.banner_url);
   const [embleme, setEmbleme] = useState(guild.emblem_url);
   const [motd, setMotd] = useState(guild.motd || "");
+  const [pose, setPose] = useState(guild.blason_pose || "coin");
+  const [fondEmbleme, setFondEmbleme] = useState(guild.emblem_bg || "");
   const [isPublic, setIsPublic] = useState(guild.is_public);
   const [maxMembers, setMaxMembers] = useState(String(guild.max_members || 25));
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [vue, setVue] = useState<"identite" | "general" | "codes" | "danger">("identite");
   const [transferTarget, setTransferTarget] = useState("");
+
+  /* LE FORMULAIRE NE SUIVAIT PAS LA GUILDE.
+   *
+   * Onze champs etaient initialises par « useState(guild.x) » — c est-a-dire
+   * UNE SEULE FOIS, au montage. React Query sert d abord ce qu il a en
+   * cache, puis va chercher la verite : si le cache etait plus vieux que
+   * la base, le formulaire naissait avec les anciennes valeurs, et
+   * « Enregistrer » les REECRIVAIT par-dessus les nouvelles. Une
+   * modification faite ailleurs — ou depuis un autre onglet — disparaissait
+   * sans un mot.
+   *
+   * La signature ne retient que les champs enregistres : le formulaire se
+   * remet a jour quand ils changent en base, et pas quand une colonne qui
+   * ne le concerne pas bouge (l XP d un raid, par exemple).
+   *
+   * Ce que cela coute : une modification en cours de saisie serait perdue
+   * si la donnee changeait dessous. C est le bon arbitrage — ecrire une
+   * valeur perimee par-dessus une valeur fraiche est pire, et silencieux.
+   */
+  const signature = [
+    guild.name, guild.description, guild.icon, guild.color,
+    guild.banner_url, guild.emblem_url, guild.motd,
+    guild.blason_pose, guild.emblem_bg, guild.is_public, guild.max_members,
+  ].join("\u0000");
+
+  useEffect(() => {
+    setName(guild.name);
+    setDescription(guild.description || "");
+    setIcon(guild.icon || "shield");
+    setColor(teinteDe(guild.color));
+    setBanniere(guild.banner_url);
+    setEmbleme(guild.emblem_url);
+    setMotd(guild.motd || "");
+    setPose(guild.blason_pose || "coin");
+    setFondEmbleme(guild.emblem_bg || "");
+    setIsPublic(guild.is_public);
+    setMaxMembers(String(guild.max_members || 25));
+    /* On depend de la signature, pas de l objet : « guild » est recree a
+       chaque lecture et relancerait l effet sans que rien ait change. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -59,11 +108,14 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
           banner_url: banniere,
           emblem_url: embleme,
           motd: motd.trim() || null,
+          blason_pose: pose,
+          emblem_bg: fondEmbleme || null,
           is_public: isPublic,
           max_members: parseInt(maxMembers) || 25,
         },
       });
       toast.success(t("common.updated"));
+      onFini?.();
     } catch {
       toast.error(t("common.error"));
     }
@@ -102,7 +154,6 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
     danger: t("guild.dangerZone", "Irréversible"),
   };
 
-  const Apercu = emblemeDe(icon);
 
   return (
     <>
@@ -129,6 +180,24 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
       {vue === "identite" && (
         <section className="gu-bloc" style={{ "--gu-teinte": color } as CSSProperties}>
           <div className="gu-corps" style={{ paddingTop: 14, display: "grid", gap: 16 }}>
+            {/* LA DEVISE ETAIT AU FOND DE « GENERAL », entre le nom et
+                le nombre de places — c est-a-dire loin de l endroit ou
+                l on compose l identite de la guilde, et invisible dans
+                l apercu. Elle rejoint le blason ; elle reste modifiable
+                dans « General », ou vit le nom. */}
+            <div>
+              <p className="gu-etiquette">{t("guild.devise", "Devise")}</p>
+              <textarea
+                className="gu-champ"
+                style={{ minHeight: 50, resize: "vertical" }}
+                value={description}
+                maxLength={200}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t("guild.deviseWhat", "Ce que la guilde poursuit, en une ligne")}
+                aria-label={t("guild.devise", "Devise")}
+              />
+            </div>
+
             <div>
               <p className="gu-etiquette">{t("guild.banner", "Bannière")}</p>
               <DepotImage
@@ -177,6 +246,36 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
               </div>
             </div>
 
+            {/* TROIS POSES, parce qu une seule ne va pas a toutes les
+                images : une banniere dont le sujet est au centre se
+                fait mordre par un embleme centre, et un embleme large
+                etouffe une banniere discrete. */}
+            <div>
+              <p className="gu-etiquette">{t("guild.placement", "Pose du blason")}</p>
+              <div className="gu-poses">
+                {(["coin", "centre", "ruban"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className="gu-pose"
+                    aria-pressed={pose === p}
+                    onClick={() => setPose(p)}
+                  >
+                    <span className="gu-pose-croquis" data-pose={p} aria-hidden="true">
+                      <i className="gu-pose-banniere" />
+                      <i className="gu-pose-blason" />
+                      <i className="gu-pose-ligne" />
+                    </span>
+                    {p === "coin"
+                      ? t("guild.placeCorner", "Au coin")
+                      : p === "centre"
+                        ? t("guild.placeCenter", "Au centre")
+                        : t("guild.placeRibbon", "En ruban")}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <p className="gu-etiquette">{t("friends.color", "Couleur")}</p>
               <div className="gu-teintes">
@@ -202,6 +301,40 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
               </div>
             </div>
 
+            {/* UN EMBLEME DETOURE EST TRANSPARENT : depose sur la
+                plaque, il laissait voir le gris de l application, quelle
+                que soit la couleur de la guilde. */}
+            <div>
+              <p className="gu-etiquette">{t("guild.emblemBg", "Fond de l’emblème")}</p>
+              <div className="gu-teintes">
+                <button
+                  type="button"
+                  className="gu-teinte-choix gu-teinte-vide"
+                  aria-pressed={!fondEmbleme}
+                  aria-label={t("guild.emblemBgNone", "Aucun — plaque neutre")}
+                  onClick={() => setFondEmbleme("")}
+                />
+                {TEINTES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="gu-teinte-choix"
+                    style={{ background: c, color: c }}
+                    aria-pressed={fondEmbleme.toUpperCase() === c}
+                    aria-label={c}
+                    onClick={() => setFondEmbleme(c)}
+                  />
+                ))}
+                <input
+                  type="color"
+                  className="gu-teinte-libre"
+                  value={fondEmbleme || color}
+                  aria-label={t("guild.colorFree", "Une autre couleur")}
+                  onChange={(e) => estUneTeinte(e.target.value) && setFondEmbleme(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div>
               <p className="gu-etiquette">{t("guild.motd", "Mot du jour")}</p>
               <textarea
@@ -215,27 +348,33 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
               />
             </div>
 
-            {/* Ce que cela donnera. */}
+            {/* CE QUE CELA DONNERA.
+                L apercu recopiait a la main la structure du bandeau —
+                deux definitions du meme dessin, qui n avaient aucune
+                raison de rester d accord. Il utilise maintenant le
+                composant que la page utilise. */}
             <div>
               <p className="gu-etiquette">{t("guild.preview", "Aperçu")}</p>
-              <div className="gu-identite" style={{ "--gu-teinte": color, borderRadius: 12, overflow: "hidden", border: "1px solid var(--co-filet)" } as CSSProperties}>
-                <div className="gu-banniere" style={{ height: 88 }}>
-                  {banniere && <img src={banniere} alt="" aria-hidden="true" />}
-                </div>
-                <header className="gu-tete" style={{ marginTop: -26, paddingBottom: 12 }}>
-                  <span className="gu-blason">
-                    {embleme ? <img src={embleme} alt="" aria-hidden="true" /> : <Apercu aria-hidden="true" />}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <h3 className="gu-nom" style={{ fontSize: 18 }}>{name || guild.name}</h3>
-                    {description && <p className="gu-mot">{description}</p>}
-                  </div>
-                </header>
+              <div className="gu-apercu">
+                <BlasonGuilde
+                  taille="moyen"
+                  pose={pose as "coin" | "centre" | "ruban"}
+                  guilde={{
+                    name: name || guild.name,
+                    description,
+                    icon,
+                    color,
+                    banner_url: banniere,
+                    emblem_url: embleme,
+                    emblem_bg: fondEmbleme || null,
+                    blason_pose: pose,
+                  }}
+                />
                 {motd.trim() && (
-                  <p className="gu-motd" style={{ marginBottom: 12 }}>
-                    <Megaphone aria-hidden="true" />
+                  <blockquote className="gu-motd" style={{ "--gu-teinte": color, marginBottom: 14 } as CSSProperties}>
                     {motd}
-                  </p>
+                    <cite className="gu-motd-qui">{name || guild.name}</cite>
+                  </blockquote>
                 )}
               </div>
             </div>
