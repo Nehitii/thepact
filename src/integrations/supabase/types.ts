@@ -5212,6 +5212,8 @@ export type Database = {
           source_type: string
         }[]
       }
+      mesures_du_membre: { Args: { p_user_id: string }; Returns: Json }
+      pseudonyme_de: { Args: { p_id: string }; Returns: string }
       purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
       purchase_shop_item: {
@@ -5232,6 +5234,7 @@ export type Database = {
         Args: { _rating: number; _review?: string; _template_id: string }
         Returns: Json
       }
+      rattraper_les_succes: { Args: { p_user_id: string }; Returns: number }
       record_todo_completion: {
         Args: {
           p_completion_date: string
@@ -5279,6 +5282,27 @@ export type Database = {
       snapshot_season_leaderboard: {
         Args: { _season_id: string; _top?: number }
         Returns: number
+      }
+      succes_du_membre: {
+        Args: { p_user_id: string }
+        Returns: {
+          avancement: number
+          bonds: number
+          cache: boolean
+          categorie: string
+          cle: string
+          description: string
+          icone: string
+          mesure: string
+          nom: string
+          obtenu: boolean
+          obtenu_le: string
+          points: number
+          rarete: string
+          saveur: string
+          seuil: number
+          valeur: number
+        }[]
       }
       update_achievement_tracking: {
         Args: { p_updates: Json }

@@ -1,0 +1,414 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE PANTHEON
+   ═══════════════════════════════════════════════════════════════
+   Cent succes, c est beaucoup — assez pour qu une grille indistincte
+   devienne du papier peint. Deux choses les rendent lisibles : la
+   rarete, qui dit ce que vaut chacun, et l avancement, qui dit
+   lesquels sont a portee.
+
+   Les raretes vont du commun au legendaire. Elles ne sont PAS six
+   couleurs prises au hasard : c est la convention que tout joueur lit
+   sans legende — gris, vert, bleu, violet, rose, or. S en ecarter
+   demanderait d expliquer, et une convention qu il faut expliquer
+   n en est plus une. */
+
+:root {
+  --su-common:    #8B929C;
+  --su-uncommon:  #35C98A;
+  --su-rare:      #4CC9F0;
+  --su-epic:      #A855F7;
+  --su-mythic:    #F0567E;
+  --su-legendary: #F5C15B;
+}
+
+.su-tete {
+  padding: 20px var(--co-gouttiere) 14px;
+  border-bottom: 1px solid var(--co-filet);
+}
+.su-titre {
+  font-family: var(--co-fonte);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-transform: none;
+  margin: 0;
+  color: var(--co-texte);
+}
+.su-sous {
+  margin: 4px 0 0;
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--co-texte-3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES TROPHEES DE CATEGORIE
+   ═══════════════════════════════════════════════════════════════
+   Cent cases a cocher ne font pas une collection. Une categorie
+   entierement franchie vaut un trophee — et un trophee, ca se
+   regarde de loin, ca brille, et ca se compte.
+
+   L anneau porte l avancement ; le chiffre au centre devient une
+   coupe quand la categorie est finie. Le passage de l un a l autre
+   est ce qu on vient chercher. */
+
+.su-coffres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+.su-trophee {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: 84px;
+  padding: 10px 6px 9px;
+  border: 1px solid var(--co-filet);
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms, transform 150ms var(--co-sortie);
+}
+.su-trophee:hover { border-color: var(--co-filet-fort); transform: translateY(-2px); }
+.su-trophee[aria-pressed="true"] {
+  border-color: var(--co-accent);
+  background: color-mix(in srgb, var(--co-accent) 10%, transparent);
+}
+
+.su-trophee--tout {
+  align-content: center;
+  width: auto;
+  min-width: 84px;
+  padding-inline: 14px;
+}
+
+.su-trophee-anneau { position: relative; width: 48px; height: 48px; }
+.su-trophee-anneau svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.su-trophee-anneau circle { fill: none; stroke-width: 4; }
+.su-trophee-fond { stroke: var(--co-filet); }
+.su-trophee-part {
+  stroke: var(--co-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 620ms var(--co-sortie);
+}
+
+.su-trophee-signe {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--co-texte-2);
+}
+.su-trophee-signe svg { width: 19px; height: 19px; }
+.su-trophee-chiffre {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.su-trophee-nom {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--co-texte-2);
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.su-trophee-compte {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+  color: var(--co-texte-3);
+}
+
+/* ── UN TROPHEE GAGNE ──
+   L or, une lueur, et un reflet qui passe. C est le seul endroit
+   franchement decoratif de la page : il a ete merite. */
+.su-trophee[data-complet] {
+  border-color: color-mix(in srgb, var(--su-legendary) 50%, transparent);
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--su-legendary) 14%, transparent), transparent 62%);
+  position: relative;
+  overflow: hidden;
+}
+.su-trophee[data-complet] .su-trophee-part { stroke: var(--su-legendary); }
+.su-trophee[data-complet] .su-trophee-signe { color: var(--su-legendary); }
+.su-trophee[data-complet] .su-trophee-nom { color: var(--co-texte); }
+.su-trophee[data-complet]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgb(255 255 255 / 0.22) 50%, transparent 60%);
+  transform: translateX(-130%);
+  animation: su-reflet 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes su-reflet {
+  0%, 76% { transform: translateX(-130%); }
+  92%, 100% { transform: translateX(130%); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LA BARRE
+   ═══════════════════════════════════════════════════════════════ */
+
+.su-barre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+.su-compte {
+  margin-left: auto;
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--co-texte-3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UN SUCCES
+   ═══════════════════════════════════════════════════════════════ */
+
+.su-liste { display: grid; }
+
+.su-carte {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 13px;
+  padding: 14px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+  transition: background 140ms;
+  /* La teinte de la rarete, choisie une fois et reprise partout dans
+     la carte : cadre de l icone, etiquette, jauge. */
+  --su-teinte: var(--su-common);
+}
+.su-carte[data-rarete="uncommon"]  { --su-teinte: var(--su-uncommon); }
+.su-carte[data-rarete="rare"]      { --su-teinte: var(--su-rare); }
+.su-carte[data-rarete="epic"]      { --su-teinte: var(--su-epic); }
+.su-carte[data-rarete="mythic"]    { --su-teinte: var(--su-mythic); }
+.su-carte[data-rarete="legendary"] { --su-teinte: var(--su-legendary); }
+
+.su-carte:hover { background: var(--co-fond-eleve); }
+
+/* Un succes verrouille reste lisible mais s efface : c est ce qui
+   fait ressortir ceux qu on a gagnes, sans avoir a les surligner. */
+.su-carte:not([data-obtenu]) .su-icone { opacity: 0.42; }
+.su-carte:not([data-obtenu]) .su-nom { color: var(--co-texte-2); }
+
+.su-icone {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--su-teinte);
+  background: color-mix(in srgb, var(--su-teinte) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 30%, transparent);
+}
+.su-icone svg { width: 21px; height: 21px; }
+
+.su-carte[data-obtenu] .su-icone {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 55%, transparent),
+    0 0 18px -6px var(--su-teinte);
+}
+
+.su-corps { min-width: 0; }
+.su-nom {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--co-texte);
+}
+.su-quoi {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--co-texte-2);
+  overflow-wrap: anywhere;
+}
+.su-saveur {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--co-texte-3);
+}
+
+/* ── L avancement ──
+   Il ne s affiche que sur ce qui n est pas gagne, et seulement quand
+   le seuil depasse un : « 0 / 1 » n apprend rien. */
+.su-avance {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 8px;
+}
+.su-jauge {
+  flex: 1;
+  display: block;
+  height: 4px;
+  min-width: 60px;
+  border-radius: 3px;
+  background: var(--co-filet);
+  overflow: hidden;
+}
+.su-jauge i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--su-teinte, var(--co-accent));
+  transition: width 560ms var(--co-sortie);
+}
+.su-chiffres {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--co-texte-3);
+  white-space: nowrap;
+}
+
+/* ── La marge droite ── */
+.su-marge {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.su-rarete {
+  font-family: var(--co-fonte-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--su-teinte);
+  white-space: nowrap;
+}
+.su-points {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--co-texte-3);
+}
+.su-acquis {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--su-teinte);
+  background: color-mix(in srgb, var(--su-teinte) 15%, transparent);
+}
+.su-acquis svg { width: 13px; height: 13px; stroke-width: 3; }
+
+/* ── CE QUI VIENT D ETRE GAGNE ──
+   Vingt succes ont ete accordes d un coup par le rattrapage. Ils
+   s annoncent une fois, puis se taisent : sans cela, ils se
+   re-annonceraient a chaque visite, indefiniment. */
+.su-neuf {
+  font-family: var(--co-fonte-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--co-fond);
+  background: var(--su-teinte);
+}
+
+.su-carte[data-neuf] {
+  animation: su-parait 520ms var(--co-sortie) both;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--su-teinte) 10%, transparent), transparent 52%);
+}
+.su-carte[data-neuf] .su-icone {
+  animation: su-pulse 2.4s ease-in-out 3;
+}
+@keyframes su-parait {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes su-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 55%, transparent), 0 0 18px -6px var(--su-teinte); }
+  50%      { box-shadow: inset 0 0 0 1px var(--su-teinte), 0 0 26px -2px var(--su-teinte); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE RAIL
+   ═══════════════════════════════════════════════════════════════
+   .co-bloc ne porte aucun retrait : chacun de ses enfants porte le
+   sien, comme le titre et les mesures. */
+
+.su-rail-corps { padding: 0 14px 14px; }
+.su-rail-titre { display: flex; align-items: center; gap: 7px; }
+.su-rail-titre svg { width: 14px; height: 14px; color: var(--co-texte-3); flex-shrink: 0; }
+
+.su-rail-grand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.su-rail-chiffre {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--co-texte);
+}
+.su-rail-mot {
+  font-family: var(--co-fonte-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--co-texte-3);
+}
+
+.su-proche { display: grid; gap: 5px; margin-bottom: 12px; }
+.su-proche:last-child { margin-bottom: 0; }
+.su-proche-nom {
+  font-size: 13px;
+  color: var(--co-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.su-proche-reste {
+  font-family: var(--co-fonte-chiffre);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--co-texte-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .su-trophee[data-complet]::after { animation: none; opacity: 0; }
+  .su-carte[data-neuf],
+  .su-carte[data-neuf] .su-icone { animation: none; }
+  .su-jauge i,
+  .su-trophee-part { transition: none; }
+}
+
+@media (max-width: 560px) {
+  .su-carte { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 11px; }
+  .su-icone { width: 38px; height: 38px; }
+  .su-icone svg { width: 18px; height: 18px; }
+  .su-trophee { width: 74px; }
+}
