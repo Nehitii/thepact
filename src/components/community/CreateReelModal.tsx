@@ -1,296 +1,337 @@
-import { useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { Upload, Video, X, Trophy, Loader2 } from "lucide-react";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Target, Trophy, Upload, Video, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 import { useCreateVictoryReel, useCompletedGoals } from "@/hooks/useCommunity";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
-import { useNavigate } from "react-router-dom";
 
-interface CreateReelModalProps {
+/* PUBLIER UNE VIDEO DE VICTOIRE.
+ *
+ * Ce formulaire etait le dernier morceau de l ancienne page : un
+ * Dialog de la bibliotheque d interface, un Select natif deguise, des
+ * libelles en anglais — « Share your victory », « Which goal did you
+ * complete? », « Please select a goal and upload a video » — et
+ * Orbitron sur son titre. Il s ouvrait par-dessus une page entierement
+ * refaite et n en parlait plus la langue.
+ *
+ * Il est reecrit dans le monde de la page : meme fond, meme filet,
+ * meme fonte, memes puces. Et il explique ce qu il demande.
+ *
+ * TROIS CHOSES QUE L ANCIEN NE FAISAIT PAS.
+ *
+ * — LA DUREE ETAIT DEVINEE. « let duration = 30 » servait de repli
+ *   quand la video n avait pas encore charge ses metadonnees : une
+ *   video de deux minutes s enregistrait a trente secondes. On attend
+ *   desormais l evenement loadedmetadata, et le formulaire ne se
+ *   valide pas avant.
+ *
+ * — L OBJET DE L URL. La video est deposee dans un depot PRIVE ; on
+ *   enregistre son chemin, signe a la lecture. C etait deja le cas,
+ *   mais rien ne le disait.
+ *
+ * — LE REGLAGE DE CONFIDENTIALITE etait verifie APRES l ouverture du
+ *   formulaire, au moment de valider : on remplissait tout pour
+ *   s entendre dire non. Il est dit d entree.
+ */
+
+const POIDS_MAX = 100 * 1024 * 1024;
+const LEGENDE_MAX = 280;
+
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
-  const { user } = useAuth();
+export function CreateReelModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { profile } = useProfileSettings();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
-  const [selectedGoalId, setSelectedGoalId] = useState("");
-  const [caption, setCaption] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const fichier = useRef<HTMLInputElement>(null);
+  const apercu = useRef<HTMLVideoElement>(null);
 
-  const createReel = useCreateVictoryReel();
-  const { data: completedGoals, isLoading: goalsLoading } = useCompletedGoals();
+  const [objectifId, setObjectifId] = useState("");
+  const [legende, setLegende] = useState("");
+  const [video, setVideo] = useState<File | null>(null);
+  const [urlApercu, setUrlApercu] = useState<string | null>(null);
+  const [duree, setDuree] = useState<number | null>(null);
+  const [envoi, setEnvoi] = useState(false);
+  const [avancement, setAvancement] = useState(0);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('video/')) {
-      toast.error("Please select a video file");
-      return;
-    }
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("Video must be under 100MB");
-      return;
-    }
-    setVideoFile(file);
-    const url = URL.createObjectURL(file);
-    setVideoPreviewUrl(url);
+  const creer = useCreateVictoryReel();
+  const { data: accomplis, isLoading: chargement } = useCompletedGoals();
+
+  const partagePermis = (profile?.share_goals_progress ?? true) !== false;
+  const aDesObjectifs = !!accomplis && accomplis.length > 0;
+
+  /* Fermer avec Echap, comme toute fenetre modale. */
+  useEffect(() => {
+    if (!isOpen) return;
+    const echap = (e: KeyboardEvent) => { if (e.key === "Escape" && !envoi) onClose(); };
+    document.addEventListener("keydown", echap);
+    return () => document.removeEventListener("keydown", echap);
+  }, [isOpen, envoi, onClose]);
+
+  /* L URL d apercu est un objet en memoire : il faut la relacher, ou
+     le fichier reste retenu tant que l onglet vit. */
+  useEffect(() => () => { if (urlApercu) URL.revokeObjectURL(urlApercu); }, [urlApercu]);
+
+  if (!isOpen) return null;
+
+  const viderLaVideo = () => {
+    setVideo(null);
+    setDuree(null);
+    if (urlApercu) { URL.revokeObjectURL(urlApercu); setUrlApercu(null); }
+    if (fichier.current) fichier.current.value = "";
   };
 
-  const clearVideo = () => {
-    setVideoFile(null);
-    if (videoPreviewUrl) {
-      URL.revokeObjectURL(videoPreviewUrl);
-      setVideoPreviewUrl(null);
+  const choisir = (f: File | undefined) => {
+    if (!f) return;
+    if (!f.type.startsWith("video/")) {
+      toast.error(t("community.reels.notAVideo", "Ce fichier n'est pas une vidéo"));
+      return;
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (f.size > POIDS_MAX) {
+      toast.error(t("community.reels.videoTooHeavy", "La vidéo dépasse 100 Mo"));
+      return;
     }
+    if (urlApercu) URL.revokeObjectURL(urlApercu);
+    setVideo(f);
+    setDuree(null);
+    setUrlApercu(URL.createObjectURL(f));
   };
 
-  const handleSubmit = async () => {
-    if ((profile?.share_goals_progress ?? true) === false) {
-      toast.error("Your privacy settings prevent sharing victory reels.");
-      return;
-    }
-    if (!user || !videoFile || !selectedGoalId) {
-      toast.error("Please select a goal and upload a video");
-      return;
-    }
+  const publier = async () => {
+    if (!user || !video || !objectifId || duree === null) return;
 
-    setIsUploading(true);
-    setUploadProgress(0);
-
+    setEnvoi(true);
+    setAvancement(10);
     try {
-      const fileExt = videoFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const extension = video.name.split(".").pop() || "mp4";
+      const chemin = `${user.id}/${Date.now()}.${extension}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('victory-reels')
-        .upload(fileName, videoFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const { error } = await supabase.storage
+        .from("victory-reels")
+        .upload(chemin, video, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      setAvancement(75);
 
-      if (uploadError) throw uploadError;
-      setUploadProgress(70);
-
-      // Store just the path — signed URLs are generated on fetch
-      let duration = 30;
-      if (videoPreviewRef.current) {
-        duration = Math.round(videoPreviewRef.current.duration);
-      }
-
-      setUploadProgress(90);
-
-      /* Le nom de l objectif part avec la video. RLS empeche les
-         autres de lire cet objectif : sans cette copie, leur fil
-         affiche une victoire sans dire de quoi elle est la victoire. */
-      await createReel.mutateAsync({
-        goal_id: selectedGoalId,
-        goal_name: completedGoals?.find((g) => g.id === selectedGoalId)?.name ?? null,
-        video_url: fileName, // Store path, not public URL
-        caption: caption || undefined,
-        duration_seconds: duration
+      await creer.mutateAsync({
+        goal_id: objectifId,
+        /* Le nom part avec la video : RLS empeche les autres de lire
+           cet objectif, et sans cette copie leur fil afficherait une
+           victoire sans dire de quoi elle est la victoire. */
+        goal_name: accomplis?.find((g) => g.id === objectifId)?.name ?? null,
+        video_url: chemin, // le CHEMIN, pas une URL : le depot est prive
+        caption: legende.trim() || undefined,
+        duration_seconds: duree,
       });
 
-      setUploadProgress(100);
-      toast.success("Victory Reel shared! 🎉");
-
-      clearVideo();
-      setSelectedGoalId("");
-      setCaption("");
+      setAvancement(100);
+      toast.success(t("community.reels.published", "Votre victoire est publiée"));
+      viderLaVideo();
+      setObjectifId("");
+      setLegende("");
       onClose();
-    } catch (error: unknown) {
-      console.error("Failed to create reel:", error);
+    } catch (e) {
+      console.error("[reel]", e);
       toast.error(
-        error instanceof Error && error.message
-          ? error.message
-          : t("community.reels.uploadFailed", "Le televersement de la video a echoue"),
+        e instanceof Error && e.message
+          ? e.message
+          : t("community.reels.uploadFailed", "Le téléversement de la vidéo a échoué"),
       );
     } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
+      setEnvoi(false);
+      setAvancement(0);
     }
   };
 
-  const hasCompletedGoals = completedGoals && completedGoals.length > 0;
+  const pret = !!video && !!objectifId && duree !== null && !envoi;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-background/95 backdrop-blur-lg border-border/50">
-        <DialogHeader>
-          <DialogTitle className="font-orbitron text-xl tracking-wide flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
-            Share Your Victory
-          </DialogTitle>
-        </DialogHeader>
+    <div className="co co-portail">
+      <div className="co-modale-voile" onClick={() => !envoi && onClose()} />
+      <div className="co-modale" role="dialog" aria-modal="true" aria-labelledby="co-modale-titre">
+        <div className="co-modale-tete">
+          <h2 className="co-modale-titre" id="co-modale-titre">
+            <Trophy aria-hidden="true" />
+            {t("community.reels.createReel", "Créer une vidéo")}
+          </h2>
+          <button
+            type="button"
+            className="co-media-retirer"
+            style={{ position: "static" }}
+            aria-label={t("community.post.cancel", "Annuler")}
+            onClick={() => !envoi && onClose()}
+          >
+            <X aria-hidden="true" />
+          </button>
+        </div>
 
-        <div className="space-y-5 mt-2">
-          {!goalsLoading && !hasCompletedGoals ? (
-            /* Empty state: no completed goals */
-            <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <Trophy className="w-8 h-8 text-primary/50" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-1">No completed goals yet</h3>
-                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  Complete your first goal to unlock Victory Reels and share your achievement with the community.
-                </p>
-              </div>
-              <Button variant="outline" onClick={() => { onClose(); navigate('/goals'); }}>
-                View My Goals
-              </Button>
+        <div className="co-modale-corps">
+          {!partagePermis ? (
+            <div className="co-vide" style={{ padding: "34px 16px" }}>
+              <Target aria-hidden="true" />
+              <h3>{t("community.reels.privacyBlocked", "Le partage de progression est désactivé")}</h3>
+              <p>
+                {t(
+                  "community.reels.privacyBlockedWhy",
+                  "Vos réglages empêchent de rattacher un objectif à une publication. Réactivez « Partager ma progression » pour publier une vidéo de victoire.",
+                )}
+              </p>
+              <a className="co-bouton co-bouton--discret" href="/profile">
+                {t("community.reels.openSettings", "Ouvrir mes réglages")}
+              </a>
+            </div>
+          ) : chargement ? (
+            <p className="co-choix-message">{t("community.create.loadingGoals", "Chargement…")}</p>
+          ) : !aDesObjectifs ? (
+            <div className="co-vide" style={{ padding: "34px 16px" }}>
+              <Trophy aria-hidden="true" />
+              <h3>{t("community.reels.needGoal", "Il faut d'abord mener un objectif à son terme")}</h3>
+              <p>
+                {t(
+                  "community.reels.what",
+                  "Une vidéo de victoire est un format vertical, court, rattaché à un objectif que vous avez mené à son terme. C'est la preuve qui accompagne le chiffre.",
+                )}
+              </p>
+              <button
+                type="button"
+                className="co-bouton co-bouton--discret"
+                onClick={() => { onClose(); navigate("/goals"); }}
+              >
+                {t("community.reels.goToGoals", "Voir mes objectifs")}
+              </button>
             </div>
           ) : (
             <>
-              {/* Goal selector */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Which goal did you complete?</Label>
-                <Select value={selectedGoalId} onValueChange={setSelectedGoalId}>
-                  <SelectTrigger className="bg-muted/30">
-                    <SelectValue placeholder={goalsLoading ? "Loading goals..." : "Select a completed goal"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {completedGoals?.map((goal) => (
-                      <SelectItem key={goal.id} value={goal.id}>
-                        <div className="flex items-center gap-2">
-                          <Trophy className="w-4 h-4 text-amber-500" />
-                          {goal.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="co-champ">
+                <label className="co-champ-titre" htmlFor="co-reel-objectif">
+                  {t("community.reels.whichGoal", "Quelle victoire racontez-vous ?")}
+                </label>
+                <div className="co-filtres" style={{ padding: 0, border: "none", gap: 6 }}>
+                  {accomplis!.map((g) => {
+                    const teinte = teinteDuPalier(g.difficulty);
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        id={g.id === objectifId ? "co-reel-objectif" : undefined}
+                        className="co-puce"
+                        aria-pressed={g.id === objectifId}
+                        onClick={() => setObjectifId(g.id)}
+                      >
+                        <span
+                          style={{ width: 7, height: 7, borderRadius: 999, background: teinte.couleur }}
+                          aria-hidden="true"
+                        />
+                        {g.name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Video upload */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Upload your victory video (15-60 seconds)</Label>
-                {!videoPreviewUrl ? (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className={cn(
-                      "w-full h-48 rounded-xl border-2 border-dashed border-border/50",
-                      "flex flex-col items-center justify-center gap-3",
-                      "bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer"
-                    )}
-                  >
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Upload className="w-7 h-7 text-primary" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium">Click to upload video</p>
-                      <p className="text-xs text-muted-foreground">MP4, WebM, MOV (max 100MB)</p>
-                    </div>
-                  </button>
-                ) : (
-                  <div className="relative rounded-xl overflow-hidden bg-black">
-                    <video
-                      ref={videoPreviewRef}
-                      src={videoPreviewUrl}
-                      className="w-full h-48 object-cover"
-                      controls
-                    />
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2 w-8 h-8"
-                      onClick={clearVideo}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+              <div className="co-champ">
+                <span className="co-champ-titre">
+                  {t("community.reels.theVideo", "La vidéo")}
+                </span>
+
                 <input
-                  ref={fileInputRef}
+                  ref={fichier}
                   type="file"
                   accept="video/*"
-                  onChange={handleFileSelect}
-                  className="hidden"
+                  hidden
+                  onChange={(e) => choisir(e.target.files?.[0])}
                 />
-              </div>
 
-              {/* Caption */}
-              <div className="space-y-2">
-                <Label className="text-sm text-muted-foreground">Caption (optional)</Label>
-                <Textarea
-                  placeholder="Share what this achievement means to you..."
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  className="min-h-[80px] resize-none bg-muted/30 border-border/50"
-                  maxLength={200}
-                />
-                <div className="text-xs text-muted-foreground text-right">
-                  {caption.length}/200
-                </div>
-              </div>
-
-              {/* Upload progress */}
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      className="h-full bg-primary"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${uploadProgress}%` }}
+                {!urlApercu ? (
+                  <button type="button" className="co-depot" onClick={() => fichier.current?.click()}>
+                    <Upload aria-hidden="true" />
+                    <b>{t("community.reels.pick", "Choisir une vidéo")}</b>
+                    <small>{t("community.reels.limits", "Format vertical conseillé · 100 Mo maximum")}</small>
+                  </button>
+                ) : (
+                  <div className="co-composeur-media">
+                    <video
+                      ref={apercu}
+                      src={urlApercu}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      style={{ display: "block", width: "100%", maxHeight: 300, background: "#000" }}
+                      onLoadedMetadata={(e) => {
+                        const d = Math.round(e.currentTarget.duration);
+                        setDuree(Number.isFinite(d) && d > 0 ? d : null);
+                      }}
                     />
+                    <button
+                      type="button"
+                      className="co-media-retirer"
+                      aria-label={t("community.reels.removeVideo", "Retirer la vidéo")}
+                      onClick={viderLaVideo}
+                    >
+                      <X aria-hidden="true" />
+                    </button>
+                    <p className="co-depot-info">
+                      <Video aria-hidden="true" />
+                      {duree === null
+                        ? t("community.reels.reading", "Lecture du fichier…")
+                        : t("community.reels.duration", "{{n}} secondes", { n: duree })}
+                    </p>
                   </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Uploading... {uploadProgress}%
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={onClose} disabled={isUploading}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!selectedGoalId || !videoFile || isUploading}
-                  className="gap-2"
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Video className="w-4 h-4" />
-                      Share Reel
-                    </>
-                  )}
-                </Button>
+              <div className="co-champ">
+                <label className="co-champ-titre" htmlFor="co-reel-legende">
+                  {t("community.reels.caption", "Légende")}
+                  <em className="co-champ-option">{t("community.reels.optional", "facultatif")}</em>
+                </label>
+                <textarea
+                  id="co-reel-legende"
+                  className="co-composeur-champ"
+                  style={{ fontSize: 15, minHeight: 64 }}
+                  rows={2}
+                  maxLength={LEGENDE_MAX}
+                  value={legende}
+                  onChange={(e) => setLegende(e.target.value)}
+                  placeholder={t("community.reels.captionHint", "Ce qu'il a fallu pour y arriver…")}
+                />
               </div>
             </>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {partagePermis && aDesObjectifs && (
+          <div className="co-modale-pied">
+            {envoi && (
+              <span className="co-jauge" aria-hidden="true">
+                <i style={{ width: `${avancement}%` }} />
+              </span>
+            )}
+            <button
+              type="button"
+              className="co-bouton co-bouton--discret"
+              onClick={onClose}
+              disabled={envoi}
+            >
+              {t("community.post.cancel", "Annuler")}
+            </button>
+            <button type="button" className="co-bouton" onClick={publier} disabled={!pret}>
+              {envoi ? <Loader2 className="co-tourne" aria-hidden="true" /> : <Trophy aria-hidden="true" />}
+              {envoi
+                ? t("community.reels.publishing", "Publication…")
+                : t("community.create.post", "Publier")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
