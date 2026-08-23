@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CircleCheck, MessagesSquare } from "lucide-react";
+import { CircleCheck, ImagePlus, MessagesSquare, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import { NATURES, libelleNature, type NaturePost } from "./vocabulaire";
 import { Pastille } from "./Pastille";
 import { useCadres } from "@/hooks/community/useCadres";
 import { ChoixObjectif } from "./ChoixObjectif";
+import { ChoixEmoji } from "./ChoixEmoji";
+import { deposerMedia, estUnTypeAccepte, retirerMedia, TYPES_ACCEPTES } from "@/lib/communityMedia";
 import {
   useCommunityPosts,
   useCreatePost,
@@ -59,6 +61,13 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
   const [texte, setTexte] = useState("");
   const [nature, setNature] = useState<NaturePost>("reflection");
   const [objectif, setObjectif] = useState<{ id: string; nom: string | null }>({ id: "", nom: null });
+  /* Le media est depose des qu il est choisi, pas a la publication :
+     on voit l aperçu tout de suite, et une image lourde ne fait pas
+     attendre au moment ou l on clique sur Publier. Le chemin est
+     garde pour pouvoir la retirer du depot si on change d avis. */
+  const [media, setMedia] = useState<{ url: string; chemin: string } | null>(null);
+  const [depotEnCours, setDepotEnCours] = useState(false);
+  const fichier = useRef<HTMLInputElement>(null);
   const [deploye, setDeploye] = useState(false);
 
   const { data: profil } = useQuery({
@@ -98,20 +107,73 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     el.style.height = `${el.scrollHeight}px`;
   };
 
+  const choisirFichier = async (f: File | undefined) => {
+    if (!f || !user) return;
+    if (!estUnTypeAccepte(f.type)) {
+      toast.error(t("community.create.badType", "Format non accepté : images et GIF seulement"));
+      return;
+    }
+    setDepotEnCours(true);
+    try {
+      if (media) await retirerMedia(media.chemin);
+      const depose = await deposerMedia(f, user.id);
+      setMedia(depose);
+    } catch (e) {
+      const trop = e instanceof Error && e.message === "trop-lourd";
+      toast.error(trop
+        ? t("community.create.tooHeavy", "Fichier trop lourd (8 Mo maximum)")
+        : t("community.create.uploadFailed", "Le dépôt a échoué"));
+    } finally {
+      setDepotEnCours(false);
+      if (fichier.current) fichier.current.value = "";
+    }
+  };
+
+  const retirerLeMedia = async () => {
+    if (!media) return;
+    const aRetirer = media.chemin;
+    setMedia(null);
+    await retirerMedia(aRetirer);
+  };
+
+  /* L emoji s insere LA OU EST LE CURSEUR, pas au bout du texte :
+     on ajoute souvent un emoji au milieu d une phrase qu on vient
+     d ecrire. */
+  const insererEmoji = (emoji: string) => {
+    const el = champ.current;
+    if (!el) { setTexte((t2) => t2 + emoji); return; }
+    const debut = el.selectionStart ?? texte.length;
+    const fin = el.selectionEnd ?? texte.length;
+    const suite = texte.slice(0, debut) + emoji + texte.slice(fin);
+    setTexte(suite);
+    setDeploye(true);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = debut + emoji.length;
+      el.setSelectionRange(pos, pos);
+      grandir();
+    });
+  };
+
   const envoyer = () => {
     const propre = texte.trim();
-    if (!propre || propre.length > LIMITE) return;
+    /* Une image seule est une publication valable — c est le cas le
+       plus courant d un GIF. Le texte n est donc plus obligatoire des
+       lors qu il y a un media. */
+    if ((!propre && !media) || propre.length > LIMITE) return;
     publier.mutate(
       {
         content: propre,
         post_type: nature,
         goal_id: objectif.id || undefined,
         goal_name: objectif.nom || undefined,
+        image_url: media?.url ?? null,
       },
       {
         onSuccess: () => {
           setTexte("");
           setObjectif({ id: "", nom: null });
+          setMedia(null);
           setDeploye(false);
           if (champ.current) champ.current.style.height = "auto";
           toast.success(t("community.feed.published", "Publié"));
@@ -159,7 +221,47 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                   ))}
                 </div>
 
+                {(media || depotEnCours) && (
+                  <div className="co-composeur-media">
+                    {depotEnCours && !media ? (
+                      <span className="co-os" style={{ display: "block", height: 180, borderRadius: 12 }} />
+                    ) : (
+                      <>
+                        <img src={media!.url} alt="" />
+                        <button
+                          type="button"
+                          className="co-media-retirer"
+                          aria-label={t("community.create.removeImage", "Retirer l'image")}
+                          onClick={retirerLeMedia}
+                        >
+                          <X aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 <div className="co-composeur-pied">
+                  <input
+                    ref={fichier}
+                    type="file"
+                    accept={TYPES_ACCEPTES.join(",")}
+                    hidden
+                    onChange={(e) => choisirFichier(e.target.files?.[0])}
+                  />
+                  <button
+                    type="button"
+                    className="co-puce"
+                    aria-label={t("community.create.addImage", "Ajouter une image ou un GIF")}
+                    title={t("community.create.addImage", "Ajouter une image ou un GIF")}
+                    disabled={depotEnCours}
+                    onClick={() => fichier.current?.click()}
+                  >
+                    <ImagePlus aria-hidden="true" />
+                  </button>
+
+                  <ChoixEmoji onChoisir={insererEmoji} />
+
                   <ChoixObjectif
                     valeur={objectif.id}
                     onChoisir={(id, nom) => setObjectif({ id, nom })}
@@ -180,7 +282,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                     className="co-bouton"
                     style={reste > SEUIL_ALERTE ? { marginLeft: "auto" } : undefined}
                     onClick={envoyer}
-                    disabled={!texte.trim() || reste < 0 || publier.isPending}
+                    disabled={(!texte.trim() && !media) || reste < 0 || depotEnCours || publier.isPending}
                   >
                     {publier.isPending
                       ? t("community.create.posting", "Publication…")

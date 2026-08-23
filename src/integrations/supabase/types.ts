@@ -737,6 +737,7 @@ export type Database = {
           goal_id: string | null
           goal_name: string | null
           id: string
+          image_url: string | null
           inspired_count: number
           is_public: boolean
           post_type: string
@@ -752,6 +753,7 @@ export type Database = {
           goal_id?: string | null
           goal_name?: string | null
           id?: string
+          image_url?: string | null
           inspired_count?: number
           is_public?: boolean
           post_type?: string
@@ -767,6 +769,7 @@ export type Database = {
           goal_id?: string | null
           goal_name?: string | null
           id?: string
+          image_url?: string | null
           inspired_count?: number
           is_public?: boolean
           post_type?: string

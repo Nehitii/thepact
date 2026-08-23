@@ -242,6 +242,19 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
           </>
         )}
 
+        {post.image_url && (
+          /* Le rapport est libre : un GIF est souvent large et court,
+             une capture est haute. On borne la hauteur pour qu une
+             image ne pousse pas le reste du fil hors de l ecran. */
+          <img
+            className="co-post-image"
+            src={post.image_url}
+            alt=""
+            loading="lazy"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+
         {post.goal_name && objectifVisible && (
           <span className="co-objectif">
             <Target aria-hidden="true" />

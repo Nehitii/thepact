@@ -1743,7 +1743,15 @@
       "searchGoal": "Chercher un objectif…",
       "loadingGoals": "Chargement…",
       "noMatch": "Aucun objectif ne correspond",
-      "noGoalYet": "Aucun objectif dans votre pacte"
+      "noGoalYet": "Aucun objectif dans votre pacte",
+      "emoji": "Émoji",
+      "searchEmoji": "Chercher un émoji…",
+      "noEmoji": "Aucun émoji ne correspond",
+      "addImage": "Ajouter une image ou un GIF",
+      "removeImage": "Retirer l'image",
+      "badType": "Format non accepté : images et GIF seulement",
+      "tooHeavy": "Fichier trop lourd (8 Mo maximum)",
+      "uploadFailed": "Le dépôt a échoué"
     },
     "reactions": {
       "support": "Soutien",
@@ -1777,6 +1785,12 @@
       "reactions": "réactions",
       "replies": "réponses",
       "topics": "Sujets"
+    },
+    "emojis": {
+      "humeur": "Humeur",
+      "effort": "Effort",
+      "esprit": "Esprit",
+      "lien": "Lien"
     }
   },
   "wishlist": {

@@ -1743,7 +1743,15 @@
       "searchGoal": "Search a goal…",
       "loadingGoals": "Loading…",
       "noMatch": "No goal matches",
-      "noGoalYet": "No goal in your pact"
+      "noGoalYet": "No goal in your pact",
+      "emoji": "Emoji",
+      "searchEmoji": "Search an emoji…",
+      "noEmoji": "No emoji matches",
+      "addImage": "Add an image or GIF",
+      "removeImage": "Remove the image",
+      "badType": "Format not accepted: images and GIFs only",
+      "tooHeavy": "File too heavy (8 MB maximum)",
+      "uploadFailed": "Upload failed"
     },
     "reactions": {
       "support": "Support",
@@ -1777,6 +1785,12 @@
       "reactions": "reactions",
       "replies": "replies",
       "topics": "Topics"
+    },
+    "emojis": {
+      "humeur": "Mood",
+      "effort": "Effort",
+      "esprit": "Mind",
+      "lien": "Bond"
     }
   },
   "wishlist": {

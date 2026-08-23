@@ -10,6 +10,8 @@ export interface CommunityPost {
   content: string;
   goal_id: string | null;
   goal_name: string | null;
+  /** Image ou GIF depose avec la publication, dans community-media. */
+  image_url: string | null;
   post_type: 'reflection' | 'progress' | 'obstacle' | 'mindset' | 'help_request' | 'encouragement';
   is_public: boolean;
   created_at: string;

@@ -30,7 +30,7 @@ export function useCommunityPosts(
            rester une chaine litterale : Supabase en deduit le type de
            la ligne a la compilation, et une variable lui rend la
            ligne illisible. */
-        .select("id, user_id, content, post_type, goal_name, created_at, updated_at, support_count, respect_count, inspired_count, replies_count")
+        .select("id, user_id, content, post_type, goal_name, image_url, created_at, updated_at, support_count, respect_count, inspired_count, replies_count")
         .eq("is_public", true));
 
       if (filter !== 'all') {
@@ -211,6 +211,7 @@ export function useCreatePost() {
       content: string;
       goal_id?: string;
       goal_name?: string;
+      image_url?: string | null;
       post_type?: CommunityPost['post_type'];
     }) => {
       if (!user) throw new Error("Must be logged in");
@@ -222,6 +223,7 @@ export function useCreatePost() {
           content: data.content,
           goal_id: data.goal_id || null,
           goal_name: data.goal_name || null,
+          image_url: data.image_url || null,
           post_type: data.post_type || 'reflection',
           is_public: true
         })
