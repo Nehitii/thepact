@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Pastille } from "@/components/community/Pastille";
+import { nomAffichable } from "@/components/community/vocabulaire";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
 interface GuildMessage {
   id: string;
@@ -28,6 +28,9 @@ interface Props {
 
 export function GuildChat({ guildId, userId }: Props) {
   const { t } = useTranslation();
+  /* Les dates etaient rendues sans locale : « 5 months ago » a un
+     lecteur francais, comme partout ailleurs dans ce module. */
+  const locale = useDateFnsLocale();
   const qc = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [msg, setMsg] = useState("");
@@ -97,31 +100,35 @@ export function GuildChat({ guildId, userId }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-[500px]">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 p-3 scrollbar-thin">
+    <div className="gu-discussion">
+      <div className="gu-fil" ref={scrollRef}>
         {messages.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center mt-10">{t("guild.noChatMessages")}</p>
+          <p className="co-choix-message">{t("guild.noChatMessages", "Aucun message pour le moment")}</p>
         )}
         {messages.map((m) => {
-          const isOwn = m.user_id === userId;
+          const demoi = m.user_id === userId;
+          const nom = nomAffichable(m.display_name, "?");
           return (
-            <div key={m.id} className={`flex gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={m.avatar_url || undefined} />
-                <AvatarFallback className="ds-t-label">{(m.display_name || "?")[0]}</AvatarFallback>
-              </Avatar>
-              <div className={`max-w-[70%] ${isOwn ? "items-end" : ""}`}>
-                <div className={`ds-t-label text-muted-foreground mb-0.5 ${isOwn ? "text-right" : ""}`}>
-                  {m.display_name} · {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+            <div className={demoi ? "gu-mess gu-mess--moi" : "gu-mess"} key={m.id}>
+              <Pastille identifiant={m.user_id} nom={nom} image={m.avatar_url} petite />
+              <div className="gu-mess-corps">
+                <div className="gu-mess-tete">
+                  <span className="co-nom" style={{ fontSize: 13 }}>{nom}</span>
+                  <span className="co-sep" aria-hidden="true">·</span>
+                  <time className="co-quand" style={{ fontSize: 12 }} dateTime={m.created_at}>
+                    {formatDistanceToNow(new Date(m.created_at), { addSuffix: true, locale })}
+                  </time>
                 </div>
-                <div className={`group relative rounded-lg px-3 py-1.5 text-xs ${isOwn ? "bg-primary/20 text-foreground" : "bg-card/80 border border-border/50"}`}>
+                <div className="gu-bulle">
                   {m.content}
-                  {isOwn && (
+                  {demoi && (
                     <button
+                      type="button"
+                      className="gu-bulle-retirer"
+                      aria-label={t("common.delete", "Supprimer")}
                       onClick={() => deleteMutation.mutate(m.id)}
-                      className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 bg-destructive text-destructive-foreground rounded-full p-0.5 transition-opacity"
                     >
-                      <Trash2 className="h-2.5 w-2.5" />
+                      <Trash2 aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -131,18 +138,19 @@ export function GuildChat({ guildId, userId }: Props) {
         })}
       </div>
 
-      <div className="border-t border-border/50 p-3 flex gap-2">
-        <Input
+      <div className="gu-saisie">
+        <input
           value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          placeholder={t("guild.typeMessage")}
           maxLength={500}
-          className="h-9 text-xs"
+          onChange={(e) => setMsg(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          placeholder={t("guild.typeMessage", "Écrire un message…")}
+          aria-label={t("guild.typeMessage", "Écrire un message…")}
         />
-        <Button size="sm" onClick={handleSend} disabled={!msg.trim() || sendMutation.isPending}>
-          <Send className="h-3.5 w-3.5" />
-        </Button>
+        <button type="button" className="co-bouton" onClick={handleSend} disabled={!msg.trim() || sendMutation.isPending}>
+          <Send aria-hidden="true" />
+          {t("guild.send", "Envoyer")}
+        </button>
       </div>
     </div>
   );

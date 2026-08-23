@@ -3051,7 +3051,35 @@
     "xpGained": "{{name}} a gagné {{amount}} XP",
     "ranking": "Classement",
     "membersOf_one": "1 membre sur {{max}}",
-    "membersOf_other": "{{count}} membres sur {{max}}"
+    "membersOf_other": "{{count}} membres sur {{max}}",
+    "send": "Envoyer",
+    "searchMember": "Chercher un membre…",
+    "noMemberFound": "Aucun membre de ce nom",
+    "inviteAlly": "Inviter un allié",
+    "promote": "Promouvoir officier",
+    "demote": "Rétrograder",
+    "kick": "Exclure de la guilde",
+    "role": {
+      "owner": "Fondateur",
+      "officer": "Officier",
+      "member": "Membre"
+    },
+    "goalsOngoing": "En cours",
+    "goalsDone": "Franchis",
+    "eventPast": "Passé",
+    "eventWhen": "Date et heure",
+    "eventDuration": "Durée en minutes",
+    "eventMax": "Places",
+    "eventMinutes": "{{n}} min",
+    "rsvp": {
+      "going": "Je viens",
+      "maybe": "Peut-être",
+      "declined": "Je passe"
+    },
+    "transferWhy": "Le nouveau fondateur pourra tout modifier, y compris vous exclure. Vous deviendrez membre.",
+    "transferNobody": "Il faut au moins un autre membre pour transmettre la guilde.",
+    "pickMember": "Choisir un membre",
+    "typeNameToConfirm": "Écrivez « {{nom}} » pour confirmer"
   },
   "analytics": {
     "period": {

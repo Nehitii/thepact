@@ -1,18 +1,32 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Crown, MoreHorizontal, Search, Shield, User, UserMinus, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
-import { useFriends } from "@/hooks/useFriends";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Crown, Shield, User, MoreVertical, Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import { CyberEmpty } from "@/components/ui/cyber-states";
+import { Pastille } from "@/components/community/Pastille";
+import { nomAffichable } from "@/components/community/vocabulaire";
+import { useCadres } from "@/hooks/community/useCadres";
+import { useFriends } from "@/hooks/useFriends";
+import { useGuildMembers, useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
 
-const roleIcon: Record<string, React.ElementType> = { owner: Crown, officer: Shield, member: User };
-const roleColor: Record<string, string> = { owner: "text-yellow-400", officer: "text-amber-400", member: "text-muted-foreground" };
+/* LES MEMBRES D UNE GUILDE.
+ *
+ * LE CLASSEMENT A FUSIONNE ICI, et pour une raison simple : il n en
+ * etait pas un. GuildLeaderboard triait les membres par ROLE — le
+ * fondateur, puis les officiers, puis les autres — et collait un
+ * numero devant. Aucun score, aucune progression : la meme liste, avec
+ * un rang decoratif. Il occupait une septieme entree de menu pour une
+ * guilde qui compte un membre.
+ *
+ * Il affichait aussi le role brut de la base — « owner », « officer »,
+ * « member » — en anglais, sur une page traduite. Les trois passent
+ * par le fichier de langue.
+ *
+ * Et son podium etait un emoji tronque, « "🏆".slice(0, 1) », la ou
+ * une icone dessinee dit la meme chose sans dependre du systeme qui
+ * l affiche. */
+
+const ICONE: Record<string, typeof Crown> = { owner: Crown, officer: Shield, member: User };
+const RANG: Record<string, number> = { owner: 0, officer: 1, member: 2 };
 
 interface Props {
   guild: Guild;
@@ -23,132 +37,182 @@ interface Props {
 
 export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) {
   const { t } = useTranslation();
-  const { useGuildMembers, removeMember, updateMemberRole, inviteMember } = useGuilds();
-  const { data: members = [] } = useGuildMembers(guild.id);
+  const { data: membres = [] } = useGuildMembers(guild.id);
   const { friends } = useFriends();
-  const [search, setSearch] = useState("");
-  const [showInvite, setShowInvite] = useState(false);
-  const [inviteSearch, setInviteSearch] = useState("");
+  const { removeMember, updateMemberRole, inviteMember } = useGuilds();
 
-  const filtered = members.filter((m) =>
-    !search || (m.display_name || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const [recherche, setRecherche] = useState("");
+  const [inviter, setInviter] = useState(false);
+  const [menu, setMenu] = useState<string | null>(null);
 
-  const sorted = [...filtered].sort((a, b) => {
-    const order: Record<string, number> = { owner: 0, officer: 1, member: 2 };
-    return (order[a.role] ?? 3) - (order[b.role] ?? 3);
-  });
+  const { data: cadres } = useCadres(membres.map((m) => m.user_id));
 
-  const memberUserIds = new Set(members.map((m) => m.user_id));
-  const invitableFriends = friends.filter((f) => !memberUserIds.has(f.friend_id) && (!inviteSearch || f.display_name?.toLowerCase().includes(inviteSearch.toLowerCase())));
+  const libelleRole = (role: string) =>
+    t(`guild.role.${role}`, role === "owner" ? "Fondateur" : role === "officer" ? "Officier" : "Membre");
 
-  const handleInvite = async (friendId: string) => {
+  const listee = useMemo(() => {
+    const q = recherche.trim().toLowerCase();
+    return membres
+      .filter((m) => !q || (m.display_name || "").toLowerCase().includes(q))
+      .sort((a, b) => (RANG[a.role] ?? 3) - (RANG[b.role] ?? 3));
+  }, [membres, recherche]);
+
+  const dejaMembres = new Set(membres.map((m) => m.user_id));
+  const invitables = friends.filter((f) => !dejaMembres.has(f.friend_id));
+
+  const changerRole = async (m: GuildMember, role: string) => {
+    setMenu(null);
     try {
-      await inviteMember.mutateAsync({ guildId: guild.id, inviteeId: friendId });
-      toast.success(t("friends.inviteSent"));
+      await updateMemberRole.mutateAsync({ memberId: m.id, role });
+      toast.success(role === "officer" ? t("friends.promoted", "Promu officier") : t("friends.demoted", "Rétrogradé"));
     } catch {
-      toast.error(t("friends.inviteFailed"));
+      toast.error(t("friends.roleFailed", "Le changement de rôle a échoué"));
     }
   };
 
-  const handleRoleChange = async (member: GuildMember, newRole: string) => {
+  const exclure = async (m: GuildMember) => {
+    setMenu(null);
     try {
-      await updateMemberRole.mutateAsync({ memberId: member.id, role: newRole });
-      toast.success(newRole === "officer" ? t("friends.promoted") : t("friends.demoted"));
+      await removeMember.mutateAsync({ memberId: m.id });
+      toast.success(t("friends.memberRemoved", "Membre retiré"));
     } catch {
-      toast.error(t("friends.roleFailed"));
-    }
-  };
-
-  const handleKick = async (member: GuildMember) => {
-    try {
-      await removeMember.mutateAsync({ memberId: member.id });
-      toast.success(t("friends.memberRemoved"));
-    } catch {
-      toast.error(t("friends.memberRemoveFailed"));
+      toast.error(t("friends.memberRemoveFailed", "Le retrait a échoué"));
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("common.search")} className="pl-8 h-8 text-xs" />
-        </div>
+    <>
+      <div className="fr-chercher">
+        <Search aria-hidden="true" />
+        <input
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          placeholder={t("guild.searchMember", "Chercher un membre…")}
+          aria-label={t("guild.searchMember", "Chercher un membre…")}
+        />
         {isOfficer && (
-          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setShowInvite(!showInvite)}>
-            <UserPlus className="h-3.5 w-3.5 mr-1" /> {t("friends.invite")}
-          </Button>
+          <button type="button" className="co-puce" aria-pressed={inviter} onClick={() => setInviter((v) => !v)}>
+            <UserPlus aria-hidden="true" />
+            {t("friends.invite", "Inviter")}
+          </button>
         )}
       </div>
 
-      {showInvite && (
-        <div className="border border-border/50 rounded-lg p-3 space-y-2 bg-card/30">
-          <Input value={inviteSearch} onChange={(e) => setInviteSearch(e.target.value)} placeholder={t("friends.searchFriendsInvite")} className="h-7 text-xs" />
-          {invitableFriends.length === 0 ? (
-            <p className="ds-t-label text-muted-foreground">{t("friends.noFriendsToInvite")}</p>
-          ) : (
-            invitableFriends.slice(0, 10).map((f) => (
-              <div key={f.friend_id} className="flex items-center justify-between">
-                <span className="text-xs">{f.display_name}</span>
-                <Button size="sm" variant="ghost" className="h-6 ds-t-label" onClick={() => handleInvite(f.friend_id)}>
-                  {t("friends.invite")}
-                </Button>
-              </div>
-            ))
-          )}
-        </div>
+      {inviter && (
+        <section className="gu-bloc">
+          <div className="gu-bloc-tete">
+            <h2 className="gu-bloc-titre">{t("guild.inviteAlly", "Inviter un allié")}</h2>
+          </div>
+          <div className="gu-corps">
+            {invitables.length === 0 ? (
+              <p className="co-choix-message" style={{ textAlign: "left", padding: "6px 0" }}>
+                {t("friends.noFriendsToInvite", "Aucun allié à inviter — ils sont déjà membres, ou vous n'en avez pas encore.")}
+              </p>
+            ) : (
+              invitables.map((f) => (
+                <div
+                  className="gu-annonce"
+                  key={f.friend_id}
+                  style={{ gridTemplateColumns: "32px 1fr auto", alignItems: "center" }}
+                >
+                  <Pastille identifiant={f.friend_id} nom={f.display_name} image={f.avatar_url} petite />
+                  <span className="co-nom" style={{ fontSize: 14 }}>
+                    {nomAffichable(f.display_name, t("friends.unknownAgent", "Agent Inconnu"))}
+                  </span>
+                  <button
+                    type="button"
+                    className="co-bouton"
+                    disabled={inviteMember.isPending}
+                    onClick={async () => {
+                      try {
+                        await inviteMember.mutateAsync({ guildId: guild.id, inviteeId: f.friend_id });
+                        toast.success(t("friends.inviteSent", "Invitation envoyée"));
+                      } catch {
+                        toast.error(t("friends.inviteFailed", "L'invitation a échoué"));
+                      }
+                    }}
+                  >
+                    {t("friends.invite", "Inviter")}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       )}
 
-      {sorted.length === 0 ? (
-        <CyberEmpty icon={User} title={t("friends.noMembers")} />
+      {listee.length === 0 ? (
+        <div className="co-vide">
+          <User aria-hidden="true" />
+          <h3>
+            {recherche
+              ? t("guild.noMemberFound", "Aucun membre de ce nom")
+              : t("friends.noMembers", "Aucun membre")}
+          </h3>
+        </div>
       ) : (
-        <div className="space-y-1">
-          {sorted.map((m) => {
-            const RoleIcon = roleIcon[m.role] || User;
-            const canManage = isOwner || (isOfficer && m.role === "member");
-            const isSelf = m.user_id === userId;
+        listee.map((m) => {
+          const Icone = ICONE[m.role] || User;
+          const nom = nomAffichable(m.display_name, t("friends.unknownAgent", "Agent Inconnu"));
+          const cestMoi = m.user_id === userId;
+          const modifiable = isOfficer && !cestMoi && m.role !== "owner";
 
-            return (
-              <div key={m.id} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={m.avatar_url || undefined} />
-                  <AvatarFallback className="ds-t-label">{(m.display_name || "?")[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold truncate">{m.display_name}</span>
-                    {isSelf && <Badge variant="outline" className="ds-t-label px-1 py-0">YOU</Badge>}
-                  </div>
+          return (
+            <div className="co-post fr-ligne" key={m.id}>
+              <Pastille identifiant={m.user_id} nom={nom} image={m.avatar_url} cadre={cadres?.get(m.user_id)} />
+
+              <div className="co-post-corps">
+                <div className="co-post-tete">
+                  <span className="co-nom">{nom}</span>
+                  {cestMoi && <span className="fr-grade">{t("leaderboard.you", "(TOI)")}</span>}
                 </div>
-                <div className={`flex items-center gap-1 ${roleColor[m.role]}`}>
-                  <RoleIcon className="h-3.5 w-3.5" />
-                  <span className="ds-t-label font-bold uppercase">{m.role}</span>
+                <div className="fr-mesures">
+                  <span className="fr-mesure">
+                    <Icone aria-hidden="true" />
+                    {libelleRole(m.role)}
+                  </span>
                 </div>
-                {canManage && !isSelf && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MoreVertical className="h-3.5 w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="text-xs">
-                      {m.role === "member" && isOwner && (
-                        <DropdownMenuItem onClick={() => handleRoleChange(m, "officer")}>{t("friends.promoteOfficer")}</DropdownMenuItem>
-                      )}
-                      {m.role === "officer" && isOwner && (
-                        <DropdownMenuItem onClick={() => handleRoleChange(m, "member")}>{t("friends.demoteToMember")}</DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={() => handleKick(m)} className="text-destructive">{t("common.remove")}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
               </div>
-            );
-          })}
-        </div>
+
+              <div className="fr-actions">
+                {modifiable && menu === m.id ? (
+                  <>
+                    {m.role === "member" ? (
+                      <button type="button" className="co-puce" onClick={() => changerRole(m, "officer")}>
+                        {t("guild.promote", "Promouvoir officier")}
+                      </button>
+                    ) : (
+                      <button type="button" className="co-puce" onClick={() => changerRole(m, "member")}>
+                        {t("guild.demote", "Rétrograder")}
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        type="button"
+                        className="co-puce"
+                        onClick={() => exclure(m)}
+                        aria-label={t("guild.kick", "Exclure de la guilde")}
+                      >
+                        <UserMinus aria-hidden="true" />
+                      </button>
+                    )}
+                  </>
+                ) : modifiable ? (
+                  <button
+                    type="button"
+                    className="co-action"
+                    data-reaction="more"
+                    aria-label={t("community.post.actions", "Actions")}
+                    onClick={() => setMenu(m.id)}
+                  >
+                    <i className="co-action-rond"><MoreHorizontal aria-hidden="true" /></i>
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          );
+        })
       )}
-    </div>
+    </>
   );
 }

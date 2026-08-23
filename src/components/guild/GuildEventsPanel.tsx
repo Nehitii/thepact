@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,8 @@ interface Props {
 
 export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
   const { t } = useTranslation();
+  /* format(..., "PPp") sans locale rendait la date en anglais. */
+  const locale = useDateFnsLocale();
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
@@ -112,88 +115,137 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["guild-rsvps", guildId] }),
   });
 
-  const rsvpIcons: Record<string, React.ElementType> = { going: Check, maybe: HelpCircle, declined: X };
+  const ICONE_REPONSE = { going: Check, maybe: HelpCircle, declined: X } as const;
+  const REPONSES = ["going", "maybe", "declined"] as const;
 
   return (
-    <div className="space-y-4">
+    <>
       {isOfficer && (
-        <Button size="sm" variant="outline" className="text-xs" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="h-3.5 w-3.5 mr-1" /> {t("guild.createEvent")}
-        </Button>
-      )}
-
-      {showCreate && (
-        <div className="border border-border/50 rounded-lg p-4 space-y-3 bg-card/30">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("guild.eventTitle")} className="h-8 text-xs" maxLength={100} />
-          <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("guild.eventDescription")} className="h-14 text-xs resize-none" maxLength={500} />
-          <div className="flex gap-2">
-            <Input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} className="h-8 text-xs flex-1" />
-            <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="Duration (min)" className="h-8 text-xs w-24" min={5} max={1440} />
-            <Input type="number" value={maxP} onChange={(e) => setMaxP(e.target.value)} placeholder="Max" className="h-8 text-xs w-20" min={1} />
+        <>
+          <div className="fr-barre">
+            <button type="button" className="co-bouton" onClick={() => setShowCreate(!showCreate)}>
+              <Plus aria-hidden="true" />
+              {t("guild.createEvent", "Créer un événement")}
+            </button>
           </div>
-          <Button size="sm" onClick={() => createEvent.mutate()} disabled={!title.trim() || !date || createEvent.isPending} className="text-xs">
-            {t("common.create")}
-          </Button>
-        </div>
+
+          {showCreate && (
+            <div className="gu-ecrire">
+              <input
+                className="gu-champ"
+                value={title}
+                maxLength={100}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("guild.eventTitle", "Titre de l’événement")}
+                aria-label={t("guild.eventTitle", "Titre de l’événement")}
+              />
+              <textarea
+                value={desc}
+                maxLength={500}
+                onChange={(e) => setDesc(e.target.value)}
+                placeholder={t("guild.eventDescription", "De quoi s’agit-il ?")}
+                aria-label={t("guild.eventDescription", "De quoi s’agit-il ?")}
+              />
+              <div className="gu-contribuer" style={{ marginTop: 0, flexWrap: "wrap" }}>
+                <input
+                  className="gu-champ"
+                  style={{ width: "auto", flex: "1 1 190px" }}
+                  type="datetime-local"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  aria-label={t("guild.eventWhen", "Date et heure")}
+                />
+                <input
+                  type="number"
+                  min={5}
+                  max={1440}
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  aria-label={t("guild.eventDuration", "Durée en minutes")}
+                  title={t("guild.eventDuration", "Durée en minutes")}
+                />
+                <input
+                  type="number"
+                  min={1}
+                  value={maxP}
+                  onChange={(e) => setMaxP(e.target.value)}
+                  aria-label={t("guild.eventMax", "Places")}
+                  title={t("guild.eventMax", "Places")}
+                />
+                <button
+                  type="button"
+                  className="co-bouton"
+                  onClick={() => createEvent.mutate()}
+                  disabled={!title.trim() || !date || createEvent.isPending}
+                >
+                  {t("common.create", "Créer")}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {events.length === 0 ? (
-        <CyberEmpty icon={CalendarDays} title={t("guild.noEvents")} subtitle={t("guild.noEventsDesc")} />
-      ) : (
-        <div className="space-y-3">
-          {events.map((ev) => {
-            const eventRsvps = allRsvps.filter((r) => r.event_id === ev.id);
-            const goingCount = eventRsvps.filter((r) => r.status === "going").length;
-            const myRsvp = eventRsvps.find((r) => r.user_id === userId);
-            const past = isPast(new Date(ev.event_date));
-
-            return (
-              <div key={ev.id} className={`border border-border/50 rounded-lg p-4 ${past ? "opacity-50" : ""}`}>
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h4 className="text-sm font-bold">{ev.title}</h4>
-                    {ev.description && <p className="ds-t-label text-muted-foreground mt-0.5">{ev.description}</p>}
-                  </div>
-                  {past && <Badge variant="outline" className="ds-t-label">PAST</Badge>}
-                </div>
-
-                <div className="flex items-center gap-4 ds-t-label text-muted-foreground mb-3">
-                  <span className="flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" /> {format(new Date(ev.event_date), "PPp")}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> {ev.duration_minutes}min
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" /> {goingCount}{ev.max_participants ? `/${ev.max_participants}` : ""}
-                  </span>
-                </div>
-
-                {!past && (
-                  <div className="flex gap-1.5">
-                    {(["going", "maybe", "declined"] as const).map((status) => {
-                      const Icon = rsvpIcons[status];
-                      const isActive = myRsvp?.status === status;
-                      return (
-                        <Button
-                          key={status}
-                          size="sm"
-                          variant={isActive ? "default" : "outline"}
-                          className="h-7 ds-t-label px-2"
-                          onClick={() => rsvpMutation.mutate({ eventId: ev.id, status })}
-                        >
-                          <Icon className="h-3 w-3 mr-1" />
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="co-vide">
+          <CalendarDays aria-hidden="true" />
+          <h3>{t("guild.noEvents", "Aucun événement")}</h3>
+          <p>{t("guild.noEventsDesc", "Un événement donne un rendez-vous à la guilde : une séance commune, un point d’étape.")}</p>
         </div>
+      ) : (
+        events.map((ev) => {
+          const reponses = allRsvps.filter((r) => r.event_id === ev.id);
+          const presents = reponses.filter((r) => r.status === "going").length;
+          const maReponse = reponses.find((r) => r.user_id === userId);
+          const passe = isPast(new Date(ev.event_date));
+
+          return (
+            <div className="gu-evenement" data-passe={passe ? "oui" : "non"} key={ev.id}>
+              <div className="gu-objectif-tete">
+                <span className="co-nom">{ev.title}</span>
+                {passe && <span className="fr-grade">{t("guild.eventPast", "Passé")}</span>}
+              </div>
+
+              {ev.description && <p className="gu-mot">{ev.description}</p>}
+
+              <div className="fr-mesures">
+                <span className="fr-mesure">
+                  <CalendarDays aria-hidden="true" />
+                  {format(new Date(ev.event_date), "PPp", { locale })}
+                </span>
+                <span className="fr-mesure">
+                  <Clock aria-hidden="true" />
+                  {t("guild.eventMinutes", "{{n}} min", { n: ev.duration_minutes })}
+                </span>
+                <span className="fr-mesure">
+                  <Users aria-hidden="true" />
+                  {presents}{ev.max_participants ? " / " + ev.max_participants : ""}
+                </span>
+              </div>
+
+              {!passe && (
+                <div className="fr-actions" style={{ marginTop: 10, justifyContent: "flex-start" }}>
+                  {REPONSES.map((statut) => {
+                    const Icone = ICONE_REPONSE[statut];
+                    return (
+                      <button
+                        key={statut}
+                        type="button"
+                        className="co-puce"
+                        aria-pressed={maReponse?.status === statut}
+                        onClick={() => rsvpMutation.mutate({ eventId: ev.id, status: statut })}
+                      >
+                        <Icone aria-hidden="true" />
+                        {t("guild.rsvp." + statut, statut === "going" ? "Je viens" : statut === "maybe" ? "Peut-être" : "Je passe")}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })
       )}
-    </div>
+    </>
   );
 }

@@ -43,6 +43,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
   const [isPublic, setIsPublic] = useState(guild.is_public);
   const [maxMembers, setMaxMembers] = useState(String(guild.max_members || 25));
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [vue, setVue] = useState<"general" | "codes" | "danger">("general");
   const [transferTarget, setTransferTarget] = useState("");
 
   const handleSave = async () => {
@@ -79,99 +80,193 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
     }
   };
 
-  const otherMembers = members.filter((m) => m.user_id !== userId);
+  const autresMembres = members.filter((m) => m.user_id !== userId);
+  const VUES = isOwner
+    ? (["general", "codes", "danger"] as const)
+    : (["general", "codes"] as const);
 
   return (
-    <Tabs defaultValue="general">
-      <TabsList className="mb-4">
-        <TabsTrigger value="general" className="text-xs">{t("guild.general")}</TabsTrigger>
-        <TabsTrigger value="codes" className="text-xs">{t("guild.inviteCodes")}</TabsTrigger>
-        {isOwner && <TabsTrigger value="danger" className="text-xs">{t("guild.dangerZone")}</TabsTrigger>}
-      </TabsList>
+    <>
+      <div className="fr-barre">
+        {VUES.map((v) => (
+          <button
+            key={v}
+            type="button"
+            className="co-puce"
+            aria-pressed={vue === v}
+            onClick={() => setVue(v)}
+          >
+            {v === "general"
+              ? t("guild.general", "Général")
+              : v === "codes"
+                ? t("guild.inviteCodes", "Codes d’invitation")
+                : t("guild.dangerZone", "Irréversible")}
+          </button>
+        ))}
+      </div>
 
-      <TabsContent value="general" className="space-y-4">
-        <Input placeholder={t("friends.guildName")} value={name} onChange={(e) => setName(e.target.value)} maxLength={40} className="text-xs" />
-        <Textarea placeholder={t("friends.guildDescription")} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={200} className="resize-none h-16 text-xs" />
-
-        <div>
-          <p className="ds-t-label font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.icon")}</p>
-          <div className="flex gap-2">
-            {iconOptions.map((opt) => (
-              <button key={opt.key} onClick={() => setIcon(opt.key)} className={cn("w-10 h-10 rounded-lg border flex items-center justify-center", icon === opt.key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>
-                <opt.icon className="h-5 w-5" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="ds-t-label font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.color")}</p>
-          <div className="flex gap-2">
-            {colorOptions.map((c) => (
-              <button key={c} onClick={() => setColor(c)} className={cn("w-8 h-8 rounded-full", colorClasses[c], color === c ? "ring-2 ring-offset-2 ring-offset-background ring-primary scale-110" : "opacity-60 hover:opacity-100")} />
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Label className="text-xs font-bold uppercase tracking-wider">{t("friends.publicGuild")}</Label>
-          <Switch checked={isPublic} onCheckedChange={setIsPublic} />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-bold uppercase tracking-wider whitespace-nowrap">{t("friends.maxMembers")}</Label>
-          <Input type="number" value={maxMembers} onChange={(e) => setMaxMembers(e.target.value)} className="h-8 w-20 text-xs" min={2} max={100} />
-        </div>
-
-        <Button onClick={handleSave} disabled={!name.trim() || updateGuild.isPending} className="w-full text-xs font-bold uppercase tracking-wider">
-          {updateGuild.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          {t("common.saveChanges")}
-        </Button>
-      </TabsContent>
-
-      <TabsContent value="codes">
-        <GuildInviteCodePanel guildId={guild.id} canManage={isOwner} />
-      </TabsContent>
-
-      {isOwner && (
-        <TabsContent value="danger" className="space-y-6">
-          <div className="border border-amber-500/30 rounded-lg p-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase text-amber-400 flex items-center gap-2">
-              <UserCheck className="h-3.5 w-3.5" /> {t("friends.transferOwnership")}
-            </h4>
-            <select
-              value={transferTarget}
-              onChange={(e) => setTransferTarget(e.target.value)}
-              className="w-full h-8 text-xs bg-background border border-border rounded-md px-2"
-            >
-              <option value="">Select a member…</option>
-              {otherMembers.map((m) => (
-                <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
-              ))}
-            </select>
-            <Button size="sm" variant="outline" className="text-xs text-amber-400 border-amber-500/30" onClick={handleTransfer} disabled={!transferTarget}>
-              {t("friends.transferOwnership")}
-            </Button>
-          </div>
-
-          <div className="border border-destructive/30 rounded-lg p-4 space-y-3">
-            <h4 className="text-xs font-bold uppercase text-destructive flex items-center gap-2">
-              <Trash2 className="h-3.5 w-3.5" /> {t("friends.deleteGuild")}
-            </h4>
-            <p className="ds-t-label text-muted-foreground">{t("friends.deleteGuildConfirm")}</p>
-            <Input
-              value={deleteConfirm}
-              onChange={(e) => setDeleteConfirm(e.target.value)}
-              placeholder={`Type "${guild.name}" to confirm`}
-              className="h-8 text-xs"
+      {vue === "general" && (
+        <section className="gu-bloc">
+          <div className="gu-corps" style={{ paddingTop: 14, display: "grid", gap: 14 }}>
+            <input
+              className="gu-champ"
+              value={name}
+              maxLength={40}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("friends.guildName", "Nom de la guilde")}
+              aria-label={t("friends.guildName", "Nom de la guilde")}
             />
-            <Button size="sm" variant="destructive" className="text-xs" onClick={handleDelete} disabled={deleteConfirm !== guild.name || deleteGuild.isPending}>
-              {deleteGuild.isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-              {t("friends.deleteGuild")}
-            </Button>
+            <textarea
+              className="gu-champ"
+              style={{ minHeight: 62, resize: "vertical" }}
+              value={description}
+              maxLength={200}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("friends.guildDescription", "Sa devise, ce qu’elle poursuit")}
+              aria-label={t("friends.guildDescription", "Sa devise, ce qu’elle poursuit")}
+            />
+
+            <div>
+              <p className="gu-etiquette">{t("friends.icon", "Blason")}</p>
+              <div className="fr-barre" style={{ padding: 0, border: "none" }}>
+                {iconOptions.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    className="co-puce"
+                    aria-pressed={icon === opt.key}
+                    aria-label={opt.key}
+                    onClick={() => setIcon(opt.key)}
+                  >
+                    <opt.icon aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="gu-etiquette">{t("friends.color", "Couleur")}</p>
+              <div className="gu-couleurs">
+                {colorOptions.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={cn("gu-couleur", colorClasses[c])}
+                    aria-pressed={color === c}
+                    aria-label={c}
+                    onClick={() => setColor(c)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <label className="gu-reglage">
+              <span>{t("friends.publicGuild", "Guilde publique")}</span>
+              <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+            </label>
+
+            <label className="gu-reglage">
+              <span>{t("friends.maxMembers", "Places")}</span>
+              <input
+                className="gu-champ"
+                style={{ width: 92, fontFamily: "var(--co-fonte-chiffre)" }}
+                type="number"
+                min={2}
+                max={100}
+                value={maxMembers}
+                onChange={(e) => setMaxMembers(e.target.value)}
+              />
+            </label>
+
+            <div>
+              <button
+                type="button"
+                className="co-bouton"
+                onClick={handleSave}
+                disabled={!name.trim() || updateGuild.isPending}
+              >
+                {t("common.saveChanges", "Enregistrer")}
+              </button>
+            </div>
           </div>
-        </TabsContent>
+        </section>
       )}
-    </Tabs>
+
+      {vue === "codes" && <GuildInviteCodePanel guildId={guild.id} canManage={isOwner} />}
+
+      {vue === "danger" && isOwner && (
+        <>
+          <section className="gu-bloc">
+            <div className="gu-bloc-tete">
+              <UserCheck aria-hidden="true" style={{ width: 15, height: 15, color: "var(--co-respect)" }} />
+              <h2 className="gu-bloc-titre">{t("friends.transferOwnership", "Transmettre la guilde")}</h2>
+            </div>
+            <div className="gu-corps" style={{ display: "grid", gap: 10 }}>
+              <p className="gu-mot" style={{ margin: 0 }}>
+                {t("guild.transferWhy", "Le nouveau fondateur pourra tout modifier, y compris vous exclure. Vous deviendrez membre.")}
+              </p>
+              {autresMembres.length === 0 ? (
+                <p className="co-choix-message" style={{ textAlign: "left", padding: 0 }}>
+                  {t("guild.transferNobody", "Il faut au moins un autre membre pour transmettre la guilde.")}
+                </p>
+              ) : (
+                <>
+                  <select
+                    className="gu-champ"
+                    value={transferTarget}
+                    onChange={(e) => setTransferTarget(e.target.value)}
+                    aria-label={t("guild.pickMember", "Choisir un membre")}
+                  >
+                    <option value="">{t("guild.pickMember", "Choisir un membre")}</option>
+                    {autresMembres.map((m) => (
+                      <option key={m.user_id} value={m.user_id}>{m.display_name}</option>
+                    ))}
+                  </select>
+                  <div>
+                    <button
+                      type="button"
+                      className="co-bouton co-bouton--discret"
+                      onClick={handleTransfer}
+                      disabled={!transferTarget}
+                    >
+                      {t("friends.transferOwnership", "Transmettre la guilde")}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className="gu-bloc">
+            <div className="gu-bloc-tete">
+              <Trash2 aria-hidden="true" style={{ width: 15, height: 15, color: "var(--co-obstacle)" }} />
+              <h2 className="gu-bloc-titre">{t("friends.deleteGuild", "Dissoudre la guilde")}</h2>
+            </div>
+            <div className="gu-corps" style={{ display: "grid", gap: 10 }}>
+              <p className="gu-mot" style={{ margin: 0 }}>
+                {t("friends.deleteGuildConfirm", "Cette action est définitive : membres, messages, objectifs et annonces partent avec elle.")}
+              </p>
+              <input
+                className="gu-champ"
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder={t("guild.typeNameToConfirm", "Écrivez « {{nom}} » pour confirmer", { nom: guild.name })}
+                aria-label={t("guild.typeNameToConfirm", "Écrivez « {{nom}} » pour confirmer", { nom: guild.name })}
+              />
+              <div>
+                <button
+                  type="button"
+                  className="co-bouton gu-danger"
+                  onClick={handleDelete}
+                  disabled={deleteConfirm !== guild.name || deleteGuild.isPending}
+                >
+                  {t("friends.deleteGuild", "Dissoudre la guilde")}
+                </button>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+    </>
   );
 }

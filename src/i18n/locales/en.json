@@ -3051,7 +3051,35 @@
     "xpGained": "{{name}} earned {{amount}} XP",
     "ranking": "Ranking",
     "membersOf_one": "1 member of {{max}}",
-    "membersOf_other": "{{count}} members of {{max}}"
+    "membersOf_other": "{{count}} members of {{max}}",
+    "send": "Send",
+    "searchMember": "Search a member…",
+    "noMemberFound": "No member by that name",
+    "inviteAlly": "Invite an ally",
+    "promote": "Promote to officer",
+    "demote": "Demote",
+    "kick": "Remove from the guild",
+    "role": {
+      "owner": "Founder",
+      "officer": "Officer",
+      "member": "Member"
+    },
+    "goalsOngoing": "Ongoing",
+    "goalsDone": "Completed",
+    "eventPast": "Past",
+    "eventWhen": "Date and time",
+    "eventDuration": "Duration in minutes",
+    "eventMax": "Seats",
+    "eventMinutes": "{{n}} min",
+    "rsvp": {
+      "going": "I am coming",
+      "maybe": "Maybe",
+      "declined": "I pass"
+    },
+    "transferWhy": "The new founder will be able to change everything, including removing you. You become a member.",
+    "transferNobody": "You need at least one other member to hand over the guild.",
+    "pickMember": "Pick a member",
+    "typeNameToConfirm": "Type « {{nom}} » to confirm"
   },
   "analytics": {
     "period": {

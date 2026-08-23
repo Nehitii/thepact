@@ -13,7 +13,7 @@ import { useGuild, useGuildMembers, useGuilds } from "@/hooks/useGuilds";
 import { GuildOverview } from "@/components/guild/GuildOverview";
 import { GuildMembersPanel } from "@/components/guild/GuildMembersPanel";
 import { GuildChat } from "@/components/guild/GuildChat";
-import { GuildGoalsPanel } from "@/components/friends/GuildGoalsPanel";
+import { GuildGoalsPanel } from "@/components/guild/GuildGoalsPanel";
 import { GuildEventsPanel } from "@/components/guild/GuildEventsPanel";
 import { GuildSettingsPage } from "@/components/guild/GuildSettingsPage";
 
