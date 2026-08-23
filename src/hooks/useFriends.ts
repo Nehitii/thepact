@@ -61,7 +61,7 @@ export function useFriends() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      const senderIds = (data ?? []).map((r: any) => r.sender_id);
+      const senderIds = (data ?? []).map((r) => r.sender_id);
       if (senderIds.length === 0) return [];
 
       const { data: profiles } = await supabase
@@ -70,10 +70,10 @@ export function useFriends() {
         .in("id", senderIds);
 
       const profileMap = new Map(
-        (profiles ?? []).map((p: any) => [p.id, p])
+        (profiles ?? []).map((p) => [p.id, p])
       );
 
-      return (data ?? []).map((r: any) => ({
+      return (data ?? []).map((r) => ({
         ...r,
         sender_profile: profileMap.get(r.sender_id) ?? null,
       })) as FriendRequest[];
@@ -95,17 +95,17 @@ export function useFriends() {
       if (error) throw error;
       if (!data || data.length === 0) return [];
 
-      const receiverIds = data.map((r: any) => r.receiver_id);
+      const receiverIds = data.map((r) => r.receiver_id);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, display_name, avatar_url")
         .in("id", receiverIds);
 
       const profileMap = new Map(
-        (profiles ?? []).map((p: any) => [p.id, p])
+        (profiles ?? []).map((p) => [p.id, p])
       );
 
-      return data.map((r: any) => ({
+      return data.map((r) => ({
         ...r,
         receiver_profile: profileMap.get(r.receiver_id) ?? null,
       })) as SentRequest[];
@@ -128,7 +128,7 @@ export function useFriends() {
       const { error } = await supabase.from("friendships").insert({
         sender_id: user.id,
         receiver_id: receiverId,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: invalidateAll,
@@ -139,7 +139,7 @@ export function useFriends() {
     mutationFn: async (friendshipId: string) => {
       const { error } = await supabase
         .from("friendships")
-        .update({ status: "accepted" } as any)
+        .update({ status: "accepted" })
         .eq("id", friendshipId);
       if (error) throw error;
     },
@@ -156,7 +156,7 @@ export function useFriends() {
     mutationFn: async (friendshipId: string) => {
       const { error } = await supabase
         .from("friendships")
-        .update({ status: "declined" } as any)
+        .update({ status: "declined" })
         .eq("id", friendshipId);
       if (error) throw error;
     },
@@ -190,7 +190,7 @@ export function useFriends() {
   // Check friendship status with a specific user
   const getFriendshipStatus = (otherUserId: string): "none" | "pending_sent" | "pending_received" | "accepted" => {
     if (friends.some((f) => f.friend_id === otherUserId)) return "accepted";
-    if (sentRequests.some((r: any) => r.receiver_id === otherUserId)) return "pending_sent";
+    if (sentRequests.some((r) => r.receiver_id === otherUserId)) return "pending_sent";
     if (pendingRequests.some((r) => r.sender_id === otherUserId)) return "pending_received";
     return "none";
   };
@@ -203,13 +203,13 @@ export function useFriends() {
       .from("blocked_users")
       .select("blocked_user_id")
       .eq("user_id", user.id);
-    const blockedIds = (blocked ?? []).map((b: any) => b.blocked_user_id);
+    const blockedIds = (blocked ?? []).map((b) => b.blocked_user_id);
 
     const { data: blockedBy } = await supabase
       .from("blocked_users")
       .select("user_id")
       .eq("blocked_user_id", user.id);
-    const blockedByIds = (blockedBy ?? []).map((b: any) => b.user_id);
+    const blockedByIds = (blockedBy ?? []).map((b) => b.user_id);
 
     const excludeIds = [...new Set([user.id, ...blockedIds, ...blockedByIds])];
 

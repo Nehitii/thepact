@@ -32,7 +32,7 @@ export function GuildActivityFeedPanel({ guildId }: Props) {
       case "guild_created": return t("friends.activityCreated", { name });
       case "member_joined": return t("friends.activityJoined", { name });
       case "member_left": return t("friends.activityLeft", { name });
-      case "goal_contribution": return t("friends.activityContributed", { name, amount: (a.metadata as any)?.amount || 1 });
+      case "goal_contribution": return t("friends.activityContributed", { name, amount: (a.metadata as { amount?: number } | null)?.amount || 1 });
       default: return `${name} — ${a.action_type}`;
     }
   };

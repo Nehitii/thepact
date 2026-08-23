@@ -19,8 +19,16 @@ interface GuildsTabProps {
   guildsLoading: boolean;
   invites: GuildInvite[];
   userId: string;
-  createGuild: { mutateAsync: (data: any) => Promise<any>; isPending: boolean };
-  respondToInvite: { mutateAsync: (data: any) => Promise<void> };
+  /* Les deux mutations viennent de useGuilds ; on reprend leurs
+     signatures plutot que de les effacer derriere « any ». */
+  createGuild: {
+    mutateAsync: (data: {
+      name: string; description?: string; icon?: string;
+      color?: string; is_public?: boolean; max_members?: number;
+    }) => Promise<unknown>;
+    isPending: boolean;
+  };
+  respondToInvite: { mutateAsync: (data: { inviteId: string; guildId: string; accept: boolean }) => Promise<void> };
 }
 
 export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild, respondToInvite }: GuildsTabProps) {
@@ -47,8 +55,8 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
       await joinViaCode.mutateAsync(inviteCode.trim());
       toast.success(t("friends.guildJoined"));
       setInviteCode("");
-    } catch (err: any) {
-      toast.error(err?.message || t("common.error"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     } finally {
       setJoiningCode(false);
     }

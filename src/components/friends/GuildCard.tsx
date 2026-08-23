@@ -1,10 +1,11 @@
 import { Shield, Users, Crown, ChevronRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Guild } from "@/hooks/useGuilds";
 
-const iconMap: Record<string, any> = { shield: Shield, crown: Crown, users: Users };
+const iconMap: Record<string, LucideIcon> = { shield: Shield, crown: Crown, users: Users };
 const colorMap: Record<string, string> = {
   violet: "from-violet-500/20 to-violet-900/10 border-violet-500/30",
   emerald: "from-emerald-500/20 to-emerald-900/10 border-emerald-500/30",
@@ -26,8 +27,8 @@ export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
     if (onClick) onClick();
     else navigate(`/guild/${guild.id}`);
   };
-  const Icon = iconMap[guild.icon] || Shield;
-  const colorClass = colorMap[guild.color] || colorMap.violet;
+  const Icon = iconMap[guild.icon ?? ""] || Shield;
+  const colorClass = colorMap[guild.color ?? ""] || colorMap.violet;
 
   return (
     <button

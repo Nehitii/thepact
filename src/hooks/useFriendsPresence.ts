@@ -32,7 +32,7 @@ export function useFriendsPresence(friendIds: string[]) {
         .in("id", friendIds);
       if (cancelled) return;
       const map: Record<string, string | null> = {};
-      data?.forEach((p: any) => {
+      data?.forEach((p) => {
         map[p.id] = p.last_seen_at ?? null;
       });
       setLastSeenMap(map);
@@ -51,7 +51,7 @@ export function useFriendsPresence(friendIds: string[]) {
           table: "profiles",
           filter: `id=in.(${friendIds.join(",")})`,
         },
-        (payload: any) => {
+        (payload) => {
           const { id, last_seen_at } = payload.new ?? {};
           if (!id) return;
           setLastSeenMap((prev) => ({ ...prev, [id]: last_seen_at ?? null }));

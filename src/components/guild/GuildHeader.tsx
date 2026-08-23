@@ -31,9 +31,10 @@ interface Props {
 export function GuildHeader({ guild, memberCount }: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const Icon = iconMap[guild.icon] || Shield;
-  const colorVar = COLOR_HSL[guild.color] || COLOR_HSL.violet;
-  const accent = ACCENT_KEY[guild.color] || "special";
+  /* icon et color sont nullables en base. */
+  const Icon = iconMap[guild.icon ?? ""] || Shield;
+  const colorVar = COLOR_HSL[guild.color ?? ""] || COLOR_HSL.violet;
+  const accent = ACCENT_KEY[guild.color ?? ""] || "special";
   const factionId = guild.id.slice(0, 8).toUpperCase();
   const max = guild.max_members || 25;
   const isOwner = false; // visual only — real owner badge depends on guild metadata

@@ -1,11 +1,12 @@
 import { Shield, Users, Crown, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import type { LucideIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DSPanel } from "@/components/ds";
 import type { Guild } from "@/hooks/useGuilds";
 
-const iconMap: Record<string, any> = { shield: Shield, crown: Crown, users: Users };
+const iconMap: Record<string, LucideIcon> = { shield: Shield, crown: Crown, users: Users };
 
 const COLOR_HSL: Record<string, string> = {
   violet: "var(--ds-accent-special)",
@@ -24,8 +25,10 @@ interface GuildNodeCardProps {
 export function GuildNodeCard({ guild, isOwner, onClick }: GuildNodeCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const Icon = iconMap[guild.icon] || Shield;
-  const colorVar = COLOR_HSL[guild.color] || COLOR_HSL.violet;
+  /* icon et color sont nullables en base : sans repli sur la CLE,
+     l index vaut null et le repli « || Shield » arrive trop tard. */
+  const Icon = iconMap[guild.icon ?? ""] || Shield;
+  const colorVar = COLOR_HSL[guild.color ?? ""] || COLOR_HSL.violet;
 
   const memberCount = guild.member_count || 1;
   const max = guild.max_members || 25;
