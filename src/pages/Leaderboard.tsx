@@ -11,6 +11,7 @@ import { useCadres, type Cadre } from "@/hooks/community/useCadres";
 import { useCordee, type Grimpeur } from "@/hooks/useCordee";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useRangs } from "@/hooks/useRangs";
+import { avatarSimule } from "@/lib/avatarSimule";
 
 /* LE CLASSEMENT.
  *
@@ -182,6 +183,11 @@ export default function Leaderboard() {
       cle: `g${g.place}`,
       place: 0,
       nom: g.nom,
+      /* Une figure abstraite tiree du nom, comme en posent Linear ou
+         Vercel a qui n a pas depose de photo. Pas un visage : coller
+         des visages sur des comptes qui n existent pas, ce serait
+         fabriquer des gens. */
+      avatar: avatarSimule(g.nom + g.place),
       devise: g.devise,
       xp: g.xp,
       objectifs: g.objectifs,

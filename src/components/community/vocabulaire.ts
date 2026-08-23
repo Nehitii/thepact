@@ -63,9 +63,17 @@ export function Initiales(nom: string | null | undefined): string {
 export function nomAffichable(nom: string | null | undefined, repli: string): string {
   const propre = (nom || "").trim();
   if (!propre) return repli;
-  if (!propre.includes("@")) return propre;
-  const avant = propre.split("@")[0].trim();
-  return avant.length >= 2 ? avant : repli;
+  /* UNE ADRESSE NE S AFFICHE PLUS, MEME AMPUTEE DE SON DOMAINE.
+     Cette fonction retirait le « @gmail.com » et montrait le reste :
+     « geoffrey.luzignant ». Ce n etait pas une anonymisation. On
+     reconstitue l adresse en ajoutant le domaine le plus courant, et
+     le nom et le prenom se lisaient en clair.
+     La base ne laisse plus entrer d adresse dans display_name — un
+     declencheur la remplace par un pseudonyme a l ecriture. Ceci n est
+     donc qu un dernier rempart, pour une donnee ancienne ou venue
+     d ailleurs : on prefere « Agent Inconnu » a une adresse. */
+  if (propre.includes("@")) return repli;
+  return propre;
 }
 
 /* LA TEINTE D UN AVATAR SANS IMAGE.
