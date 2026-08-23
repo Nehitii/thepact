@@ -1,57 +1,55 @@
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { HandHeart, Medal, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { REPLI_REACTION, type TypeReaction } from "./vocabulaire";
 
-type ReactionType = 'support' | 'respect' | 'inspired';
+/* LES TROIS REACTIONS.
+ *
+ * Support, Respect, Inspire : le vocabulaire d engagement propre a
+ * Vowpact, la ou les autres reseaux n ont qu un like. On le garde.
+ *
+ * Ce qui change, c est ce qui le porte. Trois emoji — 💪 🫡 ⚡ —
+ * tenaient lieu d icones : ils sont dessines differemment sur chaque
+ * systeme, ne s alignent pas sur la ligne de base du texte, et ne
+ * peuvent ni prendre la couleur du texte ni s epaissir. Trois icones
+ * dessinees les remplacent, meme graisse, meme taille.
+ *
+ * Chaque bouton etait aussi une pastille bordee et remplie, en
+ * permanence. Au repos, une reaction n est plus qu une icone grise
+ * et un chiffre ; la couleur n arrive que lorsqu on la pose — c est
+ * alors le seul moment anime de la page. */
 
-interface ReactionButtonProps {
-  type: ReactionType;
+const ICONES = { support: HandHeart, respect: Medal, inspired: Zap } as const;
+
+interface Props {
+  type: TypeReaction;
   count: number;
   isActive: boolean;
   onToggle: () => void;
-  size?: 'sm' | 'md';
+  /** Sur la scene video, l icone grossit et le libelle disparait. */
+  variante?: "fil" | "scene";
 }
 
-const reactionConfig: Record<ReactionType, { emoji: string; label: string; activeClasses: string }> = {
-  support: {
-    emoji: "💪",
-    label: "Support",
-    activeClasses: "bg-emerald-500/15 border-emerald-500/50 text-emerald-300"
-  },
-  respect: {
-    emoji: "🫡",
-    label: "Respect",
-    activeClasses: "bg-amber-500/15 border-amber-500/50 text-amber-300"
-  },
-  inspired: {
-    emoji: "⚡",
-    label: "Inspired",
-    activeClasses: "bg-violet-500/15 border-violet-500/50 text-violet-300"
-  }
-};
-
-export function ReactionButton({ type, count, isActive, onToggle, size = 'md' }: ReactionButtonProps) {
-  const config = reactionConfig[type];
+export function ReactionButton({ type, count, isActive, onToggle, variante = "fil" }: Props) {
+  const { t } = useTranslation();
+  const Icone = ICONES[type];
+  const libelle = t(`community.reactions.${type}`, REPLI_REACTION[type]);
 
   return (
-    <motion.button
-      onClick={onToggle}
-      whileTap={{ scale: 0.9 }}
-      className={cn(
-        "flex items-center gap-1.5 rounded-full transition-all border font-medium",
-        size === 'sm' ? "px-2 py-1 gap-1 ds-t-label" : "px-3.5 py-1.5 text-xs",
-        isActive
-          ? config.activeClasses
-          : "bg-muted border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground hover:bg-primary/8"
-      )}
+    <button
+      type="button"
+      className="co-action"
+      data-reaction={type}
+      aria-pressed={isActive}
+      aria-label={`${libelle} · ${count}`}
+      title={libelle}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
     >
-      <motion.span
-        animate={isActive ? { scale: [1, 1.3, 1] } : {}}
-        transition={{ duration: 0.3 }}
-        className={size === 'sm' ? "text-xs" : "text-sm"}
-      >
-        {config.emoji}
-      </motion.span>
-      <span>{count > 0 ? count : config.label}</span>
-    </motion.button>
+      <Icone aria-hidden="true" />
+      <span>{count > 0 ? count : ""}</span>
+      {variante === "scene" && <em style={{ fontStyle: "normal", fontSize: 11 }}>{libelle}</em>}
+    </button>
   );
 }

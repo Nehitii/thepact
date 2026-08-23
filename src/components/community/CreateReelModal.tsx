@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 import { useCreateVictoryReel, useCompletedGoals } from "@/hooks/useCommunity";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +26,7 @@ interface CreateReelModalProps {
 
 export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { profile } = useProfileSettings();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,8 +104,12 @@ export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
 
       setUploadProgress(90);
 
+      /* Le nom de l objectif part avec la video. RLS empeche les
+         autres de lire cet objectif : sans cette copie, leur fil
+         affiche une victoire sans dire de quoi elle est la victoire. */
       await createReel.mutateAsync({
         goal_id: selectedGoalId,
+        goal_name: completedGoals?.find((g) => g.id === selectedGoalId)?.name ?? null,
         video_url: fileName, // Store path, not public URL
         caption: caption || undefined,
         duration_seconds: duration
@@ -116,9 +122,13 @@ export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
       setSelectedGoalId("");
       setCaption("");
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to create reel:", error);
-      toast.error(error.message || "Failed to upload video");
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : t("community.reels.uploadFailed", "Le televersement de la video a echoue"),
+      );
     } finally {
       setIsUploading(false);
       setUploadProgress(0);

@@ -1,229 +1,134 @@
-import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX, Eye, Calendar, Target } from "lucide-react";
-import { formatDistanceToNow, differenceInDays } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+import { Eye, Pause, Play, Target, Volume2, VolumeX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ReactionButton } from "./ReactionButton";
-import { 
-  VictoryReel, 
-  useAddReaction, 
+import { Initiales, nomAffichable, REACTIONS, type TypeReaction } from "./vocabulaire";
+import {
+  VictoryReel,
+  useAddReaction,
   useRemoveReaction,
-  useIncrementReelView
+  useIncrementReelView,
 } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
 
-interface VictoryReelCardProps {
-  reel: VictoryReel;
-  isActive: boolean;
-}
+/* UNE VIDEO DE VICTOIRE — plein cadre, vertical, une a la fois.
+ *
+ * C est la grammaire de Snapchat et des Reels : la video occupe la
+ * surface, l interface se retire sur les bords et repose sur un
+ * degrade plutot que sur des boites. Les trois reactions passent en
+ * colonne a droite, comme sur les deux references.
+ *
+ * L objectif celebre s affiche depuis goal_name — la copie figee a la
+ * publication — quand la jointure ne rend rien, ce qui est le cas de
+ * toutes les videos qui ne sont pas les notres : RLS ne laisse voir
+ * que ses propres objectifs. Sans elle, une victoire s affichait sans
+ * dire de quoi elle etait la victoire. */
 
-export function VictoryReelCard({ reel, isActive }: VictoryReelCardProps) {
+export function VictoryReelCard({ reel, isActive }: { reel: VictoryReel; isActive: boolean }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [hasViewed, setHasViewed] = useState(false);
-  
-  const addReaction = useAddReaction();
-  const removeReaction = useRemoveReaction();
-  const incrementView = useIncrementReelView();
-  
-  // Auto-play when active
+  const video = useRef<HTMLVideoElement>(null);
+  const [joue, setJoue] = useState(false);
+  const [muet, setMuet] = useState(true);
+  const [vue, setVue] = useState(false);
+
+  const poser = useAddReaction();
+  const retirer = useRemoveReaction();
+  const compterVue = useIncrementReelView();
+
   useEffect(() => {
-    if (isActive && videoRef.current) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-      
-      // Track view
-      if (!hasViewed) {
-        setHasViewed(true);
-        incrementView.mutate(reel.id);
-      }
-    } else if (videoRef.current) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-  }, [isActive, reel.id, hasViewed]);
-  
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-  
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-  
-  const handleReaction = (type: 'support' | 'respect' | 'inspired') => {
-    if (!user) return;
-    
-    const isActive = reel.user_reactions?.includes(type);
+    const el = video.current;
+    if (!el) return;
     if (isActive) {
-      removeReaction.mutate({ reel_id: reel.id, reaction_type: type });
+      el.play().then(() => setJoue(true)).catch(() => {});
+      if (!vue) {
+        setVue(true);
+        compterVue.mutate(reel.id);
+      }
     } else {
-      addReaction.mutate({ reel_id: reel.id, reaction_type: type });
+      el.pause();
+      setJoue(false);
     }
+    // compterVue est une mutation stable ; la reinscrire relancerait la vue.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, reel.id, vue]);
+
+  const basculerLecture = () => {
+    const el = video.current;
+    if (!el) return;
+    if (joue) { el.pause(); setJoue(false); }
+    else { el.play().catch(() => {}); setJoue(true); }
   };
-  
-  const isDiscoverable = reel.profile?.community_profile_discoverable ?? true;
-  const canShowGoals = reel.profile?.share_goals_progress ?? true;
-  const displayName = isDiscoverable ? (reel.profile?.display_name || "Anonymous") : "Anonymous";
-  const initials = displayName.slice(0, 2).toUpperCase();
-  const avatarUrl = isDiscoverable ? reel.profile?.avatar_url || undefined : undefined;
-  
-  // Calculate pact duration
-  const pactDuration = reel.goal?.start_date && reel.goal?.completion_date
-    ? differenceInDays(new Date(reel.goal.completion_date), new Date(reel.goal.start_date))
-    : null;
-  
+
+  const basculerReaction = (type: TypeReaction) => {
+    if (!user) return;
+    if (reel.user_reactions?.includes(type)) retirer.mutate({ reel_id: reel.id, reaction_type: type });
+    else poser.mutate({ reel_id: reel.id, reaction_type: type });
+  };
+
+  const decouvrable = reel.profile?.community_profile_discoverable ?? true;
+  const objectifVisible = reel.profile?.share_goals_progress ?? true;
+  const anonyme = t("community.post.anonymous", "Anonyme");
+  const nom = decouvrable ? nomAffichable(reel.profile?.display_name, anonyme) : anonyme;
+  const objectif = objectifVisible ? reel.goal?.name : null;
+
   return (
-    <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {/* Video */}
+    <div className="co-scene">
       <video
-        ref={videoRef}
+        ref={video}
         src={reel.video_url}
-        poster={reel.thumbnail_url || undefined}
+        muted={muet}
         loop
-        muted={isMuted}
         playsInline
-        className="w-full h-full object-cover"
-        onClick={togglePlay}
+        preload="metadata"
+        poster={reel.thumbnail_url || undefined}
+        onClick={basculerLecture}
       />
-      
-      {/* Play/Pause overlay */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isPlaying ? 0 : 1 }}
-        className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none"
-      >
-        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <Play className="w-8 h-8 text-white fill-white ml-1" />
-        </div>
-      </motion.div>
-      
-      {/* Top gradient */}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-      
-      {/* Bottom gradient and info */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-20 pb-6 px-4">
-        {/* Goal info - minimal, human-focused */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-white text-lg">
-              {canShowGoals ? (reel.goal?.name || "Goal Achieved") : "Goal Achieved"}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-3 flex-wrap">
-            {canShowGoals && reel.goal?.type && (
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                {reel.goal.type}
-              </Badge>
-            )}
-            {pactDuration !== null && (
-              <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{pactDuration} days journey</span>
-              </div>
-            )}
-          </div>
-          
-          {reel.caption && (
-            <p className="text-white/90 text-sm leading-relaxed">{reel.caption}</p>
+
+      <div className="co-nav" style={{ top: 12, transform: "none" }}>
+        <button type="button" onClick={basculerLecture} aria-label={joue ? t("community.reels.pause", "Pause") : t("community.reels.play", "Lecture")}>
+          {joue ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+        </button>
+        <button type="button" onClick={() => setMuet((v) => !v)} aria-label={muet ? t("community.reels.unmute", "Activer le son") : t("community.reels.mute", "Couper le son")}>
+          {muet ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
+        </button>
+      </div>
+
+      <div className="co-scene-cote">
+        {REACTIONS.map((type) => (
+          <ReactionButton
+            key={type}
+            type={type}
+            count={reel.reactions_count?.[type] ?? 0}
+            isActive={!!reel.user_reactions?.includes(type)}
+            onToggle={() => basculerReaction(type)}
+            variante="scene"
+          />
+        ))}
+        <span className="co-action" style={{ flexDirection: "column", gap: 3, color: "#fff", height: "auto" }}>
+          <Eye aria-hidden="true" />
+          <span>{reel.view_count || 0}</span>
+        </span>
+      </div>
+
+      <div className="co-scene-bas">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          {decouvrable && reel.profile?.avatar_url ? (
+            <img className="co-avatar co-avatar--petit" src={reel.profile.avatar_url} alt="" />
+          ) : (
+            <span className="co-avatar co-avatar--petit" aria-hidden="true">{Initiales(nom)}</span>
           )}
+          <p className="co-scene-titre">{nom}</p>
         </div>
-        
-        {/* User info */}
-        <div className="flex items-center gap-3">
-          <Avatar className="w-9 h-9 ring-2 ring-white/30">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-primary/20 text-white text-sm">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <span className="text-white font-medium text-sm">{displayName}</span>
-            <div className="flex items-center gap-2 text-white/60 text-xs">
-              <Eye className="w-3 h-3" />
-              <span>{reel.view_count} views</span>
-              <span>•</span>
-              <span>{formatDistanceToNow(new Date(reel.created_at), { addSuffix: true })}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Right side reactions */}
-      <div className="absolute right-4 bottom-40 flex flex-col gap-4">
-        <div className="flex flex-col items-center gap-1">
-          <button
-            onClick={() => handleReaction('support')}
-            className={cn(
-              "w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all",
-              reel.user_reactions?.includes('support') && "bg-rose-500/30"
-            )}
-          >
-            <motion.div whileTap={{ scale: 1.3 }}>
-              <span className="text-2xl">{reel.user_reactions?.includes('support') ? '❤️' : '🤍'}</span>
-            </motion.div>
-          </button>
-          <span className="text-white text-xs font-medium">{reel.reactions_count?.support || 0}</span>
-        </div>
-        
-        <div className="flex flex-col items-center gap-1">
-          <button
-            onClick={() => handleReaction('respect')}
-            className={cn(
-              "w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all",
-              reel.user_reactions?.includes('respect') && "bg-amber-500/30"
-            )}
-          >
-            <motion.div whileTap={{ scale: 1.3 }}>
-              <span className="text-2xl">🏆</span>
-            </motion.div>
-          </button>
-          <span className="text-white text-xs font-medium">{reel.reactions_count?.respect || 0}</span>
-        </div>
-        
-        <div className="flex flex-col items-center gap-1">
-          <button
-            onClick={() => handleReaction('inspired')}
-            className={cn(
-              "w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all",
-              reel.user_reactions?.includes('inspired') && "bg-primary/30"
-            )}
-          >
-            <motion.div whileTap={{ scale: 1.3 }}>
-              <span className="text-2xl">✨</span>
-            </motion.div>
-          </button>
-          <span className="text-white text-xs font-medium">{reel.reactions_count?.inspired || 0}</span>
-        </div>
-      </div>
-      
-      {/* Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
-          onClick={toggleMute}
-        >
-          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-        </Button>
+
+        {objectif && (
+          <span className="co-objectif" style={{ marginTop: 0, marginBottom: 8, borderColor: "rgb(255 255 255 / 0.22)", color: "rgb(255 255 255 / 0.9)" }}>
+            <Target aria-hidden="true" />
+            <b style={{ color: "#fff" }}>{objectif}</b>
+          </span>
+        )}
+
+        {reel.caption && <p className="co-scene-legende">{reel.caption}</p>}
       </div>
     </div>
   );

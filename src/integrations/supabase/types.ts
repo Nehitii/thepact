@@ -4683,6 +4683,7 @@ export type Database = {
           created_at: string
           duration_seconds: number
           goal_id: string
+          goal_name: string | null
           id: string
           inspired_count: number
           is_public: boolean
@@ -4699,6 +4700,7 @@ export type Database = {
           created_at?: string
           duration_seconds: number
           goal_id: string
+          goal_name: string | null
           id?: string
           inspired_count?: number
           is_public?: boolean
@@ -4715,6 +4717,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           goal_id?: string
+          goal_name?: string | null
           id?: string
           inspired_count?: number
           is_public?: boolean

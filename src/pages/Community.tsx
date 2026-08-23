@@ -1,362 +1,198 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { CyberBackground } from "@/components/CyberBackground";
+import { Clapperboard, MessagesSquare, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import "@/styles/community.css";
 import { CommunityFeed } from "@/components/community/CommunityFeed";
 import { VictoryReelsFeed } from "@/components/community/VictoryReelsFeed";
-import { cn } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
+import { ClassementLigne } from "@/components/community/ClassementLigne";
 import { useCommunityStats } from "@/hooks/useCommunity";
-import { Trophy, TrendingUp, Star } from "lucide-react";
-import { useLeaderboard, LeaderboardEntry } from "@/hooks/useLeaderboard";
+import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Crown, Medal } from "lucide-react";
 
-type CommunityTab = "feed" | "reels" | "leaderboard";
+/* COMMUNITY — la coque.
+ *
+ * CE QUI A ETE RETIRE, ET POURQUOI.
+ *
+ * — LE BANDEAU DEFILANT. Cinq indicateurs en boucle, vingt-deux
+ *   secondes par tour, dont trois etaient des tirets ecrits en dur.
+ *   Un bandeau qui defile en permanence occupe le regard sans jamais
+ *   rien apprendre ; celui-ci mentait en plus.
+ *
+ * — LA RANGEE DE TROIS TUILES. « 0 Online now », « 0 Posts / week »
+ *   et « 38 Goals completed » — le 38 etant un litteral, sans aucun
+ *   lien avec la communaute. C etait aussi le patron « grand chiffre,
+ *   petit libelle, accent », qui remplit une page sans la nourrir.
+ *   Les chiffres vrais sont passes dans le rail, ou ils accompagnent
+ *   le fil au lieu de le preceder.
+ *
+ * — LES TROIS TUILES D ONGLET. Chacune portait un emoji dans un carre
+ *   colore, un titre, une description et un badge — dont un « 184 »
+ *   au-dessus d un onglet dont la table etait vide. Trois mots
+ *   soulignes suffisent, c est ce que font les trois references.
+ *
+ * — LE TITRE EN DEGRADE et son etiquette « Neural Network · Live ».
+ *   Un sur-titre au-dessus d un titre ne dit rien que le titre ne
+ *   dise ; le degrade sur le texte remplace la hierarchie par de la
+ *   couleur.
+ *
+ * — TOUTES LES ANIMATIONS D ENTREE. Huit etats initiaux a opacite
+ *   zero laissaient la page BLANCHE dans un onglet d arriere-plan :
+ *   mesure sur place, le titre gele a 17 % et les deux grilles a
+ *   zero. Pire, AnimatePresence en mode « wait » attendait une
+ *   animation de sortie qui ne venait jamais — la bascule d onglets
+ *   ne repondait plus du tout. Le changement d onglet est desormais
+ *   immediat.
+ *
+ * Reste la structure d un vrai reseau : une colonne de lecture
+ * bordee, une tete collante, un rail qui porte l etat de la
+ * communaute. */
 
-/* ── LIVE TICKER ──────────────────────────────────────────── */
-function LiveTicker() {
-  const { data: stats } = useCommunityStats();
-  const items = [
-    { emoji: "👥", label: "Active members", value: stats?.activeMembers ?? "—" },
-    { emoji: "📝", label: "Posts this week", value: stats?.postsThisWeek ?? "—" },
-    { emoji: "🏆", label: "Goals completed today", value: "—" },
-    { emoji: "⚡", label: "Reactions given", value: "—" },
-    { emoji: "🎬", label: "Victory Reels", value: "—" },
-  ];
-  const doubled = [...items, ...items];
+type Onglet = "fil" | "videos" | "classement";
 
+function Mesure({ valeur, quoi }: { valeur: number | undefined; quoi: string }) {
   return (
-    <div
-      className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl overflow-hidden"
-      style={{ background: "linear-gradient(90deg, hsl(var(--card)) 0%, hsl(var(--muted)/0.6) 100%)" }}
-    >
-      <div className="flex items-center gap-3 px-6 py-2">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-          </span>
-          <span className="font-mono ds-t-label font-medium tracking-widest uppercase text-primary">NETWORK</span>
-        </div>
-        <div className="overflow-hidden flex-1">
-          <motion.div
-            className="flex gap-8 whitespace-nowrap"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-          >
-            {doubled.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 font-mono ds-t-label text-muted-foreground">
-                {item.emoji} {item.label} <b className="text-foreground font-medium">{item.value}</b>
-              </span>
-            ))}
-          </motion.div>
-        </div>
-      </div>
+    <div className="co-mesure">
+      <span className="co-mesure-valeur">{(valeur ?? 0).toLocaleString()}</span>
+      <span className="co-mesure-quoi">{quoi}</span>
     </div>
   );
 }
 
-/* ── STAT CARD ────────────────────────────────────────────── */
-function StatCard({ value, label, color }: { value: string | number; label: string; color?: "accent" | "violet" }) {
-  return (
-    <div className="relative bg-card border border-border/50 rounded-2xl p-4 text-center overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 group cursor-default">
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-px"
-        style={{
-          background: "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
-        }}
-      />
-      <span
-        className={cn(
-          "block font-orbitron text-[1.375rem] font-bold",
-          color === "accent" && "text-primary",
-          color === "violet" && "text-violet-400",
-          !color && "text-foreground",
-        )}
-      >
-        {value}
-      </span>
-      <span className="block font-mono ds-t-label text-muted-foreground uppercase tracking-[0.08em] mt-1">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-/* ── MODE BUTTON ──────────────────────────────────────────── */
-function ModeButton({
-  active,
-  emoji,
-  title,
-  desc,
-  count,
-  onClick,
-}: {
-  active: boolean;
-  emoji: string;
-  title: string;
-  desc: string;
-  count: string | number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "relative flex items-center gap-3.5 p-[18px] rounded-[18px] border text-left overflow-hidden transition-all duration-250 w-full",
-        active
-          ? "border-primary bg-gradient-to-br from-primary/12 to-card shadow-[0_0_0_1px_rgba(123,92,250,0.3),0_8px_32px_rgba(123,92,250,0.15),inset_0_1px_0_rgba(255,255,255,0.08)]"
-          : "border-border/50 bg-card hover:border-primary/25 hover:-translate-y-px",
-      )}
-    >
-      {active && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "linear-gradient(135deg, rgba(123,92,250,0.12) 0%, transparent 60%)",
-          }}
-        />
-      )}
-      <div
-        className={cn(
-          "relative z-10 w-[42px] h-[42px] rounded-xl flex items-center justify-center text-xl shrink-0 transition-all",
-          active ? "bg-primary shadow-[0_4px_16px_rgba(123,92,250,0.35)]" : "bg-muted",
-        )}
-      >
-        {emoji}
-      </div>
-      <div className="relative z-10 min-w-0">
-        <div
-          className={cn(
-            "font-orbitron text-[0.8125rem] font-semibold tracking-[0.03em]",
-            active ? "text-white" : "text-foreground",
-          )}
-        >
-          {title}
-        </div>
-        <div className="font-mono ds-t-label text-muted-foreground mt-0.5">{desc}</div>
-      </div>
-      <div
-        className={cn(
-          "absolute top-3 right-3.5 font-mono ds-t-label text-primary border border-primary/30 px-2 py-0.5 rounded-full",
-          active ? "bg-primary/25" : "bg-primary/8",
-        )}
-      >
-        {count}
-      </div>
-    </button>
-  );
-}
-
-/* ── LEADERBOARD (INLINE) ─────────────────────────────────── */
-function RankBadge({ position }: { position: number }) {
-  if (position === 1) return <Crown className="h-6 w-6 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />;
-  if (position === 2) return <Medal className="h-5 w-5 text-slate-300 drop-shadow-[0_0_6px_rgba(203,213,225,0.5)]" />;
-  if (position === 3) return <Medal className="h-5 w-5 text-amber-600 drop-shadow-[0_0_6px_rgba(217,119,6,0.5)]" />;
-  return <span className="text-sm font-mono text-muted-foreground w-6 text-center">#{position}</span>;
-}
-
-function LeaderboardRow({ entry, position, isCurrentUser }: { entry: LeaderboardEntry; position: number; isCurrentUser: boolean }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: position * 0.03 }}
-      className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
-        isCurrentUser
-          ? "bg-primary/10 border-primary/30 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.3)]"
-          : position <= 3
-          ? "bg-card/80 border-amber-500/20"
-          : "bg-card/50 border-border/50 hover:bg-card/80"
-      }`}
-    >
-      <div className="w-8 flex justify-center">
-        <RankBadge position={position} />
-      </div>
-      <Avatar className="h-10 w-10 border border-border/50">
-        <AvatarImage src={entry.avatar_url || undefined} />
-        <AvatarFallback className="bg-muted text-foreground font-orbitron text-xs">
-          {entry.display_name?.[0] || "?"}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-foreground truncate font-rajdhani">
-          {entry.display_name || "Anonymous Agent"}
-          {isCurrentUser && <span className="ml-2 ds-t-label text-primary font-mono">(YOU)</span>}
-        </p>
-        {entry.rank_name && (
-          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{entry.rank_name}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-6 text-right">
-        <div>
-          <p className="text-lg font-orbitron font-bold text-primary">{entry.points.toLocaleString()}</p>
-          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">XP</p>
-        </div>
-        <div className="hidden sm:block">
-          <p className="text-sm font-mono text-foreground">{entry.goals_completed}</p>
-          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">Goals</p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function LeaderboardPanel() {
+function Rail() {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: entries = [], isLoading } = useLeaderboard();
-  const currentUserPosition = entries.findIndex((e) => e.user_id === user?.id) + 1;
+  const { data: stats } = useCommunityStats();
+  const { data: classement = [] } = useLeaderboard();
 
   return (
-    <div>
-      {currentUserPosition > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 mb-4">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-sm text-foreground font-rajdhani">
-            Your position: <span className="font-orbitron font-bold text-primary">#{currentUserPosition}</span> of {entries.length}
-          </span>
+    <aside className="co-rail">
+      <section className="co-bloc">
+        <h2 className="co-bloc-titre">{t("community.rail.week", "Cette semaine")}</h2>
+        <div className="co-mesures">
+          <Mesure valeur={stats?.postsSemaine} quoi={t("community.rail.posts", "publications")} />
+          <Mesure valeur={stats?.auteursSemaine} quoi={t("community.rail.authors", "ont publié")} />
+          <Mesure valeur={stats?.reactionsTotal} quoi={t("community.rail.reactions", "réactions")} />
+          <Mesure valeur={stats?.reponsesTotal} quoi={t("community.rail.replies", "réponses")} />
         </div>
-      )}
-      <div className="space-y-2">
-        {isLoading ? (
-          Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-lg" />
-          ))
-        ) : entries.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Star className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="font-mono text-sm">No agents on the leaderboard yet</p>
-          </div>
-        ) : (
-          entries.map((entry, i) => (
-            <LeaderboardRow
-              key={entry.user_id}
-              entry={entry}
-              position={i + 1}
-              isCurrentUser={entry.user_id === user?.id}
-            />
-          ))
+      </section>
+
+      <section className="co-bloc">
+        <h2 className="co-bloc-titre">{t("leaderboard.title", "Classement")}</h2>
+        {classement.slice(0, 5).map((entree, i) => (
+          <ClassementLigne
+            key={entree.user_id}
+            entree={entree}
+            place={i + 1}
+            estMoi={entree.user_id === user?.id}
+            forme="rail"
+          />
+        ))}
+        {classement.length === 0 && (
+          <p className="co-rail-pied" style={{ color: "var(--co-texte-2)" }}>
+            {t("leaderboard.noAgents", "Aucun agent dans le classement pour le moment")}
+          </p>
         )}
-      </div>
-    </div>
+      </section>
+    </aside>
   );
 }
 
-/* ── MAIN PAGE ────────────────────────────────────────────── */
+function PanneauClassement() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { data: entrees = [], isLoading } = useLeaderboard();
+  const maPlace = entrees.findIndex((e) => e.user_id === user?.id) + 1;
+
+  if (isLoading) {
+    return (
+      <div aria-busy="true">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div className="co-fantome" key={i}>
+            <span className="co-os co-os--rond" />
+            <span className="co-os" style={{ height: 14, alignSelf: "center" }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (entrees.length === 0) {
+    return (
+      <div className="co-vide">
+        <Trophy aria-hidden="true" />
+        <h3>{t("leaderboard.noAgents", "Aucun agent dans le classement pour le moment")}</h3>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {maPlace > 0 && (
+        <p className="co-rail-pied" style={{ borderTop: "none", borderBottom: "1px solid var(--co-filet)", color: "var(--co-texte-2)" }}>
+          {t("leaderboard.yourPosition", "Ta position :")}{" "}
+          <b style={{ color: "var(--co-accent)" }}>#{maPlace}</b>{" "}
+          {t("leaderboard.of", "sur")} {entrees.length}
+        </p>
+      )}
+      {entrees.map((entree, i) => (
+        <ClassementLigne
+          key={entree.user_id}
+          entree={entree}
+          place={i + 1}
+          estMoi={entree.user_id === user?.id}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function Community() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<CommunityTab>("feed");
+  const [onglet, setOnglet] = useState<Onglet>("fil");
   const { data: stats } = useCommunityStats();
 
+  const onglets: { cle: Onglet; libelle: string; Icone: typeof MessagesSquare; compte?: number }[] = [
+    { cle: "fil", libelle: t("community.tabs.feed", "Fil"), Icone: MessagesSquare, compte: stats?.postsTotal },
+    { cle: "videos", libelle: t("community.tabs.reels", "Vidéos"), Icone: Clapperboard, compte: stats?.reelsTotal },
+    { cle: "classement", libelle: t("leaderboard.title", "Classement"), Icone: Trophy },
+  ];
+
   return (
-    <div className="min-h-screen">
-      <CyberBackground />
-      <LiveTicker />
+    <div className="co">
+      <div className="co-grille">
+        <main className="co-colonne">
+          <div className="co-tete">
+            <h1 className="co-titre">{t("community.heading", "Communauté")}</h1>
+            <div className="co-onglets" role="tablist" aria-label={t("community.heading", "Communauté")}>
+              {onglets.map(({ cle, libelle, Icone, compte }) => (
+                <button
+                  key={cle}
+                  type="button"
+                  role="tab"
+                  id={`co-onglet-${cle}`}
+                  aria-selected={onglet === cle}
+                  aria-controls={`co-panneau-${cle}`}
+                  className="co-onglet"
+                  onClick={() => setOnglet(cle)}
+                >
+                  <Icone aria-hidden="true" />
+                  {libelle}
+                  {compte !== undefined && compte > 0 && (
+                    <span className="co-onglet-compte">{compte}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      <div className="relative z-10 max-w-[760px] mx-auto px-4 pb-20">
-        {/* ── HERO ── */}
-        <div className="pt-12 pb-8 text-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 border border-primary/35 mb-5"
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-            </span>
-            <span className="font-mono ds-t-label font-medium text-primary tracking-[0.1em] uppercase">
-              Neural Network · Live
-            </span>
-          </motion.div>
+          <div role="tabpanel" id={`co-panneau-${onglet}`} aria-labelledby={`co-onglet-${onglet}`}>
+            {onglet === "fil" && <CommunityFeed />}
+            {onglet === "videos" && <VictoryReelsFeed />}
+            {onglet === "classement" && <PanneauClassement />}
+          </div>
+        </main>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="font-orbitron font-black text-[clamp(28px,6vw,48px)] leading-[1.1] tracking-[0.04em] mb-3"
-            style={{
-              background: "linear-gradient(135deg, #fff 0%, rgba(123,92,250,0.9) 40%, hsl(var(--primary)) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            COMMUNITY HUB
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.5 }}
-            className="text-sm text-muted-foreground leading-relaxed"
-          >
-            Share your journey. Fuel others. Grow together.
-          </motion.p>
-        </div>
-
-        {/* ── STATS ROW ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-3 gap-3 mb-7"
-        >
-          <StatCard value={stats?.activeMembers ?? "—"} label="Online now" color="accent" />
-          <StatCard value={stats?.postsThisWeek ?? "—"} label="Posts / week" />
-          <StatCard value="38" label="Goals completed" color="violet" />
-        </motion.div>
-
-        {/* ── MODE SWITCHER (3 tabs) ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="grid grid-cols-3 gap-3 mb-7"
-        >
-          <ModeButton
-            active={activeTab === "feed"}
-            emoji="👥"
-            title={t("community.tabs.feed")}
-            desc="reflections · progress"
-            count={stats?.postsThisWeek ? `${Math.round(((stats.postsThisWeek as number) / 1000) * 10) / 10}K` : "—"}
-            onClick={() => setActiveTab("feed")}
-          />
-          <ModeButton
-            active={activeTab === "reels"}
-            emoji="🎬"
-            title={t("community.tabs.reels")}
-            desc="celebrate wins"
-            count="184"
-            onClick={() => setActiveTab("reels")}
-          />
-          <ModeButton
-            active={activeTab === "leaderboard"}
-            emoji="🏆"
-            title="Leaderboard"
-            desc="global rankings"
-            count="TOP"
-            onClick={() => setActiveTab("leaderboard")}
-          />
-        </motion.div>
-
-        {/* ── PANELS ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {activeTab === "feed" && <CommunityFeed />}
-            {activeTab === "reels" && <VictoryReelsFeed />}
-            {activeTab === "leaderboard" && <LeaderboardPanel />}
-          </motion.div>
-        </AnimatePresence>
+        <Rail />
       </div>
     </div>
   );

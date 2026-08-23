@@ -1677,13 +1677,27 @@
       "createPost": "Créer une publication",
       "noPostsTitle": "Pas encore de publications",
       "noPostsDesc": "Sois le premier à partager ton parcours",
-      "loading": "Chargement des publications…"
+      "loading": "Chargement des publications…",
+      "placeholder": "Quoi de neuf sur ton pacte ?",
+      "published": "Publié",
+      "publishFailed": "La publication a échoué",
+      "more": "Voir plus"
     },
     "reels": {
       "createReel": "Créer une vidéo",
       "noReelsTitle": "Pas encore de vidéos de victoire",
       "noReelsDesc": "Partage tes objectifs accomplis avec la communauté",
-      "views": "{{count}} vues"
+      "views": "{{count}} vues",
+      "caption": "Légende",
+      "goal": "Objectif accompli",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "of": "sur",
+      "play": "Lecture",
+      "pause": "Pause",
+      "mute": "Couper le son",
+      "unmute": "Activer le son",
+      "uploadFailed": "Le téléversement de la vidéo a échoué"
     },
     "post": {
       "like": "J'aime",
@@ -1695,7 +1709,18 @@
       "comments": "Commentaires",
       "noComments": "Pas encore de commentaires",
       "addComment": "Ajouter un commentaire...",
-      "postComment": "Publier"
+      "postComment": "Publier",
+      "anonymous": "Anonyme",
+      "you": "Vous",
+      "edited": "modifié",
+      "actions": "Actions",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "updated": "Publication modifiée",
+      "updateFailed": "La modification a échoué",
+      "deleted": "Publication supprimée",
+      "deleteFailed": "La suppression a échoué",
+      "loadingReplies": "Chargement des réponses…"
     },
     "create": {
       "title": "Créer une publication",
@@ -1706,14 +1731,38 @@
       "public": "Public",
       "private": "Privé",
       "posting": "Publication…",
-      "post": "Publier"
+      "post": "Publier",
+      "noGoal": "Aucun objectif"
     },
     "reactions": {
-      "fire": "Feu",
-      "love": "Amour",
-      "clap": "Bravo",
-      "strong": "Force",
-      "brain": "Génie"
+      "support": "Soutien",
+      "respect": "Respect",
+      "inspired": "Inspiré"
+    },
+    "heading": "Communauté",
+    "natures": {
+      "reflection": "Réflexion",
+      "progress": "Progression",
+      "obstacle": "Obstacle",
+      "mindset": "Mental",
+      "help_request": "Besoin d'aide",
+      "encouragement": "Encouragement"
+    },
+    "filters": {
+      "title": "Filtrer le fil",
+      "all": "Tout"
+    },
+    "sort": {
+      "recent": "Récents",
+      "popular": "Populaires",
+      "label": "Trier le fil"
+    },
+    "rail": {
+      "week": "Cette semaine",
+      "posts": "publications",
+      "authors": "ont publié",
+      "reactions": "réactions",
+      "replies": "réponses"
     }
   },
   "wishlist": {

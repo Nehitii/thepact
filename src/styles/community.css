@@ -1,0 +1,822 @@
+/* ═══════════════════════════════════════════════════════════════
+   COMMUNITY — un vrai reseau, pas une maquette
+   ═══════════════════════════════════════════════════════════════
+
+   CE QUI FAISAIT « MAQUETTE », ET CE QUI LE REMPLACE.
+
+   L ancienne page empilait des cartes : chaque post dans son
+   rectangle a bord arrondi de 20px, chaque statistique dans le sien,
+   chaque onglet dans une tuile de 18px de rayon avec un emoji dans un
+   carre colore. Un fil de discussion n est pas une collection de
+   cartes — X, Instagram et Snapchat n en posent aucune. Une
+   conversation est une SUITE : des lignes separees par un filet d un
+   pixel, sans bord, sans ombre, sans rayon. Le contenu porte la
+   page, le contenant disparait.
+
+   Trois autres marqueurs sont partis avec les cartes :
+
+   — LES EMOJI EN GUISE D ICONES. 👥 🎬 🏆 💪 🫡 ⚡ 💡 📈 ⚠️ 🧠 🆘 💚
+     tenaient lieu de systeme d icones. Ils changent de dessin selon
+     le systeme d exploitation, ne s alignent pas sur la ligne de
+     base, et ne peuvent ni prendre la couleur du texte ni s epaissir.
+     Tout est passe en icones dessinees, meme graisse, meme taille.
+
+   — ORBITRON. La fonte d affichage cyberpunk du reste de l app est
+     illisible en dessous de 14px et donne a chaque libelle un air de
+     titre de jeu video. Elle ne parait plus ici. Le texte que l on
+     LIT — les posts, les reponses, les noms — est en pile systeme :
+     c est ce que font Instagram et LinkedIn sur le web, parce que
+     rien ne rend mieux a 15px que la fonte d interface du systeme.
+     Rajdhani reste pour les libelles de structure, JetBrains Mono
+     pour les chiffres, et pour rien d autre.
+
+   — LE NEON. Aucune lueur, aucun halo, aucune bordure qui brille.
+     Le violet du produit ne sert qu a trois choses : l etat actif,
+     le bouton de publication, et les liens. Partout ailleurs, c est
+     un gris qui travaille.
+
+   Le monde est sombre parce que c est la demande ; il reste juste en
+   theme clair, ou seuls les jetons changent.
+   ═══════════════════════════════════════════════════════════════ */
+
+.co {
+  /* ── Fonds ── */
+  --co-fond:        #FFFFFF;
+  --co-fond-eleve:  #F7F8FA;
+  --co-fond-creux:  #F0F2F5;
+  --co-voile:       rgb(255 255 255 / 0.85);
+
+  /* ── Le filet. Un pixel, jamais plus. ── */
+  --co-filet:       #E3E6EA;
+  --co-filet-fort:  #CFD4DA;
+
+  /* ── Texte ── */
+  --co-texte:       #14171A;
+  --co-texte-2:     #5B6470;
+  /* Mesure sur la page : #838C97 donnait 3.39:1 en clair et son
+     equivalent sombre 3.55:1, sous le plancher de 4.5:1 exige pour
+     du texte de 14px. C est la couleur des horodatages — « il y a 6
+     mois » — qu on lit sur chaque ligne du fil. Les deux valeurs sont
+     remontees jusqu a passer la mesure. */
+  --co-texte-3:     #6C7480;
+
+  /* ── L accent, rare et precis ── */
+  --co-accent:      #6541E8;
+  --co-accent-vif:  #5733DC;
+  --co-accent-voile: rgb(101 65 232 / 0.10);
+
+  /* ── Les trois reactions. Couleur seulement quand elles sont
+        posees ; grises au repos, comme partout ailleurs. ── */
+  --co-support:     #12855A;
+  --co-respect:     #9A6400;
+  --co-inspire:     #6541E8;
+
+  /* ── Les six natures de post ── */
+  --co-reflexion:   #2563C9;
+  --co-progression: #9A6400;
+  --co-obstacle:    #C22E4E;
+  --co-mental:      #7A3FD4;
+  --co-aide:        #C0561B;
+  --co-soutien:     #12855A;
+
+  /* ── Typographie ── */
+  --co-fonte: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+              "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --co-fonte-ui: "Rajdhani", var(--co-fonte);
+  --co-fonte-chiffre: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* ── Mesures ── */
+  --co-colonne: 600px;
+  --co-rail: 320px;
+  --co-gouttiere: 16px;
+  --co-tete: 53px;
+
+  --co-sortie: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root.dark .co {
+  --co-fond:        #0A0B0D;
+  --co-fond-eleve:  #14161A;
+  --co-fond-creux:  #050607;
+  --co-voile:       rgb(10 11 13 / 0.82);
+
+  --co-filet:       #22262C;
+  --co-filet-fort:  #333941;
+
+  --co-texte:       #E9EBEE;
+  --co-texte-2:     #8B929C;
+  --co-texte-3:     #7B848F;
+
+  --co-accent:      #8B72FF;
+  --co-accent-vif:  #9C88FF;
+  --co-accent-voile: rgb(139 114 255 / 0.14);
+
+  --co-support:     #35C98A;
+  --co-respect:     #E0A340;
+  --co-inspire:     #8B72FF;
+
+  --co-reflexion:   #62A6FF;
+  --co-progression: #E0A340;
+  --co-obstacle:    #FF7089;
+  --co-mental:      #B48CFF;
+  --co-aide:        #FF9558;
+  --co-soutien:     #35C98A;
+}
+
+/* LES TITRES ECHAPPENT A LA REGLE GLOBALE.
+   index.css impose a tous les h1..h6 du produit la fonte Orbitron,
+   un interlettrage de 0.1em et les MAJUSCULES. C est la voix
+   cyberpunk du reste de l app ; ici elle transformait « Communaute »
+   en « C O M M U N A U T E » et « Cette semaine » en capitales
+   espacees. On la neutralise pour toute la page — la hierarchie est
+   portee par la taille et la graisse, pas par la casse. */
+.co h1, .co h2, .co h3, .co h4, .co h5, .co h6 {
+  font-family: var(--co-fonte);
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+/* ═══════════════ LA COQUE ═══════════════ */
+
+.co {
+  min-height: 100vh;
+  background: var(--co-fond);
+  color: var(--co-texte);
+  font-family: var(--co-fonte);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* LES SURFACES DU NAVIGATEUR.
+   Selection, curseur, barre de defilement, anneau de focus : rien de
+   tout cela n est dessine par nous, et tout cela reste en reglage
+   d usine sur la plupart des pages. C est le signe le moins cher
+   qu une page a ete construite plutot qu assemblee. */
+.co ::selection { background: var(--co-accent-voile); color: var(--co-texte); }
+.co { caret-color: var(--co-accent); scrollbar-color: var(--co-filet-fort) transparent; scrollbar-width: thin; }
+.co ::-webkit-scrollbar { width: 8px; height: 8px; }
+.co ::-webkit-scrollbar-track { background: transparent; }
+.co ::-webkit-scrollbar-thumb { background: var(--co-filet-fort); border-radius: 4px; }
+.co ::-webkit-scrollbar-thumb:hover { background: var(--co-texte-3); }
+.co :focus-visible {
+  outline: 2px solid var(--co-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.co a { color: var(--co-accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+.co-grille {
+  display: grid;
+  grid-template-columns: minmax(0, var(--co-colonne)) var(--co-rail);
+  gap: 0 28px;
+  max-width: calc(var(--co-colonne) + var(--co-rail) + 28px);
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* La colonne centrale porte ses filets lateraux : c est ce qui donne
+   au fil sa forme de colonne, sans aucune carte. */
+.co-colonne {
+  min-width: 0;
+  border-inline: 1px solid var(--co-filet);
+  min-height: 100vh;
+}
+
+/* ═══════════════ LA TETE ET LES ONGLETS ═══════════════ */
+
+.co-tete {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--co-voile);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+.co-titre {
+  font-family: var(--co-fonte);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+  padding: 14px var(--co-gouttiere) 12px;
+  color: var(--co-texte);
+}
+
+.co-onglets {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.co-onglet {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 15px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--co-fonte);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--co-texte-2);
+  transition: background-color 120ms linear, color 120ms linear;
+}
+.co-onglet:hover { background: var(--co-fond-eleve); color: var(--co-texte); }
+.co-onglet[aria-selected="true"] { color: var(--co-texte); font-weight: 700; }
+
+/* Le trait sous l onglet actif — la seule marque d etat de la barre.
+   Il fait la largeur du mot, pas de la colonne. */
+.co-onglet[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max(56px, 60%);
+  height: 3px;
+  border-radius: 2px;
+  background: var(--co-accent);
+}
+
+.co-onglet svg { width: 17px; height: 17px; stroke-width: 2; flex-shrink: 0; }
+
+.co-onglet-compte {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-3);
+  font-weight: 400;
+}
+.co-onglet[aria-selected="true"] .co-onglet-compte { color: var(--co-accent); }
+
+/* ═══════════════ LE COMPOSEUR ═══════════════ */
+
+/* Il est POSE DANS LE FIL, pas derriere un bouton qui ouvre une
+   fenetre. Ecrire est l action principale de la page ; la cacher
+   derriere une modale ajoute un clic a la seule chose qu on vient
+   faire. La modale reste pour la video, ou le televersement justifie
+   une focalisation protegee. */
+.co-composeur {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 12px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+.co-composeur-champ {
+  width: 100%;
+  border: none;
+  background: none;
+  resize: none;
+  font-family: var(--co-fonte);
+  font-size: 19px;
+  line-height: 1.35;
+  color: var(--co-texte);
+  padding: 9px 0 0;
+  min-height: 46px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.co-composeur-champ::placeholder { color: var(--co-texte-3); }
+.co-composeur-champ:focus { outline: none; }
+
+.co-composeur-pied {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--co-filet);
+}
+.co-composeur:focus-within .co-composeur-pied { border-top-color: var(--co-filet); }
+
+.co-composeur-reste {
+  margin-left: auto;
+  font-family: var(--co-fonte-chiffre);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-3);
+}
+.co-composeur-reste[data-proche="oui"] { color: var(--co-respect); }
+.co-composeur-reste[data-proche="depasse"] { color: var(--co-obstacle); }
+
+/* ═══════════════ LE BOUTON ═══════════════ */
+
+.co-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 17px;
+  border: none;
+  border-radius: 999px;
+  background: var(--co-accent);
+  color: #FFFFFF;
+  font-family: var(--co-fonte);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 120ms linear, opacity 120ms linear;
+}
+.co-bouton:hover:not(:disabled) { background: var(--co-accent-vif); }
+.co-bouton:disabled { opacity: 0.45; cursor: not-allowed; }
+.co-bouton svg { width: 15px; height: 15px; stroke-width: 2.2; }
+
+.co-bouton--discret {
+  background: none;
+  color: var(--co-texte-2);
+  border: 1px solid var(--co-filet-fort);
+}
+.co-bouton--discret:hover:not(:disabled) { background: var(--co-fond-eleve); color: var(--co-texte); }
+
+/* ═══════════════ LES FILTRES ═══════════════ */
+
+/* LE TRI RESTE VISIBLE.
+   Les sept natures et les deux tris tenaient dans une seule rangee
+   qui defilait : mesure sur la page, 927px de contenu pour 599px de
+   cadre — le tri etait donc a 328px hors du champ, atteignable
+   seulement en faisant defiler une barre dont rien n indiquait
+   qu elle defilait. Les natures gardent leur defilement ; le tri
+   sort de ce flux et se tient au bout, toujours la. */
+.co-filtres {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+
+.co-filtres-defile {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Un fondu au bord dit qu il reste des puces derriere. */
+  mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+}
+.co-filtres-defile::-webkit-scrollbar { display: none; }
+.co-filtres::-webkit-scrollbar { display: none; }
+
+.co-tri { flex-shrink: 0; }
+
+.co-puce {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--co-filet);
+  background: none;
+  cursor: pointer;
+  font-family: var(--co-fonte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--co-texte-2);
+  white-space: nowrap;
+  transition: border-color 120ms linear, color 120ms linear, background-color 120ms linear;
+}
+.co-puce:hover { border-color: var(--co-filet-fort); color: var(--co-texte); }
+.co-puce[aria-pressed="true"] {
+  background: var(--co-texte);
+  border-color: var(--co-texte);
+  color: var(--co-fond);
+}
+.co-puce svg { width: 13px; height: 13px; stroke-width: 2.2; }
+
+/* ═══════════════ LE POST ═══════════════ */
+
+.co-post {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 12px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+  cursor: pointer;
+  transition: background-color 120ms linear;
+}
+.co-post:hover { background: var(--co-fond-eleve); }
+.co-post:last-child { border-bottom: none; }
+
+.co-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: var(--co-fond-creux);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--co-fonte-ui);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--co-texte-2);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.co-avatar--petit { width: 32px; height: 32px; font-size: 13px; }
+
+.co-post-corps { min-width: 0; }
+
+.co-post-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.co-nom {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--co-texte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.co-quand, .co-post-tete .co-sep {
+  font-size: 14px;
+  color: var(--co-texte-3);
+  white-space: nowrap;
+}
+.co-edite { font-size: 13px; color: var(--co-texte-3); }
+
+/* Le texte du post. C est le seul endroit de la page ou la mesure
+   compte : on la tient sous 70 caracteres a la colonne nominale. */
+.co-post-texte {
+  font-size: 15px;
+  line-height: 1.47;
+  color: var(--co-texte);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 2px 0 0;
+}
+
+/* ═══════════════ LA NATURE DU POST ═══════════════ */
+
+/* Un point de couleur et un mot. L ancienne etiquette etait une
+   pastille bordee, remplie, en majuscules et en monospace, avec un
+   emoji devant : cinq signaux pour une information. */
+.co-nature {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--co-fonte-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--co-nature-teinte, var(--co-texte-2));
+}
+.co-nature::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.co-nature[data-nature="reflection"]   { --co-nature-teinte: var(--co-reflexion); }
+.co-nature[data-nature="progress"]     { --co-nature-teinte: var(--co-progression); }
+.co-nature[data-nature="obstacle"]     { --co-nature-teinte: var(--co-obstacle); }
+.co-nature[data-nature="mindset"]      { --co-nature-teinte: var(--co-mental); }
+.co-nature[data-nature="help_request"] { --co-nature-teinte: var(--co-aide); }
+.co-nature[data-nature="encouragement"]{ --co-nature-teinte: var(--co-soutien); }
+
+/* L objectif rattache : une ligne, pas une carte. */
+.co-objectif {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--co-filet);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--co-texte-2);
+  max-width: 100%;
+}
+.co-objectif svg { width: 13px; height: 13px; stroke-width: 2; color: var(--co-texte-3); flex-shrink: 0; }
+.co-objectif b { font-weight: 600; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ═══════════════ LES ACTIONS ═══════════════ */
+
+.co-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  margin-left: -8px;
+}
+
+.co-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  font-family: var(--co-fonte);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--co-texte-2);
+  transition: color 120ms linear, background-color 120ms linear;
+}
+.co-action svg { width: 16px; height: 16px; stroke-width: 1.9; }
+.co-action span {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+}
+.co-action:hover { background: var(--co-teinte-voile, var(--co-fond-creux)); color: var(--co-teinte, var(--co-texte)); }
+.co-action[aria-pressed="true"] { color: var(--co-teinte); }
+.co-action[aria-pressed="true"] svg { fill: color-mix(in srgb, currentColor 22%, transparent); }
+
+.co-action[data-reaction="support"]  { --co-teinte: var(--co-support); --co-teinte-voile: color-mix(in srgb, var(--co-support) 12%, transparent); }
+.co-action[data-reaction="respect"]  { --co-teinte: var(--co-respect); --co-teinte-voile: color-mix(in srgb, var(--co-respect) 12%, transparent); }
+.co-action[data-reaction="inspired"] { --co-teinte: var(--co-inspire); --co-teinte-voile: color-mix(in srgb, var(--co-inspire) 12%, transparent); }
+.co-action[data-reaction="reply"]    { --co-teinte: var(--co-reflexion); --co-teinte-voile: color-mix(in srgb, var(--co-reflexion) 12%, transparent); }
+.co-action[data-reaction="more"]     { --co-teinte: var(--co-texte); }
+
+/* LE SEUL MOMENT ANIME DE LA PAGE.
+   Poser une reaction est le geste qu on repete le plus ; c est donc
+   le seul qui merite d etre ressenti. L icone part a 0.86 et
+   depasse legerement — un ressort tres court, une seule fois. Rien
+   d autre n a d animation d entree : le contenu est simplement la,
+   ce qui le rend aussi visible dans un onglet d arriere-plan, ou le
+   navigateur suspend les images par seconde. */
+@keyframes co-pose {
+  0%   { transform: scale(0.86); }
+  55%  { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+.co-action[aria-pressed="true"] svg { animation: co-pose 260ms var(--co-sortie); }
+
+@media (prefers-reduced-motion: reduce) {
+  .co-action[aria-pressed="true"] svg { animation: none; }
+  .co * { transition-duration: 1ms !important; }
+}
+
+/* ═══════════════ LES REPONSES ═══════════════ */
+
+.co-reponses {
+  border-top: 1px solid var(--co-filet);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.co-reponse {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+}
+.co-reponse-texte { font-size: 14px; line-height: 1.45; color: var(--co-texte); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.co-repondre {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding-top: 8px;
+}
+.co-repondre input {
+  border: none;
+  border-bottom: 1px solid var(--co-filet);
+  background: none;
+  padding: 7px 0;
+  font-family: var(--co-fonte);
+  font-size: 14px;
+  color: var(--co-texte);
+  min-width: 0;
+}
+.co-repondre input::placeholder { color: var(--co-texte-3); }
+.co-repondre input:focus { outline: none; border-bottom-color: var(--co-accent); }
+
+/* ═══════════════ LE RAIL ═══════════════ */
+
+/* Il porte ce que le fil ne peut pas porter : l etat de la
+   communaute et le haut du classement. Toutes ses valeurs viennent
+   de la base — c est ici que vivaient le « 38 » et le « 184 ». */
+.co-rail {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.co-bloc {
+  border: 1px solid var(--co-filet);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.co-bloc-titre {
+  font-family: var(--co-fonte);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--co-texte);
+  margin: 0;
+  padding: 12px 14px 8px;
+}
+
+.co-mesures { display: grid; grid-template-columns: 1fr 1fr; }
+.co-mesure {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--co-filet);
+}
+.co-mesure:nth-child(odd) { border-right: 1px solid var(--co-filet); }
+.co-mesure-valeur {
+  display: block;
+  font-family: var(--co-fonte-chiffre);
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte);
+  line-height: 1.1;
+}
+.co-mesure-quoi {
+  display: block;
+  font-family: var(--co-fonte-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--co-texte-2);
+  margin-top: 3px;
+}
+
+.co-rang {
+  display: grid;
+  grid-template-columns: 22px 32px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 14px;
+  border-top: 1px solid var(--co-filet);
+  text-decoration: none;
+  color: inherit;
+}
+.co-rang:hover { background: var(--co-fond-eleve); }
+.co-rang-place {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-3);
+  text-align: center;
+}
+.co-rang[data-podium="oui"] .co-rang-place { color: var(--co-respect); font-weight: 700; }
+.co-rang-nom { font-size: 14px; font-weight: 600; color: var(--co-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-rang-xp {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-2);
+}
+.co-rang[data-moi="oui"] { background: var(--co-accent-voile); }
+
+.co-rail-pied {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--co-filet);
+  font-size: 13px;
+}
+
+/* ═══════════════ LE VIDE ═══════════════ */
+
+.co-vide {
+  padding: 56px 32px;
+  text-align: center;
+}
+.co-vide svg { width: 30px; height: 30px; stroke-width: 1.5; color: var(--co-texte-3); margin-bottom: 14px; }
+.co-vide h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 6px; color: var(--co-texte); }
+.co-vide p { font-size: 14px; color: var(--co-texte-2); margin: 0 auto 18px; max-width: 44ch; line-height: 1.5; }
+
+/* Le squelette de chargement : la forme exacte d un post, pour que
+   rien ne saute quand les donnees arrivent. */
+.co-fantome { display: grid; grid-template-columns: 40px 1fr; gap: 12px; padding: 12px var(--co-gouttiere); border-bottom: 1px solid var(--co-filet); }
+.co-os { background: var(--co-fond-creux); border-radius: 6px; }
+.co-os--rond { border-radius: 999px; width: 40px; height: 40px; }
+@keyframes co-respire { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.co-os { animation: co-respire 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .co-os { animation: none; } }
+
+/* ═══════════════ LES VIDEOS ═══════════════ */
+
+/* Vertical, plein cadre, un seul a la fois : la grammaire de
+   Snapchat et des Reels. La video porte la surface, l interface se
+   retire sur les bords. */
+.co-scene {
+  position: relative;
+  height: calc(100vh - var(--co-tete) - 60px);
+  min-height: 460px;
+  background: #000;
+  border-bottom: 1px solid var(--co-filet);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.co-scene video { width: 100%; height: 100%; object-fit: contain; }
+
+.co-scene-bas {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 60px 16px 16px;
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.72) 55%);
+  color: #FFFFFF;
+  pointer-events: none;
+}
+.co-scene-bas > * { pointer-events: auto; }
+.co-scene-titre { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+.co-scene-legende { font-size: 14px; line-height: 1.4; margin: 0; color: rgb(255 255 255 / 0.86); }
+
+.co-scene-cote {
+  position: absolute;
+  right: 12px;
+  bottom: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+.co-scene-cote .co-action { flex-direction: column; gap: 3px; height: auto; color: #FFFFFF; }
+.co-scene-cote .co-action svg { width: 24px; height: 24px; }
+.co-scene-cote .co-action span { color: rgb(255 255 255 / 0.9); }
+
+.co-nav {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.co-nav button {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(0 0 0 / 0.4);
+  color: #FFFFFF;
+  cursor: pointer;
+}
+.co-nav button:hover { background: rgb(0 0 0 / 0.62); }
+.co-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+.co-nav svg { width: 17px; height: 17px; stroke-width: 2; }
+
+/* ═══════════════ LE CLASSEMENT, EN PLEIN ═══════════════ */
+
+.co-ligne-rang {
+  display: grid;
+  grid-template-columns: 34px 40px 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 11px var(--co-gouttiere);
+  border-bottom: 1px solid var(--co-filet);
+}
+.co-ligne-rang:hover { background: var(--co-fond-eleve); }
+.co-ligne-rang[data-moi="oui"] { background: var(--co-accent-voile); }
+.co-ligne-rang-place {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-3);
+  text-align: center;
+}
+.co-ligne-rang[data-podium="oui"] .co-ligne-rang-place { color: var(--co-respect); font-weight: 700; }
+.co-ligne-rang-grade { font-family: var(--co-fonte-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--co-texte-3); }
+.co-ligne-rang-chiffre { font-family: var(--co-fonte-chiffre); font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; }
+.co-ligne-rang-chiffre small { display: block; font-family: var(--co-fonte-ui); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--co-texte-3); }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+
+@media (max-width: 1000px) {
+  .co-grille { grid-template-columns: minmax(0, var(--co-colonne)); max-width: var(--co-colonne); }
+  .co-rail { display: none; }
+}
+
+@media (max-width: 640px) {
+  .co { --co-gouttiere: 12px; }
+  .co-colonne { border-inline: none; }
+  .co-composeur-champ { font-size: 17px; }
+  .co-nom { max-width: 150px; }
+  .co-onglet { font-size: 13px; gap: 5px; }
+  .co-onglet svg { width: 15px; height: 15px; }
+  .co-ligne-rang { grid-template-columns: 28px 36px 1fr auto; gap: 10px; }
+  .co-ligne-rang-grade { display: none; }
+}

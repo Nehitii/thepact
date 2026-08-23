@@ -49,6 +49,8 @@ export interface VictoryReel {
   id: string;
   user_id: string;
   goal_id: string;
+  /** Copie a la publication : RLS empeche de lire l objectif d autrui. */
+  goal_name: string | null;
   video_url: string;
   thumbnail_url: string | null;
   caption: string | null;
@@ -65,11 +67,13 @@ export interface VictoryReel {
     community_profile_discoverable?: boolean | null;
     share_goals_progress?: boolean | null;
   };
+  /* Seul le nom est garanti : pour un reel d autrui, il vient de la
+     colonne figee et la jointure n a rien rendu. */
   goal?: {
     name: string;
-    type: string;
-    start_date: string | null;
-    completion_date: string | null;
+    type?: string;
+    start_date?: string | null;
+    completion_date?: string | null;
   };
   reactions_count?: {
     support: number;
@@ -522,8 +526,16 @@ export function useVictoryReels() {
       const goalIds = [...new Set(reels.map((r) => r.goal_id))] as string[];
       const reelIds = reels.map((r) => r.id) as string[];
 
-      // Goals query goes through pacts — but RLS blocks other users' goals
-      // So we only fetch goals the current user owns (for their own reels)
+      /* RLS ne laisse voir que ses propres objectifs. La requete
+         ci-dessous en demande d autres : ils reviendront simplement
+         absents, sans erreur. Le commentaire d origine constatait la
+         limite ; il n en tirait rien, et une video d autrui
+         s affichait donc sans l objectif qu elle celebre — alors que
+         c est tout son propos.
+         La colonne goal_name vient d etre ajoutee a victory_reels
+         pour cela — elle n existait pas ; community_posts porte deja
+         la sienne depuis le debut. Elle est copiee a la creation et
+         prend le relais quand la jointure ne rend rien. */
       const [profilesRes, goalsRes, userReactionsRes] = await Promise.all([
         supabase
           .from("profiles")
@@ -550,42 +562,44 @@ export function useVictoryReels() {
         userReactionsMap.get(r.reel_id)!.push(r.reaction_type);
       });
 
-      // Generate signed URLs for private bucket videos
-      const signedUrlPromises = reels.map(async (reel) => {
-        // Extract path from stored URL or use as-is
-        const videoPath = reel.video_url.includes('/storage/v1/')
-          ? reel.video_url.split('/victory-reels/').pop()
-          : reel.video_url;
+      /* UNE SEULE SIGNATURE POUR TOUTES LES VIDEOS.
+         Chaque reel demandait son URL signee separement : jusqu a
+         cinquante allers-retours pour afficher un fil, la requete
+         plafonnant a limit(50). createSignedUrls — au pluriel — en
+         signe autant qu on veut d un coup. Le depot d images de la
+         wishlist procede deja ainsi, dans useDepotImages. */
+      const cheminDeLaVideo = (url: string): string | null => {
+        if (!url.startsWith("http")) return url || null;
+        const trouve = url.match(/victory-reels\/(.+?)(\?|$)/);
+        return trouve ? decodeURIComponent(trouve[1]) : null;
+      };
 
-        if (videoPath && !reel.video_url.startsWith('http')) {
-          const { data } = await supabase.storage
-            .from('victory-reels')
-            .createSignedUrl(videoPath, 3600);
-          return data?.signedUrl || reel.video_url;
-        }
+      const chemins = reels.map((r) => cheminDeLaVideo(r.video_url));
+      const aSigner = [...new Set(chemins.filter((c): c is string => !!c))];
+      const parChemin = new Map<string, string>();
 
-        // For URLs already stored as full paths, try to create signed URL from the path
-        try {
-          const pathMatch = reel.video_url.match(/victory-reels\/(.+?)(\?|$)/);
-          if (pathMatch) {
-            const { data } = await supabase.storage
-              .from('victory-reels')
-              .createSignedUrl(decodeURIComponent(pathMatch[1]), 3600);
-            return data?.signedUrl || reel.video_url;
-          }
-        } catch {
-          // fallback to original URL
-        }
-        return reel.video_url;
+      if (aSigner.length > 0) {
+        const { data: signees } = await supabase.storage
+          .from("victory-reels")
+          .createSignedUrls(aSigner, 3600);
+        (signees || []).forEach((s) => {
+          if (s.path && s.signedUrl) parChemin.set(s.path, s.signedUrl);
+        });
+      }
+
+      const signedUrls = reels.map((reel, i) => {
+        const chemin = chemins[i];
+        return (chemin && parChemin.get(chemin)) || reel.video_url;
       });
-
-      const signedUrls = await Promise.all(signedUrlPromises);
 
       return reels.map((reel, i) => ({
         ...reel,
         video_url: signedUrls[i],
         profile: profilesMap.get(reel.user_id),
-        goal: goalsMap.get(reel.goal_id),
+        /* La jointure d abord — elle porte le type et les dates —
+           puis le nom fige, seul disponible pour un reel d autrui. */
+        goal: goalsMap.get(reel.goal_id)
+          ?? (reel.goal_name ? { name: reel.goal_name } : undefined),
         reactions_count: {
           support: reel.support_count || 0,
           respect: reel.respect_count || 0,
@@ -606,6 +620,7 @@ export function useCreateVictoryReel() {
   return useMutation({
     mutationFn: async (data: {
       goal_id: string;
+      goal_name?: string | null;
       video_url: string;
       thumbnail_url?: string;
       caption?: string;
@@ -613,11 +628,16 @@ export function useCreateVictoryReel() {
     }) => {
       if (!user) throw new Error("Must be logged in");
 
+      /* Le nom de l objectif est fige ici, au moment de la
+         publication. Sans lui, la video d un autre utilisateur
+         s affiche sans l objectif qu elle celebre : RLS ne rendra
+         jamais cet objectif a qui ne le possede pas. */
       const { data: reel, error } = await (supabase
         .from("victory_reels")
         .insert({
           user_id: user.id,
           goal_id: data.goal_id,
+          goal_name: data.goal_name ?? null,
           video_url: data.video_url,
           thumbnail_url: data.thumbnail_url || null,
           caption: data.caption || null,
@@ -725,29 +745,65 @@ export function useUserGoals() {
   });
 }
 
-// Community stats
+/* LES CHIFFRES DE LA COMMUNAUTE.
+ *
+ * Ce hook ne rendait que deux valeurs, et la page en affichait sept :
+ * les cinq autres etaient ecrites a la main dans le JSX — un « 38 »
+ * pour les objectifs accomplis, un « 184 » pour des videos dont la
+ * table etait vide, et trois tirets litteraux dans le bandeau. Un
+ * onglet promettait donc 184 videos et ouvrait sur rien.
+ *
+ * Deux principes ici, et un renoncement.
+ *
+ * 1. RIEN QUI NE SE CALCULE PAS. « Objectifs accomplis aujourd hui »
+ *    n est pas calculable depuis le client : RLS ne laisse voir que
+ *    ses propres objectifs, un total communautaire demanderait une
+ *    fonction en base. On ne l affiche donc pas — plutot que de
+ *    laisser un tiret en permanence.
+ *
+ * 2. CHAQUE ETIQUETTE DIT CE QU ELLE COMPTE. L ancien
+ *    « activeMembers » etait affiche sous « Online now » alors qu il
+ *    comptait les AUTEURS DISTINCTS des sept derniers jours. On peut
+ *    etre connecte sans avoir poste. Le champ s appelle desormais
+ *    auteursSemaine, et rien ne pretend mesurer une presence.
+ *
+ * L ancienne version lancait deux requetes sur la meme table pour la
+ * meme semaine : la seconde ramenait deja toutes les lignes, sa
+ * longueur donnait le compte que la premiere allait chercher.
+ */
+export interface StatsCommunaute {
+  postsSemaine: number;
+  auteursSemaine: number;
+  postsTotal: number;
+  reactionsTotal: number;
+  reponsesTotal: number;
+  reelsTotal: number;
+}
+
 export function useCommunityStats() {
-  return useQuery({
+  return useQuery<StatsCommunaute>({
     queryKey: ["community-stats"],
     queryFn: async () => {
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const ilYaUneSemaine = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const compte = (table: "community_posts" | "community_reactions" | "community_replies" | "victory_reels") =>
+        supabase.from(table).select("id", { count: "exact", head: true });
 
-      const [postsRes, membersRes] = await Promise.all([
-        (supabase
-          .from("community_posts")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", oneWeekAgo)),
-        (supabase
-          .from("community_posts")
-          .select("user_id")
-          .gte("created_at", oneWeekAgo)),
+      const [semaine, posts, reactions, reponses, reels] = await Promise.all([
+        supabase.from("community_posts").select("user_id").gte("created_at", ilYaUneSemaine),
+        compte("community_posts"),
+        compte("community_reactions"),
+        compte("community_replies"),
+        compte("victory_reels"),
       ]);
 
-      const uniqueMembers = new Set((membersRes.data || []).map((m) => m.user_id)).size;
-
+      const lignes = semaine.data || [];
       return {
-        postsThisWeek: postsRes.count || 0,
-        activeMembers: uniqueMembers,
+        postsSemaine: lignes.length,
+        auteursSemaine: new Set(lignes.map((l) => l.user_id)).size,
+        postsTotal: posts.count || 0,
+        reactionsTotal: reactions.count || 0,
+        reponsesTotal: reponses.count || 0,
+        reelsTotal: reels.count || 0,
       };
     },
     staleTime: 60 * 1000,

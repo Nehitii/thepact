@@ -1,134 +1,74 @@
-import { cn } from "@/lib/utils";
+import { Clock, Flame } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PostFilterType, PostSortOption } from "@/hooks/useCommunity";
+import { NATURES, libelleNature } from "./vocabulaire";
 
-interface PostFiltersProps {
+/* LES FILTRES — une seule rangee, qui defile.
+ *
+ * Il y en avait deux, empilees : sept boutons de nature au-dessus,
+ * deux boutons de tri en dessous, precedes du mot « Sort: ». Neuf
+ * commandes et un libelle pour une barre de filtres, dans une page
+ * dont le fil compte un post.
+ *
+ * Chaque bouton portait aussi ses six couleurs en dur — fond,
+ * bordure, texte, pastille, et leurs variantes actives — soit
+ * vingt-neuf valeurs litterales pour sept boutons. Les couleurs de
+ * nature vivent maintenant dans community.css, au meme endroit que
+ * celles des etiquettes de post : une nature a une teinte, pas deux.
+ *
+ * L etat actif ne se signale plus par un fond teinte mais par
+ * l inversion — texte sur fond plein. C est lisible sans couleur,
+ * donc lisible aussi pour qui ne les distingue pas. */
+
+interface Props {
   activeFilter: PostFilterType;
   onFilterChange: (filter: PostFilterType) => void;
   activeSort: PostSortOption;
   onSortChange: (sort: PostSortOption) => void;
 }
 
-const filterOptions: {
-  value: PostFilterType;
-  label: string;
-  dot: string;
-  activeBg: string;
-  activeBorder: string;
-  activeText: string;
-}[] = [
-  {
-    value: "all",
-    label: "All",
-    dot: "#7b5cfa",
-    activeBg: "rgba(123,92,250,0.18)",
-    activeBorder: "rgba(123,92,250,0.4)",
-    activeText: "#c4b5fd",
-  },
-  {
-    value: "reflection",
-    label: "Reflections",
-    dot: "#3b82f6",
-    activeBg: "rgba(59,130,246,0.15)",
-    activeBorder: "rgba(59,130,246,0.4)",
-    activeText: "#93c5fd",
-  },
-  {
-    value: "progress",
-    label: "Progress",
-    dot: "#f59e0b",
-    activeBg: "rgba(245,158,11,0.15)",
-    activeBorder: "rgba(245,158,11,0.4)",
-    activeText: "#fcd34d",
-  },
-  {
-    value: "obstacle",
-    label: "Obstacles",
-    dot: "#f43f5e",
-    activeBg: "rgba(244,63,94,0.15)",
-    activeBorder: "rgba(244,63,94,0.4)",
-    activeText: "#fda4af",
-  },
-  {
-    value: "mindset",
-    label: "Mindset",
-    dot: "#a855f7",
-    activeBg: "rgba(168,85,247,0.15)",
-    activeBorder: "rgba(168,85,247,0.4)",
-    activeText: "#d8b4fe",
-  },
-  {
-    value: "help_request",
-    label: "Help Needed",
-    dot: "#fb923c",
-    activeBg: "rgba(251,146,60,0.15)",
-    activeBorder: "rgba(251,146,60,0.4)",
-    activeText: "#fdba74",
-  },
-  {
-    value: "encouragement",
-    label: "Support",
-    dot: "#10b981",
-    activeBg: "rgba(16,185,129,0.15)",
-    activeBorder: "rgba(16,185,129,0.4)",
-    activeText: "#6ee7b7",
-  },
-];
+export function PostFilters({ activeFilter, onFilterChange, activeSort, onSortChange }: Props) {
+  const { t } = useTranslation();
 
-export function PostFilters({ activeFilter, onFilterChange, activeSort, onSortChange }: PostFiltersProps) {
   return (
-    <div className="space-y-3">
-      {/* Section label */}
-      <div className="font-mono ds-t-label text-muted-foreground tracking-[0.1em] uppercase">Filter by type</div>
+    <div className="co-filtres">
+      <div className="co-filtres-defile" role="group" aria-label={t("community.filters.title", "Filtrer le fil")}>
+        <button
+          type="button"
+          className="co-puce"
+          aria-pressed={activeFilter === "all"}
+          onClick={() => onFilterChange("all")}
+        >
+          {t("community.filters.all", "Tout")}
+        </button>
 
-      {/* Filter chips */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
-        {filterOptions.map((opt) => {
-          const isActive = activeFilter === opt.value;
-          return (
-            <button
-              key={opt.value}
-              onClick={() => onFilterChange(opt.value)}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-full text-xs font-medium transition-all whitespace-nowrap shrink-0 border",
-                !isActive &&
-                  "bg-card border-border/50 text-muted-foreground hover:border-primary/25 hover:text-foreground",
-              )}
-              style={
-                isActive
-                  ? {
-                      background: opt.activeBg,
-                      borderColor: opt.activeBorder,
-                      color: opt.activeText,
-                      fontWeight: 600,
-                    }
-                  : undefined
-              }
-            >
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: opt.dot }} />
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Sort row */}
-      <div className="flex items-center gap-2">
-        <span className="font-mono ds-t-label text-muted-foreground">Sort:</span>
-        {(["recent", "popular"] as PostSortOption[]).map((s) => (
+        {NATURES.map((nature) => (
           <button
-            key={s}
-            onClick={() => onSortChange(s)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono ds-t-label font-medium border transition-all",
-              activeSort === s
-                ? "bg-primary border-primary text-white shadow-[0_2px_12px_rgba(123,92,250,0.35)]"
-                : "bg-transparent border-border/50 text-muted-foreground hover:border-primary/25",
-            )}
+            key={nature}
+            type="button"
+            className="co-puce"
+            aria-pressed={activeFilter === nature}
+            onClick={() => onFilterChange(nature)}
           >
-            {s === "recent" ? "⏱" : "🔥"} {s === "recent" ? "Recent" : "Popular"}
+            <span className="co-nature" data-nature={nature} style={{ gap: 0, fontSize: 0 }} aria-hidden="true" />
+            {libelleNature(nature, t)}
           </button>
         ))}
       </div>
+
+      {/* Le tri bascule entre deux etats : un seul bouton suffit, et
+          il ne quitte jamais le cadre. */}
+      <button
+        type="button"
+        className="co-puce co-tri"
+        aria-label={t("community.sort.label", "Trier le fil")}
+        onClick={() => onSortChange(activeSort === "recent" ? "popular" : "recent")}
+      >
+        {activeSort === "recent" ? <Clock aria-hidden="true" /> : <Flame aria-hidden="true" />}
+        {activeSort === "recent"
+          ? t("community.sort.recent", "Récents")
+          : t("community.sort.popular", "Populaires")}
+      </button>
     </div>
   );
 }

@@ -1677,13 +1677,27 @@
       "createPost": "Create Post",
       "noPostsTitle": "No posts yet",
       "noPostsDesc": "Be the first to share your journey",
-      "loading": "Loading posts…"
+      "loading": "Loading posts…",
+      "placeholder": "What is happening with your pact?",
+      "published": "Published",
+      "publishFailed": "Could not publish",
+      "more": "Show more"
     },
     "reels": {
       "createReel": "Create Reel",
       "noReelsTitle": "No victory reels yet",
       "noReelsDesc": "Share your completed goals with the community",
-      "views": "{{count}} views"
+      "views": "{{count}} views",
+      "caption": "Caption",
+      "goal": "Goal completed",
+      "previous": "Previous",
+      "next": "Next",
+      "of": "of",
+      "play": "Play",
+      "pause": "Pause",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "uploadFailed": "Video upload failed"
     },
     "post": {
       "like": "Like",
@@ -1695,7 +1709,18 @@
       "comments": "Comments",
       "noComments": "No comments yet",
       "addComment": "Add a comment...",
-      "postComment": "Post"
+      "postComment": "Post",
+      "anonymous": "Anonymous",
+      "you": "You",
+      "edited": "edited",
+      "actions": "Actions",
+      "save": "Save",
+      "cancel": "Cancel",
+      "updated": "Post updated",
+      "updateFailed": "Could not update the post",
+      "deleted": "Post deleted",
+      "deleteFailed": "Could not delete the post",
+      "loadingReplies": "Loading replies…"
     },
     "create": {
       "title": "Create Post",
@@ -1706,14 +1731,38 @@
       "public": "Public",
       "private": "Private",
       "posting": "Posting…",
-      "post": "Post"
+      "post": "Post",
+      "noGoal": "No goal"
     },
     "reactions": {
-      "fire": "Fire",
-      "love": "Love",
-      "clap": "Clap",
-      "strong": "Strong",
-      "brain": "Brain"
+      "support": "Support",
+      "respect": "Respect",
+      "inspired": "Inspired"
+    },
+    "heading": "Community",
+    "natures": {
+      "reflection": "Reflection",
+      "progress": "Progress",
+      "obstacle": "Obstacle",
+      "mindset": "Mindset",
+      "help_request": "Help needed",
+      "encouragement": "Encouragement"
+    },
+    "filters": {
+      "title": "Filter the feed",
+      "all": "All"
+    },
+    "sort": {
+      "recent": "Recent",
+      "popular": "Popular",
+      "label": "Sort the feed"
+    },
+    "rail": {
+      "week": "This week",
+      "posts": "posts",
+      "authors": "posted",
+      "reactions": "reactions",
+      "replies": "replies"
     }
   },
   "wishlist": {
