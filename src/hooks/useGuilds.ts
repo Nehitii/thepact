@@ -39,6 +39,11 @@ export interface Guild {
   max_members: number;
   is_public: boolean;
   banner_url: string | null;
+  /* Deux colonnes que la base porte depuis toujours et que cette
+     interface passait sous silence : le mot du jour n etait donc
+     affiche nulle part, et l embleme depose non plus. */
+  emblem_url: string | null;
+  motd: string | null;
   total_xp: number;
   updated_at?: string | null;
   member_count?: number;
@@ -468,11 +473,24 @@ export function useGuilds() {
   });
 
   const updateGuild = useMutation({
-    mutationFn: async ({ guildId, updates }: { guildId: string; updates: Partial<Pick<Guild, "name" | "description" | "icon" | "color" | "is_public" | "max_members">> }) => {
+    mutationFn: async ({ guildId, updates }: {
+      guildId: string;
+      /* La liste s arretait aux six champs du premier formulaire : la
+         banniere, l embleme et le mot du jour ne pouvaient donc pas
+         etre enregistres, alors que leurs colonnes existent. */
+      updates: Partial<Pick<Guild,
+        "name" | "description" | "icon" | "color" | "is_public"
+        | "max_members" | "banner_url" | "emblem_url" | "motd">>;
+    }) => {
       const { error } = await supabase.from("guilds").update(updates).eq("id", guildId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["guilds"] }),
+    /* La page de guilde lit useGuild(id), pas la liste : sans invalider
+       cette cle-la, un enregistrement ne changeait rien a l ecran. */
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["guilds"] });
+      qc.invalidateQueries({ queryKey: ["guild", v.guildId] });
+    },
   });
 
   // ── Announcement mutations ──

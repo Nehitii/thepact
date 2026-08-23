@@ -48,7 +48,8 @@
     "on": "OUI",
     "off": "NON",
     "or": "ou",
-    "previous": "Précédent"
+    "previous": "Précédent",
+    "copy": "Copier"
   },
   "auth": {
     "brand": "Pact",
@@ -2903,7 +2904,7 @@
     "wantsToBeFriends": "Veut être ami(e)",
     "alreadyFriends": "Amis",
     "yourGuilds": "Tes Guildes",
-    "createGuild": "Créer une Guilde",
+    "createGuild": "Créer une guilde",
     "pendingInvites": "Invitations en attente",
     "noGuildsTitle": "Aucune guilde",
     "noGuildsDesc": "Crée une guilde et invite tes amis à unir leurs forces.",
@@ -2973,12 +2974,12 @@
     "activityJoined": "{{name}} a rejoint la guilde",
     "activityLeft": "{{name}} a quitté la guilde",
     "activityContributed": "{{name}} a contribué {{amount}} à un objectif",
-    "generateCode": "Générer un Code d'Invitation",
+    "generateCode": "Créer un code",
     "codeGenerated": "Code généré : {{code}}",
     "codeCopied": "Code copié !",
     "codeDeactivated": "Code désactivé",
-    "noCodes": "Aucun code d'invitation",
-    "noCodesDesc": "Génère un code partageable pour inviter des membres.",
+    "noCodes": "Aucun code actif",
+    "noCodesDesc": "Un code d’invitation ouvre la guilde à qui le possède, pour une durée limitée.",
     "noMembers": "Aucun membre",
     "blockConfirm": "Es-tu sûr de vouloir bloquer {{name}} ? Cela le retirera aussi de ta liste d'amis. Cette action est irréversible depuis cette page.",
     "blockedUsersTitle": "UTILISATEURS BLOQUÉS",
@@ -3016,7 +3017,8 @@
     "noGuildsWhy": "Une guilde réunit plusieurs personnes autour d'objectifs communs. Créez la vôtre, ou entrez le code de quelqu'un.",
     "noPublicGuild": "Aucune guilde publique pour le moment",
     "guildCreated": "Guilde créée",
-    "confirmRemove": "Confirmer"
+    "confirmRemove": "Confirmer",
+    "foundGuild": "Fonder"
   },
   "guild": {
     "overview": "Vue d'ensemble",
@@ -3105,7 +3107,31 @@
       "objectifs": "Objectifs franchis",
       "taches": "Tâches faites",
       "journal": "Jours écrits"
-    }
+    },
+    "identity": "Identité",
+    "banner": "Bannière",
+    "bannerAdd": "Déposer une bannière",
+    "emblem": "Emblème",
+    "emblemAdd": "Déposer un emblème",
+    "emblemUploaded": "Votre emblème remplace le pictogramme ci-dessous.",
+    "emblemPick": "Sans image déposée, la guilde porte l’un de ces vingt-cinq signes.",
+    "colorFree": "Une autre couleur",
+    "motd": "Mot du jour",
+    "motdWhat": "Ce que la guilde doit lire en arrivant",
+    "preview": "Aperçu",
+    "mediaTypeRefused": "Ce format d’image n’est pas accepté",
+    "mediaTooHeavy": "Image trop lourde — {{max}} Mo au maximum",
+    "mediaFailed": "Le dépôt a échoué",
+    "mediaRemove": "Retirer l’image",
+    "codeFailed": "La création du code a échoué",
+    "copyFailed": "La copie a échoué",
+    "codeRevokeFailed": "La désactivation a échoué",
+    "codeUses_one": "{{count}} utilisation",
+    "codeUses_other": "{{count}} utilisations",
+    "codeExpires": "expire {{quand}}",
+    "copyCode": "Copier le code",
+    "copied": "Copié",
+    "revokeCode": "Désactiver ce code"
   },
   "analytics": {
     "period": {

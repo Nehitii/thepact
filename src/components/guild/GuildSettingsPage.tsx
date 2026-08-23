@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useGuilds, type Guild } from "@/hooks/useGuilds";
@@ -8,21 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Crown, Users, Loader2, Trash2, UserCheck } from "lucide-react";
+import { Megaphone, Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { GuildInviteCodePanel } from "@/components/friends/GuildInviteCodePanel";
+import { DepotImage } from "@/components/guild/DepotImage";
+import {
+  CLES_EMBLEMES, EMBLEMES, TEINTES, emblemeDe, estUneTeinte, teinteDe,
+} from "@/components/guild/blason";
 
-const iconOptions = [
-  { key: "shield", icon: Shield },
-  { key: "crown", icon: Crown },
-  { key: "users", icon: Users },
-];
-const colorOptions = ["violet", "emerald", "amber", "rose", "cyan"];
-const colorClasses: Record<string, string> = {
-  violet: "bg-violet-500", emerald: "bg-emerald-500", amber: "bg-amber-500",
-  rose: "bg-rose-500", cyan: "bg-cyan-500",
-};
+/* LES DEUX LISTES QUI VIVAIENT ICI — trois emblemes et cinq noms de
+   couleur — existaient a l identique dans GuildCreateModal. Elles sont
+   parties dans blason.ts, en un seul exemplaire et avec de quoi
+   choisir. Les noms de couleur, eux, ne fonctionnaient pas : voir le
+   commentaire de ce fichier. */
 
 interface Props {
   guild: Guild;
@@ -39,11 +37,14 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
   const [name, setName] = useState(guild.name);
   const [description, setDescription] = useState(guild.description || "");
   const [icon, setIcon] = useState(guild.icon || "shield");
-  const [color, setColor] = useState(guild.color || "violet");
+  const [color, setColor] = useState(teinteDe(guild.color));
+  const [banniere, setBanniere] = useState(guild.banner_url);
+  const [embleme, setEmbleme] = useState(guild.emblem_url);
+  const [motd, setMotd] = useState(guild.motd || "");
   const [isPublic, setIsPublic] = useState(guild.is_public);
   const [maxMembers, setMaxMembers] = useState(String(guild.max_members || 25));
   const [deleteConfirm, setDeleteConfirm] = useState("");
-  const [vue, setVue] = useState<"general" | "codes" | "danger">("general");
+  const [vue, setVue] = useState<"identite" | "general" | "codes" | "danger">("identite");
   const [transferTarget, setTransferTarget] = useState("");
 
   const handleSave = async () => {
@@ -51,7 +52,16 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
     try {
       await updateGuild.mutateAsync({
         guildId: guild.id,
-        updates: { name: name.trim(), description: description.trim() || null, icon, color, is_public: isPublic, max_members: parseInt(maxMembers) || 25 },
+        updates: {
+          name: name.trim(),
+          description: description.trim() || null,
+          icon, color,
+          banner_url: banniere,
+          emblem_url: embleme,
+          motd: motd.trim() || null,
+          is_public: isPublic,
+          max_members: parseInt(maxMembers) || 25,
+        },
       });
       toast.success(t("common.updated"));
     } catch {
@@ -82,8 +92,17 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
 
   const autresMembres = members.filter((m) => m.user_id !== userId);
   const VUES = isOwner
-    ? (["general", "codes", "danger"] as const)
-    : (["general", "codes"] as const);
+    ? (["identite", "general", "codes", "danger"] as const)
+    : (["identite", "general", "codes"] as const);
+
+  const LIBELLES: Record<(typeof VUES)[number], string> = {
+    identite: t("guild.identity", "Identité"),
+    general: t("guild.general", "Général"),
+    codes: t("guild.inviteCodes", "Codes d’invitation"),
+    danger: t("guild.dangerZone", "Irréversible"),
+  };
+
+  const Apercu = emblemeDe(icon);
 
   return (
     <>
@@ -96,14 +115,144 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
             aria-pressed={vue === v}
             onClick={() => setVue(v)}
           >
-            {v === "general"
-              ? t("guild.general", "Général")
-              : v === "codes"
-                ? t("guild.inviteCodes", "Codes d’invitation")
-                : t("guild.dangerZone", "Irréversible")}
+            {LIBELLES[v]}
           </button>
         ))}
       </div>
+
+      {/* L IDENTITE.
+          Elle n existait pas : on choisissait un embleme parmi trois et
+          une « couleur » parmi cinq noms, dont trois que le navigateur
+          rejetait. Ni l un ni l autre n etait jamais affiche par la
+          page de guilde, qui montrait votre role a la place du blason.
+          Ici la guilde a un visage, et ce visage se voit. */}
+      {vue === "identite" && (
+        <section className="gu-bloc" style={{ "--gu-teinte": color } as CSSProperties}>
+          <div className="gu-corps" style={{ paddingTop: 14, display: "grid", gap: 16 }}>
+            <div>
+              <p className="gu-etiquette">{t("guild.banner", "Bannière")}</p>
+              <DepotImage
+                guildId={guild.id}
+                usage="banniere"
+                url={banniere}
+                onChange={setBanniere}
+                label={t("guild.bannerAdd", "Déposer une bannière")}
+              />
+            </div>
+
+            <div>
+              <p className="gu-etiquette">{t("guild.emblem", "Emblème")}</p>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <DepotImage
+                  guildId={guild.id}
+                  usage="embleme"
+                  url={embleme}
+                  onChange={setEmbleme}
+                  label={t("guild.emblemAdd", "Déposer un emblème")}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="co-choix-message" style={{ textAlign: "left", padding: "0 0 8px" }}>
+                    {embleme
+                      ? t("guild.emblemUploaded", "Votre emblème remplace le pictogramme ci-dessous.")
+                      : t("guild.emblemPick", "Sans image déposée, la guilde porte l’un de ces vingt-cinq signes.")}
+                  </p>
+                  <div className="gu-emblemes">
+                    {CLES_EMBLEMES.map((cle) => {
+                      const Signe = EMBLEMES[cle];
+                      return (
+                        <button
+                          key={cle}
+                          type="button"
+                          className="gu-embleme"
+                          aria-pressed={icon === cle}
+                          aria-label={cle}
+                          onClick={() => setIcon(cle)}
+                        >
+                          <Signe aria-hidden="true" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="gu-etiquette">{t("friends.color", "Couleur")}</p>
+              <div className="gu-teintes">
+                {TEINTES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="gu-teinte-choix"
+                    style={{ background: c, color: c }}
+                    aria-pressed={color.toUpperCase() === c}
+                    aria-label={c}
+                    onClick={() => setColor(c)}
+                  />
+                ))}
+                {/* Huit propositions, et tout le reste du spectre. */}
+                <input
+                  type="color"
+                  className="gu-teinte-libre"
+                  value={color}
+                  aria-label={t("guild.colorFree", "Une autre couleur")}
+                  onChange={(e) => estUneTeinte(e.target.value) && setColor(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="gu-etiquette">{t("guild.motd", "Mot du jour")}</p>
+              <textarea
+                className="gu-champ"
+                style={{ minHeight: 54, resize: "vertical" }}
+                value={motd}
+                maxLength={240}
+                onChange={(e) => setMotd(e.target.value)}
+                placeholder={t("guild.motdWhat", "Ce que la guilde doit lire en arrivant")}
+                aria-label={t("guild.motd", "Mot du jour")}
+              />
+            </div>
+
+            {/* Ce que cela donnera. */}
+            <div>
+              <p className="gu-etiquette">{t("guild.preview", "Aperçu")}</p>
+              <div className="gu-identite" style={{ "--gu-teinte": color, borderRadius: 12, overflow: "hidden", border: "1px solid var(--co-filet)" } as CSSProperties}>
+                <div className="gu-banniere" style={{ height: 88 }}>
+                  {banniere && <img src={banniere} alt="" aria-hidden="true" />}
+                </div>
+                <header className="gu-tete" style={{ marginTop: -26, paddingBottom: 12 }}>
+                  <span className="gu-blason">
+                    {embleme ? <img src={embleme} alt="" aria-hidden="true" /> : <Apercu aria-hidden="true" />}
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <h3 className="gu-nom" style={{ fontSize: 18 }}>{name || guild.name}</h3>
+                    {description && <p className="gu-mot">{description}</p>}
+                  </div>
+                </header>
+                {motd.trim() && (
+                  <p className="gu-motd" style={{ marginBottom: 12 }}>
+                    <Megaphone aria-hidden="true" />
+                    {motd}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                className="co-bouton"
+                onClick={handleSave}
+                disabled={!name.trim() || updateGuild.isPending}
+              >
+                {t("common.saveChanges", "Enregistrer")}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {vue === "general" && (
         <section className="gu-bloc">
@@ -125,40 +274,6 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
               placeholder={t("friends.guildDescription", "Sa devise, ce qu’elle poursuit")}
               aria-label={t("friends.guildDescription", "Sa devise, ce qu’elle poursuit")}
             />
-
-            <div>
-              <p className="gu-etiquette">{t("friends.icon", "Blason")}</p>
-              <div className="gu-barre" style={{ padding: 0, border: "none" }}>
-                {iconOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    type="button"
-                    className="co-puce"
-                    aria-pressed={icon === opt.key}
-                    aria-label={opt.key}
-                    onClick={() => setIcon(opt.key)}
-                  >
-                    <opt.icon aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="gu-etiquette">{t("friends.color", "Couleur")}</p>
-              <div className="gu-couleurs">
-                {colorOptions.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={cn("gu-couleur", colorClasses[c])}
-                    aria-pressed={color === c}
-                    aria-label={c}
-                    onClick={() => setColor(c)}
-                  />
-                ))}
-              </div>
-            </div>
 
             <label className="gu-reglage">
               <span>{t("friends.publicGuild", "Guilde publique")}</span>

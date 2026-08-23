@@ -3,6 +3,9 @@ import { Shield, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@/styles/community.css";
 import "@/styles/friends.css";
+/* La modale de fondation montre un apercu de la guilde : elle utilise
+   donc les classes .gu-, qui vivent dans guild.css. */
+import "@/styles/guild.css";
 import { PanneauAllies } from "@/components/friends/PanneauAllies";
 import { PanneauGuildes } from "@/components/friends/PanneauGuildes";
 import { useAuth } from "@/contexts/AuthContext";

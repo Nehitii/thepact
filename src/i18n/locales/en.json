@@ -48,7 +48,8 @@
     "on": "ON",
     "off": "OFF",
     "or": "or",
-    "previous": "Previous"
+    "previous": "Previous",
+    "copy": "Copy"
   },
   "auth": {
     "brand": "Pact",
@@ -2903,7 +2904,7 @@
     "wantsToBeFriends": "Wants to be friends",
     "alreadyFriends": "Friends",
     "yourGuilds": "Your Guilds",
-    "createGuild": "Create Guild",
+    "createGuild": "Create a guild",
     "pendingInvites": "Pending Invites",
     "noGuildsTitle": "No guild",
     "noGuildsDesc": "Create a guild and invite your friends to join forces.",
@@ -2973,12 +2974,12 @@
     "activityJoined": "{{name}} joined the guild",
     "activityLeft": "{{name}} left the guild",
     "activityContributed": "{{name}} contributed {{amount}} to a goal",
-    "generateCode": "Generate Invite Code",
+    "generateCode": "Create a code",
     "codeGenerated": "Code generated: {{code}}",
     "codeCopied": "Code copied!",
     "codeDeactivated": "Code deactivated",
-    "noCodes": "No invite codes",
-    "noCodesDesc": "Generate a shareable code to invite members.",
+    "noCodes": "No active code",
+    "noCodesDesc": "An invite code opens the guild to whoever holds it, for a limited time.",
     "noMembers": "No members",
     "blockConfirm": "Are you sure you want to block {{name}}? This will also remove them from your friends list. This action cannot be undone from this page.",
     "blockedUsersTitle": "BLOCKED USERS",
@@ -3016,7 +3017,8 @@
     "noGuildsWhy": "A guild gathers several people around shared goals. Create yours, or enter someone else's code.",
     "noPublicGuild": "No public guild for now",
     "guildCreated": "Guild created",
-    "confirmRemove": "Confirm"
+    "confirmRemove": "Confirm",
+    "foundGuild": "Found"
   },
   "guild": {
     "overview": "Overview",
@@ -3105,7 +3107,31 @@
       "objectifs": "Goals completed",
       "taches": "Tasks done",
       "journal": "Days written"
-    }
+    },
+    "identity": "Identity",
+    "banner": "Banner",
+    "bannerAdd": "Add a banner",
+    "emblem": "Emblem",
+    "emblemAdd": "Add an emblem",
+    "emblemUploaded": "Your emblem replaces the sign below.",
+    "emblemPick": "With no image uploaded, the guild wears one of these twenty-five signs.",
+    "colorFree": "Another colour",
+    "motd": "Message of the day",
+    "motdWhat": "What the guild should read on arriving",
+    "preview": "Preview",
+    "mediaTypeRefused": "That image format is not accepted",
+    "mediaTooHeavy": "Image too heavy — {{max}} MB at most",
+    "mediaFailed": "The upload failed",
+    "mediaRemove": "Remove the image",
+    "codeFailed": "Creating the code failed",
+    "copyFailed": "The copy failed",
+    "codeRevokeFailed": "Deactivating the code failed",
+    "codeUses_one": "{{count}} use",
+    "codeUses_other": "{{count}} uses",
+    "codeExpires": "expires {{quand}}",
+    "copyCode": "Copy the code",
+    "copied": "Copied",
+    "revokeCode": "Deactivate this code"
   },
   "analytics": {
     "period": {

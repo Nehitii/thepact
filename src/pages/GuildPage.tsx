@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  ArrowLeft, CalendarDays, Crown, Home, LogOut,
+  ArrowLeft, CalendarDays, Crown, Home, LogOut, Megaphone,
   MessageSquare, Settings, Shield, Swords, Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import "@/styles/community.css";
 import "@/styles/guild.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuild, useGuildMembers, useGuilds } from "@/hooks/useGuilds";
+import { emblemeDe, teinteDe } from "@/components/guild/blason";
 import { GuildOverview } from "@/components/guild/GuildOverview";
 import { GuildMembersPanel } from "@/components/guild/GuildMembersPanel";
 import { GuildChat } from "@/components/guild/GuildChat";
@@ -123,6 +124,9 @@ export default function GuildPage() {
   const niveau = Math.floor(xp / 100);
   const dansLeNiveau = xp % 100;
 
+  const Embleme = emblemeDe(guilde.icon);
+  const teinte = teinteDe(guilde.color);
+
   return (
     <div className="co">
       <div className="co-grille">
@@ -134,35 +138,64 @@ export default function GuildPage() {
             </button>
           </div>
 
-          <header className="gu-tete">
-            <span className="gu-blason" style={{ color: guilde.color || "var(--co-accent)" }}>
-              {estFondateur ? <Crown aria-hidden="true" /> : <Shield aria-hidden="true" />}
-            </span>
-
-            <div style={{ minWidth: 0 }}>
-              <h1 className="gu-nom">{guilde.name}</h1>
-              {guilde.description && <p className="gu-mot">{guilde.description}</p>}
-              <div className="gu-faits">
-                <span className="gu-fait">
-                  <Users aria-hidden="true" />
-                  {t("guild.membersOf", { count: membres.length, max, defaultValue: "{{count}} membres sur {{max}}" })}
-                </span>
-                {estFondateur && (
-                  <span className="gu-fait">
-                    <Crown aria-hidden="true" />
-                    {t("friends.owner", "Fondateur")}
-                  </span>
-                )}
-              </div>
+          {/* L IDENTITE DE LA GUILDE, ENFIN AFFICHEE.
+              Le blason montrait « couronne si vous etes fondateur,
+              bouclier sinon » : votre role, jamais l embleme choisi
+              pour la guilde. guilds.icon etait ecrit par les reglages
+              et relu par personne.
+              La couleur, elle, etait un NOM de palette — « rose »,
+              « emerald », « amber » — injecte dans du CSS. Trois de ces
+              cinq mots ne sont pas des couleurs : le navigateur
+              rejetait la declaration et le blason heritait de la
+              couleur du texte. */}
+          <div className="gu-identite" style={{ "--gu-teinte": teinte } as CSSProperties}>
+            <div className="gu-banniere">
+              {guilde.banner_url && (
+                <img src={guilde.banner_url} alt="" aria-hidden="true" loading="lazy" />
+              )}
             </div>
 
-            {estMembre && !estFondateur && (
-              <button type="button" className="co-puce" onClick={quitter} disabled={leaveGuild.isPending}>
-                <LogOut aria-hidden="true" />
-                {t("friends.leaveGuild", "Quitter")}
-              </button>
+            <header className="gu-tete">
+              <span className="gu-blason">
+                {guilde.emblem_url
+                  ? <img src={guilde.emblem_url} alt="" aria-hidden="true" />
+                  : <Embleme aria-hidden="true" />}
+              </span>
+
+              <div style={{ minWidth: 0 }}>
+                <h1 className="gu-nom">{guilde.name}</h1>
+                {guilde.description && <p className="gu-mot">{guilde.description}</p>}
+                <div className="gu-faits">
+                  <span className="gu-fait">
+                    <Users aria-hidden="true" />
+                    {t("guild.membersOf", { count: membres.length, max, defaultValue: "{{count}} membres sur {{max}}" })}
+                  </span>
+                  {estFondateur && (
+                    <span className="gu-fait">
+                      <Crown aria-hidden="true" />
+                      {t("friends.owner", "Fondateur")}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {estMembre && !estFondateur && (
+                <button type="button" className="co-puce" onClick={quitter} disabled={leaveGuild.isPending}>
+                  <LogOut aria-hidden="true" />
+                  {t("friends.leaveGuild", "Quitter")}
+                </button>
+              )}
+            </header>
+
+            {/* Le mot du jour. La colonne motd existait deja en base et
+                n etait affichee nulle part. */}
+            {guilde.motd && (
+              <p className="gu-motd">
+                <Megaphone aria-hidden="true" />
+                {guilde.motd}
+              </p>
             )}
-          </header>
+          </div>
 
           <div className="gu-xp">
             <span className="gu-xp-niveau">{t("guild.level", "Niveau {{n}}", { n: niveau })}</span>

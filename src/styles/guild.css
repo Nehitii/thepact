@@ -17,26 +17,8 @@
    jauge d'expérience, et les blocs des sections.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── LE BANDEAU ── */
-.gu-tete {
-  display: grid;
-  grid-template-columns: 56px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 16px var(--co-gouttiere);
-  border-bottom: 1px solid var(--co-filet);
-}
-
-.gu-blason {
-  width: 56px;
-  height: 56px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: var(--co-fond-eleve);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
-}
-.gu-blason svg { width: 24px; height: 24px; stroke-width: 1.8; }
+/* ── LE BANDEAU ──
+   Sa definition vit desormais avec le reste de l identite, plus bas. */
 
 .gu-nom {
   font-family: var(--co-fonte);
@@ -770,4 +752,260 @@
 @media (max-width: 640px) {
   .gu-ligne { grid-template-columns: 40px 1fr; }
   .gu-actions { grid-column: 1 / -1; margin-top: 8px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   L IDENTITE D UNE GUILDE
+   ═══════════════════════════════════════════════════════════════
+   Le blason montrait « couronne si vous etes fondateur, bouclier
+   sinon » — c est-a-dire VOTRE role, jamais l embleme choisi pour la
+   guilde. Le champ guilds.icon etait enregistre par les reglages et
+   relu par personne.
+
+   Et la couleur etait un NOM de palette injecte dans du CSS, si bien
+   que trois choix sur cinq etaient purement et simplement rejetes par
+   le navigateur.
+
+   Ici, la guilde porte ce qu elle a choisi : sa banniere, son embleme,
+   sa teinte. La teinte arrive par --gu-teinte, posee sur l en-tete. */
+
+.gu-identite {
+  position: relative;
+  border-bottom: 1px solid var(--co-filet);
+  isolation: isolate;
+}
+
+/* ── La banniere ──
+   Elle est un FOND, pas une image a regarder : le nom de la guilde
+   passe par-dessus et doit rester lisible quoi qu on y depose. D ou le
+   voile, qui va du transparent en haut a la couleur de fond en bas —
+   le texte repose donc toujours sur du fond, jamais sur la photo. */
+.gu-banniere {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gu-teinte, var(--co-accent)) 22%, var(--co-fond)),
+    var(--co-fond)
+  );
+}
+.gu-banniere img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gu-banniere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.10) 0%,
+    transparent 38%,
+    color-mix(in srgb, var(--co-fond) 82%, transparent) 82%,
+    var(--co-fond) 100%
+  );
+}
+
+/* ── Le bandeau, remonte sur la banniere ── */
+.gu-tete {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 14px;
+  align-items: end;
+  padding: 0 var(--co-gouttiere) 16px;
+  margin-top: -34px;
+  position: relative;
+  z-index: 1;
+}
+.gu-identite .gu-tete { border-bottom: none; }
+
+.gu-blason {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--co-fond-eleve);
+  /* Un liseré a la teinte de la guilde, et un cerne sombre pour que la
+     plaque se detache de n importe quelle banniere. */
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--gu-teinte, var(--co-accent)) 55%, transparent),
+    0 0 0 4px var(--co-fond);
+  color: var(--gu-teinte, var(--co-accent));
+}
+.gu-blason svg { width: 28px; height: 28px; stroke-width: 1.7; }
+.gu-blason img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Le mot du jour : la seule phrase que la guilde adresse aux siens.
+   La colonne motd existait deja, et n etait affichee nulle part. */
+.gu-motd {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 var(--co-gouttiere) 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-left: 2px solid var(--gu-teinte, var(--co-accent));
+  background: var(--co-fond-eleve);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--co-texte-2);
+}
+.gu-motd svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--gu-teinte, var(--co-accent));
+}
+
+/* ── Deposer une image ── */
+.gu-depot {
+  position: relative;
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px dashed var(--co-filet-fort);
+  background: var(--co-fond-creux);
+  cursor: pointer;
+  transition: border-color 140ms;
+}
+.gu-depot:hover { border-color: var(--gu-teinte, var(--co-accent)); }
+.gu-depot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.gu-depot--banniere { height: 104px; }
+.gu-depot--embleme { width: 72px; height: 72px; border-radius: 16px; }
+.gu-depot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gu-depot-vide {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  align-content: center;
+  color: var(--co-texte-3);
+  font-size: 12.5px;
+  pointer-events: none;
+}
+.gu-depot-vide svg { width: 17px; height: 17px; }
+
+.gu-depot-retirer {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 7px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+}
+.gu-depot-retirer svg { width: 13px; height: 13px; }
+
+/* ── Choisir un embleme ──
+   Vingt-cinq emblemes, pas trois. La grille defile plutot que
+   d imposer sa hauteur au formulaire. */
+.gu-emblemes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+  max-height: 176px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.gu-embleme {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--co-filet);
+  border-radius: 10px;
+  background: none;
+  color: var(--co-texte-2);
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+.gu-embleme svg { width: 17px; height: 17px; }
+.gu-embleme:hover { border-color: var(--co-filet-fort); color: var(--co-texte); }
+.gu-embleme[aria-pressed="true"] {
+  border-color: var(--gu-teinte, var(--co-accent));
+  color: var(--gu-teinte, var(--co-accent));
+  background: color-mix(in srgb, var(--gu-teinte, var(--co-accent)) 12%, transparent);
+}
+
+/* ── Choisir une teinte ── */
+.gu-teintes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gu-teinte-choix {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 120ms var(--co-sortie), box-shadow 120ms;
+}
+.gu-teinte-choix:hover { transform: scale(1.08); }
+.gu-teinte-choix[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--co-fond), 0 0 0 4px currentColor;
+}
+/* Le selecteur natif, pour toute autre couleur que les huit proposees. */
+.gu-teinte-libre {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px dashed var(--co-filet-fort);
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.gu-teinte-libre::-webkit-color-swatch-wrapper { padding: 2px; }
+.gu-teinte-libre::-webkit-color-swatch { border: none; border-radius: 999px; }
+.gu-teinte-libre::-moz-color-swatch { border: none; border-radius: 999px; }
+
+@media (max-width: 480px) {
+  .gu-banniere { height: 104px; }
+  .gu-tete { grid-template-columns: 56px 1fr; margin-top: -28px; }
+  .gu-blason { width: 56px; height: 56px; }
+  .gu-blason svg { width: 24px; height: 24px; }
+}
+
+/* ── UN CODE D INVITATION ──
+   Le code est la seule chose qu on vient chercher ici : il occupe
+   donc la premiere place, en chiffres, et non une ligne de texte
+   ordinaire perdue entre deux boutons. */
+.gu-code {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--co-filet);
+  border-radius: 10px;
+  background: var(--co-fond-eleve);
+}
+.gu-code-suite {
+  font-family: var(--co-fonte-chiffre);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--co-texte);
+  user-select: all;
+}
+.gu-code-vie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  /* Le code garde sa ligne ; le reste passe dessous plutot que de le
+     comprimer jusqu a le rendre illisible. */
+  .gu-code { grid-template-columns: 1fr auto auto; }
+  .gu-code-suite { grid-column: 1 / -1; }
 }

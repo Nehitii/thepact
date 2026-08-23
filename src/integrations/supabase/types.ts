@@ -2298,6 +2298,7 @@ export type Database = {
           color: string | null
           created_at: string | null
           description: string | null
+          emblem_url: string | null
           icon: string | null
           id: string
           is_public: boolean
@@ -2313,6 +2314,7 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           description?: string | null
+          emblem_url?: string | null
           icon?: string | null
           id?: string
           is_public?: boolean
@@ -2328,6 +2330,7 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           description?: string | null
+          emblem_url?: string | null
           icon?: string | null
           id?: string
           is_public?: boolean
