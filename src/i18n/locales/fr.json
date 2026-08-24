@@ -118,7 +118,7 @@
   },
   "profile": {
     "title": "Profil",
-    "subtitle": "Ton console d'identité",
+    "subtitle": "Ta console d’identité",
     "emailCantChange": "L'email ne peut pas être modifié",
     "displayName": "Nom d'affichage",
     "displayNamePlaceholder": "Ton nom",
@@ -217,7 +217,32 @@
         "achievements": "Succès"
       },
       "healthDesc": "Points du jour, sommeil, activité et stress (CSV)"
-    }
+    },
+    "securitySubtitle": "Ton mot de passe, ton second facteur, tes sessions.",
+    "identityPanel": "Identité",
+    "regionPanel": "Langue & région",
+    "unsaved": "non enregistré",
+    "displayNameRule": "Un nom vide ou contenant une adresse e-mail sera remplacé par un pseudonyme.",
+    "nameReplacedTitle": "Nom d’affichage remplacé",
+    "nameReplacedDesc": "Un nom vide ou contenant une adresse e-mail est remplacé par un pseudonyme. Le tien est désormais « {{nom}} ».",
+    "passwordPanel": "Mot de passe",
+    "readyToChange": "prêt",
+    "confirmHint": "Retape-le à l’identique — il est obligatoire.",
+    "showPassword": "Afficher",
+    "hidePassword": "Masquer",
+    "passwordChanged": "Mot de passe changé",
+    "mfaPanel": "Double authentification",
+    "sessionsPanel": "Sessions",
+    "closeOthers": "Fermer les autres sessions",
+    "closeOthersDesc": "Déconnecte tous les autres appareils. Celui-ci reste ouvert.",
+    "closeOthersAction": "Fermer",
+    "sessionsClosed": "Autres sessions fermées",
+    "sessionsClosedDesc": "Seul cet appareil reste connecté.",
+    "sessionsFailed": "Fermeture impossible",
+    "journalPanel": "Journal de sécurité",
+    "journalCount": "{{n}} derniers",
+    "journalEmpty": "Aucun geste de sécurité enregistré. Les changements de mot de passe, l’activation du second facteur et la fermeture des sessions apparaîtront ici.",
+    "journalError": "Le journal n’a pas pu être lu : {{m}}"
   },
   "todo": {
     "title": "To-Do List",

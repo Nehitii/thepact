@@ -5,6 +5,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Loader2, ShieldCheck, ShieldOff, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMfa, type MfaEnrollment as Enrollment } from "@/hooks/useMfa";
+import { noterEvenementSecurite } from "@/lib/journalSecurite";
 
 /**
  * Enrôlement d'un facteur TOTP via Supabase Auth.
@@ -13,7 +14,10 @@ import { useMfa, type MfaEnrollment as Enrollment } from "@/hooks/useMfa";
  * stocke par l'application. Tant que le code de confirmation n'est pas
  * valide, le facteur reste au statut "unverified" et ne protege rien.
  */
-export function MfaEnrollment() {
+/* `userId` et `onEvenement` : l activation et le retrait d un second
+   facteur sont des gestes de securite, et doivent laisser une trace
+   dans le journal — c est meme la raison pour laquelle on le relit. */
+export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEvenement?: () => void } = {}) {
   const mfa = useMfa();
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [code, setCode] = useState("");
@@ -24,8 +28,8 @@ export function MfaEnrollment() {
     try {
       setEnrollment(await mfa.enroll("Vowpact"));
       setCode("");
-    } catch (e: any) {
-      toast.error("Enrôlement impossible", { description: e?.message });
+    } catch (e) {
+      toast.error("Enrôlement impossible", { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setBusy(false);
     }
@@ -38,11 +42,13 @@ export function MfaEnrollment() {
       await mfa.confirmEnrollment(enrollment.factorId, code);
       setEnrollment(null);
       setCode("");
+      await noterEvenementSecurite(userId, "mfa_enrolled");
+      onEvenement?.();
       toast.success("Second facteur activé", {
         description: "Ta session porte désormais le niveau aal2.",
       });
-    } catch (e: any) {
-      toast.error("Code refusé", { description: e?.message });
+    } catch (e) {
+      toast.error("Code refusé", { description: e instanceof Error ? e.message : String(e) });
       setCode("");
     } finally {
       setBusy(false);
@@ -53,9 +59,11 @@ export function MfaEnrollment() {
     setBusy(true);
     try {
       await mfa.disable();
+      await noterEvenementSecurite(userId, "mfa_revoked");
+      onEvenement?.();
       toast.success("Second facteur retiré");
-    } catch (e: any) {
-      toast.error("Retrait impossible", { description: e?.message });
+    } catch (e) {
+      toast.error("Retrait impossible", { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setBusy(false);
     }
@@ -64,7 +72,7 @@ export function MfaEnrollment() {
   if (mfa.isLoading) {
     return (
       <div className="flex items-center gap-2 p-4 font-mono ds-t-label text-muted-foreground">
-        <Loader2 className="w-3 h-3 animate-spin" /> CHARGEMENT...
+        <Loader2 className="w-3 h-3 animate-spin" /> CHARGEMENT…
       </div>
     );
   }
@@ -82,7 +90,7 @@ export function MfaEnrollment() {
             </p>
           </div>
           <span className="px-2 py-1 ds-t-label font-mono tracking-widest uppercase border bg-primary/10 border-primary/40 text-primary">
-            ACTIVE
+            ACTIF
           </span>
         </div>
         <Button variant="ghost" size="sm" onClick={revoke} disabled={busy}
@@ -149,7 +157,7 @@ export function MfaEnrollment() {
           <p className="font-mono ds-t-label text-muted-foreground mt-1">Aucun second facteur</p>
         </div>
         <span className="px-2 py-1 ds-t-label font-mono tracking-widest uppercase border bg-foreground/5 border-foreground/10 text-muted-foreground">
-          OFFLINE
+          INACTIF
         </span>
       </div>
       <Button onClick={start} disabled={busy} size="sm"

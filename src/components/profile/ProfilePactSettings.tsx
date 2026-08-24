@@ -6,7 +6,7 @@ import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
 import { PactIdentityCard } from "./PactIdentityCard";
 import { PactOverviewCard } from "./PactOverviewCard";
-import { DataPanel, SettingsBreadcrumb, CyberSeparator, TerminalLog } from "./settings-ui";
+import { DataPanel, TerminalLog } from "./settings-ui";
 import { useResetPact } from "@/hooks/useResetPact";
 import { AlertTriangle, Loader2, Lock, Check, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";

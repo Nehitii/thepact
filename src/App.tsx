@@ -100,6 +100,7 @@ function AppRoutes() {
         <Route path="finance" element={<Finance />} />
         <Route path="journal" element={<Journal />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="profile/security" element={<Profile />} />
         <Route path="profile/bounded" element={<BoundedProfile />} />
         <Route path="profile/pact-settings" element={<PactSettings />} />
         <Route path="profile/pact-rules" element={<PactSettings />} />

@@ -217,7 +217,32 @@
         "achievements": "Achievements"
       },
       "healthDesc": "Wellness check-ins, sleep, activity & stress data (CSV)"
-    }
+    },
+    "securitySubtitle": "Your password, your second factor, your sessions.",
+    "identityPanel": "Identity",
+    "regionPanel": "Language & region",
+    "unsaved": "unsaved",
+    "displayNameRule": "A blank name, or one containing an email address, is replaced by a pseudonym.",
+    "nameReplacedTitle": "Display name replaced",
+    "nameReplacedDesc": "A blank name, or one containing an email address, is replaced by a pseudonym. Yours is now “{{nom}}”.",
+    "passwordPanel": "Password",
+    "readyToChange": "ready",
+    "confirmHint": "Type it again — this field is required.",
+    "showPassword": "Show",
+    "hidePassword": "Hide",
+    "passwordChanged": "Password changed",
+    "mfaPanel": "Two-factor authentication",
+    "sessionsPanel": "Sessions",
+    "closeOthers": "Close other sessions",
+    "closeOthersDesc": "Signs out every other device. This one stays open.",
+    "closeOthersAction": "Close",
+    "sessionsClosed": "Other sessions closed",
+    "sessionsClosedDesc": "Only this device remains signed in.",
+    "sessionsFailed": "Could not close sessions",
+    "journalPanel": "Security log",
+    "journalCount": "last {{n}}",
+    "journalEmpty": "No security action recorded yet. Password changes, second-factor activation and session closures will appear here.",
+    "journalError": "The log could not be read: {{m}}"
   },
   "todo": {
     "title": "To-Do List",

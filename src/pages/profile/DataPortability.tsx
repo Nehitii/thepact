@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Bouton } from "@/components/profile/console-ui";
-import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle } from "lucide-react";
+import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +18,35 @@ import { Panneau } from "@/components/profile/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
+/* LES MOTS DE CONFIRMATION SONT EN FRANCAIS.
+   Il fallait taper « RESET » — et « DELETE » pour supprimer le compte —
+   dans une interface francaise : l utilisateur devait deviner le mot de
+   passe de sa propre destruction. */
+const MOT_REINIT = "REINITIALISER";
+const MOT_SUPPRESSION = "SUPPRIMER";
+
+/* La fonction delete-account exige desormais aal2 quand un second
+   facteur est enrole. Son 403 porte un code, pas une phrase — et
+   functions.invoke jette le corps de toute reponse non-2xx. On relit
+   donc la reponse conservee dans context, comme ailleurs dans
+   l application. */
+const motifLisible = (code: string) =>
+  code === "second_facteur_requis"
+    ? "Ton compte est protégé par un second facteur. Reconnecte-toi en le saisissant, puis réessaie."
+    : code;
+
+const motifDeLEchec = async (error: { message: string; context?: unknown }) => {
+  if (error.context instanceof Response) {
+    try {
+      const corps = await error.context.clone().json();
+      if (corps?.error) return motifLisible(corps.error);
+    } catch {
+      /* Corps illisible : on retombe sur le message d origine. */
+    }
+  }
+  return error.message;
+};
+
 export default function DataPortability() {
   const { user, session } = useAuth();
   const { t } = useTranslation();
@@ -31,6 +60,9 @@ export default function DataPortability() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetConfirm, setResetConfirm] = useState("");
   const [isResetting, setIsResetting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "DATA PORTABILITY READY", type: "info" });
 
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -148,7 +180,7 @@ export default function DataPortability() {
   };
 
   const handleDeleteAllData = async () => {
-    if (resetConfirm !== "RESET") return;
+    if (resetConfirm !== MOT_REINIT) return;
     setIsResetting(true);
     setLatestLog({ text: "RESETTING ALL DATA...", type: "warn" });
     try {
@@ -162,6 +194,42 @@ export default function DataPortability() {
       toast.error("Erreur", { description: e.message });
       setLatestLog({ text: "RESET FAILED", type: "warn" });
     } finally { setIsResetting(false); }
+  };
+
+  /* LA SUPPRESSION DU COMPTE A REJOINT SA VOISINE.
+     Elle vivait dans un onglet « Systeme » de la page Compte, loin de
+     la reinitialisation des donnees a laquelle elle ressemble. Deux
+     destructions, une seule zone sensible.
+
+     Elle lisait aussi son resultat comme le reste de cette page ne le
+     faisait deja : `invoke` ne leve pas sur une reponse non-2xx, il
+     rend `{ data, error }`. L ancienne version jetait cette valeur,
+     journalisait « ACCOUNT PURGED », deconnectait et redirigeait — meme
+     apres un 500. Le compte etait toujours la, et l utilisateur n avait
+     plus aucun moyen de s en apercevoir. */
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== MOT_SUPPRESSION) return;
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error) throw new Error(await motifDeLEchec(error));
+      if (data?.error) throw new Error(motifLisible(data.error));
+
+      toast.success("Compte supprimé", { description: "Toutes tes données ont été effacées." });
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (e) {
+      /* On reste sur place et connecte : la seule facon honnete de dire
+         que rien n a ete supprime. */
+      toast.error("Suppression impossible", {
+        description: e instanceof Error ? e.message : "Ton compte est intact. Réessaie ou signale-le.",
+      });
+      setLatestLog({ text: "ACCOUNT DELETE FAILED", type: "warn" });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getCategoryLabel = (category: ExportCategory): string => {
@@ -285,21 +353,63 @@ export default function DataPortability() {
             </div>
           </div>
         </div>
+
+        <div className="border border-destructive/30 bg-destructive/10 p-4 mt-3" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
+          <div className="flex items-start gap-3">
+            <UserX className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <p className="text-xs font-mono text-destructive tracking-wider uppercase font-bold">Supprimer mon compte</p>
+              <p className="ds-t-label text-destructive/60 font-mono leading-relaxed">Efface le compte lui-même, et tout ce qu’il contient. Tu ne pourras plus te reconnecter avec cette adresse. Aucun retour possible.</p>
+              <Bouton role="danger" onClick={() => setShowDeleteModal(true)}>
+                <UserX />
+                Supprimer mon compte
+              </Bouton>
+            </div>
+          </div>
+        </div>
       </Panneau>
 
       <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
         <DialogContent className="bg-card border-destructive/30 max-w-md rounded-none">
           <DialogHeader>
             <DialogTitle className="text-destructive font-orbitron tracking-wider flex items-center gap-2"><AlertCircle className="h-5 w-5" /> RÉINITIALISATION</DialogTitle>
-            <DialogDescription className="text-muted-foreground text-xs font-mono">Tape <span className="text-destructive font-bold">RESET</span> pour confirmer la suppression de toutes tes données.</DialogDescription>
+            <DialogDescription className="text-muted-foreground text-xs font-mono">Tape <span className="text-destructive font-bold">{MOT_REINIT}</span> pour confirmer la suppression de toutes tes données.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <Input value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder='Tape "RESET" pour confirmer' className="font-mono text-sm border-destructive/25 bg-destructive/5 text-destructive rounded-none" />
+            <Input value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder={`Tape « ${MOT_REINIT} » pour confirmer`} className="font-mono text-sm border-destructive/25 bg-destructive/5 text-destructive rounded-none" />
           </div>
           <DialogFooter className="gap-2">
             <button onClick={() => { setShowResetModal(false); setResetConfirm(""); }} className="px-4 py-2 border border-primary/12 text-primary/35 hover:text-primary/65 font-mono ds-t-label tracking-[0.22em] uppercase transition-all">ANNULER</button>
-            <button onClick={handleDeleteAllData} disabled={resetConfirm !== "RESET" || isResetting} className={cn("px-4 py-2 border border-destructive/40 bg-destructive/20 text-destructive", "hover:bg-destructive/30 hover:border-destructive/60", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors", "disabled:opacity-30 disabled:cursor-not-allowed")}>
+            <button onClick={handleDeleteAllData} disabled={resetConfirm !== MOT_REINIT || isResetting} className={cn("px-4 py-2 border border-destructive/40 bg-destructive/20 text-destructive", "hover:bg-destructive/30 hover:border-destructive/60", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors", "disabled:opacity-30 disabled:cursor-not-allowed")}>
               {isResetting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "CONFIRMER"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteModal} onOpenChange={(o) => { setShowDeleteModal(o); if (!o) setDeleteConfirm(""); }}>
+        <DialogContent className="bg-card border-destructive/40 max-w-md rounded-none">
+          <DialogHeader>
+            <DialogTitle className="text-destructive font-orbitron tracking-wider flex items-center gap-2">
+              <UserX className="h-5 w-5" /> SUPPRESSION DU COMPTE
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs font-mono leading-relaxed">
+              Ton compte, tes objectifs, ton journal, tes finances, tes cosmétiques : tout part.
+              Tape <span className="text-destructive font-bold">{MOT_SUPPRESSION}</span> pour confirmer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder={`Tape « ${MOT_SUPPRESSION} » pour confirmer`}
+              className="font-mono text-sm border-destructive/30 bg-destructive/5 text-destructive rounded-none"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }} className="px-4 py-2 border border-primary/12 text-primary/35 hover:text-primary/65 font-mono ds-t-label tracking-[0.22em] uppercase transition-all">ANNULER</button>
+            <button onClick={handleDeleteAccount} disabled={deleteConfirm !== MOT_SUPPRESSION || isDeleting} className={cn("px-4 py-2 border border-destructive/50 bg-destructive/25 text-destructive", "hover:bg-destructive/40 hover:border-destructive/70", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors", "disabled:opacity-30 disabled:cursor-not-allowed")}>
+              {isDeleting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "SUPPRIMER DÉFINITIVEMENT"}
             </button>
           </DialogFooter>
         </DialogContent>

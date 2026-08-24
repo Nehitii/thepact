@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode, forwardRef, useId } from "react";
+import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import "@/styles/reglages.css";
 
@@ -137,17 +138,20 @@ export function Jauge({ children, valeur }: { children: ReactNode; valeur: React
 /* Quatorze styles de bouton coexistaient dans les reglages — des
    hauteurs de 16 a 136 px, deux familles de police, la casse au
    hasard. Un seul style, quatre intentions. */
-export function Bouton({
-  role = "normal",
-  pleine,
-  className,
-  ...reste
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  role?: "primaire" | "normal" | "discret" | "danger";
-  pleine?: boolean;
-}) {
+/* La `ref` est transmise : Radix pose la sienne sur le declencheur
+   qu il enveloppe (`AlertDialogTrigger asChild`), et un composant qui
+   la laisse tomber declenche « Function components cannot be given
+   refs » — le declencheur perd alors son ancrage et son focus. */
+export const Bouton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    role?: "primaire" | "normal" | "discret" | "danger";
+    pleine?: boolean;
+  }
+>(function Bouton({ role = "normal", pleine, className, ...reste }, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       className={cn("rg-bouton", className)}
       data-role={role !== "normal" ? role : undefined}
@@ -155,7 +159,7 @@ export function Bouton({
       {...reste}
     />
   );
-}
+});
 
 /* ── UN CHAMP ETIQUETE ───────────────────────────────────────── */
 
@@ -167,6 +171,78 @@ export function Champ({ etiquette, children }: { etiquette: ReactNode; children:
       <span className="rg-champ-etiquette">{etiquette}</span>
       {children}
     </label>
+  );
+}
+
+/* ── UN EDITEUR ──────────────────────────────────────────────── */
+
+/* UN INTITULE QUI NE DESIGNE RIEN N EST PAS UN INTITULE.
+ *
+ * L ancien kit dessinait un `<label>` voisin du controle, sans
+ * `htmlFor`, sans `id` en face, et sans l englober : le lien etait
+ * purement visuel. Sur la page Compte, sept champs de suite
+ * s annoncaient « zone d edition, vide ».
+ *
+ * Les deux composants ci-dessous possedent le cablage plutot que de le
+ * laisser a l appelant : `htmlFor` pour une saisie native,
+ * `aria-labelledby` pour une liste Radix — qui est un bouton et non un
+ * `select`, et qu un `<label>` englobant ne nomme donc pas de facon
+ * fiable. */
+
+interface EditeurCommun {
+  etiquette: ReactNode;
+  /* Une phrase sous le champ : ce qu on attend, ou ce qui ne va pas. */
+  aide?: ReactNode;
+  /* Vrai quand `aide` decrit une faute : elle passe en rouge et le
+     champ avec elle. */
+  faute?: boolean;
+  /* Prend la largeur des deux colonnes de `.rg-champs`. */
+  pleine?: boolean;
+}
+
+export function ChampTexte({
+  etiquette, aide, faute, pleine, className, ...reste
+}: EditeurCommun & React.InputHTMLAttributes<HTMLInputElement>) {
+  const id = useId();
+  return (
+    <div className="rg-editeur" data-pleine={pleine ? "" : undefined}>
+      <label className="rg-champ-etiquette" htmlFor={id}>{etiquette}</label>
+      <input
+        id={id}
+        className={cn("rg-saisie", className)}
+        data-faute={faute ? "" : undefined}
+        aria-invalid={faute || undefined}
+        aria-describedby={aide ? `${id}-aide` : undefined}
+        {...reste}
+      />
+      {aide && <p className="rg-editeur-aide" id={`${id}-aide`} data-faute={faute ? "" : undefined}>{aide}</p>}
+    </div>
+  );
+}
+
+export function ChampListe({
+  etiquette, aide, faute, pleine, valeur, onChange, placeholder, disabled, children,
+}: EditeurCommun & {
+  valeur: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  const id = useId();
+  return (
+    <div className="rg-editeur" data-pleine={pleine ? "" : undefined}>
+      {/* Un `<span>` porteur d id, pas un `<label>` : Radix rend un
+          bouton, que `htmlFor` ne designe pas. */}
+      <span className="rg-champ-etiquette" id={id}>{etiquette}</span>
+      <Select value={valeur} onValueChange={onChange} disabled={disabled}>
+        <SelectTrigger className="rg-saisie" aria-labelledby={id} data-faute={faute ? "" : undefined}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent className="bg-card border-primary/20 max-h-[300px]">{children}</SelectContent>
+      </Select>
+      {aide && <p className="rg-editeur-aide" data-faute={faute ? "" : undefined}>{aide}</p>}
+    </div>
   );
 }
 

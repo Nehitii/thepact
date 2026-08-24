@@ -1,29 +1,18 @@
-import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import {
-  Loader2, User, ShieldCheck, Lock, Eye, EyeOff, Smartphone, Check,
-  AlertTriangle, Activity, Trash2, History, LogOut, Mail,
-} from "lucide-react";
+import { Loader2, Eye, EyeOff, Check, KeyRound, LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-
+import { SelectItem } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MfaEnrollment } from "@/components/profile/MfaEnrollment";
-import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useQuery } from "@tanstack/react-query";
-import {
-  CyberPanel, CyberInput, CyberSelect, SettingsTabBar, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { texteDepuisDateCivile, aujourdHuiCivil } from "@/lib/dateCivile";
+import { noterEvenementSecurite, LIBELLES_EVENEMENT, type EvenementSecurite } from "@/lib/journalSecurite";
+import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/components/profile/console-ui";
 
 const TIMEZONES = [
   "UTC", "Europe/Paris", "Europe/London", "America/New_York", "America/Los_Angeles",
@@ -31,8 +20,16 @@ const TIMEZONES = [
 ] as const;
 const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
-interface ProfileAccountSettingsProps {
+/* Le minimum impose par Supabase Auth. Le client s y aligne plutot que
+   d inventer sa propre regle : rejeter ce que le serveur accepte, ou
+   l inverse, produit un message qui ne correspond a rien. */
+const LONGUEUR_MINIMALE = 6;
+
+export type VoletCompte = "compte" | "securite";
+
+interface Props {
   userId: string;
+  volet: VoletCompte;
   initialData: {
     email: string;
     displayName: string;
@@ -44,314 +41,500 @@ interface ProfileAccountSettingsProps {
   };
 }
 
-// ─── Cyber Birthday Picker ───
-function CyberBirthdayPicker({ value, onChange, label }: { value: Date | undefined; onChange: (d: Date) => void; label: string }) {
-  const dateLocale = useDateFnsLocale();
-  const years = useMemo(() => { const cy = new Date().getFullYear(); return Array.from({ length: 100 }).map((_, i) => cy - i); }, []);
-  const months = useMemo(() => Array.from({ length: 12 }).map((_, i) => ({ value: i, label: format(new Date(2000, i, 1), "MMM", { locale: dateLocale }).toUpperCase() })), [dateLocale]);
+/* ─────────────────────────────────────────────────────────────
+   LA DATE DE NAISSANCE
+   ───────────────────────────────────────────────────────────── */
 
-  const [year, setYear] = useState<number | undefined>(value?.getFullYear());
-  const [month, setMonth] = useState<number | undefined>(value?.getMonth());
-  const [day, setDay] = useState<number | undefined>(value?.getDate());
+/* Trois listes bornees a aujourd hui. L ancienne version proposait
+   l annee courante avec tous ses mois et tous ses jours : une
+   naissance en decembre 2026 etait selectionnable, et ni le client ni
+   la base ne s y opposaient. */
+function TripletNaissance({
+  valeur, onChange, etiquette,
+}: { valeur: Date | undefined; onChange: (d: Date) => void; etiquette: string }) {
+  const locale = useDateFnsLocale();
+  const auj = useMemo(() => aujourdHuiCivil(), []);
 
-  useEffect(() => { if (value) { setYear(value.getFullYear()); setMonth(value.getMonth()); setDay(value.getDate()); } }, [value]);
+  const [annee, setAnnee] = useState<number | undefined>(valeur?.getFullYear());
+  const [mois, setMois] = useState<number | undefined>(valeur?.getMonth());
+  const [jour, setJour] = useState<number | undefined>(valeur?.getDate());
 
-  const daysInMonth = year !== undefined && month !== undefined ? new Date(year, month + 1, 0).getDate() : 31;
-  const days = useMemo(() => Array.from({ length: daysInMonth }).map((_, i) => i + 1), [daysInMonth]);
+  useEffect(() => {
+    if (!valeur) return;
+    setAnnee(valeur.getFullYear());
+    setMois(valeur.getMonth());
+    setJour(valeur.getDate());
+  }, [valeur]);
 
-  const handleUpdate = (y?: number, m?: number, d?: number) => {
-    let newY = y !== undefined ? y : year;
-    let newM = m !== undefined ? m : month;
-    let newD = d !== undefined ? d : day;
-    if (newY !== undefined && newM !== undefined && newD !== undefined) {
-      const max = new Date(newY, newM + 1, 0).getDate();
-      if (newD > max) newD = max;
+  const annees = useMemo(
+    () => Array.from({ length: 120 }).map((_, i) => auj.getFullYear() - i),
+    [auj],
+  );
+
+  const dernierMois = annee === auj.getFullYear() ? auj.getMonth() : 11;
+  const moisDispo = useMemo(
+    () => Array.from({ length: dernierMois + 1 }).map((_, i) => ({
+      valeur: i,
+      libelle: format(new Date(2000, i, 1), "MMMM", { locale }),
+    })),
+    [dernierMois, locale],
+  );
+
+  const dernierJour =
+    annee === auj.getFullYear() && mois === auj.getMonth()
+      ? auj.getDate()
+      : annee !== undefined && mois !== undefined
+        ? new Date(annee, mois + 1, 0).getDate()
+        : 31;
+  const jours = useMemo(() => Array.from({ length: dernierJour }).map((_, i) => i + 1), [dernierJour]);
+
+  const majSelection = (a?: number, m?: number, j?: number) => {
+    const na = a ?? annee;
+    let nm = m ?? mois;
+    let nj = j ?? jour;
+
+    /* Reculer l annee ou le mois peut rendre le jour impossible — le
+       31 d un mois de trente jours, le 29 fevrier d une annee commune,
+       ou une date desormais future. On rabat plutot que de laisser une
+       selection invalide. */
+    if (na !== undefined && nm !== undefined) {
+      if (na === auj.getFullYear() && nm > auj.getMonth()) nm = auj.getMonth();
+      const max =
+        na === auj.getFullYear() && nm === auj.getMonth()
+          ? auj.getDate()
+          : new Date(na, nm + 1, 0).getDate();
+      if (nj !== undefined && nj > max) nj = max;
     }
-    setYear(newY); setMonth(newM); setDay(newD);
-    if (newY !== undefined && newM !== undefined && newD !== undefined) onChange(new Date(newY, newM, newD));
+
+    setAnnee(na); setMois(nm); setJour(nj);
+    if (na !== undefined && nm !== undefined && nj !== undefined) onChange(new Date(na, nm, nj));
   };
 
   return (
-    <div className="space-y-2 group">
-      <label className="ds-t-label font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
-        <span className="text-primary/40">{">"}</span> {label}
-      </label>
-      <div className="flex gap-2 w-full">
-        <Select value={day?.toString()} onValueChange={(v) => handleUpdate(year, month, parseInt(v))}>
-          <SelectTrigger className="bg-foreground/5 border-none border-b-2 border-foreground/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-primary text-foreground flex-1 transition-colors hover:bg-primary/5"><SelectValue placeholder="DD" /></SelectTrigger>
-          <SelectContent className="bg-card border-primary/30 rounded-none font-mono">{days.map((d) => <SelectItem key={d} value={d.toString()}>{d.toString().padStart(2, "0")}</SelectItem>)}</SelectContent>
-        </Select>
-        <Select value={month?.toString()} onValueChange={(v) => handleUpdate(year, parseInt(v), day)}>
-          <SelectTrigger className="bg-foreground/5 border-none border-b-2 border-foreground/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-primary text-foreground flex-[1.2] transition-colors hover:bg-primary/5"><SelectValue placeholder="MM" /></SelectTrigger>
-          <SelectContent className="bg-card border-primary/30 rounded-none font-mono max-h-[300px]">{months.map((m) => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}</SelectContent>
-        </Select>
-        <Select value={year?.toString()} onValueChange={(v) => handleUpdate(parseInt(v), month, day)}>
-          <SelectTrigger className="bg-foreground/5 border-none border-b-2 border-foreground/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-primary text-foreground flex-[1.5] transition-colors hover:bg-primary/5"><SelectValue placeholder="YYYY" /></SelectTrigger>
-          <SelectContent className="bg-card border-primary/30 rounded-none font-mono max-h-[300px]">{years.map((y) => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}</SelectContent>
-        </Select>
+    <div className="rg-editeur" data-pleine="">
+      <span className="rg-champ-etiquette">{etiquette}</span>
+      <div className="rg-triplet">
+        <ChampListe
+          etiquette={<span className="sr-only">{etiquette} — jour</span>}
+          valeur={jour?.toString() ?? ""}
+          onChange={(v) => majSelection(undefined, undefined, Number(v))}
+          placeholder="JJ"
+        >
+          {jours.map((j) => <SelectItem key={j} value={j.toString()}>{String(j).padStart(2, "0")}</SelectItem>)}
+        </ChampListe>
+        <ChampListe
+          etiquette={<span className="sr-only">{etiquette} — mois</span>}
+          valeur={mois?.toString() ?? ""}
+          onChange={(v) => majSelection(undefined, Number(v), undefined)}
+          placeholder="Mois"
+        >
+          {moisDispo.map((m) => <SelectItem key={m.valeur} value={m.valeur.toString()}>{m.libelle}</SelectItem>)}
+        </ChampListe>
+        <ChampListe
+          etiquette={<span className="sr-only">{etiquette} — année</span>}
+          valeur={annee?.toString() ?? ""}
+          onChange={(v) => majSelection(Number(v), undefined, undefined)}
+          placeholder="Année"
+        >
+          {annees.map((a) => <SelectItem key={a} value={a.toString()}>{a}</SelectItem>)}
+        </ChampListe>
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───
-export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
+/* ─────────────────────────────────────────────────────────────
+   LE VOLET « COMPTE »
+   ───────────────────────────────────────────────────────────── */
+
+function VoletIdentite({ userId, initialData }: { userId: string; initialData: Props["initialData"] }) {
   const { t, i18n } = useTranslation();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
+  const qc = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<"Identité" | "Sécurité" | "Système">("Identité");
   const [formData, setFormData] = useState(initialData);
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "SYSTEM.READY // AWAITING INPUT", type: "info" });
+  const [enCours, setEnCours] = useState(false);
 
-  const addLog = (text: string, type: "ok" | "warn" | "info") => setLatestLog({ text, type });
+  /* `initialData` est reconstruit a chaque rendu du parent : le
+     comparer par identite ferait clignoter l etat. On compare le
+     contenu, fige dans une chaine. */
+  const reference = useMemo(
+    () => JSON.stringify({ ...initialData, birthday: texteDepuisDateCivile(initialData.birthday) }),
+    [initialData],
+  );
+  const courant = JSON.stringify({ ...formData, birthday: texteDepuisDateCivile(formData.birthday) });
+  const modifie = courant !== reference;
 
+  /* Le formulaire suit la source quand elle change sous lui — apres un
+     enregistrement, ou depuis un autre onglet du navigateur. Sans
+     cela, le cache et l ecran divergeaient definitivement. */
   useEffect(() => {
-    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData);
-    setHasChanges(isChanged);
-    if (isChanged && latestLog.text.includes("SYSTEM.READY")) addLog("UNSAVED MODIFICATIONS DETECTED", "warn");
-  }, [formData, initialData]);
+    setFormData(initialData);
+    /* On depend du *contenu*, pas de l objet : `initialData` est une
+       nouvelle reference a chaque rendu du parent, et l inclure ici
+       reinitialiserait le formulaire a chaque frappe. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reference]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    addLog("COMMITTING CHANGES TO MAINFRAME...", "info");
+  const enregistrer = async () => {
+    setEnCours(true);
+    const nomEnvoye = formData.displayName.trim() || null;
     try {
-      const { error } = await supabase.from("profiles").update({
-        display_name: formData.displayName.trim() || null,
-        timezone: formData.timezone, language: formData.language, currency: formData.currency,
-        birthday: formData.birthday ? format(formData.birthday, "yyyy-MM-dd") : null,
-        country: formData.country || null,
-      }).eq("id", userId);
+      /* `.select()` rend la ligne telle que la base l a acceptee —
+         triggers compris. C est le seul moyen de savoir que le pseudo
+         a ete reecrit. */
+      const { data: apres, error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: nomEnvoye,
+          timezone: formData.timezone,
+          language: formData.language,
+          currency: formData.currency,
+          birthday: texteDepuisDateCivile(formData.birthday),
+          country: formData.country || null,
+        })
+        .eq("id", userId)
+        .select("display_name")
+        .single();
       if (error) throw error;
+
       if (formData.language !== i18n.language) await i18n.changeLanguage(formData.language);
       updateGlobalCurrency(formData.currency);
       await refreshCurrency();
-      setHasChanges(false);
-      addLog("UPDATE SUCCESSFUL. DATA SYNCED.", "ok");
-      toast.success(t("profile.updatedTitle"), { description: t("profile.updatedDesc") });
-    } catch (error: any) {
-      addLog(`COMMIT ERROR: ${error.message.toUpperCase()}`, "warn");
-      toast.error(t("common.error"), { description: error.message });
-    } finally { setIsSaving(false); }
-  };
 
-  return (
-    <div className="w-full max-w-4xl mx-auto pb-32">
-      <SettingsTabBar tabs={["Identité", "Sécurité", "Système"] as const} activeTab={activeTab} onChange={(tab) => setActiveTab(tab as typeof activeTab)} />
+      /* SANS CETTE INVALIDATION, LA PAGE MENTAIT.
+         L ecriture directe laissait le cache de `useProfile` sur les
+         anciennes valeurs ; la comparaison restait donc vraie et le
+         bouton « Enregistrer » reapparaissait aussitot, indefiniment,
+         jusqu au rechargement complet. */
+      await qc.invalidateQueries({ queryKey: ["profile", userId] });
 
-      <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">
-          {activeTab === "Identité" && (
-            <>
-              <CyberPanel title="Identité">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="relative">
-                    <CyberInput label={t("common.email")} value={formData.email} disabled />
-                    <Lock className="absolute right-4 top-[40px] h-4 w-4 text-muted-foreground/40" />
-                  </div>
-                  <CyberInput label={t("profile.displayName")} placeholder="Enter Alias" value={formData.displayName} onChange={(e: any) => setFormData((p) => ({ ...p, displayName: e.target.value }))} />
-                  <CyberBirthdayPicker label={t("profile.birthday")} value={formData.birthday} onChange={(d) => setFormData((p) => ({ ...p, birthday: d }))} />
-                </div>
-              </CyberPanel>
+      /* LE FORMULAIRE MONTRE CE QUI EST STOCKE, PAS CE QU ON A TAPE.
+         « Nehiti␣ » part en base comme « Nehiti » — la coupure des
+         blancs se fait a l envoi. Sans cette remise a niveau, le champ
+         gardait son espace, la comparaison restait vraie, et l ecran
+         annoncait « non enregistre » sur une donnee pourtant ecrite. */
+      const nomRecu = apres?.display_name ?? null;
+      setFormData((f) => ({ ...f, displayName: nomRecu ?? "" }));
 
-              <CyberPanel title="Langue & région">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <CyberSelect label={t("profile.country")} value={formData.country} onValueChange={(v) => setFormData((p) => ({ ...p, country: v }))}>
-                    {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{t(`profile.countries.${c}`)}</SelectItem>)}
-                  </CyberSelect>
-                  <CyberSelect label={t("profile.timezone")} value={formData.timezone} onValueChange={(v) => setFormData((p) => ({ ...p, timezone: v }))}>
-                    {TIMEZONES.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
-                  </CyberSelect>
-                  <CyberSelect label={t("profile.language")} value={formData.language} onValueChange={(v) => setFormData((p) => ({ ...p, language: v }))}>
-                    <SelectItem value="en">ENGLISH</SelectItem>
-                    <SelectItem value="fr">FRANÇAIS</SelectItem>
-                  </CyberSelect>
-                  <CyberSelect label={t("profile.currency")} value={formData.currency} onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}>
-                    <SelectItem value="eur">EUR (€)</SelectItem>
-                    <SelectItem value="usd">USD ($)</SelectItem>
-                  </CyberSelect>
-                </div>
-              </CyberPanel>
-            </>
-          )}
-
-          {activeTab === "Sécurité" && (
-            <>
-              <ChangePasswordSection onLog={addLog} />
-              <TwoFactorSection onLog={addLog} />
-            </>
-          )}
-
-          {activeTab === "Système" && (
-            <>
-              <SessionsSection userId={userId} onLog={addLog} />
-              <DangerZoneSection onLog={addLog} />
-            </>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      <StickyCommandBar latestLog={latestLog} hasChanges={hasChanges} isSaving={isSaving} onSave={handleSave} />
-    </div>
-  );
-}
-
-// ─── Sub-Components ──────────────────────────
-function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const mismatch = !!confirmPassword && newPassword !== confirmPassword;
-
-  const handleChangePassword = async () => {
-    if (newPassword.length < 6) return toast.error("ERROR", { description: "MIN 6 CHARACTERS REQUIRED" });
-    if (mismatch) return toast.error("ERROR", { description: "PASSWORDS DO NOT MATCH" });
-    setIsSaving(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-      setNewPassword(""); setConfirmPassword("");
-      onLog("ENCRYPTION KEY UPDATED", "ok");
-      toast.success("SUCCESS", { description: "Password updated successfully." });
-    } catch (error: any) {
-      onLog("KEY UPDATE FAILED", "warn");
-      toast.error("ERROR", { description: error.message });
-    } finally { setIsSaving(false); }
-  };
-
-  return (
-    <CyberPanel title="Identifiants">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="relative">
-          <CyberInput label="New Password" type={showPassword ? "text" : "password"} value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} placeholder="••••••••" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-[40px] text-muted-foreground/50 hover:text-primary">
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-        <div className="relative">
-          <CyberInput label="Confirm Password" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e: any) => setConfirmPassword(e.target.value)} placeholder="••••••••" className={mismatch ? "border-destructive focus-visible:border-destructive" : ""} />
-        </div>
-      </div>
-      <button onClick={handleChangePassword} disabled={isSaving || !newPassword || mismatch} className="mt-4 px-6 py-4 bg-foreground/5 hover:bg-primary/20 border border-primary/30 text-primary font-mono ds-t-label tracking-[0.2em] uppercase transition-colors disabled:opacity-30" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
-        {isSaving ? "PROCESSING..." : "[ INITIALIZE KEY CHANGE ]"}
-      </button>
-    </CyberPanel>
-  );
-}
-
-function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  return (
-    <CyberPanel title="Double authentification">
-      <div className="space-y-4">
-        <MfaEnrollment />
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card/40 border border-foreground/10 opacity-60">
-          <div className="flex items-center gap-4 mb-4 sm:mb-0">
-            <Mail className="w-5 h-5 text-muted-foreground" />
-            <div>
-              <p className="font-mono text-xs text-foreground/80">Email Verification</p>
-              <p className="font-mono ds-t-label text-muted-foreground mt-1">Non configuré (aucun fournisseur d'envoi)</p>
-            </div>
-          </div>
-          <span className="ds-t-label font-mono text-muted-foreground uppercase tracking-widest">{">"} INDISPONIBLE</span>
-        </div>
-      </div>
-    </CyberPanel>
-  );
-}
-
-function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const [signingOut, setSigningOut] = useState(false);
-
-  const { data: loginHistory } = useQuery({
-    queryKey: ["security-events", userId],
-    queryFn: async () => {
-      const { data } = await supabase.from("security_events").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5);
-      return data || [];
-    },
-    enabled: !!userId,
-  });
-
-  const handleSignOutAll = async () => {
-    setSigningOut(true);
-    try {
-      await supabase.auth.signOut({ scope: "others" as any });
-      onLog("SESSIONS TERMINATED", "ok");
-      toast.success("Terminated", { description: "All other sessions disconnected." });
-    } finally { setSigningOut(false); }
-  };
-
-  return (
-    <CyberPanel title="Sessions actives">
-      <div className="space-y-6">
-        <button onClick={handleSignOutAll} disabled={signingOut} className="w-full flex items-center justify-center gap-3 p-4 border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground/80 font-mono ds-t-label tracking-[0.2em] uppercase transition-colors">
-          <LogOut className="w-4 h-4" /> {signingOut ? "TERMINATING..." : "KILL ALL OTHER SESSIONS"}
-        </button>
-        <div className="space-y-2">
-          <p className="ds-t-label text-muted-foreground font-mono tracking-widest uppercase border-b border-foreground/5 pb-2">Connection Logs</p>
-          {!loginHistory?.length ? (
-            <p className="text-xs text-muted-foreground/40 font-mono py-4">NO RECENT ACTIVITY DETECTED.</p>
-          ) : (
-            <div className="space-y-1">
-              {loginHistory.map((ev: any) => (
-                <div key={ev.id} className="flex justify-between items-center py-2 ds-t-label font-mono border-b border-foreground/5 last:border-0">
-                  <span className="text-primary/60">{ev.event_type}</span>
-                  <span className="text-muted-foreground/50">{new Date(ev.created_at).toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </CyberPanel>
-  );
-}
-
-function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const navigate = useNavigate();
-  const { session } = useAuth();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
-
-  const handleDelete = async () => {
-    if (deleteConfirm !== "DELETE") return;
-    try {
-      await supabase.functions.invoke("delete-account", { headers: { Authorization: `Bearer ${session?.access_token}` } });
-      onLog("ACCOUNT PURGED", "warn");
-      await supabase.auth.signOut();
-      navigate("/auth");
-    } catch (e: any) {
-      onLog("PURGE FAILED", "warn");
+      if (nomRecu !== nomEnvoye) {
+        /* Le trigger `pas_d_adresse_en_pseudo` ne refuse pas : il
+           remplace, en silence. Un nom vide ou porteur d une arobase
+           devient un pseudonyme genere. Le taire laissait
+           l utilisateur croire que son nom etait celui qu il voyait. */
+        toast.warning(t("profile.nameReplacedTitle", "Nom d’affichage remplacé"), {
+          description: t(
+            "profile.nameReplacedDesc",
+            "Un nom vide ou contenant une adresse e-mail est remplacé par un pseudonyme. Le tien est désormais « {{nom}} ».",
+            { nom: nomRecu ?? "" },
+          ),
+        });
+      } else {
+        toast.success(t("profile.updatedTitle"), { description: t("profile.updatedDesc") });
+      }
+    } catch (e) {
+      toast.error(t("common.error"), { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setEnCours(false);
     }
   };
 
   return (
     <>
-      <CyberPanel title="Zone sensible" accent="red">
-        <div className="bg-destructive/10 border border-destructive/30 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h4 className="font-orbitron text-destructive text-sm tracking-widest mb-1 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> PURGE ACCOUNT</h4>
-            <p className="font-mono ds-t-label text-destructive/60 uppercase">This action will permanently destroy all data. No recovery.</p>
-          </div>
-          <button onClick={() => setShowDeleteModal(true)} className="px-6 py-3 bg-destructive/20 hover:bg-destructive/40 text-destructive font-mono ds-t-label tracking-[0.2em] font-bold uppercase transition-colors" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
-            INITIATE PURGE
-          </button>
+      <Panneau
+        code={t("profile.identityPanel", "Identité")}
+        etat={modifie ? t("profile.unsaved", "non enregistré") : t("settings.console.synced", "synchronisé")}
+        ton={modifie ? "alerte" : "actif"}
+        rang="primaire"
+        taille="pleine"
+      >
+        <div className="rg-champs">
+          <ChampTexte
+            etiquette={t("common.email")}
+            value={formData.email}
+            disabled
+            readOnly
+            aide={t("profile.emailCantChange")}
+          />
+          <ChampTexte
+            etiquette={t("profile.displayName")}
+            placeholder={t("profile.displayNamePlaceholder")}
+            value={formData.displayName}
+            maxLength={40}
+            onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
+            aide={t("profile.displayNameRule", "Un nom vide ou contenant une adresse e-mail sera remplacé par un pseudonyme.")}
+          />
+          <TripletNaissance
+            etiquette={t("profile.birthday")}
+            valeur={formData.birthday}
+            onChange={(d) => setFormData((p) => ({ ...p, birthday: d }))}
+          />
         </div>
-      </CyberPanel>
+      </Panneau>
 
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent className="bg-card border-destructive/50 rounded-none">
-          <DialogHeader>
-            <DialogTitle className="font-orbitron text-destructive">SYSTEM PURGE WARNING</DialogTitle>
-            <DialogDescription className="font-mono text-destructive/60 text-xs">Type "DELETE" to confirm destruction.</DialogDescription>
-          </DialogHeader>
-          <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} className="bg-destructive/5 border-destructive/30 text-destructive font-mono rounded-none focus-visible:ring-destructive" />
-          <DialogFooter>
-            <button onClick={handleDelete} disabled={deleteConfirm !== "DELETE"} className="bg-destructive text-destructive-foreground font-mono text-xs px-6 py-2 uppercase tracking-widest disabled:opacity-30">CONFIRM PURGE</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Panneau
+        code={t("profile.regionPanel", "Langue & région")}
+        etat={formData.language.toUpperCase()}
+        ton="actif"
+        taille="pleine"
+      >
+        <div className="rg-champs">
+          <ChampListe
+            etiquette={t("profile.country")}
+            valeur={formData.country}
+            onChange={(v) => setFormData((p) => ({ ...p, country: v }))}
+            placeholder={t("profile.countryPlaceholder")}
+          >
+            {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{t(`profile.countries.${c}`)}</SelectItem>)}
+          </ChampListe>
+          <ChampListe
+            etiquette={t("profile.timezone")}
+            valeur={formData.timezone}
+            onChange={(v) => setFormData((p) => ({ ...p, timezone: v }))}
+            placeholder={t("profile.timezonePlaceholder")}
+          >
+            {TIMEZONES.map((tz) => <SelectItem key={tz} value={tz}>{tz}</SelectItem>)}
+          </ChampListe>
+          <ChampListe
+            etiquette={t("profile.language")}
+            valeur={formData.language}
+            onChange={(v) => setFormData((p) => ({ ...p, language: v }))}
+          >
+            <SelectItem value="fr">Français</SelectItem>
+            <SelectItem value="en">English</SelectItem>
+          </ChampListe>
+          <ChampListe
+            etiquette={t("profile.currency")}
+            valeur={formData.currency}
+            onChange={(v) => setFormData((p) => ({ ...p, currency: v }))}
+          >
+            <SelectItem value="eur">EUR (€)</SelectItem>
+            <SelectItem value="usd">USD ($)</SelectItem>
+          </ChampListe>
+        </div>
+
+        {/* L action au pied de son formulaire, plutot qu une barre
+            collante permanente qui annonce « SYSTEM.READY » a vide. */}
+        <div className="rg-pied">
+          <Bouton role="discret" onClick={() => setFormData(initialData)} disabled={!modifie || enCours}>
+            {t("common.cancel", "Annuler")}
+          </Bouton>
+          <Bouton role="primaire" onClick={enregistrer} disabled={!modifie || enCours}>
+            {enCours ? <Loader2 className="animate-spin" /> : <Check />}
+            {enCours ? t("common.saving", "Enregistrement…") : t("common.save", "Enregistrer")}
+          </Bouton>
+        </div>
+      </Panneau>
     </>
   );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LE VOLET « SECURITE »
+   ───────────────────────────────────────────────────────────── */
+
+function PanneauMotDePasse({ userId, onEvenement }: { userId: string; onEvenement: () => void }) {
+  const { t } = useTranslation();
+  const [nouveau, setNouveau] = useState("");
+  const [confirme, setConfirme] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+
+  const tropCourt = nouveau.length > 0 && nouveau.length < LONGUEUR_MINIMALE;
+  const desaccord = confirme.length > 0 && nouveau !== confirme;
+
+  /* LA CONFIRMATION EST DESORMAIS EXIGEE.
+     L ancienne condition tenait dans `!!confirmPassword && …` : un
+     champ vide ne produisait aucun desaccord, donc le bouton
+     s activait des le premier champ rempli. Or c est exactement le cas
+     contre lequel une confirmation existe — la faute de frappe dans le
+     seul champ qu on a rempli. */
+  const pret = nouveau.length >= LONGUEUR_MINIMALE && confirme === nouveau;
+
+  const changer = async () => {
+    if (!pret) return;
+    setEnCours(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: nouveau });
+      if (error) throw error;
+      setNouveau(""); setConfirme("");
+      await noterEvenementSecurite(userId, "password_changed");
+      onEvenement();
+      toast.success(t("profile.passwordChanged", "Mot de passe changé"), {
+        description: t("profile.changePassword.success"),
+      });
+    } catch (e) {
+      toast.error(t("common.error"), { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setEnCours(false);
+    }
+  };
+
+  return (
+    <Panneau
+      code={t("profile.passwordPanel", "Mot de passe")}
+      etat={pret ? t("profile.readyToChange", "prêt") : t("settings.console.waiting", "en attente")}
+      ton={pret ? "actif" : "neutre"}
+      rang="primaire"
+      taille="pleine"
+    >
+      <div className="rg-champs">
+        <ChampTexte
+          etiquette={t("profile.changePassword.newPassword")}
+          type={visible ? "text" : "password"}
+          value={nouveau}
+          autoComplete="new-password"
+          onChange={(e) => setNouveau(e.target.value)}
+          faute={tropCourt}
+          aide={t("profile.changePassword.minLength")}
+        />
+        <ChampTexte
+          etiquette={t("profile.changePassword.confirmPassword")}
+          type={visible ? "text" : "password"}
+          value={confirme}
+          autoComplete="new-password"
+          onChange={(e) => setConfirme(e.target.value)}
+          faute={desaccord}
+          aide={desaccord
+            ? t("profile.changePassword.mismatch")
+            : t("profile.confirmHint", "Retape-le à l’identique — il est obligatoire.")}
+        />
+      </div>
+
+      <div className="rg-pied">
+        <Bouton role="discret" type="button" onClick={() => setVisible((v) => !v)}>
+          {visible ? <EyeOff /> : <Eye />}
+          {visible ? t("profile.hidePassword", "Masquer") : t("profile.showPassword", "Afficher")}
+        </Bouton>
+        <Bouton role="primaire" onClick={changer} disabled={!pret || enCours}>
+          {enCours ? <Loader2 className="animate-spin" /> : <KeyRound />}
+          {t("profile.changePassword.title")}
+        </Bouton>
+      </div>
+    </Panneau>
+  );
+}
+
+function PanneauSessions({ userId, onEvenement }: { userId: string; onEvenement: () => void }) {
+  const { t } = useTranslation();
+  const [enCours, setEnCours] = useState(false);
+
+  const fermerLesAutres = async () => {
+    setEnCours(true);
+    try {
+      /* `signOut` NE LEVE PAS : il rend `{ error }`.
+         L ancienne version l ignorait et affichait « toutes les autres
+         sessions ont ete deconnectees » quoi qu il arrive — sur le
+         bouton qu on presse justement quand on soupconne quelqu un
+         d autre d etre connecte. */
+      const { error } = await supabase.auth.signOut({ scope: "others" });
+      if (error) throw error;
+      await noterEvenementSecurite(userId, "sessions_revoked");
+      onEvenement();
+      toast.success(t("profile.sessionsClosed", "Autres sessions fermées"), {
+        description: t("profile.sessionsClosedDesc", "Seul cet appareil reste connecté."),
+      });
+    } catch (e) {
+      toast.error(t("profile.sessionsFailed", "Fermeture impossible"), {
+        description: e instanceof Error ? e.message : String(e),
+      });
+    } finally {
+      setEnCours(false);
+    }
+  };
+
+  return (
+    <Panneau code={t("profile.sessionsPanel", "Sessions")} taille="pleine">
+      <Reglage
+        nom={t("profile.closeOthers", "Fermer les autres sessions")}
+        note={t("profile.closeOthersDesc", "Déconnecte tous les autres appareils. Celui-ci reste ouvert.")}
+        icone={<LogOut />}
+      >
+        <Bouton onClick={fermerLesAutres} disabled={enCours}>
+          {enCours ? <Loader2 className="animate-spin" /> : <LogOut />}
+          {t("profile.closeOthersAction", "Fermer")}
+        </Bouton>
+      </Reglage>
+    </Panneau>
+  );
+}
+
+function PanneauJournal({ userId, cle }: { userId: string; cle: number }) {
+  const { t } = useTranslation();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["security-events", userId, cle],
+    enabled: !!userId,
+    queryFn: async () => {
+      /* L ancienne version faisait `data || []` et jetait l erreur :
+         une panne de lecture devenait indiscernable d un historique
+         vide. Ici elle remonte, et le panneau le dit. */
+      const { data, error } = await supabase
+        .from("security_events")
+        .select("id, event_type, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return (
+    <Panneau
+      code={t("profile.journalPanel", "Journal de sécurité")}
+      etat={data?.length ? t("profile.journalCount", "{{n}} derniers", { n: data.length }) : undefined}
+      taille="pleine"
+    >
+      {error ? (
+        <Alerte>{t("profile.journalError", "Le journal n’a pas pu être lu : {{m}}", { m: error.message })}</Alerte>
+      ) : isLoading ? (
+        <p className="rg-releve-vide">{t("common.loading", "Chargement…")}</p>
+      ) : !data?.length ? (
+        <p className="rg-releve-vide">
+          {t("profile.journalEmpty", "Aucun geste de sécurité enregistré. Les changements de mot de passe, l’activation du second facteur et la fermeture des sessions apparaîtront ici.")}
+        </p>
+      ) : (
+        <div className="rg-releve">
+          {data.map((ev) => (
+            <div key={ev.id} className="rg-releve-ligne">
+              <span>{LIBELLES_EVENEMENT[ev.event_type as EvenementSecurite] ?? ev.event_type}</span>
+              <span className="rg-releve-quand">
+                {new Date(ev.created_at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panneau>
+  );
+}
+
+function VoletSecurite({ userId }: { userId: string }) {
+  const { t } = useTranslation();
+  /* Un compteur suffit a refaire lire le journal apres un geste : il
+     change la cle de la requete. */
+  const [cle, setCle] = useState(0);
+  const rafraichir = useCallback(() => setCle((n) => n + 1), []);
+
+  return (
+    <>
+      <PanneauMotDePasse userId={userId} onEvenement={rafraichir} />
+
+      <Panneau code={t("profile.mfaPanel", "Double authentification")} taille="pleine">
+        <MfaEnrollment userId={userId} onEvenement={rafraichir} />
+      </Panneau>
+
+      <PanneauSessions userId={userId} onEvenement={rafraichir} />
+      <PanneauJournal userId={userId} cle={cle} />
+    </>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────── */
+
+export function ProfileAccountSettings({ userId, volet, initialData }: Props) {
+  return volet === "securite"
+    ? <VoletSecurite userId={userId} />
+    : <VoletIdentite userId={userId} initialData={initialData} />;
 }

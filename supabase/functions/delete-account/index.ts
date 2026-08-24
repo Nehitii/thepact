@@ -38,6 +38,30 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    // A live session alone used to be enough to wipe the account: no current
+    // password, no second factor, no recency check. When the user has enrolled
+    // a verified TOTP factor, demand that this session actually carries it —
+    // the same bar the `mfa_aal2_requis` RLS policy sets on their own data.
+    // Users without a factor are unaffected: there is nothing to demand.
+    //
+    // The predicate is `a_un_second_facteur()`, the SECURITY DEFINER function
+    // those policies already call, run through the *user* client so that
+    // `auth.uid()` resolves to the caller. Reusing it keeps one definition of
+    // "this account is protected" instead of two that can drift apart.
+    const { data: hasVerifiedFactor, error: factorError } =
+      await userClient.rpc("a_un_second_facteur");
+    if (factorError) {
+      // Fail closed: an unreadable factor state is not a green light.
+      console.error("Error checking second factor:", factorError);
+      return new Response(JSON.stringify({ error: "Failed to verify second factor" }), { status: 500, headers: corsHeaders });
+    }
+    if (hasVerifiedFactor && claimsData.claims.aal !== "aal2") {
+      return new Response(
+        JSON.stringify({ error: "second_facteur_requis" }),
+        { status: 403, headers: corsHeaders },
+      );
+    }
+
     // Guilds are intentionally not FK-cascaded — drop the ones this user owns.
     await adminClient.from("guilds").delete().eq("owner_id", userId);
 
