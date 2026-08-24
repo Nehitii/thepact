@@ -83,7 +83,7 @@ export default function NotificationSettings() {
     >
       {/* ── LES FLUX ── */}
       <Panneau
-        code="alrt.flux"
+        code="Flux d’alertes"
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: actives, total: categories.length })}
         /* Zero flux actif n est pas un etat neutre : on ne recevra plus
            rien, et il faut que ca se voie. */
@@ -109,7 +109,7 @@ export default function NotificationSettings() {
 
       {/* ── LES CONTROLES ── */}
       <Panneau
-        code="alrt.system"
+        code="Contrôles"
         etat={settings?.focus_mode
           ? t("settings.notifications.focusOn", "concentration")
           : t("settings.console.synced", "synchronisé")}
@@ -161,7 +161,7 @@ export default function NotificationSettings() {
 
       {/* ── LES HEURES CALMES ── */}
       <Panneau
-        code="alrt.quiet"
+        code="Heures calmes"
         etat={calmeActif ? `${debut} → ${fin}` : t("settings.console.off", "coupé")}
         ton={calmeActif ? "actif" : "neutre"}
         journal={journaux.calme ?? attente}
@@ -212,7 +212,7 @@ export default function NotificationSettings() {
 
       {/* ── LE PUSH NAVIGATEUR ── */}
       <Panneau
-        code="alrt.webpush"
+        code="Notifications du navigateur"
         etat={push.subscribed
           ? t("settings.notifications.subscribed", "abonné")
           : t("settings.console.off", "inactif")}

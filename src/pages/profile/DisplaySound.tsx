@@ -115,7 +115,7 @@ export default function DisplaySound() {
     >
       {/* ── VISUEL ── */}
       <Panneau
-        code="sys.display"
+        code="Affichage"
         etat={t("settings.console.synced", "synchronisé")}
         ton="actif"
         rang="primaire"
@@ -192,7 +192,7 @@ export default function DisplaySound() {
 
       {/* ── AUDIO ── */}
       <Panneau
-        code="sys.audio"
+        code="Son"
         etat={effective.masterEnabled
           ? t("settings.console.on", "actif")
           : t("settings.console.off", "coupé")}
@@ -269,7 +269,7 @@ export default function DisplaySound() {
 
       {/* ── PARTICULES ── */}
       <Panneau
-        code="sys.particles"
+        code="Particules"
         etat={(profile?.particles_enabled ?? true)
           ? `${Math.round(intensite * 100)} %`
           : t("settings.console.off", "coupé")}
@@ -319,7 +319,7 @@ export default function DisplaySound() {
 
       {/* ── ACCENT ── */}
       <Panneau
-        code="sys.accent"
+        code="Couleur d’accent"
         etat={NOMS_ACCENT[ACCENTS.find((a) => a.hex === accent)?.cle ?? "cyber"]}
         ton="actif"
         journal={journaux.accent ?? attente}

@@ -27,7 +27,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
+/* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
+   L identite du pacte est un editeur a elle seule — 1 282 px — et les
+   rangs 780. On coupe donc en deux : ce que le pacte EST d un cote,
+   ce qu il EXIGE de l autre. Le meme composant sert les deux volets,
+   pour qu il n y ait qu un endroit ou brancher les donnees. */
+type VoletPacte = "identite" | "exigence";
+
 interface ProfilePactSettingsProps {
+  volet?: VoletPacte;
   userId: string;
   pactId: string | null;
   pactName: string;
@@ -55,6 +63,7 @@ interface ProfilePactSettingsProps {
 }
 
 export function ProfilePactSettings({
+  volet = "identite",
   userId,
   pactId,
   pactName,
@@ -159,29 +168,31 @@ export function ProfilePactSettings({
     }
   };
 
+  if (volet === "identite") {
+    return (
+      <>
+        <PactOverviewCard userId={userId} />
+        <PactIdentityCard
+          pactId={pactId}
+          pactName={pactName}
+          pactMantra={pactMantra}
+          pactSymbol={pactSymbol}
+          titleFont={titleFont}
+          titleEffect={titleEffect}
+          onPactNameChange={onPactNameChange}
+          onPactMantraChange={onPactMantraChange}
+          onPactSymbolChange={onPactSymbolChange}
+          onTitleFontChange={onTitleFontChange}
+          onTitleEffectChange={onTitleEffectChange}
+          onSave={onSavePactIdentity}
+          isSaving={isSavingIdentity}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      <SettingsBreadcrumb code="PCT.02" />
-      <CyberSeparator />
-
-      <PactOverviewCard userId={userId} />
-
-      <PactIdentityCard
-        pactId={pactId}
-        pactName={pactName}
-        pactMantra={pactMantra}
-        pactSymbol={pactSymbol}
-        titleFont={titleFont}
-        titleEffect={titleEffect}
-        onPactNameChange={onPactNameChange}
-        onPactMantraChange={onPactMantraChange}
-        onPactSymbolChange={onPactSymbolChange}
-        onTitleFontChange={onTitleFontChange}
-        onTitleEffectChange={onTitleEffectChange}
-        onSave={onSavePactIdentity}
-        isSaving={isSavingIdentity}
-      />
-
+    <>
       <ProjectTimelineCard
         pactId={pactId}
         projectStartDate={projectStartDate}
@@ -318,6 +329,6 @@ export function ProfilePactSettings({
 
       <TerminalLog lines={logLines} />
       <div className="h-8" />
-    </div>
+    </>
   );
 }

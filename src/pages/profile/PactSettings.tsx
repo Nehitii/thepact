@@ -6,9 +6,15 @@ import { Loader2 } from "lucide-react";
 import { usePactMutation } from "@/hooks/usePactMutation";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 export default function PactSettings() {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  /* Deux adresses, une page : « ce que le pacte est » d un cote,
+     « ce qu il exige » de l autre. Les donnees ne sont chargees
+     qu une fois, quel que soit le volet ouvert. */
+  const volet = pathname.endsWith("/pact-rules") ? "exigence" : "identite";
   const { user } = useAuth();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -90,6 +96,7 @@ export default function PactSettings() {
       note={t("settings.pact.subtitle", "Son identité, son échéance, et ta difficulté sur mesure.")}
     >
       <ProfilePactSettings
+        volet={volet}
         userId={user.id}
         pactId={pactId}
         pactName={pactName}

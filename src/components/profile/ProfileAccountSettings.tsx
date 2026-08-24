@@ -155,7 +155,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                 </div>
               </CyberPanel>
 
-              <CyberPanel title="Localization Config">
+              <CyberPanel title="Langue & région">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CyberSelect label={t("profile.country")} value={formData.country} onValueChange={(v) => setFormData((p) => ({ ...p, country: v }))}>
                     {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{t(`profile.countries.${c}`)}</SelectItem>)}
@@ -222,7 +222,7 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
   };
 
   return (
-    <CyberPanel title="Security Credentials">
+    <CyberPanel title="Identifiants">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="relative">
           <CyberInput label="New Password" type={showPassword ? "text" : "password"} value={newPassword} onChange={(e: any) => setNewPassword(e.target.value)} placeholder="••••••••" />
@@ -243,7 +243,7 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
 
 function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
   return (
-    <CyberPanel title="Multi-Factor Auth">
+    <CyberPanel title="Double authentification">
       <div className="space-y-4">
         <MfaEnrollment />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card/40 border border-foreground/10 opacity-60">
@@ -283,7 +283,7 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
   };
 
   return (
-    <CyberPanel title="Active Connections">
+    <CyberPanel title="Sessions actives">
       <div className="space-y-6">
         <button onClick={handleSignOutAll} disabled={signingOut} className="w-full flex items-center justify-center gap-3 p-4 border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground/80 font-mono ds-t-label tracking-[0.2em] uppercase transition-colors">
           <LogOut className="w-4 h-4" /> {signingOut ? "TERMINATING..." : "KILL ALL OTHER SESSIONS"}
@@ -328,7 +328,7 @@ function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn
 
   return (
     <>
-      <CyberPanel title="Danger Zone" accent="red">
+      <CyberPanel title="Zone sensible" accent="red">
         <div className="bg-destructive/10 border border-destructive/30 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h4 className="font-orbitron text-destructive text-sm tracking-widest mb-1 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> PURGE ACCOUNT</h4>

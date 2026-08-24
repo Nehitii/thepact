@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { User, IdCard, Target, SlidersHorizontal, Bell, Shield, Database } from "lucide-react";
+import { User, IdCard, Target, Gauge, SlidersHorizontal, Bell, Shield, Database } from "lucide-react";
 import { DSPageShell, DSBackground } from "@/components/ds";
 import "@/styles/reglages.css";
 
@@ -23,6 +23,7 @@ export const SECTIONS = [
   { chemin: "/profile", code: "ACCT", libelle: "Compte", icone: User, exact: true },
   { chemin: "/profile/bounded", code: "IDNT", libelle: "Profil public", icone: IdCard },
   { chemin: "/profile/pact-settings", code: "PACT", libelle: "Mon pacte", icone: Target },
+  { chemin: "/profile/pact-rules", code: "RULE", libelle: "Règles du pacte", icone: Gauge },
   { chemin: "/profile/display-sound", code: "DISP", libelle: "Apparence & sons", icone: SlidersHorizontal },
   { chemin: "/profile/notifications", code: "ALRT", libelle: "Notifications", icone: Bell },
   { chemin: "/profile/privacy", code: "PRIV", libelle: "Confidentialité", icone: Shield },

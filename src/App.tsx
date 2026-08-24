@@ -102,6 +102,7 @@ function AppRoutes() {
         <Route path="profile" element={<Profile />} />
         <Route path="profile/bounded" element={<BoundedProfile />} />
         <Route path="profile/pact-settings" element={<PactSettings />} />
+        <Route path="profile/pact-rules" element={<PactSettings />} />
         <Route path="profile/display-sound" element={<DisplaySound />} />
         <Route path="profile/privacy" element={<PrivacyControl />} />
         <Route path="profile/notifications" element={<NotificationSettings />} />

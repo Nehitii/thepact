@@ -69,7 +69,7 @@ export function BlockedUsersPanel() {
        forme au milieu. Le compte des bloques vit dans l etat du
        panneau, la ou vivent tous les autres. */
     <Panneau
-      code="priv.blocked"
+      code="Comptes bloqués"
       etat={blockedUsers?.length
         ? t("settings.privacy.blockedCount", "{{n}} bloqué(s)", { n: blockedUsers.length })
         : t("settings.console.none", "aucun")}

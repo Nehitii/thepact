@@ -101,7 +101,7 @@ export default function PrivacyControl() {
       note={t("settings.privacy.subtitle")}
     >
       <Panneau
-        code="priv.visibility"
+        code="Visibilité"
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: visibles, total: 2 })}
         ton={tonExposition(visibles)}
         rang="primaire"
@@ -133,7 +133,7 @@ export default function PrivacyControl() {
       </Panneau>
 
       <Panneau
-        code="priv.goals"
+        code="Objectifs"
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: partagees, total: 2 })}
         ton={tonExposition(partagees)}
         journal={journaux.objectifs ?? attente}
@@ -164,7 +164,7 @@ export default function PrivacyControl() {
       </Panneau>
 
       <Panneau
-        code="priv.community"
+        code="Communauté"
         etat={t("settings.console.synced", "synchronisé")}
         ton="actif"
         journal={journaux.communaute ?? attente}
@@ -198,7 +198,7 @@ export default function PrivacyControl() {
 
       {/* ── CE QUI EST DEJA PARTAGE ── */}
       <Panneau
-        code="priv.shared"
+        code="Déjà partagé"
         etat={nbPartages
           ? t("settings.privacy.sharedCount", "{{n}} partage(s)", { n: nbPartages })
           : t("settings.console.none", "aucun")}

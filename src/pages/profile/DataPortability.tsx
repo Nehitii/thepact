@@ -193,7 +193,7 @@ export default function DataPortability() {
   return (
     <ConsoleReglages titre={t("profile.data.title")} note={t("profile.data.subtitle")}>
       {/* ── Stats ── */}
-      <Panneau code="data.stats" etat={t("settings.console.synced", "synchronisé")} ton="actif" rang="primaire">
+      <Panneau code="Ce que tu as produit" etat={t("settings.console.synced", "synchronisé")} ton="actif" rang="primaire">
         <div className="grid grid-cols-2 gap-3">
           {statItems.map((s) => (
             <div key={s.label} className="border border-primary/15 bg-primary/[0.03] p-4 text-center" style={{ clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)" }}>
@@ -205,7 +205,7 @@ export default function DataPortability() {
       </Panneau>
 
       {/* ── Export ── */}
-      <Panneau code="data.export">
+      <Panneau code="Exporter">
         <div className="space-y-4">
           <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.exportDesc")}</p>
           <RadioGroup value={exportCategory} onValueChange={(v) => setExportCategory(v as ExportCategory)} className="grid grid-cols-2 gap-3">
@@ -232,7 +232,7 @@ export default function DataPortability() {
       </Panneau>
 
       {/* ── Import ── */}
-      <Panneau code="data.import">
+      <Panneau code="Importer">
         <div className="space-y-4">
           <p className="ds-t-label text-muted-foreground tracking-wide">Restaure tes données à partir d'un fichier JSON exporté précédemment.</p>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
@@ -259,7 +259,7 @@ export default function DataPortability() {
       </Panneau>
 
       {/* ── Legal ── */}
-      <Panneau code="data.legal">
+      <Panneau code="Mentions légales">
         <div className="space-y-3">
           <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
           <Link to="/legal">
@@ -271,7 +271,7 @@ export default function DataPortability() {
       </Panneau>
 
       {/* ── Danger Zone ── */}
-      <Panneau code="data.reset" etat={t("settings.data.danger", "irréversible")} ton="danger" taille="pleine">
+      <Panneau code="Zone sensible" etat={t("settings.data.danger", "irréversible")} ton="danger" taille="pleine">
         <div className="border border-destructive/20 bg-destructive/5 p-4" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
           <div className="flex items-start gap-3">
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />

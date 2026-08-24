@@ -41,7 +41,7 @@ export default function BoundedProfile() {
       {/* Seule section a n avoir porte aucun panneau : l editeur
           dessinait sa propre mise en page et detonnait au milieu des
           six autres. Il vit maintenant dans le meme cadre. */}
-      <Panneau code="idnt.card" etat={t("settings.console.synced", "synchronisé")} ton="actif">
+      <Panneau code="Ta carte publique" etat={t("settings.console.synced", "synchronisé")} ton="actif">
       <ProfileBoundedProfile
         userId={user.id}
         displayName={displayName}
