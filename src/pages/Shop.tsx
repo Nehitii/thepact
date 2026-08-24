@@ -9,6 +9,7 @@ import { PurchaseHistory } from "@/components/shop/PurchaseHistory";
 import { DailyDealsSection } from "@/components/shop/DailyDealsSection";
 import { BundlesSection } from "@/components/shop/BundlesSection";
 import { ShopSpotlight } from "@/components/shop/ShopSpotlight";
+import { BandeBoutique } from "@/components/shop/BandeBoutique";
 import { PurchaseConfirmModal, PurchaseItem } from "@/components/shop/PurchaseConfirmModal";
 import { UnlockAnimation } from "@/components/shop/UnlockAnimation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -139,14 +140,29 @@ export default function Shop() {
             transition={{ duration: 0.2 }}
           >
             {activeTab === "cosmetics" && (
+              /* Les quatre sections ne sont plus de meme nature : la
+                 vedette annonce, les offres expirent, les lots
+                 assemblent, le catalogue attend. Chacune a desormais
+                 son assise. */
               <div className="space-y-10">
-                <ShopSpotlight
-                  onPurchase={handleSpotlightPurchase}
-                  onPreview={handleSpotlightPurchase}
-                />
-                <DailyDealsSection />
-                <BundlesSection />
-                <CosmeticShop />
+                <BandeBoutique>
+                  <ShopSpotlight
+                    onPurchase={handleSpotlightPurchase}
+                    onPreview={handleSpotlightPurchase}
+                  />
+                </BandeBoutique>
+
+                <BandeBoutique pleineLargeur ton="urgent">
+                  <DailyDealsSection />
+                </BandeBoutique>
+
+                <BandeBoutique>
+                  <BundlesSection />
+                </BandeBoutique>
+
+                <BandeBoutique ton="creux" className="px-4 sm:px-5">
+                  <CosmeticShop />
+                </BandeBoutique>
               </div>
             )}
             {activeTab === "modules" && <ModulesShop />}
