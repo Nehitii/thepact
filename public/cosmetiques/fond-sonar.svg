@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice">
+<rect width="1200" height="300" fill="#020c12"/>
+<g fill="none" stroke="#22d3ee">
+<circle cx="180" cy="150" r="60" stroke-width="2.4" opacity="0.60">
+     <animate attributeName="r" values="60;86;60" dur="6s" repeatCount="indefinite"/></circle><circle cx="180" cy="150" r="130" stroke-width="2.1" opacity="0.50">
+     <animate attributeName="r" values="130;156;130" dur="7s" repeatCount="indefinite"/></circle><circle cx="180" cy="150" r="210" stroke-width="1.7999999999999998" opacity="0.40">
+     <animate attributeName="r" values="210;236;210" dur="8s" repeatCount="indefinite"/></circle><circle cx="180" cy="150" r="300" stroke-width="1.5" opacity="0.30">
+     <animate attributeName="r" values="300;326;300" dur="9s" repeatCount="indefinite"/></circle><circle cx="180" cy="150" r="400" stroke-width="1.2" opacity="0.20">
+     <animate attributeName="r" values="400;426;400" dur="10s" repeatCount="indefinite"/></circle>
+</g>
+<circle cx="180" cy="150" r="9" fill="#a5f3fc"/>
+<g stroke="#0e7490" stroke-width="1" opacity=".35">
+<path d="M0 0h1200"/><path d="M0 25h1200"/><path d="M0 50h1200"/><path d="M0 75h1200"/><path d="M0 100h1200"/><path d="M0 125h1200"/><path d="M0 150h1200"/><path d="M0 175h1200"/><path d="M0 200h1200"/><path d="M0 225h1200"/><path d="M0 250h1200"/><path d="M0 275h1200"/><path d="M0 300h1200"/>
+<path d="M0 0v300"/><path d="M50 0v300"/><path d="M100 0v300"/><path d="M150 0v300"/><path d="M200 0v300"/><path d="M250 0v300"/><path d="M300 0v300"/><path d="M350 0v300"/><path d="M400 0v300"/><path d="M450 0v300"/><path d="M500 0v300"/><path d="M550 0v300"/><path d="M600 0v300"/><path d="M650 0v300"/><path d="M700 0v300"/><path d="M750 0v300"/><path d="M800 0v300"/><path d="M850 0v300"/><path d="M900 0v300"/><path d="M950 0v300"/><path d="M1000 0v300"/><path d="M1050 0v300"/><path d="M1100 0v300"/><path d="M1150 0v300"/><path d="M1200 0v300"/>
+</g></svg>

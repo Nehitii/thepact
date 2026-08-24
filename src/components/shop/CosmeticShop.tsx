@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance, CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/hooks/useShop";
 import { FramePreview, AvatarFrame } from "@/components/ui/avatar-frame";
 import { useProfile } from "@/hooks/useProfile";
+import { useCarteProfil } from "@/hooks/useCarteProfil";
+import { ApercuFondCarte } from "./ApercuFondCarte";
 import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
@@ -48,6 +50,9 @@ export function CosmeticShop() {
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: balance } = useBondBalance(user?.id);
   const { data: profil } = useProfile(user?.id);
+  /* Une seule requete sert tous les fonds de carte : on ne change que
+     l image, le reste de la carte est le meme pour chacun. */
+  const { data: maCarte } = useCarteProfil(user?.id, true);
   const transaction = useShopTransaction();
 
   /* L APERCU PORTE.
@@ -183,18 +188,7 @@ export function CosmeticShop() {
                 {activeCategory === "banners" && filteredBanners.map((banner, i) => (
                   <CyberItemCard key={banner.id} id={banner.id} name={banner.name} rarity={banner.rarity} price={banner.price}
                     owned={isOwned(banner.id, "banner") || banner.is_default} canAfford={(balance?.balance || 0) >= banner.price} itemType="banner" index={i}
-                    preview={<div className="w-full h-16 rounded-lg" style={{ background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})` }} />}
-                    previewPorte={
-                      <div className="w-full h-16 rounded-lg relative overflow-hidden flex items-end" style={{ background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})` }}>
-                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--card) / 0.85), transparent 70%)" }} />
-                        <div className="relative flex items-center gap-2 px-2 pb-1.5 w-full">
-                          <AvatarFrame size="sm" avatarUrl={monAvatar} fallback={mesInitiales} showBorder={false} />
-                          <span className="font-orbitron text-[0.6875rem] font-semibold truncate text-foreground">
-                            {profil?.display_name ?? ""}
-                          </span>
-                        </div>
-                      </div>
-                    }
+                    preview={<ApercuFondCarte carte={maCarte} fond={banner} />}
                     onPurchase={() => handlePurchaseClick({ id: banner.id, name: banner.name, type: "banner", price: banner.price, rarity: banner.rarity })}
                     onPreview={() => setFittingItem({ type: "banner", data: banner })} />
                 ))}

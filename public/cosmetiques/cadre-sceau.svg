@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><filter id="g"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#g)" fill="none" stroke="#a78bfa">
+  <circle cx="128" cy="128" r="118" stroke-width="1.6" opacity=".55"/>
+  <circle cx="128" cy="128" r="100" stroke-width="3" opacity=".9"/>
+  <g opacity=".9" stroke-width="2.4">
+    <polygon points="128,36 207,174 49,174"/><polygon points="128,220 49,82 207,82"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 128 128" to="360 128 128" dur="48s" repeatCount="indefinite"/>
+  </g>
+</g>
+<g filter="url(#g)" fill="#ddd6fe">
+<rect x="-1.6" y="-9" width="3.2" height="18" transform="translate(128.0 18.0) rotate(0)" opacity="1"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(170.1 26.4) rotate(23)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(205.8 50.2) rotate(45)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(229.6 85.9) rotate(68)" opacity="0.6"/><rect x="-1.6" y="-9" width="3.2" height="18" transform="translate(238.0 128.0) rotate(90)" opacity="1"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(229.6 170.1) rotate(113)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(205.8 205.8) rotate(135)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(170.1 229.6) rotate(158)" opacity="0.6"/><rect x="-1.6" y="-9" width="3.2" height="18" transform="translate(128.0 238.0) rotate(180)" opacity="1"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(85.9 229.6) rotate(203)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(50.2 205.8) rotate(225)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(26.4 170.1) rotate(248)" opacity="0.6"/><rect x="-1.6" y="-9" width="3.2" height="18" transform="translate(18.0 128.0) rotate(270)" opacity="1"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(26.4 85.9) rotate(293)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(50.2 50.2) rotate(315)" opacity="0.6"/><rect x="-1.6" y="-5" width="3.2" height="10" transform="translate(85.9 26.4) rotate(338)" opacity="0.6"/>
+</g></svg>

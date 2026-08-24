@@ -459,19 +459,19 @@ export function ProfileBoundedProfile({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <CustomizationTrigger
           icon={<Sparkles className="w-5 h-5" />}
-          label="Avatar Frame"
+          label="Cadre d’avatar"
           value={activeFrame?.name}
           onClick={() => setShowFrameDialog(true)}
         />
         <CustomizationTrigger
           icon={<ImageIcon className="w-5 h-5" />}
-          label="Profile Banner"
+          label="Fond de carte"
           value={activeBanner?.name}
           onClick={() => setShowBannerDialog(true)}
         />
         <CustomizationTrigger
           icon={<Crown className="w-5 h-5" />}
-          label="Honorific Title"
+          label="Titre"
           value={activeTitle?.title_text}
           onClick={() => setShowTitleDialog(true)}
         />

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><filter id="g"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<circle cx="128" cy="128" r="106" fill="none" stroke="#38bdf8" stroke-width="1.6" opacity=".35"/>
+<g filter="url(#g)" fill="none" stroke="#bae6fd" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M128 20l-16 34 22 8-20 40" opacity=".95">
+    <animate attributeName="opacity" values=".95;.15;.95;.4;.95" dur="1.7s" repeatCount="indefinite"/></path>
+  <path d="M228 150l-34 12 6 22-38 14" opacity=".9">
+    <animate attributeName="opacity" values=".2;.9;.3;.9;.2" dur="2.3s" repeatCount="indefinite"/></path>
+  <path d="M40 96l32 16-10 20 34 12" opacity=".85">
+    <animate attributeName="opacity" values=".85;.25;.85;.5;.85" dur="2.9s" repeatCount="indefinite"/></path>
+</g>
+<g filter="url(#g)" fill="#e0f2fe">
+<circle cx="211.4" cy="44.6" r="3"/><circle cx="211.4" cy="211.4" r="3"/><circle cx="44.6" cy="211.4" r="3"/><circle cx="44.6" cy="44.6" r="3"/>
+</g></svg>
