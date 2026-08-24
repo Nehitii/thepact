@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><filter id="g"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#g)" fill="none" stroke="#4ade80">
+  <circle cx="128" cy="128" r="106" stroke-width="3" opacity=".9" stroke-dasharray="150 26 60 26"/>
+  <circle cx="128" cy="128" r="118" stroke-width="1.4" opacity=".45"/>
+  <g stroke-width="2.6" stroke-linecap="square" opacity=".95">
+    <path d="M128 22 128 8M182 40 190 26M222 84 236 76M234 150 248 154M196 208 206 220M100 234 96 248M46 196 34 206M22 108 8 104"/>
+  </g>
+</g>
+<g fill="#4ade80" filter="url(#g)">
+  <circle cx="128" cy="8" r="4"/><circle cx="190" cy="26" r="3.4"/><circle cx="236" cy="76" r="4"/>
+  <circle cx="248" cy="154" r="3.4"/><circle cx="206" cy="220" r="4"/><circle cx="96" cy="248" r="3.4"/>
+  <circle cx="34" cy="206" r="4"/><circle cx="8" cy="104" r="3.4"/>
+</g>
+<circle cx="128" cy="128" r="106" fill="none" stroke="#eaffef" stroke-width="1.2" opacity=".55" stroke-dasharray="14 300">
+  <animate attributeName="stroke-dashoffset" from="314" to="0" dur="4s" repeatCount="indefinite"/>
+</circle></svg>

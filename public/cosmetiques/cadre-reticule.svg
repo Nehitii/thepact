@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><filter id="g"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#g)" fill="none" stroke="#22d3ee" stroke-linecap="round">
+  <circle cx="128" cy="128" r="112" stroke-width="2" stroke-dasharray="26 14" opacity=".85">
+    <animateTransform attributeName="transform" type="rotate" from="0 128 128" to="360 128 128" dur="24s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="128" cy="128" r="99" stroke-width="1" opacity=".35"/>
+  <g stroke-width="3" opacity=".95">
+    <path d="M128 6v22M128 250v-22M6 128h22M250 128h-22"/>
+  </g>
+  <g stroke-width="2.5" opacity=".9">
+    <path d="M40 26h-14v14M216 26h14v14M40 230h-14v-14M216 230h14v-14"/>
+  </g>
+</g></svg>
