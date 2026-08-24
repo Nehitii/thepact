@@ -293,10 +293,11 @@ export function usePurchaseCosmetic() {
       cosmeticType: "frame" | "banner" | "title"; 
       price: number;
     }) => {
+      /* Le prix n est plus transmis : `purchase_shop_item` le relit
+         dans le catalogue. L envoyer laissait croire qu il comptait. */
       const { data, error } = await supabase.rpc("purchase_shop_item", {
         p_item_id: cosmeticId,
         p_item_type: cosmeticType,
-        p_price: price,
       });
 
       if (error) throw error;
@@ -336,7 +337,6 @@ export function usePurchaseModule() {
       const { data, error } = await supabase.rpc("purchase_shop_item", {
         p_item_id: moduleId,
         p_item_type: "module",
-        p_price: price,
       });
 
       if (error) throw error;

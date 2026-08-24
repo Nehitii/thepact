@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Heart, Sparkles, Star, Package, Trash2, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist, useRemoveFromWishlist } from "@/hooks/useWishlist";
@@ -7,7 +8,7 @@ import { useShopBundles } from "@/hooks/useBundles";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { Button } from "@/components/ui/button";
 import { SignalLostEmpty } from "./SignalLostEmpty";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
 
 interface WishlistPanelProps {
   onPurchaseItem: (item: any, itemType: string) => void;
@@ -30,6 +31,8 @@ interface ArticleSouhaite {
 }
 
 export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: wishlist = [], isLoading } = useWishlist(user?.id);
   const { data: balance } = useBondBalance(user?.id);
@@ -87,7 +90,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
   }
 
   if (enrichedWishlist.length === 0) {
-    return <SignalLostEmpty subtitle="Save items to your loadout for later acquisition" />;
+    return <SignalLostEmpty subtitle={t("shop.wishlist.emptyDesc", "Ajoute des articles à suivre")} />;
   }
 
   const getIcon = (itemType: string) => {
@@ -102,7 +105,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Heart className="w-5 h-5" style={{ color: "hsl(350 80% 55%)" }} />
-          <h2 className="font-orbitron text-lg text-foreground tracking-wide">Wishlist</h2>
+          <h2 className="font-orbitron text-lg text-foreground tracking-wide">{t("shop.tabs.wishlist", "Liste de souhaits")}</h2>
           <span className="px-2 py-0.5 rounded-lg ds-t-label font-orbitron font-bold"
             style={{ background: "hsl(350 80% 55% / 0.12)", color: "hsl(350 80% 55%)" }}>
             {enrichedWishlist.length}
@@ -169,7 +172,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
                 {/* Rarity badge */}
                 <div className="flex justify-center">
                   <span className={`ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
-                    {wishlistItem.item?.rarity}
+                    {libelleRarete(wishlistItem.item?.rarity ?? "common")}
                   </span>
                 </div>
 
@@ -202,7 +205,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
       <div className="flex items-center justify-between p-4 rounded-xl" style={{
         background: "hsl(var(--card) / 0.5)", border: "1px solid hsl(var(--primary) / 0.1)",
       }}>
-        <div className="ds-t-label font-orbitron tracking-wider text-muted-foreground uppercase">Total Loadout Cost</div>
+        <div className="ds-t-label font-orbitron tracking-wider text-muted-foreground uppercase">{t("shop.wishlist.totalCost", "Coût total de la liste")}</div>
         <div className="flex items-center gap-1.5 font-orbitron text-sm font-bold text-primary">
           <BondIcon size={15} /> {totalCost.toLocaleString()}
         </div>

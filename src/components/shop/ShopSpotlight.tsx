@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Star, Eye, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +7,7 @@ import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBond
 import { BondIcon } from "@/components/ui/bond-icon";
 import { FramePreview } from "@/components/ui/avatar-frame";
 import { Button } from "@/components/ui/button";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
 
@@ -16,6 +17,8 @@ interface ShopSpotlightProps {
 }
 
 export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: frames = [] } = useShopFrames();
   const { data: banners = [] } = useShopBanners();
@@ -100,7 +103,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
           {/* FEATURED watermark */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
             <span className="font-orbitron text-[100px] sm:text-[140px] font-black uppercase tracking-[0.15em] opacity-[0.02]" style={{ transform: "rotate(-12deg)" }}>
-              FEATURED
+              {t("shop.spotlight.featured", "En vedette")}
             </span>
           </div>
 
@@ -124,7 +127,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                 <span className="ds-t-label uppercase tracking-[0.15em] font-orbitron font-bold px-3 py-1 rounded-lg border" style={{
                   color: r.accent, borderColor: r.border, background: r.glow,
                 }}>
-                  {featured.rarity}
+                  {libelleRarete(featured.rarity)}
                 </span>
                 <motion.span
                   className="ds-t-label uppercase tracking-[0.2em] font-orbitron px-2 py-0.5 rounded-md flex items-center gap-1"
@@ -132,7 +135,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <Star className="w-2.5 h-2.5" /> Featured
+                  <Star className="w-2.5 h-2.5" /> {t("shop.spotlight.featured", "En vedette")}
                 </motion.span>
               </div>
 
@@ -148,7 +151,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                 <div className="flex items-center gap-2">
                   {onPreview && (
                     <Button size="sm" variant="ghost" onClick={() => onPreview(featured, featured._type)} className="h-9 text-xs text-muted-foreground hover:text-foreground">
-                      <Eye className="w-3.5 h-3.5 mr-1" /> Preview
+                      <Eye className="w-3.5 h-3.5 mr-1" /> {t("shop.purchase.preview", "Aperçu")}
                     </Button>
                   )}
                   {onPurchase && (
@@ -156,7 +159,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                       className="h-9 text-xs font-orbitron tracking-wider rounded-lg"
                       style={{ background: canAfford ? r.glow : undefined, borderColor: r.border, color: canAfford ? r.accent : undefined, border: `1px solid ${r.border}` }}
                     >
-                      <ShoppingCart className="w-3.5 h-3.5 mr-1" /> Buy Now
+                      <ShoppingCart className="w-3.5 h-3.5 mr-1" /> {t("shop.purchase.buyNow", "Acheter")}
                     </Button>
                   )}
                 </div>

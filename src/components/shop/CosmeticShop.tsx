@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, Frame, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,12 +18,13 @@ import { cn } from "@/lib/utils";
 type CosmeticCategory = "frames" | "banners" | "titles";
 
 const categories = [
-  { id: "frames" as const, label: "Frames", icon: Frame },
-  { id: "banners" as const, label: "Banners", icon: Image },
-  { id: "titles" as const, label: "Titles", icon: Crown },
+  { id: "frames" as const, cle: "shop.cosmetics.frames", secours: "Cadres", icon: Frame },
+  { id: "banners" as const, cle: "shop.cosmetics.banners", secours: "Bannières", icon: Image },
+  { id: "titles" as const, cle: "shop.cosmetics.titles", secours: "Titres", icon: Crown },
 ];
 
 export function CosmeticShop() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
@@ -82,7 +84,7 @@ export function CosmeticShop() {
       {/* Category nav */}
       <div className={cn(isMobile ? "flex gap-2 mb-4 overflow-x-auto hide-scrollbar" : "w-48 flex-shrink-0 space-y-2")}>
         {!isMobile && (
-          <h3 className="ds-t-label text-muted-foreground uppercase tracking-[0.15em] font-orbitron mb-4 px-2">Categories</h3>
+          <h3 className="ds-t-label text-muted-foreground uppercase tracking-[0.15em] font-orbitron mb-4 px-2">{t("shop.cosmetics.categories", "Catégories")}</h3>
         )}
         {categories.map((cat) => {
           const isActive = activeCategory === cat.id;
@@ -100,7 +102,7 @@ export function CosmeticShop() {
               style={isActive ? { border: `1px solid hsl(var(--primary) / 0.2)` } : { border: "1px solid transparent" }}
             >
               <Icon className="w-4.5 h-4.5 shrink-0" />
-              <span className="font-rajdhani font-medium text-sm">{cat.label}</span>
+              <span className="font-rajdhani font-medium text-sm">{t(cat.cle, cat.secours)}</span>
               <span className="text-xs opacity-50 ml-auto">{count}</span>
             </button>
           );
@@ -154,19 +156,19 @@ export function CosmeticShop() {
                 {activeCategory === "frames" && filteredFrames.length === 0 && !framesLoading && (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     <Frame className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-rajdhani">{frames.length === 0 ? "No frames available yet" : "No frames match your filters"}</p>
+                    <p className="font-rajdhani">{t(frames.length === 0 ? "shop.cosmetics.noneYet" : "shop.cosmetics.noneMatch", { type: t("shop.cosmetics.frames", "Cadres").toLowerCase() })}</p>
                   </div>
                 )}
                 {activeCategory === "banners" && filteredBanners.length === 0 && !bannersLoading && (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-rajdhani">{banners.length === 0 ? "No banners available yet" : "No banners match your filters"}</p>
+                    <p className="font-rajdhani">{t(banners.length === 0 ? "shop.cosmetics.noneYet" : "shop.cosmetics.noneMatch", { type: t("shop.cosmetics.banners", "Bannières").toLowerCase() })}</p>
                   </div>
                 )}
                 {activeCategory === "titles" && filteredTitles.length === 0 && !titlesLoading && (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     <Crown className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-rajdhani">{titles.length === 0 ? "No titles available yet" : "No titles match your filters"}</p>
+                    <p className="font-rajdhani">{t(titles.length === 0 ? "shop.cosmetics.noneYet" : "shop.cosmetics.noneMatch", { type: t("shop.cosmetics.titles", "Titres").toLowerCase() })}</p>
                   </div>
                 )}
               </motion.div>

@@ -8,16 +8,15 @@ import { UnlockAnimation } from "./UnlockAnimation";
 import { ModuleCard } from "./ModuleCard";
 import { useShopTransaction } from "@/hooks/useShopTransaction";
 import { SignalLostEmpty } from "./SignalLostEmpty";
-
-const moduleFeatures: Record<string, string[]> = {
-  finance: ["Track income & expenses", "Budget projections", "Recurring management"],
-  "the-call": ["Motivational prompts", "Daily check-ins", "Mindset tools"],
-  journal: ["Daily reflection", "Mood tracking", "Growth insights"],
-  "todo-list": ["Priority tasks", "Deadline system", "Gamified scoring"],
-  "track-health": ["Vitals dashboard", "Sleep monitoring", "Health analytics"],
-};
+import { useModuleFeatures } from "./moduleFeatures";
+import { useTranslation } from "react-i18next";
 
 export function ModulesShop() {
+  const { t } = useTranslation();
+  /* La recherche interroge desormais le texte reellement affiche.
+     Elle portait sur une seconde liste, plus courte : une phrase lue
+     a l ecran pouvait ne rien trouver. */
+  const promessesDe = useModuleFeatures();
   const { user } = useAuth();
   const { data: modules = [], isLoading } = useShopModules();
   const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
@@ -38,9 +37,9 @@ export function ModulesShop() {
     const query = searchQuery.toLowerCase();
     return modules.filter(m =>
       m.name.toLowerCase().includes(query) || m.description?.toLowerCase().includes(query) ||
-      moduleFeatures[m.key]?.some(f => f.toLowerCase().includes(query))
+      promessesDe(m.key).some(f => f.toLowerCase().includes(query))
     );
-  }, [modules, searchQuery]);
+  }, [modules, searchQuery, promessesDe]);
 
   if (isLoading) return <ShopLoadingState type="modules" count={3} />;
 
@@ -50,11 +49,11 @@ export function ModulesShop() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Puzzle className="w-5 h-5 text-primary" />
-          <h2 className="font-orbitron text-xl text-foreground tracking-wide">Premium Modules</h2>
+          <h2 className="font-orbitron text-xl text-foreground tracking-wide">{t("shop.modules.title", "Modules Premium")}</h2>
         </div>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search modules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <Input placeholder={t("shop.modules.search", "Chercher un module")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-card/50 border-primary/15 font-rajdhani h-9 text-sm" />
         </div>
       </div>
@@ -68,7 +67,11 @@ export function ModulesShop() {
       </div>
 
       {filteredModules.length === 0 && (
-        <SignalLostEmpty subtitle={modules.length === 0 ? "No modules available" : "No modules match your search"} />
+        <SignalLostEmpty
+          subtitle={modules.length === 0
+            ? t("shop.cosmetics.noneYet", { type: t("shop.tabs.modules", "Modules").toLowerCase(), defaultValue: "Aucun module disponible" })
+            : t("shop.cosmetics.noneMatch", { type: t("shop.tabs.modules", "Modules").toLowerCase(), defaultValue: "Aucun module ne correspond" })}
+        />
       )}
 
       {transaction.lastPurchased && (

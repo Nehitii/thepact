@@ -5027,6 +5027,7 @@ export type Database = {
         Args: { p_cosmetic_id: string; p_user_id: string }
         Returns: Json
       }
+      assurer_offres_du_jour: { Args: never; Returns: number }
       carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
       categories_cosmetiques: { Args: never; Returns: number }
       check_and_increment_ai_quota: {
@@ -5261,7 +5262,7 @@ export type Database = {
       purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
       purchase_shop_item: {
-        Args: { p_item_id: string; p_item_type: string; p_price: number }
+        Args: { p_item_id: string; p_item_type: string }
         Returns: Json
       }
       rangs_des_membres: {

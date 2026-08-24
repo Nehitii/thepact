@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,6 +34,7 @@ export function FittingRoom({
   canAfford,
   currentBalance,
 }: FittingRoomProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   // Fetch current user's profile for avatar/active cosmetics
@@ -182,14 +184,14 @@ export function FittingRoom({
               </span>
             </div>
             <div className="flex items-center justify-between text-sm font-rajdhani">
-              <span className="text-muted-foreground">Price</span>
+              <span className="text-muted-foreground">{t("shop.purchase.price", "Prix")}</span>
               <div className="flex items-center gap-1.5 text-primary font-orbitron">
                 <BondIcon size={16} />
                 {price.toLocaleString()}
               </div>
             </div>
             <div className="flex items-center justify-between text-sm font-rajdhani">
-              <span className="text-muted-foreground">Balance after</span>
+              <span className="text-muted-foreground">{t("shop.fitting.balanceAfter", "Solde après")}</span>
               <span className={`font-orbitron ${canAfford ? "text-primary" : "text-destructive"}`}>
                 {Math.max(0, currentBalance - price).toLocaleString()}
               </span>

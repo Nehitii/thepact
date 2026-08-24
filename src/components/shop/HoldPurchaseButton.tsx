@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface HoldPurchaseButtonProps {
   onComplete: () => void;
@@ -22,6 +23,7 @@ export function HoldPurchaseButton({
   className,
   holdDuration = HOLD_MS,
 }: HoldPurchaseButtonProps) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<ButtonPhase>(isPending ? "authorizing" : "idle");
   const progress = useMotionValue(0);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
@@ -68,13 +70,13 @@ export function HoldPurchaseButton({
   const label = (() => {
     switch (phase) {
       case "holding":
-        return "HOLD";
+        return t("shop.purchase.holding", "Maintiens");
       case "authorizing":
-        return "AUTHORIZING...";
+        return t("shop.purchase.authorizing", "Autorisation…");
       case "acquired":
-        return "ACQUIRED";
+        return t("shop.purchase.acquired", "Acquis");
       default:
-        return "HOLD TO BUY";
+        return t("shop.purchase.hold", "Maintenir pour acheter");
     }
   })();
 

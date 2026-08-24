@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
 
 export type CyberItemType = "module" | "frame" | "banner" | "title";
 
@@ -27,6 +27,7 @@ interface CyberItemCardProps {
 export function CyberItemCard({
   id, name, rarity, price, owned, canAfford, isComingSoon = false, itemType, preview, onPurchase, onPreview, index = 0,
 }: CyberItemCardProps) {
+  const libelleRarete = useRarityLabel();
   const r = getRarity(rarity);
   const isCosmetic = itemType !== "module";
   const [isHovered, setIsHovered] = useState(false);
@@ -131,7 +132,7 @@ export function CyberItemCard({
                 r.badgeBg, r.badgeText, r.badgeBorder
               )}>
                 {r.animated && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: r.accent }} />}
-                {rarity}
+                {libelleRarete(rarity)}
               </span>
             </div>
 

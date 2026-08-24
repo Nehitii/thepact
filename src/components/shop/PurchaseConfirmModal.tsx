@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useRarityLabel } from "./shopRarity";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import {
@@ -81,6 +83,8 @@ export function PurchaseConfirmModal({
   onConfirm,
   isPending = false,
 }: PurchaseConfirmModalProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
   if (!item) return null;
 
   const canAfford = currentBalance >= item.price;
@@ -144,7 +148,7 @@ export function PurchaseConfirmModal({
                   </span>
                   {item.rarity && (
                     <span className={`text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-${rarity === 'legendary' ? 'amber' : rarity === 'epic' ? 'purple' : rarity === 'rare' ? 'blue' : 'slate'}-500/20 text-${rarity === 'legendary' ? 'amber' : rarity === 'epic' ? 'purple' : rarity === 'rare' ? 'blue' : 'slate'}-400`}>
-                      {item.rarity}
+                      {libelleRarete(item.rarity)}
                     </span>
                   )}
                 </div>
@@ -153,14 +157,14 @@ export function PurchaseConfirmModal({
 
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm font-rajdhani">
-                <span className="text-muted-foreground">Current Balance</span>
+                <span className="text-muted-foreground">{t("shop.purchase.currentBalance", "Solde actuel")}</span>
                 <div className="flex items-center gap-1.5">
                   <BondIcon size={16} />
                   <AnimatedNumber value={currentBalance} className="text-foreground font-medium" />
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm font-rajdhani">
-                <span className="text-muted-foreground">Item Cost</span>
+                <span className="text-muted-foreground">{t("shop.purchase.itemCost", "Coût")}</span>
                 <div className="flex items-center gap-1.5">
                   {hasDiscount && (
                     <span className="text-muted-foreground line-through text-xs flex items-center gap-1">
@@ -177,7 +181,7 @@ export function PurchaseConfirmModal({
               </div>
               <div className="h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent)" }} />
               <div className="flex items-center justify-between font-rajdhani">
-                <span className="text-foreground font-medium">New Balance</span>
+                <span className="text-foreground font-medium">{t("shop.purchase.newBalance", "Nouveau solde")}</span>
                 <div className={`flex items-center gap-1.5 ${canAfford ? 'text-primary' : 'text-red-400'}`}>
                   <BondIcon size={18} />
                   <span className="font-orbitron font-bold text-lg">
@@ -208,7 +212,7 @@ export function PurchaseConfirmModal({
               >
                 <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
                 <div className="text-sm font-rajdhani">
-                  <span className="text-red-400 font-medium">Insufficient bonds!</span>
+                  <span className="text-red-400 font-medium">{t("shop.purchase.insufficient", "Bonds insuffisants")}</span>
                   <span className="text-muted-foreground"> You need {(item.price - currentBalance).toLocaleString()} more bonds.</span>
                 </div>
               </motion.div>

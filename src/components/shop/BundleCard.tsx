@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Package, Sparkles, Star, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { ShopBundle } from "@/hooks/useBundles";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
 
 interface BundleCardProps {
   bundle: ShopBundle;
@@ -14,6 +15,8 @@ interface BundleCardProps {
 }
 
 export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: BundleCardProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
   const r = getRarity(bundle.rarity);
   const allOwned = ownedItemCount === bundle.items.length;
   const savings = bundle.original_price_bonds ? bundle.original_price_bonds - bundle.price_bonds : 0;
@@ -41,7 +44,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
         {savings > 0 && (
           <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg font-orbitron ds-t-label font-black"
             style={{ background: "hsl(142 70% 50% / 0.15)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.25)" }}>
-            SAVE {savings}
+            {t("shop.bundles.save", { n: savings })}
           </div>
         )}
 
@@ -66,7 +69,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className={`ds-t-label uppercase tracking-[0.15em] font-orbitron px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
-                  {bundle.rarity}
+                  {libelleRarete(bundle.rarity)}
                 </span>
               </div>
               <h3 className="font-orbitron text-base font-bold text-foreground truncate">{bundle.name}</h3>
@@ -79,7 +82,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
           {/* Items grid */}
           <div className="space-y-2">
             <div className="ds-t-label text-muted-foreground uppercase tracking-wider font-orbitron">
-              Contains {bundle.items.length} items
+              {t("shop.bundles.contains", { n: bundle.items.length })}
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {bundle.items.slice(0, 4).map((item, idx) => (
@@ -92,7 +95,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
             </div>
             {bundle.items.length > 4 && (
               <div className="ds-t-label text-primary font-orbitron" style={{ background: "hsl(var(--primary) / 0.06)" }}>
-                +{bundle.items.length - 4} more
+                {t("shop.bundles.more", { n: bundle.items.length - 4 })}
               </div>
             )}
           </div>
@@ -100,7 +103,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
           {/* Ownership */}
           {ownedItemCount > 0 && (
             <div className="flex items-center gap-1.5 ds-t-label" style={{ color: "hsl(142 70% 50%)" }}>
-              <Check className="w-3 h-3" /> {ownedItemCount}/{bundle.items.length} already owned
+              <Check className="w-3 h-3" /> {t("shop.bundles.owned", { n: ownedItemCount, total: bundle.items.length })}
             </div>
           )}
 
@@ -121,13 +124,15 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
 
             {allOwned ? (
               <div className="w-full py-2.5 rounded-lg text-center ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)", background: "hsl(142 70% 50% / 0.1)" }}>
-                All Owned
+                {t("shop.bundles.allOwned", "Tout possédé")}
               </div>
             ) : (
               <Button onClick={onPurchase} disabled={!canAfford} variant="outline"
                 className="w-full h-10 font-orbitron text-xs tracking-wider rounded-lg"
                 style={{ borderColor: r.border, color: canAfford ? r.accent : undefined, background: canAfford ? r.glow : undefined }}>
-                {canAfford ? "Get Bundle" : <><Lock className="w-3 h-3 mr-1.5" /> Need More Bonds</>}
+                {canAfford
+                  ? t("shop.bundles.get", "Prendre le lot")
+                  : <><Lock className="w-3 h-3 mr-1.5" /> {t("shop.bundles.needMore", "Bonds insuffisants")}</>}
               </Button>
             )}
           </div>

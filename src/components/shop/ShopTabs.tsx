@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles, Puzzle, Heart, History } from "lucide-react";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { cn } from "@/lib/utils";
@@ -11,17 +13,54 @@ interface ShopTabsProps {
   wishlistCount?: number;
 }
 
+/* Les libelles etaient ecrits en anglais alors que `shop.tabs.*`
+   existe et est traduit depuis toujours. On relie les deux. */
 const tabs = [
-  { id: "cosmetics" as const, label: "Cosmetics", icon: Sparkles, isImage: false },
-  { id: "modules" as const, label: "Modules", icon: Puzzle, isImage: false },
-  { id: "bonds" as const, label: "Bonds", icon: null, isImage: true },
-  { id: "wishlist" as const, label: "Wishlist", icon: Heart, isImage: false },
-  { id: "history" as const, label: "History", icon: History, isImage: false },
+  { id: "cosmetics" as const, cle: "shop.tabs.cosmetics", secours: "Cosmétiques", icon: Sparkles, isImage: false },
+  { id: "modules" as const, cle: "shop.tabs.modules", secours: "Modules", icon: Puzzle, isImage: false },
+  { id: "bonds" as const, cle: "shop.tabs.bonds", secours: "Bonds", icon: null, isImage: true },
+  { id: "wishlist" as const, cle: "shop.tabs.wishlist", secours: "Liste de souhaits", icon: Heart, isImage: false },
+  { id: "history" as const, cle: "shop.tabs.history", secours: "Historique", icon: History, isImage: false },
 ];
 
 export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabsProps) {
+  const { t } = useTranslation();
+  const bande = useRef<HTMLDivElement>(null);
+  const [resteADroite, setResteADroite] = useState(false);
+
+  /* On ne devine pas le debordement, on le mesure — et on le remesure
+     quand la fenetre change ou quand on fait defiler. Un voile pose en
+     permanence mentirait a 1 280 px, ou la bande tient exactement. */
+  useEffect(() => {
+    const el = bande.current;
+    if (!el) return;
+    const jauger = () =>
+      setResteADroite(el.scrollWidth - el.clientWidth - el.scrollLeft > 8);
+    jauger();
+    el.addEventListener("scroll", jauger, { passive: true });
+    const observateur = new ResizeObserver(jauger);
+    observateur.observe(el);
+    return () => {
+      el.removeEventListener("scroll", jauger);
+      observateur.disconnect();
+    };
+  }, []);
+
+  /* LA BANDE DEBORDAIT SANS LE DIRE. Mesure a 596 px de large : 653 px
+     de contenu dans 555 px visibles, le cinquieme onglet coupe net au
+     bord — et `hide-scrollbar` retirait le seul indice qu il restait
+     quelque chose a droite. Le voile en degrade rend le debordement
+     visible sans rendre la barre au navigateur ; il disparait quand la
+     bande tient (`scrollbar-gutter` n aurait rien montre ici, le
+     defilement etant horizontal). */
   return (
-    <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+    <div className="relative">
+      <div
+        ref={bande}
+        className="flex gap-2 overflow-x-auto hide-scrollbar"
+        role="tablist"
+        aria-label={t("shop.tabs.aria", "Sections de la boutique")}
+      >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -30,6 +69,8 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
         return (
           <motion.button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onTabChange(tab.id)}
             whileTap={{ scale: 0.96 }}
             className={cn(
@@ -61,7 +102,7 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
               ) : null}
             </div>
 
-            <span className="relative z-10">{tab.label}</span>
+            <span className="relative z-10">{t(tab.cle, tab.secours)}</span>
 
             {isWishlistFull && (
               <motion.span
@@ -79,6 +120,16 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
           </motion.button>
         );
       })}
+      </div>
+
+      {/* Le voile ne se pose que si quelque chose reste a droite. */}
+      {resteADroite && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-12"
+          style={{ background: "linear-gradient(to right, transparent, hsl(var(--background)))" }}
+        />
+      )}
     </div>
   );
 }

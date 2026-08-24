@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/useWishlist";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface WishlistButtonProps {
   itemId: string;
@@ -12,6 +13,7 @@ interface WishlistButtonProps {
 }
 
 export function WishlistButton({ itemId, itemType, className, size = "md" }: WishlistButtonProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: wishlist = [] } = useWishlist(user?.id);
   const addToWishlist = useAddToWishlist();
@@ -46,7 +48,9 @@ export function WishlistButton({ itemId, itemType, className, size = "md" }: Wis
       )}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+      title={isInWishlist
+        ? t("shop.wishlist.removeFromWishlist", "Retirer des souhaits")
+        : t("shop.wishlist.addToWishlist", "Ajouter aux souhaits")}
     >
       <Heart 
         className={cn(iconSize, isInWishlist && "fill-current")} 

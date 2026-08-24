@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Package, Sparkles, Star, Terminal } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ function AnimatedCounter({ value }: { value: number }) {
 }
 
 export function PurchaseHistory() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: transactions = [], isLoading } = useAllTransactions(user?.id);
 
@@ -50,8 +52,8 @@ export function PurchaseHistory() {
           animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 3, repeat: Infinity }}>
           <Terminal className="w-7 h-7 text-muted-foreground/40" />
         </motion.div>
-        <h3 className="font-orbitron text-sm text-foreground mb-1 tracking-wider">No Transactions</h3>
-        <p className="text-xs text-muted-foreground font-rajdhani">Your transaction ledger will appear here</p>
+        <h3 className="font-orbitron text-sm text-foreground mb-1 tracking-wider">{t("shop.history.none", "Aucune opération")}</h3>
+        <p className="text-xs text-muted-foreground font-rajdhani">{t("shop.history.emptyDesc", "Ton historique d’achats apparaîtra ici")}</p>
       </div>
     );
   }
@@ -84,9 +86,9 @@ export function PurchaseHistory() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Terminal className="w-5 h-5 text-primary" />
-          <h2 className="font-orbitron text-lg text-foreground tracking-wide">Transaction Ledger</h2>
+          <h2 className="font-orbitron text-lg text-foreground tracking-wide">{t("shop.history.ledger", "Registre des opérations")}</h2>
         </div>
-        <span className="ds-t-label font-mono text-muted-foreground">{transactions.length} records</span>
+        <span className="ds-t-label font-mono text-muted-foreground">{t("shop.history.records", { n: transactions.length })}</span>
       </div>
 
       {/* Ledger */}
@@ -116,13 +118,13 @@ export function PurchaseHistory() {
 
                 {/* Description */}
                 <div className="flex-1 min-w-0 text-xs font-rajdhani text-foreground/80 truncate">
-                  {tx.description || (isCredit ? "Earned Bonds" : "Purchase")}
+                  {tx.description || t(isCredit ? "shop.history.earned" : "shop.history.purchase")}
                 </div>
 
                 {/* Type tag */}
                 <span className="shrink-0 px-2 py-0.5 rounded-md ds-t-label font-orbitron font-bold tracking-widest uppercase"
                   style={{ color, background: color + "10" }}>
-                  {isCredit ? "Credit" : "Debit"}
+                  {t(isCredit ? "shop.history.credit" : "shop.history.debit")}
                 </span>
 
                 {/* Amount */}
@@ -139,13 +141,13 @@ export function PurchaseHistory() {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 rounded-xl" style={{ background: "hsl(142 70% 50% / 0.04)", border: "1px solid hsl(142 70% 50% / 0.12)" }}>
-          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(142 70% 50% / 0.6)" }}>Total Earned</div>
+          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(142 70% 50% / 0.6)" }}>{t("shop.history.totalEarned", "Total gagné")}</div>
           <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "hsl(142 70% 50%)" }}>
             <BondIcon size={18} /> <AnimatedCounter value={totalEarned} />
           </div>
         </div>
         <div className="p-4 rounded-xl" style={{ background: "hsl(350 80% 55% / 0.04)", border: "1px solid hsl(350 80% 55% / 0.12)" }}>
-          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(350 80% 55% / 0.6)" }}>Total Spent</div>
+          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(350 80% 55% / 0.6)" }}>{t("shop.history.totalSpent", "Total dépensé")}</div>
           <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "hsl(350 80% 55%)" }}>
             <BondIcon size={18} /> <AnimatedCounter value={totalSpent} />
           </div>

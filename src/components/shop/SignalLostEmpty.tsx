@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SignalLostEmptyProps {
   subtitle?: string;
 }
 
-export function SignalLostEmpty({ subtitle = "Check back later" }: SignalLostEmptyProps) {
+export function SignalLostEmpty({ subtitle }: SignalLostEmptyProps) {
+  const { t } = useTranslation();
+  const texte = subtitle ?? t("shop.empty.checkBack", "Repasse plus tard");
   // Generate static dots positions once
   const dots = useMemo(() => 
     Array.from({ length: 40 }, (_, i) => ({

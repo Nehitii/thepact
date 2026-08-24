@@ -1598,49 +1598,114 @@
       "modules": "Modules",
       "bonds": "Bonds",
       "wishlist": "Liste de souhaits",
-      "history": "Historique"
+      "history": "Historique",
+      "aria": "Sections de la boutique"
     },
     "dailyDeals": {
       "title": "Offres du jour",
       "noDeals": "Pas d'offres disponibles aujourd'hui",
       "expiresIn": "Expire dans",
-      "discount": "-{{percent}}%"
+      "discount": "-{{percent}}%",
+      "badge": "Offre du jour",
+      "live": "En cours",
+      "grab": "Prendre l’offre"
     },
     "bundles": {
       "title": "Packs",
       "items": "{{count}} articles",
-      "save": "Économise {{percent}}%"
+      "save": "Économise {{n}}",
+      "none": "Aucun lot en ce moment — repasse plus tard",
+      "get": "Prendre le lot",
+      "needMore": "Bonds insuffisants",
+      "alreadyOwned": "Tu possèdes déjà tout ce lot",
+      "contains": "Contient {{n}} articles",
+      "more": "+{{n}} de plus",
+      "owned": "{{n}}/{{total}} déjà possédés",
+      "allOwned": "Tout possédé"
     },
     "cosmetics": {
       "frames": "Cadres",
       "banners": "Bannières",
       "titles": "Titres",
-      "noItems": "Aucun cosmétique disponible"
+      "noItems": "Aucun cosmétique disponible",
+      "categories": "Catégories",
+      "noneYet": "Aucun {{type}} disponible pour l’instant",
+      "noneMatch": "Aucun {{type}} ne correspond aux filtres",
+      "showing": "{{n}} sur {{total}}"
     },
     "modules": {
       "title": "Modules Premium",
       "unlock": "Débloquer",
       "unlocked": "Débloqué",
-      "comingSoon": "Bientôt disponible"
+      "comingSoon": "Bientôt disponible",
+      "features": {
+        "finance": [
+          "Suivi des revenus et des dépenses",
+          "Projections de budget",
+          "Gestion des opérations récurrentes"
+        ],
+        "the-call": [
+          "Invitations à se remettre en marche",
+          "Rappels quotidiens",
+          "Outils d’ancrage mental"
+        ],
+        "journal": [
+          "Entrées de réflexion quotidienne",
+          "Suivi de l’humeur et du contexte",
+          "Regard sur ta progression"
+        ],
+        "todo-list": [
+          "Tâches classées par priorité",
+          "Échéances et rappels",
+          "Score de productivité"
+        ],
+        "track-health": [
+          "Tableau des constantes",
+          "Qualité du sommeil",
+          "Tendances de santé"
+        ],
+        "wishlist": [
+          "Planification des achats du pacte",
+          "Le nécessaire distingué de l’envie",
+          "Coût réel de chaque objectif"
+        ]
+      },
+      "owned": "Déjà acquis",
+      "search": "Chercher un module"
     },
     "bonds": {
       "title": "Obtenir des Bonds",
       "balance": "Ton solde",
       "buyBonds": "Acheter des Bonds",
-      "bonus": "+{{percent}}% bonus"
+      "bonus": "+{{percent}}% bonus",
+      "comingSoon": "Bientôt disponible",
+      "comingSoonDesc": "Le paiement n’est pas encore branché.",
+      "secure": "Protocole sécurisé",
+      "instant": "Livraison immédiate",
+      "bestValue": "Meilleur rapport"
     },
     "wishlist": {
       "title": "Ta liste de souhaits",
       "empty": "Ta liste de souhaits est vide",
       "emptyDesc": "Ajoute des articles à suivre",
       "addToWishlist": "Ajouter aux souhaits",
-      "removeFromWishlist": "Retirer des souhaits"
+      "removeFromWishlist": "Retirer des souhaits",
+      "totalCost": "Coût total de la liste"
     },
     "history": {
       "title": "Historique d'achats",
       "empty": "Aucun achat",
       "emptyDesc": "Ton historique d'achats apparaîtra ici",
-      "purchasedOn": "Acheté le"
+      "purchasedOn": "Acheté le",
+      "ledger": "Registre des opérations",
+      "none": "Aucune opération",
+      "records": "{{n}} écritures",
+      "credit": "Crédit",
+      "debit": "Débit",
+      "earned": "Bonds gagnés",
+      "totalEarned": "Total gagné",
+      "totalSpent": "Total dépensé",
+      "purchase": "Achat"
     },
     "purchase": {
       "confirm": "Confirmer l'achat",
@@ -1649,7 +1714,17 @@
       "afterPurchase": "Après achat",
       "insufficientFunds": "Bonds insuffisants",
       "buy": "Acheter",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "currentBalance": "Solde actuel",
+      "itemCost": "Coût",
+      "newBalance": "Nouveau solde",
+      "insufficient": "Bonds insuffisants",
+      "hold": "Maintenir pour acheter",
+      "preview": "Aperçu",
+      "buyNow": "Acheter",
+      "holding": "Maintiens",
+      "authorizing": "Autorisation…",
+      "acquired": "Acquis"
     },
     "rarity": {
       "common": "Commun",
@@ -1664,7 +1739,36 @@
       "redeem": "Utiliser",
       "success": "Code utilisé avec succès !",
       "invalid": "Code invalide ou expiré",
-      "alreadyUsed": "Tu as déjà utilisé ce code"
+      "alreadyUsed": "Tu as déjà utilisé ce code",
+      "enter": "Valider"
+    },
+    "filters": {
+      "sort": "Trier",
+      "sortBy": "Trier par",
+      "filter": "Filtrer",
+      "filters": "Filtres",
+      "rarity": "Rareté",
+      "allRarities": "Toutes les raretés",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix décroissant",
+      "nameAsc": "Nom · A à Z",
+      "nameDesc": "Nom · Z à A",
+      "reset": "Tout effacer",
+      "search": "Chercher un article",
+      "hideOwned": "Masquer ce que je possède",
+      "hidingOwned": "Possédés masqués"
+    },
+    "fitting": {
+      "balanceAfter": "Solde après"
+    },
+    "empty": {
+      "checkBack": "Repasse plus tard"
+    },
+    "spotlight": {
+      "featured": "En vedette"
+    },
+    "item": {
+      "owned": "Possédé"
     }
   },
   "community": {

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 // Unified rarity design system for the entire Shop
 export const rarityConfig = {
   common: {
@@ -54,4 +56,17 @@ export type RarityKey = keyof typeof rarityConfig;
 
 export function getRarity(rarity: string) {
   return rarityConfig[rarity as RarityKey] || rarityConfig.common;
+}
+
+/* LE NOM DE LA RARETE S AFFICHAIT BRUT.
+ *
+ * Huit endroits rendaient directement la valeur de la base — « epic »,
+ * « legendary » — au milieu d une interface francaise. Les libelles
+ * `shop.rarity.*` existaient pourtant deja dans les deux langues. Ce
+ * crochet les relie ; il vit ici pour que la couleur et le mot d une
+ * rarete restent decides au meme endroit. */
+export function useRarityLabel() {
+  const { t } = useTranslation();
+  return (rarity: string) =>
+    t(`shop.rarity.${rarity}`, { defaultValue: rarity });
 }

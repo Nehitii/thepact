@@ -3,19 +3,13 @@ import { TrendingUp, Phone, BookOpen, ListTodo, Heart, Check, Lock, Sparkles, Za
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
+import { useModuleFeatures } from "./moduleFeatures";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp, "the-call": Phone, journal: BookOpen, "todo-list": ListTodo, "track-health": Heart,
-};
-
-const moduleFeatures: Record<string, string[]> = {
-  finance: ["Track income & expenses monthly", "Smart budget projections", "Recurring transaction management"],
-  "the-call": ["Guided motivational prompts", "Daily check-in reminders", "Mindset reinforcement tools"],
-  journal: ["Daily reflection entries", "Mood & context tracking", "Personal growth insights"],
-  "todo-list": ["Priority-based task management", "Deadline & reminder system", "Gamified productivity scoring"],
-  "track-health": ["Vital metrics dashboard", "Sleep quality monitoring", "Health trend analytics"],
 };
 
 interface ModuleCardProps {
@@ -30,8 +24,11 @@ interface ModuleCardProps {
 }
 
 export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 0 }: ModuleCardProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
+  const promessesDe = useModuleFeatures();
   const Icon = moduleIcons[module.key] || Sparkles;
-  const features = moduleFeatures[module.key] || [];
+  const features = promessesDe(module.key);
   const r = getRarity(module.rarity);
 
   return (
@@ -71,7 +68,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
             <h3 className="font-orbitron text-base font-bold text-foreground tracking-wide">{module.name}</h3>
             <div className="flex items-center gap-2 mt-1">
               <span className={cn("ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border", r.badgeBg, r.badgeText, r.badgeBorder)}>
-                {module.rarity}
+                {libelleRarete(module.rarity)}
               </span>
               {module.is_coming_soon && (
                 <span className="ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25">
@@ -92,7 +89,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
         <div className="font-orbitron text-2xl font-bold flex items-center gap-2" style={{ color: r.accent }}>
           {owned ? (
             <span className="flex items-center gap-2 text-lg" style={{ color: "hsl(142 70% 50%)" }}>
-              <Check className="w-5 h-5" /> Unlocked
+              <Check className="w-5 h-5" /> {t("shop.modules.unlocked", "Débloqué")}
             </span>
           ) : module.is_coming_soon ? (
             <span className="text-muted-foreground text-lg">TBA</span>
@@ -103,7 +100,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
 
         {/* Features */}
         <ul className="space-y-2">
-          {(features.length > 0 ? features : module.description ? [module.description] : ["Premium module features"]).map((feature, i) => (
+          {(features.length > 0 ? features : module.description ? [module.description] : []).map((feature, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground font-rajdhani">
               <span className="mt-1 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: r.accent }} />
               {feature}
@@ -115,12 +112,12 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
         {owned ? (
           <Button disabled className="w-full h-11 rounded-xl font-rajdhani text-sm"
             style={{ background: "hsl(142 70% 50% / 0.1)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.2)" }}>
-            <Check className="w-4 h-4 mr-2" /> Already Owned
+            <Check className="w-4 h-4 mr-2" /> {t("shop.modules.owned", "Déjà acquis")}
           </Button>
         ) : module.is_coming_soon ? (
           <Button disabled className="w-full h-11 rounded-xl font-rajdhani text-sm"
             style={{ background: "hsl(45 100% 55% / 0.1)", color: "hsl(45 100% 55%)", border: "1px solid hsl(45 100% 55% / 0.2)" }}>
-            <Bell className="w-4 h-4 mr-2" /> Coming Soon
+            <Bell className="w-4 h-4 mr-2" /> {t("shop.modules.comingSoon", "Bientôt disponible")}
           </Button>
         ) : (
           <Button onClick={onPurchaseClick} disabled={!canAfford}
@@ -130,7 +127,9 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
               color: canAfford ? r.accent : "hsl(var(--muted-foreground))",
               border: `1px solid ${canAfford ? r.border : "hsl(var(--border))"}`,
             }}>
-            {canAfford ? <><Zap className="w-4 h-4 mr-2" />Purchase</> : <><Lock className="w-4 h-4 mr-2" />Need More Bonds</>}
+            {canAfford
+              ? <><Zap className="w-4 h-4 mr-2" />{t("shop.modules.unlock", "Débloquer")}</>
+              : <><Lock className="w-4 h-4 mr-2" />{t("shop.bundles.needMore", "Bonds insuffisants")}</>}
           </Button>
         )}
       </div>

@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Sparkles, Lock, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { DailyDealWithItem } from "@/hooks/useDailyDeals";
 import { useEffect, useState } from "react";
-import { getRarity } from "./shopRarity";
+import { getRarity, useRarityLabel } from "./shopRarity";
 
 interface DailyDealCardProps {
   deal: DailyDealWithItem;
@@ -24,6 +25,8 @@ function FlipDigit({ value }: { value: string }) {
 }
 
 export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDealCardProps) {
+  const libelleRarete = useRarityLabel();
+  const { t } = useTranslation();
   const [hours, setHours] = useState("00");
   const [minutes, setMinutes] = useState("00");
   const [seconds, setSeconds] = useState("00");
@@ -91,9 +94,9 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <span className={`ds-t-label uppercase tracking-[0.15em] font-orbitron font-bold px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
-            {rarity}
+            {libelleRarete(rarity)}
           </span>
-          <span className="ds-t-label uppercase tracking-wider font-orbitron text-amber-400/70">Daily Deal</span>
+          <span className="ds-t-label uppercase tracking-wider font-orbitron text-amber-400/70">{t("shop.dailyDeals.badge", "Offre du jour")}</span>
         </div>
 
         <h3 className="font-orbitron text-sm font-bold text-foreground truncate">{deal.item.name}</h3>
@@ -120,12 +123,12 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
         {/* Action */}
         {isOwned ? (
           <div className="flex items-center gap-1.5 ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
-            <Check className="w-3.5 h-3.5" /> Owned
+            <Check className="w-3.5 h-3.5" /> {t("shop.item.owned", "Possédé")}
           </div>
         ) : (
           <Button onClick={onPurchase} disabled={!canAfford} variant="outline" className="w-full h-9 font-orbitron text-xs tracking-wider rounded-lg"
             style={{ borderColor: "hsl(45 100% 60% / 0.3)", color: canAfford ? "hsl(45 100% 60%)" : undefined, background: canAfford ? "hsl(45 100% 60% / 0.1)" : undefined }}>
-            {canAfford ? "Grab Deal" : <Lock className="w-3 h-3" />}
+            {canAfford ? t("shop.dailyDeals.grab", "Prendre l’offre") : <Lock className="w-3 h-3" />}
           </Button>
         )}
       </div>

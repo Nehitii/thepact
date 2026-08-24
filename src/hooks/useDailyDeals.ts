@@ -26,11 +26,29 @@ export function useDailyDeals() {
   return useQuery({
     queryKey: ["daily-deals"],
     queryFn: async () => {
+      /* DEUX DEFAUTS TENAIENT ENSEMBLE.
+         La table etait vide, donc la section n affichait jamais rien ;
+         et la lecture ne filtrait que sur `is_active` alors que
+         `purchase_daily_deal` exige `deal_date = CURRENT_DATE` — une
+         offre de la veille se serait affichee sans etre achetable.
+         On demande d abord au serveur d assurer les offres du jour
+         (il ne fait rien si elles existent deja), puis on ne lit que
+         celles d aujourd hui. */
+      await supabase.rpc("assurer_offres_du_jour");
+
+      const aujourdhui = new Date();
+      const jour = [
+        aujourdhui.getFullYear(),
+        String(aujourdhui.getMonth() + 1).padStart(2, "0"),
+        String(aujourdhui.getDate()).padStart(2, "0"),
+      ].join("-");
+
       const { data: deals, error } = await supabase
         .from("shop_daily_deals")
         .select("*")
-        .eq("is_active", true);
-      
+        .eq("is_active", true)
+        .eq("deal_date", jour);
+
       if (error) throw error;
       if (!deals || deals.length === 0) return [];
       

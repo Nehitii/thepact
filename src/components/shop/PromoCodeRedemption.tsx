@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ticket, Gift, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRedeemPromoCode } from "@/hooks/usePromoCodes";
 
 export function PromoCodeRedemption() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [code, setCode] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -58,7 +60,7 @@ export function PromoCodeRedemption() {
             <Ticket className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <h3 className="font-orbitron text-foreground">Redeem Code</h3>
+            <h3 className="font-orbitron text-foreground">{t("shop.promoCode.title", "Code promo")}</h3>
             <p className="text-xs text-emerald-400/60 font-rajdhani">
               Enter a promotional code to claim rewards
             </p>
@@ -100,7 +102,7 @@ export function PromoCodeRedemption() {
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Enter code..."
+                placeholder={t("shop.promoCode.placeholder", "Entrer le code")}
                 className="flex-1 bg-background/50 border-emerald-500/30 focus:border-emerald-500/50 font-mono uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleRedeem();

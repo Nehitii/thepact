@@ -1598,49 +1598,114 @@
       "modules": "Modules",
       "bonds": "Bonds",
       "wishlist": "Wishlist",
-      "history": "History"
+      "history": "History",
+      "aria": "Shop sections"
     },
     "dailyDeals": {
       "title": "Daily Deals",
       "noDeals": "No deals available today",
       "expiresIn": "Expires in",
-      "discount": "{{percent}}% OFF"
+      "discount": "{{percent}}% OFF",
+      "badge": "Daily deal",
+      "live": "Live",
+      "grab": "Grab deal"
     },
     "bundles": {
       "title": "Bundles",
       "items": "{{count}} items",
-      "save": "Save {{percent}}%"
+      "save": "Save {{n}}",
+      "none": "No bundles right now — check back later",
+      "get": "Get bundle",
+      "needMore": "Not enough bonds",
+      "alreadyOwned": "You already own everything in this bundle",
+      "contains": "Contains {{n}} items",
+      "more": "+{{n}} more",
+      "owned": "{{n}}/{{total}} already owned",
+      "allOwned": "All owned"
     },
     "cosmetics": {
       "frames": "Frames",
       "banners": "Banners",
       "titles": "Titles",
-      "noItems": "No cosmetics available"
+      "noItems": "No cosmetics available",
+      "categories": "Categories",
+      "noneYet": "No {{type}} available yet",
+      "noneMatch": "No {{type}} match your filters",
+      "showing": "{{n}} of {{total}}"
     },
     "modules": {
       "title": "Premium Modules",
       "unlock": "Unlock",
       "unlocked": "Unlocked",
-      "comingSoon": "Coming Soon"
+      "comingSoon": "Coming Soon",
+      "features": {
+        "finance": [
+          "Track income and expenses",
+          "Budget projections",
+          "Recurring transaction management"
+        ],
+        "the-call": [
+          "Guided motivational prompts",
+          "Daily check-in reminders",
+          "Mindset reinforcement tools"
+        ],
+        "journal": [
+          "Daily reflection entries",
+          "Mood and context tracking",
+          "Personal growth insights"
+        ],
+        "todo-list": [
+          "Priority-based task management",
+          "Deadlines and reminders",
+          "Gamified productivity scoring"
+        ],
+        "track-health": [
+          "Vital metrics dashboard",
+          "Sleep quality monitoring",
+          "Health trend analytics"
+        ],
+        "wishlist": [
+          "Strategic purchase planning",
+          "Required set apart from wanted",
+          "Real cost of every goal"
+        ]
+      },
+      "owned": "Already owned",
+      "search": "Search a module"
     },
     "bonds": {
       "title": "Get Bonds",
       "balance": "Your Balance",
       "buyBonds": "Buy Bonds",
-      "bonus": "+{{percent}}% bonus"
+      "bonus": "+{{percent}}% bonus",
+      "comingSoon": "Coming soon",
+      "comingSoonDesc": "Payment integration is not wired yet.",
+      "secure": "Secure protocol",
+      "instant": "Instant delivery",
+      "bestValue": "Best value"
     },
     "wishlist": {
       "title": "Your Wishlist",
       "empty": "Your wishlist is empty",
       "emptyDesc": "Add items to track what you want",
       "addToWishlist": "Add to Wishlist",
-      "removeFromWishlist": "Remove from Wishlist"
+      "removeFromWishlist": "Remove from Wishlist",
+      "totalCost": "Total loadout cost"
     },
     "history": {
       "title": "Purchase History",
       "empty": "No purchases yet",
       "emptyDesc": "Your purchase history will appear here",
-      "purchasedOn": "Purchased on"
+      "purchasedOn": "Purchased on",
+      "ledger": "Transaction ledger",
+      "none": "No transactions",
+      "records": "{{n}} records",
+      "credit": "Credit",
+      "debit": "Debit",
+      "earned": "Earned bonds",
+      "totalEarned": "Total earned",
+      "totalSpent": "Total spent",
+      "purchase": "Purchase"
     },
     "purchase": {
       "confirm": "Confirm Purchase",
@@ -1649,7 +1714,17 @@
       "afterPurchase": "After Purchase",
       "insufficientFunds": "Insufficient Bonds",
       "buy": "Buy",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "currentBalance": "Current balance",
+      "itemCost": "Cost",
+      "newBalance": "New balance",
+      "insufficient": "Not enough bonds",
+      "hold": "Hold to buy",
+      "preview": "Preview",
+      "buyNow": "Buy now",
+      "holding": "Hold",
+      "authorizing": "Authorizing…",
+      "acquired": "Acquired"
     },
     "rarity": {
       "common": "Common",
@@ -1664,7 +1739,36 @@
       "redeem": "Redeem",
       "success": "Code redeemed successfully!",
       "invalid": "Invalid or expired code",
-      "alreadyUsed": "You've already used this code"
+      "alreadyUsed": "You've already used this code",
+      "enter": "Enter"
+    },
+    "filters": {
+      "sort": "Sort",
+      "sortBy": "Sort by",
+      "filter": "Filter",
+      "filters": "Filters",
+      "rarity": "Rarity",
+      "allRarities": "All rarities",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low",
+      "nameAsc": "Name: A to Z",
+      "nameDesc": "Name: Z to A",
+      "reset": "Clear all",
+      "search": "Search items",
+      "hideOwned": "Hide owned items",
+      "hidingOwned": "Hiding owned"
+    },
+    "fitting": {
+      "balanceAfter": "Balance after"
+    },
+    "empty": {
+      "checkBack": "Check back later"
+    },
+    "spotlight": {
+      "featured": "Featured"
+    },
+    "item": {
+      "owned": "Owned"
     }
   },
   "community": {

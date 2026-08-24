@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Sparkles, Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 export function BondsShop() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: packs = [], isLoading: loadingPacks } = useBondPacks();
   const { data: balance, isLoading: loadingBalance } = useBondBalance(user?.id);
@@ -16,7 +18,9 @@ export function BondsShop() {
   const isLoading = loadingPacks || loadingOffers;
 
   const handlePackPurchase = () => {
-    toast.success("Coming Soon", { description: "Payment integration is under development. Stay tuned!" });
+    toast.success(t("shop.bonds.comingSoon", "Bientôt disponible"), {
+      description: t("shop.bonds.comingSoonDesc", "Le paiement n’est pas encore branché."),
+    });
   };
 
   return (
@@ -45,7 +49,7 @@ export function BondsShop() {
           }}>
             <BondIcon size={40} className="drop-shadow-[0_0_10px_hsl(var(--primary)/0.3)]" />
             <div>
-              <p className="ds-t-label text-primary font-orbitron uppercase tracking-widest mb-0.5">Balance</p>
+              <p className="ds-t-label text-primary font-orbitron uppercase tracking-widest mb-0.5">{t("shop.bonds.balance", "Ton solde")}</p>
               {loadingBalance ? (
                 <Skeleton className="h-8 w-20 bg-primary/10" />
               ) : (
@@ -164,9 +168,9 @@ export function BondsShop() {
       {/* Trust footer */}
       <footer className="flex items-center justify-center gap-8 pt-6 border-t" style={{ borderColor: "hsl(var(--primary) / 0.08)" }}>
         {[
-          { icon: ShieldCheck, color: "text-emerald-500", label: "Secure Protocol" },
-          { icon: Zap, color: "text-primary", label: "Instant Delivery" },
-          { icon: TrendingUp, color: "text-purple-500", label: "Best Value" },
+          { icon: ShieldCheck, color: "text-emerald-500", label: t("shop.bonds.secure", "Protocole sécurisé") },
+          { icon: Zap, color: "text-primary", label: t("shop.bonds.instant", "Livraison immédiate") },
+          { icon: TrendingUp, color: "text-purple-500", label: t("shop.bonds.bestValue", "Meilleur rapport") },
         ].map((f, i) => (
           <div key={i} className="flex items-center gap-2 text-muted-foreground">
             <f.icon className={cn("w-4 h-4", f.color)} />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +12,7 @@ import { ShopLoadingState } from "./ShopLoadingState";
 import { SignalLostEmpty } from "./SignalLostEmpty";
 
 export function BundlesSection() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: bundles = [], isLoading } = useShopBundles();
   const { data: balance } = useBondBalance(user?.id);
@@ -40,7 +42,7 @@ export function BundlesSection() {
   };
 
   if (isLoading) return <ShopLoadingState type="modules" />;
-  if (bundles.length === 0) return <SignalLostEmpty subtitle="No bundles available — check back later" />;
+  if (bundles.length === 0) return <SignalLostEmpty subtitle={t("shop.bundles.none", "Aucun lot en ce moment — repasse plus tard")} />;
 
   const purchaseItem: PurchaseItem | null = selectedBundle ? {
     id: selectedBundle.id, name: selectedBundle.name, price: selectedBundle.price_bonds, rarity: selectedBundle.rarity, type: "bundle",
@@ -50,7 +52,7 @@ export function BundlesSection() {
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <Package className="w-5 h-5 text-purple-400" />
-        <h2 className="font-orbitron text-lg text-foreground tracking-wide">Bundles</h2>
+        <h2 className="font-orbitron text-lg text-foreground tracking-wide">{t("shop.bundles.title", "Packs")}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
