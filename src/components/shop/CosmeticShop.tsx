@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image, Frame, Crown } from "lucide-react";
+import { Image, Frame, Crown, Shuffle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance, CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/hooks/useShop";
-import { FramePreview } from "@/components/ui/avatar-frame";
+import { FramePreview, AvatarFrame } from "@/components/ui/avatar-frame";
+import { useProfile } from "@/hooks/useProfile";
 import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
@@ -31,6 +32,12 @@ export function CosmeticShop() {
   const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
   const [showUnlock, setShowUnlock] = useState(false);
   const [filters, setFilters] = useState<ShopFilterState>({ search: "", sort: "price-asc", rarity: "all", hideOwned: false });
+  /* MELANGER. Le tri par prix ou par nom fige toujours la meme
+     vitrine, et l on finit par ne plus voir que les premieres cartes.
+     Un remaniement rebat l ordre sans rien cacher ; la graine vit dans
+     l etat, donc l ordre tient tant qu on ne redemande pas. */
+  const [graine, setGraine] = useState(0);
+
   const [fittingItem, setFittingItem] = useState<
     | { type: "frame"; data: CosmeticFrame } | { type: "banner"; data: CosmeticBanner } | { type: "title"; data: CosmeticTitle } | null
   >(null);
@@ -40,7 +47,17 @@ export function CosmeticShop() {
   const { data: titles = [], isLoading: titlesLoading } = useShopTitles();
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: balance } = useBondBalance(user?.id);
+  const { data: profil } = useProfile(user?.id);
   const transaction = useShopTransaction();
+
+  /* L APERCU PORTE.
+     Un cadre pose sur une silhouette grise ne dit pas ce qu il fera sur
+     toi. `FramePreview` n est d ailleurs qu un `AvatarFrame` avec
+     `avatarUrl = null` : montrer l article porte ne demandait que de
+     passer le vrai avatar. La carte croise les deux au survol. */
+  const monAvatar = profil?.avatar_url ?? null;
+  const mesInitiales = (profil?.display_name ?? "")
+    .split(/s+/).filter(Boolean).slice(0, 2).map((m) => m[0]?.toUpperCase() ?? "").join("") || "?";
 
   const isLoading = activeCategory === "frames" ? framesLoading : activeCategory === "banners" ? bannersLoading : titlesLoading;
 
@@ -72,9 +89,29 @@ export function CosmeticShop() {
     return ownedCosmetics.titles.includes(id);
   };
 
-  const filteredFrames = useMemo(() => applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")), [frames, filters, ownedCosmetics]);
-  const filteredBanners = useMemo(() => applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner")), [banners, filters, ownedCosmetics]);
-  const filteredTitles = useMemo(() => applyShopFilters(titles.map(t => ({ ...t, name: t.title_text })), filters, (t) => isOwned(t.id, "title")), [titles, filters, ownedCosmetics]);
+  /* L ordre melange est deduit de la graine et de l identifiant : pas
+     de tirage au sort, donc pas de reordonnancement a chaque rendu. */
+  const remanier = <T extends { id: string }>(liste: T[]) => {
+    if (!graine) return liste;
+    /* FNV-1a puis avalanche. Un simple `h * 31 + code` partant de la
+       graine ne brassait rien : deux graines consecutives donnaient le
+       meme ordre a une rotation pres — mesure faite, la seconde
+       pression ne deplacait qu une carte. Il faut disperser la graine
+       avant de replier l identifiant, puis melanger les bits obtenus. */
+    const rang = (id: string) => {
+      let h = Math.imul(graine, 2654435761) >>> 0;
+      for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619) >>> 0;
+      h ^= h >>> 15;
+      h = Math.imul(h, 2246822507) >>> 0;
+      h ^= h >>> 13;
+      return h >>> 0;
+    };
+    return [...liste].sort((a, b) => rang(a.id) - rang(b.id));
+  };
+
+  const filteredFrames = useMemo(() => remanier(applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame"))), [frames, filters, ownedCosmetics, graine]);
+  const filteredBanners = useMemo(() => remanier(applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner"))), [banners, filters, ownedCosmetics, graine]);
+  const filteredTitles = useMemo(() => remanier(applyShopFilters(titles.map(t => ({ ...t, name: t.title_text })), filters, (t) => isOwned(t.id, "title"))), [titles, filters, ownedCosmetics, graine]);
 
   const totalItems = activeCategory === "frames" ? frames.length : activeCategory === "banners" ? banners.length : titles.length;
   const visibleItems = activeCategory === "frames" ? filteredFrames.length : activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;
@@ -112,7 +149,20 @@ export function CosmeticShop() {
       {/* Right panel */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex-shrink-0 mb-5">
-          <ShopFilters filters={filters} onFiltersChange={setFilters} totalItems={totalItems} visibleItems={visibleItems} />
+          <div className="flex items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <ShopFilters filters={filters} onFiltersChange={setFilters} totalItems={totalItems} visibleItems={visibleItems} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setGraine((g) => g + 1)}
+              title={t("shop.filters.shuffle", "Mélanger")}
+              className="shrink-0 h-10 px-3 rounded-lg border border-primary/20 bg-card/50 text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors flex items-center gap-2"
+            >
+              <Shuffle className="w-4 h-4" />
+              <span className="hidden sm:inline font-rajdhani text-sm">{t("shop.filters.shuffle", "Mélanger")}</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto hide-scrollbar">
@@ -126,6 +176,7 @@ export function CosmeticShop() {
                   <CyberItemCard key={frame.id} id={frame.id} name={frame.name} rarity={frame.rarity} price={frame.price}
                     owned={isOwned(frame.id, "frame") || frame.is_default} canAfford={(balance?.balance || 0) >= frame.price} itemType="frame" index={i}
                     preview={<FramePreview size="lg" frameImage={frame.preview_url} borderColor={frame.border_color} glowColor={frame.glow_color} frameScale={frame.frame_scale} frameOffsetX={frame.frame_offset_x} frameOffsetY={frame.frame_offset_y} />}
+                    previewPorte={<AvatarFrame size="lg" avatarUrl={monAvatar} fallback={mesInitiales} frameImage={frame.preview_url} borderColor={frame.border_color} glowColor={frame.glow_color} frameScale={frame.frame_scale} frameOffsetX={frame.frame_offset_x} frameOffsetY={frame.frame_offset_y} />}
                     onPurchase={() => handlePurchaseClick({ id: frame.id, name: frame.name, type: "frame", price: frame.price, rarity: frame.rarity })}
                     onPreview={() => setFittingItem({ type: "frame", data: frame })} />
                 ))}
@@ -133,6 +184,17 @@ export function CosmeticShop() {
                   <CyberItemCard key={banner.id} id={banner.id} name={banner.name} rarity={banner.rarity} price={banner.price}
                     owned={isOwned(banner.id, "banner") || banner.is_default} canAfford={(balance?.balance || 0) >= banner.price} itemType="banner" index={i}
                     preview={<div className="w-full h-16 rounded-lg" style={{ background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})` }} />}
+                    previewPorte={
+                      <div className="w-full h-16 rounded-lg relative overflow-hidden flex items-end" style={{ background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})` }}>
+                        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--card) / 0.85), transparent 70%)" }} />
+                        <div className="relative flex items-center gap-2 px-2 pb-1.5 w-full">
+                          <AvatarFrame size="sm" avatarUrl={monAvatar} fallback={mesInitiales} showBorder={false} />
+                          <span className="font-orbitron text-[0.6875rem] font-semibold truncate text-foreground">
+                            {profil?.display_name ?? ""}
+                          </span>
+                        </div>
+                      </div>
+                    }
                     onPurchase={() => handlePurchaseClick({ id: banner.id, name: banner.name, type: "banner", price: banner.price, rarity: banner.rarity })}
                     onPreview={() => setFittingItem({ type: "banner", data: banner })} />
                 ))}

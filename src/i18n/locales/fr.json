@@ -1756,7 +1756,8 @@
       "reset": "Tout effacer",
       "search": "Chercher un article",
       "hideOwned": "Masquer ce que je possède",
-      "hidingOwned": "Possédés masqués"
+      "hidingOwned": "Possédés masqués",
+      "shuffle": "Mélanger"
     },
     "fitting": {
       "balanceAfter": "Solde après"

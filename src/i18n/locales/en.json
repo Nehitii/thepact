@@ -1756,7 +1756,8 @@
       "reset": "Clear all",
       "search": "Search items",
       "hideOwned": "Hide owned items",
-      "hidingOwned": "Hiding owned"
+      "hidingOwned": "Hiding owned",
+      "shuffle": "Shuffle"
     },
     "fitting": {
       "balanceAfter": "Balance after"
