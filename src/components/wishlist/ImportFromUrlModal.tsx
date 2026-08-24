@@ -9,6 +9,45 @@ import { AlertTriangle, Check, Globe, Loader2, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { ChampImage } from "@/components/wishlist/ChampImage";
 
+/* Le serveur nomme la cause ; ici on la dit. Un « non-2xx » n apprend
+   rien a qui essaie d importer un canape. */
+const motifLisible = (code: unknown, t: (c: string, d: string) => string) => {
+  switch (code) {
+    case "site_refuse":
+      return t(
+        "wishlist.import.siteRefuse",
+        "Ce site refuse la lecture automatique. Saisis le produit à la main.",
+      );
+    case "page_absente":
+      return t("wishlist.import.pageAbsente", "Cette page n’existe plus.");
+    case "trop_de_demandes":
+      return t("wishlist.import.tropDeDemandes", "Le site nous demande d’attendre. Réessaie dans un instant.");
+    case "site_injoignable":
+      return t("wishlist.import.siteInjoignable", "Le site n’a pas répondu. Réessaie plus tard.");
+    default:
+      return t("wishlist.import.echec", "La page n’a rien livré.");
+  }
+};
+
+/* `FunctionsHttpError` garde la reponse HTTP dans `context`. Sans cette
+   relecture, le motif meurt dans le transport : `functions.invoke`
+   rejette tout non-2xx avec un message generique et jette le corps. */
+const motifDeLEchec = async (
+  error: { message: string; context?: unknown },
+  t: (c: string, d: string) => string,
+) => {
+  const reponse = error.context;
+  if (reponse instanceof Response) {
+    try {
+      const corps = await reponse.clone().json();
+      if (corps?.code) return motifLisible(corps.code, t);
+    } catch {
+      /* Corps illisible : on retombe sur le message d origine. */
+    }
+  }
+  return error.message;
+};
+
 export interface ScrapedProduct {
   name: string | null;
   image_url: string | null;
@@ -135,8 +174,8 @@ export function ImportFromUrlModal({
 
     try {
       const { data, error } = await supabase.functions.invoke("scrape-product", { body: { url: brut } });
-      if (error) throw new Error(error.message);
-      if (!data?.success) throw new Error(data?.error || t("wishlist.import.echec", "La page n’a rien livré."));
+      if (error) throw new Error(await motifDeLEchec(error, t));
+      if (!data?.success) throw new Error(motifLisible(data?.code, t));
 
       const produit = data.data as ScrapedProduct;
       setLu(produit);

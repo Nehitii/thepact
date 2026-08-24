@@ -318,16 +318,37 @@ Deno.serve(async (req) => {
 
     const response = await fetch(formattedUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; VowpactBot/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+          '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+        'Upgrade-Insecure-Requests': '1',
       },
       redirect: 'follow',
     });
 
     if (!response.ok) {
+      /* Le statut amont dit pourquoi, et chaque cas appelle un geste
+         different : reessayer, corriger l adresse, ou renoncer. */
+      const motif =
+        response.status === 403 || response.status === 401
+          ? 'site_refuse'
+          : response.status === 404 || response.status === 410
+            ? 'page_absente'
+            : response.status === 429
+              ? 'trop_de_demandes'
+              : 'site_injoignable';
+
+      console.log('Scrape refuse:', response.status, motif, formattedUrl);
+
       return new Response(
-        JSON.stringify({ success: false, error: `Failed to fetch: ${response.status}` }),
+        JSON.stringify({
+          success: false,
+          code: motif,
+          statut: response.status,
+          error: `Failed to fetch: ${response.status}`,
+        }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
