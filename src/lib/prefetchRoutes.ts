@@ -22,8 +22,6 @@ export const routeImports = {
   privacyControl: () => import("@/pages/profile/PrivacyControl"),
   notificationSettings: () => import("@/pages/profile/NotificationSettings"),
   dataPortability: () => import("@/pages/profile/DataPortability"),
-  lifeAreas: () => import("@/pages/profile/LifeAreas"),
-  automations: () => import("@/pages/profile/Automations"),
   wishlist: () => import("@/pages/Wishlist"),
   reviews: () => import("@/pages/Reviews"),
 } as const;
@@ -51,8 +49,6 @@ export const routePathToImport: Record<string, () => Promise<unknown>> = {
   "/profile/privacy": routeImports.privacyControl,
   "/profile/notifications": routeImports.notificationSettings,
   "/profile/data": routeImports.dataPortability,
-  "/profile/life-areas": routeImports.lifeAreas,
-  "/profile/automations": routeImports.automations,
   "/wishlist": routeImports.wishlist,
   "/reviews": routeImports.reviews,
 };

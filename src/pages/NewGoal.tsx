@@ -8,7 +8,6 @@ import { trackGoalCreated } from "@/lib/achievements";
 import { insertGoalTags } from "@/hooks/useGoalTags";
 import { useGoals } from "@/hooks/useGoals";
 import { usePact } from "@/hooks/usePact";
-import { useLifeAreas } from "@/hooks/useLifeAreas";
 import {
   ArrowLeft, Target, Sparkles, Calendar, ListOrdered, StickyNote,
   Receipt, Tag, Zap, Check, X, Crown, Filter, HandIcon, Compass,
@@ -60,7 +59,6 @@ export default function NewGoal() {
   const navigate = useNavigate();
   const { data: pactData } = usePact(user?.id);
   const { data: existingGoals = [] } = useGoals(pactData?.id, { includeStepCounts: true, includeTags: true });
-  const { areas: lifeAreas } = useLifeAreas();
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -76,7 +74,6 @@ export default function NewGoal() {
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [deadline, setDeadline] = useState("");
-  const [lifeAreaId, setLifeAreaId] = useState<string>("none");
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
     Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` })),
   );
@@ -277,7 +274,6 @@ export default function NewGoal() {
           image_url: imageUrl || null,
           ...superGoalData,
           deadline: deadline || null,
-          life_area_id: lifeAreaId && lifeAreaId !== "none" ? lifeAreaId : null,
         } as any)
         .select()
         .single();
@@ -552,47 +548,6 @@ export default function NewGoal() {
                   </p>
                 </div>
 
-                {/* Le domaine de vie porte sa couleur : une pastille la
-                    montre, une liste deroulante la perdait. */}
-                {lifeAreas.length > 0 && (
-                  <div className="ge-champ">
-                    <span className="ge-etiquette">
-                      <Compass size={11} aria-hidden="true" />
-                      {t("goals.new.lifeArea", "Domaine de vie")}
-                    </span>
-                    <div className="ge-pastilles">
-                      <button
-                        type="button"
-                        className="ge-pastille"
-                        aria-pressed={lifeAreaId === "none"}
-                        onClick={() => setLifeAreaId("none")}
-                        style={lifeAreaId === "none"
-                          ? { ["--c" as string]: "#64748b", ["--encre" as string]: encreSurFond("#64748b") }
-                          : undefined}
-                      >
-                        {t("goals.new.lifeAreaNone", "Aucun")}
-                      </button>
-                      {lifeAreas.map((a) => {
-                        const choisi = lifeAreaId === a.id;
-                        return (
-                          <button
-                            key={a.id}
-                            type="button"
-                            className="ge-pastille"
-                            aria-pressed={choisi}
-                            onClick={() => setLifeAreaId(a.id)}
-                            style={choisi
-                              ? { ["--c" as string]: a.color, ["--encre" as string]: encreSurFond(a.color) }
-                              : undefined}
-                          >
-                            {choisi && <Check size={10} aria-hidden="true" />}
-                            {a.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </section>
 

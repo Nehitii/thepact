@@ -36,11 +36,11 @@ export interface Decision {
 
 const TABLE = "decisions" as const;
 
-export function useDecisions(filters?: { status?: DecisionStatus; lifeAreaId?: string }) {
+export function useDecisions(filters?: { status?: DecisionStatus }) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["decisions", user?.id, filters?.status, filters?.lifeAreaId],
+    queryKey: ["decisions", user?.id, filters?.status],
     queryFn: async () => {
       if (!user?.id) return [] as Decision[];
       let q = supabase
@@ -49,7 +49,6 @@ export function useDecisions(filters?: { status?: DecisionStatus; lifeAreaId?: s
         .eq("user_id", user.id)
         .order("decided_at", { ascending: false });
       if (filters?.status) q = q.eq("status", filters.status);
-      if (filters?.lifeAreaId) q = q.eq("life_area_id", filters.lifeAreaId);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as Decision[];

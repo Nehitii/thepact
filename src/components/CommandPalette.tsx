@@ -33,7 +33,6 @@ import {
   Search,
   GripVertical,
   Keyboard,
-  Compass,
   UserCircle,
 } from "lucide-react";
 import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
@@ -74,7 +73,6 @@ const allItems: PaletteItem[] = [
   // Settings
   { label: "Compte", icon: UserCircle, route: "/profile", group: "Settings", keywords: "profile account compte" },
   { label: "Profil public", icon: User, route: "/profile/bounded", group: "Settings", keywords: "public bounded" },
-  { label: "Domaines de vie", icon: Compass, route: "/profile/life-areas", group: "Settings", keywords: "life areas domaines" },
   {
     label: "Mon Pacte",
     icon: Settings,
@@ -96,7 +94,6 @@ const allItems: PaletteItem[] = [
     group: "Settings",
     keywords: "alerts reminders notifications",
   },
-  { label: "Automatisations", icon: Zap, route: "/profile/automations", group: "Settings", keywords: "automations rules automatisations" },
   { label: "Confidentialité", icon: Shield, route: "/profile/privacy", group: "Settings", keywords: "security data privacy confidentialite" },
   { label: "Mes données", icon: Database, route: "/profile/data", group: "Settings", keywords: "export import data portability donnees" },
 

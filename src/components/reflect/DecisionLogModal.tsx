@@ -25,7 +25,6 @@ import {
   Reversibility,
   useDecisionMutations,
 } from "@/hooks/useDecisions";
-import { useLifeAreas } from "@/hooks/useLifeAreas";
 
 interface Props {
   open: boolean;
@@ -35,7 +34,6 @@ interface Props {
 
 export function DecisionLogModal({ open, onClose, initial }: Props) {
   const { create, update } = useDecisionMutations();
-  const { areas } = useLifeAreas();
 
   const [title, setTitle] = useState("");
   const [context, setContext] = useState("");
@@ -44,7 +42,6 @@ export function DecisionLogModal({ open, onClose, initial }: Props) {
   const [expected, setExpected] = useState("");
   const [confidence, setConfidence] = useState<string>("3");
   const [reversibility, setReversibility] = useState<Reversibility>("reversible");
-  const [lifeAreaId, setLifeAreaId] = useState<string>("none");
   const [reviewAt, setReviewAt] = useState<Date | undefined>();
   const [busy, setBusy] = useState(false);
 
@@ -58,7 +55,6 @@ export function DecisionLogModal({ open, onClose, initial }: Props) {
       setExpected(initial.expected_outcome ?? "");
       setConfidence(String(initial.confidence ?? 3));
       setReversibility((initial.reversibility ?? "reversible") as Reversibility);
-      setLifeAreaId(initial.life_area_id ?? "none");
       setReviewAt(initial.review_at ? new Date(initial.review_at) : undefined);
     } else {
       setTitle("");
@@ -68,7 +64,6 @@ export function DecisionLogModal({ open, onClose, initial }: Props) {
       setExpected("");
       setConfidence("3");
       setReversibility("reversible");
-      setLifeAreaId("none");
       // Default review date = today + 30d
       const d = new Date();
       d.setDate(d.getDate() + 30);
@@ -88,7 +83,6 @@ export function DecisionLogModal({ open, onClose, initial }: Props) {
         expected_outcome: expected.trim() || null,
         confidence: Number(confidence),
         reversibility,
-        life_area_id: lifeAreaId === "none" ? null : lifeAreaId,
         review_at: reviewAt ? reviewAt.toISOString().slice(0, 10) : null,
       };
       if (initial) {
@@ -198,23 +192,9 @@ export function DecisionLogModal({ open, onClose, initial }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Domaine</Label>
-              <Select value={lifeAreaId} onValueChange={setLifeAreaId}>
-                <SelectTrigger className="mt-1 bg-background/50 border-white/10">
-                  <SelectValue placeholder="Aucun" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
-                  {areas.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Le domaine de vie a ete retire : la grille de deux
+              colonnes n en porte plus qu une. */}
+          <div>
             <div>
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">À revoir le</Label>
               <Popover>
