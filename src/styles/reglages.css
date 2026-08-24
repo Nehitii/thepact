@@ -156,6 +156,15 @@
   align-content: start;
 }
 
+/* TROIS SECTIONS ENVELOPPAIENT LEURS CARTES DANS UN DIV.
+   La grille n y voyait donc qu un seul element : elle le rangeait
+   dans la colonne de gauche et laissait la droite vide — d ou
+   « Identite du pacte » a 326 px de large pour 1 315 de haut, un
+   rapport de 4 contre 1. `display: contents` efface l enveloppe :
+   ses enfants redeviennent des elements de grille, et `pleine`
+   retrouve son sens. */
+.rg-grille > div:not(.rg-panneau) { display: contents; }
+
 @container volet (min-width: 640px) {
   .rg-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rg-panneau[data-taille="pleine"] { grid-column: 1 / -1; }
