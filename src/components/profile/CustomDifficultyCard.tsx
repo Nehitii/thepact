@@ -73,7 +73,7 @@ export function CustomDifficultyCard({
   return (
     <DataPanel
       code="MODULE_04"
-      title="CUSTOM DIFFICULTY"
+      title="Difficulté sur mesure"
       statusText={<span className={customDifficultyActive ? "text-primary" : "text-muted-foreground"}>{customDifficultyActive ? "ACTIVE" : "INACTIVE"}</span>}
       footerLeft={<span>NAME: <b className="text-primary">{customDifficultyName || "—"}</b></span>}
     >

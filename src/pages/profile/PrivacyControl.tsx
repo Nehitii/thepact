@@ -1,151 +1,274 @@
 import { useCallback, useRef, useState } from "react";
-import { Shield, Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
+import { Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-import {
-  SettingsPageShell, CyberPanel, SettingRow, SyncIndicator, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { Panneau, Reglage } from "@/components/profile/console-ui";
 import { BlockedUsersPanel } from "@/components/profile/BlockedUsersPanel";
+
+type CleVieePrivee =
+  | "community_profile_discoverable"
+  | "show_activity_status"
+  | "share_goals_progress"
+  | "share_achievements"
+  | "community_updates_enabled"
+  | "achievement_celebrations_enabled";
 
 export default function PrivacyControl() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { profile, isLoading, updateProfile } = useProfileSettings();
   const queryClient = useQueryClient();
-  const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
-  const syncTimer = useRef<ReturnType<typeof setTimeout>>();
-  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "PRIVACY CONTROLS LOADED", type: "info" });
 
-  const markSync = useCallback((panel: number) => {
-    setSyncingPanel(panel);
-    clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(() => setSyncingPanel(null), 2000);
+  const [journaux, setJournaux] = useState<Record<string, { texte: string; type: "info" | "ok" | "warn" }>>({});
+  const minuteurs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const noter = useCallback((panneau: string, texte: string, type: "info" | "ok" | "warn" = "ok") => {
+    setJournaux((j) => ({ ...j, [panneau]: { texte, type } }));
+    clearTimeout(minuteurs.current[panneau]);
+    minuteurs.current[panneau] = setTimeout(
+      () => setJournaux((j) => ({ ...j, [panneau]: { texte: "en attente", type: "info" } })),
+      4000,
+    );
   }, []);
 
-  type PrivacyKey =
-    | "community_profile_discoverable"
-    | "show_activity_status"
-    | "share_goals_progress"
-    | "share_achievements"
-    | "community_updates_enabled"
-    | "achievement_celebrations_enabled";
-
-  const toggle = useCallback((key: PrivacyKey, value: boolean, panel: number) => {
-    updateProfile.mutate(
-      { [key]: value },
-      {
+  const basculer = useCallback(
+    (cle: CleVieePrivee, valeur: boolean, panneau: string, nom: string) => {
+      updateProfile.mutate({ [cle]: valeur }, {
         onSuccess: () => {
-          toast.success(t("settings.privacy.toasts.updated"), { description: t("settings.privacy.toasts.updatedDesc") });
-          setLatestLog({ text: `${key.toUpperCase().replace(/_/g, "_")}: ${value ? "ENABLED" : "DISABLED"}`, type: value ? "ok" : "warn" });
-          markSync(panel);
+          toast.success(t("settings.privacy.toasts.updated"));
+          noter(panneau, `${nom.toLowerCase()} → ${valeur ? "visible" : "masqué"}`, valeur ? "ok" : "warn");
         },
-      }
-    );
-  }, [updateProfile, t, markSync]);
+      });
+    },
+    [updateProfile, t, noter],
+  );
 
-  const isPending = isLoading || updateProfile.isPending;
+  const enCours = isLoading || updateProfile.isPending;
 
-  const { data: sharedData } = useQuery({
+  const { data: partages } = useQuery({
     queryKey: ["shared-data-overview", user?.id],
     queryFn: async () => {
-      if (!user?.id) return { sharedGoals: 0, sharedPacts: 0, sharedGoalsList: [], sharedPactsList: [] };
+      if (!user?.id) return { objectifs: [], pactes: [] };
       const { data: goals } = await supabase.from("shared_goals").select("id, goal_id, shared_with_id").eq("owner_id", user.id);
       const { data: pacts } = await supabase.from("shared_pacts").select("id, pact_id, member_id").eq("owner_id", user.id);
-      return { sharedGoals: goals?.length || 0, sharedPacts: pacts?.length || 0, sharedGoalsList: goals || [], sharedPactsList: pacts || [] };
+      return { objectifs: goals ?? [], pactes: pacts ?? [] };
     },
     enabled: !!user?.id,
   });
 
-  const revokeGoalShare = useMutation({
-    mutationFn: async (shareId: string) => { const { error } = await supabase.from("shared_goals").delete().eq("id", shareId); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast.success(t("settings.privacy.shareRevoked") || "Partage révoqué"); setLatestLog({ text: "GOAL_SHARE REVOKED", type: "warn" }); },
+  const revoquer = useMutation({
+    mutationFn: async ({ table, id }: { table: "shared_goals" | "shared_pacts"; id: string }) => {
+      const { error } = await supabase.from(table).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, v) => {
+      queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] });
+      toast.success(t("settings.privacy.shareRevoked", "Partage révoqué"));
+      noter("partages", `${v.table === "shared_goals" ? "objectif" : "pacte"} → partage révoqué`, "warn");
+    },
   });
 
-  const revokePactShare = useMutation({
-    mutationFn: async (shareId: string) => { const { error } = await supabase.from("shared_pacts").delete().eq("id", shareId); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast.success(t("settings.privacy.shareRevoked") || "Partage révoqué"); setLatestLog({ text: "PACT_SHARE REVOKED", type: "warn" }); },
-  });
-
-  const visibilityOn = [profile?.community_profile_discoverable ?? true, profile?.show_activity_status ?? true].filter(Boolean).length;
-  const sharingOn = [profile?.share_goals_progress ?? true, profile?.share_achievements ?? true].filter(Boolean).length;
+  const visibles = [profile?.community_profile_discoverable ?? true, profile?.show_activity_status ?? true].filter(Boolean).length;
+  const partagees = [profile?.share_goals_progress ?? true, profile?.share_achievements ?? true].filter(Boolean).length;
+  const nbPartages = (partages?.objectifs.length ?? 0) + (partages?.pactes.length ?? 0);
 
   if (isLoading) {
     return (
-      <SettingsPageShell title={t("settings.privacy.title")} subtitle={t("settings.privacy.subtitle")} icon={<Shield className="h-7 w-7 text-primary" />}>
-        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      </SettingsPageShell>
+      <ConsoleReglages titre={t("settings.privacy.title")}>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ConsoleReglages>
     );
   }
 
+  const attente = { texte: "en attente", type: "info" } as const;
+
+  /* Une case decochee, ici, protege : l etat « tout actif » n est donc
+     pas un etat de reussite. Le temoin reste neutre quand on se cache,
+     et ne s allume que pour dire ce qui est expose. */
+  const tonExposition = (n: number) => (n === 0 ? "neutre" : "actif");
+
   return (
-    <SettingsPageShell
-      title={t("settings.privacy.title")}
-      subtitle={t("settings.privacy.subtitle")}
-      icon={<Shield className="h-7 w-7 text-primary" />}
-      stickyBar={<StickyCommandBar latestLog={latestLog} />}
+    <ConsoleReglages
+      titre={t("settings.privacy.title")}
+      note={t("settings.privacy.subtitle")}
     >
-      <CyberPanel title="VISIBILITÉ COMMUNAUTAIRE" statusText={<span className={cn(visibilityOn === 2 ? "text-muted-foreground" : "text-[hsl(40,100%,50%)]")}>{visibilityOn}/2 ACTIFS</span>}>
-        <SettingRow icon={<Users className="h-4 w-4 text-primary" />} label={t("settings.privacy.profileDiscoverable")} description={t("settings.privacy.profileDiscoverableDesc")} checked={profile?.community_profile_discoverable ?? true} disabled={isPending} onToggle={(v) => toggle("community_profile_discoverable", v, 1)} />
-        <SettingRow icon={<Eye className="h-4 w-4 text-primary" />} label={t("settings.privacy.showActivityStatus")} description={t("settings.privacy.showActivityStatusDesc")} checked={profile?.show_activity_status ?? true} disabled={isPending} onToggle={(v) => toggle("show_activity_status", v, 1)} />
-      </CyberPanel>
+      <Panneau
+        code="priv.visibility"
+        etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: visibles, total: 2 })}
+        ton={tonExposition(visibles)}
+        journal={journaux.visibilite ?? attente}
+      >
+        <Reglage
+          nom={t("settings.privacy.profileDiscoverable")}
+          note={t("settings.privacy.profileDiscoverableDesc")}
+          icone={<Users />}
+        >
+          <Switch
+            checked={profile?.community_profile_discoverable ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("community_profile_discoverable", v, "visibilite", t("settings.privacy.profileDiscoverable"))}
+          />
+        </Reglage>
 
-      <CyberPanel title="VISIBILITÉ DES OBJECTIFS" statusText={<span className={cn(sharingOn === 2 ? "text-muted-foreground" : "text-[hsl(40,100%,50%)]")}>{sharingOn}/2 ACTIFS</span>}>
-        <SettingRow icon={<Eye className="h-4 w-4 text-primary" />} label={t("settings.privacy.shareGoalsProgress")} description={t("settings.privacy.shareGoalsProgressDesc")} checked={profile?.share_goals_progress ?? true} disabled={isPending} onToggle={(v) => toggle("share_goals_progress", v, 2)} />
-        <SettingRow icon={<Award className="h-4 w-4 text-primary" />} label={t("settings.privacy.shareAchievements")} description={t("settings.privacy.shareAchievementsDesc")} checked={profile?.share_achievements ?? true} disabled={isPending} onToggle={(v) => toggle("share_achievements", v, 2)} />
-      </CyberPanel>
+        <Reglage
+          nom={t("settings.privacy.showActivityStatus")}
+          note={t("settings.privacy.showActivityStatusDesc")}
+          icone={<Eye />}
+        >
+          <Switch
+            checked={profile?.show_activity_status ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("show_activity_status", v, "visibilite", t("settings.privacy.showActivityStatus"))}
+          />
+        </Reglage>
+      </Panneau>
 
-      <CyberPanel title="NOTIFICATIONS COMMUNAUTAIRES" statusText={<SyncIndicator syncing={syncingPanel === 3} />}>
-        <SettingRow icon={<Bell className="h-4 w-4 text-primary" />} label={t("settings.privacy.communityUpdates")} description={t("settings.privacy.communityUpdatesDesc")} checked={profile?.community_updates_enabled ?? true} disabled={isPending} onToggle={(v) => toggle("community_updates_enabled", v, 3)} />
-        <SettingRow icon={<Award className="h-4 w-4 text-primary" />} label={t("settings.privacy.achievementCelebrations")} description={t("settings.privacy.achievementCelebrationsDesc")} checked={profile?.achievement_celebrations_enabled ?? true} disabled={isPending} onToggle={(v) => toggle("achievement_celebrations_enabled", v, 3)} />
-      </CyberPanel>
+      <Panneau
+        code="priv.goals"
+        etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: partagees, total: 2 })}
+        ton={tonExposition(partagees)}
+        journal={journaux.objectifs ?? attente}
+      >
+        <Reglage
+          nom={t("settings.privacy.shareGoalsProgress")}
+          note={t("settings.privacy.shareGoalsProgressDesc")}
+          icone={<Eye />}
+        >
+          <Switch
+            checked={profile?.share_goals_progress ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("share_goals_progress", v, "objectifs", t("settings.privacy.shareGoalsProgress"))}
+          />
+        </Reglage>
+
+        <Reglage
+          nom={t("settings.privacy.shareAchievements")}
+          note={t("settings.privacy.shareAchievementsDesc")}
+          icone={<Award />}
+        >
+          <Switch
+            checked={profile?.share_achievements ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("share_achievements", v, "objectifs", t("settings.privacy.shareAchievements"))}
+          />
+        </Reglage>
+      </Panneau>
+
+      <Panneau
+        code="priv.community"
+        etat={t("settings.console.synced", "synchronisé")}
+        ton="actif"
+        journal={journaux.communaute ?? attente}
+      >
+        <Reglage
+          nom={t("settings.privacy.communityUpdates")}
+          note={t("settings.privacy.communityUpdatesDesc")}
+          icone={<Bell />}
+        >
+          <Switch
+            checked={profile?.community_updates_enabled ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("community_updates_enabled", v, "communaute", t("settings.privacy.communityUpdates"))}
+          />
+        </Reglage>
+
+        <Reglage
+          nom={t("settings.privacy.achievementCelebrations")}
+          note={t("settings.privacy.achievementCelebrationsDesc")}
+          icone={<Award />}
+        >
+          <Switch
+            checked={profile?.achievement_celebrations_enabled ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("achievement_celebrations_enabled", v, "communaute", t("settings.privacy.achievementCelebrations"))}
+          />
+        </Reglage>
+      </Panneau>
 
       <BlockedUsersPanel />
 
-      {/* ── Shared Data Overview ── */}
-      <CyberPanel title="DONNÉES PARTAGÉES">
-        <div className="space-y-3">
-          {(!sharedData?.sharedGoals && !sharedData?.sharedPacts) ? (
-            <div className="text-center py-6">
-              <Share2 className="h-8 w-8 text-primary/20 mx-auto mb-2" />
-              <p className="ds-t-label text-muted-foreground font-mono tracking-wider">{t("settings.privacy.noSharedData") || "AUCUNE DONNÉE PARTAGÉE"}</p>
-            </div>
-          ) : (
-            <>
-              {sharedData?.sharedGoalsList && sharedData.sharedGoalsList.length > 0 && (
-                <div className="space-y-1">
-                  <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
-                    <Target className="h-3 w-3" /> OBJECTIFS PARTAGÉS ({sharedData.sharedGoals})
-                  </p>
-                  {sharedData.sharedGoalsList.map((sg: any) => (
-                    <div key={sg.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] ds-t-label font-mono">
-                      <span className="text-primary/60 truncate flex-1">Goal #{sg.goal_id.slice(0, 8)}...</span>
-                      <button onClick={() => revokeGoalShare.mutate(sg.id)} disabled={revokeGoalShare.isPending} className="text-destructive/60 hover:text-destructive transition-colors ml-2 uppercase tracking-wider">RÉVOQUER</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {sharedData?.sharedPactsList && sharedData.sharedPactsList.length > 0 && (
-                <div className="space-y-1">
-                  <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
-                    <Link2 className="h-3 w-3" /> PACTS PARTAGÉS ({sharedData.sharedPacts})
-                  </p>
-                  {sharedData.sharedPactsList.map((sp: any) => (
-                    <div key={sp.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] ds-t-label font-mono">
-                      <span className="text-primary/60 truncate flex-1">Pact #{sp.pact_id.slice(0, 8)}...</span>
-                      <button onClick={() => revokePactShare.mutate(sp.id)} disabled={revokePactShare.isPending} className="text-destructive/60 hover:text-destructive transition-colors ml-2 uppercase tracking-wider">RÉVOQUER</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+      {/* ── CE QUI EST DEJA PARTAGE ── */}
+      <Panneau
+        code="priv.shared"
+        etat={nbPartages
+          ? t("settings.privacy.sharedCount", "{{n}} partage(s)", { n: nbPartages })
+          : t("settings.console.none", "aucun")}
+        ton={nbPartages ? "actif" : "neutre"}
+        journal={journaux.partages ?? attente}
+      >
+        {nbPartages === 0 ? (
+          <p className="flex items-center gap-2.5 py-4 text-sm font-rajdhani text-muted-foreground">
+            <Share2 className="h-4 w-4 opacity-40" />
+            {t("settings.privacy.noSharedData", "Rien n’est partagé pour l’instant.")}
+          </p>
+        ) : (
+          <div className="py-2 space-y-4">
+            {partages!.objectifs.length > 0 && (
+              <ListePartages
+                icone={<Target className="h-3 w-3" />}
+                titre={t("settings.privacy.sharedGoals", "Objectifs partagés")}
+                lignes={partages!.objectifs.map((o) => ({ id: o.id, etiquette: `#${o.goal_id.slice(0, 8)}` }))}
+                onRevoquer={(id) => revoquer.mutate({ table: "shared_goals", id })}
+                enCours={revoquer.isPending}
+                libelleRevoquer={t("settings.privacy.revoke", "Révoquer")}
+              />
+            )}
+            {partages!.pactes.length > 0 && (
+              <ListePartages
+                icone={<Link2 className="h-3 w-3" />}
+                titre={t("settings.privacy.sharedPacts", "Pactes partagés")}
+                lignes={partages!.pactes.map((p) => ({ id: p.id, etiquette: `#${p.pact_id.slice(0, 8)}` }))}
+                onRevoquer={(id) => revoquer.mutate({ table: "shared_pacts", id })}
+                enCours={revoquer.isPending}
+                libelleRevoquer={t("settings.privacy.revoke", "Révoquer")}
+              />
+            )}
+          </div>
+        )}
+      </Panneau>
+    </ConsoleReglages>
+  );
+}
+
+function ListePartages({
+  icone, titre, lignes, onRevoquer, enCours, libelleRevoquer,
+}: {
+  icone: React.ReactNode;
+  titre: string;
+  lignes: { id: string; etiquette: string }[];
+  onRevoquer: (id: string) => void;
+  enCours: boolean;
+  libelleRevoquer: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="rg-champ-etiquette flex items-center gap-1.5">
+        {icone} {titre} ({lignes.length})
+      </p>
+      {lignes.map((l) => (
+        <div
+          key={l.id}
+          className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-primary/10 bg-primary/[0.02] font-mono text-xs"
+        >
+          <span className="text-primary/70 truncate">{l.etiquette}</span>
+          <button
+            type="button"
+            onClick={() => onRevoquer(l.id)}
+            disabled={enCours}
+            className="text-destructive/70 hover:text-destructive transition-colors uppercase tracking-wider disabled:opacity-40"
+          >
+            {libelleRevoquer}
+          </button>
         </div>
-      </CyberPanel>
-    </SettingsPageShell>
+      ))}
+    </div>
   );
 }

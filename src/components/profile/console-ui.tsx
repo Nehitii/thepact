@@ -18,7 +18,7 @@ interface PanneauProps {
   /* L etat a droite : « SYNC'D », « 3 ACTIFS », « HORS LIGNE »… */
   etat?: ReactNode;
   /* Vert quand tout est en ordre, rouge quand quelque chose manque. */
-  ton?: "neutre" | "actif" | "alerte";
+  ton?: "neutre" | "actif" | "alerte" | "danger";
   /* La derniere operation, en pied de panneau. */
   journal?: { texte: string; type?: "info" | "ok" | "warn" } | null;
   children: ReactNode;
@@ -27,7 +27,7 @@ interface PanneauProps {
 
 export function Panneau({ code, etat, ton = "neutre", journal, children, className }: PanneauProps) {
   return (
-    <section className={cn("rg-panneau", className)}>
+    <section className={cn("rg-panneau", className)} data-danger={ton === "danger" ? "" : undefined}>
       <header className="rg-panneau-tete">
         <span className="rg-panneau-code">{code}</span>
         <span className="rg-panneau-fil" aria-hidden="true" />
@@ -35,7 +35,7 @@ export function Panneau({ code, etat, ton = "neutre", journal, children, classNa
           <span
             className="rg-panneau-etat"
             data-actif={ton === "actif" ? "" : undefined}
-            data-alerte={ton === "alerte" ? "" : undefined}
+            data-alerte={ton === "alerte" || ton === "danger" ? "" : undefined}
           >
             <span className="rg-pastille" aria-hidden="true" />
             {etat}
@@ -115,5 +115,30 @@ export function Jauge({ children, valeur }: { children: ReactNode; valeur: React
       {children}
       <span className="rg-valeur">{valeur}</span>
     </div>
+  );
+}
+
+/* ── UN CHAMP ETIQUETE ───────────────────────────────────────── */
+
+/* Pour les controles qui viennent par paire — une heure de debut et
+   une de fin — et qui ont besoin d un intitule chacun. */
+export function Champ({ etiquette, children }: { etiquette: ReactNode; children: ReactNode }) {
+  return (
+    <label className="rg-champ">
+      <span className="rg-champ-etiquette">{etiquette}</span>
+      {children}
+    </label>
+  );
+}
+
+/* ── UN AVERTISSEMENT ────────────────────────────────────────── */
+
+/* La bande qui apparait quand un reglage en eteint d autres : le mode
+   focus qui silence tout, une cle absente, un service hors ligne. */
+export function Alerte({ children, ton = "warn" }: { children: ReactNode; ton?: "warn" | "info" }) {
+  return (
+    <p className="rg-alerte" data-ton={ton} role="status">
+      {children}
+    </p>
   );
 }

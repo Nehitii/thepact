@@ -204,7 +204,7 @@ export function ProfilePactSettings({
       {/* Goal Lock Code */}
       <PactSettingsCard
         icon={<Lock className="h-4 w-4 text-primary" />}
-        title="Goal Lock Code"
+        title="Code de verrouillage"
         description="Set a 4-digit PIN to lock/unlock sensitive goals"
         sectionId="goal-lock"
       >
@@ -262,7 +262,7 @@ export function ProfilePactSettings({
       {pactId && (
         <DataPanel
           code="MODULE_06"
-          title="⚠ DANGER ZONE"
+          title="Zone sensible"
           statusText={<span className="text-destructive">DESTRUCTIVE</span>}
         >
           <div className="py-4 space-y-4">

@@ -1,189 +1,305 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain, Send, BellOff } from "lucide-react";
 import { useNotificationSettings } from "@/hooks/useNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  SettingsPageShell, CyberPanel, SettingRow, SettingContentRow, SyncIndicator, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { Panneau, Reglage, Champ, Alerte } from "@/components/profile/console-ui";
 
-const HOURS = Array.from({ length: 24 }, (_, i) => ({
-  value: `${String(i).padStart(2, "0")}:00`,
-  label: `${String(i).padStart(2, "0")}:00`,
-}));
+const HEURES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { settings, isLoading, updateSettings } = useNotificationSettings();
   const push = usePushNotifications();
-  const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
-  const syncTimer = useRef<ReturnType<typeof setTimeout>>();
-  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "NOTIFICATION SETTINGS LOADED", type: "info" });
 
-  const markSync = useCallback((panel: number) => {
-    setSyncingPanel(panel);
-    clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(() => setSyncingPanel(null), 2000);
+  const [journaux, setJournaux] = useState<Record<string, { texte: string; type: "info" | "ok" | "warn" }>>({});
+  const minuteurs = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const noter = useCallback((panneau: string, texte: string, type: "info" | "ok" | "warn" = "ok") => {
+    setJournaux((j) => ({ ...j, [panneau]: { texte, type } }));
+    clearTimeout(minuteurs.current[panneau]);
+    minuteurs.current[panneau] = setTimeout(
+      () => setJournaux((j) => ({ ...j, [panneau]: { texte: "en attente", type: "info" } })),
+      4000,
+    );
   }, []);
 
-  const handleToggle = useCallback((key: string, value: boolean, panel: number) => {
-    updateSettings.mutate({ [key]: value }, {
-      onSuccess: () => {
-        toast.success(t("settings.notifications.toasts.updated"), { description: t("settings.notifications.toasts.updatedDesc") });
-        const labelMap: Record<string, string> = {
-          system_enabled: "SYSTEM_ALERTS", progress_enabled: "PROGRESS_ALERTS",
-          social_enabled: "SOCIAL_ALERTS", marketing_enabled: "MARKETING_ALERTS",
-          push_enabled: "PUSH_SERVICE", focus_mode: "FOCUS_MODE",
-        };
-        setLatestLog({ text: `${labelMap[key] || key.toUpperCase()}: ${value ? "ENABLED" : "DISABLED"}`, type: value ? "ok" : "warn" });
-        markSync(panel);
-      },
-    });
-  }, [updateSettings, t, markSync]);
+  const basculer = useCallback(
+    (cle: string, valeur: boolean, panneau: string, nom: string) => {
+      updateSettings.mutate({ [cle]: valeur } as never, {
+        onSuccess: () => {
+          toast.success(t("settings.notifications.toasts.updated"));
+          noter(panneau, `${nom.toLowerCase()} → ${valeur ? "actif" : "coupé"}`, valeur ? "ok" : "warn");
+        },
+      });
+    },
+    [updateSettings, t, noter],
+  );
 
-  const handleQuietHoursChange = useCallback((key: string, value: string | null) => {
-    updateSettings.mutate({ [key]: value || null } as any, {
-      onSuccess: () => {
-        toast.success(t("common.updated"), { description: t("settings.notifications.quietHoursUpdated") || "Heures calmes mises à jour." });
-        setLatestLog({ text: `QUIET_HOURS ${key.includes("start") ? "START" : "END"}: ${value || "DISABLED"}`, type: value ? "ok" : "warn" });
-        markSync(3);
-      },
-    });
-  }, [updateSettings, t, markSync]);
+  const heuresCalmes = useCallback(
+    (cle: string, valeur: string | null) => {
+      updateSettings.mutate({ [cle]: valeur || null } as never, {
+        onSuccess: () => {
+          toast.success(t("common.updated"));
+          noter("calme", `${cle.includes("start") ? "début" : "fin"} → ${valeur ?? "aucune"}`, valeur ? "ok" : "warn");
+        },
+      });
+    },
+    [updateSettings, t, noter],
+  );
 
-  const isPending = isLoading || updateSettings.isPending;
-  const categoryKeys = ["system_enabled", "progress_enabled", "social_enabled", "marketing_enabled"] as const;
-  const activeCount = categoryKeys.filter(k => settings?.[k] ?? true).length;
+  const enCours = isLoading || updateSettings.isPending;
+  const categories = ["system_enabled", "progress_enabled", "social_enabled", "marketing_enabled"] as const;
+  const actives = categories.filter((k) => settings?.[k] ?? true).length;
 
-  const quietStart = (settings as any)?.quiet_hours_start || "";
-  const quietEnd = (settings as any)?.quiet_hours_end || "";
-  const quietActive = !!quietStart && !!quietEnd;
+  const debut = (settings as { quiet_hours_start?: string })?.quiet_hours_start || "";
+  const fin = (settings as { quiet_hours_end?: string })?.quiet_hours_end || "";
+  const calmeActif = !!debut && !!fin;
 
   if (isLoading) {
     return (
-      <SettingsPageShell title={t("settings.notifications.title")} subtitle={t("settings.notifications.subtitle")} icon={<Bell className="h-7 w-7 text-primary" />}>
-        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      </SettingsPageShell>
+      <ConsoleReglages titre={t("settings.notifications.title")}>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ConsoleReglages>
     );
   }
 
+  const attente = { texte: "en attente", type: "info" } as const;
+
   return (
-    <SettingsPageShell
-      title={t("settings.notifications.title")}
-      subtitle={t("settings.notifications.subtitle")}
-      icon={<Bell className="h-7 w-7 text-primary" />}
-      stickyBar={<StickyCommandBar latestLog={latestLog} />}
+    <ConsoleReglages
+      titre={t("settings.notifications.title")}
+      note={t("settings.notifications.subtitle")}
     >
-      <CyberPanel title="FLUX D'ALERTES" statusText={<span className={cn(activeCount < 2 ? "text-destructive" : activeCount < 4 ? "text-[hsl(40,100%,50%)]" : "text-muted-foreground")}>{activeCount}/4 ACTIFS</span>}>
-        <SettingRow icon={<Zap className="h-4 w-4 text-primary" />} label={t("settings.notifications.system")} description={t("settings.notifications.systemDesc")} checked={settings?.system_enabled ?? true} disabled={isPending} onToggle={(v) => handleToggle("system_enabled", v, 1)} />
-        <SettingRow icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.notifications.progress")} description={t("settings.notifications.progressDesc")} checked={settings?.progress_enabled ?? true} disabled={isPending} onToggle={(v) => handleToggle("progress_enabled", v, 1)} />
-        <SettingRow icon={<MessageSquare className="h-4 w-4 text-primary" />} label={t("settings.notifications.social")} description={t("settings.notifications.socialDesc")} checked={settings?.social_enabled ?? true} disabled={isPending} onToggle={(v) => handleToggle("social_enabled", v, 1)} />
-        <SettingRow icon={<Gift className="h-4 w-4 text-primary" />} label={t("settings.notifications.marketing")} description={t("settings.notifications.marketingDesc")} checked={settings?.marketing_enabled ?? true} disabled={isPending} onToggle={(v) => handleToggle("marketing_enabled", v, 1)} />
-      </CyberPanel>
+      {/* ── LES FLUX ── */}
+      <Panneau
+        code="alrt.flux"
+        etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: actives, total: categories.length })}
+        /* Zero flux actif n est pas un etat neutre : on ne recevra plus
+           rien, et il faut que ca se voie. */
+        ton={actives === 0 ? "alerte" : "actif"}
+        journal={journaux.flux ?? attente}
+      >
+        {([
+          ["system_enabled", "settings.notifications.system", "settings.notifications.systemDesc", <Zap key="z" />],
+          ["progress_enabled", "settings.notifications.progress", "settings.notifications.progressDesc", <Volume2 key="v" />],
+          ["social_enabled", "settings.notifications.social", "settings.notifications.socialDesc", <MessageSquare key="m" />],
+          ["marketing_enabled", "settings.notifications.marketing", "settings.notifications.marketingDesc", <Gift key="g" />],
+        ] as const).map(([cle, nomCle, noteCle, icone]) => (
+          <Reglage key={cle} nom={t(nomCle)} note={t(noteCle)} icone={icone}>
+            <Switch
+              checked={settings?.[cle] ?? true}
+              disabled={enCours}
+              onCheckedChange={(v) => basculer(cle, v, "flux", t(nomCle))}
+            />
+          </Reglage>
+        ))}
+      </Panneau>
 
-      <CyberPanel title="CONTRÔLES SYSTÈME" statusText={<SyncIndicator syncing={syncingPanel === 2} />}>
-        <SettingRow icon={<Bell className="h-4 w-4 text-[hsl(195,100%,50%)]" />} label={t("settings.notifications.pushEnabled")} description={t("settings.notifications.pushEnabledDesc")} checked={settings?.push_enabled ?? true} disabled={isPending} variant="cyan" onToggle={(v) => handleToggle("push_enabled", v, 2)} />
-        <SettingRow icon={<AlertCircle className="h-4 w-4 text-[hsl(40,100%,50%)]" />} label={t("settings.notifications.focusMode")} description={t("settings.notifications.focusModeDesc")} checked={settings?.focus_mode ?? false} disabled={isPending} variant="amber" onToggle={(v) => handleToggle("focus_mode", v, 2)} />
-        <SettingRow
-          icon={<Brain className="h-4 w-4 text-primary" />}
-          label="Coach proactif"
-          description="Le Coach IA analyse tes données en arrière-plan toutes les 4h pour générer des insights et patterns."
-          checked={(settings as any)?.coach_proactive_enabled ?? true}
-          disabled={isPending}
-          onToggle={(v) => handleToggle("coach_proactive_enabled", v, 2)}
-        />
-        <AnimatePresence>
-          {settings?.focus_mode && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden -mx-5">
-              <div className="flex items-center gap-2.5 px-5 py-3 bg-[hsl(40,100%,50%)]/[0.07] border-t border-[hsl(40,100%,50%)]/20">
-                <AlertCircle className="h-4 w-4 text-[hsl(40,100%,50%)] animate-pulse flex-shrink-0" />
-                <span className="font-mono ds-t-label text-[hsl(40,100%,50%)] tracking-[0.1em]">⚠ FOCUS MODE ACTIF — TOUTES LES ALERTES SONT SILENCIÉES</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </CyberPanel>
+      {/* ── LES CONTROLES ── */}
+      <Panneau
+        code="alrt.system"
+        etat={settings?.focus_mode
+          ? t("settings.notifications.focusOn", "concentration")
+          : t("settings.console.synced", "synchronisé")}
+        ton={settings?.focus_mode ? "alerte" : "actif"}
+        journal={journaux.systeme ?? attente}
+      >
+        {settings?.focus_mode && (
+          <Alerte>
+            {t("settings.notifications.focusBanner", "Mode concentration actif — toutes les alertes sont silencieuses.")}
+          </Alerte>
+        )}
 
-      {/* ── PANEL 3: Quiet Hours ── */}
-      <CyberPanel title="HEURES CALMES" statusText={<span className={cn(quietActive ? "text-[hsl(195,100%,50%)]" : "text-muted-foreground")}>{quietActive ? "ACTIF" : "INACTIF"}</span>}>
-        <SettingContentRow icon={<Clock className="h-4 w-4 text-primary" />} label="Mode Ne Pas Déranger" description="Désactive les notifications push pendant une plage horaire définie">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <span className="ds-t-label uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Début</span>
-              <Select value={quietStart || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_start", v === "none" ? null : v)}>
-                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
+        <Reglage
+          nom={t("settings.notifications.pushEnabled")}
+          note={t("settings.notifications.pushEnabledDesc")}
+          icone={<Bell />}
+        >
+          <Switch
+            checked={settings?.push_enabled ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("push_enabled", v, "systeme", t("settings.notifications.pushEnabled"))}
+          />
+        </Reglage>
+
+        <Reglage
+          nom={t("settings.notifications.focusMode")}
+          note={t("settings.notifications.focusModeDesc")}
+          icone={<AlertCircle />}
+        >
+          <Switch
+            checked={settings?.focus_mode ?? false}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("focus_mode", v, "systeme", t("settings.notifications.focusMode"))}
+          />
+        </Reglage>
+
+        <Reglage
+          nom={t("settings.notifications.coach", "Coach proactif")}
+          note={t("settings.notifications.coachDesc", "Le coach analyse tes données toutes les quatre heures pour en tirer des constats.")}
+          icone={<Brain />}
+        >
+          <Switch
+            checked={(settings as { coach_proactive_enabled?: boolean })?.coach_proactive_enabled ?? true}
+            disabled={enCours}
+            onCheckedChange={(v) => basculer("coach_proactive_enabled", v, "systeme", t("settings.notifications.coach", "Coach proactif"))}
+          />
+        </Reglage>
+      </Panneau>
+
+      {/* ── LES HEURES CALMES ── */}
+      <Panneau
+        code="alrt.quiet"
+        etat={calmeActif ? `${debut} → ${fin}` : t("settings.console.off", "coupé")}
+        ton={calmeActif ? "actif" : "neutre"}
+        journal={journaux.calme ?? attente}
+      >
+        <Reglage
+          nom={t("settings.notifications.quietHours", "Ne pas déranger")}
+          note={t("settings.notifications.quietHoursDesc", "Aucune notification poussée pendant cette plage. Les deux heures doivent être choisies pour que la plage s’applique.")}
+          icone={<Clock />}
+          large
+        >
+          <div className="grid grid-cols-2 gap-4 max-w-sm">
+            <Champ etiquette={t("settings.notifications.from", "Début")}>
+              <Select
+                value={debut || "aucune"}
+                onValueChange={(v) => heuresCalmes("quiet_hours_start", v === "aucune" ? null : v)}
+              >
+                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-primary/20 rounded-none">
-                  <SelectItem value="none" className="font-mono text-xs">— Désactivé</SelectItem>
-                  {HOURS.map((h) => <SelectItem key={h.value} value={h.value} className="font-mono text-xs">{h.label}</SelectItem>)}
+                <SelectContent className="bg-card border-primary/20">
+                  <SelectItem value="aucune" className="font-mono text-xs">— {t("settings.console.off", "coupé")}</SelectItem>
+                  {HEURES.map((h) => (
+                    <SelectItem key={h} value={h} className="font-mono text-xs">{h}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <span className="ds-t-label uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Fin</span>
-              <Select value={quietEnd || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_end", v === "none" ? null : v)}>
-                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
+            </Champ>
+
+            <Champ etiquette={t("settings.notifications.to", "Fin")}>
+              <Select
+                value={fin || "aucune"}
+                onValueChange={(v) => heuresCalmes("quiet_hours_end", v === "aucune" ? null : v)}
+              >
+                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-primary/20 rounded-none">
-                  <SelectItem value="none" className="font-mono text-xs">— Désactivé</SelectItem>
-                  {HOURS.map((h) => <SelectItem key={h.value} value={h.value} className="font-mono text-xs">{h.label}</SelectItem>)}
+                <SelectContent className="bg-card border-primary/20">
+                  <SelectItem value="aucune" className="font-mono text-xs">— {t("settings.console.off", "coupé")}</SelectItem>
+                  {HEURES.map((h) => (
+                    <SelectItem key={h} value={h} className="font-mono text-xs">{h}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Champ>
           </div>
-        </SettingContentRow>
-      </CyberPanel>
+        </Reglage>
+      </Panneau>
 
-      {/* ── PANEL 4: Web Push (PWA) ── */}
-      <CyberPanel title="WEB PUSH (PWA)" statusText={<span className={cn(push.subscribed ? "text-emerald-400" : "text-muted-foreground")}>{push.subscribed ? "ABONNÉ" : "INACTIF"}</span>}>
-        <div className="px-1 py-2 space-y-3">
-          {!push.supported && (
-            <p className="text-xs text-muted-foreground">Le navigateur ne supporte pas les notifications push, ou tu es dans un aperçu embarqué (les push fonctionnent en production seulement).</p>
-          )}
-          {push.supported && !push.hasVapid && (
-            <p className="text-xs text-amber-400">Les clés VAPID ne sont pas configurées. Demande à l'admin d'ajouter VITE_VAPID_PUBLIC_KEY puis VAPID_PRIVATE_KEY côté serveur.</p>
-          )}
-          {push.supported && push.hasVapid && (
+      {/* ── LE PUSH NAVIGATEUR ── */}
+      <Panneau
+        code="alrt.webpush"
+        etat={push.subscribed
+          ? t("settings.notifications.subscribed", "abonné")
+          : t("settings.console.off", "inactif")}
+        ton={push.subscribed ? "actif" : "neutre"}
+        journal={journaux.push ?? attente}
+      >
+        {!push.supported && (
+          <Alerte ton="info">
+            {t("settings.notifications.pushUnsupported", "Ce navigateur ne gère pas les notifications poussées, ou tu es dans un aperçu embarqué — elles ne fonctionnent qu’en production.")}
+          </Alerte>
+        )}
+
+        {push.supported && !push.hasVapid && (
+          <Alerte>
+            {t("settings.notifications.pushNoVapid", "Les clés VAPID ne sont pas configurées côté serveur.")}
+          </Alerte>
+        )}
+
+        {push.supported && push.hasVapid && (
+          <Reglage
+            nom={t("settings.notifications.webpush", "Notifications du navigateur")}
+            note={push.subscribed
+              ? t("settings.notifications.webpushOn", "Cet appareil recevra les alertes même l’application fermée.")
+              : t("settings.notifications.webpushOff", "Cet appareil ne reçoit rien tant qu’il n’est pas abonné.")}
+            icone={<Bell />}
+            large
+          >
             <div className="flex flex-wrap gap-2">
               {!push.subscribed ? (
-                <Button size="sm" className="gap-2" onClick={async () => {
-                  const r = await push.subscribe();
-                  if (r.ok) toast.success("Push activé");
-                  else toast.error("Push refusé", { description: r.reason });
-                }}>
-                  <Bell className="h-3.5 w-3.5" /> Activer les push
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  onClick={async () => {
+                    const r = await push.subscribe();
+                    if (r.ok) {
+                      toast.success(t("settings.notifications.pushOn", "Notifications activées"));
+                      noter("push", "abonnement → actif");
+                    } else {
+                      toast.error(t("settings.notifications.pushRefused", "Abonnement refusé"), { description: r.reason });
+                      noter("push", `refus : ${r.reason ?? "inconnu"}`, "warn");
+                    }
+                  }}
+                >
+                  <Bell className="h-3.5 w-3.5" />
+                  {t("settings.notifications.enablePush", "Activer")}
                 </Button>
               ) : (
                 <>
-                  <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
-                    if (!user?.id) return;
-                    const { error } = await supabase.functions.invoke("push-send", {
-                      body: { user_id: user.id, title: "Test Pacte", body: "Push fonctionnel ✨", url: "/" },
-                    });
-                    if (error) toast.error("Erreur push", { description: error.message });
-                    else toast.success("Push de test envoyé");
-                  }}>
-                    <Send className="h-3.5 w-3.5" /> Envoyer un test
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={async () => {
+                      if (!user?.id) return;
+                      const { error } = await supabase.functions.invoke("push-send", {
+                        body: { user_id: user.id, title: "Vowpact", body: "Notification de test ✨", url: "/" },
+                      });
+                      if (error) {
+                        toast.error(t("common.error"), { description: error.message });
+                        noter("push", "test → échec", "warn");
+                      } else {
+                        toast.success(t("settings.notifications.testSent", "Test envoyé"));
+                        noter("push", "test → envoyé");
+                      }
+                    }}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    {t("settings.notifications.sendTest", "Envoyer un test")}
                   </Button>
-                  <Button size="sm" variant="ghost" className="gap-2" onClick={async () => { await push.unsubscribe(); toast.success("Push désactivé"); }}>
-                    <BellOff className="h-3.5 w-3.5" /> Se désabonner
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-2"
+                    onClick={async () => {
+                      await push.unsubscribe();
+                      toast.success(t("settings.notifications.pushOff", "Notifications désactivées"));
+                      noter("push", "abonnement → coupé", "warn");
+                    }}
+                  >
+                    <BellOff className="h-3.5 w-3.5" />
+                    {t("settings.notifications.unsubscribe", "Se désabonner")}
                   </Button>
                 </>
               )}
             </div>
-          )}
-        </div>
-      </CyberPanel>
-    </SettingsPageShell>
+          </Reglage>
+        )}
+      </Panneau>
+    </ConsoleReglages>
   );
 }

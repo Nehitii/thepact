@@ -181,6 +181,24 @@
 .rg-panneau::before { top: 5px; left: 5px; border-width: 1px 0 0 1px; }
 .rg-panneau::after { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; }
 
+/* Le panneau qui peut detruire quelque chose se distingue de loin :
+   sa bordure et ses equerres passent au rouge. On ne clique pas
+   « reinitialiser » en croyant regler le volume. */
+.rg-panneau[data-danger] {
+  border-color: hsl(var(--destructive) / 0.35);
+  background: hsl(var(--destructive) / 0.04);
+}
+.rg-panneau[data-danger]::before,
+.rg-panneau[data-danger]::after { border-color: hsl(var(--destructive) / 0.6); }
+.rg-panneau[data-danger] .rg-panneau-tete {
+  border-bottom-color: hsl(var(--destructive) / 0.25);
+  background: linear-gradient(180deg, hsl(var(--destructive) / 0.10), transparent);
+}
+.rg-panneau[data-danger] .rg-panneau-code { color: hsl(var(--destructive)); }
+.rg-panneau[data-danger] .rg-panneau-fil {
+  background: repeating-linear-gradient(90deg, hsl(var(--destructive) / 0.3) 0 4px, transparent 4px 8px);
+}
+
 .rg-panneau-tete {
   display: flex;
   align-items: center;
@@ -340,6 +358,44 @@
   min-width: 46px;
   text-align: right;
 }
+
+/* ── UN CHAMP ETIQUETE ───────────────────────────────────────── */
+
+.rg-champ { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.rg-champ-etiquette {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--primary) / 0.6);
+}
+
+/* ── UN AVERTISSEMENT ────────────────────────────────────────── */
+
+.rg-alerte {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 4px 0 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.rg-alerte::before { content: "⚠"; font-size: 13px; flex: none; }
+.rg-alerte[data-ton="warn"] {
+  color: hsl(38 92% 62%);
+  background: hsl(38 92% 62% / 0.08);
+  border: 1px solid hsl(38 92% 62% / 0.25);
+}
+.rg-alerte[data-ton="info"] {
+  color: var(--rg-sourdine);
+  background: hsl(var(--primary) / 0.05);
+  border: 1px solid var(--rg-fil);
+}
+.rg-alerte[data-ton="info"]::before { content: "›"; }
 
 /* ── LE JOURNAL ──────────────────────────────────────────────── */
 

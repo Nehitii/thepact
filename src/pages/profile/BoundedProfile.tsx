@@ -2,18 +2,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
-import { UserCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  SettingsPageShell, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { Panneau } from "@/components/profile/console-ui";
 
 export default function BoundedProfile() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [latestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "PROFILE CONFIG LOADED", type: "info" });
 
   useEffect(() => {
     if (!user) return;
@@ -37,12 +34,14 @@ export default function BoundedProfile() {
   if (!user) return null;
 
   return (
-    <SettingsPageShell
-      title={t("settings.boundedProfile.title")}
-      subtitle={t("settings.boundedProfile.subtitle")}
-      icon={<UserCircle2 className="h-7 w-7 text-primary" />}
-      stickyBar={<StickyCommandBar latestLog={latestLog} />}
+    <ConsoleReglages
+      titre={t("settings.boundedProfile.title")}
+      note={t("settings.boundedProfile.subtitle")}
     >
+      {/* Seule section a n avoir porte aucun panneau : l editeur
+          dessinait sa propre mise en page et detonnait au milieu des
+          six autres. Il vit maintenant dans le meme cadre. */}
+      <Panneau code="idnt.card" etat={t("settings.console.synced", "synchronisé")} ton="actif">
       <ProfileBoundedProfile
         userId={user.id}
         displayName={displayName}
@@ -55,6 +54,7 @@ export default function BoundedProfile() {
         onPersonalQuoteChange={() => {}}
         onDisplayedBadgesChange={() => {}}
       />
-    </SettingsPageShell>
+      </Panneau>
+    </ConsoleReglages>
   );
 }

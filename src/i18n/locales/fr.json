@@ -2185,8 +2185,13 @@
         "updated": "Confidentialité mise à jour",
         "updatedDesc": "Tes préférences ont été enregistrées."
       },
-      "noSharedData": "AUCUNE DONNÉE PARTAGÉE",
-      "shareRevoked": "Partage révoqué"
+      "noSharedData": "Rien n’est partagé pour l’instant.",
+      "shareRevoked": "Partage révoqué",
+      "sharedCount": "{{n}} partage(s)",
+      "sharedGoals": "Objectifs partagés",
+      "sharedPacts": "Pactes partagés",
+      "revoke": "Révoquer",
+      "blockedCount": "{{n}} bloqué(s)"
     },
     "notifications": {
       "title": "Notifications",
@@ -2208,7 +2213,28 @@
         "updated": "Paramètres mis à jour",
         "updatedDesc": "Tes préférences de notification ont été enregistrées."
       },
-      "quietHoursUpdated": "Heures calmes mises à jour."
+      "quietHoursUpdated": "Heures calmes mises à jour.",
+      "focusOn": "concentration",
+      "focusBanner": "Mode concentration actif — toutes les alertes sont silencieuses.",
+      "coach": "Coach proactif",
+      "coachDesc": "Le coach analyse tes données toutes les quatre heures pour en tirer des constats.",
+      "quietHours": "Ne pas déranger",
+      "quietHoursDesc": "Aucune notification poussée pendant cette plage. Les deux heures doivent être choisies pour que la plage s’applique.",
+      "from": "Début",
+      "to": "Fin",
+      "subscribed": "abonné",
+      "pushUnsupported": "Ce navigateur ne gère pas les notifications poussées, ou tu es dans un aperçu embarqué — elles ne fonctionnent qu’en production.",
+      "pushNoVapid": "Les clés VAPID ne sont pas configurées côté serveur.",
+      "webpush": "Notifications du navigateur",
+      "webpushOn": "Cet appareil recevra les alertes même l’application fermée.",
+      "webpushOff": "Cet appareil ne reçoit rien tant qu’il n’est pas abonné.",
+      "pushOn": "Notifications activées",
+      "pushOff": "Notifications désactivées",
+      "pushRefused": "Abonnement refusé",
+      "enablePush": "Activer",
+      "testSent": "Test envoyé",
+      "sendTest": "Envoyer un test",
+      "unsubscribe": "Se désabonner"
     },
     "displaySound": {
       "title": "Affichage & Son",
@@ -2296,11 +2322,12 @@
       "importData": "Importer les données",
       "importDataDesc": "Restaurer depuis une exportation précédente",
       "deleteAccount": "Supprimer le compte",
-      "deleteAccountDesc": "Supprimer définitivement ton compte et tes données"
+      "deleteAccountDesc": "Supprimer définitivement ton compte et tes données",
+      "danger": "irréversible"
     },
     "pact": {
-      "title": "Paramètres du Pacte",
-      "subtitle": "Personnalise ton engagement",
+      "title": "Mon pacte",
+      "subtitle": "Son identité, son échéance, et ta difficulté sur mesure.",
       "editPact": "Modifier le Pacte",
       "pactName": "Nom du Pacte",
       "mantra": "Mantra",
@@ -2402,7 +2429,9 @@
       "on": "actif",
       "off": "coupé",
       "listen": "Écouter",
-      "waiting": "en attente"
+      "waiting": "en attente",
+      "activeOf": "{{n}} sur {{total}}",
+      "none": "aucun"
     }
   },
   "achievements": {

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { User, IdCard, Target, SlidersHorizontal, Bell, Shield, Database } from "lucide-react";
 import { DSPageShell, DSBackground } from "@/components/ds";
 import "@/styles/reglages.css";
@@ -30,8 +30,13 @@ export const SECTIONS = [
 ] as const;
 
 interface Props {
-  /* Le titre du volet ouvert. */
-  titre: string;
+  /* LE TITRE VIENT DU RAIL, PAS DE LA PAGE.
+     Les deux se contredisaient : le rail disait « Compte » et la page
+     « Profil », le rail « Mes donnees » et la page « Donnees &
+     Portabilite ». Deux sources pour un meme nom finissent toujours
+     par diverger. La section le porte une fois ; on ne le passe ici
+     que pour l ecran de chargement, avant que la route soit connue. */
+  titre?: string;
   /* Une phrase qui dit ce qu on regle ici, pas ce que c est. */
   note?: string;
   children: ReactNode;
@@ -40,6 +45,9 @@ interface Props {
 }
 
 export function ConsoleReglages({ titre, note, children, flottant }: Props) {
+  const { pathname } = useLocation();
+  const section = SECTIONS.find((s) => s.chemin === pathname);
+  const nom = section?.libelle ?? titre ?? "";
   const rail = useRef<HTMLElement>(null);
   const [resteADroite, setResteADroite] = useState(false);
 
@@ -108,7 +116,7 @@ export function ConsoleReglages({ titre, note, children, flottant }: Props) {
 
           <div className="rg-volet">
             <header className="rg-volet-tete">
-              <h1 className="rg-volet-titre">{titre}</h1>
+              <h1 className="rg-volet-titre">{nom}</h1>
               {note && <p className="rg-volet-note">{note}</p>}
             </header>
             {children}

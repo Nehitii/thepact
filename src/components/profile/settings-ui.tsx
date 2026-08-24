@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useMemo, useState } from "react";
+import { Panneau } from "@/components/profile/console-ui";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -64,6 +65,17 @@ export function SettingsPageShell({
 }
 
 /* ── CyberPanel ── */
+/* CYBERPANEL DEVIENT UN ADAPTATEUR.
+ *
+ * Une seconde couche de composants — les six cartes du pacte via
+ * `DataPanel`, les reglages du compte, la difficulte sur mesure —
+ * dessinait encore ses propres panneaux : angles coupes, degrade,
+ * pastille clignotante. Les reecrire un a un aurait touche a leur
+ * logique sans necessite ; les faire passer par `Panneau` uniformise
+ * tout d un geste, et `DataPanel` suit puisqu il delegue ici.
+ *
+ * Le titre humain devient l intitule code du panneau : la console le
+ * met en majuscules entre crochets, comme les autres. */
 export function CyberPanel({
   title,
   children,
@@ -75,25 +87,10 @@ export function CyberPanel({
   accent?: "cyan" | "red";
   statusText?: React.ReactNode;
 }) {
-  const borderColor = accent === "red" ? "border-destructive/30" : "border-primary/20";
-  const textColor = accent === "red" ? "text-destructive" : "text-primary";
-  const bgGrad = accent === "red" ? "from-destructive/5 to-transparent" : "from-primary/5 to-transparent";
-  const dotColor = accent === "red" ? "bg-destructive" : "bg-primary";
-  const lineColor = accent === "red" ? "bg-destructive" : "bg-primary";
-
   return (
-    <div
-      className={cn("relative border bg-gradient-to-br p-6 md:p-8", borderColor, bgGrad)}
-      style={{ clipPath: "polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)" }}
-    >
-      <div className={cn("absolute top-0 left-0 w-8 h-[2px]", lineColor)} />
-      <div className="flex items-center gap-3 mb-8 border-b border-foreground/5 pb-4">
-        <span className={cn("w-2 h-2 rounded-none animate-pulse", dotColor)} />
-        <h3 className={cn("font-orbitron tracking-[0.2em] text-sm uppercase flex-1", textColor)}>{title}</h3>
-        {statusText && <span className="font-mono ds-t-label text-muted-foreground tracking-[0.1em]">{statusText}</span>}
-      </div>
-      <div className="space-y-6">{children}</div>
-    </div>
+    <Panneau code={title} etat={statusText} ton={accent === "red" ? "danger" : "neutre"}>
+      <div className="space-y-5 py-2">{children}</div>
+    </Panneau>
   );
 }
 

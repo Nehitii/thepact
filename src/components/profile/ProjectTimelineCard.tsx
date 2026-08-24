@@ -77,7 +77,7 @@ export function ProjectTimelineCard({
   return (
     <DataPanel
       code="MODULE_03"
-      title="PROJECT TIMELINE"
+      title="Échéance"
       footerLeft={<span>START: <b className="text-primary">{projectStartDate ? formatDisplayDate(projectStartDate) : "—"}</b></span>}
       footerRight={<span>END: <b className="text-primary">{projectEndDate ? formatDisplayDate(projectEndDate) : "—"}</b></span>}
     >

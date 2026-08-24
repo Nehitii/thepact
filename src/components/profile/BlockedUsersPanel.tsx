@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { DataPanel } from "@/components/profile/settings-ui";
+import { Panneau } from "@/components/profile/console-ui";
 import { useTranslation } from "react-i18next";
 
 export function BlockedUsersPanel() {
@@ -65,7 +65,16 @@ export function BlockedUsersPanel() {
   );
 
   return (
-    <DataPanel code="MODULE_04" title={t("friends.blockedUsersTitle")} footerLeft={<span>TOTAL: <b className="text-primary">{blockedUsers?.length || 0}</b></span>}>
+    /* Le panneau de la console, pour que la section ne change pas de
+       forme au milieu. Le compte des bloques vit dans l etat du
+       panneau, la ou vivent tous les autres. */
+    <Panneau
+      code="priv.blocked"
+      etat={blockedUsers?.length
+        ? t("settings.privacy.blockedCount", "{{n}} bloqué(s)", { n: blockedUsers.length })
+        : t("settings.console.none", "aucun")}
+      ton={blockedUsers?.length ? "actif" : "neutre"}
+    >
       <div className="py-4 space-y-3">
         {isLoading ? (
           <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
@@ -83,7 +92,7 @@ export function BlockedUsersPanel() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t("common.search")}
-                  className="pl-9 h-9 bg-primary/5 border-primary/20 font-mono text-xs rounded-none"
+                  className="pl-9 h-9 bg-primary/5 border-primary/20 font-mono text-xs"
                 />
               </div>
             )}
@@ -91,8 +100,7 @@ export function BlockedUsersPanel() {
               {filtered.map((b: any) => (
                 <div
                   key={b.id}
-                  className="flex items-center justify-between gap-3 px-3 py-2.5 border border-primary/10 bg-primary/[0.02] hover:border-primary/25 transition-colors"
-                  style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md border border-primary/10 bg-primary/[0.02] hover:border-primary/25 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center ds-t-label font-mono text-primary shrink-0">
@@ -122,6 +130,6 @@ export function BlockedUsersPanel() {
           </>
         )}
       </div>
-    </DataPanel>
+    </Panneau>
   );
 }

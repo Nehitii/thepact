@@ -93,7 +93,7 @@ export function PactIdentityCard({
   return (
     <DataPanel
       code="MODULE_02"
-      title="PACT IDENTITY"
+      title="Identité du pacte"
       statusText={pactId ? <span className="text-primary/50">LINKED</span> : <span className="text-destructive">NO PACT</span>}
       footerLeft={<span>NAME: <b className="text-primary">{pactName || "—"}</b></span>}
       footerRight={<span className="text-primary/40">SYMBOL: {pactSymbol.toUpperCase()}</span>}

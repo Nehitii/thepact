@@ -135,7 +135,7 @@ export function RanksCard({ userId }: RanksCardProps) {
   return (
     <DataPanel
       code="MODULE_05"
-      title="RANKS"
+      title="Rangs"
       statusText={<span className="text-muted-foreground">{ranks.length} DEFINED</span>}
       footerLeft={<span>CURRENT: <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>}
       footerRight={<span>XP: <b className="text-primary">{rankData?.currentXP?.toLocaleString() || "0"}</b></span>}

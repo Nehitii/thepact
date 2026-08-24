@@ -2185,8 +2185,13 @@
         "updated": "Privacy updated",
         "updatedDesc": "Your privacy preferences have been saved."
       },
-      "noSharedData": "NO SHARED DATA",
-      "shareRevoked": "Sharing revoked"
+      "noSharedData": "Nothing is shared right now.",
+      "shareRevoked": "Share revoked",
+      "sharedCount": "{{n}} share(s)",
+      "sharedGoals": "Shared goals",
+      "sharedPacts": "Shared pacts",
+      "revoke": "Revoke",
+      "blockedCount": "{{n}} blocked"
     },
     "notifications": {
       "title": "Notifications",
@@ -2208,7 +2213,28 @@
         "updated": "Settings updated",
         "updatedDesc": "Your notification preferences have been saved."
       },
-      "quietHoursUpdated": "Quiet hours updated."
+      "quietHoursUpdated": "Quiet hours updated.",
+      "focusOn": "focus",
+      "focusBanner": "Focus mode on — every alert is silenced.",
+      "coach": "Proactive coach",
+      "coachDesc": "The coach reviews your data every four hours to draw findings from it.",
+      "quietHours": "Do not disturb",
+      "quietHoursDesc": "No pushed notification during this window. Both hours must be set for it to apply.",
+      "from": "From",
+      "to": "To",
+      "subscribed": "subscribed",
+      "pushUnsupported": "This browser does not support pushed notifications, or you are in an embedded preview — they only work in production.",
+      "pushNoVapid": "VAPID keys are not configured on the server.",
+      "webpush": "Browser notifications",
+      "webpushOn": "This device will receive alerts even with the app closed.",
+      "webpushOff": "This device receives nothing until it subscribes.",
+      "pushOn": "Notifications enabled",
+      "pushOff": "Notifications disabled",
+      "pushRefused": "Subscription refused",
+      "enablePush": "Enable",
+      "testSent": "Test sent",
+      "sendTest": "Send a test",
+      "unsubscribe": "Unsubscribe"
     },
     "displaySound": {
       "title": "Display & Sound",
@@ -2296,11 +2322,12 @@
       "importData": "Import Data",
       "importDataDesc": "Restore from a previous export",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data"
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "danger": "irreversible"
     },
     "pact": {
-      "title": "Pact Settings",
-      "subtitle": "Customize your commitment",
+      "title": "My pact",
+      "subtitle": "Its identity, its deadline, and your own difficulty.",
       "editPact": "Edit Pact",
       "pactName": "Pact Name",
       "mantra": "Mantra",
@@ -2402,7 +2429,9 @@
       "on": "on",
       "off": "muted",
       "listen": "Play",
-      "waiting": "idle"
+      "waiting": "idle",
+      "activeOf": "{{n}} of {{total}}",
+      "none": "none"
     }
   },
   "achievements": {

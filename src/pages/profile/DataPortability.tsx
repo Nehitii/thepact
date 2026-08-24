@@ -12,9 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import {
-  SettingsPageShell, CyberPanel, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { Panneau } from "@/components/profile/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
@@ -191,14 +190,9 @@ export default function DataPortability() {
   ];
 
   return (
-    <SettingsPageShell
-      title={t("profile.data.title")}
-      subtitle={t("profile.data.subtitle")}
-      icon={<Database className="h-7 w-7 text-primary" />}
-      stickyBar={<StickyCommandBar latestLog={latestLog} />}
-    >
+    <ConsoleReglages titre={t("profile.data.title")} note={t("profile.data.subtitle")}>
       {/* ── Stats ── */}
-      <CyberPanel title="VOS DONNÉES">
+      <Panneau code="data.stats" etat={t("settings.console.synced", "synchronisé")} ton="actif">
         <div className="grid grid-cols-2 gap-3">
           {statItems.map((s) => (
             <div key={s.label} className="border border-primary/15 bg-primary/[0.03] p-4 text-center" style={{ clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)" }}>
@@ -207,10 +201,10 @@ export default function DataPortability() {
             </div>
           ))}
         </div>
-      </CyberPanel>
+      </Panneau>
 
       {/* ── Export ── */}
-      <CyberPanel title="EXPORT DE DONNÉES">
+      <Panneau code="data.export">
         <div className="space-y-4">
           <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.exportDesc")}</p>
           <RadioGroup value={exportCategory} onValueChange={(v) => setExportCategory(v as ExportCategory)} className="grid grid-cols-2 gap-3">
@@ -234,10 +228,10 @@ export default function DataPortability() {
             {isExporting ? t("profile.data.exporting") : t("profile.data.download", { category: getCategoryLabel(exportCategory) })}
           </Button>
         </div>
-      </CyberPanel>
+      </Panneau>
 
       {/* ── Import ── */}
-      <CyberPanel title="IMPORT DE DONNÉES">
+      <Panneau code="data.import">
         <div className="space-y-4">
           <p className="ds-t-label text-muted-foreground tracking-wide">Restaure tes données à partir d'un fichier JSON exporté précédemment.</p>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
@@ -259,10 +253,10 @@ export default function DataPortability() {
             </div>
           )}
         </div>
-      </CyberPanel>
+      </Panneau>
 
       {/* ── Legal ── */}
-      <CyberPanel title="MENTIONS LÉGALES">
+      <Panneau code="data.legal">
         <div className="space-y-3">
           <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
           <Link to="/legal">
@@ -271,10 +265,10 @@ export default function DataPortability() {
             </Button>
           </Link>
         </div>
-      </CyberPanel>
+      </Panneau>
 
       {/* ── Danger Zone ── */}
-      <CyberPanel title="⚠ ZONE DE RÉINITIALISATION" accent="red" statusText={<span className="text-destructive">DANGER</span>}>
+      <Panneau code="data.reset" etat={t("settings.data.danger", "irréversible")} ton="danger">
         <div className="border border-destructive/20 bg-destructive/5 p-4" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
           <div className="flex items-start gap-3">
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />
@@ -287,7 +281,7 @@ export default function DataPortability() {
             </div>
           </div>
         </div>
-      </CyberPanel>
+      </Panneau>
 
       <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
         <DialogContent className="bg-card border-destructive/30 max-w-md rounded-none">
@@ -306,6 +300,6 @@ export default function DataPortability() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SettingsPageShell>
+    </ConsoleReglages>
   );
 }

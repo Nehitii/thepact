@@ -2,13 +2,13 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
-import { ScrollText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { usePactMutation } from "@/hooks/usePactMutation";
-import {
-  SettingsPageShell, StickyCommandBar,
-} from "@/components/profile/settings-ui";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { useTranslation } from "react-i18next";
 
 export default function PactSettings() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,6 @@ export default function PactSettings() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
-  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "PACT CONFIG LOADED", type: "info" });
 
   const { updatePact, isUpdating } = usePactMutation(user?.id, pactId);
 
@@ -73,25 +72,22 @@ export default function PactSettings() {
       title_font: titleFont,
       title_effect: titleEffect,
     });
-    setLatestLog({ text: "PACT IDENTITY UPDATED", type: "ok" });
   }, [updatePact, pactName, pactMantra, pactSymbol, titleFont, titleEffect]);
 
   if (!user) return null;
 
   if (isLoading) {
     return (
-      <SettingsPageShell title="Pact Settings" subtitle="PACT CONFIGURATION" icon={<ScrollText className="h-7 w-7 text-primary" />}>
+      <ConsoleReglages titre={t("settings.pact.title", "Mon pacte")}>
         <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      </SettingsPageShell>
+      </ConsoleReglages>
     );
   }
 
   return (
-    <SettingsPageShell
-      title="Pact Settings"
-      subtitle="Configure your pact identity, timeline, and custom difficulty"
-      icon={<ScrollText className="h-7 w-7 text-primary" />}
-      stickyBar={<StickyCommandBar latestLog={latestLog} />}
+    <ConsoleReglages
+      titre={t("settings.pact.title", "Mon pacte")}
+      note={t("settings.pact.subtitle", "Son identité, son échéance, et ta difficulté sur mesure.")}
     >
       <ProfilePactSettings
         userId={user.id}
@@ -119,6 +115,6 @@ export default function PactSettings() {
         onCustomDifficultyActiveChange={setCustomDifficultyActive}
         onCustomDifficultyColorChange={setCustomDifficultyColor}
       />
-    </SettingsPageShell>
+    </ConsoleReglages>
   );
 }

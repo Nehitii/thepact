@@ -4,8 +4,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
-import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { User, Loader2 } from "lucide-react";
+import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { Loader2 } from "lucide-react";
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -40,12 +40,10 @@ export default function Profile() {
     : null;
 
   return (
-    <ProfileSettingsShell
-      title={t("profile.title")}
-      subtitle={t("profile.subtitle")}
-      icon={<User className="h-7 w-7 text-primary" />}
-      floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
-      containerClassName="max-w-3xl"
+    <ConsoleReglages
+      titre={t("profile.title")}
+      note={t("profile.subtitle")}
+      flottant={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
@@ -57,6 +55,6 @@ export default function Profile() {
         </div>
       ) : null}
       <div className="h-16" />
-    </ProfileSettingsShell>
+    </ConsoleReglages>
   );
 }
