@@ -2396,6 +2396,13 @@
     "account": {
       "title": "Informations du compte",
       "subtitle": "Gère les détails de ton compte"
+    },
+    "console": {
+      "synced": "synchronisé",
+      "on": "actif",
+      "off": "coupé",
+      "listen": "Écouter",
+      "waiting": "en attente"
     }
   },
   "achievements": {

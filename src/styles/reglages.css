@@ -1,0 +1,399 @@
+/* ═══════════════════════════════════════════════════════════════
+   LA CONSOLE DE REGLAGES
+   ───────────────────────────────────────────────────────────────
+   Sept ecrans separes portaient chacun son ceremonial : halo
+   circulaire, sur-titre espace, titre massif — cent cinquante pixels
+   avant le premier reglage, sept fois de suite. Ils tiennent
+   desormais dans une seule console : un rail de sections a gauche,
+   le contenu a droite, un seul en-tete.
+
+   Le parti pris est assume : filets d angle, intitules codes,
+   temoins de synchronisation, journal de terminal. Un menu de
+   reglages est l endroit ou une interface peut se permettre de
+   ressembler a une machine — c est litteralement ce qu on y regle.
+   ═══════════════════════════════════════════════════════════════ */
+
+.rg {
+  --rg-encre: hsl(var(--foreground));
+  --rg-sourdine: hsl(var(--muted-foreground));
+  --rg-vif: hsl(var(--primary));
+  --rg-fil: hsl(var(--primary) / 0.22);
+  --rg-fil-vif: hsl(var(--primary) / 0.55);
+  --rg-fond: hsl(var(--card) / 0.55);
+  --rg-fond-creux: hsl(var(--background) / 0.55);
+  --rg-alerte: hsl(0 80% 62%);
+  --rg-ok: hsl(142 70% 50%);
+
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+/* ── LE RAIL ─────────────────────────────────────────────────── */
+
+/* La boite ne sert qu a ancrer le voile de bord en fenetre etroite ;
+   en large elle est transparente et le rail garde son collant. */
+.rg-rail-boite { position: relative; min-width: 0; }
+
+.rg-rail-voile {
+  display: none;
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: 44px;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(to right, transparent, hsl(var(--background)));
+}
+
+.rg-rail {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px;
+  border: 1px solid var(--rg-fil);
+  border-radius: 12px;
+  background: var(--rg-fond);
+  backdrop-filter: blur(8px);
+}
+
+.rg-rail-tete {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rg-vif);
+  opacity: 0.75;
+  padding: 0 8px 10px;
+  border-bottom: 1px solid var(--rg-fil);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rg-onglet {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--rg-sourdine);
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.16s, background 0.16s, border-color 0.16s;
+  position: relative;
+}
+
+.rg-onglet:hover { color: var(--rg-encre); background: hsl(var(--primary) / 0.06); }
+
+.rg-onglet svg { width: 15px; height: 15px; flex: none; }
+
+/* Le chevron dit lequel est ouvert sans dependre de la couleur seule. */
+.rg-onglet::before {
+  content: "▸";
+  font-size: 9px;
+  opacity: 0.45;
+  transition: opacity 0.16s, transform 0.16s;
+}
+
+.rg-onglet[aria-current="page"] {
+  color: var(--rg-vif);
+  background: hsl(var(--primary) / 0.10);
+  border-color: var(--rg-fil-vif);
+}
+.rg-onglet[aria-current="page"]::before {
+  content: "▪";
+  opacity: 1;
+}
+
+.rg-onglet-code {
+  margin-left: auto;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+}
+
+/* ── LE VOLET ────────────────────────────────────────────────── */
+
+.rg-volet { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.rg-volet-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rg-fil);
+}
+
+.rg-volet-titre {
+  font-family: "Orbitron", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(20px, 3vw, 28px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rg-encre);
+  margin: 0;
+}
+
+.rg-volet-note {
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--rg-sourdine);
+  margin: 0;
+  flex: 1 1 240px;
+}
+
+/* ── LE PANNEAU ──────────────────────────────────────────────── */
+
+.rg-panneau {
+  position: relative;
+  border: 1px solid var(--rg-fil);
+  border-radius: 10px;
+  background: var(--rg-fond);
+  overflow: hidden;
+}
+
+/* Les quatre equerres. Deux pseudo-elements suffisent : chacun porte
+   deux coins par un degrade conique decoupe. */
+.rg-panneau::before,
+.rg-panneau::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--rg-fil-vif);
+  border-style: solid;
+  pointer-events: none;
+}
+.rg-panneau::before { top: 5px; left: 5px; border-width: 1px 0 0 1px; }
+.rg-panneau::after { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; }
+
+.rg-panneau-tete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--rg-fil);
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.07), transparent);
+}
+
+.rg-panneau-code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rg-vif);
+  white-space: nowrap;
+}
+.rg-panneau-code::before { content: "[ "; opacity: 0.5; }
+.rg-panneau-code::after { content: " ]"; opacity: 0.5; }
+
+.rg-panneau-fil {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--rg-fil) 0 4px, transparent 4px 8px);
+  min-width: 12px;
+}
+
+.rg-panneau-etat {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rg-sourdine);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.rg-panneau-etat[data-actif] { color: var(--rg-ok); }
+.rg-panneau-etat[data-alerte] { color: var(--rg-alerte); }
+
+.rg-pastille {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+.rg-panneau-etat[data-actif] .rg-pastille { animation: rg-pulse 2.4s ease-in-out infinite; }
+
+@keyframes rg-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.rg-panneau-corps { padding: 4px 16px 14px; }
+
+/* ── UN REGLAGE ──────────────────────────────────────────────── */
+
+.rg-reglage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid hsl(var(--primary) / 0.08);
+}
+.rg-reglage:last-child { border-bottom: none; }
+
+/* Le reglage qui reclame toute la largeur — un segmente, une palette,
+   une glissiere — passe son controle sous son intitule. */
+.rg-reglage[data-large] { grid-template-columns: minmax(0, 1fr); }
+
+.rg-reglage-nom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rg-encre);
+  letter-spacing: 0.02em;
+}
+.rg-reglage-nom::before {
+  content: "▸";
+  font-size: 9px;
+  color: var(--rg-vif);
+  opacity: 0.6;
+}
+.rg-reglage-nom svg { width: 14px; height: 14px; color: var(--rg-vif); opacity: 0.8; }
+
+.rg-reglage-note {
+  grid-column: 1;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--rg-sourdine);
+  margin-top: 2px;
+  padding-left: 17px;
+}
+
+.rg-reglage-controle { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+.rg-reglage[data-large] .rg-reglage-controle {
+  grid-column: 1;
+  grid-row: auto;
+  justify-self: stretch;
+  margin-top: 10px;
+  padding-left: 17px;
+}
+
+/* ── LE SEGMENTE ─────────────────────────────────────────────── */
+
+.rg-segmente {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--rg-fil);
+  border-radius: 8px;
+  background: var(--rg-fond-creux);
+  flex-wrap: wrap;
+}
+
+.rg-segment {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--rg-sourdine);
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.16s, background 0.16s, border-color 0.16s;
+}
+.rg-segment svg { width: 14px; height: 14px; }
+.rg-segment:hover { color: var(--rg-encre); }
+.rg-segment[aria-pressed="true"] {
+  color: var(--rg-vif);
+  background: hsl(var(--primary) / 0.12);
+  border-color: var(--rg-fil-vif);
+  box-shadow: inset 0 -2px 0 hsl(var(--primary) / 0.5);
+}
+
+/* ── LA GLISSIERE ────────────────────────────────────────────── */
+
+.rg-jauge { display: flex; align-items: center; gap: 12px; }
+.rg-jauge > *:first-child { flex: 1; min-width: 90px; }
+
+.rg-valeur {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--rg-vif);
+  min-width: 46px;
+  text-align: right;
+}
+
+/* ── LE JOURNAL ──────────────────────────────────────────────── */
+
+.rg-journal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--rg-fil);
+  background: var(--rg-fond-creux);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--rg-sourdine);
+  min-height: 32px;
+}
+.rg-journal[data-type="ok"] { color: var(--rg-ok); }
+.rg-journal[data-type="warn"] { color: hsl(38 92% 60%); }
+.rg-journal::before { content: "›"; opacity: 0.6; }
+
+/* ── L ETROIT ────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .rg { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+  /* Le rail devient une bande qui defile. Le voile de bord n est pas
+     decoratif : sans lui, rien ne dit qu il reste des sections a
+     droite — le meme defaut que la bande d onglets de la boutique.
+     Il n apparait que si le debordement est mesure. */
+  .rg-rail-voile { display: block; }
+
+  .rg-rail {
+    position: static;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 8px;
+  }
+  .rg-rail::-webkit-scrollbar { display: none; }
+  .rg-rail-tete { display: none; }
+  .rg-onglet { flex: none; padding: 8px 12px; }
+  .rg-onglet-code { display: none; }
+  .rg-reglage { grid-template-columns: minmax(0, 1fr); }
+  .rg-reglage-controle {
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: stretch;
+    margin-top: 10px;
+    padding-left: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-panneau-etat[data-actif] .rg-pastille { animation: none; }
+  .rg-onglet, .rg-segment { transition: none; }
+}

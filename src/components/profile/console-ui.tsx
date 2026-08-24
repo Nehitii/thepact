@@ -1,0 +1,119 @@
+import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import "@/styles/reglages.css";
+
+/* LES BRIQUES DE LA CONSOLE.
+ *
+ * Elles remplacent un kit de quatorze exports dont la moitie ne
+ * servait qu a un seul fichier — `SettingsTabBar`, `TerminalLog`,
+ * `CyberInput`, `CyberSelect`, `CyberSeparator` avaient chacun un
+ * unique appelant. Ici : un panneau, un reglage, trois controles, un
+ * journal. Tout le reste se compose. */
+
+/* ── LE PANNEAU ──────────────────────────────────────────────── */
+
+interface PanneauProps {
+  /* L intitule code, en majuscules : c est la signature de la console. */
+  code: string;
+  /* L etat a droite : « SYNC'D », « 3 ACTIFS », « HORS LIGNE »… */
+  etat?: ReactNode;
+  /* Vert quand tout est en ordre, rouge quand quelque chose manque. */
+  ton?: "neutre" | "actif" | "alerte";
+  /* La derniere operation, en pied de panneau. */
+  journal?: { texte: string; type?: "info" | "ok" | "warn" } | null;
+  children: ReactNode;
+  className?: string;
+}
+
+export function Panneau({ code, etat, ton = "neutre", journal, children, className }: PanneauProps) {
+  return (
+    <section className={cn("rg-panneau", className)}>
+      <header className="rg-panneau-tete">
+        <span className="rg-panneau-code">{code}</span>
+        <span className="rg-panneau-fil" aria-hidden="true" />
+        {etat && (
+          <span
+            className="rg-panneau-etat"
+            data-actif={ton === "actif" ? "" : undefined}
+            data-alerte={ton === "alerte" ? "" : undefined}
+          >
+            <span className="rg-pastille" aria-hidden="true" />
+            {etat}
+          </span>
+        )}
+      </header>
+
+      <div className="rg-panneau-corps">{children}</div>
+
+      {journal && (
+        <p className="rg-journal" data-type={journal.type ?? "info"} role="status">
+          {journal.texte}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/* ── UN REGLAGE ──────────────────────────────────────────────── */
+
+interface ReglageProps {
+  nom: ReactNode;
+  note?: ReactNode;
+  icone?: ReactNode;
+  /* Le controle passe sous l intitule : pour un segmente, une palette
+     ou une glissiere, qui ont besoin de toute la largeur. */
+  large?: boolean;
+  children: ReactNode;
+}
+
+export function Reglage({ nom, note, icone, large, children }: ReglageProps) {
+  return (
+    <div className="rg-reglage" data-large={large ? "" : undefined}>
+      <span className="rg-reglage-nom">
+        {icone}
+        {nom}
+      </span>
+      {note && <span className="rg-reglage-note">{note}</span>}
+      <div className="rg-reglage-controle">{children}</div>
+    </div>
+  );
+}
+
+/* ── LE SEGMENTE ─────────────────────────────────────────────── */
+
+interface SegmenteProps<T extends string> {
+  valeur: T;
+  onChange: (v: T) => void;
+  options: { valeur: T; libelle: ReactNode; icone?: ReactNode }[];
+  aria?: string;
+}
+
+export function Segmente<T extends string>({ valeur, onChange, options, aria }: SegmenteProps<T>) {
+  return (
+    <div className="rg-segmente" role="group" aria-label={aria}>
+      {options.map((o) => (
+        <button
+          key={o.valeur}
+          type="button"
+          className="rg-segment"
+          aria-pressed={valeur === o.valeur}
+          onClick={() => onChange(o.valeur)}
+        >
+          {o.icone}
+          {o.libelle}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── LA GLISSIERE ────────────────────────────────────────────── */
+
+export function Jauge({ children, valeur }: { children: ReactNode; valeur: ReactNode }) {
+  return (
+    <div className="rg-jauge">
+      {children}
+      <span className="rg-valeur">{valeur}</span>
+    </div>
+  );
+}
