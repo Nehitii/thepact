@@ -1002,7 +1002,8 @@
       "gift": "Don",
       "banking": "Frais bancaires",
       "legal": "Protection juridique",
-      "telecom": "Téléphonie"
+      "telecom": "Téléphonie",
+      "rent": "Location"
     },
     "projections": {
       "title": "Projections financières",

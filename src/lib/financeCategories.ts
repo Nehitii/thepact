@@ -1,7 +1,7 @@
 import {
-  Home, Car, Utensils, Wifi, Heart, ShoppingBag, PiggyBank, Landmark, 
-  GraduationCap, Gamepad2, Wrench, CreditCard, Receipt, Plane, Zap, 
-  DollarSign, Briefcase, Gift, TrendingUp
+  Home, Car, Utensils, Wifi, Heart, ShoppingBag, PiggyBank, Landmark,
+  GraduationCap, Gamepad2, Wrench, CreditCard, Receipt, Plane, Zap,
+  DollarSign, Briefcase, Gift, TrendingUp, KeyRound
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { TFunction } from 'i18next';
@@ -22,6 +22,15 @@ export interface FinanceCategory {
 // Expense Categories - Single source of truth
 export const EXPENSE_CATEGORIES: FinanceCategory[] = [
   { value: 'housing', labelKey: 'finance.categories.housing', icon: Home, color: 'text-rose-400', bg: 'bg-rose-500/10', hexColor: '#fb7185' },
+  /* LOUER N EST PAS SE LOGER.
+     « Logement » couvre le toit — loyer, charges, credit. Ce qu on
+     loue par ailleurs, une voiture, un utilitaire, du materiel, un
+     garde-meuble, une residence de vacances, n avait ou aller que dans
+     « autre ». La categorie « Location » (revenus) existe deja, mais
+     elle designe l inverse : l argent qu on percoit d un bien qu on
+     possede. Les deux listes etant separees, le meme mot peut servir
+     de chaque cote sans jamais se croiser dans un menu. */
+  { value: 'rent', labelKey: 'finance.categories.rent', icon: KeyRound, color: 'text-lime-400', bg: 'bg-lime-500/10', hexColor: '#a3e635' },
   { value: 'utilities', labelKey: 'finance.categories.utilities', icon: Wifi, color: 'text-orange-400', bg: 'bg-orange-500/10', hexColor: '#fb923c' },
   { value: 'food', labelKey: 'finance.categories.food', icon: Utensils, color: 'text-yellow-400', bg: 'bg-yellow-500/10', hexColor: '#facc15' },
   { value: 'transport', labelKey: 'finance.categories.transport', icon: Car, color: 'text-blue-400', bg: 'bg-blue-500/10', hexColor: '#60a5fa' },
@@ -78,7 +87,7 @@ export function getCategoryLabel(category: FinanceCategory, t?: TFunction): stri
   if (t) return t(category.labelKey);
   // Fallback to English
   const fallbacks: Record<string, string> = {
-    housing: 'Housing', utilities: 'Utilities', food: 'Food', transport: 'Transport',
+    housing: 'Housing', rent: 'Rental', utilities: 'Utilities', food: 'Food', transport: 'Transport',
     subscriptions: 'Subscriptions', health: 'Health', leisure: 'Leisure', savings: 'Savings',
     taxes: 'Taxes', education: 'Education', travel: 'Travel', shopping: 'Shopping',
     maintenance: 'Maintenance', insurance: 'Insurance', childcare: 'Childcare', pets: 'Pets',
@@ -118,13 +127,19 @@ export function getIncomeCategory(value: string | null | undefined): FinanceCate
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   // Expenses
   housing: ['rent', 'mortgage', 'housing', 'apartment', 'lease', 'hoa', 'loyer', 'hypothèque', 'logement'],
+  /* Place APRES `housing` a dessein : « loyer » doit rester au
+     logement. Ce qui tombe ici est ce qui se loue sans etre un toit.
+     On evite « rent » nu, qui attraperait « courant » ou « rentree » —
+     le defaut existe deja dans la ligne du dessus, on ne l aggrave
+     pas. */
+  rent: ['location', 'louer', 'loueur', 'leasing', 'bail', 'garde-meuble', 'self-storage', 'renting'],
   utilities: ['electric', 'water', 'gas', 'utility', 'internet', 'wifi', 'phone', 'mobile', 'cable', 'électricité', 'eau', 'gaz', 'téléphone'],
   transport: ['car', 'auto', 'fuel', 'transport', 'metro', 'bus', 'uber', 'lyft', 'parking', 'voiture', 'essence', 'métro'],
   food: ['food', 'grocery', 'groceries', 'restaurant', 'dining', 'meal', 'lunch', 'dinner', 'breakfast', 'nourriture', 'courses', 'repas'],
   health: ['health', 'medical', 'doctor', 'dentist', 'pharmacy', 'medicine', 'gym', 'fitness', 'santé', 'médecin', 'dentiste', 'pharmacie'],
   subscriptions: ['netflix', 'spotify', 'subscription', 'streaming', 'premium', 'plus', 'membership', 'abonnement'],
   entertainment: ['entertainment', 'movie', 'game', 'concert', 'event', 'hobby', 'divertissement', 'film', 'jeu'],
-  education: ['education', 'course', 'school', 'college', 'tuition', 'book', 'learning', 'éducation', 'cours', 'école', 'livre'],
+  education: ['education', 'course', 'school', 'college', 'tuition', 'book', 'learning', 'éducation', 'cours', 'école', 'livre', 'scolaire', 'rentrée'],
   shopping: ['shopping', 'clothes', 'amazon', 'retail', 'purchase', 'vêtements', 'achat'],
   savings: ['saving', 'investment', 'invest', '401k', 'ira', 'retirement', 'épargne', 'investissement', 'retraite'],
   debt: ['debt', 'loan', 'credit', 'payment', 'interest', 'dette', 'prêt', 'crédit', 'intérêt'],
@@ -152,16 +167,41 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 /**
  * Auto-detect category from item name
  */
+/* Sans accents et en minuscules : « Éducation » et « education »
+   doivent tomber au meme endroit. */
+const aplatir = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/* UN MOT-CLE DOIT ETRE UN MOT, PAS UNE SUITE DE LETTRES.
+ *
+ * La detection cherchait chaque mot-cle en sous-chaine. « car »
+ * attrapait donc « Courses Carrefour », range en transport ; « rent »
+ * attrapait « Rentree scolaire », rangee en logement. Mesure faite sur
+ * dix libelles courants : deux mal classes sur dix.
+ *
+ * On compare desormais mot a mot, en tolerant le pluriel — « abonnement »
+ * doit reconnaitre « abonnements ». Les mots-cles composes (« social
+ * security », « garde-meuble ») restent cherches tels quels : ils sont
+ * assez longs pour ne rien attraper par hasard. */
+function motPresent(nomAplati: string, motsDuNom: string[], motCle: string): boolean {
+  const cle = aplatir(motCle);
+  if (/[\s-]/.test(cle)) return nomAplati.includes(cle);
+  return motsDuNom.some(
+    (m) => m === cle || m === cle + 's' || (cle.endsWith('s') && m === cle.slice(0, -1)),
+  );
+}
+
 export function detectCategoryFromName(itemName: string, categories: FinanceCategory[]): FinanceCategory {
-  const lowerName = itemName.toLowerCase();
-  
+  const aplati = aplatir(itemName);
+  const mots = aplati.split(/[^a-z0-9]+/).filter(Boolean);
+
   for (const [categoryValue, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (keywords.some(keyword => lowerName.includes(keyword))) {
+    if (keywords.some(keyword => motPresent(aplati, mots, keyword))) {
       const found = categories.find(c => c.value === categoryValue);
       if (found) return found;
     }
   }
-  
+
   return categories.find(c => c.value === 'other') || categories[categories.length - 1];
 }
 

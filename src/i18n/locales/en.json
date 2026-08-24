@@ -1002,7 +1002,8 @@
       "gift": "Gift",
       "banking": "Bank fees",
       "legal": "Legal protection",
-      "telecom": "Phone & internet"
+      "telecom": "Phone & internet",
+      "rent": "Rental"
     },
     "projections": {
       "title": "Financial Projections",
