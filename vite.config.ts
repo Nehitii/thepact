@@ -6,23 +6,29 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    /* LE SERVEUR DE DEV N EST PLUS OFFERT AU RESEAU.
+    /* LE SERVEUR DE DEV EST OFFERT AU RESEAU LOCAL.
      *
-     * Il ecoutait sur 0.0.0.0, donc sur toutes les interfaces : n importe
-     * quelle machine du meme reseau — Wi-Fi partage, box, appareil invite
-     * — pouvait l atteindre sur le port 8080.
+     * Il ne l etait plus. Le commentaire precedent le fermait au nom de
+     * deux failles precises : un contournement de `server.fs.deny` par
+     * chemins alternatifs Windows dans Vite <= 6.4.2, et une lecture du
+     * serveur de dev par n importe quel site dans esbuild <= 0.24.2.
      *
-     * Ce n est pas theorique. Vite <= 6.4.2 porte un contournement de
-     * `server.fs.deny` par chemins alternatifs Windows (severite HAUTE),
-     * et esbuild <= 0.24.2 laisse n importe quel site adresser des
-     * requetes au serveur de dev et en lire la reponse. Les deux
-     * supposent d abord de pouvoir JOINDRE le serveur. En restant sur
-     * localhost, on retire cette premiere marche.
+     * LES DEUX SONT CORRIGEES DEPUIS. Ce projet tourne en Vite 7.3.6 et
+     * esbuild 0.28.2 — la justification ecrite ne decrivait plus rien.
+     * Une precaution qu on ne peut plus expliquer finit par etre
+     * contournee sans y penser ; mieux vaut la lever franchement et
+     * dire ce qui reste vrai.
      *
-     * Rien n est perdu pour autant : `npm run dev -- --host` reouvre
-     * l acces reseau le temps d une session, quand on veut essayer la
-     * PWA depuis un telephone. L exposition devient un geste, au lieu
-     * d etre l etat par defaut. */
+     * CE QUI RESTE VRAI : un serveur de dev n a AUCUNE
+     * AUTHENTIFICATION et sert les sources du projet a qui l atteint.
+     * Sur un reseau domestique le risque est faible ; sur un Wi-Fi
+     * partage — hotel, espace de travail, aeroport — il ne l est pas.
+     * Le jour ou l on developpe ailleurs qu a la maison, cette ligne se
+     * commente le temps du sejour.
+     *
+     * La production ne passe pas par ici : `vite build` produit des
+     * fichiers statiques, et rien de ce reglage ne les suit. */
+    host: true,
     port: 8080,
     hmr: {
       overlay: false,
