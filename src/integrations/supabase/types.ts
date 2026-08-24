@@ -5240,6 +5240,7 @@ export type Database = {
         Args: { p_achievement_keys: string[] }
         Returns: undefined
       }
+      marquer_succes_vus: { Args: { p_cles?: string[] }; Returns: number }
       match_coach_memory: {
         Args: {
           _match_count?: number

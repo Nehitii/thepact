@@ -294,12 +294,15 @@ export default function Achievements() {
     setACongedier(file);
   }, [cles, succes]);
 
+  /* L APPEL A « marquer » ETAIT DANS LE SETSTATE. Une fonction de
+     mise a jour doit etre PURE : React la rejoue — deux fois en mode
+     strict — et peut jeter son resultat. Un effet de bord place la
+     part deux fois, ou pas du tout. Il est calcule ici, ou l etat
+     courant est deja en portee. */
   const congedier = () => {
-    setACongedier((f) => {
-      const reste = f.slice(1);
-      if (!reste.length && cles.length) marquer(cles);
-      return reste;
-    });
+    const reste = aCongedier.slice(1);
+    setACongedier(reste);
+    if (!reste.length && cles.length) marquer(cles);
   };
 
   const enGloire = aCongedier.length

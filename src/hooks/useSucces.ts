@@ -116,13 +116,17 @@ export function useMarquerVus(userId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (cles: string[]) => {
-      if (!userId || !cles.length) return;
-      const { error } = await supabase
-        .from("user_achievements")
-        .update({ seen: true })
-        .eq("user_id", userId)
-        .in("achievement_key", cles);
+      if (!userId || !cles.length) return 0;
+      /* PAS D UPDATE DIRECT : user_achievements porte une politique de
+         lecture et rien d autre. RLS etant actif, l ecriture etait
+         refusee EN SILENCE — zero ligne touchee, aucune erreur — et la
+         fenetre de deblocage se rejouait a chaque visite.
+         Une fonction en base, parce que RLS s applique a la ligne et
+         non a la colonne : ouvrir l UPDATE laisserait reecrire
+         unlocked_at ou la clef du succes. */
+      const { data, error } = await supabase.rpc("marquer_succes_vus", { p_cles: cles });
       if (error) throw error;
+      return (data as number) ?? 0;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["succes-neufs", userId] }),
   });
