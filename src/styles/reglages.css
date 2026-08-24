@@ -127,7 +127,39 @@
 
 /* ── LE VOLET ────────────────────────────────────────────────── */
 
-.rg-volet { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+/* LE VOLET EST UNE GRILLE, PAS UNE PILE.
+ *
+ * Tout etait empile en colonne pleine largeur : d ou l impression de
+ * monobloc, et d ou « Mon pacte » a 4 235 px — cinq ecrans. Deux
+ * colonnes coupent le defilement de moitie sur les sections faites de
+ * petits panneaux, et donnent au regard un rythme au lieu d une
+ * descente. Un panneau qui a besoin de largeur — un segmente, une
+ * palette, un editeur — reclame les deux colonnes. */
+/* ON INTERROGE LA PLACE REELLE, PAS LA FENETRE.
+   Mesure a 1 280 px de viewport : le volet n en recoit que 670 — la
+   barre laterale de l application prend le reste. Une regle basee sur
+   la fenetre se trompait donc de largeur.
+
+   Le conteneur et la grille ne peuvent pas etre le meme element : une
+   requete de conteneur interroge un ANCETRE, jamais l element qui la
+   porte. D ou ce couple — le volet mesure, la grille se dispose. */
+.rg-volet {
+  min-width: 0;
+  container-type: inline-size;
+  container-name: volet;
+}
+
+.rg-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-content: start;
+}
+
+@container volet (min-width: 640px) {
+  .rg-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rg-panneau[data-taille="pleine"] { grid-column: 1 / -1; }
+}
 
 .rg-volet-tete {
   display: flex;
@@ -136,6 +168,7 @@
   flex-wrap: wrap;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--rg-fil);
+  grid-column: 1 / -1;
 }
 
 .rg-volet-titre {
@@ -180,6 +213,34 @@
 }
 .rg-panneau::before { top: 5px; left: 5px; border-width: 1px 0 0 1px; }
 .rg-panneau::after { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; }
+
+/* TROIS POIDS, POUR QUE L OEIL AIT UN POINT D ENTREE.
+ *
+ * Sept panneaux du meme gris se lisent comme un mur. Le panneau
+ * principal d une section — celui qu on vient regler — porte un
+ * liseré et un fond plus francs ; les secondaires reculent. La
+ * hierarchie n est pas decorative : elle dit par ou commencer. */
+.rg-panneau[data-rang="primaire"] {
+  border-color: var(--rg-fil-vif);
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.06), var(--rg-fond) 42%);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.06), 0 14px 34px hsl(var(--background) / 0.5);
+}
+.rg-panneau[data-rang="primaire"] .rg-panneau-tete {
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.13), transparent);
+  border-bottom-color: var(--rg-fil-vif);
+}
+.rg-panneau[data-rang="primaire"] .rg-panneau-code { font-size: 11px; letter-spacing: 0.2em; }
+.rg-panneau[data-rang="primaire"]::before,
+.rg-panneau[data-rang="primaire"]::after {
+  width: 16px; height: 16px;
+  border-color: var(--rg-vif);
+}
+
+.rg-panneau[data-rang="discret"] { background: hsl(var(--card) / 0.32); }
+.rg-panneau[data-rang="discret"] .rg-panneau-tete { background: none; }
+.rg-panneau[data-rang="discret"] .rg-panneau-code { color: var(--rg-sourdine); }
+.rg-panneau[data-rang="discret"]::before,
+.rg-panneau[data-rang="discret"]::after { border-color: var(--rg-fil); }
 
 /* Le panneau qui peut detruire quelque chose se distingue de loin :
    sa bordure et ses equerres passent au rouge. On ne clique pas
@@ -358,6 +419,62 @@
   min-width: 46px;
   text-align: right;
 }
+
+/* ── LE BOUTON ───────────────────────────────────────────────── */
+
+/* QUATORZE STYLES DE BOUTON, MESURES SUR QUATRE SECTIONS.
+   Des hauteurs de 16 a 136 px, deux familles de police, la casse au
+   hasard, et un seul arrondi sur quatorze. Un menu de reglages se
+   parcourt : si chaque bouton s annonce differemment, on relit tout.
+   Un seul style, quatre intentions. */
+.rg-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--rg-fil);
+  background: var(--rg-fond-creux);
+  color: var(--rg-encre);
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.16s, background 0.16s, border-color 0.16s;
+}
+.rg-bouton svg { width: 15px; height: 15px; flex: none; }
+.rg-bouton:hover:not(:disabled) { border-color: var(--rg-fil-vif); background: hsl(var(--primary) / 0.08); }
+.rg-bouton:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.rg-bouton[data-role="primaire"] {
+  color: var(--rg-vif);
+  border-color: var(--rg-fil-vif);
+  background: hsl(var(--primary) / 0.12);
+}
+.rg-bouton[data-role="primaire"]:hover:not(:disabled) { background: hsl(var(--primary) / 0.2); }
+
+.rg-bouton[data-role="discret"] {
+  border-color: transparent;
+  background: none;
+  color: var(--rg-sourdine);
+}
+.rg-bouton[data-role="discret"]:hover:not(:disabled) { color: var(--rg-encre); background: hsl(var(--primary) / 0.06); }
+
+.rg-bouton[data-role="danger"] {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.35);
+  background: hsl(var(--destructive) / 0.10);
+}
+.rg-bouton[data-role="danger"]:hover:not(:disabled) {
+  background: hsl(var(--destructive) / 0.2);
+  border-color: hsl(var(--destructive) / 0.6);
+}
+
+.rg-bouton[data-pleine] { width: 100%; }
 
 /* ── UN CHAMP ETIQUETE ───────────────────────────────────────── */
 

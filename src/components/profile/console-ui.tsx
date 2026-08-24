@@ -19,15 +19,29 @@ interface PanneauProps {
   etat?: ReactNode;
   /* Vert quand tout est en ordre, rouge quand quelque chose manque. */
   ton?: "neutre" | "actif" | "alerte" | "danger";
+  /* Le poids visuel. Sept panneaux du meme gris se lisent comme un
+     mur : le principal d une section porte le regard, les autres
+     reculent. */
+  rang?: "primaire" | "normal" | "discret";
+  /* « pleine » reclame les deux colonnes de la grille : pour un
+     segmente, une palette, un editeur. */
+  taille?: "demi" | "pleine";
   /* La derniere operation, en pied de panneau. */
   journal?: { texte: string; type?: "info" | "ok" | "warn" } | null;
   children: ReactNode;
   className?: string;
 }
 
-export function Panneau({ code, etat, ton = "neutre", journal, children, className }: PanneauProps) {
+export function Panneau({
+  code, etat, ton = "neutre", rang = "normal", taille = "demi", journal, children, className,
+}: PanneauProps) {
   return (
-    <section className={cn("rg-panneau", className)} data-danger={ton === "danger" ? "" : undefined}>
+    <section
+      className={cn("rg-panneau", className)}
+      data-danger={ton === "danger" ? "" : undefined}
+      data-rang={rang !== "normal" ? rang : undefined}
+      data-taille={taille}
+    >
       <header className="rg-panneau-tete">
         <span className="rg-panneau-code">{code}</span>
         <span className="rg-panneau-fil" aria-hidden="true" />
@@ -115,6 +129,31 @@ export function Jauge({ children, valeur }: { children: ReactNode; valeur: React
       {children}
       <span className="rg-valeur">{valeur}</span>
     </div>
+  );
+}
+
+/* ── LE BOUTON ───────────────────────────────────────────────── */
+
+/* Quatorze styles de bouton coexistaient dans les reglages — des
+   hauteurs de 16 a 136 px, deux familles de police, la casse au
+   hasard. Un seul style, quatre intentions. */
+export function Bouton({
+  role = "normal",
+  pleine,
+  className,
+  ...reste
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  role?: "primaire" | "normal" | "discret" | "danger";
+  pleine?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn("rg-bouton", className)}
+      data-role={role !== "normal" ? role : undefined}
+      data-pleine={pleine ? "" : undefined}
+      {...reste}
+    />
   );
 }
 

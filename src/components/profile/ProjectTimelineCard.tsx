@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -78,6 +79,7 @@ export function ProjectTimelineCard({
     <DataPanel
       code="MODULE_03"
       title="Échéance"
+      taille="demi"
       footerLeft={<span>START: <b className="text-primary">{projectStartDate ? formatDisplayDate(projectStartDate) : "—"}</b></span>}
       footerRight={<span>END: <b className="text-primary">{projectEndDate ? formatDisplayDate(projectEndDate) : "—"}</b></span>}
     >
@@ -153,9 +155,9 @@ export function ProjectTimelineCard({
           </p>
         )}
 
-        <button onClick={handleSave} disabled={saving || !!dateValidationError} className={cn(CY_BTN, "w-full flex items-center justify-center gap-2")}>
-          {saving ? (<><Loader2 className="h-3.5 w-3.5 animate-spin" />SAVING…</>) : "[ SAVE TIMELINE ]"}
-        </button>
+        <Bouton role="primaire" pleine onClick={handleSave} disabled={saving || !!dateValidationError}>
+          {saving ? <><Loader2 className="animate-spin" />Enregistrement…</> : "Enregistrer l’échéance"}
+        </Bouton>
       </div>
     </DataPanel>
   );

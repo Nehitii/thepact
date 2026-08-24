@@ -104,6 +104,7 @@ export default function PrivacyControl() {
         code="priv.visibility"
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: visibles, total: 2 })}
         ton={tonExposition(visibles)}
+        rang="primaire"
         journal={journaux.visibilite ?? attente}
       >
         <Reglage

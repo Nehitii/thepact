@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
@@ -243,17 +244,13 @@ export function ProfilePactSettings({
               className="gap-1.5"
             >
               {savingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-              Save
+              Enregistrer
             </Button>
           </div>
           {existingCodeSet && (
-            <button
-              onClick={handleRemoveUnlockCode}
-              disabled={savingCode}
-              className="ds-t-label text-destructive/70 hover:text-destructive font-mono uppercase tracking-wider transition-colors"
-            >
-              [ REMOVE CODE ]
-            </button>
+            <Bouton role="danger" onClick={handleRemoveUnlockCode} disabled={savingCode}>
+              Retirer le code
+            </Bouton>
           )}
         </div>
       </PactSettingsCard>
@@ -272,18 +269,10 @@ export function ProfilePactSettings({
 
             <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
               <AlertDialogTrigger asChild>
-                <button
-                  className={cn(
-                    "w-full h-10 font-mono ds-t-label tracking-[0.22em] uppercase",
-                    "bg-red-950/20 border border-red-500/25",
-                    "hover:bg-red-900/25 hover:border-red-400/45",
-                    "text-red-400/70 hover:text-red-400",
-                    "transition-all duration-200 flex items-center justify-center gap-2",
-                  )}
-                >
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  [ RESET PACT ]
-                </button>
+                <Bouton role="danger" pleine>
+                  <AlertTriangle />
+                  Réinitialiser le pacte
+                </Bouton>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

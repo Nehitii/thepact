@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -192,7 +193,7 @@ export default function DataPortability() {
   return (
     <ConsoleReglages titre={t("profile.data.title")} note={t("profile.data.subtitle")}>
       {/* ── Stats ── */}
-      <Panneau code="data.stats" etat={t("settings.console.synced", "synchronisé")} ton="actif">
+      <Panneau code="data.stats" etat={t("settings.console.synced", "synchronisé")} ton="actif" rang="primaire">
         <div className="grid grid-cols-2 gap-3">
           {statItems.map((s) => (
             <div key={s.label} className="border border-primary/15 bg-primary/[0.03] p-4 text-center" style={{ clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)" }}>
@@ -223,10 +224,10 @@ export default function DataPortability() {
               </Label>
             ))}
           </RadioGroup>
-          <Button onClick={handleExportData} disabled={isExporting} className="w-full bg-primary/20 border border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider disabled:opacity-50" style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-            <Download className="mr-2 h-4 w-4" />
+          <Bouton role="primaire" pleine onClick={handleExportData} disabled={isExporting}>
+            <Download />
             {isExporting ? t("profile.data.exporting") : t("profile.data.download", { category: getCategoryLabel(exportCategory) })}
-          </Button>
+          </Bouton>
         </div>
       </Panneau>
 
@@ -235,10 +236,10 @@ export default function DataPortability() {
         <div className="space-y-4">
           <p className="ds-t-label text-muted-foreground tracking-wide">Restaure tes données à partir d'un fichier JSON exporté précédemment.</p>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
-          <button onClick={() => fileInputRef.current?.click()} className={cn("w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors", "border-primary/25 hover:border-primary/50 bg-primary/[0.03] hover:bg-primary/[0.06]", "font-mono ds-t-label tracking-[0.18em] uppercase text-primary/60 hover:text-primary")} style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-            <Upload className="h-4 w-4" />
-            {importFile ? importFile.name : "SÉLECTIONNER UN FICHIER .JSON"}
-          </button>
+          <Bouton pleine onClick={() => fileInputRef.current?.click()}>
+            <Upload />
+            {importFile ? importFile.name : "Choisir un fichier .json"}
+          </Bouton>
           {importPreview && (
             <div className="border border-primary/15 bg-primary/[0.03] p-3 space-y-2" style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
               <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase">APERÇU DE L'IMPORT</p>
@@ -247,9 +248,11 @@ export default function DataPortability() {
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Steps</span></div>
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.journalEntries}</span><br /><span className="text-muted-foreground">Journal</span></div>
               </div>
-              <Button onClick={handleImport} disabled={isImporting} className="w-full bg-primary/20 border border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider disabled:opacity-50" style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-                {isImporting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> IMPORT EN COURS...</> : <><Upload className="mr-2 h-4 w-4" /> IMPORTER LES DONNÉES</>}
-              </Button>
+              <Bouton role="primaire" pleine onClick={handleImport} disabled={isImporting}>
+                {isImporting
+                  ? <><Loader2 className="animate-spin" />Import en cours…</>
+                  : <><Upload />Importer les données</>}
+              </Bouton>
             </div>
           )}
         </div>
@@ -260,24 +263,25 @@ export default function DataPortability() {
         <div className="space-y-3">
           <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
           <Link to="/legal">
-            <Button className="w-full bg-primary/20 border border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider" style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-              <Scale className="mr-2 h-4 w-4" /> {t("profile.data.viewTerms")}
-            </Button>
+            <Bouton pleine>
+              <Scale /> {t("profile.data.viewTerms")}
+            </Bouton>
           </Link>
         </div>
       </Panneau>
 
       {/* ── Danger Zone ── */}
-      <Panneau code="data.reset" etat={t("settings.data.danger", "irréversible")} ton="danger">
+      <Panneau code="data.reset" etat={t("settings.data.danger", "irréversible")} ton="danger" taille="pleine">
         <div className="border border-destructive/20 bg-destructive/5 p-4" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
           <div className="flex items-start gap-3">
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">
               <p className="text-xs font-mono text-destructive/80 tracking-wider uppercase font-bold">Supprimer toutes les données</p>
               <p className="ds-t-label text-destructive/50 font-mono leading-relaxed">Supprime tous tes objectifs, pacts, journal, finances et historiques. Ton compte reste actif mais vide.</p>
-              <button onClick={() => setShowResetModal(true)} className={cn("px-4 py-2 border border-destructive/30 bg-destructive/10 text-destructive", "hover:bg-destructive/20 hover:border-destructive/50", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors")} style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
-                RÉINITIALISER MES DONNÉES
-              </button>
+              <Bouton role="danger" onClick={() => setShowResetModal(true)}>
+                <Trash2 />
+                Réinitialiser mes données
+              </Bouton>
             </div>
           </div>
         </div>

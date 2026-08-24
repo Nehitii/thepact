@@ -81,14 +81,27 @@ export function CyberPanel({
   children,
   accent = "cyan",
   statusText,
+  taille = "pleine",
+  rang,
 }: {
   title: string;
   children: React.ReactNode;
   accent?: "cyan" | "red";
   statusText?: React.ReactNode;
+  /* Les cartes heritees prennent la pleine largeur par defaut : elles
+     n ont pas ete dessinees pour une demi-colonne. Celles qui s y
+     pretent le declarent. */
+  taille?: "demi" | "pleine";
+  rang?: "primaire" | "normal" | "discret";
 }) {
   return (
-    <Panneau code={title} etat={statusText} ton={accent === "red" ? "danger" : "neutre"}>
+    <Panneau
+      code={title}
+      etat={statusText}
+      ton={accent === "red" ? "danger" : "neutre"}
+      taille={taille}
+      rang={rang}
+    >
       <div className="space-y-5 py-2">{children}</div>
     </Panneau>
   );
@@ -192,8 +205,8 @@ export function StickyCommandBar({
   hasChanges,
   isSaving,
   onSave,
-  saveLabel = "COMMIT OVERRIDE",
-  savingLabel = "EXECUTING...",
+  saveLabel = "Enregistrer",
+  savingLabel = "Enregistrement…",
 }: {
   latestLog: { text: string; type: "ok" | "warn" | "info" };
   hasChanges?: boolean;
@@ -276,6 +289,8 @@ export function DataPanel({
   footerLeft,
   footerRight,
   children,
+  taille,
+  rang,
 }: {
   code: string;
   title: string;
@@ -283,9 +298,13 @@ export function DataPanel({
   footerLeft?: React.ReactNode;
   footerRight?: React.ReactNode;
   children: React.ReactNode;
+  /* Transmis a `CyberPanel`, donc a `Panneau` : sans ce relais, une
+     carte ne pouvait pas demander une demi-colonne. */
+  taille?: "demi" | "pleine";
+  rang?: "primaire" | "normal" | "discret";
 }) {
   return (
-    <CyberPanel title={title} statusText={statusText}>
+    <CyberPanel title={title} statusText={statusText} taille={taille} rang={rang}>
       <div>{children}</div>
       {(footerLeft || footerRight) && (
         <div className="flex items-center justify-between pt-4 mt-4 border-t border-primary/10">

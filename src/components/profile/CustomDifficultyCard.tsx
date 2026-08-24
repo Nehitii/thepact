@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { DataPanel, SettingRow } from "./settings-ui";
@@ -116,7 +117,7 @@ export function CustomDifficultyCard({
         {/* Preview */}
         {customDifficultyName && (
           <div className="border border-dashed border-primary/25 bg-primary/[0.03] p-3">
-            <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-2">PREVIEW //</p>
+            <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-2">Aperçu</p>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: customDifficultyColor }} />
               <span className="font-orbitron uppercase tracking-wide text-sm font-semibold" style={{ color: customDifficultyColor }}>{customDifficultyName}</span>
@@ -124,9 +125,9 @@ export function CustomDifficultyCard({
           </div>
         )}
 
-        <button onClick={handleSave} disabled={saving} className={cn(CY_BTN, "w-full flex items-center justify-center gap-2")}>
-          {saving ? (<><Loader2 className="h-3.5 w-3.5 animate-spin" />SAVING…</>) : "[ SAVE DIFFICULTY ]"}
-        </button>
+        <Bouton role="primaire" pleine onClick={handleSave} disabled={saving}>
+          {saving ? <><Loader2 className="animate-spin" />Enregistrement…</> : "Enregistrer la difficulté"}
+        </Bouton>
       </div>
     </DataPanel>
   );

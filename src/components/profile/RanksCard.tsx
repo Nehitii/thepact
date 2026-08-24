@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -251,15 +252,9 @@ export function RanksCard({ userId }: RanksCardProps) {
           {ranks.length > 3 && <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />}
         </div>
 
-        <button onClick={handleAddRank}
-          className={cn(
-            "w-full h-10 mt-4 font-mono ds-t-label tracking-[0.22em] uppercase",
-            "border border-dashed border-primary/30 bg-transparent",
-            "text-primary/50 hover:text-primary hover:border-primary/60 hover:bg-primary/[0.05]",
-            "transition-all duration-200 flex items-center justify-center gap-2",
-          )}>
-          <Plus className="h-4 w-4" />ADD NEW RANK
-        </button>
+        <Bouton onClick={handleAddRank} pleine className="mt-4">
+          <Plus />Ajouter un rang
+        </Bouton>
 
         {selectedRank && (
           <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />

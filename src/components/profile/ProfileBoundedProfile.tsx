@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Bouton } from "@/components/profile/console-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -478,17 +479,10 @@ export function ProfileBoundedProfile({
       </div>
 
       {/* 3. ACTION BAR */}
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full h-14 bg-primary/10 border border-primary/50 hover:bg-primary/20 text-primary font-orbitron tracking-widest uppercase relative overflow-hidden group"
-      >
-        <span className="relative z-10 flex items-center gap-2">
-          {saving ? <Loader2 className="animate-spin" /> : <Save />}
-          {saving ? "Synchronizing..." : "Save Identity"}
-        </span>
-        <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-      </Button>
+      <Bouton role="primaire" pleine onClick={handleSave} disabled={saving}>
+        {saving ? <Loader2 className="animate-spin" /> : <Save />}
+        {saving ? "Enregistrement…" : "Enregistrer"}
+      </Bouton>
 
       {/* --- DIALOGS (Keep existing implementation) --- */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>

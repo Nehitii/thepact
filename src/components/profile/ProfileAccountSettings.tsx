@@ -99,7 +99,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   const { t, i18n } = useTranslation();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
 
-  const [activeTab, setActiveTab] = useState<"IDENTITY" | "SECURITY" | "SYSTEM">("IDENTITY");
+  const [activeTab, setActiveTab] = useState<"Identité" | "Sécurité" | "Système">("Identité");
   const [formData, setFormData] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -138,13 +138,13 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   return (
     <div className="w-full max-w-4xl mx-auto pb-32">
-      <SettingsTabBar tabs={["IDENTITY", "SECURITY", "SYSTEM"] as const} activeTab={activeTab} onChange={(tab) => setActiveTab(tab as typeof activeTab)} />
+      <SettingsTabBar tabs={["Identité", "Sécurité", "Système"] as const} activeTab={activeTab} onChange={(tab) => setActiveTab(tab as typeof activeTab)} />
 
       <AnimatePresence mode="wait">
         <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">
-          {activeTab === "IDENTITY" && (
+          {activeTab === "Identité" && (
             <>
-              <CyberPanel title="Core Identity">
+              <CyberPanel title="Identité">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="relative">
                     <CyberInput label={t("common.email")} value={formData.email} disabled />
@@ -176,14 +176,14 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
             </>
           )}
 
-          {activeTab === "SECURITY" && (
+          {activeTab === "Sécurité" && (
             <>
               <ChangePasswordSection onLog={addLog} />
               <TwoFactorSection onLog={addLog} />
             </>
           )}
 
-          {activeTab === "SYSTEM" && (
+          {activeTab === "Système" && (
             <>
               <SessionsSection userId={userId} onLog={addLog} />
               <DangerZoneSection onLog={addLog} />

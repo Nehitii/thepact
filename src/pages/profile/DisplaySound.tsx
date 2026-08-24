@@ -118,6 +118,8 @@ export default function DisplaySound() {
         code="sys.display"
         etat={t("settings.console.synced", "synchronisé")}
         ton="actif"
+        rang="primaire"
+        taille="pleine"
         journal={journaux.visuel ?? attente}
       >
         <Reglage
@@ -195,6 +197,7 @@ export default function DisplaySound() {
           ? t("settings.console.on", "actif")
           : t("settings.console.off", "coupé")}
         ton={effective.masterEnabled ? "actif" : "alerte"}
+        taille="pleine"
         journal={journaux.audio ?? attente}
       >
         <Reglage
@@ -246,7 +249,7 @@ export default function DisplaySound() {
                 onClick={() => ecouter("ui")}
                 disabled={!effective.masterEnabled}
                 title={t("settings.console.listen", "Écouter")}
-                className="w-8 h-8 rounded-md border border-primary/20 bg-primary/5 flex items-center justify-center hover:border-primary/40 hover:bg-primary/15 transition-colors disabled:opacity-25"
+                className="rg-bouton !w-9 !px-0"
               >
                 <Play className="h-3 w-3 text-primary" />
                 <span className="sr-only">{t("settings.console.listen", "Écouter")}</span>

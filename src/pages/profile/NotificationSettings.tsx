@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { Panneau, Reglage, Champ, Alerte } from "@/components/profile/console-ui";
+import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/components/profile/console-ui";
 
 const HEURES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 
@@ -88,6 +88,7 @@ export default function NotificationSettings() {
         /* Zero flux actif n est pas un etat neutre : on ne recevra plus
            rien, et il faut que ca se voie. */
         ton={actives === 0 ? "alerte" : "actif"}
+        rang="primaire"
         journal={journaux.flux ?? attente}
       >
         {([
@@ -241,9 +242,8 @@ export default function NotificationSettings() {
           >
             <div className="flex flex-wrap gap-2">
               {!push.subscribed ? (
-                <Button
-                  size="sm"
-                  className="gap-2"
+                <Bouton
+                  role="primaire"
                   onClick={async () => {
                     const r = await push.subscribe();
                     if (r.ok) {
@@ -255,15 +255,12 @@ export default function NotificationSettings() {
                     }
                   }}
                 >
-                  <Bell className="h-3.5 w-3.5" />
+                  <Bell />
                   {t("settings.notifications.enablePush", "Activer")}
-                </Button>
+                </Bouton>
               ) : (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
+                  <Bouton
                     onClick={async () => {
                       if (!user?.id) return;
                       const { error } = await supabase.functions.invoke("push-send", {
@@ -278,22 +275,20 @@ export default function NotificationSettings() {
                       }
                     }}
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <Send />
                     {t("settings.notifications.sendTest", "Envoyer un test")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-2"
+                  </Bouton>
+                  <Bouton
+                    role="discret"
                     onClick={async () => {
                       await push.unsubscribe();
                       toast.success(t("settings.notifications.pushOff", "Notifications désactivées"));
                       noter("push", "abonnement → coupé", "warn");
                     }}
                   >
-                    <BellOff className="h-3.5 w-3.5" />
+                    <BellOff />
                     {t("settings.notifications.unsubscribe", "Se désabonner")}
-                  </Button>
+                  </Bouton>
                 </>
               )}
             </div>

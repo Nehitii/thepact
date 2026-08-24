@@ -119,7 +119,7 @@ export function ConsoleReglages({ titre, note, children, flottant }: Props) {
               <h1 className="rg-volet-titre">{nom}</h1>
               {note && <p className="rg-volet-note">{note}</p>}
             </header>
-            {children}
+            <div className="rg-grille">{children}</div>
           </div>
         </div>
       </div>

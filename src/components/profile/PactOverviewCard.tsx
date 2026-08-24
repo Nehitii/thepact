@@ -33,6 +33,8 @@ export function PactOverviewCard({ userId }: PactOverviewCardProps) {
     <DataPanel
       code="MODULE_01"
       title="Vue d’ensemble"
+      taille="demi"
+      rang="primaire"
       statusText={<span className="text-muted-foreground">{daysActive}d ACTIVE</span>}
       footerLeft={<><span>GOALS: <b className="text-primary">{totalGoals}</b></span><span>COMPLETED: <b className="text-primary">{completedGoals}</b></span></>}
       footerRight={<span>XP: <b className="text-primary">{(pact.points ?? 0).toLocaleString()}</b></span>}
