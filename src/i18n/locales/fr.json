@@ -1724,7 +1724,18 @@
       "buyNow": "Acheter",
       "holding": "Maintiens",
       "authorizing": "Autorisation…",
-      "acquired": "Acquis"
+      "acquired": "Acquis",
+      "title": "Confirmer l’achat",
+      "about": {
+        "frame": "Tu vas acquérir ce cadre.",
+        "banner": "Tu vas acquérir ce fond de carte.",
+        "title": "Tu vas acquérir ce titre.",
+        "module": "Tu vas débloquer ce module.",
+        "bundle": "Tu vas prendre ce lot.",
+        "cosmetic": "Tu vas acquérir cette pièce."
+      },
+      "lowBalance": "Il te restera moins de 100 bonds après cet achat.",
+      "missing": "Il te manque {{n}} bonds."
     },
     "rarity": {
       "common": "Commun",
@@ -1760,7 +1771,9 @@
       "shuffle": "Mélanger"
     },
     "fitting": {
-      "balanceAfter": "Solde après"
+      "balanceAfter": "Solde après",
+      "title": "Essayage",
+      "subtitle": "Ta carte de profil, avec cette pièce dessus."
     },
     "empty": {
       "checkBack": "Repasse plus tard"

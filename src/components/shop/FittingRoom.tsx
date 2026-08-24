@@ -1,14 +1,12 @@
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserCosmetics, useShopFrames, useShopBanners, useShopTitles, CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/hooks/useShop";
+import { CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/hooks/useShop";
 import { HoldPurchaseButton } from "./HoldPurchaseButton";
 import { BondIcon } from "@/components/ui/bond-icon";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
+import { useCarteProfil, type CarteProfil } from "@/hooks/useCarteProfil";
+import { useRarityLabel, getRarity } from "./shopRarity";
 
 type PreviewItem =
   | { type: "frame"; data: CosmeticFrame }
@@ -25,6 +23,18 @@ interface FittingRoomProps {
   currentBalance: number;
 }
 
+/* L ESSAYAGE MONTRE LA CARTE, PAS UNE IMITATION.
+ *
+ * Il dessinait sa propre maquette de profil — une bande, un avatar, un
+ * nom — a cote de la vraie carte qui existait deja. Deux rendus a
+ * maintenir, et surtout un apercu qui pouvait mentir : la maquette ne
+ * reprenait ni le rang, ni la phrase, ni la mise en page reelle, et
+ * ses etiquettes « FITTING ROOM », « PREVIEW » et « NEW » etaient
+ * restees en anglais.
+ *
+ * On rend maintenant `CarteProfilPublic`, la meme qu au survol d un
+ * membre et que dans les reglages, avec la piece essayee substituee.
+ * Ce qu on essaie est ce qu on portera. */
 export function FittingRoom({
   open,
   onOpenChange,
@@ -36,174 +46,104 @@ export function FittingRoom({
 }: FittingRoomProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-
-  // Fetch current user's profile for avatar/active cosmetics
-  const { data: profile } = useQuery({
-    queryKey: ["profile-cosmetics", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("avatar_url, display_name, active_frame_id, active_banner_id, active_title_id")
-        .eq("id", user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Fetch current active cosmetics for live preview
-  const { data: frames = [] } = useShopFrames();
-  const { data: banners = [] } = useShopBanners();
-  const { data: titles = [] } = useShopTitles();
-
-  const currentFrame = useMemo(
-    () => frames.find((f) => f.id === profile?.active_frame_id),
-    [frames, profile?.active_frame_id]
-  );
-  const currentBanner = useMemo(
-    () => banners.find((b) => b.id === profile?.active_banner_id),
-    [banners, profile?.active_banner_id]
-  );
-  const currentTitle = useMemo(
-    () => titles.find((t) => t.id === profile?.active_title_id),
-    [titles, profile?.active_title_id]
-  );
+  const libelleRarete = useRarityLabel();
+  /* La requete ne part qu a l ouverture du panneau. */
+  const { data: maCarte } = useCarteProfil(user?.id, open);
 
   if (!previewItem) return null;
 
-  // Merge current cosmetics with the previewed one
-  const displayFrame = previewItem.type === "frame" ? previewItem.data : currentFrame;
-  const displayBanner = previewItem.type === "banner" ? previewItem.data : currentBanner;
-  const displayTitle = previewItem.type === "title" ? previewItem.data as CosmeticTitle : currentTitle;
+  const rarete = previewItem.data.rarity;
+  const r = getRarity(rarete);
+  const price = previewItem.data.price;
+  const itemName =
+    previewItem.type === "title" ? previewItem.data.title_text : previewItem.data.name;
 
-  const price = previewItem.type === "frame"
-    ? previewItem.data.price
-    : previewItem.type === "banner"
-      ? previewItem.data.price
-      : (previewItem.data as CosmeticTitle).price;
-
-  const itemName = previewItem.type === "title"
-    ? (previewItem.data as CosmeticTitle).title_text
-    : previewItem.data.name;
+  /* La carte du porteur, dont on ne change que la piece essayee. */
+  const essai: CarteProfil | null = maCarte
+    ? {
+        ...maCarte,
+        cadre:
+          previewItem.type === "frame"
+            ? {
+                image: previewItem.data.preview_url ?? null,
+                bordure: previewItem.data.border_color ?? null,
+                lueur: previewItem.data.glow_color ?? null,
+                montrerBordure: previewItem.data.show_border ?? null,
+                echelle: previewItem.data.frame_scale ?? null,
+                decalageX: previewItem.data.frame_offset_x ?? null,
+                decalageY: previewItem.data.frame_offset_y ?? null,
+              }
+            : maCarte.cadre,
+        banniere:
+          previewItem.type === "banner"
+            ? {
+                image: previewItem.data.banner_url ?? null,
+                debut: previewItem.data.gradient_start ?? null,
+                fin: previewItem.data.gradient_end ?? null,
+                rarete,
+              }
+            : maCarte.banniere,
+        titre:
+          previewItem.type === "title"
+            ? {
+                texte: previewItem.data.title_text ?? null,
+                couleur: previewItem.data.text_color ?? null,
+                lueur: previewItem.data.glow_color ?? null,
+              }
+            : maCarte.titre,
+      }
+    : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md border-l border-primary/20 bg-background/95 backdrop-blur-xl p-0">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md border-l border-primary/20 bg-background/95 backdrop-blur-xl p-0 overflow-y-auto"
+      >
         <SheetHeader className="p-6 pb-4 border-b border-primary/10">
           <SheetTitle className="font-orbitron text-lg tracking-wider text-primary">
-            FITTING ROOM
+            {t("shop.fitting.title", "Essayage")}
           </SheetTitle>
           <p className="text-xs text-muted-foreground font-rajdhani">
-            Preview how this item looks on your profile
+            {t("shop.fitting.subtitle", "Ta carte de profil, avec cette pièce dessus.")}
           </p>
         </SheetHeader>
 
         <div className="p-6 space-y-6">
-          {/* Mock Profile Header */}
-          <div className="rounded-xl border border-primary/20 overflow-hidden bg-card/50">
-            {/* Banner */}
-            <div
-              className="w-full h-24 relative"
-              style={{
-                background: displayBanner?.banner_url
-                  ? `url(${displayBanner.banner_url}) center/cover`
-                  : `linear-gradient(135deg, ${displayBanner?.gradient_start || "#0a0a12"}, ${displayBanner?.gradient_end || "#1a1a2e"})`,
-              }}
-            >
-              {previewItem.type === "banner" && (
-                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 ds-t-label font-orbitron text-primary">
-                  PREVIEW
-                </div>
-              )}
-            </div>
-
-            {/* Avatar + Info */}
-            <div className="px-4 pb-4 -mt-8 relative">
-              <div className="relative inline-block">
-                {displayFrame ? (
-                  <div className="relative">
-                    <AvatarFrame
-                      size="lg"
-                      avatarUrl={profile?.avatar_url ?? null}
-                      fallback={(profile?.display_name || "U")[0]}
-                      frameImage={displayFrame.preview_url}
-                      borderColor={displayFrame.avatar_border_color || displayFrame.border_color}
-                      glowColor={displayFrame.glow_color}
-                      frameScale={displayFrame.frame_scale}
-                      frameOffsetX={displayFrame.frame_offset_x}
-                      frameOffsetY={displayFrame.frame_offset_y}
-                      showBorder={displayFrame.show_border !== false}
-                    />
-                    {previewItem.type === "frame" && (
-                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 ds-t-label font-orbitron text-primary">
-                        NEW
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Avatar className="w-16 h-16 border-2 border-primary/30">
-                    <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-card text-foreground font-orbitron">
-                      {(profile?.display_name || "U")[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-
-              <div className="mt-3">
-                <p className="font-rajdhani font-semibold text-foreground text-lg">
-                  {profile?.display_name || "User"}
-                </p>
-                {displayTitle && (
-                  <span
-                    className="font-orbitron text-xs font-bold tracking-wider"
-                    style={{
-                      color: displayTitle.text_color || "hsl(var(--ds-accent-primary))",
-                      textShadow: displayTitle.glow_color
-                        ? `0 0 8px ${displayTitle.glow_color}`
-                        : undefined,
-                    }}
-                  >
-                    {displayTitle.title_text}
-                    {previewItem.type === "title" && (
-                      <span className="ml-2 text-primary/60 ds-t-label">← PREVIEW</span>
-                    )}
-                  </span>
-                )}
-              </div>
-            </div>
+          <div className="flex justify-center">
+            {essai ? (
+              <CarteProfilPublic carte={essai} />
+            ) : (
+              <div className="w-[320px] h-[300px] rounded-2xl bg-card/40 animate-pulse" />
+            )}
           </div>
 
-          {/* Item Info */}
           <div className="rounded-xl border border-primary/10 bg-card/30 p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-rajdhani font-semibold text-foreground">{itemName}</span>
-              <span className="text-xs uppercase tracking-wider text-muted-foreground capitalize">
-                {previewItem.type}
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-rajdhani font-semibold text-foreground truncate">{itemName}</span>
+              <span
+                className="ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border shrink-0"
+                style={{ color: r.accent, borderColor: r.border, background: r.glow }}
+              >
+                {libelleRarete(rarete)}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm font-rajdhani">
               <span className="text-muted-foreground">{t("shop.purchase.price", "Prix")}</span>
-              <div className="flex items-center gap-1.5 text-primary font-orbitron">
+              <div className="flex items-center gap-1.5 text-primary font-orbitron tabular-nums">
                 <BondIcon size={16} />
                 {price.toLocaleString()}
               </div>
             </div>
             <div className="flex items-center justify-between text-sm font-rajdhani">
               <span className="text-muted-foreground">{t("shop.fitting.balanceAfter", "Solde après")}</span>
-              <span className={`font-orbitron ${canAfford ? "text-primary" : "text-destructive"}`}>
+              <span className={`font-orbitron tabular-nums ${canAfford ? "text-primary" : "text-destructive"}`}>
                 {Math.max(0, currentBalance - price).toLocaleString()}
               </span>
             </div>
           </div>
 
-          {/* Hold-to-Buy */}
-          <HoldPurchaseButton
-            onComplete={onPurchase}
-            disabled={!canAfford}
-            isPending={isPending}
-          />
+          <HoldPurchaseButton onComplete={onPurchase} disabled={!canAfford} isPending={isPending} />
         </div>
       </SheetContent>
     </Sheet>

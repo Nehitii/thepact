@@ -88,7 +88,12 @@ export function CyberItemCard({
         style={{
           /* Fond neutre : la seule couleur de la carte vient de l objet. */
           background: "hsl(var(--card) / 0.82)",
-          border: `1px solid ${decouvert ? r.accent + "55" : "hsl(var(--primary) / 0.10)"}`,
+          /* `r.accent` est un `hsl(...)`, pas un hexadecimal : lui coller
+             un suffixe d opacite donnait `hsl(215 20% 55%)55`, que le
+             navigateur jette en silence — la bordure de survol n a donc
+             jamais change. `r.border` porte deja la meme teinte avec son
+             alpha. */
+          border: `1px solid ${decouvert ? r.border : "hsl(var(--primary) / 0.10)"}`,
           boxShadow: decouvert ? "0 10px 34px hsl(var(--background) / 0.55)" : undefined,
         }}
       >

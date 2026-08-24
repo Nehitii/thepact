@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance } from "@/hooks/useShop";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { FramePreview } from "@/components/ui/avatar-frame";
+import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
 import { getRarity, useRarityLabel } from "./shopRarity";
 
@@ -149,6 +150,14 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                   {featured.price.toLocaleString()}
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* La vedette laissait essayer et acheter, jamais mettre
+                      de cote — alors que c est la piece la plus chere de
+                      la page, celle qu on remet justement a plus tard. */}
+                  <WishlistButton
+                    itemId={featured.id}
+                    itemType="cosmetic"
+                    size="sm"
+                  />
                   {onPreview && (
                     <Button size="sm" variant="ghost" onClick={() => onPreview(featured, featured._type)} className="h-9 text-xs text-muted-foreground hover:text-foreground">
                       <Eye className="w-3.5 h-3.5 mr-1" /> {t("shop.purchase.preview", "Aperçu")}

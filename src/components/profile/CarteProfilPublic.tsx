@@ -3,6 +3,16 @@ import { useTranslation } from "react-i18next";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
 import { nombre, type CarteProfil } from "@/hooks/useCarteProfil";
 
+/* LA CARTE PORTE SA FEUILLE DE STYLE.
+ *
+ * Elle ne l importait pas : `SurvolProfil`, son unique appelant, s en
+ * chargeait. Le jour ou la boutique l a reutilisee pour montrer les
+ * fonds de carte, elle s est rendue toute nue — 117 px de large au
+ * lieu de 280, un fond de hauteur nulle, et le texte retombant sous
+ * l avatar. Un composant qui depend d une feuille que son appelant
+ * doit penser a charger finit toujours par etre appele ailleurs. */
+import "@/styles/carte-profil.css";
+
 /* LA CARTE DE PROFIL PUBLIC.
  *
  * Le meme objet que dans les reglages « Profil public » — banniere,

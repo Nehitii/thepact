@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
-import { useRarityLabel } from "./shopRarity";
+import { useRarityLabel, getRarity } from "./shopRarity";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { AlertTriangle } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { HoldPurchaseButton } from "@/components/shop/HoldPurchaseButton";
@@ -34,13 +34,6 @@ interface PurchaseConfirmModalProps {
   isPending?: boolean;
 }
 
-const rarityConfig: Record<string, { gradient: string; border: string; particle: string; glow: string }> = {
-  common: { gradient: "from-slate-500/20 to-slate-600/10", border: "border-slate-500/30", particle: "#94a3b8", glow: "hsl(215 20% 65% / 0.15)" },
-  rare: { gradient: "from-blue-500/20 to-blue-600/10", border: "border-blue-500/30", particle: "#60a5fa", glow: "hsl(217 91% 60% / 0.15)" },
-  epic: { gradient: "from-purple-500/20 to-purple-600/10", border: "border-purple-500/30", particle: "#c084fc", glow: "hsl(270 95% 75% / 0.15)" },
-  legendary: { gradient: "from-amber-500/20 to-amber-600/10", border: "border-amber-500/30", particle: "#fbbf24", glow: "hsl(45 93% 47% / 0.15)" },
-};
-
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const [display, setDisplay] = useState(value);
   useEffect(() => {
@@ -50,8 +43,7 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
     const duration = 400;
     const startTime = performance.now();
     const step = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / duration, 1);
+      const t = Math.min((now - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - t, 3);
       setDisplay(Math.round(start + diff * eased));
       if (t < 1) requestAnimationFrame(step);
@@ -61,20 +53,21 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <span className={className}>{display.toLocaleString()}</span>;
 }
 
-function FloatingParticle({ color, delay }: { color: string; delay: number }) {
-  const x = Math.random() * 100;
-  const size = 2 + Math.random() * 3;
-  return (
-    <motion.div
-      className="absolute rounded-full pointer-events-none"
-      style={{ backgroundColor: color, width: size, height: size, left: `${x}%`, bottom: -10 }}
-      initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: [0, 0.8, 0], y: -300 }}
-      transition={{ duration: 3 + Math.random() * 2, delay, repeat: Infinity, repeatDelay: Math.random() * 2, ease: "easeOut" }}
-    />
-  );
-}
-
+/* TROIS DEFAUTS TENAIENT DANS CETTE FENETRE.
+ *
+ * `AlertDialog` interdit par principe la fermeture au clic exterieur :
+ * c est le composant des decisions qu on ne doit pas ecarter par
+ * megarde. Une confirmation d achat n en est pas une — on doit
+ * pouvoir renoncer d un clic a cote. `Dialog` le permet, et garde
+ * Echap.
+ *
+ * La pastille de rarete composait sa classe a l execution —
+ * `bg-${...}-500/20` — ce que Tailwind ne peut pas generer : elle
+ * n avait donc aucune couleur. Elle lit maintenant les memes jetons
+ * que le reste de la boutique, quatrieme copie de la table de rarete
+ * supprimee au passage.
+ *
+ * Et le texte etait en anglais dans une interface francaise. */
 export function PurchaseConfirmModal({
   open,
   onOpenChange,
@@ -90,154 +83,133 @@ export function PurchaseConfirmModal({
   const canAfford = currentBalance >= item.price;
   const newBalance = currentBalance - item.price;
   const rarity = item.rarity || "common";
-  const cfg = rarityConfig[rarity] || rarityConfig.common;
+  const r = getRarity(rarity);
   const hasDiscount = item.originalPrice && item.originalPrice > item.price;
   const lowBalanceWarning = canAfford && newBalance < 100;
+  const estLegendaire = rarity === "legendary";
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={`max-w-md border-2 ${cfg.border} bg-gradient-to-br ${cfg.gradient} backdrop-blur-xl overflow-hidden`}>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <FloatingParticle key={i} color={cfg.particle} delay={i * 0.4} />
-          ))}
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md overflow-hidden border border-primary/15 bg-card/95 backdrop-blur-xl">
+        {/* L ornement reste reserve au legendaire, comme sur les cartes. */}
+        {estLegendaire && (
+          <div
+            className="absolute inset-x-0 top-0 h-[2px] pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${r.accent}, transparent)` }}
+          />
+        )}
 
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--foreground)) 2px, hsl(var(--foreground)) 3px)",
-          }}
-        />
+        <DialogHeader>
+          <DialogTitle className="font-orbitron text-xl">
+            {t("shop.purchase.title", "Confirmer l’achat")}
+          </DialogTitle>
+          <DialogDescription className="font-rajdhani text-muted-foreground">
+            {t(`shop.purchase.about.${item.type}`, {
+              defaultValue: t("shop.purchase.about.cosmetic", "Tu vas acquérir cette pièce."),
+            })}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="relative z-10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-orbitron text-xl flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Confirm Purchase
-            </AlertDialogTitle>
-            <AlertDialogDescription className="font-rajdhani text-muted-foreground">
-              You're about to purchase this {item.type}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="py-6 space-y-6">
-            <div className="relative flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-primary/20 overflow-hidden">
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 30% 50%, ${cfg.glow} 0%, transparent 70%)`,
-                }}
-              />
-              {item.previewElement && (
-                <motion.div
-                  className="relative flex-shrink-0"
-                  animate={{ scale: [1, 1.03, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  {item.previewElement}
-                </motion.div>
-              )}
-              <div className="relative flex-1 min-w-0">
-                <h4 className="font-rajdhani font-semibold text-foreground text-lg truncate">
-                  {item.name}
-                </h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground capitalize">
-                    {item.type}
-                  </span>
-                  {item.rarity && (
-                    <span className={`text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-${rarity === 'legendary' ? 'amber' : rarity === 'epic' ? 'purple' : rarity === 'rare' ? 'blue' : 'slate'}-500/20 text-${rarity === 'legendary' ? 'amber' : rarity === 'epic' ? 'purple' : rarity === 'rare' ? 'blue' : 'slate'}-400`}>
-                      {libelleRarete(item.rarity)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm font-rajdhani">
-                <span className="text-muted-foreground">{t("shop.purchase.currentBalance", "Solde actuel")}</span>
-                <div className="flex items-center gap-1.5">
-                  <BondIcon size={16} />
-                  <AnimatedNumber value={currentBalance} className="text-foreground font-medium" />
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm font-rajdhani">
-                <span className="text-muted-foreground">{t("shop.purchase.itemCost", "Coût")}</span>
-                <div className="flex items-center gap-1.5">
-                  {hasDiscount && (
-                    <span className="text-muted-foreground line-through text-xs flex items-center gap-1">
-                      <BondIcon size={12} />
-                      {item.originalPrice?.toLocaleString()}
-                    </span>
-                  )}
-                  <span className={`flex items-center gap-1 ${hasDiscount ? 'text-emerald-400' : 'text-red-400'}`}>
-                    <span>-</span>
-                    <BondIcon size={16} />
-                    <span className="font-medium">{item.price.toLocaleString()}</span>
-                  </span>
-                </div>
-              </div>
-              <div className="h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent)" }} />
-              <div className="flex items-center justify-between font-rajdhani">
-                <span className="text-foreground font-medium">{t("shop.purchase.newBalance", "Nouveau solde")}</span>
-                <div className={`flex items-center gap-1.5 ${canAfford ? 'text-primary' : 'text-red-400'}`}>
-                  <BondIcon size={18} />
-                  <span className="font-orbitron font-bold text-lg">
-                    <AnimatedNumber value={Math.max(0, newBalance)} />
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {lowBalanceWarning && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
-              >
-                <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span className="text-xs font-rajdhani text-amber-400">
-                  Balance will drop below 100 bonds after this purchase.
-                </span>
-              </motion.div>
+        <div className="py-4 space-y-6">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-background/40 border border-primary/10">
+            {item.previewElement && (
+              <div className="flex-shrink-0">{item.previewElement}</div>
             )}
-
-            {!canAfford && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30"
+            <div className="flex-1 min-w-0">
+              <h4 className="font-rajdhani font-semibold text-foreground text-lg truncate">
+                {item.name}
+              </h4>
+              <span
+                className="inline-flex mt-1.5 ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border"
+                style={{ color: r.accent, borderColor: r.border, background: r.glow }}
               >
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <div className="text-sm font-rajdhani">
-                  <span className="text-red-400 font-medium">{t("shop.purchase.insufficient", "Bonds insuffisants")}</span>
-                  <span className="text-muted-foreground"> You need {(item.price - currentBalance).toLocaleString()} more bonds.</span>
-                </div>
-              </motion.div>
-            )}
+                {libelleRarete(rarity)}
+              </span>
+            </div>
           </div>
 
-          <AlertDialogFooter className="gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              className="font-rajdhani"
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <div className="flex-1 min-w-[160px]">
-              <HoldPurchaseButton
-                onComplete={onConfirm}
-                disabled={!canAfford}
-                isPending={isPending}
-              />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm font-rajdhani">
+              <span className="text-muted-foreground">{t("shop.purchase.currentBalance", "Solde actuel")}</span>
+              <div className="flex items-center gap-1.5 tabular-nums">
+                <BondIcon size={16} />
+                <AnimatedNumber value={currentBalance} className="text-foreground font-medium" />
+              </div>
             </div>
-          </AlertDialogFooter>
+
+            <div className="flex items-center justify-between text-sm font-rajdhani">
+              <span className="text-muted-foreground">{t("shop.purchase.itemCost", "Coût")}</span>
+              <div className="flex items-center gap-2 tabular-nums">
+                {hasDiscount && (
+                  <span className="text-muted-foreground line-through text-xs">
+                    {item.originalPrice?.toLocaleString()}
+                  </span>
+                )}
+                <span className="flex items-center gap-1 text-foreground">
+                  −<BondIcon size={16} />
+                  <span className="font-medium">{item.price.toLocaleString()}</span>
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="h-px"
+              style={{ background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.25), transparent)" }}
+            />
+
+            <div className="flex items-center justify-between font-rajdhani">
+              <span className="text-foreground font-medium">{t("shop.purchase.newBalance", "Nouveau solde")}</span>
+              <div className={`flex items-center gap-1.5 tabular-nums ${canAfford ? "text-primary" : "text-destructive"}`}>
+                <BondIcon size={18} />
+                <span className="font-orbitron font-bold text-lg">
+                  <AnimatedNumber value={Math.max(0, newBalance)} />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {lowBalanceWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/25"
+            >
+              <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span className="text-xs font-rajdhani text-amber-400">
+                {t("shop.purchase.lowBalance", "Il te restera moins de 100 bonds après cet achat.")}
+              </span>
+            </motion.div>
+          )}
+
+          {!canAfford && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/25"
+            >
+              <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div className="text-sm font-rajdhani">
+                <span className="text-destructive font-medium">
+                  {t("shop.purchase.insufficient", "Bonds insuffisants")}
+                </span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  {t("shop.purchase.missing", { n: (item.price - currentBalance).toLocaleString() })}
+                </span>
+              </div>
+            </motion.div>
+          )}
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+
+        <DialogFooter className="gap-3">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="font-rajdhani" disabled={isPending}>
+            {t("shop.purchase.cancel", "Annuler")}
+          </Button>
+          <div className="flex-1 min-w-[160px]">
+            <HoldPurchaseButton onComplete={onConfirm} disabled={!canAfford} isPending={isPending} />
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

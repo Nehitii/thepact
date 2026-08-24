@@ -1724,7 +1724,18 @@
       "buyNow": "Buy now",
       "holding": "Hold",
       "authorizing": "Authorizing…",
-      "acquired": "Acquired"
+      "acquired": "Acquired",
+      "title": "Confirm purchase",
+      "about": {
+        "frame": "You are about to acquire this frame.",
+        "banner": "You are about to acquire this card background.",
+        "title": "You are about to acquire this title.",
+        "module": "You are about to unlock this module.",
+        "bundle": "You are about to take this bundle.",
+        "cosmetic": "You are about to acquire this piece."
+      },
+      "lowBalance": "You will be left with fewer than 100 bonds after this purchase.",
+      "missing": "You need {{n}} more bonds."
     },
     "rarity": {
       "common": "Common",
@@ -1760,7 +1771,9 @@
       "shuffle": "Shuffle"
     },
     "fitting": {
-      "balanceAfter": "Balance after"
+      "balanceAfter": "Balance after",
+      "title": "Fitting room",
+      "subtitle": "Your profile card, wearing this piece."
     },
     "empty": {
       "checkBack": "Check back later"

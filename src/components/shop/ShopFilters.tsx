@@ -231,7 +231,7 @@ export function ShopFilters({
             animate={{ opacity: 1 }}
             className="text-xs text-muted-foreground font-rajdhani"
           >
-            Showing {visibleItems} of {totalItems} items
+            {t("shop.cosmetics.showing", { n: visibleItems, total: totalItems })}
           </motion.span>
         )}
       </div>
