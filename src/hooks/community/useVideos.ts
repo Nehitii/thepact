@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
 import type { VictoryReel } from "./types";
 
 // Fetch victory reels
@@ -35,19 +36,16 @@ export function useVictoryReels() {
          pour cela — elle n existait pas ; community_posts porte deja
          la sienne depuis le debut. Elle est copiee a la creation et
          prend le relais quand la jointure ne rend rien. */
-      const [profilesRes, goalsRes, userReactionsRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
-          .in("id", userIds),
+      const [profilesMap, goalsRes, userReactionsRes] = await Promise.all([
+        /* Meme raison que pour le fil : la table ne rend que sa propre
+           ligne, la projection publique rend les autres — sans leur nom
+           quand ils ne sont pas visibles. */
+        chargerProfilsPublics(userIds),
         supabase.from("goals").select("id, name, type, start_date, completion_date").in("id", goalIds),
         user
           ? (supabase.from("community_reactions").select("reel_id, reaction_type").eq("user_id", user.id).in("reel_id", reelIds))
           : Promise.resolve({ data: [], error: null })
       ]);
-
-      const profilesMap = new Map<string, NonNullable<typeof profilesRes.data>[number]>();
-      (profilesRes.data || []).forEach((p) => profilesMap.set(p.id, p));
 
       const goalsMap = new Map<string, NonNullable<typeof goalsRes.data>[number]>();
       (goalsRes.data || []).forEach((g) => goalsMap.set(g.id, g));

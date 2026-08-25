@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Panneau } from "@/components/profile/console-ui";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
 import { useTranslation } from "react-i18next";
 
 export function BlockedUsersPanel() {
@@ -28,13 +29,16 @@ export function BlockedUsersPanel() {
 
       if (!data || data.length === 0) return [];
       const blockedIds = data.map((b: any) => b.blocked_user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .in("id", blockedIds);
+      /* La table ne rend que sa propre ligne : tous les comptes bloques
+         s affichaient « Agent inconnu ». La projection publique rend au
+         moins ceux qui sont visibles. Ceux qui ne le sont pas restent
+         anonymes — on pourrait leur faire une exception, puisqu on les
+         a forcement vus quelque part pour les bloquer, mais cela
+         demanderait d elargir le contrat de la fonction. */
+      const profils = await chargerProfilsPublics(blockedIds);
 
       return data.map((b: any) => {
-        const profile = profiles?.find((p: any) => p.id === b.blocked_user_id);
+        const profile = profils.get(b.blocked_user_id);
         return {
           ...b,
           display_name: profile?.display_name || t("friends.unknownAgent"),

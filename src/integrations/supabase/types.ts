@@ -5258,6 +5258,16 @@ export type Database = {
         }[]
       }
       mesures_du_membre: { Args: { p_user_id: string }; Returns: Json }
+      profils_publics: {
+        Args: { p_ids: string[] }
+        Returns: {
+          avatar: string
+          decouvrable: boolean
+          id: string
+          nom: string
+          partage_objectifs: boolean
+        }[]
+      }
       pseudonyme_de: { Args: { p_id: string }; Returns: string }
       purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }

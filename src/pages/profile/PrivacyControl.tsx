@@ -49,7 +49,12 @@ export default function PrivacyControl() {
     [updateProfile, t, noter],
   );
 
-  const enCours = isLoading || updateProfile.isPending;
+  /* LE PANNEAU NE SE FIGE PLUS PENDANT L ECRITURE.
+     `updateProfile.isPending` verrouillait les six interrupteurs a
+     chaque bascule — mesure : 71 ms de panneau inerte. Le cache portant
+     desormais la valeur avant le reseau, il n y a plus rien a proteger,
+     et une ecriture qui echoue revient en arriere d elle-meme. */
+  const enCours = isLoading;
 
   const { data: partages } = useQuery({
     queryKey: ["shared-data-overview", user?.id],

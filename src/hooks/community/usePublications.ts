@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
 import { trackCommunityPost } from "@/lib/achievements";
 import type { CommunityPost, CommunityReply, VictoryReel, PostFilterType, PostSortOption } from "./types";
 
@@ -77,18 +78,18 @@ export function useCommunityPosts(
          par trg_replies_count comme les compteurs de reactions le
          sont depuis toujours, rend la requete inutile. Deux appels
          reseau au lieu de trois. */
-      const [profilesRes, userReactionsRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
-          .in("id", userIds),
+      const [profilesMap, userReactionsRes] = await Promise.all([
+        /* LA PROJECTION PUBLIQUE, PAS LA TABLE.
+           `profiles` n a qu une politique SELECT — `auth.uid() = id` —
+           donc cette requete ne rendait que sa propre ligne : tous les
+           autres auteurs perdaient nom et avatar, et « profil
+           decouvrable » ne changeait rien puisque l absence de donnee
+           produisait deja le meme resultat. */
+        chargerProfilsPublics(userIds),
         user
           ? (supabase.from("community_reactions").select("post_id, reaction_type").eq("user_id", user.id).in("post_id", postIds))
           : Promise.resolve({ data: [], error: null })
       ]);
-
-      const profilesMap = new Map<string, NonNullable<typeof profilesRes.data>[number]>();
-      (profilesRes.data || []).forEach((p) => profilesMap.set(p.id, p));
 
       const userReactionsMap = new Map<string, string[]>();
       (userReactionsRes.data || []).forEach((r) => {
@@ -184,13 +185,7 @@ export function usePostReplies(postId: string | undefined) {
       if (!replies || replies.length === 0) return [];
 
       const userIds = [...new Set(replies.map((r) => r.user_id))] as string[];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url, community_profile_discoverable")
-        .in("id", userIds);
-
-      const profilesMap = new Map<string, NonNullable<typeof profiles>[number]>();
-      (profiles || []).forEach((p) => profilesMap.set(p.id, p));
+      const profilesMap = await chargerProfilsPublics(userIds);
 
       return replies.map((reply) => ({
         ...reply,

@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
 
 interface GuildMessage {
   id: string;
@@ -47,8 +48,11 @@ export function GuildChat({ guildId, userId }: Props) {
       if (error) throw error;
       if (!data?.length) return [];
       const userIds = [...new Set(data.map((m) => m.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", userIds);
-      const pm = new Map(profiles?.map((p) => [p.id, p]) || []);
+      /* `profiles` ne rend que sa propre ligne — tous les autres
+         membres s affichaient « ? ». La projection publique les rend,
+         et un compagnon de guilde y reste visible meme s il a coupe sa
+         decouvrabilite ailleurs. */
+      const pm = await chargerProfilsPublics(userIds);
       return data.map((m) => ({
         ...m,
         display_name: pm.get(m.user_id)?.display_name || "?",
