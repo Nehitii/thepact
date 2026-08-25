@@ -3,9 +3,24 @@
    ───────────────────────────────────────────────────────────────────
 
    UNE RÈGLE ABSOLUE : chaque sélecteur de ce fichier commence par
-   `.light`. Aucune ne peut donc s'appliquer au thème sombre — et le
-   préfixe ajoute une classe de spécificité, ce qui lui donne le
-   dernier mot quel que soit l'ordre de chargement.
+   `.light`. Aucune règle ne peut donc s'appliquer au thème sombre.
+   C'est vérifié par script à chaque passe : une règle sans préfixe
+   fait échouer la garde.
+
+   EN REVANCHE, LE PRÉFIXE NE SUFFIT PAS TOUJOURS À GAGNER.
+
+   Première hypothèse, fausse : « cette feuille est chargée en
+   dernier, donc à spécificité égale elle l'emporte ». Mesure dans le
+   navigateur : theme-clair.css est la feuille 9, health.css la 10.
+   Les feuilles importées par un COMPOSANT arrivent après le paquet
+   principal, quel que soit l'ordre des imports dans main.tsx.
+
+   Trois feuilles portaient déjà leur propre bloc clair écrit
+   `:root:not(.dark) …`, de spécificité (0,3,0) — plus que le préfixe
+   simple (0,2,0). Mes blocs y étaient purement décoratifs. Ils
+   répètent donc leur classe (`:root.light .hlt.hlt`) pour passer à
+   (0,4,0) : ils gagnent alors sur la spécificité seule, sans plus
+   rien devoir à l'ordre.
 
    Le thème sombre est intouchable par construction. Rien de ce qui
    suit ne le regarde.
@@ -121,7 +136,24 @@
 /* Déclarée sur `.hlt`, pas sur la racine. Une propriété posée sur un
    descendant gagne toujours sur celle héritée, quelle que soit la
    spécificité en haut : il faut la reposer au même endroit. */
-.light .hlt {
+/* CLASSE REPETEE, ET CE N EST PAS UNE COQUETTERIE.
+
+   health.css porte deja un bloc clair ecrit  :root:not(.dark) .hlt ,
+   dont la specificite (0,3,0) bat le prefixe simple (0,2,0). Passer
+   a  :root.light .hlt  met les deux a egalite — et a egalite, c est
+   l ORDRE DE CHARGEMENT qui tranche.
+
+   C est la que l hypothese de depart tombe : cette feuille n est PAS
+   chargee en dernier. Mesure dans le navigateur : theme-clair.css est
+   la feuille 9, health.css la 10. Les feuilles importees par un
+   composant arrivent APRES le paquet principal, quel que soit l ordre
+   des imports dans main.tsx.
+
+   Repeter la classe porte le bloc a (0,4,0) : il gagne alors sur la
+   specificite seule, sans plus rien devoir a l ordre. Trois familles
+   sont dans ce cas — .hlt, .gd/.ge et .fr — les seules dont la
+   feuille d origine porte deja un bloc  :root:not(.dark) . */
+:root.light .hlt.hlt {
   --hlt-fond:    212 34% 91%;
   --hlt-plaque:  #FBFAF7;
   --hlt-creux:   #EDEAE3;
@@ -129,7 +161,16 @@
   --hlt-encre:   #14181A;
   --hlt-encre-2: #3C4448;
   --hlt-encre-3: #6C7176;
-  --hlt-cyan:    #00707E;
+  --hlt-cyan:    #006278;
+  /* Les quatre jetons que le bloc clair d origine gardait pour lui :
+     sans eux la page melangeait deux palettes. Et l encre la plus
+     faible descend d un cran — a #6C7176, les seize pastilles  Vide 
+     et les titres de section tombaient a 3,4:1. */
+  --hlt-encre-3: #5A6165;
+  --hlt-trait-fort: #A9A79F;
+  --hlt-jaune:   #7A5C00;
+  --hlt-vert:    #006947;
+  --hlt-rouge:   #A80017;
 }
 
 /* ── Le dossier d'objectif et « Le front » ──
@@ -137,14 +178,16 @@
      disparaît. C'est très exactement « la view Le front n'est
      carrément plus visible ». ── */
 /* Idem : déclarées sur `.gd, .ge` et sur `.fr`. */
-.light .gd,
-.light .ge {
+/* Meme piege que pour .hlt, meme parade. */
+:root.light .gd.gd,
+:root.light .ge.ge {
   --gd-encre:   #14181A;
   --gd-encre-2: #3C4448;
   --gd-encre-3: #6C7176;
 }
 
-.light .fr {
+/* Idem cote front.css. */
+:root.light .fr.fr {
   --fr-encre:   #14181A;
   --fr-encre-2: #3C4448;
   --fr-encre-3: #6C7176;
@@ -1300,4 +1343,22 @@
 .light .rit-invite {
   color: hsl(44 26% 98%);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Le geste principal du relevé de santé, comme celui de Goals : un
+   aplat d'encre avec le texte en réserve. Il posait #07080A — un
+   quasi-noir — sur --hlt-jaune, ce qui donne 3,2:1 une fois l'or
+   descendu à l'encre. Les deux tons de l'aplat sont couverts : l'or
+   du relevé et le cyan du souffle. */
+.light .hlt-bouton,
+.light .hlt-bouton[data-ton="souffle"] {
+  color: hsl(44 26% 98%);
+  border-color: transparent;
+}
+/* La lueur du survol devient un appui : sur du papier, un halo de
+   26 px autour d'un aplat ne l'allume pas, il le fait baver. */
+.light .hlt-bouton:hover,
+.light .hlt-bouton[data-ton="souffle"]:hover {
+  filter: none;
+  box-shadow: 0 2px 0 hsl(38 22% 14% / 0.22);
 }
