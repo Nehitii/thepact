@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { PREF } from "@/lib/preferencesAffichage";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 
 interface MonitoringData {
   goalsCompleted: number;
@@ -183,6 +185,7 @@ function RadarView({ axes, frise, critique, volumeTotal }: {
   critique: any;
   volumeTotal: number;
 }) {
+  const sombre = useThemeSombre();
   const C = 150, R = 96, n = axes.length;
   const pt = (i: number, r: number) => {
     const a = (Math.PI * 2 * i) / n - Math.PI / 2;
@@ -228,7 +231,7 @@ function RadarView({ axes, frise, critique, volumeTotal }: {
 
           {axes.map((a, i) => {
             const p = pt(i, R * Math.max(0.03, a.pct / 100));
-            return <circle key={a.cle} className="mon-pt" cx={p[0]} cy={p[1]} r={3} style={{ ["--c" as string]: a.couleur }} />;
+            return <circle key={a.cle} className="mon-pt" cx={p[0]} cy={p[1]} r={3} style={{ ["--c" as string]: selonTheme(a.couleur, sombre) }} />;
           })}
 
           {/* Etiquettes : nom du palier et POURCENTAGE, demande explicite. */}
@@ -237,11 +240,14 @@ function RadarView({ axes, frise, critique, volumeTotal }: {
             const ancre = Math.abs(p[0] - C) < 6 ? "middle" : p[0] > C ? "start" : "end";
             return (
               <g key={a.cle}>
-                <text className="mon-lab" x={p[0]} y={p[1] - 4} fill={a.couleur} textAnchor={ancre}
-                      style={{ filter: `drop-shadow(0 0 6px ${a.couleur})` }}>
+                {/* Cinq neons de difficulte, poses en inline sur le SVG.
+                    Sur du papier ils ne portent pas, et leur lueur les
+                    empate au lieu de les allumer. */}
+                <text className="mon-lab" x={p[0]} y={p[1] - 4} fill={selonTheme(a.couleur, sombre)} textAnchor={ancre}
+                      style={{ filter: sombre ? `drop-shadow(0 0 6px ${a.couleur})` : "none" }}>
                   {a.nom}
                 </text>
-                <text className="mon-pct" x={p[0]} y={p[1] + 9} fill={a.couleur} textAnchor={ancre}>
+                <text className="mon-pct" x={p[0]} y={p[1] + 9} fill={selonTheme(a.couleur, sombre)} textAnchor={ancre}>
                   {a.pct}%
                 </text>
               </g>

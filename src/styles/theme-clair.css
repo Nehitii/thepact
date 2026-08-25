@@ -265,7 +265,7 @@
     from 0deg,
     transparent 0deg,
     transparent 7deg,
-    hsl(var(--ds-accent-hue, 200) 78% 40% / calc(0.2 * var(--sing-lum, 1))) 8deg,
+    hsl(var(--ds-accent-hue, 200) 78% 40% / calc(0.1 * var(--sing-lum, 1))) 8deg,
     transparent 9deg,
     transparent 16deg);
 }
@@ -824,3 +824,33 @@
 }
 .light .singularity-field,
 .light .singularity-field::after { opacity: 0.55; }
+
+/* ── LE DIAGNOSTIC DU MONITORING ───────────────────────────────────
+   « Le vert dans diag de monitoring est illisible. » Il l'était :
+   #7dffc4, un vert menthe pâle avec une lueur de 7 px, soit 1,4:1 sur
+   du papier. C'est la couleur d'un terminal à phosphore — elle n'a de
+   sens que dans le noir.
+
+   Sur du papier, un relevé de diagnostic s'imprime en toner, et l'état
+   NORMAL n'a pas besoin d'être coloré du tout : c'est l'écart qui doit
+   être coloré, pas la routine. Le vert ne disparaît donc pas de la
+   page, il quitte la ligne courante pour ne rester que là où il dit
+   quelque chose. */
+.light .mon-dl {
+  color: hsl(200 20% 16%);
+  text-shadow: none;
+}
+.light .mon-dl.warn { color: #8E3D00; text-shadow: none; }
+.light .mon-dl.crit { color: #A80017; text-shadow: none; }
+.light .mon-dhead {
+  color: hsl(200 14% 30%);
+  opacity: 1;
+  text-shadow: none;
+}
+.light .mon-dsep {
+  background: linear-gradient(90deg, hsl(200 16% 24% / 0.34), transparent);
+}
+.light .mon-curseur {
+  background: hsl(191 100% 22%);
+  box-shadow: none;
+}
