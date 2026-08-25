@@ -275,6 +275,7 @@ export default function DisplaySound() {
                 <span className="sr-only">{t("settings.console.listen", "Écouter")}</span>
               </button>
               <Switch
+                aria-label={t(nomCle)}
                 checked={!!effective[cle]}
                 onCheckedChange={(v) => {
                   persistSound({ ...effective, [cle]: v });

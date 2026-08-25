@@ -100,6 +100,7 @@ export function PactIdentityCard({
   const selectedEffectStyle = EFFECT_OPTIONS.find(e => e.key === titleEffect)?.style || {};
 
   return (
+    <>
     <DataPanel
       code="MODULE_02"
       title="Identité du pacte"
@@ -155,6 +156,21 @@ export function PactIdentityCard({
           </div>
         </div>
 
+      </div>
+    </DataPanel>
+
+    {/* CE QUE LE PACTE EST, PUIS COMMENT IL SE MONTRE.
+        Un seul panneau portait les deux — 1 599 px, 82 % de sa section,
+        le plus gros de toute la console. Le nom et la raison d un cote,
+        l embleme et sa typographie de l autre : deux natures, deux
+        panneaux, sans onglet de plus dans le rail. */}
+    <DataPanel
+      code="MODULE_02b"
+      title="Emblème du pacte"
+      statusText={<span className="text-primary/40">{pactSymbol.toUpperCase()}</span>}
+      footerRight={<span className="text-primary/40">Police : {titleFont.toUpperCase()}</span>}
+    >
+      <div className="py-4 space-y-5">
         {/* Pact Symbol */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
@@ -249,5 +265,6 @@ export function PactIdentityCard({
         </Bouton>
       </div>
     </DataPanel>
+    </>
   );
 }

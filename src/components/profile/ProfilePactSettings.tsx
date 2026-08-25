@@ -5,7 +5,6 @@ import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
 import { PactIdentityCard } from "./PactIdentityCard";
-import { PactOverviewCard } from "./PactOverviewCard";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
    L identite du pacte est un editeur a elle seule — 1 282 px — et les
@@ -78,7 +77,13 @@ export function ProfilePactSettings({
   if (volet === "identite") {
     return (
       <>
-        <PactOverviewCard userId={userId} />
+        {/* LA VUE D ENSEMBLE EST PARTIE DANS « MES DONNEES ».
+            Quatre chiffres ouvraient cette section, quatre autres
+            ouvraient « Mes donnees » — dont deux les memes. Aucune des
+            deux n est un reglage : une console de reglages ne commence
+            pas par un tableau de bord, encore moins deux fois. Les deux
+            valeurs qui n existaient qu ici — scelle le, jours tenus —
+            ont rejoint l autre table. */}
         <PactIdentityCard
           pactId={pactId}
           pactName={pactName}

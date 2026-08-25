@@ -41,7 +41,7 @@ export function ProjectTimelineCard({
   const [saving, setSaving] = useState(false);
 
   const dateValidationError = projectStartDate && projectEndDate && projectEndDate <= projectStartDate
-    ? "End date must be after start date."
+    ? "La date de fin doit suivre la date de début."
     : null;
 
   const handleSave = async () => {
@@ -142,7 +142,7 @@ export function ProjectTimelineCard({
                 >
                   <span className="flex items-center gap-2">
                     <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
-                    {projectEndDate ? formatDisplayDate(projectEndDate) : "Select end"}
+                    {projectEndDate ? formatDisplayDate(projectEndDate) : "Choisir"}
                   </span>
                 </button>
               </PopoverTrigger>

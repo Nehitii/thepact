@@ -4,6 +4,8 @@ import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { differenceInDays, format, parseISO, isValid } from "date-fns";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +55,7 @@ export default function DataPortability() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const locale = useDateFnsLocale();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
   const [isExporting, setIsExporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -68,7 +71,10 @@ export default function DataPortability() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "DATA PORTABILITY READY", type: "info" });
+  /* `latestLog` etait ecrit dix fois — EXPORT INITIATED, IMPORT FAILED,
+     ALL DATA PURGED… — et rendu nulle part : le journal de terminal qui
+     l affichait est parti avec la refonte epuree. Dix chaines anglaises
+     dans un etat que personne ne lisait. */
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["user-stats", user?.id],
@@ -96,9 +102,10 @@ export default function DataPortability() {
          `pact_id = ""` — une chaine vide la ou Postgres attend un uuid —
          et la requete echouait en silence, le compte retombant a zero
          par `|| 0`. */
-      /* Le nom sert a la confirmation de reinitialisation, plus bas. */
+      /* Le nom sert a la confirmation de reinitialisation, la date de
+         creation aux deux chiffres repris de « Mon pacte ». */
       const { data: pacte } = pactId
-        ? await supabase.from("pacts").select("name").eq("id", pactId).maybeSingle()
+        ? await supabase.from("pacts").select("name, created_at").eq("id", pactId).maybeSingle()
         : { data: null };
 
       const objectifs = pactId
@@ -119,9 +126,15 @@ export default function DataPortability() {
       ]);
 
       const etapes = etapesRes.data ?? [];
+
+      const scelle = pacte?.created_at ? parseISO(pacte.created_at) : null;
+      const valide = scelle && isValid(scelle);
+
       return {
         pactId,
         pactName: pacte?.name ?? "",
+        scelleLe: valide ? format(scelle, "d MMM yyyy", { locale }) : null,
+        joursTenus: valide ? differenceInDays(new Date(), scelle) : 0,
         goalsCreated: idsObjectifs.length,
         /* « completed » est bien le statut des ETAPES — contrairement
            aux objectifs, ou il n existe pas. */
@@ -137,7 +150,6 @@ export default function DataPortability() {
   const handleExportData = async () => {
     if (!user?.id) return;
     setIsExporting(true);
-    setLatestLog({ text: "EXPORT INITIATED...", type: "info" });
     try {
       /* UNE SAUVEGARDE MUETTE N EN EST PAS UNE.
          Chaque requete de cet export jetait son `error` : une lecture
@@ -191,7 +203,6 @@ export default function DataPortability() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = `vowpact-sante-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
             toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
-            setLatestLog({ text: "HEALTH CSV EXPORTED", type: "ok" });
             return;
           }
           exportData = { ...exportData, healthData };
@@ -225,10 +236,8 @@ export default function DataPortability() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
-      setLatestLog({ text: `EXPORT COMPLETE: ${exportCategory.toUpperCase()}`, type: "ok" });
     } catch {
       toast.error(t("profile.data.exportFailed"), { description: t("profile.data.exportError") });
-      setLatestLog({ text: "EXPORT FAILED", type: "warn" });
     } finally {
       setIsExporting(false);
     }
@@ -272,7 +281,6 @@ export default function DataPortability() {
   const handleImport = async () => {
     if (!importFile || !user?.id) return;
     setIsImporting(true);
-    setLatestLog({ text: "IMPORT IN PROGRESS...", type: "info" });
     try {
       const text = await importFile.text();
       const data = JSON.parse(text);
@@ -284,7 +292,6 @@ export default function DataPortability() {
         toast.info("Rien à restaurer", {
           description: "Ce fichier ne contient ni objectif ni entrée de journal.",
         });
-        setLatestLog({ text: "IMPORT: NOTHING TO DO", type: "info" });
         return;
       }
 
@@ -350,30 +357,25 @@ export default function DataPortability() {
       await queryClient.invalidateQueries({ queryKey: ["user-stats", user.id] });
 
       toast.success("Restauration terminée", { description: `${fait.join(", ")}.` });
-      setLatestLog({ text: `IMPORT COMPLETE: ${fait.join(" / ")}`, type: "ok" });
       setImportFile(null); setImportPreview(null);
     } catch (e) {
       toast.error("Erreur d’import", {
         description: e instanceof Error ? e.message : String(e),
       });
-      setLatestLog({ text: "IMPORT FAILED", type: "warn" });
     } finally { setIsImporting(false); }
   };
 
   const handleDeleteAllData = async () => {
     if (resetConfirm !== MOT_REINIT) return;
     setIsResetting(true);
-    setLatestLog({ text: "RESETTING ALL DATA...", type: "warn" });
     try {
       const { data, error } = await supabase.functions.invoke("delete-all-data", { headers: { Authorization: `Bearer ${session?.access_token}` } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success("Données supprimées", { description: "Toutes tes données ont été réinitialisées." });
-      setLatestLog({ text: "ALL DATA PURGED", type: "ok" });
       setShowResetModal(false); setResetConfirm("");
     } catch (e) {
       toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) });
-      setLatestLog({ text: "RESET FAILED", type: "warn" });
     } finally { setIsResetting(false); }
   };
 
@@ -407,7 +409,6 @@ export default function DataPortability() {
       toast.error("Suppression impossible", {
         description: e instanceof Error ? e.message : "Ton compte est intact. Réessaie ou signale-le.",
       });
-      setLatestLog({ text: "ACCOUNT DELETE FAILED", type: "warn" });
     } finally {
       setIsDeleting(false);
     }
@@ -432,7 +433,17 @@ export default function DataPortability() {
     { value: "health", label: t("profile.data.categories.health") || "Health", icon: <Heart className="h-4 w-4" />, desc: t("profile.data.healthDesc") || "Wellness check-ins, sleep, activity & stress data (CSV)" },
   ];
 
+  /* UNE SEULE TABLE DE CHIFFRES DANS LA CONSOLE.
+     « Mon pacte » s ouvrait sur quatre chiffres, « Mes donnees » sur
+     quatre autres — dont deux les memes. Aucune des deux n est un
+     reglage : une console de reglages qui commence par un tableau de
+     bord, et deux fois.
+
+     Les deux valeurs qui n existaient que la-bas — la date de
+     scellement et les jours tenus — rejoignent celle-ci. */
   const statItems = [
+    { value: stats?.scelleLe || "—", label: "Scellé le" },
+    { value: stats?.joursTenus ?? 0, label: "Jours tenus" },
     { value: stats?.goalsCreated || 0, label: t("profile.data.stats.goalsCreated") },
     { value: stats?.stepsCompleted || 0, label: t("profile.data.stats.stepsCompleted") },
     { value: stats?.journalEntries || 0, label: t("profile.data.stats.journalEntries") },
@@ -443,7 +454,7 @@ export default function DataPortability() {
     <ConsoleReglages titre={t("profile.data.title")} note={t("profile.data.subtitle")}>
       {/* ── Stats ── */}
       <Panneau code="Ce que tu as produit" etat={t("settings.console.synced", "synchronisé")} ton="actif" rang="primaire">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {statItems.map((s) => (
             <div key={s.label} className="border border-primary/15 bg-primary/[0.03] p-4 text-center" style={{ clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)" }}>
               <div className="text-2xl font-orbitron font-bold text-primary">{s.value}</div>

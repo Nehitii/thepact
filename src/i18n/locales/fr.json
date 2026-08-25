@@ -190,7 +190,7 @@
       "exportTitle": "Exporter tes données",
       "exportDesc": "Télécharge une copie de tes données au format JSON. Choisis ce que tu veux exporter :",
       "exporting": "Exportation…",
-      "download": "Télécharger {{category}}",
+      "download": "Télécharger : {{category}}",
       "exportComplete": "Export terminé",
       "exportSuccess": "Tes {{category}} ont été exportées avec succès.",
       "exportFailed": "Échec de l'export",

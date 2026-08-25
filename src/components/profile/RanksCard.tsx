@@ -100,7 +100,7 @@ export function RanksCard({ userId }: RanksCardProps) {
   const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
 
   const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast.error("Nom manquant", { description: "Un rang a besoin d’un nom." }); throw new Error("Validation failed"); }
+    if (!rank.name.trim()) { toast.error("Nom manquant", { description: "Un rang a besoin d’un nom." }); throw new Error("nom_manquant"); }
     
     // Overlap validation: check for duplicate min_points
     const conflicting = ranks.find(r => r.min_points === rank.min_points && r.id !== rank.id);
@@ -217,7 +217,7 @@ export function RanksCard({ userId }: RanksCardProps) {
                             <span className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate" style={{ color: frameColor, textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` }}>{rank.name}</span>
                             {isCurrentRank && (
                               <span className="flex-shrink-0 px-1.5 py-0.5 ds-t-label font-mono font-bold uppercase tracking-wider rounded-sm" style={{ backgroundColor: `${frameColor}20`, color: frameColor, border: `1px solid ${frameColor}40` }}>
-                                Current
+                                Actuel
                               </span>
                             )}
                           </div>
@@ -226,19 +226,24 @@ export function RanksCard({ userId }: RanksCardProps) {
                           </div>
                         </div>
 
-                        {/* Three-dot dropdown menu — works on mobile */}
+                        {/* Le menu par rang : modifier, supprimer. */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 flex-shrink-0">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={"Actions pour le rang " + rank.name}
+                              className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 flex-shrink-0"
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-card border-primary/30 z-50">
                             <DropdownMenuItem onClick={() => handleEditRank(rank)} className="gap-2 cursor-pointer">
-                              <Edit2 className="h-3.5 w-3.5" /> Edit
+                              <Edit2 className="h-3.5 w-3.5" /> Modifier
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteRank(rank)} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                              <Trash2 className="h-3.5 w-3.5" /> Supprimer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -263,15 +268,16 @@ export function RanksCard({ userId }: RanksCardProps) {
         <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
           <AlertDialogContent className="bg-card border-primary/30">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-foreground">Delete Rank</AlertDialogTitle>
+              <AlertDialogTitle className="text-foreground">Supprimer « {rankToDelete?.name} » ?</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete "{rankToDelete?.name}"? This action cannot be undone.
+                Ce palier disparaîtra de ta progression. L’XP déjà gagnée ne
+                bouge pas ; c’est l’échelle qui change.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="border-primary/30">Cancel</AlertDialogCancel>
+              <AlertDialogCancel className="border-primary/30">Annuler</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
+                Supprimer
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

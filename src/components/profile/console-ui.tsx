@@ -1,4 +1,4 @@
-import { ReactNode, forwardRef, useId } from "react";
+import { ReactNode, ReactElement, cloneElement, forwardRef, isValidElement, useId } from "react";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import "@/styles/reglages.css";
@@ -82,14 +82,32 @@ interface ReglageProps {
 }
 
 export function Reglage({ nom, note, icone, large, children }: ReglageProps) {
+  /* L INTITULE EST UN VOISIN, PAS UNE ETIQUETTE.
+
+     Radix rend ses interrupteurs et ses glissieres sans texte propre.
+     Sans rattachement explicite, la console annoncait dix-neuf
+     controles « bouton » sans jamais dire lesquels : visuellement
+     etiquetes, muets a l oreille.
+
+     On rattache ici plutot qu a chaque appel — vingt sites
+     aujourd hui, et tous ceux qui viendront. Un enfant qui porte
+     deja son propre nom garde le sien. */
+  const idNom = useId();
+  const enfant =
+    isValidElement(children) &&
+    !(children.props as Record<string, unknown>)["aria-label"] &&
+    !(children.props as Record<string, unknown>)["aria-labelledby"]
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, { "aria-labelledby": idNom })
+      : children;
+
   return (
     <div className="rg-reglage" data-large={large ? "" : undefined}>
-      <span className="rg-reglage-nom">
+      <span className="rg-reglage-nom" id={idNom}>
         {icone}
         {nom}
       </span>
       {note && <span className="rg-reglage-note">{note}</span>}
-      <div className="rg-reglage-controle">{children}</div>
+      <div className="rg-reglage-controle">{enfant}</div>
     </div>
   );
 }
@@ -124,10 +142,24 @@ export function Segmente<T extends string>({ valeur, onChange, options, aria }: 
 
 /* ── LA GLISSIERE ────────────────────────────────────────────── */
 
-export function Jauge({ children, valeur }: { children: ReactNode; valeur: ReactNode }) {
+export function Jauge({
+  children,
+  valeur,
+  ...reste
+}: { children: ReactNode; valeur: ReactNode } & Record<string, unknown>) {
+  /* Elle s intercale entre `Reglage` et la glissiere pour coller la
+     valeur chiffree a cote. En s intercalant, elle interceptait
+     l etiquette : elle la relaie desormais. */
+  const lie = reste["aria-labelledby"];
+  const enfant =
+    lie && isValidElement(children) &&
+    !(children.props as Record<string, unknown>)["aria-labelledby"]
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, { "aria-labelledby": lie })
+      : children;
+
   return (
     <div className="rg-jauge">
-      {children}
+      {enfant}
       <span className="rg-valeur">{valeur}</span>
     </div>
   );
