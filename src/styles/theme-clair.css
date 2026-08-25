@@ -1281,3 +1281,23 @@
 .light .tsk-invite .tsk-sigle { color: #7A5C00; }
 .light .tsk-invite input { color: hsl(200 24% 12%); }
 .light .tsk-invite input::placeholder { color: hsl(200 9% 44%); }
+
+/* ═══════════════════════════════════════════════════════════════
+   14. THE CALL — LE RITUEL
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Même dilution que sur le calendrier et les tâches. */
+.light .rit {
+  --rit-faible: hsl(200 12% 30%);
+  --rit-trait:  hsl(var(--ds-border-default) / 0.3);
+}
+.light .rit-avert { color: hsl(200 12% 28%); }
+
+/* L'invite est posée SUR le noyau. En fusion soustractive, le noyau
+   est la zone la plus dense du dessin : l'encre la plus foncée du
+   cœur. Le libellé y passe donc en réserve, comme la foudre — c'est
+   le même renversement que sur un aplat. */
+.light .rit-invite {
+  color: hsl(44 26% 98%);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+}

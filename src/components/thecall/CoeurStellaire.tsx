@@ -59,6 +59,42 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
 /* Du cyan froid au blanc de fusion, en passant par le violet. */
+/* -- LE MEME COEUR, SUR DU PAPIER --
+
+   Ce canevas ne peint pas des formes : il peint de la LUMIERE. Tous
+   ses traits sont blancs, et le tout se compose en `lighter` — une
+   fusion ADDITIVE, ou chaque calque ajoute son eclat au precedent.
+   C est le bon modele sur du noir : il n y a rien, et on allume.
+
+   Sur du papier, ce modele ne peut RIEN produire. Ajouter de la
+   lumiere a une surface deja blanche ne change rien : c est pour ca
+   que  les cercles sont trop pales et a peine visibles . Baisser une
+   opacite ou forcer une couleur n y change rien non plus — le
+   probleme n est pas le reglage, c est le mode de fusion.
+
+   Le jumeau physique de l addition de lumiere, c est la SOUSTRACTION
+   par l encre : `multiply`. Une encre n ajoute pas, elle absorbe. Le
+   dessin est donc rigoureusement le meme — memes anneaux, memes
+   orbites, memes ondes — mais il s obtient en retirant de la lumiere
+   au papier au lieu d en ajouter au noir.
+
+   Deux consequences directes :
+   — le trait blanc devient un trait d encre. En multiply, du blanc
+     est neutre : il serait litteralement invisible.
+   — l eclair de blanc total qui precede le souffle devient un
+     eclair de NOIR. C est le negatif de la meme image.
+
+   Les valeurs sombres sont recopiees au caractere pres. */
+const RENDU = {
+  sombre: { fusion: "lighter" as GlobalCompositeOperation, trait: [255, 255, 255] as [number, number, number], flash: "#fff" },
+  clair:  { fusion: "multiply" as GlobalCompositeOperation, trait: [16, 22, 26] as [number, number, number], flash: "#12171a" },
+};
+
+function rendu() {
+  if (typeof document === "undefined") return RENDU.sombre;
+  return document.documentElement.classList.contains("dark") ? RENDU.sombre : RENDU.clair;
+}
+
 function teinte(p: number): [number, number, number] {
   if (p < 0.5) {
     const t = p * 2;
@@ -281,7 +317,7 @@ export function CoeurStellaire({
         ctx.stroke();
       }
 
-      ctx.globalCompositeOperation = "lighter";
+      ctx.globalCompositeOperation = rendu().fusion;
 
       // ── B : l aurore ─────────────────────────────────────────
       if (o.matiere && echelle > 0.02 && typeof ctx.createConicGradient === "function") {
@@ -329,7 +365,7 @@ export function CoeurStellaire({
             ctx.beginPath();
             ctx.moveTo(cx + Math.cos(d.angle) * r1, cy + Math.sin(d.angle) * r1);
             ctx.lineTo(cx + Math.cos(d.angle - 0.07) * r2, cy + Math.sin(d.angle - 0.07) * r2);
-            ctx.strokeStyle = rgba([255, 255, 255], (0.2 + p * 0.5) * clamp01(2.4 - d.rayon));
+            ctx.strokeStyle = rgba(rendu().trait, (0.2 + p * 0.5) * clamp01(2.4 - d.rayon));
             ctx.lineWidth = d.taille;
             ctx.stroke();
           }
@@ -352,7 +388,7 @@ export function CoeurStellaire({
           for (let couche = 0; couche < 3; couche++) {
             ctx.beginPath();
             ctx.ellipse(ex, ey, Math.max(0, rx), Math.max(0, ry), angles[i], 0, TAU);
-            ctx.strokeStyle = rgba(couche === 0 ? [255, 255, 255] : c, Math.max(0, alpha) / (couche + 1) ** 2);
+            ctx.strokeStyle = rgba(couche === 0 ? rendu().trait : c, Math.max(0, alpha) / (couche + 1) ** 2);
             ctx.lineWidth = 0.8 + couche * 2.4 + p * 1.6;
             ctx.stroke();
           }
@@ -381,7 +417,7 @@ export function CoeurStellaire({
             cx + Math.cos(f.angle) * debut, cy + Math.sin(f.angle) * debut,
             cx + Math.cos(f.angle) * fin, cy + Math.sin(f.angle) * fin,
           );
-          g.addColorStop(0, rgba([255, 255, 255], Math.max(0, a)));
+          g.addColorStop(0, rgba(rendu().trait, Math.max(0, a)));
           g.addColorStop(1, rgba(c, 0));
           ctx.beginPath();
           ctx.moveTo(cx + Math.cos(f.angle) * debut, cy + Math.sin(f.angle) * debut);
@@ -417,7 +453,7 @@ export function CoeurStellaire({
             const x = cx + Math.cos(ang) * r, y = cy + Math.sin(ang) * r;
             if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           }
-          ctx.strokeStyle = rgba([255, 255, 255], (1 - u) * (0.5 + p * 0.5));
+          ctx.strokeStyle = rgba(rendu().trait, (1 - u) * (0.5 + p * 0.5));
           ctx.lineWidth = 1 + p * 1.6;
           ctx.stroke();
         }
@@ -435,7 +471,7 @@ export function CoeurStellaire({
 
         for (const [lx, ly] of lobes) {
           const noyau = ctx.createRadialGradient(lx, ly, 0, lx, ly, r * 2.6);
-          noyau.addColorStop(0, rgba([255, 255, 255], Math.min(1, (0.75 + p * 0.25) * eclat)));
+          noyau.addColorStop(0, rgba(rendu().trait, Math.min(1, (0.75 + p * 0.25) * eclat)));
           noyau.addColorStop(0.32, rgba(c, Math.min(1, (0.5 + p * 0.5) * eclat)));
           noyau.addColorStop(0.65, rgba(c, 0.16 + p * 0.3));
           noyau.addColorStop(1, "rgba(0,0,0,0)");
@@ -446,7 +482,7 @@ export function CoeurStellaire({
 
           ctx.beginPath();
           ctx.arc(lx, ly, Math.max(0, r), 0, TAU);
-          ctx.strokeStyle = rgba([255, 255, 255], Math.min(1, (0.5 + p * 0.5) * eclat));
+          ctx.strokeStyle = rgba(rendu().trait, Math.min(1, (0.5 + p * 0.5) * eclat));
           ctx.lineWidth = 1 + p * 2;
           ctx.stroke();
         }
@@ -460,16 +496,16 @@ export function CoeurStellaire({
         /* E : une image de blanc total avant le souffle. */
         if (o.final && !immobile && depuis < 0.06) {
           ctx.globalCompositeOperation = "source-over";
-          ctx.fillStyle = "#fff";
+          ctx.fillStyle = rendu().flash;
           ctx.fillRect(-ox, -oy, largeur, hauteur);
-          ctx.globalCompositeOperation = "lighter";
+          ctx.globalCompositeOperation = rendu().fusion;
         }
 
         const portee = Math.hypot(largeur, hauteur) * 0.75;
         const rr = portee * (immobile ? u : Math.pow(u, 0.45));
         ctx.beginPath();
         ctx.arc(cx, cy, rr, 0, TAU);
-        ctx.strokeStyle = rgba([255, 255, 255], (1 - u) * 0.9);
+        ctx.strokeStyle = rgba(rendu().trait, (1 - u) * 0.9);
         ctx.lineWidth = 6 + (1 - u) * 90;
         ctx.stroke();
 
@@ -488,7 +524,7 @@ export function CoeurStellaire({
         }
 
         const s = ctx.createRadialGradient(cx, cy, 0, cx, cy, portee);
-        s.addColorStop(0, rgba([255, 255, 255], (1 - u) * 0.55));
+        s.addColorStop(0, rgba(rendu().trait, (1 - u) * 0.55));
         s.addColorStop(Math.min(0.98, u), rgba(c, (1 - u) * 0.3));
         s.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = s;
