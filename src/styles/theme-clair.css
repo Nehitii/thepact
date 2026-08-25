@@ -1,0 +1,193 @@
+/* ═══════════════════════════════════════════════════════════════════
+   « LE PLAN » — LE THÈME CLAIR DE VOWPACT
+   ───────────────────────────────────────────────────────────────────
+
+   UNE RÈGLE ABSOLUE : chaque sélecteur de ce fichier commence par
+   `.light`. Aucune ne peut donc s'appliquer au thème sombre — et le
+   préfixe ajoute une classe de spécificité, ce qui lui donne le
+   dernier mot quel que soit l'ordre de chargement.
+
+   Le thème sombre est intouchable par construction. Rien de ce qui
+   suit ne le regarde.
+
+   ───────────────────────────────────────────────────────────────────
+   CE QU'ON NE FAIT PAS : blanchir le thème sombre.
+
+   Le sombre est un HUD de nuit — fond noir, encre néon, lueurs. Le
+   décolorer donne exactement ce qu'on a aujourd'hui : des accents
+   délavés, des bordures invisibles, des lueurs qui deviennent des
+   bavures. C'est ce que dit l'audit, page après page : « sombre et
+   délavé », « plus visible », « gris immonde ».
+
+   CE QU'ON FAIT : son jumeau de jour. Un HUD éclairé au soleil, c'est
+   un PLAN — un dessin technique. Papier froid, traits d'encre,
+   accents saturés, aucune lueur, de vraies ombres.
+
+   Trois traductions portent tout le fichier :
+
+     LA LUEUR DEVIENT DU POIDS. `0 0 8px cyan` dit « ceci est sous
+     tension » sur du noir ; sur du blanc c'est une tache. La même
+     chose se dit en clair par un accent SATURÉ et une graisse de
+     700 — pas par un flou.
+
+     LE TRAIT DEVIENT UNE LIGNE. Une bordure à 8 % d'un bleu clair se
+     voit sur du noir et disparaît sur du papier. Ici les traits sont
+     de vraies lignes de crayon.
+
+     LE RELIEF DEVIENT UNE OMBRE. En sombre une surface se lève en
+     s'éclaircissant. En clair elle se lève en projetant.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ═══ 1. LE SOCLE ═══════════════════════════════════════════════════
+   Les surfaces `--ds-*` avaient déjà des valeurs claires. Ce qui
+   manquait — et qui produit le « délavé » signalé partout — ce sont
+   les BORDURES et les QUATRE AUTRES ACCENTS, restés néon.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root.light {
+  /* ── Le papier ──
+     Un fond franchement teinté, pas du blanc : c'est lui qui permet
+     aux surfaces blanches de se détacher. Sans ça, « seules les cards
+     sont blanches » et le reste flotte. */
+  --ds-bg-base:       212 34% 91%;
+  --ds-bg-canvas:     212 32% 93%;
+  --ds-surface-1:     0 0% 100%;
+  --ds-surface-2:     212 30% 97%;
+  --ds-surface-3:     212 26% 94%;
+  --ds-overlay:       212 30% 88%;
+
+  /* ── Les traits ──
+     Ils valaient 200 50% 75% — un bleu pâle prévu pour être posé à
+     8 % sur du noir. Sur du papier, invisible. Ce sont maintenant de
+     vraies lignes, et les alphas d'origine (0.08 / 0.18 / 0.35)
+     continuent de fonctionner parce que la couleur, elle, porte. */
+  --ds-border-subtle:  212 26% 34%;
+  --ds-border-default: 212 30% 28%;
+  --ds-border-strong:  212 38% 22%;
+
+  /* ── Les accents ──
+     Seul `--ds-accent-primary` avait été descendu. Les quatre autres
+     restaient des néons : lime à 71 %, ambre à 66 %, magenta à 65 %,
+     violet à 68 %. Sur du blanc, aucun ne tient. Même teinte, même
+     saturation, la luminosité descend. */
+  --ds-accent-primary:  190 100% 24%;
+  --ds-accent-success:  128 78% 26%;
+  --ds-accent-warning:  28  95% 33%;
+  --ds-accent-critical: 339 82% 42%;
+  --ds-accent-special:  263 72% 46%;
+
+  --ds-text-primary:   212 45% 13%;
+  --ds-text-secondary: 212 22% 32%;
+  --ds-text-muted:     212 16% 44%;
+  --ds-text-disabled:  212 12% 60%;
+
+  /* ── LA LUEUR DEVIENT UNE OMBRE ──
+     `--ds-glow-*` sert de `box-shadow` un peu partout. En clair, une
+     lueur colorée autour d'un élément blanc le salit. On garde le
+     nom — des dizaines de règles le lisent — et on change ce qu'il
+     produit : une ombre portée, teintée de l'accent, qui LÈVE au
+     lieu d'irradier. */
+  --ds-glow-sm: 0 1px 2px hsl(212 40% 20% / 0.07),
+                0 2px 6px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.10);
+  --ds-glow-md: 0 1px 2px hsl(212 40% 20% / 0.08),
+                0 6px 16px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.14);
+  --ds-glow-lg: 0 2px 4px hsl(212 40% 20% / 0.09),
+                0 12px 30px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.18);
+  --ds-glow-focus: 0 0 0 3px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.28);
+}
+
+/* ═══ 2. LES FAMILLES SANS AUCUNE VALEUR CLAIRE ═════════════════════
+
+   Cinq familles étaient entièrement écrites pour le noir. Elles
+   expliquent, une par une, les pages que l'audit signale.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Santé ── « même constat que les autres » ── */
+/* Déclarée sur `.hlt`, pas sur la racine. Une propriété posée sur un
+   descendant gagne toujours sur celle héritée, quelle que soit la
+   spécificité en haut : il faut la reposer au même endroit. */
+.light .hlt {
+  --hlt-fond:    212 34% 91%;
+  --hlt-plaque:  #FFFFFF;
+  --hlt-creux:   #EEF2F7;
+  --hlt-trait:   #C6D2E0;
+  --hlt-encre:   #0E1826;
+  --hlt-encre-2: #38495E;
+  --hlt-encre-3: #667689;
+  --hlt-cyan:    #00707E;
+}
+
+/* ── Le dossier d'objectif et « Le front » ──
+     L'encre y était claire par nature (#eaf6ff) : sur du papier, elle
+     disparaît. C'est très exactement « la view Le front n'est
+     carrément plus visible ». ── */
+/* Idem : déclarées sur `.gd, .ge` et sur `.fr`. */
+.light .gd,
+.light .ge {
+  --gd-encre:   #0E1826;
+  --gd-encre-2: #38495E;
+  --gd-encre-3: #667689;
+}
+
+.light .fr {
+  --fr-encre:   #0E1826;
+  --fr-encre-2: #38495E;
+  --fr-encre-3: #667689;
+}
+
+/* ── Le prisme d'Analytics ── « couleurs sombres et délavées » ── */
+:root.light {
+  --prism-bg:       212 34% 91%;
+  --prism-cyan:     188 100% 26%;
+  --prism-magenta:  320 85% 40%;
+}
+
+/* ── Les raretés des succès ──
+     Quatre-vingt-dix-sept monuments portaient ces teintes en encre
+     sur blanc : c'est la page la plus touchée de tout l'audit. ── */
+:root.light {
+  --su-common:    #4A5A6E;
+  --su-uncommon:  #0A7A50;
+  --su-rare:      #0B6BA8;
+  --su-epic:      #7A2FA8;
+  --su-legendary: #A85A00;
+  --su-mythic:    #A81E4C;
+}
+
+/* ═══ 3. LA LUEUR DEVIENT DU POIDS ══════════════════════════════════
+
+   Le motif `text-shadow: 0 0 Npx <accent>` est employé partout pour
+   dire « ceci est sous tension ». Sur du papier il produit une
+   bavure : le texte perd ses arêtes et paraît sale.
+
+   On coupe l'ombre et on rend la tension autrement — l'accent est
+   déjà saturé et profond, il suffit de le laisser parler.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.light .ds-glow-text,
+.light [class*="drop-shadow-[0_0"],
+.light .neural-bar-clock,
+.light .nexus-stat,
+.light .cyber-title,
+.light .sc-enonce b {
+  text-shadow: none;
+}
+
+/* Les traînées et halos décoratifs : ils n'ont pas d'équivalent en
+   clair, et les garder à faible opacité donne une brume grise. */
+.light .cyber-orb,
+.light .singularity-corona,
+.light .singularity-flare,
+.light .singularity-influx {
+  opacity: 0.35;
+  filter: saturate(1.4);
+}
+
+/* ═══ 4. LE FOND VIVANT ═════════════════════════════════════════════
+   La grille cyberpunk était tracée en clair sur du noir. Sur du
+   papier elle doit être tracée en encre, sinon elle s'efface — c'est
+   « le fond doit être adapté » du Dashboard et d'Analytics.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.light .cyber-bg-root { opacity: 0.55; }
+.light .cyber-grid { filter: invert(1) hue-rotate(180deg); opacity: 0.14; }

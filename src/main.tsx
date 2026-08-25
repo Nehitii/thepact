@@ -17,6 +17,11 @@ import "./styles/difficulty.css";
 import "./styles/shop.css";
 import "./styles/glassmorphism.css";
 import "./styles/journal.css";
+// EN DERNIER, ET CE N EST PAS un detail : chaque regle de
+// theme-clair.css est prefixee .light, ce qui lui donne une classe
+// de specificite de plus que la regle qu elle corrige. Le sombre
+// n est atteint par aucune d entre elles.
+import "./styles/theme-clair.css";
 // finance.css, analytics.css and goals.css are co-located with their
 // respective lazy pages (Finance/Analytics/Goals) so they ship in the
 // page chunk instead of the initial bundle.
