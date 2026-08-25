@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -196,6 +196,23 @@ export default function Auth() {
                 </span>
                 <div className="btn-corners"></div>
               </button>
+
+              {/* LES CONDITIONS, LA OU ON LES ACCEPTE.
+
+                  Leur article 5 pose l acceptation a la creation du
+                  compte. Or rien sur cet ecran ne les mentionnait, et
+                  leur seul chemin passait par Profil > Mes donnees —
+                  derriere l authentification, donc apres coup.
+
+                  Le lien ne bloque pas l inscription : il la rend
+                  honnete. Recueillir un consentement explicite, avec sa
+                  date et la version acceptee, reste a faire. */}
+              {!isLogin && (
+                <p className="auth-legal">
+                  En forgeant ton pacte, tu acceptes les{" "}
+                  <Link to="/legal">conditions et mentions légales</Link>.
+                </p>
+              )}
             </form>
 
             <div className="sys-log">
@@ -213,6 +230,24 @@ export default function Auth() {
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+  .auth-legal {
+    margin: 14px 0 0;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: rgba(0, 242, 255, 0.45);
+  }
+  .auth-legal a {
+    color: var(--c-cyan);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(0, 242, 255, 0.4);
+  }
+  .auth-legal a:hover { text-decoration-color: var(--c-cyan); }
+  .auth-legal a:focus-visible { outline: 1px solid var(--c-cyan); outline-offset: 2px; }
 
   :root {
     --bg-dark: #020202;

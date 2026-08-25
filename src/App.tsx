@@ -82,6 +82,14 @@ function AppRoutes() {
     <Routes>
       {/* Public */}
       <Route path="/auth" element={<Auth />} />
+      {/* LES CONDITIONS SONT PUBLIQUES.
+
+          Elles etaient derriere ProtectedRoute : inaccessibles a qui
+          n avait pas encore de compte, alors que leur article 5 demande
+          justement de les accepter AVANT d en creer un. Des mentions
+          legales qu on ne peut lire qu une fois inscrit ne remplissent
+          pas leur office. */}
+      <Route path="/legal" element={<Legal />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />
@@ -111,7 +119,6 @@ function AppRoutes() {
         <Route path="achievements" element={<Achievements />} />
         <Route path="shop" element={<Shop />} />
         <Route path="community" element={<SocialGate enabled={social.community} loading={social.loadingMap.community}><Community /></SocialGate>} />
-        <Route path="legal" element={<Legal />} />
         <Route path="todo" element={<TodoList />} />
         <Route path="inbox" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><Inbox /></SocialGate>} />
         <Route path="inbox/thread/:userId" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><InboxThread /></SocialGate>} />
