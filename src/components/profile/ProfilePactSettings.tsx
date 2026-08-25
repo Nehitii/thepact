@@ -121,7 +121,7 @@ export function ProfilePactSettings({
 
   const handleSaveUnlockCode = async () => {
     if (unlockCode.length !== 4 || !/^\d{4}$/.test(unlockCode)) {
-      toast.error("Invalid code", { description: "Please enter a 4-digit PIN code" });
+      toast.error("Code invalide", { description: "Quatre chiffres, ni plus ni moins." });
       return;
     }
     setSavingCode(true);
@@ -134,7 +134,7 @@ export function ProfilePactSettings({
       toast.error("Error", { description: error.message });
     } else {
       setExistingCodeSet(true);
-      toast.success("Unlock code saved", { description: "Your 4-digit goal lock code has been set." });
+      toast.success("Code enregistré", { description: "Tes objectifs verrouillés le demanderont." });
       setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE UPDATED", type: "ok" as const }]);
     }
   };
@@ -217,14 +217,14 @@ export function ProfilePactSettings({
       <PactSettingsCard
         icon={<Lock className="h-4 w-4 text-primary" />}
         title="Code de verrouillage"
-        description="Set a 4-digit PIN to lock/unlock sensitive goals"
+        description="Un code à quatre chiffres pour masquer le contenu d’un objectif"
         sectionId="goal-lock"
       >
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground font-rajdhani">
             {existingCodeSet
-              ? "Your lock code is set. You can change or remove it below."
-              : "Set a 4-digit PIN code. Once set, you can lock individual goals to hide their content."}
+              ? "Ton code est posé. Tu peux le changer ou le retirer ci-dessous."
+              : "Choisis un code à quatre chiffres. Une fois posé, tu pourras verrouiller un objectif pour en masquer le contenu."}
           </p>
           <div className="flex items-center gap-2">
             <div className="relative flex-1 max-w-[180px]">
@@ -232,6 +232,8 @@ export function ProfilePactSettings({
                 type={showCode ? "text" : "password"}
                 inputMode="numeric"
                 maxLength={4}
+                id="code-verrouillage"
+                aria-label="Code de verrouillage à quatre chiffres"
                 placeholder="0000"
                 value={unlockCode}
                 onChange={(e) => {
@@ -271,11 +273,11 @@ export function ProfilePactSettings({
         <DataPanel
           code="MODULE_06"
           title="Zone sensible"
-          statusText={<span className="text-destructive">DESTRUCTIVE</span>}
+          statusText={<span className="text-destructive">irréversible</span>}
         >
           <div className="py-4 space-y-4">
             <p className="ds-t-label text-destructive/60 font-mono tracking-wider">
-              This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
+              Cette action est sans retour. Tous tes objectifs, étapes, missions et compteurs de progression seront effacés.
             </p>
 
             <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
@@ -289,7 +291,7 @@ export function ProfilePactSettings({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Reset Pact</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
+                    Cette action est sans retour. Tous tes objectifs, étapes, missions et compteurs de progression seront effacés.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 

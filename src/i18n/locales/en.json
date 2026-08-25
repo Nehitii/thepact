@@ -2443,7 +2443,9 @@
       "ranksUpdatedDesc": "{{name}} has been updated",
       "ranksDeletedTitle": "Rank Deleted",
       "ranksDeletedDesc": "{{name}} has been removed",
-      "ranksDeleteConfirm": "Are you sure you want to delete \"{{name}}\"?"
+      "ranksDeleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
+      "rulesSubtitle": "Its deadline, your difficulty, your ranks — and what gets erased.",
+      "identitySubtitle": "What your pact is: its name, its reason, its symbol."
     },
     "account": {
       "title": "Account Information",

@@ -93,7 +93,12 @@ export default function PactSettings() {
   return (
     <ConsoleReglages
       titre={t("settings.pact.title", "Mon pacte")}
-      note={t("settings.pact.subtitle", "Son identité, son échéance, et ta difficulté sur mesure.")}
+      /* Une phrase par volet : la meme servait les deux, et annoncait
+         l echeance et la difficulte a une section qui ne porte que le
+         nom et le symbole. */
+      note={volet === "exigence"
+        ? t("settings.pact.rulesSubtitle", "Son échéance, ta difficulté, tes rangs — et ce qui s’efface.")
+        : t("settings.pact.identitySubtitle", "Ce que ton pacte est : son nom, sa raison, son symbole.")}
     >
       <ProfilePactSettings
         volet={volet}

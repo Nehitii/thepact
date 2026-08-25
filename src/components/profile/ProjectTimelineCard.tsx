@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 
 interface ProjectTimelineCardProps {
@@ -35,6 +36,7 @@ export function ProjectTimelineCard({
   onProjectStartDateChange,
   onProjectEndDateChange,
 }: ProjectTimelineCardProps) {
+  const locale = useDateFnsLocale();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
@@ -44,11 +46,11 @@ export function ProjectTimelineCard({
 
   const handleSave = async () => {
     if (dateValidationError) {
-      toast.error("Validation Error", { description: dateValidationError });
+      toast.error("Échéance invalide", { description: dateValidationError });
       return;
     }
     if (!pactId) {
-      toast.error("Error", { description: "No pact found to update." });
+      toast.error("Aucun pacte", { description: "Il n’y a pas de pacte à mettre à jour." });
       return;
     }
 
@@ -62,17 +64,19 @@ export function ProjectTimelineCard({
       .eq("id", pactId);
 
     if (error) {
-      toast.error("Error", { description: error.message });
+      toast.error("Erreur", { description: error.message });
     } else {
       queryClient.invalidateQueries({ queryKey: ["pact"] });
-      toast.success("Timeline Updated", { description: "Your project timeline has been saved." });
+      toast.success("Échéance enregistrée", { description: "Les dates de ton projet sont à jour." });
     }
     setSaving(false);
   };
 
   const formatDisplayDate = (date: Date | undefined) => {
     if (!date) return null;
-    return format(date, "MMM d, yyyy");
+    /* Sans locale, date-fns rend l anglais : « Nov 1, 2023 » au
+        milieu d une interface francaise. */
+    return format(date, "d MMMM yyyy", { locale });
   };
 
   return (
@@ -80,8 +84,8 @@ export function ProjectTimelineCard({
       code="MODULE_03"
       title="Échéance"
       taille="demi"
-      footerLeft={<span>START: <b className="text-primary">{projectStartDate ? formatDisplayDate(projectStartDate) : "—"}</b></span>}
-      footerRight={<span>END: <b className="text-primary">{projectEndDate ? formatDisplayDate(projectEndDate) : "—"}</b></span>}
+      footerLeft={<span>Début : <b className="text-primary">{projectStartDate ? formatDisplayDate(projectStartDate) : "—"}</b></span>}
+      footerRight={<span>Fin : <b className="text-primary">{projectEndDate ? formatDisplayDate(projectEndDate) : "—"}</b></span>}
     >
       <div className="py-4 space-y-4">
         <div className="flex items-center gap-2 px-2">
@@ -93,7 +97,7 @@ export function ProjectTimelineCard({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Start Date</label>
+              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Date de début</label>
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -109,7 +113,7 @@ export function ProjectTimelineCard({
                 >
                   <span className="flex items-center gap-2">
                     <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
-                    {projectStartDate ? formatDisplayDate(projectStartDate) : "Select start"}
+                    {projectStartDate ? formatDisplayDate(projectStartDate) : "Choisir"}
                   </span>
                 </button>
               </PopoverTrigger>
@@ -122,7 +126,7 @@ export function ProjectTimelineCard({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">End Date</label>
+              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Date de fin</label>
             </div>
             <Popover>
               <PopoverTrigger asChild>

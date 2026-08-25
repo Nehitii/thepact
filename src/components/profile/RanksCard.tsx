@@ -32,7 +32,7 @@ function XPTimeline({ ranks, currentXP, totalMaxXP }: { ranks: Rank[]; currentXP
   return (
     <TooltipProvider delayDuration={200}>
       <div className="mb-4">
-        <div className="ds-t-label font-mono text-primary/40 tracking-[0.15em] mb-1.5">XP_TIMELINE</div>
+        <div className="ds-t-label font-mono text-primary/40 tracking-[0.15em] mb-1.5 uppercase">Ligne d’XP</div>
         <div className="relative h-3 w-full rounded-full overflow-hidden bg-primary/10 flex">
           {ranks.map((rank, i) => {
             const nextMin = ranks[i + 1]?.min_points ?? maxVal;
@@ -100,23 +100,23 @@ export function RanksCard({ userId }: RanksCardProps) {
   const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
 
   const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast.error("Validation Error", { description: "Please enter a rank name" }); throw new Error("Validation failed"); }
+    if (!rank.name.trim()) { toast.error("Nom manquant", { description: "Un rang a besoin d’un nom." }); throw new Error("Validation failed"); }
     
     // Overlap validation: check for duplicate min_points
     const conflicting = ranks.find(r => r.min_points === rank.min_points && r.id !== rank.id);
     if (conflicting) {
-      toast.error("Conflict", { description: `Another rank ("${conflicting.name}") already uses ${rank.min_points.toLocaleString()} XP as threshold.` });
+      toast.error("Seuil déjà pris", { description: `« ${conflicting.name} » occupe déjà le seuil de ${rank.min_points.toLocaleString("fr-FR")} XP.` });
       throw new Error("Conflict");
     }
 
     if (isNewRank) {
       const { error } = await supabase.from("ranks").insert({ user_id: userId, min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote });
-      if (error) { toast.error("Error", { description: error.message }); throw error; }
-      toast.success("Rank Created", { description: `${rank.name} has been added to your progression` });
+      if (error) { toast.error("Erreur", { description: error.message }); throw error; }
+      toast.success("Rang créé", { description: `« ${rank.name} » rejoint ta progression.` });
     } else {
       const { error } = await supabase.from("ranks").update({ min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote }).eq("id", rank.id);
-      if (error) { toast.error("Error", { description: error.message }); throw error; }
-      toast.success("Rank Updated", { description: `${rank.name} has been updated` });
+      if (error) { toast.error("Erreur", { description: error.message }); throw error; }
+      toast.success("Rang modifié", { description: `« ${rank.name} » est à jour.` });
     }
     queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
   };
@@ -128,8 +128,8 @@ export function RanksCard({ userId }: RanksCardProps) {
   const confirmDeleteRank = async () => {
     if (!rankToDelete) return;
     const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
-    if (error) { toast.error("Error", { description: error.message }); }
-    else { toast.success("Rank Deleted", { description: `${rankToDelete.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    if (error) { toast.error("Erreur", { description: error.message }); }
+    else { toast.success("Rang supprimé", { description: `« ${rankToDelete.name} » a été retiré.` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
     setRankToDelete(null);
   };
 
@@ -137,9 +137,9 @@ export function RanksCard({ userId }: RanksCardProps) {
     <DataPanel
       code="MODULE_05"
       title="Rangs"
-      statusText={<span className="text-muted-foreground">{ranks.length} DEFINED</span>}
-      footerLeft={<span>CURRENT: <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>}
-      footerRight={<span>XP: <b className="text-primary">{rankData?.currentXP?.toLocaleString() || "0"}</b></span>}
+      statusText={<span className="text-muted-foreground">{ranks.length} paliers</span>}
+      footerLeft={<span>Actuel : <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>}
+      footerRight={<span>XP : <b className="text-primary">{rankData?.currentXP?.toLocaleString("fr-FR") || "0"}</b></span>}
     >
       <div className="py-4">
         {/* Current Rank Card — only if a real rank exists */}
@@ -147,14 +147,14 @@ export function RanksCard({ userId }: RanksCardProps) {
           <div className="mb-4 border border-primary/25 bg-primary/[0.04] p-4">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em]">CURRENT_RANK</span>
+              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em] uppercase">Rang actuel</span>
             </div>
             <div className="flex justify-center">
               <RankCard rank={rankData.currentRank} currentXP={rankData.currentXP} nextRankMinXP={rankData.nextRank?.min_points} totalMaxXP={rankData.totalMaxXP} isActive={true} size="sm" />
             </div>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between ds-t-label font-mono text-primary/40">
-                <span className="flex items-center gap-1"><Target className="h-3 w-3" />GLOBAL_PROGRESS</span>
+                <span className="flex items-center gap-1"><Target className="h-3 w-3" />Progression totale</span>
                 <span>{Math.round(rankData.globalProgress)}%</span>
               </div>
               <div className="h-1.5 bg-primary/10 overflow-hidden">
@@ -170,7 +170,7 @@ export function RanksCard({ userId }: RanksCardProps) {
           <div className="mb-3 border border-primary/15 bg-primary/[0.02] p-2.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Info className="h-3 w-3 text-[hsl(40,100%,50%)]" />
-              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em]">MAX_XP_FROM_GOALS</span>
+              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em] uppercase">XP maximale des objectifs</span>
             </div>
             <span className="text-xs font-mono text-[hsl(40,100%,50%)] font-bold">{rankData.totalMaxXP.toLocaleString()} XP</span>
           </div>

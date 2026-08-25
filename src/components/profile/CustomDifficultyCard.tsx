@@ -49,7 +49,7 @@ export function CustomDifficultyCard({
 
   const handleSave = async () => {
     if (!userId) {
-      toast.error("Error", { description: "User not found." });
+      toast.error("Erreur", { description: "Utilisateur introuvable." });
       return;
     }
     setSaving(true);
@@ -63,10 +63,10 @@ export function CustomDifficultyCard({
       .eq("id", userId);
 
     if (error) {
-      toast.error("Error", { description: error.message });
+      toast.error("Erreur", { description: error.message });
     } else {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast.success("Custom Difficulty Updated", { description: "Your custom difficulty settings have been saved." });
+      toast.success("Difficulté enregistrée", { description: "Ta difficulté sur mesure est à jour." });
     }
     setSaving(false);
   };
@@ -75,7 +75,7 @@ export function CustomDifficultyCard({
     <DataPanel
       code="MODULE_04"
       title="Difficulté sur mesure"
-      statusText={<span className={customDifficultyActive ? "text-primary" : "text-muted-foreground"}>{customDifficultyActive ? "ACTIVE" : "INACTIVE"}</span>}
+      statusText={<span className={customDifficultyActive ? "text-primary" : "text-muted-foreground"}>{customDifficultyActive ? "active" : "inactive"}</span>}
       footerLeft={<span>Nom : <b className="text-primary">{customDifficultyName || "—"}</b></span>}
     >
       <div className="py-4 space-y-4">
@@ -83,32 +83,33 @@ export function CustomDifficultyCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Difficulty Name</label>
+            <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold" htmlFor="difficulte-nom">Nom de la difficulté</label>
           </div>
-          <Input placeholder="Enter custom difficulty name" value={customDifficultyName} onChange={(e) => onCustomDifficultyNameChange(e.target.value)} maxLength={50} className={CY_INPUT} />
+          <Input id="difficulte-nom" placeholder="ex. Impitoyable" value={customDifficultyName} onChange={(e) => onCustomDifficultyNameChange(e.target.value)} maxLength={50} className={CY_INPUT} />
         </div>
 
         {/* Difficulty Color */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
-              <Palette className="h-3 w-3 text-primary/60" />Difficulty Color
+            <label htmlFor="difficulte-couleur" className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
+              <Palette className="h-3 w-3 text-primary/60" />Couleur
             </label>
           </div>
           <div className="flex items-center gap-3">
             <label className="relative w-12 h-12 border border-primary/20 overflow-hidden flex-shrink-0 cursor-pointer group transition-all duration-200 hover:border-primary/40 active:scale-95" style={{ backgroundColor: customDifficultyColor }}>
+              <span className="sr-only">Choisir la couleur au nuancier</span>
               <input type="color" value={customDifficultyColor} onChange={(e) => onCustomDifficultyColorChange(e.target.value)} className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 cursor-pointer opacity-0" />
             </label>
-            <Input type="text" value={customDifficultyColor} onChange={(e) => onCustomDifficultyColorChange(e.target.value)} placeholder="#a855f7" maxLength={7} className={cn(CY_INPUT, "flex-1")} />
+            <Input id="difficulte-couleur" type="text" value={customDifficultyColor} onChange={(e) => onCustomDifficultyColorChange(e.target.value)} placeholder="#a855f7" maxLength={7} className={cn(CY_INPUT, "flex-1")} />
           </div>
         </div>
 
         {/* Activate Toggle */}
         <SettingRow
           icon={<Zap className="h-4 w-4 text-primary" />}
-          label="Activate Custom Difficulty"
-          description={customDifficultyActive ? "Available in goal creation" : "Hidden from selectors"}
+          label="Activer ma difficulté"
+          description={customDifficultyActive ? "Proposée à la création d’un objectif" : "Absente des sélecteurs"}
           checked={customDifficultyActive}
           disabled={false}
           onToggle={onCustomDifficultyActiveChange}

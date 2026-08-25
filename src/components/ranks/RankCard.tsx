@@ -89,14 +89,14 @@ export function RankCard({ rank, currentRank: currentRankProp, nextRank, current
         <div className="flex-1 space-y-2">
           <div className="flex justify-between items-end">
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground uppercase tracking-widest font-mono">Current XP</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-widest font-mono">XP actuelle</span>
               <span className="text-lg font-bold font-rajdhani text-primary tabular-nums">
                 {currentXP.toLocaleString()}
               </span>
             </div>
             {nextRank && (
               <div className="text-right">
-                <span className="ds-t-label text-muted-foreground">Next Rank: {nextRank.name}</span>
+                <span className="ds-t-label text-muted-foreground">Prochain : {nextRank.name}</span>
                 <div className="text-xs font-mono text-primary/80">
                   {Math.floor(nextRankMin - currentXP).toLocaleString()} XP left
                 </div>
