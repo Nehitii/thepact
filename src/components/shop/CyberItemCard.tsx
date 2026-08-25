@@ -146,7 +146,13 @@ export function CyberItemCard({
             {/* L article seul, puis l article porte. Les deux occupent la
                 meme place et on croise leur opacite : les permuter ferait
                 sauter le cadre d un pixel au survol. */}
-            <div className="relative flex items-center justify-center w-full">
+            {/* sh-scene : l ECRIN. Un cosmetique est dessine pour le
+                theme sombre — c est la que le joueur le portera. Presente
+                sur une carte blanche, il ne montre pas ce qu il est.
+                En theme clair, l apercu recoit donc son propre fond de
+                nuit, comme un bijoutier pose une piece sur du velours.
+                La classe ne fait rien en theme sombre. */}
+            <div className="sh-scene relative flex items-center justify-center w-full">
               <motion.div
                 animate={{ opacity: previewPorte && decouvert ? 0 : 1 }}
                 transition={{ duration: 0.18 }}

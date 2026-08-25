@@ -739,7 +739,7 @@
   --card-foreground: 200 22% 11%;
   --popover-foreground: 200 22% 11%;
   --secondary-foreground: 200 22% 11%;
-  --muted-foreground: 200 8% 40%;
+  --muted-foreground: 200 9% 36%;
   --encre-titre: 200 26% 10%;
   --encre-titre-douce: 200 16% 24%;
   --encre-second: 202 12% 28%;
@@ -1391,3 +1391,36 @@
   --wl-encre-3: #5F666E;
   --wl-vert:    #006947;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   16. SHOP — L'ÉCRIN
+   ───────────────────────────────────────────────────────────────
+   « Trop de blanc partout, ça noie la boutique. » Le sol de béton
+   règle la moitié du problème : les cartes se détachent enfin.
+
+   L'autre moitié tient à ce que la boutique VEND. Un titre, un cadre,
+   une couleur de pseudo sont des cosmétiques dessinés pour le thème
+   sombre — c'est là que le joueur les portera. Présentés sur une carte
+   blanche, ils ne montrent pas ce qu'ils sont : « Legend » en néon sur
+   du papier n'est pas un aperçu, c'est un mensonge sur le produit.
+
+   L'aperçu reçoit donc son propre fond de nuit, comme un bijoutier
+   pose une pièce sur du velours. Ce n'est pas une entorse au thème
+   clair : c'est la vitrine, et une vitrine montre l'article dans sa
+   matière.
+   ═══════════════════════════════════════════════════════════════ */
+.light .sh-scene {
+  padding: 16px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #141A20 0%, #0B0F13 100%);
+  box-shadow:
+    inset 0 0 0 1px hsl(200 18% 30% / 0.55),
+    inset 0 14px 28px -18px rgba(255, 255, 255, 0.22);
+}
+
+/* La bannière d'un lot est peinte par un fond de nuit passé en style
+   inline, dans les deux thèmes. En clair, le texte posé dessus héritait
+   du toner de la page : de l'encre sombre sur un fond sombre. */
+.light .sh-banniere,
+.light .sh-banniere * { color: hsl(44 26% 98%); }
+.light .sh-banniere .text-muted-foreground { color: hsl(210 14% 74%); }

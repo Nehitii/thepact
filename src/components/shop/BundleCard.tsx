@@ -86,7 +86,11 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
 
       <div className="relative z-[1] rounded-2xl overflow-hidden" style={{ background: "hsl(var(--card))" }}>
         {/* ── L APERCU COMPOSE : la carte de profil, lot applique ── */}
-        <div className="relative h-[124px] overflow-hidden" style={{ background: fondBanniere }}>
+        {/* sh-banniere : cette banniere est peinte par un fond de nuit
+            passe en style inline, dans les deux themes. En clair, le
+            texte pose dessus heritait du toner de la page — de l encre
+            sombre sur un fond sombre. Il y passe donc en reserve. */}
+        <div className="sh-banniere relative h-[124px] overflow-hidden" style={{ background: fondBanniere }}>
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--card)) 4%, transparent 65%)" }} />
 
           <div className="absolute top-2.5 right-2.5 z-10">
