@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 import { Flame, Footprints, Gem, Globe, Mountain, Target, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@/styles/community.css";
@@ -56,9 +58,15 @@ interface LigneClassement {
 }
 
 function Palier({ nom, couleur }: { nom: string | null; couleur: string | null }) {
+  /* La teinte d un palier vient de la base : ce sont des couleurs
+     choisies pour le theme sombre, et rien ne garantit qu elles
+     portent sur du papier — mesure avant correction : 1,6:1 sur les
+     trois paliers hauts. selonTheme conserve la teinte au degre pres
+     et ne descend que sa clarte. */
+  const sombre = useThemeSombre();
   if (!nom) return null;
   return (
-    <span className="cl-palier" style={{ "--cl-teinte": couleur || undefined } as CSSProperties}>
+    <span className="cl-palier" style={{ "--cl-teinte": couleur ? selonTheme(couleur, sombre) : undefined } as CSSProperties}>
       <Gem aria-hidden="true" />
       {nom}
     </span>

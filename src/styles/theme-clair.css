@@ -1443,3 +1443,11 @@
   --rg-fil:     hsl(var(--primary) / 0.26);
   --rg-fil-vif: hsl(var(--primary) / 0.6);
 }
+
+/* LE JOURNAL N EST PAS TOUCHÉ, ET C EST UNE CORRECTION.
+   J avais descendu son halo cyan, en croyant appliquer la règle
+   habituelle : une encre diluée à 0,42 qui disparaît sur du papier.
+   Mesure après coup : 3,04 devenu 1,27 — j avais empiré la chose.
+   La carte de question porte un fond de NUIT même en thème clair
+   (rgba(5,18,24,0.93)), donc le halo lumineux y était juste. La page
+   était déjà bonne ; la seule bonne action était de ne rien faire. */
