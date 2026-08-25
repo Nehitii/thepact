@@ -1362,3 +1362,32 @@
   filter: none;
   box-shadow: 0 2px 0 hsl(38 22% 14% / 0.22);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   15. WISHLIST — LE BORDEREAU
+   ───────────────────────────────────────────────────────────────
+   La page était déjà juste : c'est le seul écran de l'application dont
+   le thème clair était pensé dès l'origine, et son en-tête noir à
+   accents d'or est exactement le registre visé. Deux points restaient.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Le monogramme d'une tuile sans image. Il tient lieu de photo — c'est
+   la raison d'être du mode sans image — mais il était gravé plutôt
+   qu'écrit : #B7BDC7 sur une plaque à peine plus claire, soit 1,6:1.
+   Un monogramme gravé se voit par son RELIEF, et le relief tient au
+   contraste des deux ombres, pas à celui de la lettre. Sur du papier,
+   l'estampage ne prend pas : la lettre doit porter seule. */
+.light .wl-plaque span {
+  color: #7C848F;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* Deux jetons du bordereau restaient un cran trop haut une fois posés
+   sur le sol de la page plutôt que sur du blanc pur : l'encre discrète
+   (mesurée à 4,7:1 sur blanc, mais 4,4 sur le sol) et le vert des
+   sommes acquittées, un vert d'écran à 2,6:1. */
+:root.light .wl.wl,
+:root.light .wl-boite.wl-boite {
+  --wl-encre-3: #5F666E;
+  --wl-vert:    #006947;
+}
