@@ -1202,3 +1202,38 @@
    c'est le néon qui porte. C'est le seul endroit du thème clair où on
    remonte une couleur au lieu de la descendre. */
 .light .cp-contrat-xp { color: var(--cp-cyan-plein, #00f0ff); }
+
+/* ═══════════════════════════════════════════════════════════════
+   12. CALENDAR — LE RUBAN
+   ───────────────────────────────────────────────────────────────
+   « Pas mal, mais manque de contraste, certains éléments paraissent
+   délavés. » Le diagnostic était exact et tenait à UN jeton.
+
+   `--cal-faible` vaut l'encre discrète DILUÉE à 0,8 d'alpha. Sur du
+   noir, diluer une encre claire la fait reculer sans la faire
+   disparaître ; sur du papier, ça la fait remonter vers le support et
+   elle tombe à 3,3:1. Trente et un libellés de jour, quatre boutons
+   de vue et six numéros en dépendaient — soit les trois quarts des
+   défauts de la page.
+
+   Les jetons sont déclarés sur `.cal`, pas sur la racine : une
+   propriété posée sur un descendant gagne sur celle qui descend de la
+   racine, quelle que soit la spécificité en haut. Il faut donc les
+   reposer au même endroit.
+   ═══════════════════════════════════════════════════════════════ */
+.light .cal {
+  --cal-faible: hsl(200 12% 29%);
+  --cal-doux:   hsl(202 12% 26%);
+  --cal-trait:      hsl(var(--ds-border-default) / 0.26);
+  --cal-trait-fort: hsl(var(--ds-border-default) / 0.46);
+}
+/* Les jours vides gardent leur retrait, mais par la clarté. */
+.light .cal-rb-ligne.est-vide .cal-rb-num,
+.light .cal-rb-ligne.est-vide .cal-rb-jour { color: hsl(200 9% 41%); }
+
+/* Le titre du calendrier est peint par un dégradé découpé dans le
+   texte : sa couleur est `transparent`, ce que l'auditeur lit comme un
+   contraste de 1,00 alors que le mot s'imprime très bien. Rien à
+   corriger là — sauf la lueur de 16 px, qui sur du papier ne fait que
+   le rendre flou. */
+.light .cal-entete-titre em { filter: none; }
