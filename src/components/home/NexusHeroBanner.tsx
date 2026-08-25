@@ -48,6 +48,8 @@ interface NexusHeroBannerProps {
   rankProgress?: number;
   rankXP?: number;
   rankXPTarget?: number;
+  /** Combien d objectifs sont reellement en cours. Le logo bat avec. */
+  enCours?: number;
 }
 
 export function NexusHeroBanner({
@@ -67,6 +69,7 @@ export function NexusHeroBanner({
   rankProgress = 0,
   rankXP = 0,
   rankXPTarget = 0,
+  enCours = 0,
 }: NexusHeroBannerProps) {
   const stats = useMemo(() => [
     /* Le libelle dit CE QUI est compte : un pourcentage nu ne se lit
@@ -154,7 +157,29 @@ export function NexusHeroBanner({
           <div className="singularity-nucleus" />
           <div className="singularity-ring" />
           <div className="relative" style={{ zIndex: 4 }}>
-            <PactVisual symbol={pactSymbol} size="sm" progress={progression} />
+            {/* LE LOGO DIT CE QUI EST EN COURS.
+
+                Il ondulait a vide — trois anneaux a 8, 5 et 3 secondes,
+                quoi qu il arrive. Or rien sur ce hub ne montrait la
+                charge VIVE du pacte : la progression dit le chemin fait,
+                le rang dit l experience, les missions le total, les jours
+                actifs l anciennete. Aucun ne dit ce qui est ouvert.
+
+                Cinq chantiers ouverts font le plein elan : au-dela le
+                logo ne tournerait pas plus vite pour rien dire de plus.
+                Zero, et il ralentit jusqu a presque s arreter — un pacte
+                au repos, ce qui est en soi une information. */}
+            <PactVisual
+              symbol={pactSymbol}
+              size="sm"
+              progress={progression}
+              elan={Math.min(1, enCours / 5)}
+              titre={
+                enCours > 0
+                  ? `${enCours} ${enCours > 1 ? "objectifs en cours" : "objectif en cours"}`
+                  : "Aucun objectif en cours"
+              }
+            />
           </div>
         </div>
 

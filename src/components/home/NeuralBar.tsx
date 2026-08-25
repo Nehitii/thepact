@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Pact } from "@/hooks/usePact";
@@ -16,6 +17,7 @@ interface NeuralBarProps {
 
 export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [now, setNow] = useState(new Date());
 
@@ -24,12 +26,26 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
   useVisibleInterval(() => setNow(new Date()), 1000);
 
-  const { currentRank, nextRank, currentXP } = rankData;
-  const currentRankMin = currentRank?.min_points || 0;
-  const nextRankMin = nextRank?.min_points || currentRankMin + 1000;
-  const isMaxRank = !nextRank && rankData.ranks.length > 0;
-  const xpSpan = nextRankMin - currentRankMin;
-  const xpProgress = isMaxRank ? 100 : xpSpan > 0 ? Math.min(((currentXP - currentRankMin) / xpSpan) * 100, 100) : 0;
+  /* LA BARRE SYSTEME DIT LA JOURNEE.
+
+     Elle montrait l avancement dans le rang courant. Or le rang est
+     deja sur cette page DEUX FOIS : « LVL 5 » dans les statistiques du
+     bandeau, et l arc bleu qui entoure le coeur. Un troisieme rappel,
+     reduit a 120 px sans chiffre ni infobulle, n apprenait rien.
+
+     A cote d une horloge a la seconde et d une date, une jauge se lit
+     naturellement comme du TEMPS. C est ce qu elle mesure desormais :
+     la part de la journee ecoulee, de minuit a minuit. Elle avance
+     toute seule, ce qui est exactement le propos — le jour passe, que
+     l on fasse quelque chose ou non.
+
+     `now` est deja rafraichi chaque seconde pour l horloge : la jauge
+     suit sans une minuterie de plus. */
+  const partDuJour = (() => {
+    const minuit = new Date(now);
+    minuit.setHours(0, 0, 0, 0);
+    return ((now.getTime() - minuit.getTime()) / 86_400_000) * 100;
+  })();
 
   const timeStr = format(now, "HH:mm:ss");
   const dateStr = format(now, "EEE dd MMM yyyy", { locale: fr }).toUpperCase();
@@ -47,14 +63,22 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             SYS
           </span>
 
-          {/* Global progress track */}
+          {/* La journee ecoulee. Une jauge muette de 120 px ne se lit
+              pas : elle porte son role et sa valeur, pour la souris
+              comme pour un lecteur d ecran. */}
           <div
             className="overflow-hidden shrink-0 rounded-sm bg-primary/10"
             style={{ width: 120, height: 4 }}
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(partDuJour)}
+            aria-label={t("home.neuralBar.dayElapsed", "Journée écoulée")}
+            title={`${t("home.neuralBar.dayElapsed", "Journée écoulée")} — ${Math.round(partDuJour)} %`}
           >
             <div
               className="h-full neural-bar-progress"
-              style={{ width: `${xpProgress}%` }}
+              style={{ width: `${partDuJour}%` }}
             />
           </div>
 
@@ -121,7 +145,9 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             {/* Le libelle debordait deja de la barre sous 400px (bord droit a
                 393px sur un ecran de 375, rogne par le parent sans defilement
                 possible) ; le passage de 10 a 11px aggravait la coupe. */}
-            <span className="hidden min-[400px]:inline">CUSTOMIZE</span>
+            <span className="hidden min-[400px]:inline">
+              {t("home.neuralBar.customize", "Personnaliser")}
+            </span>
           </button>
         </div>
       </header>

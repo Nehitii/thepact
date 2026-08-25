@@ -21,6 +21,21 @@ import { cn } from "@/lib/utils";
 interface PactVisualProps {
   symbol?: string;
   progress?: number;
+  /**
+   * L ELAN, de 0 a 1 — a quel rythme le logo bat.
+   *
+   * Les anneaux du vortex tournaient a 8, 5 et 3 secondes, toujours,
+   * quoi qu il arrive dans le pacte. Un logo qui ondule sans rien
+   * dire est un economiseur d ecran pose sur un tableau de bord.
+   *
+   * A un, il bat a sa cadence d origine ; a zero, il tourne trois
+   * fois plus lentement — presque immobile. Ce n est pas une jauge :
+   * on ne lit pas un nombre dans une vitesse. C est un ETAT, qu on
+   * sent avant de le lire — et `titre` donne le nombre a qui regarde.
+   */
+  elan?: number;
+  /** Ce que le logo raconte, en toutes lettres. */
+  titre?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -284,11 +299,17 @@ function CitadelIcon({ id, size }: { id: string; size: number }) {
   );
 }
 
+/* LES TROIS ANNEAUX BATTENT AU RYTHME DU PACTE.
+
+   Ils tournaient a 8, 5 et 3 secondes, toujours. Les durees passent
+   par `--pv-cadence` : au plein elan rien ne change, a l arret le
+   vortex tourne trois fois plus lentement. Ce que l on voit alors
+   n est pas un chiffre — c est un pacte qui ralentit. */
 function VortexIcon({ id, size }: { id: string; size: number }) {
   const rings = [
-    { r: 20, dash: "8 6", speed: "8s", w: 1.5, col: "#7c3aed", dir: "cw" },
-    { r: 14, dash: "5 8", speed: "5s", w: 2, col: "#a855f7", dir: "ccw" },
-    { r: 8, dash: "3 5", speed: "3s", w: 2.5, col: "#c084fc", dir: "cw" },
+    { r: 20, dash: "8 6", speed: "calc(8s * var(--pv-cadence, 1))", w: 1.5, col: "#7c3aed", dir: "cw" },
+    { r: 14, dash: "5 8", speed: "calc(5s * var(--pv-cadence, 1))", w: 2, col: "#a855f7", dir: "ccw" },
+    { r: 8, dash: "3 5", speed: "calc(3s * var(--pv-cadence, 1))", w: 2.5, col: "#c084fc", dir: "cw" },
   ];
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
@@ -306,7 +327,7 @@ function VortexIcon({ id, size }: { id: string; size: number }) {
       {[0, 90, 180, 270].map((deg, i) => (
         <circle key={i} cx="24" cy="4" r="2" fill="#a855f7" transform={`rotate(${deg} 24 24)`} opacity="0.9" />
       ))}
-      <circle cx="24" cy="24" r="4" fill={`url(#${id}-core)`} style={{ animation: "vo-core 2s ease-in-out infinite" }} />
+      <circle cx="24" cy="24" r="4" fill={`url(#${id}-core)`} style={{ animation: "vo-core calc(2s * var(--pv-cadence, 1)) ease-in-out infinite" }} />
       <circle cx="24" cy="24" r="1.5" fill="white" opacity="0.95" />
     </svg>
   );
@@ -496,7 +517,7 @@ function StarFlash({ color, index }: { color: string; index: number }) {
 
 let _styleInjected = false;
 
-export function PactVisual({ symbol = "flame", progress = 0, size = "lg", className }: PactVisualProps) {
+export function PactVisual({ symbol = "flame", progress = 0, size = "lg", className, elan, titre }: PactVisualProps) {
   const uid = useId().replace(/:/g, "");
 
   // Inject keyframes once
@@ -515,8 +536,18 @@ export function PactVisual({ symbol = "flame", progress = 0, size = "lg", classN
   const circ = 2 * Math.PI * r;
   const dashOffset = circ * (1 - Math.min(100, Math.max(0, progress)) / 100);
 
+  /* La cadence multiplie les durees d animation : 1 au plein elan,
+     3 a l arret. Une propriete personnalisee plutot qu un calcul par
+     anneau — la feuille de style la lit ou elle en a besoin, et les
+     symboles qui ne s en servent pas ne changent pas. */
+  const cadence = elan == null ? 1 : 1 + (1 - Math.min(1, Math.max(0, elan))) * 2;
+
   return (
-    <div className={cn("relative inline-block overflow-visible", className)} style={{ padding: s.p }}>
+    <div
+      className={cn("relative inline-block overflow-visible", className)}
+      style={{ padding: s.p, ["--pv-cadence" as string]: String(cadence) }}
+      {...(titre ? { role: "img", "aria-label": titre, title: titre } : {})}
+    >
       {/* ── outer aura ── */}
       <div
         aria-hidden

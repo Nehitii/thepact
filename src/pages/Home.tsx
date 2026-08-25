@@ -154,6 +154,25 @@ export default function Home() {
     }
   }, [pactLoading, pact, user, navigate]);
 
+  /* LA MESURE CHOISIE, RETENUE.
+
+     En localStorage : c est un reglage de lecture sur une seule page,
+     comme le fond de Focus. Il ne merite ni colonne ni aller-retour
+     serveur.
+
+     ET IL SE DECLARE AVANT LE RETOUR ANTICIPE ci-dessous. Pose plus
+     bas — ou il etait — ces deux hooks disparaissaient le temps d une
+     redirection vers l onboarding, et l ordre des hooks cassait au
+     rendu suivant. Le typecheck ne dit rien la-dessus ; eslint si. */
+  const [mesure, setMesure] = useState<MesureProgression>(() => {
+    try {
+      return localStorage.getItem(CLE_MESURE) === "steps" ? "steps" : "goals";
+    } catch { return "goals"; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
+  }, [mesure]);
+
   if (!pactLoading && !pact && user) {
     return null;
   }
@@ -192,20 +211,7 @@ export default function Home() {
 
      Aucune des deux n a raison contre l autre : elles repondent a des
      questions differentes, « ou j en suis » et « est-ce que j avance ».
-     Le choix est donc a celui qui regarde, et il est retenu.
-
-     En localStorage : c est un reglage de lecture sur une seule page,
-     comme le fond de Focus. Il ne merite ni colonne ni aller-retour
-     serveur. */
-  const [mesure, setMesure] = useState<MesureProgression>(() => {
-    try {
-      return localStorage.getItem(CLE_MESURE) === "steps" ? "steps" : "goals";
-    } catch { return "goals"; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
-  }, [mesure]);
-
+     Le choix est donc a celui qui regarde — voir `mesure`, plus haut. */
   const progression = (() => {
     const [fait, total] =
       mesure === "steps"
@@ -265,6 +271,7 @@ export default function Home() {
         {pact ? (
           <NexusHeroBanner
             progression={progression}
+            enCours={dashboardData.statusCounts.in_progress}
             mesure={mesure}
             onChangerMesure={() => setMesure((m) => (m === "goals" ? "steps" : "goals"))}
             level={level}

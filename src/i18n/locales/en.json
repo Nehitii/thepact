@@ -2194,6 +2194,10 @@
       "hideWidget": "Hide Widget",
       "resetLayout": "Reset Layout",
       "saveLayout": "Save Layout"
+    },
+    "neuralBar": {
+      "dayElapsed": "Day elapsed",
+      "customize": "Customize"
     }
   },
   "settings": {
