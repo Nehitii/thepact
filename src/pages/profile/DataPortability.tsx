@@ -3,7 +3,7 @@ import { Bouton } from "@/components/profile/console-ui";
 import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ export default function DataPortability() {
   const { user, session } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
   const [isExporting, setIsExporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -239,17 +240,27 @@ export default function DataPortability() {
     }
   };
 
-  /* L IMPORT NE RESTAURE QUE LE JOURNAL.
-     Il l a toujours fait — objectifs, etapes, finances et sante sont
-     lus dans le fichier, comptes dans l apercu, puis ignores. Le
-     message annoncait pourtant « les donnees ont ete importees avec
-     succes », meme quand pas une ligne n avait bouge.
+  /* L IMPORT NE RESTAURAIT QUE LE JOURNAL.
+     Objectifs et etapes etaient lus dans le fichier, comptes dans
+     l apercu — puis ignores, sous un message annoncant « les donnees
+     ont ete importees avec succes ».
 
-     Restaurer les objectifs demande de remettre les identifiants en
-     correspondance, de respecter l ordre des cles etrangeres et de
-     decider quoi faire des doublons : c est une fonctionnalite a
-     ecrire, pas un correctif. En attendant, l ecran dit ce qu il fait
-     et compte ce qu il a reellement ecrit. */
+     Ce qu il fallait resoudre pour les restaurer :
+
+     LES IDENTIFIANTS. Une etape pointe son objectif par `goal_id` ;
+     reinserer les objectifs leur donne de nouveaux identifiants. On
+     les tire donc nous-memes avant d ecrire, et l on garde la
+     correspondance ancien → nouveau. Se fier a l ordre de retour d un
+     INSERT aurait marche en pratique, sans etre garanti.
+
+     LE PACTE. Un objectif appartient a un pacte, et celui du fichier
+     peut ne plus exister — ou etre celui d un autre compte. On rattache
+     au pacte actif de qui importe.
+
+     LES DOUBLONS. On insere toujours du neuf, jamais par-dessus :
+     reimporter deux fois cree deux fois, ce qui se corrige a la main.
+     L inverse ecraserait un travail plus recent que la sauvegarde, ce
+     qui ne se corrige pas. L ecran le dit avant. */
   const handleImport = async () => {
     if (!importFile || !user?.id) return;
     setIsImporting(true);
@@ -258,29 +269,80 @@ export default function DataPortability() {
       const text = await importFile.text();
       const data = JSON.parse(text);
       const entrees = Array.isArray(data.journalEntries) ? data.journalEntries : [];
+      const objectifs = Array.isArray(data.goals) ? data.goals : [];
+      const etapes = Array.isArray(data.steps) ? data.steps : [];
 
-      if (!entrees.length) {
+      if (!entrees.length && !objectifs.length) {
         toast.info("Rien à restaurer", {
-          description: "Ce fichier ne contient aucune entrée de journal.",
+          description: "Ce fichier ne contient ni objectif ni entrée de journal.",
         });
         setLatestLog({ text: "IMPORT: NOTHING TO DO", type: "info" });
         return;
       }
 
-      /* Une seule requete au lieu d une par entree — et son erreur est
-         lue : chaque ligne partait sans que personne ne regarde si elle
-         etait arrivee. */
-      const lignes = entrees.map((e: Record<string, unknown>) => {
-        const { id: _ignore, ...reste } = e;
-        return { ...reste, user_id: user.id };
-      });
-      const { error } = await supabase.from("journal_entries").insert(lignes);
-      if (error) throw error;
+      const fait: string[] = [];
 
-      toast.success("Journal restauré", {
-        description: `${lignes.length} entrée${lignes.length > 1 ? "s" : ""} ajoutée${lignes.length > 1 ? "s" : ""}. Les objectifs et les étapes ne sont pas restaurés.`,
-      });
-      setLatestLog({ text: `IMPORT COMPLETE: ${lignes.length} ENTRIES`, type: "ok" });
+      /* ── LE JOURNAL ── */
+      if (entrees.length) {
+        const lignes = entrees.map((e: Record<string, unknown>) => {
+          const { id: _i, ...reste } = e;
+          return { ...reste, user_id: user.id };
+        });
+        const { error } = await supabase.from("journal_entries").insert(lignes);
+        if (error) throw new Error(`journal : ${error.message}`);
+        fait.push(`${lignes.length} entrée${lignes.length > 1 ? "s" : ""} de journal`);
+      }
+
+      /* ── LES OBJECTIFS, PUIS LEURS ÉTAPES ── */
+      if (objectifs.length) {
+        const { data: profil } = await supabase
+          .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
+        let pactId = profil?.active_pact_id ?? null;
+        if (!pactId) {
+          const { data: dernier } = await supabase
+            .from("pacts").select("id").eq("user_id", user.id)
+            .order("created_at", { ascending: false }).limit(1).maybeSingle();
+          pactId = dernier?.id ?? null;
+        }
+        if (!pactId) {
+          throw new Error("Aucun pacte pour accueillir ces objectifs. Crée-en un d’abord.");
+        }
+
+        const correspondance = new Map<string, string>();
+        const lignesObjectifs = objectifs.map((g: Record<string, unknown>) => {
+          const { id: ancien, created_at: _c, updated_at: _u, pact_id: _p, ...reste } = g;
+          const nouveau = crypto.randomUUID();
+          if (typeof ancien === "string") correspondance.set(ancien, nouveau);
+          return { ...reste, id: nouveau, pact_id: pactId };
+        });
+
+        const { error: erreurObjectifs } = await supabase.from("goals").insert(lignesObjectifs);
+        if (erreurObjectifs) throw new Error(`objectifs : ${erreurObjectifs.message}`);
+        fait.push(`${lignesObjectifs.length} objectif${lignesObjectifs.length > 1 ? "s" : ""}`);
+
+        /* Une etape dont l objectif n est pas du lot n a nulle part ou
+           aller : on la laisse plutot que de l accrocher au hasard. */
+        const lignesEtapes = etapes
+          .filter((s: Record<string, unknown>) => correspondance.has(String(s.goal_id)))
+          .map((s: Record<string, unknown>) => {
+            const { id: _i, created_at: _c, updated_at: _u, goal_id, ...reste } = s;
+            return { ...reste, goal_id: correspondance.get(String(goal_id))! };
+          });
+
+        if (lignesEtapes.length) {
+          const { error: erreurEtapes } = await supabase.from("steps").insert(lignesEtapes);
+          if (erreurEtapes) throw new Error(`étapes : ${erreurEtapes.message}`);
+          fait.push(`${lignesEtapes.length} étape${lignesEtapes.length > 1 ? "s" : ""}`);
+        }
+
+        const orphelines = etapes.length - lignesEtapes.length;
+        if (orphelines > 0) fait.push(`${orphelines} étape${orphelines > 1 ? "s" : ""} sans objectif, ignorée${orphelines > 1 ? "s" : ""}`);
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["user-stats", user.id] });
+
+      toast.success("Restauration terminée", { description: `${fait.join(", ")}.` });
+      setLatestLog({ text: `IMPORT COMPLETE: ${fait.join(" / ")}`, type: "ok" });
       setImportFile(null); setImportPreview(null);
     } catch (e) {
       toast.error("Erreur d’import", {
@@ -427,8 +489,8 @@ export default function DataPortability() {
                      contient ; seul le journal sera restaure. L apercu
                      les presentait a l identique, ce qui laissait croire
                      que tout reviendrait. */}
-                <div className="text-center opacity-45"><span className="font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Objectifs</span></div>
-                <div className="text-center opacity-45"><span className="font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Étapes</span></div>
+                <div className="text-center"><span className="text-primary font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Objectifs</span></div>
+                <div className="text-center"><span className="text-primary font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Étapes</span></div>
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.journalEntries}</span><br /><span className="text-muted-foreground">Journal</span></div>
               </div>
               <Bouton role="primaire" pleine onClick={handleImport} disabled={isImporting}>
