@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { CornerBrackets } from "./CornerBrackets";
 import { PactVisual } from "@/components/PactVisual";
 import { RankCore } from "./RankCore";
@@ -42,6 +43,32 @@ const EFFETS_PAPIER: Record<string, React.CSSProperties> = {
   "purple-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(113,65,163,0.34)" },
   "gold-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(115,90,0,0.34)" },
   glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
+};
+
+/* ── LE ROULEMENT ──
+   La bascule ne change pas une valeur, elle change ce que la valeur
+   COMPTE. Un fondu dirait « ça se met à jour » ; un roulement dit
+   « on a changé de registre », ce qui est exactement le geste — la
+   sortante monte et s'en va, l'entrante monte à sa place. C'est le
+   mouvement d'un compteur mécanique, et les chiffres sont déjà en
+   chasse fixe pour ça. */
+const ROULEMENT = { duration: 0.34, ease: [0.2, 0.8, 0.2, 1] as const };
+
+const STYLE_VALEUR: React.CSSProperties = {
+  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+  fontSize: 24,
+  fontVariantNumeric: "tabular-nums",
+  lineHeight: 1.1,
+  whiteSpace: "nowrap",
+};
+
+const STYLE_LIBELLE: React.CSSProperties = {
+  fontSize: "max(11px, 0.6875rem)",
+  letterSpacing: 3,
+  color: "var(--nexus-text-dim)",
+  textTransform: "uppercase",
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
 };
 
 /** Ce que compte le pourcentage de progression. */
@@ -106,18 +133,40 @@ export function NexusHeroBanner({
        pas, et deux mesures differentes affichees pareil se confondent
        d une session a l autre. */
     {
+      /* LA CLE NE DOIT PAS ETRE LE LIBELLE.
+
+         Elle l etait, et le libelle est precisement ce qui change
+         quand on bascule. React voyait donc une colonne disparaitre
+         et une autre apparaitre : il demontait tout le sous-arbre.
+         AnimatePresence perdait avec lui la memoire de la face
+         sortante, et chaque bascule redevenait un premier montage —
+         donc aucune animation, ni a l entree ni a la sortie.
+
+         La cle dit CE QU EST la colonne, pas ce qu elle affiche. */
+      cle: "mesure",
       value: `${Math.round(progression)}%`,
       label: mesure === "steps" ? "ÉTAPES FRANCHIES" : "OBJECTIFS ATTEINTS",
+      /* Le libellé de l'AUTRE mesure. Il n'est jamais lu : il sert de
+         gabarit, empilé sous le vrai, pour que la colonne garde
+         toujours la largeur du plus long des deux. Sans lui, basculer
+         fait varier la cellule de onze pixels et pousse les trois
+         voisines — c'est la déformation qu'on voyait. Le calculer au
+         lieu de l'écrire en dur laisse la traduction le déplacer sans
+         rien casser. */
+      gabarit: mesure === "steps" ? "OBJECTIFS ATTEINTS" : "ÉTAPES FRANCHIES",
       color: "hsl(var(--ds-accent-primary))",
       glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none",
       bascule: onChangerMesure,
+      /* La clé du roulement : c'est elle qui dit à AnimatePresence
+         qu'on a changé de face. */
+      face: mesure,
       titre: mesure === "steps"
         ? "Compter les objectifs atteints à la place"
         : "Compter les étapes franchies à la place",
     },
-    { value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
-    { value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
-    { value: String(activeDays), label: "JOURS ACTIFS", color: selonTheme("#ff8c00", sombre), glow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none" },
+    { cle: "rang", value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
+    { cle: "missions", value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
+    { cle: "jours", value: String(activeDays), label: "JOURS ACTIFS", color: selonTheme("#ff8c00", sombre), glow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none" },
   ], [progression, mesure, onChangerMesure, level, totalMissions, activeDays, sombre]);
 
   const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
@@ -253,37 +302,66 @@ export function NexusHeroBanner({
             const Cadre = s.bascule ? "button" : "div";
             return (
             <Cadre
-              key={s.label}
+              key={s.cle}
               {...(s.bascule
                 ? { type: "button" as const, onClick: s.bascule, title: s.titre, "aria-label": s.titre }
                 : {})}
               className={
                 "flex flex-col items-center" +
-                (s.bascule
-                  ? " cursor-pointer rounded-sm px-2 -mx-2 transition-colors hover:bg-primary/[0.07] focus-visible:outline focus-visible:outline-1 focus-visible:outline-primary/60"
-                  : "")
+                (s.bascule ? " hb-bascule" : "")
               }
             >
-              <span
-                style={{
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  fontSize: 24,
-                  color: s.color,
-                  textShadow: s.glow,
-                }}
-              >
-                {s.value}
+              <span className="hb-piste">
+                {/* Le gabarit du chiffre : « 100% » est le plus large que
+                    la mesure puisse produire. Il porte la MÊME typographie
+                    que la face, sinon il ne mesure pas la bonne chose. */}
+                {s.bascule && (
+                  <span className="hb-gabarit" aria-hidden="true" style={{ ...STYLE_VALEUR, color: s.color }}>
+                    100%
+                  </span>
+                )}
+                {/* Pas de mode popLayout : il sort l element en position absolue,
+                    ce qui n a de sens que dans un flux. Ici les deux faces
+                    partagent deja la meme cellule de grille — elles se
+                    superposent d elles-memes, sans rien deplacer. */}
+                <AnimatePresence initial={false}>
+                  <motion.span
+                    key={s.face ?? "fixe"}
+                    className="hb-face"
+                    initial={s.bascule ? { y: "0.55em", opacity: 0 } : false}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "-0.55em", opacity: 0 }}
+                    transition={ROULEMENT}
+                    style={{ ...STYLE_VALEUR, color: s.color, textShadow: s.glow }}
+                  >
+                    {s.value}
+                  </motion.span>
+                </AnimatePresence>
               </span>
-              <span
-                style={{
-                  fontSize: "max(11px, 0.6875rem)",
-                  letterSpacing: 3,
-                  color: "var(--nexus-text-dim)",
-                  textTransform: "uppercase" as const,
-                  marginTop: 4,
-                }}
-              >
-                {s.label}
+
+              <span className="hb-piste" style={{ marginTop: 4 }}>
+                {s.bascule && (
+                  <span className="hb-gabarit" aria-hidden="true" style={STYLE_LIBELLE}>
+                    {s.gabarit}
+                  </span>
+                )}
+                {/* Pas de mode popLayout : il sort l element en position absolue,
+                    ce qui n a de sens que dans un flux. Ici les deux faces
+                    partagent deja la meme cellule de grille — elles se
+                    superposent d elles-memes, sans rien deplacer. */}
+                <AnimatePresence initial={false}>
+                  <motion.span
+                    key={s.face ?? "fixe"}
+                    className="hb-face"
+                    initial={s.bascule ? { y: "0.55em", opacity: 0 } : false}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "-0.55em", opacity: 0 }}
+                    transition={ROULEMENT}
+                    style={STYLE_LIBELLE}
+                  >
+                    {s.label}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </Cadre>
             );
@@ -293,6 +371,71 @@ export function NexusHeroBanner({
 
       {/* Keyframes */}
       <style>{`
+        /* ── LA PISTE ──
+           Le gabarit et la face occupent la MÊME cellule : la piste
+           prend donc toujours la largeur du plus large des deux
+           libellés, et basculer ne peut plus déplacer les colonnes
+           voisines. Le gabarit garde sa place sans être lu — ni à
+           l'œil, ni par un lecteur d'écran. */
+        .hb-piste { display: grid; justify-items: center; }
+        .hb-piste > * { grid-area: 1 / 1; }
+        .hb-gabarit { visibility: hidden; pointer-events: none; }
+        /* La face qui sort est retirée du flux par framer-motion
+           (mode popLayout) : elle ne pousse rien pendant qu'elle
+           s'en va. */
+        .hb-face { will-change: transform, opacity; }
+
+        /* ── LE SURVOL ──
+           Avant : un aplat d'accent à 7 % sur tout le bloc. Franc,
+           mais lourd — et sur une rangée de quatre chiffres dont un
+           seul est cliquable, un pavé teinté crie plus fort que ce
+           qu'il annonce.
+
+           Ici c'est une RÈGLE qui se trace sous la colonne, de la
+           gauche vers la droite. Elle dit la même chose — ceci
+           répond — en un seul pixel, elle est posée en absolu donc
+           elle ne déforme rien, et c'est le geste de la page : un
+           trait d'encre plutôt qu'un halo. */
+        .hb-bascule {
+          position: relative;
+          cursor: pointer;
+          padding-bottom: 7px;
+          background: none;
+          border: 0;
+        }
+        .hb-bascule::after {
+          content: "";
+          position: absolute;
+          left: 0; right: 0; bottom: 0;
+          height: 1px;
+          background: hsl(var(--ds-current-accent, var(--ds-accent-primary)));
+          transform: scaleX(0);
+          transform-origin: left center;
+          transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .hb-bascule:hover::after,
+        .hb-bascule:focus-visible::after { transform: scaleX(1); }
+        /* Le libellé se rapproche de l'encre courante au survol :
+           l'accent reste pour la règle, la couleur pour le mot. */
+        /* Seul le LIBELLE se rapproche de l encre courante : c est lui
+           qui nomme la mesure, donc lui qui repond. Le chiffre garde
+           sa couleur — le survol ne doit pas donner l impression que
+           la valeur change avant le clic. Cible la seconde piste et
+           non  .hb-face:last-child , qui attrapait les deux. */
+        .hb-bascule > .hb-piste:last-of-type .hb-face {
+          transition: color 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .hb-bascule:hover > .hb-piste:last-of-type .hb-face,
+        .hb-bascule:focus-visible > .hb-piste:last-of-type .hb-face {
+          color: var(--nexus-text-label);
+        }
+        .hb-bascule:focus-visible { outline: none; }
+        .hb-bascule:focus-visible::after { transform: scaleX(1); height: 2px; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hb-bascule::after { transition: none; }
+        }
+
         @keyframes logoPulse {
           0%,100%{box-shadow:0 0 14px rgba(0,212,255,0.8),0 0 50px rgba(0,212,255,0.2)}
           50%{box-shadow:0 0 24px rgba(0,212,255,1),0 0 80px rgba(0,212,255,0.4)}
