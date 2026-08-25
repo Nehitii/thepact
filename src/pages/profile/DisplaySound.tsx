@@ -54,8 +54,15 @@ export default function DisplaySound() {
   const noter = useCallback((panneau: string, texte: string, type: "info" | "ok" | "warn" = "ok") => {
     setJournaux((j) => ({ ...j, [panneau]: { texte, type } }));
     clearTimeout(minuteurs.current[panneau]);
+    /* IL S EFFACE, IL NE REVIENT PAS A « EN ATTENTE ».
+
+       Cette ligne etait masquee par la feuille de style quand elle a
+       ete ecrite : revenir a un texte d attente ne coutait rien. La
+       plaque lui ayant donne un pied, « en attente » s affichait en
+       permanence sous chaque groupe — un journal qui parle avant que
+       rien ne se soit passe. */
     minuteurs.current[panneau] = setTimeout(
-      () => setJournaux((j) => ({ ...j, [panneau]: { texte: "en attente", type: "info" } })),
+      () => setJournaux((j) => { const s = { ...j }; delete s[panneau]; return s; }),
       4000,
     );
   }, []);
@@ -110,7 +117,6 @@ export default function DisplaySound() {
     );
   }
 
-  const attente = { texte: "en attente", type: "info" } as const;
 
   return (
     <ConsoleReglages
@@ -124,7 +130,7 @@ export default function DisplaySound() {
         ton="actif"
         rang="primaire"
         taille="pleine"
-        journal={journaux.visuel ?? attente}
+        journal={journaux.visuel ?? null}
       >
         <Reglage
           nom={t("settings.displaySound.theme")}
@@ -212,7 +218,7 @@ export default function DisplaySound() {
           : t("settings.console.off", "coupé")}
         ton={effective.masterEnabled ? "actif" : "alerte"}
         taille="pleine"
-        journal={journaux.audio ?? attente}
+        journal={journaux.audio ?? null}
       >
         <Reglage
           nom={t("settings.displaySound.masterSound")}
@@ -294,7 +300,7 @@ export default function DisplaySound() {
           ? `${Math.round(intensite * 100)} %`
           : t("settings.console.off", "coupé")}
         ton={(profile?.particles_enabled ?? true) ? "actif" : "neutre"}
-        journal={journaux.particules ?? attente}
+        journal={journaux.particules ?? null}
       >
         <Reglage
           nom={t("settings.displaySound.enableParticles")}
@@ -342,7 +348,7 @@ export default function DisplaySound() {
         code="Couleur d’accent"
         etat={NOMS_ACCENT[ACCENTS.find((a) => a.hex === accent)?.cle ?? "cyber"]}
         ton="actif"
-        journal={journaux.accent ?? attente}
+        journal={journaux.accent ?? null}
       >
         <Reglage
           nom={t("settings.displaySound.accentColor", "Couleur d’accent")}

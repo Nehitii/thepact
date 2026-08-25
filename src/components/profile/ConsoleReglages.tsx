@@ -80,10 +80,18 @@ export function ConsoleReglages({ titre, note, children, flottant }: Props) {
       className="selection:bg-primary/30 !p-0"
       background={
         <>
-          {/* Le sol descend d un cran. Une plaque ne se leve que si le
-              fond est plus bas qu elle : a #03060A, la difference avec la
-              surface des panneaux ne se voyait pas. */}
-          <div className="absolute inset-0" style={{ background: "#000409" }} />
+          {/* LE SOL SUIT LE THEME.
+
+              Il etait peint en dur — #03060A d abord, #000409 ensuite —
+              alors que le texte de la console, lui, suit le theme. En
+              clair, cela donnait du bleu nuit sur du noir : illisible.
+              Le defaut precede la plaque, mais la plaque le rendait
+              criant.
+
+              Il descend maintenant d un cran SOUS le fond de page, quel
+              que soit le theme : c est ce qui permet a une plaque de se
+              lever, et ca marche dans les deux sens. */}
+          <div className="rg-sol" />
           <DSBackground variant="cyber" />
         </>
       }

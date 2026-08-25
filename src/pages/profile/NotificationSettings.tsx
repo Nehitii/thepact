@@ -27,7 +27,9 @@ export default function NotificationSettings() {
     setJournaux((j) => ({ ...j, [panneau]: { texte, type } }));
     clearTimeout(minuteurs.current[panneau]);
     minuteurs.current[panneau] = setTimeout(
-      () => setJournaux((j) => ({ ...j, [panneau]: { texte: "en attente", type: "info" } })),
+      /* Il s efface au lieu de revenir a « en attente » : la ligne
+         etait masquee quand ce code a ete ecrit. */
+      () => setJournaux((j) => { const c = { ...j }; delete c[panneau]; return c; }),
       4000,
     );
   }, []);
@@ -79,7 +81,6 @@ export default function NotificationSettings() {
     );
   }
 
-  const attente = { texte: "en attente", type: "info" } as const;
 
   return (
     <ConsoleReglages
@@ -94,7 +95,7 @@ export default function NotificationSettings() {
            rien, et il faut que ca se voie. */
         ton={actives === 0 ? "alerte" : "actif"}
         rang="primaire"
-        journal={journaux.flux ?? attente}
+        journal={journaux.flux ?? null}
       >
         {([
           ["system_enabled", "settings.notifications.system", "settings.notifications.systemDesc", <Zap key="z" />],
@@ -119,7 +120,7 @@ export default function NotificationSettings() {
           ? t("settings.notifications.focusOn", "concentration")
           : t("settings.console.synced", "synchronisé")}
         ton={settings?.focus_mode ? "alerte" : "actif"}
-        journal={journaux.systeme ?? attente}
+        journal={journaux.systeme ?? null}
       >
         {settings?.focus_mode && (
           <Alerte>
@@ -169,7 +170,7 @@ export default function NotificationSettings() {
         code="Heures calmes"
         etat={calmeActif ? `${debut} → ${fin}` : t("settings.console.off", "coupé")}
         ton={calmeActif ? "actif" : "neutre"}
-        journal={journaux.calme ?? attente}
+        journal={journaux.calme ?? null}
       >
         <Reglage
           nom={t("settings.notifications.quietHours", "Ne pas déranger")}
@@ -222,7 +223,7 @@ export default function NotificationSettings() {
           ? t("settings.notifications.subscribed", "abonné")
           : t("settings.console.off", "inactif")}
         ton={push.subscribed ? "actif" : "neutre"}
-        journal={journaux.push ?? attente}
+        journal={journaux.push ?? null}
       >
         {!push.supported && (
           <Alerte ton="info">

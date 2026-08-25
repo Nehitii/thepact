@@ -172,14 +172,30 @@
    lumiere sur le bord haut, la ou la lumiere frapperait. La
    wishlist en use deja pour ses vignettes. Avec elle, quatre points
    de luminance suffisent. */
+/* LE SOL, UN CRAN SOUS LE FOND DE PAGE.
+   En sombre il fonce, en clair il fonce aussi — c est un creux, pas
+   une couleur. La plaque se leve donc dans les deux themes. */
+.rg-sol {
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--background));
+  filter: brightness(0.72);
+}
+
 .rg-panneau {
   position: relative;
   padding: 18px 22px 10px;
-  background: hsl(210 68% 7%);
-  border: 1px solid hsl(var(--primary) / 0.13);
+  /* Un voile d accent sur la carte : en sombre il leve la surface
+     de quatre points de luminance, en clair il la teinte a peine.
+     Deux fonds superposes plutot qu une couleur en dur — c est ce
+     qui rend la plaque valable dans les deux themes. */
+  background:
+    linear-gradient(hsl(var(--primary) / 0.05), hsl(var(--primary) / 0.05)),
+    hsl(var(--card));
+  border: 1px solid hsl(var(--primary) / 0.14);
   box-shadow:
     inset 0 1px 0 hsl(var(--primary) / 0.10),
-    0 1px 0 hsl(210 100% 1% / 0.6);
+    0 1px 0 hsl(var(--background) / 0.6);
   clip-path: polygon(
     0 0,
     calc(100% - 12px) 0,
@@ -204,7 +220,7 @@
 
 .rg-panneau-code {
   font-family: "Rajdhani", system-ui, sans-serif;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -293,9 +309,12 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 3px 20px;
-  padding: 13px 0;
+  padding: 15px 0;
 }
-.rg-reglage + .rg-reglage { border-top: 1px solid hsl(var(--primary) / 0.06); }
+/* Sur la plaque, un filet a 6 % ne se voyait pas : la surface est
+   plus claire que le sol, il faut un peu plus pour marquer la
+   couture entre deux reglages. */
+.rg-reglage + .rg-reglage { border-top: 1px solid hsl(var(--primary) / 0.10); }
 
 .rg-reglage[data-large] { grid-template-columns: minmax(0, 1fr); }
 
@@ -320,12 +339,25 @@
 }
 
 .rg-reglage-controle { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+/* UN CONTROLE LARGE N EST PAS UN CONTROLE ETIRE.
+
+   Il s etendait d un bord a l autre de la plaque : une glissiere de
+   394 px pour regler un volume, un segmente de trois mots etale sur
+   toute la largeur. Ca se lit comme un formulaire, pas comme un
+   reglage — et la maquette montrait l inverse.
+
+   Il descend toujours sous son intitule quand il a besoin de sa
+   propre ligne, mais il s aligne a DROITE et prend la largeur qu il
+   lui faut, pas celle qu il trouve. Ce qui a vraiment besoin de
+   tout — une palette de teintes — le reclame par data-etale. */
 .rg-reglage[data-large] .rg-reglage-controle {
   grid-column: 1;
   grid-row: auto;
-  justify-self: stretch;
+  justify-self: end;
+  width: min(100%, 360px);
   margin-top: 10px;
 }
+.rg-reglage[data-etale] .rg-reglage-controle { justify-self: stretch; width: 100%; }
 
 /* ── LE SEGMENTE ─────────────────────────────────────────────── */
 

@@ -1752,7 +1752,14 @@
    element. Rien n'y est centre, rien n'y flotte.
    ═══════════════════════════════════════════════════════════════ */
 
-.rg {
+/* RENOMMEE DEPUIS `.rg`.
+
+   La console de reglages emploie `.rg` pour sa grille, et les deux
+   feuilles sont chargees globalement : celle-ci passait apres et
+   peignait donc son fond, sa bordure et sa police mono sur la
+   console. Trois classes etaient en conflit — `.rg`, `.rg-jauge`,
+   `.rg-volet` — et rien ne le signalait. */
+.gr-registre {
   width: 100%;
   background: var(--nexus-bg);
   border: 1px solid var(--nexus-border);
@@ -1846,9 +1853,9 @@
   font-variant-numeric: tabular-nums;
 }
 .rg-etapes i { font-style: normal; color: var(--nexus-text-dimmer); }
-.rg-jauge { display: flex; gap: 2px; }
-.rg-jauge u { flex: 1; height: 8px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
-.rg-jauge u.on { background: var(--t); }
+.gr-jauge { display: flex; gap: 2px; }
+.gr-jauge u { flex: 1; height: 8px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
+.gr-jauge u.on { background: var(--t); }
 .rg-xp {
   text-align: right;
   font-size: max(11px, 0.6875rem);
@@ -1968,19 +1975,19 @@
 .rg-bloc { border-bottom: 1px solid rgb(255 255 255 / 0.045); }
 .rg-bloc .rg-l { border-bottom: 0; }
 
-.rg-volet {
+.gr-volet {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 280ms cubic-bezier(.3, .8, .3, 1);
 }
-.rg-bloc.est-ouvert .rg-volet { grid-template-rows: 1fr; }
+.rg-bloc.est-ouvert .gr-volet { grid-template-rows: 1fr; }
 /* min-height: 0 est indispensable : sans lui, l'element de grille refuse
    de descendre sous la hauteur de son contenu et rien ne s'anime. */
-.rg-volet-in {
+.gr-volet-in {
   min-height: 0;
   overflow: hidden;
 }
-.rg-bloc.est-ouvert .rg-volet-in {
+.rg-bloc.est-ouvert .gr-volet-in {
   border-left: 2px solid var(--t);
   background: rgb(255 255 255 / 0.022);
 }
@@ -2082,7 +2089,7 @@
   .rg-membre-j { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rg-volet, .rg-chevron { transition: none; }
+  .gr-volet, .rg-chevron { transition: none; }
 }
 
 /* Un volet ne doit pas repousser la page hors de vue. Le groupe

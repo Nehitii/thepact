@@ -32,7 +32,9 @@ export default function PrivacyControl() {
     setJournaux((j) => ({ ...j, [panneau]: { texte, type } }));
     clearTimeout(minuteurs.current[panneau]);
     minuteurs.current[panneau] = setTimeout(
-      () => setJournaux((j) => ({ ...j, [panneau]: { texte: "en attente", type: "info" } })),
+      /* Il s efface au lieu de revenir a « en attente » : la ligne
+         etait masquee quand ce code a ete ecrit. */
+      () => setJournaux((j) => { const c = { ...j }; delete c[panneau]; return c; }),
       4000,
     );
   }, []);
@@ -93,7 +95,6 @@ export default function PrivacyControl() {
     );
   }
 
-  const attente = { texte: "en attente", type: "info" } as const;
 
   /* Une case decochee, ici, protege : l etat « tout actif » n est donc
      pas un etat de reussite. Le temoin reste neutre quand on se cache,
@@ -110,7 +111,7 @@ export default function PrivacyControl() {
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: visibles, total: 2 })}
         ton={tonExposition(visibles)}
         rang="primaire"
-        journal={journaux.visibilite ?? attente}
+        journal={journaux.visibilite ?? null}
       >
         <Reglage
           nom={t("settings.privacy.profileDiscoverable")}
@@ -141,7 +142,7 @@ export default function PrivacyControl() {
         code="Objectifs"
         etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: partagees, total: 1 })}
         ton={tonExposition(partagees)}
-        journal={journaux.objectifs ?? attente}
+        journal={journaux.objectifs ?? null}
       >
         <Reglage
           nom={t("settings.privacy.shareGoalsProgress")}
@@ -186,7 +187,7 @@ export default function PrivacyControl() {
           ? t("settings.privacy.sharedCount", "{{n}} partage(s)", { n: nbPartages })
           : t("settings.console.none", "aucun")}
         ton={nbPartages ? "actif" : "neutre"}
-        journal={journaux.partages ?? attente}
+        journal={journaux.partages ?? null}
       >
         {nbPartages === 0 ? (
           <p className="flex items-center gap-2.5 py-4 text-sm font-rajdhani text-muted-foreground">

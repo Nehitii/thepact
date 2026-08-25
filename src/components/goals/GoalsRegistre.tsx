@@ -254,7 +254,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
           <span className="rg-etapes">
             {av.faits}<i>/{av.total}</i>
           </span>
-          <span className="rg-jauge" aria-hidden="true">
+          <span className="gr-jauge" aria-hidden="true">
             {Array.from({ length: 14 }, (_, i) => (
               <u key={i} className={i < Math.round((av.pct / 100) * 14) ? "on" : ""} />
             ))}
@@ -281,8 +281,8 @@ export const GoalsRegistre = memo(function GoalsRegistre({
 
         {/* Le volet est toujours dans le DOM : c'est ce qui permet
             d'animer sa hauteur sans la mesurer en JavaScript. */}
-        <div className="rg-volet" style={{ ["--t" as string]: couleur }}>
-          <div className="rg-volet-in">
+        <div className="gr-volet" style={{ ["--t" as string]: couleur }}>
+          <div className="gr-volet-in">
             {(estOuvert || rendus.has(g.id)) && (
               g.goal_type === "super"
                 ? <MembresDuGroupe membres={membres || []} onNavigate={onNavigate}
@@ -337,7 +337,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
   };
 
   return (
-    <div className="rg">
+    <div className="gr-registre">
       <div className="rg-barre">
         <span className="rg-titre ds-t-label">Registre</span>
         <span className="rg-fil" />
