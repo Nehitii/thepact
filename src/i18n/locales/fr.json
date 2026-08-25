@@ -2033,14 +2033,15 @@
       "etape": "étape",
       "voirEnLigne": "Voir en ligne",
       "remettre": "Remettre dans la liste",
-      "marquerPaye": "Marquer payé",
+      "marquerPaye": "Marquer comme payé",
       "poserImage": "Poser une image",
       "sceauPacte": "Pièce du pacte",
       "sceauLibre": "Article libre",
       "corrigerPrix": "Corriger le prix",
       "collerLien": "Coller l’adresse de la boutique",
       "imageMorte": "L’image n’est plus disponible — en poser une autre",
-      "imageIndisponible": "Image indisponible"
+      "imageIndisponible": "Image indisponible",
+      "ouvrirLien": "Ouvrir le lien"
     },
     "etat": {
       "parEtape": "Étape faite",
@@ -2102,7 +2103,12 @@
     "finance": {
       "ajoute": "Ajouté aux dépenses de {{mois}}"
     },
-    "saut": "Aller à l’archive"
+    "saut": "Aller à l’archive",
+    "forme": {
+      "aria": "Forme de la liste",
+      "vitrine": "Vitrine",
+      "registre": "Registre"
+    }
   },
   "inbox": {
     "title": "Boîte de réception",

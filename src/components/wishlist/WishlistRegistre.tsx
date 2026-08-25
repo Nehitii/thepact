@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, ExternalLink, Pencil, Target, Trash2 } from "lucide-react";
@@ -50,6 +51,7 @@ export function WishlistRegistre({
 }: WishlistRegistreProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const immobile = useReducedMotion();
 
   const groupes = useMemo<Groupe[]>(() => {
     const parObjectif = new Map<string, Groupe>();
@@ -230,69 +232,86 @@ export function WishlistRegistre({
                 que la ligne devienne un peigne. */}
             <WishlistRail className="wl-groupe-rail" part={part} cellules={24} />
 
-            {ouvert && (
-              <div className="wl-postes">
-                {g.postes.map((item) => {
-                  const piece = item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined;
-                  return (
-                    <div className="wl-poste" key={item.id} data-acquis={item.acquired ? "oui" : "non"}>
-                      {/* Meme regle que la fiche d objectif : une etape
-                          validee a deja paye sa piece. */}
-                      <button
-                        type="button"
-                        className="wl-coche"
-                        aria-pressed={item.acquired}
-                        disabled={piece?.etapeFaite === true}
-                        onClick={() => onToggleAcquired(item.id, !item.acquired)}
-                        title={piece?.etapeFaite
-                          ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
-                          : item.acquired
-                            ? t("wishlist.fiche.remettre", "Remettre dans la liste")
-                            : t("wishlist.fiche.marquerPaye", "Marquer payé")}
-                      >
-                        {/* Une case vide est un etat, pas un oubli. */}
-                        {item.acquired && <Check aria-hidden="true" />}
-                      </button>
+            {/* LE GROUPE S OUVRE, MAINTENANT.
 
-                      <span className="wl-poste-nom">
-                        {item.name}
-                        {/* D ou vient la coche : l etape, ou la main. */}
-                        {piece?.etapeTitre && (
-                          <span className="wl-poste-source">
-                            {piece.etapeRang != null
-                              ? `${t("wishlist.fiche.etape", "étape")} ${piece.etapeRang} · `
-                              : ""}
-                            {piece.etapeTitre}
-                            {piece.parLEtape ? ` · ${t("wishlist.etat.parEtape", "Étape faite")}` : ""}
-                          </span>
-                        )}
-                      </span>
-
-                      <span className="wl-poste-prix">
-                        {formatCurrency(Number(item.estimated_cost || 0), currency)}
-                      </span>
-
-                      <span className="wl-outils">
-                        {item.url && (
-                          <a className="wl-outil" href={item.url} target="_blank" rel="noopener noreferrer"
-                            title={t("wishlist.fiche.voirEnLigne", "Voir en ligne")}>
-                            <ExternalLink aria-hidden="true" />
-                          </a>
-                        )}
-                        <button type="button" className="wl-outil" onClick={() => onEdit(item)}
-                          title={t("common.edit", "Modifier")}>
-                          <Pencil aria-hidden="true" />
+                Ses lignes apparaissaient d un bloc, sans transition :
+                seul le chevron tournait, et le document sautait sous le
+                curseur. Meme geste que le pli de l archive, meme
+                traitement. */}
+            <AnimatePresence initial={false}>
+              {ouvert && (
+                <motion.div
+                  className="wl-postes"
+                  initial={immobile ? false : { height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={immobile ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={immobile
+                    ? { duration: 0 }
+                    : { height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.16 } }}
+                  style={{ overflow: "hidden" }}
+                >
+                  {g.postes.map((item) => {
+                    const piece = item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined;
+                    return (
+                      <div className="wl-poste" key={item.id} data-acquis={item.acquired ? "oui" : "non"}>
+                        {/* Meme regle que la fiche d objectif : une etape
+                            validee a deja paye sa piece. */}
+                        <button
+                          type="button"
+                          className="wl-coche"
+                          aria-pressed={item.acquired}
+                          disabled={piece?.etapeFaite === true}
+                          onClick={() => onToggleAcquired(item.id, !item.acquired)}
+                          title={piece?.etapeFaite
+                            ? t("goals.detail.paidByStep", "Payé par la validation de l’étape")
+                            : item.acquired
+                              ? t("wishlist.fiche.remettre", "Remettre dans la liste")
+                              : t("wishlist.fiche.marquerPaye", "Marquer payé")}
+                        >
+                          {/* Une case vide est un etat, pas un oubli. */}
+                          {item.acquired && <Check aria-hidden="true" />}
                         </button>
-                        <button type="button" className="wl-outil wl-outil--danger" onClick={() => onDelete(item.id)}
-                          title={t("common.delete", "Supprimer")}>
-                          <Trash2 aria-hidden="true" />
-                        </button>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+
+                        <span className="wl-poste-nom">
+                          {item.name}
+                          {/* D ou vient la coche : l etape, ou la main. */}
+                          {piece?.etapeTitre && (
+                            <span className="wl-poste-source">
+                              {piece.etapeRang != null
+                                ? `${t("wishlist.fiche.etape", "étape")} ${piece.etapeRang} · `
+                                : ""}
+                              {piece.etapeTitre}
+                              {piece.parLEtape ? ` · ${t("wishlist.etat.parEtape", "Étape faite")}` : ""}
+                            </span>
+                          )}
+                        </span>
+
+                        <span className="wl-poste-prix">
+                          {formatCurrency(Number(item.estimated_cost || 0), currency)}
+                        </span>
+
+                        <span className="wl-outils">
+                          {item.url && (
+                            <a className="wl-outil" href={item.url} target="_blank" rel="noopener noreferrer"
+                              title={t("wishlist.fiche.voirEnLigne", "Voir en ligne")}>
+                              <ExternalLink aria-hidden="true" />
+                            </a>
+                          )}
+                          <button type="button" className="wl-outil" onClick={() => onEdit(item)}
+                            title={t("common.edit", "Modifier")}>
+                            <Pencil aria-hidden="true" />
+                          </button>
+                          <button type="button" className="wl-outil wl-outil--danger" onClick={() => onDelete(item.id)}
+                            title={t("common.delete", "Supprimer")}>
+                            <Trash2 aria-hidden="true" />
+                          </button>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </section>
         );
       })}

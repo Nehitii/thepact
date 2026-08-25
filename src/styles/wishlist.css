@@ -984,13 +984,19 @@
 .wl-poste[data-acquis="oui"] .wl-poste-nom { color: var(--wl-encre-2); }
 .wl-poste[data-acquis="oui"] .wl-poste-prix { color: var(--wl-vert); }
 
+/* LE JETON SUIT L ETAT, comme la tranche.
+   Il etait vert en dur : dans l archive c est juste, tout y est
+   acquis. Applique au registre de la liste ACTIVE, il annoncait
+   « fait » sur trente-sept articles qui ne le sont pas — et
+   contredisait la tranche rouge a trois pixels de la. */
 .wl-poste-jeton {
   width: 7px;
   height: 7px;
   margin: 0 9px;
-  background: var(--wl-vert);
+  background: var(--wl-dette);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
+.wl-poste[data-acquis="oui"] .wl-poste-jeton { background: var(--wl-vert); }
 
 /* ═══════════════════════════════════════════════════════════════
    LE PLI — l archive
@@ -1400,3 +1406,81 @@
 
 /* Les fenetres suivent la meme nuit. */
 :root.dark .wl-boite { background: var(--wl-plaque); }
+
+/* ═══════════════════════════════════════════════════════════════
+   VITRINE OU REGISTRE
+
+   Quatre-vingt-trois articles en tuiles a photo font VINGT-NEUF
+   ECRANS, dont 86 % de surface d image : la vitrine est belle pour
+   choisir, aveugle pour compter, comparer, retrouver.
+
+   Le registre est la ligne de l archive appliquee a la liste active.
+   Rien n est perdu — la tranche dit l etat, le nom dit quoi, la
+   provenance dit d ou, le prix dit combien, les outils font le
+   reste. Seule l image s en va, et c est elle qu on retirait.
+
+   La bascule se tient A PART des tris : trier change l ORDRE,
+   celle-ci change la FORME. Les melanger ferait croire a un
+   cinquieme tri.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-formes {
+  display: inline-flex;
+  margin-left: auto;
+  border: 1px solid var(--wl-trait);
+  background: var(--wl-plaque);
+}
+.wl-forme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--wl-encre-3);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear;
+}
+.wl-forme + .wl-forme { border-left: 1px solid var(--wl-trait); }
+.wl-forme:hover { color: var(--wl-encre); background: var(--wl-creux); }
+.wl-forme[aria-pressed="true"] { color: #FFFFFF; background: var(--wl-encre); }
+.wl-forme:focus-visible { outline: 2px solid var(--wl-jaune); outline-offset: -2px; }
+.wl-forme svg { width: 15px; height: 15px; }
+
+/* LA LISTE PLATE reprend la plaque du pli : c est le meme objet,
+   sur l autre moitie de la wishlist.
+
+   Elle ne s appelle PAS .wl-registre : ce nom est deja pris par la
+   vue « le pacte », qui groupe par objectif. Deux regles du meme nom
+   dans la meme feuille, et la derniere ecrase la premiere — la vue
+   pacte y aurait perdu sa colonne et son interligne. */
+.wl-liste {
+  background: var(--wl-plaque);
+  box-shadow: var(--wl-ombre);
+  clip-path: var(--wl-coupe);
+}
+.wl-liste .wl-postes { border-top: 0; }
+
+/* Un objectif se rejoint depuis la ligne aussi : c etait la seule
+   chose de la tuile qui menait ailleurs. */
+.wl-poste-lien {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--wl-trait-fort);
+  text-underline-offset: 2px;
+}
+.wl-poste-lien:hover { color: var(--wl-encre); }
+.wl-poste-lien:focus-visible { outline: 2px solid var(--wl-jaune); outline-offset: 2px; }
+
+/* Sur un ecran etroit, les outils ne se cachent pas : il n y a pas
+   de survol pour les revenir chercher. */
+@media (hover: none) {
+  .wl-poste .wl-outils { opacity: 1; }
+}

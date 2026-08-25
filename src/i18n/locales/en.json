@@ -2040,7 +2040,8 @@
       "corrigerPrix": "Correct the price",
       "collerLien": "Paste the shop address",
       "imageMorte": "The image is no longer available — add another",
-      "imageIndisponible": "Image unavailable"
+      "imageIndisponible": "Image unavailable",
+      "ouvrirLien": "Open link"
     },
     "etat": {
       "parEtape": "Step done",
@@ -2102,7 +2103,12 @@
     "finance": {
       "ajoute": "Added to {{mois}} expenses"
     },
-    "saut": "Skip to the archive"
+    "saut": "Skip to the archive",
+    "forme": {
+      "aria": "List layout",
+      "vitrine": "Showcase",
+      "registre": "Register"
+    }
   },
   "inbox": {
     "title": "Inbox",

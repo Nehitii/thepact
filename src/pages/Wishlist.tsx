@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { format, startOfMonth } from "date-fns";
 import { fr as dateFr } from "date-fns/locale";
 import { useEcrirePointage, useEffacerPointage } from "@/hooks/usePointages";
-import { Globe, Plus, Search } from "lucide-react";
+import { Globe, Grid2X2, Plus, Rows3, Search } from "lucide-react";
 import {
   PactWishlistItemType,
   WishlistPriority,
@@ -35,6 +35,10 @@ import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/w
 import { ImportFromUrlModal, type ScrapedProduct } from "@/components/wishlist/ImportFromUrlModal";
 import { DeleteConfirmDialog } from "@/components/wishlist/DeleteConfirmDialog";
 import { WishlistFiche } from "@/components/wishlist/WishlistFiche";
+import { WishlistPoste } from "@/components/wishlist/WishlistPoste";
+
+/* La forme de la liste, retenue d une visite a l autre. */
+const CLE_AFFICHAGE = "vowpact.wishlist.affichage";
 import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
 import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
 import { WishlistRail } from "@/components/wishlist/WishlistRail";
@@ -147,6 +151,27 @@ export default function Wishlist() {
   }, [vue]);
 
   const [recherche, setRecherche] = useState("");
+
+  /* VITRINE OU REGISTRE.
+
+     Quatre-vingt-trois articles en tuiles a photo font vingt-neuf
+     ecrans, dont 86 % de surface d image. La vitrine est belle pour
+     choisir ; elle est aveugle pour compter, comparer, retrouver.
+
+     Le registre est la ligne de l archive, appliquee a la liste
+     active : tranche rouge sur le flanc, nom, provenance, prix,
+     gestes. Rien n est perdu — seule l image s en va, et c est elle
+     qu on retirait.
+
+     Retenu en localStorage : un reglage de lecture sur une page. */
+  const [affichage, setAffichage] = useState<"vitrine" | "registre">(() => {
+    try {
+      return localStorage.getItem(CLE_AFFICHAGE) === "registre" ? "registre" : "vitrine";
+    } catch { return "vitrine"; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(CLE_AFFICHAGE, affichage); } catch { /* stockage indisponible */ }
+  }, [affichage]);
   const [tri, setTri] = useState<Tri>("visuel");
 
   // ── Formulaire de creation ──
@@ -736,6 +761,28 @@ export default function Wishlist() {
                 <button type="button" className="wl-tri" aria-pressed={tri === "abordable"} onClick={() => setTri("abordable")}>
                   {t("wishlist.tri.abordable", "Prix ↑")}
                 </button>
+
+                {/* La bascule d affichage se tient a part des tris :
+                    trier change l ORDRE, celle-ci change la FORME. Les
+                    melanger ferait croire a un cinquieme tri. */}
+                <div className="wl-formes" role="group" aria-label={t("wishlist.forme.aria", "Forme de la liste")}>
+                  {([
+                    ["vitrine", Grid2X2, t("wishlist.forme.vitrine", "Vitrine")],
+                    ["registre", Rows3, t("wishlist.forme.registre", "Registre")],
+                  ] as const).map(([id, Icone, libelle]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className="wl-forme"
+                      aria-pressed={affichage === id}
+                      onClick={() => setAffichage(id)}
+                      title={libelle}
+                    >
+                      <Icone aria-hidden="true" />
+                      <span className="sr-only">{libelle}</span>
+                    </button>
+                  ))}
+                </div>
               </>
             )}
           </div>
@@ -780,6 +827,24 @@ export default function Wishlist() {
                   )}
                 </div>
               ) : (
+                affichage === "registre" ? (
+                  <div className="wl-liste">
+                    <div className="wl-postes">
+                      {vus.actifs.map((item) => (
+                        <WishlistPoste
+                          key={item.id}
+                          item={item}
+                          currency={currency}
+                          piece={item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined}
+                          variante="actif"
+                          onEdit={ouvrirEdition}
+                          onDelete={demanderSuppression}
+                          onToggleAcquired={basculerAcquis}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
                 <div className="wl-grille">
                   {vus.actifs.map((item) => (
                     <WishlistFiche
@@ -795,6 +860,7 @@ export default function Wishlist() {
                     />
                   ))}
                 </div>
+                )
               )}
 
               <WishlistArchive
