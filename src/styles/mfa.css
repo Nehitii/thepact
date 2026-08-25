@@ -1,0 +1,116 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE SECOND FACTEUR, DANS LA LANGUE DE LA CONSOLE
+
+   L'enrôlement et les codes de secours se dessinaient chacun leur
+   carte — `p-4 bg-card/40 border` — À L'INTÉRIEUR du panneau qui les
+   contient déjà. Une carte dans une carte, avec des boutons pleins
+   que plus aucun écran de réglages n'emploie depuis la refonte.
+
+   Les lignes intitulé/note/contrôle passent par `Reglage`, les gestes
+   par `Bouton`. Ce fichier ne garde que ce qu'un PARCOURS réclame en
+   propre, et qu'aucune primitive ne couvre : un QR code, une clé à
+   recopier, huit codes à noter.
+   ═══════════════════════════════════════════════════════════════ */
+
+.rg-attente {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+  margin: 0;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── L'ENRÔLEMENT ───────────────────────────────────────────────
+   Deux étapes numérotées, centrées : ce n'est pas un réglage qu'on
+   ajuste, c'est un parcours qu'on suit une fois. */
+.mfa-enrolement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0 8px;
+}
+
+.mfa-etape {
+  align-self: stretch;
+  margin: 0;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Le QR doit rester sur fond clair pour être lisible par une caméra :
+   c'est la seule surface blanche de la console, et elle est justifiée. */
+.mfa-qr {
+  width: 176px;
+  height: 176px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+.mfa-secret {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.06em;
+  text-align: left;
+  overflow-wrap: anywhere;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.5);
+  cursor: pointer;
+  transition: border-color 120ms linear, color 120ms linear;
+}
+.mfa-secret:hover { border-color: hsl(var(--primary) / 0.5); }
+.mfa-secret:focus-visible { outline: 1px solid hsl(var(--primary) / 0.7); outline-offset: 2px; }
+.mfa-secret svg { flex: none; width: 13px; height: 13px; color: hsl(var(--muted-foreground)); }
+
+.mfa-code { padding: 2px 0 4px; }
+
+.mfa-gestes { display: flex; flex-wrap: wrap; gap: 8px; align-self: stretch; }
+
+/* ── LES HUIT CODES ─────────────────────────────────────────────
+   Montrés une seule fois : la base n'en garde que l'empreinte. Deux
+   colonnes, chiffres alignés — on les recopie, il faut pouvoir les
+   suivre du doigt. */
+.mfa-codes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0 6px;
+}
+
+.mfa-serie {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mfa-serie li {
+  padding: 9px 4px;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(13px, 0.8125rem);
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+@media (max-width: 420px) {
+  .mfa-serie { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { KeyRound, Copy, Loader2, AlertTriangle, Check } from "lucide-react";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton, Reglage } from "@/components/profile/console-ui";
+import "@/styles/mfa.css";
 import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
 
 /**
@@ -45,25 +46,18 @@ export function CodesDeSecours({ actif }: { actif: boolean }) {
   /* ── LES CODES, MONTRÉS UNE SEULE FOIS ── */
   if (codesEnClair) {
     return (
-      <div className="p-4 bg-card/40 border border-primary/30 space-y-3">
+      <div className="mfa-codes">
         <p className="rg-alerte" data-ton="warn" role="status">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           Note-les maintenant. Ils ne seront plus jamais affichés : la base
           n’en garde que l’empreinte.
         </p>
 
-        <ul className="grid grid-cols-2 gap-2">
-          {codesEnClair.map((c) => (
-            <li
-              key={c}
-              className="font-mono text-sm tracking-[0.14em] text-center py-2 border border-foreground/10 bg-background/60"
-            >
-              {c}
-            </li>
-          ))}
+        <ul className="mfa-serie">
+          {codesEnClair.map((c) => <li key={c}>{c}</li>)}
         </ul>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="mfa-gestes">
           <Bouton role="primaire" onClick={copier}>
             {copie ? <Check /> : <Copy />}
             {copie ? "Copiés" : "Copier les huit"}
@@ -76,45 +70,32 @@ export function CodesDeSecours({ actif }: { actif: boolean }) {
     );
   }
 
-  /* ── L’ÉTAT COURANT ── */
+  /* ── L’ÉTAT COURANT ──
+     Une ligne de reglage, comme tout le reste de la console. Elle se
+     dessinait sa propre carte a l interieur du panneau qui la
+     contient deja — une carte dans une carte. */
   return (
-    <div className="p-4 bg-card/40 border border-foreground/10 space-y-3">
-      <div className="flex items-center gap-3">
-        <KeyRound className="w-5 h-5 text-muted-foreground" />
-        <div className="flex-1 min-w-0">
-          <p className="font-mono text-xs text-foreground/80">Codes de secours</p>
-          <p className="font-mono ds-t-label text-muted-foreground mt-1">
-            {enChargement
-              ? "Vérification…"
-              : restants === null
-                ? "État inconnu"
-                : restants === 0
-                  ? "Aucun code. Sans téléphone, tu ne pourrais plus entrer."
-                  : `${restants} code${restants > 1 ? "s" : ""} inutilisé${restants > 1 ? "s" : ""}.`}
-          </p>
-        </div>
-        {restants === 0 && !enChargement && (
-          <span className="px-2 py-1 ds-t-label font-mono tracking-widest uppercase border bg-destructive/10 border-destructive/40 text-destructive">
-            AUCUN
-          </span>
-        )}
-      </div>
-
-      <p className="font-mono ds-t-label text-muted-foreground leading-relaxed">
-        Un code de secours ne remplace pas ton application : il retire le
-        second facteur pour te rendre l’accès. Tu le réactives ensuite.
-      </p>
-
-      <Bouton onClick={lancer} disabled={occupe}>
+    <Reglage
+      nom="Codes de secours"
+      note={
+        enChargement
+          ? "Vérification…"
+          : restants === null
+            ? "État inconnu."
+            : restants === 0
+              ? "Aucun code. Sans ton téléphone, tu ne pourrais plus entrer."
+              : `${restants} code${restants > 1 ? "s" : ""} inutilisé${restants > 1 ? "s" : ""}. Une nouvelle série annule les précédents.`
+      }
+      icone={<KeyRound aria-hidden="true" />}
+    >
+      <Bouton
+        role={restants === 0 && !enChargement ? "primaire" : "normal"}
+        onClick={lancer}
+        disabled={occupe}
+      >
         {occupe ? <Loader2 className="animate-spin" /> : <KeyRound />}
-        {restants ? "Générer une nouvelle série" : "Générer mes codes"}
+        {restants ? "Renouveler" : "Générer"}
       </Bouton>
-
-      {!!restants && (
-        <p className="font-mono ds-t-label text-muted-foreground">
-          Une nouvelle série annule les {restants} précédents.
-        </p>
-      )}
-    </div>
+    </Reglage>
   );
 }

@@ -137,6 +137,14 @@ export function useMfa() {
     refresh();
   }, [refresh]);
 
+  /** Retire UN facteur precis — un enrolement abandonne, par exemple.
+   *   les retire tous : c est le bon geste pour desactiver le
+   *  second facteur, le mauvais pour renoncer a en poser un. */
+  const retirerFacteur = useCallback(async (factorId: string) => {
+    await supabase.auth.mfa.unenroll({ factorId });
+    refresh();
+  }, [refresh]);
+
   return {
     isLoading: query.isLoading,
     isError: query.isError,
@@ -150,6 +158,7 @@ export function useMfa() {
     confirmEnrollment,
     verify,
     disable,
+    retirerFacteur,
     refresh,
   };
 }
