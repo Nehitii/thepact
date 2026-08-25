@@ -11,13 +11,13 @@ import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { Panneau, Reglage } from "@/components/profile/console-ui";
 import { BlockedUsersPanel } from "@/components/profile/BlockedUsersPanel";
 
+/* Trois cles de plus figuraient ici — share_achievements,
+   community_updates_enabled, achievement_celebrations_enabled —
+   sans interrupteur ni effet. Voir useProfileSettings. */
 type CleVieePrivee =
   | "community_profile_discoverable"
   | "show_activity_status"
-  | "share_goals_progress"
-  | "share_achievements"
-  | "community_updates_enabled"
-  | "achievement_celebrations_enabled";
+  | "share_goals_progress";
 
 export default function PrivacyControl() {
   const { t } = useTranslation();

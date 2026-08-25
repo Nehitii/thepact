@@ -26,16 +26,31 @@ export interface HealthData {
 export interface HealthSettings {
   id: string;
   user_id: string;
+  /* CE QUI AGIT. */
   height_cm: number | null;
   weight_kg: number | null;
+  /* Ouvre ou ferme l etape nutrition du releve. */
+  show_nutrition: boolean;
+  hydration_goal_glasses: number | null;
+
+  /* CE QUI NE COMMANDE PLUS RIEN.
+
+     Les six suivantes ont perdu leur consommateur avec la refonte du
+     module : les interrupteurs « afficher les metriques » pilotaient
+     les cartes d un tableau de bord qui n existe plus, et le choix
+     entre aujourd hui et hier a disparu quand le releve est passe a la
+     veille. Le panneau de reglages a ete nettoye en consequence ;
+     elles restent en base avec leurs valeurs.
+
+     Elles sont declarees ici parce que la ligne les rend, pas parce
+     qu elles sont reglables. Ne pas les recabler sans verifier qu il
+     existe encore quelque chose a commander. */
   show_bmi: boolean;
   show_sleep: boolean;
   show_activity: boolean;
   show_stress: boolean;
   show_hydration: boolean;
-  show_nutrition: boolean;
   sleep_goal_hours: number | null;
-  hydration_goal_glasses: number | null;
   /* L unite d AFFICHAGE. Le stockage reste en verres — voir
      `lib/hydratation.ts` pour pourquoi. */
   hydration_unit: UniteHydratation;

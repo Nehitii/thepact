@@ -13,16 +13,31 @@ export type ProfileSettings = {
   accent_color: string;
   font_size: number;
 
+  /* TROIS REGLAGES ONT ETE RETIRES D ICI.
+
+     `share_achievements`, `community_updates_enabled` et
+     `achievement_celebrations_enabled` etaient declares dans ce type,
+     charges par la requete, et repris dans le type d union du panneau
+     Confidentialite. Ils n avaient ni interrupteur ni effet : cherches
+     dans tout le code, ils n apparaissaient QUE dans ces trois
+     endroits. La plomberie etait posee, sans robinet ni sortie.
+
+     `share_achievements` n a meme pas de cible : aucun succes n est
+     jamais montre publiquement — ni sur la carte publique, ni dans la
+     communaute. Un interrupteur qui promettrait de le cacher mentirait.
+     Les deux autres recouvrent ce que `notification_settings` commande
+     deja, lui pour de bon.
+
+     Les colonnes restent en base avec leurs valeurs : c est le code qui
+     pretendait, pas la table. Le jour ou des succes se partageront,
+     tout est pret. */
   community_profile_discoverable: boolean;
   show_activity_status: boolean;
   share_goals_progress: boolean;
-  share_achievements: boolean;
-  community_updates_enabled: boolean;
-  achievement_celebrations_enabled: boolean;
 };
 
 const PROFILE_SETTINGS_SELECT =
-  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, accent_color, font_size, community_profile_discoverable, show_activity_status, share_goals_progress, share_achievements, community_updates_enabled, achievement_celebrations_enabled";
+  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, accent_color, font_size, community_profile_discoverable, show_activity_status, share_goals_progress";
 
 export function useProfileSettings() {
   const { user } = useAuth();
