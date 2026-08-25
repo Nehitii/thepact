@@ -41,7 +41,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
   if (reducedMotion || statique) {
     return (
       <div
-        className="fixed inset-0 pointer-events-none overflow-hidden"
+        className="sc-ambiance fixed inset-0 pointer-events-none overflow-hidden"
         style={{ zIndex: 0 }}
         aria-hidden="true"
       >
@@ -65,7 +65,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
 
   return (
     <motion.div
-      className="fixed inset-0 pointer-events-none overflow-hidden"
+      className="sc-ambiance fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

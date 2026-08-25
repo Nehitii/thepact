@@ -86,7 +86,29 @@ interface Etat {
 }
 
 const SIGNES = "01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶ<>/\\{}[]#*+-=";
-const FOND = "#04060a";
+
+/* ── LE SOL DE LA SCENE, DANS LES DEUX THEMES ──
+
+   Il etait peint en dur : #04060a, la nuit. C est le seul endroit de
+   l application ou le fond est dessine en JavaScript — aucune feuille
+   de style ne pouvait l atteindre, et la page restait donc noire quel
+   que soit le theme.
+
+   Les valeurs SOMBRES sont inchangees, au caractere pres. On ajoute
+   une seconde palette, on ne modifie pas la premiere.
+
+   La dissipation garde son alpha : c est elle qui fait respirer le
+   trace. Seule la couleur qu elle depose change — la nuit efface en
+   noir, le jour efface en papier. */
+const PALETTE = {
+  sombre: { fond: "#04060a", dissipe: "rgba(4,6,10,", or: [252, 238, 10] as [number, number, number] },
+  clair:  { fond: "#EDF1F6", dissipe: "rgba(237,241,246,", or: [122, 98, 0] as [number, number, number] },
+};
+
+function palette() {
+  if (typeof document === "undefined") return PALETTE.sombre;
+  return document.documentElement.classList.contains("dark") ? PALETTE.sombre : PALETTE.clair;
+}
 
 function rgba(c: [number, number, number], a: number) {
   return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
@@ -170,7 +192,7 @@ function placeLibre(e: Etat): { x: number; y: number } {
 }
 
 function initMycelium(e: Etat) {
-  e.ctx.fillStyle = FOND;
+  e.ctx.fillStyle = palette().fond;
   e.ctx.fillRect(0, 0, e.w, e.h);
   e.pointes = [];
   e.germes = [];
@@ -190,7 +212,7 @@ function peindreMycelium(e: Etat, dt: number, eveil: number, prog: number) {
   e.dissipe += dt;
   if (e.dissipe > 900) {
     e.dissipe = 0;
-    ctx.fillStyle = "rgba(4,6,10,0.055)";
+    ctx.fillStyle = palette().dissipe + "0.055)";
     ctx.fillRect(0, 0, e.w, e.h);
   }
   if (eveil < 0.02 || !e.pointes || !e.germes) return;
@@ -295,7 +317,7 @@ function peindreMycelium(e: Etat, dt: number, eveil: number, prog: number) {
 
 /* ═══ B — AURORES ═══ */
 function initAurores(e: Etat) {
-  e.ctx.fillStyle = FOND;
+  e.ctx.fillStyle = palette().fond;
   e.ctx.fillRect(0, 0, e.w, e.h);
   e.parts = [];
   for (let i = 0; i < 620; i++) {
@@ -305,7 +327,7 @@ function initAurores(e: Etat) {
 }
 function peindreAurores(e: Etat, dt: number, eveil: number, prog: number) {
   const ctx = e.ctx;
-  ctx.fillStyle = "rgba(4,6,10,0.032)";
+  ctx.fillStyle = palette().dissipe + "0.032)";
   ctx.fillRect(0, 0, e.w, e.h);
   if (eveil < 0.02 || !e.parts) return;
   e.temps += dt * 0.00013;
@@ -335,7 +357,7 @@ function peindreAurores(e: Etat, dt: number, eveil: number, prog: number) {
 function initMaillage(e: Etat) { e.temps = 0; e.impulsion = 0; }
 function peindreMaillage(e: Etat, dt: number, eveil: number, prog: number) {
   const ctx = e.ctx;
-  ctx.fillStyle = FOND;
+  ctx.fillStyle = palette().fond;
   ctx.fillRect(0, 0, e.w, e.h);
   if (eveil < 0.02) return;
   e.temps += dt * 0.0009;
@@ -395,7 +417,7 @@ function initMaree(e: Etat) {
 }
 function peindreMaree(e: Etat, dt: number, eveil: number, prog: number) {
   const ctx = e.ctx;
-  ctx.fillStyle = FOND;
+  ctx.fillStyle = palette().fond;
   ctx.fillRect(0, 0, e.w, e.h);
   if (eveil < 0.02 || !e.cols) return;
   e.temps += dt;
@@ -469,7 +491,9 @@ export function FocusFond({ variante, actif, progress, isBreak = false, apercu =
 
     const relireCouleurs = () => {
       etat.teinte = jetonEnRvb(teinteRef.current ? "--accent" : "--primary", [92, 182, 255]);
-      etat.or = [252, 238, 10];
+      /* L or a #fcee0a ne se voit pas sur du papier : meme teinte,
+         descendue jusqu a porter. */
+      etat.or = palette().or;
     };
     relireRef.current = relireCouleurs;
 
@@ -548,7 +572,7 @@ export function FocusFond({ variante, actif, progress, isBreak = false, apercu =
       cv.style.opacity = String(opacite);
 
       if (!cible && opacite <= 0.005) {
-        if (brut > 0) { ctx.fillStyle = FOND; ctx.fillRect(0, 0, etat.w, etat.h); brut = 0; }
+        if (brut > 0) { ctx.fillStyle = palette().fond; ctx.fillRect(0, 0, etat.w, etat.h); brut = 0; }
         return;
       }
       brut = 1;
@@ -584,6 +608,21 @@ export function FocusFond({ variante, actif, progress, isBreak = false, apercu =
   // La teinte suit la phase sans relancer la scene : relancer effacerait
   // la pousse du mycelium, qui est justement sa raison detre.
   useEffect(() => { relireRef.current?.(); }, [isBreak]);
+
+  /* LE THEME AUSSI CHANGE LES COULEURS, ET SANS PREVENIR.
+
+     Basculer clair/sombre ne passe par aucune prop : sans ce
+     guetteur, la scene garderait son sol de nuit jusqu au prochain
+     redimensionnement. On relit les couleurs ET on repeint le fond,
+     puisque c est lui qui a change — le trace accumule, lui, est
+     conserve : il se lira sur le nouveau sol. */
+  useEffect(() => {
+    const racine = document.documentElement;
+    const suivre = () => relireRef.current?.();
+    const guetteur = new MutationObserver(suivre);
+    guetteur.observe(racine, { attributes: true, attributeFilter: ["class"] });
+    return () => guetteur.disconnect();
+  }, []);
 
   if (variante === "aucun") return null;
 

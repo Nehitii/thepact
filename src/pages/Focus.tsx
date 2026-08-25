@@ -11,6 +11,7 @@ import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { DSPageShell } from "@/components/ds";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
 import "@/styles/focus.css";
 import {
   AlertDialog,
@@ -103,6 +104,9 @@ export default function Focus() {
   const [objet, setObjet] = useState<ObjetClause>(objet0);
   // Derives, jamais stockes : c est ce qui garantit qu ils ne peuvent pas
   // etre remplis tous les deux.
+  /* Ce que le CSS ne peut pas atteindre : le sol anime de la page. */
+  const sombre = useThemeSombre();
+
   const linkedGoalId = objet?.type === "goal" ? objet.id : null;
   const linkedTodoId = objet?.type === "todo" ? objet.id : null;
   /* Le fond vivant, choisi par l utilisateur et retenu. Quatre scenes plus
@@ -479,6 +483,15 @@ export default function Focus() {
       padding="tight"
       background={
         <>
+          {/* LE SOL DE LA PAGE, DANS LES DEUX THEMES.
+
+              Il est peint par un style INLINE — framer-motion anime la
+              couleur de fond — ce qu aucune feuille de style ne peut
+              corriger, meme prefixee `.light`. C etait la cause du
+              « tout est ultra fonce » : la page restait noire quel que
+              soit le theme.
+
+              La valeur SOMBRE est inchangee, au caractere pres. */}
           <motion.div
             className="absolute inset-0"
             animate={{
@@ -486,9 +499,9 @@ export default function Focus() {
                 ? isBreak
                   ? "rgba(var(--accent-rgb), 0.03)"
                   : "rgba(var(--primary-rgb), 0.03)"
-                : "#050508",
+                : sombre ? "#050508" : "#EDF1F6",
             }}
-            initial={{ backgroundColor: "#050508" }}
+            initial={{ backgroundColor: sombre ? "#050508" : "#EDF1F6" }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
           />
           {/* Quantifie : l intensite du halo suit l avancement, mais par

@@ -191,3 +191,155 @@
 
 .light .cyber-bg-root { opacity: 0.55; }
 .light .cyber-grid { filter: invert(1) hue-rotate(180deg); opacity: 0.14; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. FOCUS — LA SCÈNE DE JOUR
+   ───────────────────────────────────────────────────────────────────
+   « Pas de mode clair, tout est ultra foncé. » C'était vrai au sens
+   littéral : la page entière est peinte en dur, et son fond est un
+   CANEVAS dessiné en JavaScript — hors de portée de toute feuille de
+   style.
+
+   Trois niveaux de surface portent presque tout : --n0, --n1, --n2,
+   déclarés sur `.sc, .md, .sc-bandeau, .cyb`. Les basculer suffit à
+   retourner la scène. Ce sont des descendants : il faut les reposer
+   au même endroit, pas à la racine.
+
+   Le parti pris tient : la nuit devient du jour, pas un gris. La
+   plaque est du papier, les arêtes sont des traits, l'or reste de
+   l'or mais assez profond pour se poser dessus.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.light .sc,
+.light .md,
+.light .sc-bandeau,
+.light .cyb {
+  --n0: #FFFFFF;
+  --n1: #F4F7FB;
+  --n2: #E6EDF5;
+  --bord: hsl(212 30% 30% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  /* L'or à #fcee0a est un néon : sur du papier il devient illisible.
+     Même teinte, descendue jusqu'à porter sur du blanc. */
+  --or: #7A6200;
+}
+
+:root.light {
+  /* Déclarée sur :root dans cyberpunk.css — l'encre secondaire de
+     toute la scène. #7089a0 est un gris-bleu prévu pour du noir. */
+  --cp-texte-doux: #4A5C70;
+}
+
+/* Les surfaces peintes en rgba(4, 6, 10, …) : le noir translucide de
+   la scène de nuit. */
+.light .sc-tele div,
+.light .md { background: rgba(255, 255, 255, 0.94); }
+.light .md-cadre { background: #F4F7FB; }
+
+/* Le chrono était blanc pur sur du noir. */
+.light .sc-temps { color: #0E1826; }
+.light .cyb:hover { color: #0E1826; }
+.light .md-champ button.md-ok { color: #0A7A50; }
+
+/* Le grain et les scanlines sont tracés en blanc translucide : sur du
+   papier ils éclaircissent au lieu de texturer. Ils passent en encre. */
+.light .sc-grain,
+.light .sc-vignette::before { filter: invert(1); opacity: 0.5; }
+
+/* L'IMMERSION RESTE NOIRE, ET C'EST VOLONTAIRE.
+   Elle éteint l'interface pour ne laisser que le compte à rebours :
+   c'est un geste, pas un thème. La rendre blanche en ferait une page
+   de plus. */
+
+/* Le composeur REDÉCLARE ses trois niveaux sur lui-même — même piège
+   que `.hlt` : la valeur posée sur l'élément gagne sur l'héritée. */
+.light .sc-composeur {
+  --n0: rgba(255, 255, 255, 0.92);
+  --n1: rgba(244, 247, 251, 0.96);
+  --n2: #E6EDF5;
+  --bord: hsl(212 30% 30% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  --or: #7A6200;
+}
+
+/* ── L'AMBIANCE ──
+   Les halos et la vignette sont composés en style inline, à partir de
+   l'accent. Sur du noir ils éclairent ; sur du papier la vignette
+   assombrit les bords et donne ce voile bleuté qu'on voyait aux
+   angles. Le geste garde son sens, à un tiers de sa force. */
+.light .sc-ambiance { opacity: 0.32; }
+
+/* ── L'ENCRE AFFAIBLIE ──
+   Quatre libellés d'onglet et deux références passaient l'accent à
+   0,8–0,92 d'alpha : suffisant sur du noir, sous le seuil sur du
+   papier. En clair l'accent porte déjà, il n'a pas besoin d'être
+   dilué. */
+.light .sc-panneaux .cyb,
+.light .sc-bandeau-ref,
+.light .sc-immersion { opacity: 1; }
+.light .sc-bandeau-ref { color: hsl(var(--primary)); }
+.light .sc-immersion { color: hsl(var(--primary)); }
+
+/* ── LES SÉLECTEURS ET LEURS JUMEAUX ──
+   Deux règles écrivent leur dégradé en clair — rgba(24,39,56) et
+   rgba(15,25,37) — au lieu de lire --n2 et --n1. Les jetons avaient
+   beau être clairs sur l'élément, le fond restait de nuit. */
+.light .cyb-select,
+.light .sc-fenetre {
+  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
+  color: hsl(var(--primary));
+}
+.light .cyb-select:hover { border-color: hsl(var(--primary) / 0.45); }
+
+/* ── LA PUCE ACTIVE ──
+   Le chiffre choisi (« 25′ ») pose une encre quasi noire sur l'accent.
+   En sombre l'accent est lumineux, l'encre noire porte. En clair
+   l'accent est profond — bleu à 34 % de clarté — et le noir sur bleu
+   tombe à 3,1:1. C'est --primary-foreground qui connaît déjà la
+   réponse : AccentColorSync le calcule d'après la clarté de l'accent. */
+.light .cyb.est-actif,
+.light .cyb[aria-pressed="true"] { color: hsl(var(--primary-foreground)); }
+.light .cyb.est-actif::after,
+.light .cyb[aria-pressed="true"]::after { background: hsl(var(--primary-foreground)); }
+
+/* ── LES DEUX PLAQUES OUBLIÉES ──
+   « Immersion » et le billet de destination écrivent aussi leur fond
+   en dur. Leur encre était devenue lisible, leur support non : de
+   l'accent profond sur une plaque de nuit, 2,0:1. */
+.light .sc-immersion {
+  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
+  border-color: hsl(var(--primary) / 0.38);
+}
+.light .sc-immersion:hover {
+  color: #5A4800;
+  border-color: #B99A00;
+  background: rgba(252, 238, 10, 0.22);
+}
+.light .dst-billet {
+  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
+  box-shadow: 0 18px 46px -14px rgba(17, 34, 51, 0.28), 0 0 0 1px hsl(var(--primary) / 0.1);
+  --n0: #FFFFFF;
+  --n1: #F4F7FB;
+  --n2: #E6EDF5;
+  --bord: hsl(212 30% 30% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  --or: #7A6200;
+}
+
+/* ── L'OR SUR DU PAPIER ──
+   Le jaune néon reste le signal du départ : sur fond, avec une encre
+   noire, il porte à 17:1 et fait sur la page ce qu'un surligneur fait
+   sur une feuille. C'est en ENCRE qu'il disparaissait — du #fcee0a sur
+   du blanc ne se lit pas. Au repos, l'or descend donc jusqu'à porter ;
+   au survol, il reprend sa pleine intensité derrière l'encre noire. */
+.light .sc-depart,
+.light .cyb--or {
+  color: #5A4800;
+  border-color: #C7A800;
+  background: linear-gradient(180deg, rgba(252, 238, 10, 0.34), rgba(252, 238, 10, 0.14));
+}
+.light .sc-depart:hover,
+.light .cyb--or:hover {
+  color: #05070b;
+  box-shadow: 0 0 0 1px #C7A800, 0 10px 28px -10px rgba(184, 155, 0, 0.55);
+}
