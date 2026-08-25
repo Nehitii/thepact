@@ -1424,3 +1424,22 @@
 .light .sh-banniere,
 .light .sh-banniere * { color: hsl(44 26% 98%); }
 .light .sh-banniere .text-muted-foreground { color: hsl(210 14% 74%); }
+
+/* ═══════════════════════════════════════════════════════════════
+   17. LA CONSOLE DE RÉGLAGES
+   ───────────────────────────────────────────────────────────────
+   « Pas mal, mais en dehors du menu ouvert tout est grisâtre et
+   délavé. » Le rail et les plaques étaient déjà justes ; ce qui
+   grisait, c'est le seul jeton que la console garde pour elle.
+
+   `--rg-ok` vaut hsl(142 70% 50%) — un vert de diode, pensé pour
+   s'allumer sur du noir. Sur du papier il tombe à 1,8:1, et c'est lui
+   qui écrit « synchronisé » et le code de langue en tête de chaque
+   plaque : les deux mots que l'œil cherche pour savoir si le réglage
+   a pris.
+   ═══════════════════════════════════════════════════════════════ */
+:root.light .rg.rg {
+  --rg-ok: hsl(152 100% 21%);
+  --rg-fil:     hsl(var(--primary) / 0.26);
+  --rg-fil-vif: hsl(var(--primary) / 0.6);
+}
