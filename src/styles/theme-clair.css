@@ -1419,13 +1419,23 @@
    la pièce repose dans une flaque d ombre, et le papier reprend tout
    autour sans arête. */
 .light .sh-scene {
-  padding: 20px 12px;
-  background: radial-gradient(ellipse 66% 78% at 50% 46%,
-    #0F151A 0%,
-    #0F151A 38%,
-    rgba(15, 21, 26, 0.9) 56%,
-    rgba(15, 21, 26, 0.5) 72%,
-    rgba(15, 21, 26, 0) 88%);
+  padding: 22px 12px;
+  /* Le rayon compte autant que la couleur. Premier reglage : une
+     ellipse a 66/78 % qui s eteignait a 88 % — donc encore a moitie
+     opaque au bord de la tuile, d ou le debordement. Ici la nappe est
+     pleine sous la piece, puis eteinte AVANT le bord : il reste
+     toujours une marge de papier tout autour.
+
+     Trop resserree, elle ne servait plus les cadres PALES — un anneau
+     blanc sur du papier n existe pas plus qu un neon. Le reglage
+     retenu tient les deux : assez dense sous la piece pour qu un trait
+     clair se detache, eteint assez tot pour ne jamais toucher le bord. */
+  background: radial-gradient(circle at 50% 47%,
+    rgba(15, 21, 26, 0.82) 0%,
+    rgba(15, 21, 26, 0.78) 40%,
+    rgba(15, 21, 26, 0.34) 55%,
+    rgba(15, 21, 26, 0.08) 64%,
+    rgba(15, 21, 26, 0) 72%);
 }
 
 /* La bannière d'un lot est peinte par un fond de nuit passé en style
@@ -1494,3 +1504,8 @@
   --succes-papier-01: hsl(152 100% 20% / 0.14);
   --succes-papier-004: hsl(152 100% 20% / 0.08);
 }
+
+/* Les heures du ruban : encore une encre discrète diluée, à 0,88 cette
+   fois. Sur du papier, 4,44:1 — la dilution reste le motif le plus
+   fréquent de tout cet audit. */
+.light .cal-rb-heure { color: hsl(200 12% 31%); }
