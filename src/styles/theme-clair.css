@@ -1156,3 +1156,49 @@
    Il lit --encre-discrete par une règle en :root:not(.dark), dont la
    spécificité (0,3,1) bat le préfixe .light (0,2,1) : la corriger de
    l'extérieur ne servait à rien, il fallait descendre le jeton. */
+
+/* ═══════════════════════════════════════════════════════════════
+   11. ANALYTICS — LE PRISME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* La vue active suit exactement le même sort que l'onglet de Goals :
+   un filet d'ocre à gauche, une plaque de papier, du toner dessus.
+   Elle posait un dégradé partant de rgb(24 28 22) — une amorce de
+   nuit écrite en dur — sous une encre jaune, avec une lueur de 10 px
+   qui l'empâtait. */
+.light .ana-vue[data-actif="true"] .ana-vue-in {
+  background:
+    linear-gradient(90deg, #7A5C00 0 3px, transparent 3px),
+    linear-gradient(100deg, hsl(44 26% 98%) 0%, hsl(42 16% 95%) 46%);
+}
+.light .ana-vue[data-actif="true"] .ana-vue-nom {
+  color: hsl(200 24% 12%);
+  text-shadow: none;
+}
+.light .ana-vue[data-actif="true"] .ana-vue-sous { color: hsl(202 12% 30%); }
+
+/* La légende d'un graphique n'est pas une décoration : c'est la clé
+   de lecture. Recharts la peint à l'encre du thème sombre. */
+.light .recharts-legend-item-text { fill: hsl(202 12% 26%) !important; color: hsl(202 12% 26%) !important; }
+.light .recharts-cartesian-axis-tick-value { fill: hsl(200 10% 36%); }
+.light .recharts-cartesian-grid line { stroke: hsl(200 14% 40% / 0.22); }
+
+/* ── LES ÉTIQUETTES D'ENCRE ──
+   Le même renversement que sur Goals, appliqué là où il manquait :
+   `.cp-tag` et le segment de période actif employaient --cp-jaune
+   comme FOND. Descendu à un olive pour rester lisible en encre, il
+   donne une pastille terne portant un texte presque noir. */
+.light .cp-tag,
+.light .cp-periode-seg[data-actif="true"] {
+  color: hsl(44 24% 97%);
+  background: #7A5C00;
+  border-color: #7A5C00;
+}
+
+/* ── CE QUI RESTE POSÉ SUR UNE PHOTO ──
+   La pastille d'XP d'un contrat est une vitre sombre volontaire :
+   elle est posée sur l'image du contrat, pas sur la page. Son encre
+   ne doit donc PAS descendre avec le reste du thème — sur ce fond-là,
+   c'est le néon qui porte. C'est le seul endroit du thème clair où on
+   remonte une couleur au lieu de la descendre. */
+.light .cp-contrat-xp { color: var(--cp-cyan-plein, #00f0ff); }

@@ -31,14 +31,31 @@
 }
 .cp[data-compacte] { width: 280px; }
 
-/* ── La banniere ── */
-.cp-fond {
+/* -- La banniere --
+
+   ATTENTION AU PREFIXE. Deux feuilles emploient .cp- pour deux
+   choses differentes : ici carte-profil, et cyberpunk.css pour son
+   systeme de panneaux. Sur les dix-neuf classes de ce fichier, une
+   seule entrait en collision -- .cp-fond -- mais elle est employee a
+   huit endroits cote cyberpunk : les en-tetes d Analytics et de
+   Goals, la barre d outils, l etat vide, le bandeau de dossier, le
+   bouton d honneur et les contrats.
+
+   Tous recevaient donc height: 168px, la hauteur de CETTE banniere.
+   La position etait rattrapee par .cp-cadre > .cp-fond, pas la
+   hauteur : les panneaux etaient rognes a 168 px avec overflow:
+   hidden, et leur contenu disparaissait dessous. C est ce qu on
+   voyait comme des elements  ecrases  et illisibles.
+
+   La regle est donc rendue a sa carte. La racine .cp est toujours
+   presente au-dessus (CarteProfilPublic), donc rien ne change ici. */
+.cp .cp-fond {
   position: absolute;
   inset: 0 0 auto;
   height: 168px;
 }
 .cp[data-compacte] .cp-fond { height: 132px; }
-.cp-fond img {
+.cp .cp-fond img {
   width: 100%;
   height: 100%;
   object-fit: cover;

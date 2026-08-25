@@ -510,7 +510,10 @@
 }
 
 /* ── Le bandeau et sa rayure de danger ── */
-.ana-bandeau-panneau { padding-bottom: 16px; }
+/* La reserve doit depasser la hauteur du bandeau de telemetrie
+   (15 px) : a 16 px le releve venait lecher la derniere ligne de
+   compteurs. */
+.ana-bandeau-panneau { padding-bottom: 26px; }
 .ana-bandeau-rayure {
   margin: 0 0 14px;
   /* La rayure ne traverse pas toute la largeur : elle marque le bandeau
