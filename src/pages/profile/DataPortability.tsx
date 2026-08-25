@@ -55,7 +55,10 @@ export default function DataPortability() {
   const [isExporting, setIsExporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
-  const [importPreview, setImportPreview] = useState<any>(null);
+  const [importPreview, setImportPreview] = useState<{
+    category: string; exportedAt: string;
+    goals: number; steps: number; journalEntries: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetConfirm, setResetConfirm] = useState("");
@@ -69,13 +72,55 @@ export default function DataPortability() {
     queryKey: ["user-stats", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data: pact } = await supabase.from("pacts").select("id").eq("user_id", user.id).maybeSingle();
-      const { count: goalsCount } = await supabase.from("goals").select("*", { count: "exact", head: true }).eq("pact_id", pact?.id || "");
-      const { data: steps } = await supabase.from("steps").select("id, status, goal_id").in("goal_id", pact?.id ? (await supabase.from("goals").select("id").eq("pact_id", pact.id)).data?.map((g) => g.id) || [] : []);
-      const completedSteps = steps?.filter((s) => s.status === "completed").length || 0;
-      const { count: journalCount } = await supabase.from("journal_entries").select("*", { count: "exact", head: true }).eq("user_id", user.id);
-      const { count: achievementsCount } = await supabase.from("user_achievements").select("*", { count: "exact", head: true }).eq("user_id", user.id).not("unlocked_at", "is", null);
-      return { goalsCreated: goalsCount || 0, stepsCompleted: completedSteps, totalSteps: steps?.length || 0, journalEntries: journalCount || 0, achievementsUnlocked: achievementsCount || 0 };
+
+      /* LE PACTE ACTIF, PAS UN PACTE AU HASARD.
+         `pacts.maybeSingle()` supposait qu il n y en ait qu un : a deux
+         pactes, PostgREST rend une erreur et le panneau reste vide. Et
+         meme sans erreur, rien ne disait lequel etait compte. On prend
+         `active_pact_id` — la source dont tout le reste depend, de
+         `xp_du_membre` a la carte publique — avec le plus recent en
+         repli. */
+      const { data: profil } = await supabase
+        .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
+      let pactId = profil?.active_pact_id ?? null;
+      if (!pactId) {
+        const { data: dernier } = await supabase
+          .from("pacts").select("id").eq("user_id", user.id)
+          .order("created_at", { ascending: false }).limit(1).maybeSingle();
+        pactId = dernier?.id ?? null;
+      }
+
+      /* Sans pacte, on ne demande rien. Le repli precedent envoyait
+         `pact_id = ""` — une chaine vide la ou Postgres attend un uuid —
+         et la requete echouait en silence, le compte retombant a zero
+         par `|| 0`. */
+      const objectifs = pactId
+        ? (await supabase.from("goals").select("id").eq("pact_id", pactId)).data ?? []
+        : [];
+      const idsObjectifs = objectifs.map((g) => g.id);
+
+      /* Trois requetes independantes, lancees ensemble. Les etapes
+         attendaient jusqu ici la liste des objectifs *a l interieur* de
+         leur propre argument : cinq allers-retours en file. */
+      const [etapesRes, journalRes, succesRes] = await Promise.all([
+        idsObjectifs.length
+          ? supabase.from("steps").select("id, status").in("goal_id", idsObjectifs)
+          : Promise.resolve({ data: [] as { id: string; status: string | null }[] }),
+        supabase.from("journal_entries").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("user_achievements").select("*", { count: "exact", head: true })
+          .eq("user_id", user.id).not("unlocked_at", "is", null),
+      ]);
+
+      const etapes = etapesRes.data ?? [];
+      return {
+        goalsCreated: idsObjectifs.length,
+        /* « completed » est bien le statut des ETAPES — contrairement
+           aux objectifs, ou il n existe pas. */
+        stepsCompleted: etapes.filter((s) => s.status === "completed").length,
+        totalSteps: etapes.length,
+        journalEntries: journalRes.count ?? 0,
+        achievementsUnlocked: succesRes.count ?? 0,
+      };
     },
     enabled: !!user?.id,
   });
@@ -85,28 +130,57 @@ export default function DataPortability() {
     setIsExporting(true);
     setLatestLog({ text: "EXPORT INITIATED...", type: "info" });
     try {
+      /* UNE SAUVEGARDE MUETTE N EN EST PAS UNE.
+         Chaque requete de cet export jetait son `error` : une lecture
+         qui echoue produisait `null`, et le fichier partait sans les
+         objectifs — sans un mot. C est le pire defaut possible pour la
+         fonction censee te garantir une copie. `verifier` fait remonter
+         l echec au `catch`, qui annonce deja l export rate. */
+      const verifier = <T,>(r: { data: T; error: { message: string } | null }, quoi: string): T => {
+        if (r.error) throw new Error(`${quoi} : ${r.error.message}`);
+        return r.data;
+      };
+
       let exportData: Record<string, unknown> = { exportedAt: new Date().toISOString(), category: exportCategory, user: { email: user.email, id: user.id } };
-      const { data: pact } = await supabase.from("pacts").select("*").eq("user_id", user.id).maybeSingle();
+
+      /* Le pacte actif, et non « le » pacte : `maybeSingle()` supposait
+         qu il n y en ait qu un et echoue des le second. */
+      const { data: profilPacte } = await supabase
+        .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
+      const pactId = profilPacte?.active_pact_id
+        ?? verifier(await supabase.from("pacts").select("id").eq("user_id", user.id)
+              .order("created_at", { ascending: false }).limit(1).maybeSingle(), "pacte")?.id
+        ?? null;
+      const pact = pactId
+        ? verifier(await supabase.from("pacts").select("*").eq("id", pactId).maybeSingle(), "pacte")
+        : null;
+
       if (exportCategory === "all" || exportCategory === "goals-steps") {
-        const { data: goals } = await supabase.from("goals").select("*").eq("pact_id", pact?.id || "");
-        const goalIds = goals?.map((g) => g.id) || [];
-        const { data: steps } = await supabase.from("steps").select("*").in("goal_id", goalIds.length > 0 ? goalIds : ["none"]);
+        const goals = pactId
+          ? verifier(await supabase.from("goals").select("*").eq("pact_id", pactId), "objectifs") ?? []
+          : [];
+        const goalIds = goals.map((g) => g.id);
+        const steps = goalIds.length
+          ? verifier(await supabase.from("steps").select("*").in("goal_id", goalIds), "étapes") ?? []
+          : [];
         exportData = { ...exportData, goals, steps };
       }
       if (exportCategory === "all" || exportCategory === "journal") {
-        const { data: journal } = await supabase.from("journal_entries").select("*").eq("user_id", user.id);
+        const journal = verifier(await supabase.from("journal_entries").select("*").eq("user_id", user.id), "journal");
         exportData = { ...exportData, journalEntries: journal };
       }
       if (exportCategory === "all" || exportCategory === "health") {
         const { data: healthData, error: healthErr } = await supabase.from("health_data").select("*").eq("user_id", user.id).order("entry_date", { ascending: true });
         if (!healthErr && healthData && healthData.length > 0) {
           if (exportCategory === "health") {
-            const headers = ["Date","Sleep Hours","Sleep Quality","Wake Energy","Activity Level","Movement Minutes","Stress Level","Mental Load","Hydration Glasses","Meal Balance","Mood Level","Energy Morning","Energy Afternoon","Energy Evening","Notes"];
+            /* Les seuls mots anglais de la page vivaient dans ce CSV,
+                que personne ne relit avant de l ouvrir dans un tableur. */
+            const headers = ["Date","Heures de sommeil","Qualité du sommeil","Énergie au réveil","Niveau d’activité","Minutes de mouvement","Niveau de stress","Charge mentale","Verres d’eau","Équilibre des repas","Humeur","Énergie matin","Énergie après-midi","Énergie soir","Notes"];
             const rows = healthData.map((d: Record<string, unknown>) => [d.entry_date, d.sleep_hours ?? "", d.sleep_quality ?? "", d.wake_energy ?? "", d.activity_level ?? "", d.movement_minutes ?? "", d.stress_level ?? "", d.mental_load ?? "", d.hydration_glasses ?? "", d.meal_balance ?? "", d.mood_level ?? "", d.energy_morning ?? "", d.energy_afternoon ?? "", d.energy_evening ?? "", `"${String(d.notes ?? "").replace(/"/g, '""')}"`]);
             const csv = [headers.join(","), ...rows.map((r: unknown[]) => r.join(","))].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `health-data-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
+            const a = document.createElement("a"); a.href = url; a.download = `vowpact-sante-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
             toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
             setLatestLog({ text: "HEALTH CSV EXPORTED", type: "ok" });
             return;
@@ -124,12 +198,20 @@ export default function DataPortability() {
         exportData = { ...exportData, finance: { settings: profileData, recurringIncome, recurringExpenses, monthlyRecords: financeRecords, monthlyValidations, pactSpending } };
       }
       if (exportCategory === "all") {
-        const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        /* `select("*")` emportait aussi `goal_unlock_code` — le code a
+           quatre chiffres qui masque le contenu d un objectif — en clair
+           dans un fichier fait pour etre range ailleurs. */
+        const { data: profileComplet } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        const profileData = profileComplet
+          ? Object.fromEntries(Object.entries(profileComplet).filter(([c]) => c !== "goal_unlock_code"))
+          : null;
         const { data: achievements } = await supabase.from("user_achievements").select("*").eq("user_id", user.id);
         exportData = { ...exportData, profile: profileData, pact, achievements, stats };
       }
       const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "");
-      const filename = `the-pact-${exportCategory === "all" ? "all" : exportCategory}-${dateStr}.json`;
+      /* L application s appelle Vowpact ; « the-pact » est un nom qu elle
+         ne porte plus nulle part ailleurs. */
+      const filename = `vowpact-${exportCategory === "all" ? "tout" : exportCategory}-${dateStr}.json`;
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -157,6 +239,17 @@ export default function DataPortability() {
     }
   };
 
+  /* L IMPORT NE RESTAURE QUE LE JOURNAL.
+     Il l a toujours fait — objectifs, etapes, finances et sante sont
+     lus dans le fichier, comptes dans l apercu, puis ignores. Le
+     message annoncait pourtant « les donnees ont ete importees avec
+     succes », meme quand pas une ligne n avait bouge.
+
+     Restaurer les objectifs demande de remettre les identifiants en
+     correspondance, de respecter l ordre des cles etrangeres et de
+     decider quoi faire des doublons : c est une fonctionnalite a
+     ecrire, pas un correctif. En attendant, l ecran dit ce qu il fait
+     et compte ce qu il a reellement ecrit. */
   const handleImport = async () => {
     if (!importFile || !user?.id) return;
     setIsImporting(true);
@@ -164,17 +257,35 @@ export default function DataPortability() {
     try {
       const text = await importFile.text();
       const data = JSON.parse(text);
-      if (data.journalEntries && data.journalEntries.length > 0) {
-        for (const entry of data.journalEntries) {
-          const { id, ...rest } = entry;
-          await supabase.from("journal_entries").upsert({ ...rest, user_id: user.id }, { onConflict: "id" });
-        }
+      const entrees = Array.isArray(data.journalEntries) ? data.journalEntries : [];
+
+      if (!entrees.length) {
+        toast.info("Rien à restaurer", {
+          description: "Ce fichier ne contient aucune entrée de journal.",
+        });
+        setLatestLog({ text: "IMPORT: NOTHING TO DO", type: "info" });
+        return;
       }
-      toast.success("Import terminé", { description: "Les données ont été importées avec succès." });
-      setLatestLog({ text: "IMPORT COMPLETE", type: "ok" });
+
+      /* Une seule requete au lieu d une par entree — et son erreur est
+         lue : chaque ligne partait sans que personne ne regarde si elle
+         etait arrivee. */
+      const lignes = entrees.map((e: Record<string, unknown>) => {
+        const { id: _ignore, ...reste } = e;
+        return { ...reste, user_id: user.id };
+      });
+      const { error } = await supabase.from("journal_entries").insert(lignes);
+      if (error) throw error;
+
+      toast.success("Journal restauré", {
+        description: `${lignes.length} entrée${lignes.length > 1 ? "s" : ""} ajoutée${lignes.length > 1 ? "s" : ""}. Les objectifs et les étapes ne sont pas restaurés.`,
+      });
+      setLatestLog({ text: `IMPORT COMPLETE: ${lignes.length} ENTRIES`, type: "ok" });
       setImportFile(null); setImportPreview(null);
-    } catch (e: any) {
-      toast.error("Erreur d'import", { description: e.message });
+    } catch (e) {
+      toast.error("Erreur d’import", {
+        description: e instanceof Error ? e.message : String(e),
+      });
       setLatestLog({ text: "IMPORT FAILED", type: "warn" });
     } finally { setIsImporting(false); }
   };
@@ -190,8 +301,8 @@ export default function DataPortability() {
       toast.success("Données supprimées", { description: "Toutes tes données ont été réinitialisées." });
       setLatestLog({ text: "ALL DATA PURGED", type: "ok" });
       setShowResetModal(false); setResetConfirm("");
-    } catch (e: any) {
-      toast.error("Erreur", { description: e.message });
+    } catch (e) {
+      toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) });
       setLatestLog({ text: "RESET FAILED", type: "warn" });
     } finally { setIsResetting(false); }
   };
@@ -312,8 +423,12 @@ export default function DataPortability() {
             <div className="border border-primary/15 bg-primary/[0.03] p-3 space-y-2" style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
               <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase">APERÇU DE L'IMPORT</p>
               <div className="grid grid-cols-3 gap-2 ds-t-label font-mono">
-                <div className="text-center"><span className="text-primary font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Goals</span></div>
-                <div className="text-center"><span className="text-primary font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Steps</span></div>
+                {/* Les deux premiers comptes disent ce que le FICHIER
+                     contient ; seul le journal sera restaure. L apercu
+                     les presentait a l identique, ce qui laissait croire
+                     que tout reviendrait. */}
+                <div className="text-center opacity-45"><span className="font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Objectifs</span></div>
+                <div className="text-center opacity-45"><span className="font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Étapes</span></div>
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.journalEntries}</span><br /><span className="text-muted-foreground">Journal</span></div>
               </div>
               <Bouton role="primaire" pleine onClick={handleImport} disabled={isImporting}>
