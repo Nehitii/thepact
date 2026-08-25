@@ -21,6 +21,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* L ATELIER
  *
@@ -64,8 +65,6 @@ function Bascule({ valeur, onChange, label }: { valeur: boolean; onChange: (v: b
 }
 
 const CLE_BROUILLON = (id?: string) => `journal-draft-${id ?? "new"}`;
-const CLE_CORRECTEUR = "vowpact.journal.correcteur";
-const CLE_RAIL = "vowpact.journal.rail";
 
 function lireDrapeau(cle: string, defaut: boolean): boolean {
   try {
@@ -97,13 +96,13 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
 
   /* Le correcteur du navigateur : actif par defaut, coupable pour une
      entree pleine de noms propres. */
-  const [correcteur, setCorrecteur] = useState(() => lireDrapeau(CLE_CORRECTEUR, true));
+  const [correcteur, setCorrecteur] = useState(() => lireDrapeau(PREF.JOURNAL_CORRECTEUR, true));
   const [rail, setRail] = useState(() =>
-    lireDrapeau(CLE_RAIL, typeof window === "undefined" ? true : window.innerWidth >= 1100),
+    lireDrapeau(PREF.JOURNAL_RAIL, typeof window === "undefined" ? true : window.innerWidth >= 1100),
   );
 
-  useEffect(() => { try { localStorage.setItem(CLE_CORRECTEUR, correcteur ? "1" : "0"); } catch { /* sans consequence */ } }, [correcteur]);
-  useEffect(() => { try { localStorage.setItem(CLE_RAIL, rail ? "1" : "0"); } catch { /* sans consequence */ } }, [rail]);
+  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_CORRECTEUR, correcteur ? "1" : "0"); } catch { /* sans consequence */ } }, [correcteur]);
+  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_RAIL, rail ? "1" : "0"); } catch { /* sans consequence */ } }, [rail]);
 
   const { user } = useAuth();
   const { data: pact } = usePact(user?.id);

@@ -38,12 +38,12 @@ import { WishlistFiche } from "@/components/wishlist/WishlistFiche";
 import { WishlistPoste } from "@/components/wishlist/WishlistPoste";
 
 /* La forme de la liste, retenue d une visite a l autre. */
-const CLE_AFFICHAGE = "vowpact.wishlist.affichage";
 import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
 import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
 import { WishlistRail } from "@/components/wishlist/WishlistRail";
 import { ChampImage } from "@/components/wishlist/ChampImage";
 import "@/styles/wishlist.css";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* ═══════════════════════════════════════════════════════════════
    LE BORDEREAU
@@ -76,7 +76,6 @@ import "@/styles/wishlist.css";
 type Vue = "tout" | "pacte" | "libre";
 type Tri = "visuel" | "recent" | "cher" | "abordable";
 
-const CLE_VUE = "vowpact.wishlist.vue";
 
 function normaliserNom(valeur: string) {
   return valeur.trim().toLowerCase().replace(/\s+/g, " ");
@@ -143,11 +142,11 @@ export default function Wishlist() {
 
   /* La vue retenue survit a la visite, comme le mois de Finance. */
   const [vue, setVue] = useState<Vue>(() => {
-    const garde = typeof window !== "undefined" ? window.localStorage.getItem(CLE_VUE) : null;
+    const garde = typeof window !== "undefined" ? window.localStorage.getItem(PREF.WISHLIST_VUE) : null;
     return garde === "pacte" || garde === "libre" ? garde : "tout";
   });
   useEffect(() => {
-    window.localStorage.setItem(CLE_VUE, vue);
+    window.localStorage.setItem(PREF.WISHLIST_VUE, vue);
   }, [vue]);
 
   const [recherche, setRecherche] = useState("");
@@ -166,11 +165,11 @@ export default function Wishlist() {
      Retenu en localStorage : un reglage de lecture sur une page. */
   const [affichage, setAffichage] = useState<"vitrine" | "registre">(() => {
     try {
-      return localStorage.getItem(CLE_AFFICHAGE) === "registre" ? "registre" : "vitrine";
+      return localStorage.getItem(PREF.WISHLIST_AFFICHAGE) === "registre" ? "registre" : "vitrine";
     } catch { return "vitrine"; }
   });
   useEffect(() => {
-    try { localStorage.setItem(CLE_AFFICHAGE, affichage); } catch { /* stockage indisponible */ }
+    try { localStorage.setItem(PREF.WISHLIST_AFFICHAGE, affichage); } catch { /* stockage indisponible */ }
   }, [affichage]);
   const [tri, setTri] = useState<Tri>("visuel");
 

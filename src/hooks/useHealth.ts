@@ -251,13 +251,21 @@ export function useUpsertHealthSettings(userId: string | undefined) {
       if (error) throw error;
       return data as HealthSettings;
     },
+    /* PAS DE BULLE SUR LE SUCCES.
+
+       Elle disait « Settings saved », en anglais, et surgissait a
+       chaque geste — un interrupteur, un cran de curseur. La console
+       signale autrement : une ligne de journal en pied de panneau,
+       qui dit CE QUI a change au lieu de repeter que quelque chose a
+       change. Les bulles restent pour les echecs. */
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["health-settings", userId] });
-      toast.success("Settings saved");
     },
     onError: (error) => {
       console.error("Failed to save settings:", error);
-      toast.error("Failed to save settings");
+      toast.error(i18next.t("common.error", "Erreur"), {
+        description: i18next.t("settings.health.saveError", "Le réglage n’a pas pu être enregistré."),
+      });
     },
   });
 }

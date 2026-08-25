@@ -44,6 +44,7 @@ import type { FinancialItem } from '@/types/finance';
 import { PlancheDesCreanciers } from './PlancheDesCreanciers';
 import { AnneeDesEcheances } from './AnneeDesEcheances';
 import { provisionMensuelle, totalDuMois } from '@/lib/finance/cadence';
+import { PREF } from "@/lib/preferencesAffichage";
 
 interface Props {
   items: FinancialItem[];
@@ -54,7 +55,6 @@ interface Props {
 }
 
 type Vue = 'planche' | 'annee';
-const CLE_VUE = 'vowpact.echeances.vue';
 
 /* Le choix de vue se retient. Il ne vaut pas un aller-retour en base
    — c est une preference d affichage, pas une donnee du pacte — mais
@@ -62,7 +62,7 @@ const CLE_VUE = 'vowpact.echeances.vue';
    un choix a refaire n en est plus un. */
 const lireVue = (): Vue => {
   try {
-    return localStorage.getItem(CLE_VUE) === 'annee' ? 'annee' : 'planche';
+    return localStorage.getItem(PREF.ECHEANCES_VUE) === 'annee' ? 'annee' : 'planche';
   } catch {
     return 'planche';
   }
@@ -78,7 +78,7 @@ export function EcheancesParticulieres({ items, onAdd, onEdit, onDelete, onToggl
 
   const choisirVue = (v: Vue) => {
     setVue(v);
-    try { localStorage.setItem(CLE_VUE, v); } catch { /* le refus du stockage ne doit pas empecher la bascule */ }
+    try { localStorage.setItem(PREF.ECHEANCES_VUE, v); } catch { /* le refus du stockage ne doit pas empecher la bascule */ }
   };
 
   const poche = provisionMensuelle(items);

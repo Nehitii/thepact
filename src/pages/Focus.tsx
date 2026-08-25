@@ -35,13 +35,11 @@ import {
   FocusControls,
   type FocusPanel,
 } from "@/components/focus";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* Reglages et objectif lie survivent au demontage, comme la session
    elle-meme : revenir sur la page avec un minuteur de 45 minutes remis a
    25 serait aussi surprenant que de perdre le compte a rebours. */
-const CLE_CONFIG = "vowpact.focus.config";
-const CLE_LIEN = "vowpact.focus.lien";
-const CLE_FOND = "vowpact.focus.fond";
 
 /* L OBJET DE LA CLAUSE
  *
@@ -59,7 +57,7 @@ export type ObjetClause = { type: "goal" | "todo"; id: string } | null;
 
 function lireObjet(): ObjetClause {
   try {
-    const brut = localStorage.getItem(CLE_LIEN);
+    const brut = localStorage.getItem(PREF.FOCUS_LIEN);
     if (!brut) return null;
     const o = JSON.parse(brut);
     if (o && (o.type === "goal" || o.type === "todo") && typeof o.id === "string") return o;
@@ -96,7 +94,7 @@ export default function Focus() {
   const isMobile = useIsMobile();
   const mouvementReduit = useReducedMotion();
 
-  const config0 = useRef(lire(CLE_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
+  const config0 = useRef(lire(PREF.FOCUS_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
   const objet0 = useRef(lireObjet()).current;
 
   const [workMin, setWorkMin] = useState(config0.work);
@@ -112,12 +110,12 @@ export default function Focus() {
      calme serait exactement le contraire du but de la page. */
   const [fond, setFond] = useState<VarianteFond>(() => {
     try {
-      const lu = localStorage.getItem(CLE_FOND);
+      const lu = localStorage.getItem(PREF.FOCUS_FOND);
       return (lu as VarianteFond) || "mycelium";
     } catch { return "mycelium"; }
   });
   useEffect(() => {
-    try { localStorage.setItem(CLE_FOND, fond); } catch { /* stockage indisponible */ }
+    try { localStorage.setItem(PREF.FOCUS_FOND, fond); } catch { /* stockage indisponible */ }
   }, [fond]);
 
   const [activePanel, setActivePanel] = useState<FocusPanel>(null);
@@ -137,9 +135,9 @@ export default function Focus() {
      la meme courbe — la page n avance que de ce que le menu s elargit. */
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
 
-  useEffect(() => { ecrire(CLE_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },
+  useEffect(() => { ecrire(PREF.FOCUS_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },
     [workMin, breakMin, longBreakMin]);
-  useEffect(() => { ecrire(CLE_LIEN, objet); }, [objet]);
+  useEffect(() => { ecrire(PREF.FOCUS_LIEN, objet); }, [objet]);
 
   /* Un objectif supprime laissait un champ vide plutot que « Aucun » :
      l identifiant survivait a sa cible. On ne verifie qu une fois la

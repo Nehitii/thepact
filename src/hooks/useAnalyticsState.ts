@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { AnalyticsPeriod } from "@/components/analytics/PeriodSelector";
+import { PREF } from "@/lib/preferencesAffichage";
 /** Les trois vues de la page. Voir le commentaire sur SECTIONS. */
 export type PrismSection = "trajectoire" | "repartition" | "rythme";
 
-const STORAGE_KEY = "pacte:analytics:state";
 
 /* Trois vues au lieu de six onglets. La page etait organisee par SOURCE
    de donnees — objectifs, focus, sante, finance, habitudes — et repondait
@@ -22,7 +22,7 @@ function isPeriod(p: string | null): p is AnalyticsPeriod {
 
 function readStorage(): { section?: PrismSection; period?: AnalyticsPeriod } {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(PREF.ANALYTICS_ETAT);
     if (!raw) return {};
     const v = JSON.parse(raw);
     return {
@@ -67,7 +67,7 @@ export function useAnalyticsState(defaults: {
   // Persist
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ section, period }));
+      localStorage.setItem(PREF.ANALYTICS_ETAT, JSON.stringify({ section, period }));
     } catch {
       /* ignore */
     }

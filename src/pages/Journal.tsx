@@ -16,6 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* LOG.01 — LE DOSSIER
  *
@@ -30,11 +31,10 @@ import {
  */
 
 type Lumiere = "auto" | "clair" | "sombre";
-const CLE_LUMIERE = "vowpact.journal.lumiere";
 
 function lumiereInitiale(): Lumiere {
   try {
-    const v = localStorage.getItem(CLE_LUMIERE) as Lumiere | null;
+    const v = localStorage.getItem(PREF.JOURNAL_LUMIERE) as Lumiere | null;
     if (v === "clair" || v === "sombre" || v === "auto") return v;
   } catch { /* stockage indisponible */ }
   return "auto";
@@ -47,7 +47,7 @@ export default function Journal() {
 
   const [lumiere, setLumiere] = useState<Lumiere>(lumiereInitiale);
   useEffect(() => {
-    try { localStorage.setItem(CLE_LUMIERE, lumiere); } catch { /* sans consequence */ }
+    try { localStorage.setItem(PREF.JOURNAL_LUMIERE, lumiere); } catch { /* sans consequence */ }
   }, [lumiere]);
   const theme = lumiere === "auto" ? (resolvedTheme === "light" ? "clair" : "sombre") : lumiere;
 

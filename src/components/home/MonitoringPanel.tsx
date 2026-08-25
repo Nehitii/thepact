@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PREF } from "@/lib/preferencesAffichage";
 
 interface MonitoringData {
   goalsCompleted: number;
@@ -40,7 +41,6 @@ const NOMS: Record<string, string> = {
   extreme: "EXTREME", impossible: "IMPOSSIBLE", custom: "ANANTA",
 };
 
-const CLE_VUE = "vowpact.monitoring.vue";
 type Vue = "radar" | "diagnostic";
 
 /**
@@ -68,12 +68,12 @@ export function MonitoringPanel({
 }: MonitoringPanelProps) {
   const [vue, setVue] = useState<Vue>(() => {
     if (typeof window === "undefined") return "radar";
-    return (localStorage.getItem(CLE_VUE) as Vue) || "radar";
+    return (localStorage.getItem(PREF.MONITORING_VUE) as Vue) || "radar";
   });
 
   const changerVue = (v: Vue) => {
     setVue(v);
-    try { localStorage.setItem(CLE_VUE, v); } catch { /* mode prive */ }
+    try { localStorage.setItem(PREF.MONITORING_VUE, v); } catch { /* mode prive */ }
   };
 
   const frise = useMemo(() => {

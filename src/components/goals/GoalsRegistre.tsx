@@ -7,6 +7,7 @@ import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
 import { useTranslation } from "react-i18next";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* REGISTRE — la vue liste
  *
@@ -103,8 +104,6 @@ interface Props {
   onToggleFocus: (id: string, focus: boolean, e: React.MouseEvent) => void;
 }
 
-const CLE_GROUPE = "vowpact.registre.groupe";
-const CLE_CONSTELLATIONS = "vowpact.registre.constellations";
 
 export const GoalsRegistre = memo(function GoalsRegistre({
   goals,
@@ -116,7 +115,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
 }: Props) {
   const { t } = useTranslation();
   const [grouper, setGrouper] = useState<boolean>(() => {
-    try { return localStorage.getItem(CLE_GROUPE) === "1"; } catch { return false; }
+    try { return localStorage.getItem(PREF.REGISTRE_GROUPE) === "1"; } catch { return false; }
   });
 
   /* Une seule ligne ouverte a la fois.
@@ -157,7 +156,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
    * survit d une visite a l autre. */
   const [constellations, setConstellations] = useState<Set<string>>(() => {
     try {
-      const brut = localStorage.getItem(CLE_CONSTELLATIONS);
+      const brut = localStorage.getItem(PREF.REGISTRE_CONSTELLATIONS);
       const lu = brut ? JSON.parse(brut) : [];
       return new Set<string>(Array.isArray(lu) ? (lu as string[]) : []);
     } catch { return new Set<string>(); }
@@ -167,7 +166,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
     setConstellations((s) => {
       const n = new Set(s);
       if (n.has(cle)) n.delete(cle); else n.add(cle);
-      try { localStorage.setItem(CLE_CONSTELLATIONS, JSON.stringify([...n])); }
+      try { localStorage.setItem(PREF.REGISTRE_CONSTELLATIONS, JSON.stringify([...n])); }
       catch { /* stockage indisponible */ }
       return n;
     });
@@ -176,7 +175,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
   const basculer = () => {
     setGrouper((v) => {
       const n = !v;
-      try { localStorage.setItem(CLE_GROUPE, n ? "1" : "0"); } catch { /* stockage indisponible */ }
+      try { localStorage.setItem(PREF.REGISTRE_GROUPE, n ? "1" : "0"); } catch { /* stockage indisponible */ }
       return n;
     });
   };

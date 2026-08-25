@@ -2472,7 +2472,20 @@
       "listen": "Play",
       "waiting": "idle",
       "activeOf": "{{n}} of {{total}}",
-      "none": "none"
+      "none": "none",
+      "ready": "filled in"
+    },
+    "health": {
+      "title": "Health",
+      "note": "What the daily check-in asks, and what it does with it.",
+      "saveBody": "Save height and weight",
+      "unitNote": "Storage is unchanged: the switch is reversible at any time.",
+      "goalNote": "Recalled under the check-in slider.",
+      "checkin": "The check-in",
+      "stepsOn": "7 steps",
+      "stepsOff": "6 steps",
+      "nutritionNote": "Adds a step to the daily check-in.",
+      "saveError": "The setting could not be saved."
     }
   },
   "achievements": {

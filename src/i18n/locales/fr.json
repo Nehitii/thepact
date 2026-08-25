@@ -2472,7 +2472,20 @@
       "listen": "Écouter",
       "waiting": "en attente",
       "activeOf": "{{n}} sur {{total}}",
-      "none": "aucun"
+      "none": "aucun",
+      "ready": "renseigné"
+    },
+    "health": {
+      "title": "Santé",
+      "note": "Ce que le relevé quotidien te demande, et ce qu’il en fait.",
+      "saveBody": "Enregistrer taille et poids",
+      "unitNote": "Le stockage ne bouge pas : la bascule se défait à tout instant.",
+      "goalNote": "Rappelé sous le curseur du relevé.",
+      "checkin": "Le relevé",
+      "stepsOn": "7 étapes",
+      "stepsOff": "6 étapes",
+      "nutritionNote": "Ajoute une étape au relevé quotidien.",
+      "saveError": "Le réglage n’a pas pu être enregistré."
     }
   },
   "achievements": {

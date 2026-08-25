@@ -22,6 +22,7 @@ export const routeImports = {
   privacyControl: () => import("@/pages/profile/PrivacyControl"),
   notificationSettings: () => import("@/pages/profile/NotificationSettings"),
   dataPortability: () => import("@/pages/profile/DataPortability"),
+  healthSettings: () => import("@/pages/profile/HealthSettings"),
   wishlist: () => import("@/pages/Wishlist"),
   reviews: () => import("@/pages/Reviews"),
 } as const;
@@ -48,6 +49,7 @@ export const routePathToImport: Record<string, () => Promise<unknown>> = {
   "/profile/display-sound": routeImports.displaySound,
   "/profile/privacy": routeImports.privacyControl,
   "/profile/notifications": routeImports.notificationSettings,
+  "/profile/health": routeImports.healthSettings,
   "/profile/data": routeImports.dataPortability,
   "/wishlist": routeImports.wishlist,
   "/reviews": routeImports.reviews,

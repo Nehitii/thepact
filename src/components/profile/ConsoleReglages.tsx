@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { User, ShieldCheck, IdCard, Target, Gauge, SlidersHorizontal, Bell, Shield, Database } from "lucide-react";
+import { User, ShieldCheck, IdCard, Target, Gauge, SlidersHorizontal, Bell, Shield, Database, HeartPulse } from "lucide-react";
 import { DSPageShell, DSBackground } from "@/components/ds";
 import "@/styles/reglages.css";
 
@@ -27,6 +27,7 @@ export const SECTIONS = [
   { chemin: "/profile/pact-rules", code: "RULE", libelle: "Règles du pacte", icone: Gauge },
   { chemin: "/profile/display-sound", code: "DISP", libelle: "Apparence & sons", icone: SlidersHorizontal },
   { chemin: "/profile/notifications", code: "ALRT", libelle: "Notifications", icone: Bell },
+  { chemin: "/profile/health", code: "HLTH", libelle: "Santé", icone: HeartPulse },
   { chemin: "/profile/privacy", code: "PRIV", libelle: "Confidentialité", icone: Shield },
   { chemin: "/profile/data", code: "DATA", libelle: "Mes données", icone: Database },
 ] as const;

@@ -28,6 +28,7 @@ const DisplaySound = lazy(routeImports.displaySound);
 const PrivacyControl = lazy(routeImports.privacyControl);
 const NotificationSettings = lazy(routeImports.notificationSettings);
 const DataPortability = lazy(routeImports.dataPortability);
+const HealthSettings = lazy(routeImports.healthSettings);
 const Achievements = lazy(routeImports.achievements);
 const Shop = lazy(routeImports.shop);
 const Community = lazy(() => import("./pages/Community"));
@@ -115,6 +116,7 @@ function AppRoutes() {
         <Route path="profile/display-sound" element={<DisplaySound />} />
         <Route path="profile/privacy" element={<PrivacyControl />} />
         <Route path="profile/notifications" element={<NotificationSettings />} />
+        <Route path="profile/health" element={<HealthSettings />} />
         <Route path="profile/data" element={<DataPortability />} />
         <Route path="achievements" element={<Achievements />} />
         <Route path="shop" element={<Shop />} />

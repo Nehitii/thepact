@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Bouton } from "@/components/profile/console-ui";
-import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX } from "lucide-react";
+import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { ReinitialiserLePacte } from "@/components/profile/ReinitialiserLePacte";
+import { oublierLesPreferences, preferencesPosees } from "@/lib/preferencesAffichage";
 import { Panneau } from "@/components/profile/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
@@ -57,6 +58,9 @@ export default function DataPortability() {
   const queryClient = useQueryClient();
   const locale = useDateFnsLocale();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
+  /* Compte a l ouverture : le stockage local ne previent pas quand il
+     change, et rien d autre sur cette page ne le regarde. */
+  const [preferencesLocales, setPreferencesLocales] = useState(preferencesPosees);
   const [isExporting, setIsExporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -519,6 +523,48 @@ export default function DataPortability() {
               </Bouton>
             </div>
           )}
+        </div>
+      </Panneau>
+
+      {/* ── LES PRÉFÉRENCES D AFFICHAGE ──
+
+          Dix-sept reglages de lecture vivent dans le navigateur : la
+          vue du calendrier, le tri du registre, la forme de la
+          wishlist, le fond de la page de concentration. Aucun ne
+          merite une colonne en base, mais rien ne les recensait — donc
+          rien ne pouvait les remettre a zero. Une application coincee
+          dans un etat bizarre n avait pas d autre porte de sortie que
+          vider les donnees du site, ce qui deconnecte.
+
+          Ce panneau ne touche a AUCUNE donnee : ni objectif, ni
+          journal, ni seance en cours, ni brouillon, ni lien colle. */}
+      <Panneau
+        code="Préférences d’affichage"
+        etat={preferencesLocales === 0
+          ? "aucune"
+          : `${preferencesLocales} ${preferencesLocales > 1 ? "posées" : "posée"}`}
+      >
+        <div className="space-y-3">
+          <p className="ds-t-label text-muted-foreground tracking-wide">
+            Vues, tris, mises en page et ambiances, retenus dans ce
+            navigateur. Les remettre à zéro n’efface aucune donnée.
+          </p>
+          <Bouton
+            pleine
+            disabled={preferencesLocales === 0}
+            onClick={() => {
+              const n = oublierLesPreferences();
+              setPreferencesLocales(0);
+              toast.success(
+                n === 0
+                  ? "Rien à remettre à zéro"
+                  : `${n} ${n > 1 ? "préférences remises" : "préférence remise"} à zéro`,
+                { description: "Les pages reprendront leur présentation par défaut." },
+              );
+            }}
+          >
+            <RotateCcw /> Remettre à zéro
+          </Bouton>
         </div>
       </Panneau>
 

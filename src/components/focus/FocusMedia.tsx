@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link2, Check, X, ChevronDown, ChevronUp, Music, Youtube } from "lucide-react";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* LE LIEN AUDIO
  *
@@ -64,8 +65,12 @@ export function analyserLien(url: string): LienMedia | null {
   return null;
 }
 
+/* La cle est PAR UTILISATEUR : deux comptes sur le meme
+   navigateur ne se partagent pas un lien colle. La racine vient de
+   l inventaire des preferences, qui la recense sans l effacer — un
+   lien colle est du contenu saisi, pas de la mise en page. */
 function cle(userId?: string) {
-  return userId ? `vowpact.focus.media.${userId}` : "vowpact.focus.media";
+  return userId ? `${PREF.FOCUS_MEDIA}.${userId}` : PREF.FOCUS_MEDIA;
 }
 
 interface FocusMediaProps {

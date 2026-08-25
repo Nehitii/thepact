@@ -13,6 +13,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getCostCategoryLabel } from "@/lib/goalConstants";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
 import { BoutonHonneur } from "./BoutonHonneur";
+import { PREF } from "@/lib/preferencesAffichage";
 
 const deuxChiffres = (n: number) => String(n).padStart(2, "0");
 
@@ -357,7 +358,6 @@ export interface MembreDossier {
    retard d abord. Le bouton passe de l une a l autre. */
 const TRIS = ["ordre", "avance", "retard"] as const;
 type Tri = (typeof TRIS)[number];
-const CLE_TRI = "vowpact.groupe.tri";
 
 const ICONE_TRI = {
   ordre: ListOrdered,
@@ -383,14 +383,14 @@ export const DossierMembres = React.memo(function DossierMembres({
   /* Le choix se garde d un groupe a l autre et d une session a la
      suivante : qui lit ses groupes par avancement les lit tous ainsi. */
   const [tri, setTri] = React.useState<Tri>(() => {
-    const garde = typeof localStorage !== "undefined" ? localStorage.getItem(CLE_TRI) : null;
+    const garde = typeof localStorage !== "undefined" ? localStorage.getItem(PREF.DOSSIER_TRI) : null;
     return (TRIS as readonly string[]).includes(garde ?? "") ? (garde as Tri) : "ordre";
   });
 
   const changerTri = () => {
     const suivant = TRIS[(TRIS.indexOf(tri) + 1) % TRIS.length];
     setTri(suivant);
-    try { localStorage.setItem(CLE_TRI, suivant); } catch { /* mode prive */ }
+    try { localStorage.setItem(PREF.DOSSIER_TRI, suivant); } catch { /* mode prive */ }
   };
 
   const ordonnes = React.useMemo(() => {

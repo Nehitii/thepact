@@ -14,17 +14,17 @@ import { addDays, differenceInCalendarDays, parseISO, format, getISOWeek, startO
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { PREF } from "@/lib/preferencesAffichage";
 
 const ALL_SOURCES = new Set<CalendarSourceType>(["event", "todo", "goal", "step"]);
 const VUES: CalendarView[] = ["ruban", "day", "week", "month", "year"];
-const CLE_VUE = "vowpact.calendar.vue";
 
 /* La vue de depart est le ruban — c est lui qui dit comment le temps est
    fait, la grille ne dit que ce qu il contient. Mais le choix suivant
    appartient a l utilisateur : on le retient. */
 function vueInitiale(): CalendarView {
   try {
-    const stockee = localStorage.getItem(CLE_VUE) as CalendarView | null;
+    const stockee = localStorage.getItem(PREF.CALENDRIER_VUE) as CalendarView | null;
     if (stockee && VUES.includes(stockee)) return stockee;
   } catch { /* stockage indisponible : le defaut suffit */ }
   return "ruban";
@@ -42,7 +42,7 @@ export function CalendarPage() {
   const [activeFilters, setActiveFilters] = useState<Set<CalendarSourceType>>(new Set(ALL_SOURCES));
 
   useEffect(() => {
-    try { localStorage.setItem(CLE_VUE, view); } catch { /* sans consequence */ }
+    try { localStorage.setItem(PREF.CALENDRIER_VUE, view); } catch { /* sans consequence */ }
   }, [view]);
 
   const { events, isLoading, createEvent, updateEvent, deleteEvent } = useCalendarEvents(viewDate, view, activeFilters);

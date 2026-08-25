@@ -10,8 +10,8 @@ import { Corps } from "@/components/health/Corps";
 import { JournalDuCorps } from "@/components/health/JournalDuCorps";
 import { Respiration } from "@/components/health/Respiration";
 import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
-import { HealthSettingsModal } from "@/components/health/HealthSettingsModal";
 import "@/styles/health.css";
+import { useNavigate } from "react-router-dom";
 
 /**
  * SANTE — LE DOSSIER.
@@ -46,8 +46,16 @@ import "@/styles/health.css";
 export default function Health() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const [reglagesOuverts, setReglagesOuverts] = useState(false);
+  /* LES REGLAGES SONT PARTIS DANS LA CONSOLE.
+
+     Ils vivaient dans une fenetre a part, ouverte depuis cette page :
+     une quatrieme surface de reglages, apres la console, le modal
+     finance et les preferences par page. Ils sont desormais sous
+     Profil > Sante, avec tout le reste.
+
+     Cette page garde ce qu on y FAIT — relever, lire, comparer. */
   /* La date du releve ouvert : la veille par defaut, ou l un des jours
      manques qu on rattrape. Null quand la fenetre est fermee. */
   const [journeeOuverte, setJourneeOuverte] = useState<string | null>(null);
@@ -69,13 +77,13 @@ export default function Health() {
   return (
     <DSPageShell width="lg" background={<DSBackground variant="cyber" />}>
       <div className="hlt">
-        <EnTeteDossier enAttente={enAttente} onReglages={() => setReglagesOuverts(true)} />
+        <EnTeteDossier enAttente={enAttente} onReglages={() => navigate("/profile/health")} />
 
         <div className="hlt-dossier">
           <Corps
             tailleCm={settings?.height_cm}
             poidsKg={settings?.weight_kg}
-            onRegler={() => setReglagesOuverts(true)}
+            onRegler={() => navigate("/profile/health")}
           />
 
           <JournalDuCorps
@@ -94,7 +102,6 @@ export default function Health() {
         <p className="hlt-note">{t("health.disclaimer")}</p>
       </div>
 
-      <HealthSettingsModal open={reglagesOuverts} onOpenChange={setReglagesOuverts} />
 
       {/* La fenetre est montee sur la date choisie : la remonter a
           chaque ouverture garantit qu elle recharge le bon jour. */}

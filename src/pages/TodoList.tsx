@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import '@/styles/todo.css';
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* TSK.01 — LA CONSOLE D OPERATIONS
  *
@@ -44,7 +45,6 @@ import '@/styles/todo.css';
 
 type Vue = 'liste' | 'detaillee' | 'calendrier' | 'stats' | 'historique';
 const VUES: Vue[] = ['liste', 'detaillee', 'calendrier', 'stats', 'historique'];
-const CLE_VUE = 'vowpact.todo.vue';
 
 const ANIMATION_DEPOT: DropAnimation = {
   duration: 220,
@@ -54,7 +54,7 @@ const ANIMATION_DEPOT: DropAnimation = {
 
 function vueInitiale(): Vue {
   try {
-    const v = localStorage.getItem(CLE_VUE) as Vue | null;
+    const v = localStorage.getItem(PREF.TODO_VUE) as Vue | null;
     if (v && VUES.includes(v)) return v;
   } catch { /* stockage indisponible */ }
   return 'liste';
@@ -100,7 +100,7 @@ export default function TodoList() {
   const dlgEdition = useDialogueConsole(formulaire === 'edition' && tacheEditee !== null);
 
   useEffect(() => {
-    try { localStorage.setItem(CLE_VUE, vue); } catch { /* sans consequence */ }
+    try { localStorage.setItem(PREF.TODO_VUE, vue); } catch { /* sans consequence */ }
   }, [vue]);
 
   const {

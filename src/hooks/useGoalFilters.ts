@@ -8,6 +8,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Goal } from "@/hooks/useGoals";
 import { estFranchi } from "@/lib/superGoals";
 import { brigadeDe } from "@/lib/brigade";
+import { PREF } from "@/lib/preferencesAffichage";
 
 export type SortOption = "difficulty" | "points" | "created" | "name" | "status" | "start" | "progression" | "super";
 
@@ -40,7 +41,6 @@ export type SortDirection = "asc" | "desc";
 export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
 export type GoalTab = "all" | "active" | "completed";
 
-const STORAGE_KEY = "goals-page-settings";
 
 /* OU ON EN ETAIT, PAR OPPOSITION A CE QU ON PREFERE.
  *
@@ -88,7 +88,7 @@ interface PersistedSettings {
 
 function loadSettings(): Partial<PersistedSettings> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(PREF.OBJECTIFS_FILTRES);
     if (raw) return JSON.parse(raw);
   } catch {}
   return {};
@@ -96,7 +96,7 @@ function loadSettings(): Partial<PersistedSettings> {
 
 function saveSettings(s: PersistedSettings) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    localStorage.setItem(PREF.OBJECTIFS_FILTRES, JSON.stringify(s));
   } catch {}
 }
 

@@ -8,6 +8,7 @@ import {
   SCHEMAS, CIBLES, CIBLE_PAR_DEFAUT, schemaDe, sequenceDe,
   rythmeSuggere, partiesDeDuree, type Temps,
 } from "@/lib/health/souffle";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /* ═══════════════════════════════════════════════════════════════
    LE PROTOCOLE
@@ -61,7 +62,6 @@ const HAUTEURS: Record<Temps, number> = {
   inspire: 528, retiens: 440, expire: 396, pause: 396,
 };
 
-const CLE_SON = "vowpact.souffle.son";
 
 export function Respiration({ stress, chargeMentale }: Props) {
   const { t } = useTranslation();
@@ -102,13 +102,13 @@ export function Respiration({ stress, chargeMentale }: Props) {
   /* Le reglage du son survit a la session : on ne le remet pas a chaque
      ouverture de la page. */
   useEffect(() => {
-    try { setSon(localStorage.getItem(CLE_SON) === "1"); } catch { /* stockage indisponible */ }
+    try { setSon(localStorage.getItem(PREF.SOUFFLE_SON) === "1"); } catch { /* stockage indisponible */ }
   }, []);
 
   const basculerSon = useCallback(() => {
     setSon((v) => {
       const suivant = !v;
-      try { localStorage.setItem(CLE_SON, suivant ? "1" : "0"); } catch { /* idem */ }
+      try { localStorage.setItem(PREF.SOUFFLE_SON, suivant ? "1" : "0"); } catch { /* idem */ }
       return suivant;
     });
   }, []);

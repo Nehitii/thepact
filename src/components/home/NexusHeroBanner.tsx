@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
 import { PactVisual } from "@/components/PactVisual";
 import { RankCore } from "./RankCore";
+import { PREF } from "@/lib/preferencesAffichage";
 
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",
@@ -24,7 +25,7 @@ const EFFECT_STYLES: Record<string, React.CSSProperties> = {
 export type MesureProgression = "goals" | "steps";
 
 /** La cle de retenue, partagee avec la page qui la lit. */
-export const CLE_MESURE = "vowpact.hub.mesureProgression";
+export const CLE_MESURE = PREF.HUB_MESURE;
 
 interface NexusHeroBannerProps {
   progression: number;
