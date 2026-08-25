@@ -80,12 +80,23 @@ export function ConsoleReglages({ titre, note, children, flottant }: Props) {
       className="selection:bg-primary/30 !p-0"
       background={
         <>
-          <div className="absolute inset-0" style={{ background: "#03060A" }} />
+          {/* Le sol descend d un cran. Une plaque ne se leve que si le
+              fond est plus bas qu elle : a #03060A, la difference avec la
+              surface des panneaux ne se voyait pas. */}
+          <div className="absolute inset-0" style={{ background: "#000409" }} />
           <DSBackground variant="cyber" />
         </>
       }
     >
-      <div className="page-px pt-6 md:pt-10 pb-10 max-w-6xl mx-auto">
+      {/* DE L AIR EN HAUT.
+
+          Le premier mot de la page — SYS.CONFIG et le titre de section —
+          tombait a 38 px du bord. C etait tout ce qu il y avait : ce
+          conteneur donnait pt-10 et rien ne le precede.
+
+          Il appartient a la console, pas au shell partage : l aerer ici
+          ne deplace aucune des dix autres pages qui emploient DSPageShell. */}
+      <div className="page-px pt-9 md:pt-16 pb-16 max-w-6xl mx-auto">
         <div className="rg">
           <div className="rg-rail-boite">
           {resteADroite && <span className="rg-rail-voile" aria-hidden="true" />}

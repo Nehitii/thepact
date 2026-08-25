@@ -90,7 +90,11 @@
 .rg-onglet svg { width: 15px; height: 15px; flex: none; opacity: 0.7; }
 
 /* L etat ouvert se dit par un trait, pas par un cadre. */
+/* Le rail parle la meme langue : la section ouverte est une plaque,
+   a la meme echelle. */
 .rg-onglet[aria-current="page"] {
+  border: 1px solid hsl(var(--primary) / 0.16);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
   color: var(--rg-vif);
   background: hsl(var(--primary) / 0.07);
   box-shadow: inset 2px 0 0 var(--rg-vif);
@@ -113,10 +117,11 @@
 
 .rg-grille { display: flex; flex-direction: column; }
 
+/* Le filet sous le titre separait le titre du premier groupe. Les
+   plaques s en chargent : deux traits pour une seule couture. */
 .rg-volet-tete {
-  padding-bottom: 18px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid var(--rg-fil);
+  padding-bottom: 0;
+  margin-bottom: 22px;
 }
 
 .rg-volet-titre {
@@ -137,22 +142,64 @@
   max-width: 62ch;
 }
 
-/* ── UN GROUPE ───────────────────────────────────────────────── */
+/* ── UN GROUPE : LA PLAQUE ───────────────────────────────────── */
 
-/* Plus de cadre. Un groupe se reconnait a son titre et a l air qui le
-   precede ; le filet ne marque que la couture. */
+/* CHAQUE GROUPE EST UN OBJET.
+
+   La version d avant encadrait tout — equerres d angle, temoin
+   clignotant, filet pointille — et le decor mangeait le reglage. On a
+   donc tout retire : il ne restait qu un titre et de l air.
+
+   Trop, peut-etre : dix sections de groupes sans surface se lisent
+   comme une seule coulee, et rien ne dit ou un groupe finit.
+
+   La plaque est le milieu. Une surface a peine levee, un filet a
+   11 %, un chanfrein de 12 px — le meme vocabulaire que la carte
+   publique, le pli de la wishlist et le composeur de Focus. Pas un
+   cadre de plus : LE cadre de la maison, applique une fois par
+   groupe. L uniformite se voit parce que c est dix fois la meme
+   piece. */
+.rg-grille { gap: 14px; }
+
+/* ELLE DOIT SE LEVER, PAS SEULEMENT ETRE CERNEE.
+
+   Au premier essai la surface valait hsl(var(--card)) sur un sol a
+   #000409 : un rapport de contraste de 1,05, autant dire rien. Le
+   filet a 11 % portait seul la limite, et une plaque cernee sans
+   etre levee se lit comme un rectangle dessine, pas comme un objet.
+
+   Ce qui fait qu une surface se leve, c est l ARETE : une ligne de
+   lumiere sur le bord haut, la ou la lumiere frapperait. La
+   wishlist en use deja pour ses vignettes. Avec elle, quatre points
+   de luminance suffisent. */
 .rg-panneau {
   position: relative;
-  padding: 26px 0 4px;
-  border-top: 1px solid var(--rg-fil);
+  padding: 18px 22px 10px;
+  background: hsl(210 68% 7%);
+  border: 1px solid hsl(var(--primary) / 0.13);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--primary) / 0.10),
+    0 1px 0 hsl(210 100% 1% / 0.6);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
 }
-.rg-panneau:first-child { border-top: none; padding-top: 12px; }
 
+/* Il court d un bord a l autre de la plaque : les marges negatives
+   annulent le rembourrage, le filet separe donc vraiment la tete du
+   corps au lieu de flotter entre deux blancs. */
 .rg-panneau-tete {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 2px;
+  margin: 0 -22px 6px;
+  padding: 0 22px 12px;
+  border-bottom: 1px solid hsl(var(--primary) / 0.08);
 }
 
 .rg-panneau-code {
@@ -164,8 +211,11 @@
   color: var(--rg-sourdine);
 }
 
-/* Le filet pointille decorait une separation que le titre marque. */
-.rg-panneau-fil { flex: 1; }
+/* Le filet pointille decorait une separation que le titre marque.
+   Sur la plaque il ne sert meme plus d entretoise : l etat file a
+   droite par la marge. */
+.rg-panneau-fil { display: none; }
+.rg-panneau-etat { margin-left: auto; }
 
 .rg-panneau-etat {
   font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -182,13 +232,16 @@
 
 /* Ce qui peut detruire garde son signal : le seul endroit ou la
    couleur previent au lieu de decorer. */
+/* MEME PIECE, AUTRE ALLIAGE. Il se distinguait par un coin arrondi
+   la ou tout le reste est chanfreine — une exception de forme pour
+   dire une exception de nature. La couleur suffit : il garde le
+   chanfrein de la plaque et prend la teinte du danger. */
 .rg-panneau[data-danger] {
-  margin-top: 18px;
-  padding: 20px 18px 8px;
-  border: 1px solid hsl(var(--destructive) / 0.28);
-  border-radius: 10px;
-  background: hsl(var(--destructive) / 0.04);
+  margin-top: 8px;
+  border-color: hsl(var(--destructive) / 0.28);
+  background: hsl(var(--destructive) / 0.045);
 }
+.rg-panneau[data-danger] .rg-panneau-tete { border-bottom-color: hsl(var(--destructive) / 0.16); }
 .rg-panneau[data-danger] .rg-panneau-code { color: hsl(var(--destructive)); }
 
 /* Le rang principal se distingue par la taille de son titre, non par
@@ -198,9 +251,40 @@
   font-size: 12.5px;
 }
 
-/* Le journal permanent disparait : une confirmation passagere suffit,
-   et neuf journaux par ecran etaient du bruit. */
-.rg-journal { display: none; }
+/* IL AVAIT DISPARU FAUTE DE PLACE, PAS FAUTE D UTILITE.
+
+   Neuf journaux permanents flottant sous des groupes sans cadre,
+   c etait du bruit — on l avait donc masque. Mais le masquer sans
+   retirer les appels a laisse des pages qui CROIENT signaler et ne
+   signalent rien : les reglages de sante s enregistraient en silence
+   depuis que leur bulle avait ete retiree au profit de cette ligne.
+
+   La plaque lui donne un pied. Il n apparait que si quelque chose a
+   ete ecrit, et dit CE QUI a change. */
+.rg-journal {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 8px -22px -10px;
+  padding: 8px 22px 9px;
+  border-top: 1px solid hsl(var(--primary) / 0.07);
+  background: hsl(var(--primary) / 0.025);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--rg-sourdine);
+}
+.rg-journal::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: none;
+  background: var(--rg-sourdine);
+}
+.rg-journal[data-type="ok"] { color: var(--rg-ok); }
+.rg-journal[data-type="ok"]::before { background: var(--rg-ok); }
+.rg-journal[data-type="warn"] { color: hsl(var(--destructive)); }
+.rg-journal[data-type="warn"]::before { background: hsl(var(--destructive)); }
 
 /* ── UN REGLAGE ──────────────────────────────────────────────── */
 
@@ -518,7 +602,11 @@
   .rg-rail::-webkit-scrollbar { display: none; }
   .rg-rail-tete { display: none; }
   .rg-onglet { flex: none; padding: 8px 12px; }
-  .rg-onglet[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--rg-vif); }
+  /* Le rail parle la meme langue : la section ouverte est une plaque,
+   a la meme echelle. */
+.rg-onglet[aria-current="page"] {
+  border: 1px solid hsl(var(--primary) / 0.16);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); box-shadow: inset 0 -2px 0 var(--rg-vif); }
   .rg-onglet-code { display: none; }
 
 }
@@ -538,4 +626,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .rg-onglet, .rg-segment, .rg-bouton { transition: none; }
+}
+
+/* ── LA PLAQUE EN PETITE LARGEUR ─────────────────────────────────
+   Vingt-deux pixels de rembourrage sur un ecran de 360 laissent
+   316 px de contenu : c est encore lisible. Sous 520, le controle
+   passe deja sous son libelle — la plaque n a plus besoin d autant
+   de flancs. */
+@media (max-width: 520px) {
+  .rg-panneau { padding: 15px 15px 8px; }
+  .rg-panneau-tete { margin: 0 -15px 6px; padding: 0 15px 10px; }
+  .rg-journal { margin: 8px -15px -8px; padding: 7px 15px 8px; }
 }
