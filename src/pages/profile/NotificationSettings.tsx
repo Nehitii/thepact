@@ -56,7 +56,12 @@ export default function NotificationSettings() {
     [updateSettings, t, noter],
   );
 
-  const enCours = isLoading || updateSettings.isPending;
+  /* LE PANNEAU NE SE FIGE PLUS PENDANT L ECRITURE.
+     `updateSettings.isPending` verrouillait les sept interrupteurs a
+     chaque bascule. Le cache portant desormais la valeur avant le
+     reseau, il n y a plus rien a proteger : chacun reste manipulable,
+     et une ecriture qui echoue revient en arriere d elle-meme. */
+  const enCours = isLoading;
   const categories = ["system_enabled", "progress_enabled", "social_enabled", "marketing_enabled"] as const;
   const actives = categories.filter((k) => settings?.[k] ?? true).length;
 
@@ -264,7 +269,10 @@ export default function NotificationSettings() {
                     onClick={async () => {
                       if (!user?.id) return;
                       const { error } = await supabase.functions.invoke("push-send", {
-                        body: { user_id: user.id, title: "Vowpact", body: "Notification de test ✨", url: "/" },
+                        /* Une demande explicite n est pas une notification :
+                           elle passe outre les preferences, sinon le bouton
+                           ne prouverait rien quand le push est coupe. */
+                        body: { user_id: user.id, title: "Vowpact", body: "Notification de test ✨", url: "/", force: true },
                       });
                       if (error) {
                         toast.error(t("common.error"), { description: error.message });

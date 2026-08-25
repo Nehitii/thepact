@@ -43,6 +43,22 @@ export interface NotificationSettings {
   updated_at: string;
 }
 
+/* Les valeurs par defaut de `notification_settings`, telles que la
+   table les pose. Elles ne servent qu a l ecriture optimiste, quand
+   aucune ligne n existe encore. */
+const DEFAUTS_NOTIFICATIONS = {
+  id: "",
+  system_enabled: true,
+  progress_enabled: true,
+  social_enabled: true,
+  marketing_enabled: true,
+  push_enabled: false,
+  focus_mode: false,
+  coach_proactive_enabled: true,
+  created_at: "",
+  updated_at: "",
+};
+
 type EnabledCategoryMap = Record<NotificationCategory, boolean>;
 
 function buildEnabledMap(settings: NotificationSettings | null | undefined): EnabledCategoryMap {
@@ -216,33 +232,52 @@ export function useNotificationSettings() {
     enabled: !!user?.id,
   });
 
-  // Create or update settings
+  const CLE = ["notification-settings", user?.id] as const;
+
   const updateSettings = useMutation({
+    /* UN SEUL ALLER-RETOUR AU LIEU DE DEUX.
+       La mutation lisait d abord la table pour savoir s il fallait
+       inserer ou mettre a jour. `user_id` porte une contrainte
+       d unicite : un upsert fait les deux en une requete, et les
+       colonnes absentes gardent leur valeur — ou prennent leur defaut
+       a la premiere ecriture. */
     mutationFn: async (updates: Partial<NotificationSettings>) => {
       if (!user?.id) throw new Error("Not authenticated");
-      
-      // Check if settings exist
-      const { data: existing } = await supabase
+      const { error } = await supabase
         .from("notification_settings")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase
-          .from("notification_settings")
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq("user_id", user.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("notification_settings")
-          .insert({ user_id: user.id, ...updates });
-        if (error) throw error;
-      }
+        .upsert(
+          { user_id: user.id, ...updates, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" },
+        );
+      if (error) throw error;
     },
+
+    /* LE CACHE BOUGE AVANT LE RESEAU.
+       Sans cela l interrupteur restait sur son ancienne position tant
+       que l ecriture n avait pas repondu — mesure sur « Marketing » :
+       477 ms avant qu il bascule, et sept interrupteurs geles pendant
+       ce temps. On cliquait, rien ne bougeait, on recliquait. */
+    onMutate: async (updates: Partial<NotificationSettings>) => {
+      await queryClient.cancelQueries({ queryKey: CLE });
+      const precedent = queryClient.getQueryData<NotificationSettings | null>(CLE);
+      queryClient.setQueryData<NotificationSettings | null>(CLE, (ancien) =>
+        ancien
+          ? { ...ancien, ...updates }
+          /* Aucune ligne encore : on en compose une avec les valeurs
+             par defaut de la table, pour que le premier clic se voie
+             lui aussi. */
+          : ({ ...DEFAUTS_NOTIFICATIONS, user_id: user!.id, ...updates } as NotificationSettings),
+      );
+      return { precedent };
+    },
+
+    onError: (_e, _updates, contexte) => {
+      const c = contexte as { precedent?: NotificationSettings | null } | undefined;
+      if (c && "precedent" in c) queryClient.setQueryData(CLE, c.precedent);
+    },
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notification-settings", user?.id] });
+      queryClient.invalidateQueries({ queryKey: CLE });
     },
   });
 
