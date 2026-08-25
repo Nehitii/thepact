@@ -96,7 +96,14 @@ export function CarteProfilPublic({ carte, compacte = false }: Props) {
 
         <div className="cp-pied">
           <span className="cp-rang" style={{ color: accent }}>
-            <Shield aria-hidden="true" />
+            {/* L image du rang si l utilisateur en a pose une ; le
+                bouclier n etait qu un repli, et il servait pour tout le
+                monde faute que `logo_url` soit jamais rempli. */}
+            {carte.rang?.logo ? (
+              <img className="cp-rang-logo" src={carte.rang.logo} alt="" loading="lazy" decoding="async" />
+            ) : (
+              <Shield aria-hidden="true" />
+            )}
             {carte.rang?.nom || t("guild.unranked", "Sans rang")}
           </span>
           <span className="cp-faits">

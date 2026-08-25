@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Bouton } from "@/components/profile/console-ui";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RankBadge } from "@/components/ranks/RankCard";
+import { RankCore } from "@/components/home/RankCore";
 import { useRankXP } from "@/hooks/useRankXP";
 import { usePact } from "@/hooks/usePact";
 import { supabase } from "@/integrations/supabase/client";
@@ -180,6 +180,14 @@ export function ProfileBoundedProfile({
   const { t } = useTranslation();
   const { data: pact } = usePact(userId);
   const { data: rankData } = useRankXP(userId, pact?.id);
+
+  /* Le niveau est le rang du palier dans la liste, pas une colonne :
+     le hub le calcule de la meme facon. */
+  const niveauDuRang = useMemo(() => {
+    if (!rankData?.currentRank || !rankData.ranks?.length) return 1;
+    const i = rankData.ranks.findIndex((r) => r.id === rankData.currentRank!.id);
+    return i >= 0 ? i + 1 : 1;
+  }, [rankData]);
 
   // State
   const [saving, setSaving] = useState(false);
@@ -525,28 +533,31 @@ export function ProfileBoundedProfile({
                   </div>
                 </div>
 
-                {/* Footer Stats / Rank */}
-                <div className="w-full mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="ds-t-label text-white/30 uppercase tracking-widest font-mono mb-1">
-                      Rang actuel
-                    </span>
-                    <div className="flex items-center gap-2 text-white/90 font-rajdhani font-semibold text-sm">
-                      <Shield className="w-4 h-4 text-primary" />
-                      {rankData?.currentRank?.name || "Sans rang"}
-                    </div>
-                  </div>
+                {/* LE MEME NOYAU QUE LE TABLEAU DE BORD.
+                    Le pied portait deux fois le meme renseignement : un
+                    intitule « Rang actuel » avec un bouclier, et a cote
+                    un badge rond montrant… un bouclier. Ce bouclier
+                    n etait qu un repli — `ranks.logo_url` est vide sur
+                    les dix rangs — et le badge recevait `currentXP` et
+                    `nextRankMinXP` sans jamais les lire.
 
-                  {rankData?.currentRank && (
-                    <RankBadge
-                      rank={rankData.currentRank}
+                    Le noyau les remplace : l image du rang au centre,
+                    son nom dessous, et l XP en arc plutot qu en chiffre
+                    muet. */}
+                {rankData?.currentRank && (
+                  <div className="w-full mt-7 pt-5 border-t border-white/10 flex justify-center">
+                    <RankCore
+                      taille="carte"
+                      level={niveauDuRang}
+                      rankName={rankData.currentRank.name}
+                      logoUrl={rankData.currentRank.logo_url}
+                      nextRankName={rankData.nextRank?.name ?? null}
+                      progress={rankData.progressInCurrentRank}
                       currentXP={rankData.currentXP}
-                      nextRankMinXP={rankData.nextRank?.min_points}
-                      size="sm"
-                      className="scale-110 origin-right"
+                      targetXP={rankData.nextRank?.min_points ?? 0}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </HolographicCard>

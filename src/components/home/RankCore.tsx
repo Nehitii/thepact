@@ -1,6 +1,16 @@
 interface RankCoreProps {
   level: number;
   rankName: string;
+  /* L IMAGE DU RANG, CHOISIE PAR L UTILISATEUR.
+     `ranks.logo_url` est editable depuis les reglages du pacte et
+     n avait jusqu ici aucun endroit ou s afficher : la carte publique
+     retombait sur un bouclier generique, et le noyau du hub montrait le
+     numero de niveau. Quand l image existe, elle prend le centre ; sinon
+     le niveau reste. */
+  logoUrl?: string | null;
+  /* « hub » : 7rem, le noyau du tableau de bord.
+     « carte » : 5,5rem, le pied de la carte publique. */
+  taille?: "hub" | "carte";
   /** Rang suivant, ou null au palier maximal. */
   nextRankName?: string | null;
   /** Avancement dans le rang courant, en pourcentage. */
@@ -25,6 +35,8 @@ interface RankCoreProps {
 export function RankCore({
   level,
   rankName,
+  logoUrl,
+  taille = "hub",
   nextRankName,
   progress,
   currentXP,
@@ -34,18 +46,26 @@ export function RankCore({
 
   return (
     <div className="flex flex-col items-center gap-2 select-none">
-      <div className="rank-core" style={{ ["--rank-pct" as string]: `${pct}%` }}>
+      <div className="rank-core" data-taille={taille} style={{ ["--rank-pct" as string]: `${pct}%` }}>
         <div className="rank-core-glow" aria-hidden="true" />
         <div className="rank-core-ticks" aria-hidden="true" />
         <div className="rank-core-arc" aria-hidden="true" />
         <div className="rank-core-center">
-          <b>{level}</b>
-          <i
-            className="ds-t-label font-mono not-italic"
-            style={{ letterSpacing: 3, color: "var(--nexus-text-dimmer)" }}
-          >
-            NIVEAU
-          </i>
+          {logoUrl ? (
+            /* Le nom du rang est deja annonce juste dessous : l image
+               n a rien a repeter. */
+            <img className="rank-core-logo" src={logoUrl} alt="" loading="lazy" decoding="async" />
+          ) : (
+            <>
+              <b>{level}</b>
+              <i
+                className="ds-t-label font-mono not-italic"
+                style={{ letterSpacing: 3, color: "var(--nexus-text-dimmer)" }}
+              >
+                NIVEAU
+              </i>
+            </>
+          )}
         </div>
       </div>
 
