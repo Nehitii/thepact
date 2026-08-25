@@ -46,6 +46,8 @@ export function useProfileSettings() {
     staleTime: 30 * 1000,
   });
 
+  const CLE = ["profile-settings", user?.id] as const;
+
   const updateProfile = useMutation({
     mutationFn: async (updates: Partial<ProfileSettings>) => {
       if (!user?.id) throw new Error("Not authenticated");
@@ -57,6 +59,37 @@ export function useProfileSettings() {
 
       if (error) throw error;
     },
+
+    /* LE CACHE PREND LA VALEUR AVANT LE RESEAU.
+       Sans cela, `profile` gardait l ancienne valeur pendant tout
+       l aller-retour, et deux ecrans s en trouvaient faux :
+
+       — LE THEME CLIGNOTAIT. `setTheme(v)` applique tout de suite,
+         puis `ProfilePreferencesSync` relit `theme_preference`, y
+         trouve encore l ancien, et remet le theme precedent. Mesure
+         sur un clic « Clair » : light a 5 566 ms, dark a 5 621, light
+         a 5 694 — 128 ms de theme faux, bien visibles.
+
+       — LES GLISSIERES REVENAIENT EN ARRIERE. `onValueCommit` remet
+         l etat local a `null` pour rendre la main a la source ; la
+         source etant en retard, la poignee sautait a l ancienne
+         position avant de repartir a la bonne. */
+    onMutate: async (updates) => {
+      await queryClient.cancelQueries({ queryKey: CLE });
+      const precedent = queryClient.getQueryData(CLE);
+      queryClient.setQueryData(CLE, (ancien: ProfileSettings | null | undefined) =>
+        ancien ? { ...ancien, ...updates } : ancien,
+      );
+      return { precedent };
+    },
+
+    onError: (_e, _updates, contexte) => {
+      /* L ecriture a echoue : on rend au cache ce qu il portait, sinon
+         l ecran affiche un reglage qui n existe pas en base. */
+      const c = contexte as { precedent?: unknown } | undefined;
+      if (c && "precedent" in c) queryClient.setQueryData(CLE, c.precedent);
+    },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile-settings", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["sidebar-profile", user?.id] });

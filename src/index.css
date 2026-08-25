@@ -1520,3 +1520,33 @@ html body[data-scroll-locked] {
   .text-muted-foreground\/80, .text-muted-foreground\/70,
   .text-muted-foreground\/60, .text-muted-foreground\/50 { color: hsl(var(--encre-discrete)); }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   « ANIMATIONS RÉDUITES », BRANCHÉE
+   ───────────────────────────────────────────────────────────────
+   `ProfilePreferencesSync` posait bien `data-reduce-motion` sur la
+   racine, et `profiles.reduce_motion` s'écrivait bien en base — mais
+   rien, nulle part, ne lisait ni l'un ni l'autre. L'interrupteur
+   basculait, la valeur partait au serveur, et l'écran continuait
+   exactement pareil.
+
+   Le réglage fait désormais ce que le système fait quand on le lui
+   demande : couper le mouvement, sans rien retirer d'autre. Les
+   durées ne tombent pas à zéro mais à un cent-millième de seconde —
+   une durée nulle empêche `transitionend` et `animationend` de se
+   déclencher, et les composants qui les écoutent resteraient en
+   suspens.
+   ═══════════════════════════════════════════════════════════════ */
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  transition-delay: 0ms !important;
+}
+
+[data-reduce-motion="true"] {
+  scroll-behavior: auto !important;
+}

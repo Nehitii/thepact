@@ -82,13 +82,17 @@ export default function DisplaySound() {
     });
   }, [user?.id, save, setSoundSettings, t]);
 
+  /* Le volume entendu est celui de la glissiere, y compris pendant
+     qu on la deplace : `localVolume` prime tant qu il existe. Sans
+     cela on ecoutait le reglage precedent — et l on jugeait le
+     nouveau sur l ancien. */
   const ecouter = useCallback((cle: string) => {
     try {
       const audio = new Audio(SONS[cle] || SONS.ui);
-      audio.volume = effective.volume ?? 0.35;
+      audio.volume = localVolume ?? effective.volume ?? 0.35;
       void audio.play();
     } catch { /* un apercu qui ne part pas ne doit rien casser */ }
-  }, [effective.volume]);
+  }, [localVolume, effective.volume]);
 
   const volume = localVolume ?? (effective.volume ?? 0);
   const intensite = localParticules ?? ((profile?.particles_intensity ?? 1) as number);
@@ -177,7 +181,17 @@ export default function DisplaySound() {
               max={24}
               step={1}
               disabled={enCours}
-              onValueChange={(v) => setLocalPolice(v[0] ?? 16)}
+              /* APERCU VIVANT.
+                  `AccentColorSync` n applique la taille qu une fois la
+                  valeur enregistree : on deplaçait donc une glissiere
+                  en lisant un nombre, sans voir le texte bouger. On
+                  pose la taille pendant le geste ; la synchro reprend
+                  la main a l enregistrement. */
+              onValueChange={(v) => {
+                const n = v[0] ?? 16;
+                setLocalPolice(n);
+                document.documentElement.style.fontSize = `${n}px`;
+              }}
               onValueCommit={(v) => {
                 const n = v[0] ?? 16;
                 setLocalPolice(null);
@@ -221,11 +235,14 @@ export default function DisplaySound() {
           large
         >
           <Jauge valeur={`${Math.round(volume * 100)} %`}>
+            {/* COUPER N EST PAS METTRE A ZERO.
+                 La glissiere etait verrouillee des que le son general
+                 etait coupe : impossible de preparer son niveau avant
+                 de rallumer. Aucun systeme d exploitation ne fait ca. */}
             <Slider
               value={[Math.round(volume * 100)]}
               max={100}
               step={1}
-              disabled={!effective.masterEnabled}
               onValueChange={(v) => setLocalVolume((v[0] ?? 0) / 100)}
               onValueCommit={(v) => {
                 const n = (v[0] ?? 0) / 100;
@@ -244,6 +261,9 @@ export default function DisplaySound() {
         ] as const).map(([cle, nomCle, noteCle]) => (
           <Reglage key={cle} nom={t(nomCle)} note={t(noteCle)} icone={<Volume2 />}>
             <div className="flex items-center gap-3">
+              {/* L ecoute, elle, reste liee au son general : appuyer
+                   sur « ecouter » et n entendre rien serait pire qu un
+                   bouton eteint. */}
               <button
                 type="button"
                 onClick={() => ecouter("ui")}
@@ -256,7 +276,6 @@ export default function DisplaySound() {
               </button>
               <Switch
                 checked={!!effective[cle]}
-                disabled={!effective.masterEnabled}
                 onCheckedChange={(v) => {
                   persistSound({ ...effective, [cle]: v });
                   noter("audio", `${t(nomCle).toLowerCase()} → ${v ? "actif" : "coupé"}`);

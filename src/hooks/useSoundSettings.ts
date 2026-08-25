@@ -38,6 +38,21 @@ export function useSoundSettings() {
   });
 
   const mutation = useMutation({
+    /* Meme raison que pour le profil : la glissiere de volume rendait
+       la main a `settings`, encore en retard d un aller-retour, et
+       repartait donc en arriere. Le bouton d ecoute, lui, jouait au
+       volume precedent — la seule chose qu on utilise pour juger du
+       reglage qu on vient de poser. */
+    onMutate: async (next: SoundSettings) => {
+      await qc.cancelQueries({ queryKey: QUERY_KEY(user?.id) });
+      const precedent = qc.getQueryData(QUERY_KEY(user?.id));
+      qc.setQueryData(QUERY_KEY(user?.id), next);
+      return { precedent };
+    },
+    onError: (_e, _next, contexte) => {
+      const c = contexte as { precedent?: unknown } | undefined;
+      if (c && "precedent" in c) qc.setQueryData(QUERY_KEY(user?.id), c.precedent);
+    },
     mutationFn: async (next: SoundSettings) => {
       if (!user?.id) throw new Error("Not authenticated");
       const { error } = await supabase
