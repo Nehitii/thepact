@@ -1237,3 +1237,47 @@
    corriger là — sauf la lueur de 16 px, qui sur du papier ne fait que
    le rendre flou. */
 .light .cal-entete-titre em { filter: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   13. TODO — LA FEUILLE DE TÂCHES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Le même jeton dilué que sur le calendrier, le même effet. */
+.light .tsk {
+  --tsk-faible: hsl(200 12% 30%);
+  --tsk-doux:   hsl(202 12% 26%);
+  --tsk-trait:      hsl(var(--ds-border-default) / 0.26);
+  --tsk-trait-fort: hsl(var(--ds-border-default) / 0.46);
+
+  /* Les trois priorités sont des néons d'écran. Passées par la même
+     règle que partout ailleurs : teinte au degré près, clarté perçue
+     descendue jusqu'à l'encre. */
+  --tsk-haute: #7B4C00;
+  --tsk-moy:   #004FBD;
+  --tsk-basse: #006947;
+}
+
+/* ── L'INVITE ──
+   « Des zones de texte et la page quick task sont d'un gris immonde. »
+   L'invite est un TERMINAL : une bande presque noire, un sigle `tsk >`,
+   un curseur. Sur du noir c'est juste ; sur du papier, cette bande
+   devient une barre grise posée au milieu de la feuille, et c'est
+   exactement ce que décrit la remarque.
+
+   L'idiome est conservé — mono, sigle, curseur —, le support change :
+   ce n'est plus une console, c'est un CHAMP DE FORMULAIRE imprimé.
+   Un creux de papier, une règle franche dessous, et le sigle en ocre
+   là où le terminal mettait du vert. */
+.light .tsk-invite,
+.light .tsk-invite.est-ligne {
+  background: hsl(42 16% 94%);
+  border-bottom: 1px solid hsl(200 16% 24% / 0.45);
+}
+.light .tsk-invite:focus-within,
+.light .tsk-invite.est-ligne:focus-within {
+  background: hsl(44 24% 97%);
+  border-bottom-color: hsl(191 100% 24%);
+}
+.light .tsk-invite .tsk-sigle { color: #7A5C00; }
+.light .tsk-invite input { color: hsl(200 24% 12%); }
+.light .tsk-invite input::placeholder { color: hsl(200 9% 44%); }
