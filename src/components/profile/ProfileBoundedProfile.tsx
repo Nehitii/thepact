@@ -478,9 +478,14 @@ export function ProfileBoundedProfile({
                       className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
                     />
 
-                    {/* Edit overlay - sized to match the avatar circle (h-32 w-32 = 2xl) */}
+                    {/* LA PASTILLE D ENVOI PASSE SOUS LE CADRE.
+                        `AvatarFrame` empile la photo en z-10 et le cadre en
+                        z-20 ; le voile etait en z-30 et recouvrait donc le
+                        cadre au survol — on masquait justement la piece
+                        cosmetique qu on est venu regarder. En z-15 il noircit
+                        la photo, et le cadre reste net par-dessus. */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-32 w-32 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 z-30 backdrop-blur-[2px]">
+                      <div className="h-32 w-32 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 z-[15] backdrop-blur-[2px]">
                         <Upload className="w-8 h-8 text-white drop-shadow-lg" />
                       </div>
                     </div>
