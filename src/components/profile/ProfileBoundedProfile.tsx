@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
+import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankBadge } from "@/components/ranks/RankCard";
@@ -504,24 +505,23 @@ export function ProfileBoundedProfile({
                     <CyberText text={displayName || "SANS NOM"} />
                   </h3>
 
-                  {/* Title Badge */}
-                  <div className="flex justify-center">
-                    <div
-                      className="inline-flex items-center px-4 py-1.5 rounded-full border backdrop-blur-md shadow-lg"
-                      style={{
-                        borderColor: activeTitle?.text_color ? `${activeTitle.text_color}40` : "#ffffff20",
-                        background: `linear-gradient(90deg, ${activeTitle?.text_color || "#5bb4ff"}15, ${activeTitle?.text_color || "#5bb4ff"}05)`,
-                        boxShadow: `0 0 15px ${activeTitle?.glow_color || "transparent"}`,
-                      }}
-                    >
-                      <Crown className="w-3.5 h-3.5 mr-2" style={{ color: activeTitle?.text_color || "#5bb4ff" }} />
-                      <span
-                        className="text-xs font-rajdhani uppercase tracking-[0.2em] font-bold"
-                        style={{ color: activeTitle?.text_color || "#5bb4ff" }}
-                      >
-                        {activeTitle?.title_text || "AUCUN TITRE"}
+                  {/* LE TITRE, RENDU PAR LE COMPOSANT PARTAGE.
+                      La gelule vivait ici en double de celle de la
+                      petite carte ; les deux avaient commence a
+                      diverger. */}
+                  <div className="flex justify-center w-full min-w-0 px-2">
+                    {activeTitle?.title_text ? (
+                      <TitreCosmetique
+                        texte={activeTitle.title_text}
+                        couleur={activeTitle.text_color}
+                        lueur={activeTitle.glow_color}
+                        rarete={activeTitle.rarity}
+                      />
+                    ) : (
+                      <span className="font-rajdhani uppercase tracking-[0.2em] text-xs font-semibold text-white/35">
+                        Aucun titre
                       </span>
-                    </div>
+                    )}
                   </div>
                 </div>
 

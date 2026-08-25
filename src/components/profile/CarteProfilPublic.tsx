@@ -2,6 +2,7 @@ import { Crown, Shield, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
 import { nombre, type CarteProfil } from "@/hooks/useCarteProfil";
+import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 
 /* LA CARTE PORTE SA FEUILLE DE STYLE.
  *
@@ -82,17 +83,13 @@ export function CarteProfilPublic({ carte, compacte = false }: Props) {
         <h3 className="cp-nom">{carte.nom || t("friends.unknownAgent", "Agent Inconnu")}</h3>
 
         {carte.titre?.texte && (
-          <span
-            className="cp-titre"
-            style={{
-              color: carte.titre.couleur || accent,
-              borderColor: `${carte.titre.couleur || accent}40`,
-              background: `linear-gradient(90deg, ${carte.titre.couleur || accent}18, transparent)`,
-            }}
-          >
-            <Crown aria-hidden="true" />
-            {carte.titre.texte}
-          </span>
+          <TitreCosmetique
+            texte={carte.titre.texte}
+            couleur={carte.titre.couleur || accent}
+            lueur={carte.titre.lueur}
+            rarete={carte.titre.rarete}
+            taille="compacte"
+          />
         )}
 
         {carte.phrase && <p className="cp-phrase">« {carte.phrase} »</p>}

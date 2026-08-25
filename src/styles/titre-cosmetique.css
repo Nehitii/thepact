@@ -1,0 +1,226 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE TITRE COSMETIQUE
+   ───────────────────────────────────────────────────────────────
+   Quinze titres recevaient la meme gelule arrondie, le meme filet a
+   25 % et la meme couronne — le meme glyphe pour tous, donc un signe
+   qui ne signalait rien. « Aube Privee », legendaire, ne se
+   distinguait pas de « Veilleur », commun.
+
+   Ici le titre redevient ce qu il est : du texte. Il n a plus d enclos
+   ni d icone, et c est la RARETE qui decide de son encre — un cran de
+   plus a chaque palier, du plat au degrade anime.
+
+   Deux variables suffisent, toutes deux issues de la base :
+     --c  la couleur du titre   (cosmetic_titles.text_color)
+     --l  sa lueur              (cosmetic_titles.glow_color)
+
+   ── DEUX PIEGES, EVITES ──
+   Le degrade vit dans `--fond`, PAS dans le `background-image` du
+   parent : un parent qui porte l image la peint sur toute sa boite,
+   et l on obtient un rectangle colore derriere le mot.
+
+   Les trois calques sont empiles par une grille a une seule cellule,
+   PAS par `position: absolute`. Un calque absolu prend la boite du
+   parent — laquelle inclut le blanc que le pas de piste ajoute apres
+   la derniere lettre — et se retrouve decale de quelques pixels sur
+   le texte qu il est cense doubler.
+   ═══════════════════════════════════════════════════════════════ */
+
+.tc-rangee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+}
+
+.tc {
+  display: inline-grid;
+  /* JAMAIS COMPRIME.
+     Avec `min-width: 0`, le mot cedait sa place aux rails : sur une
+     carte de 344 px, « Celui qui Recommence » se retrouvait dans une
+     boite de 151 px pour 225 px de texte, et debordait par-dessus les
+     losanges. Ce sont les rails qui doivent maigrir, pas le titre. */
+  flex: 0 0 auto;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.25;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tc[data-taille="compacte"] {
+  font-size: 11.5px;
+  letter-spacing: 0.2em;
+}
+
+/* Une seule cellule, trois calques : la floraison, l aberration, et
+   le mot. La cellule prend la taille du plus grand — ils sont
+   identiques, donc l alignement est exact. */
+.tc-bloom,
+.tc-chroma,
+.tc-texte {
+  grid-area: 1 / 1;
+  background-image: var(--fond);
+  background-size: var(--fond-taille, auto);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tc-bloom,
+.tc-chroma {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── COMMUN ──────────────────────────────────────────────────
+   Aucun degrade, aucune lueur. C est l ecart avec ce cran qui rend
+   les autres desirables : on ne decore pas ce qui est donne a tout
+   le monde. */
+.tc[data-r="common"] {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+.tc[data-r="common"] .tc-texte {
+  background-image: none;
+  color: rgb(255 255 255 / 0.46);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.85);
+}
+.tc[data-r="common"] .tc-bloom,
+.tc[data-r="common"] .tc-chroma { display: none; }
+
+.tc[data-taille="compacte"][data-r="common"] { font-size: 10.5px; }
+
+/* ── RARE ────────────────────────────────────────────────────
+   La couleur entre en scene, eclairee par le haut. Rien ne bouge
+   encore. */
+.tc[data-r="rare"] {
+  --fond: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    color-mix(in oklab, var(--c) 82%, #ffffff) 36%,
+    var(--c) 68%,
+    color-mix(in oklab, var(--c) 72%, #000000) 100%
+  );
+}
+.tc[data-r="rare"] .tc-texte { filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.9)); }
+.tc[data-r="rare"] .tc-bloom { filter: blur(7px); opacity: 0.4; }
+.tc[data-r="rare"] .tc-chroma { display: none; }
+
+/* ── EPIQUE ──────────────────────────────────────────────────
+   Deux bandes speculaires derivent lentement d un bout a l autre.
+   Les butees a 0 % et 100 % portent la meme couleur : la boucle ne
+   se voit pas. */
+.tc[data-r="epic"] {
+  --fond: linear-gradient(
+    96deg,
+    var(--c) 0%,
+    color-mix(in oklab, var(--c) 58%, #ffffff) 12%,
+    #ffffff 19%,
+    color-mix(in oklab, var(--c) 66%, #ffffff) 27%,
+    var(--c) 44%,
+    color-mix(in oklab, var(--c) 60%, #ffffff) 64%,
+    #ffffff 72%,
+    color-mix(in oklab, var(--c) 70%, #ffffff) 80%,
+    var(--c) 100%
+  );
+  --fond-taille: 200% auto;
+}
+.tc[data-r="epic"] .tc-texte { filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.9)); }
+.tc[data-r="epic"] .tc-bloom { filter: blur(10px); opacity: 0.55; }
+.tc[data-r="epic"] .tc-chroma { display: none; }
+
+/* ── LEGENDAIRE ──────────────────────────────────────────────
+   Douze butees, un blanc chaud au coeur du balayage, une floraison
+   diffuse derriere, et une aberration chromatique d un pixel et
+   demi. C est le seul cran qui bouge vite. */
+.tc[data-r="legendary"] {
+  --fond: linear-gradient(
+    100deg,
+    var(--c) 0%,
+    color-mix(in oklab, var(--c) 74%, #000000) 6%,
+    var(--c) 14%,
+    color-mix(in oklab, var(--c) 42%, #ffffff) 22%,
+    #ffffff 27%,
+    #fff7de 30%,
+    color-mix(in oklab, var(--c) 52%, #ffffff) 37%,
+    var(--c) 50%,
+    color-mix(in oklab, var(--c) 40%, #ffffff) 68%,
+    #ffffff 75%,
+    color-mix(in oklab, var(--c) 60%, #ffffff) 82%,
+    var(--c) 100%
+  );
+  --fond-taille: 200% auto;
+}
+.tc[data-r="legendary"] .tc-texte {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.9)) drop-shadow(0 0 10px var(--l));
+}
+.tc[data-r="legendary"] .tc-bloom { filter: blur(14px); opacity: 0.7; }
+/* Le calque decale : la meme encre, poussee de cinquante degres de
+   teinte. Toujours accorde a la couleur de base, quelle qu elle soit. */
+.tc[data-r="legendary"] .tc-chroma {
+  filter: hue-rotate(52deg) blur(0.6px);
+  opacity: 0.34;
+  transform: translateX(1.5px);
+}
+
+/* Les trois calques derivent ensemble : ils naissent dans la meme
+   image, donc leurs animations demarrent en phase. */
+.tc[data-r="epic"] .tc-bloom,
+.tc[data-r="epic"] .tc-chroma,
+.tc[data-r="epic"] .tc-texte { animation: tc-derive 7s linear infinite; }
+
+.tc[data-r="legendary"] .tc-bloom,
+.tc[data-r="legendary"] .tc-chroma,
+.tc[data-r="legendary"] .tc-texte { animation: tc-derive 5.5s linear infinite; }
+
+@keyframes tc-derive {
+  to { background-position: 200% center; }
+}
+
+/* ── LES RAILS ───────────────────────────────────────────────
+   Reserves au legendaire : deux filets degradés et deux losanges,
+   qui encadrent sans enfermer. */
+.tc-rail {
+  flex: 1 1 auto;
+  max-width: 40px;
+  min-width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c));
+}
+.tc-rail:last-child { background: linear-gradient(90deg, var(--c), transparent); }
+
+.tc-losange {
+  flex: none;
+  width: 4px;
+  height: 4px;
+  background: var(--c);
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px var(--l);
+  animation: tc-battement 3.2s ease-in-out infinite;
+}
+@keyframes tc-battement {
+  50% { opacity: 0.45; transform: rotate(45deg) scale(0.72); }
+}
+
+.tc-rangee[data-taille="compacte"] { gap: 8px; }
+.tc-rangee[data-taille="compacte"] .tc-rail { max-width: 26px; }
+
+/* ── MOINS DE MOUVEMENT ──────────────────────────────────────
+   Les degrades restent, figes a une position ou le blanc traverse
+   deja le mot : on ne perd pas la beaute, seulement l animation. */
+@media (prefers-reduced-motion: reduce) {
+  .tc-bloom,
+  .tc-chroma,
+  .tc-texte {
+    animation: none !important;
+    background-position: 62% center;
+  }
+  .tc-losange { animation: none; }
+}

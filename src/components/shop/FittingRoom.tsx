@@ -89,6 +89,9 @@ export function FittingRoom({
                 texte: previewItem.data.title_text ?? null,
                 couleur: previewItem.data.text_color ?? null,
                 lueur: previewItem.data.glow_color ?? null,
+                /* Essayer un legendaire doit montrer le traitement d un
+                   legendaire — c est tout l interet de la cabine. */
+                rarete,
               }
             : maCarte.titre,
       }

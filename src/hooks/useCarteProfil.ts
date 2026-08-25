@@ -32,6 +32,9 @@ export interface Titre {
   texte: string | null;
   couleur: string | null;
   lueur: string | null;
+  /* La rarete decide du traitement : la carte ne pouvait pas
+     distinguer un legendaire d un commun faute de la connaitre. */
+  rarete: string | null;
 }
 
 export interface Rang {
