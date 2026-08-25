@@ -133,12 +133,12 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
    de suite. */
 const CyberText = ({ text, className }: { text: string; className?: string }) => {
   return (
-    <div className={`relative group inline-block ${className}`}>
+    <div className={`relative group/nom inline-block ${className}`}>
       <span className="relative z-10">{text}</span>
-      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover:opacity-70 group-hover:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
+      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover/nom:opacity-70 group-hover/nom:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
         {text}
       </span>
-      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover:opacity-70 group-hover:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
+      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover/nom:opacity-70 group-hover/nom:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
         {text}
       </span>
     </div>
@@ -462,7 +462,13 @@ export function ProfileBoundedProfile({
                     type="button"
                     onClick={() => setShowAvatarDialog(true)}
                     aria-label="Changer d'avatar"
-                    className="relative group cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    /* GROUPE NOMME, PAS GROUPE ANONYME.
+                       `group-hover:` de Tailwind vise « un ancetre
+                       porteur de .group », pas le plus proche. La carte
+                       holographique en porte un pour son reflet : le
+                       voile d envoi s allumait donc des qu on survolait
+                       la carte, n importe ou. */
+                    className="relative group/avatar cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     <AvatarFrame
                       avatarUrl={avatarUrl}
@@ -475,7 +481,7 @@ export function ProfileBoundedProfile({
                       frameOffsetX={activeFrame?.frame_offset_x ?? undefined}
                       frameOffsetY={activeFrame?.frame_offset_y ?? undefined}
                       showBorder={activeFrame?.show_border !== false}
-                      className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
+                      className="transition-transform duration-300 group-hover/avatar:scale-105 shadow-2xl"
                     />
 
                     {/* LA PASTILLE D ENVOI PASSE SOUS LE CADRE.
@@ -485,7 +491,7 @@ export function ProfileBoundedProfile({
                         cosmetique qu on est venu regarder. En z-15 il noircit
                         la photo, et le cadre reste net par-dessus. */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-32 w-32 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 z-[15] backdrop-blur-[2px]">
+                      <div className="h-32 w-32 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity bg-black/60 z-[15] backdrop-blur-[2px]">
                         <Upload className="w-8 h-8 text-white drop-shadow-lg" />
                       </div>
                     </div>
