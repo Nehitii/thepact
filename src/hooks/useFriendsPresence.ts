@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
 
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 
 /**
- * Living Network — subscribes to realtime updates of `profiles.last_seen_at`
- * for the given friend ids and returns:
- *   - lastSeenMap: friendId -> ISO timestamp | null
- *   - onlineCount: number of friends seen within ONLINE_WINDOW_MS
+ * La presence des allies. Rend :
+ *   - lastSeenMap : identifiant -> horodatage ISO, ou null
+ *   - onlineCount : combien ont ete vus dans ONLINE_WINDOW_MS
  *
- * Falls back to a 60s poll if realtime is unavailable.
+ * La source est `profils_publics`, qui n expose `last_seen_at` que si
+ * son porteur accepte de montrer son activite. Un sondage d une minute,
+ * pas d abonnement au direct : les politiques de `profiles` ne
+ * laisseraient de toute facon passer aucun evenement d autrui.
  */
 export function useFriendsPresence(friendIds: string[]) {
   const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
@@ -25,46 +27,40 @@ export function useFriendsPresence(friendIds: string[]) {
 
     let cancelled = false;
 
+    /* DEUX DEFAUTS D UN COUP.
+       Cette lecture interrogeait `profiles` pour autrui, ce que la
+       politique `auth.uid() = id` interdit : la pastille de presence ne
+       s allumait jamais pour personne. Et « Afficher le statut
+       d activite » ne s interposait nulle part — couper le reglage
+       n empechait pas de diffuser sa presence.
+
+       La projection publique rend `last_seen_at`, et ne le rend que si
+       son porteur l accepte. */
     const fetchAll = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, last_seen_at")
-        .in("id", friendIds);
+      const profils = await chargerProfilsPublics(friendIds).catch(() => new Map());
       if (cancelled) return;
       const map: Record<string, string | null> = {};
-      data?.forEach((p) => {
-        map[p.id] = p.last_seen_at ?? null;
-      });
+      profils.forEach((p, id) => { map[id] = p.last_seen_at; });
       setLastSeenMap(map);
     };
 
     fetchAll();
 
-    // Realtime subscription on profiles updates for these ids
-    const channel = supabase
-      .channel(`friends-presence-${idsKey.slice(0, 32)}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=in.(${friendIds.join(",")})`,
-        },
-        (payload) => {
-          const { id, last_seen_at } = payload.new ?? {};
-          if (!id) return;
-          setLastSeenMap((prev) => ({ ...prev, [id]: last_seen_at ?? null }));
-        }
-      )
-      .subscribe();
+    /* L ABONNEMENT AU DIRECT NE POUVAIT RIEN RECEVOIR.
+       Realtime applique les memes politiques que la lecture : avec
+       `auth.uid() = id` sur `profiles`, un abonnement aux lignes des
+       amis ne remonte jamais rien. Il tenait un canal ouvert pour
+       zero evenement — et, s il en avait recu, il aurait contourne le
+       reglage « Afficher le statut d activite », que seule la
+       projection publique applique.
 
-    // Safety poll every 60s to refresh stale entries (also drives online → idle/offline transitions)
+       Le sondage d une minute, qui existait deja en filet, est
+       desormais le seul chemin. La presence a une fenetre de cinq
+       minutes : une minute de retard n y change rien. */
     const interval = window.setInterval(fetchAll, 60_000);
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
       window.clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

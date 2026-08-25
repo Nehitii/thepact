@@ -26,6 +26,9 @@ export interface ProfilPublic {
   avatar_url: string | null;
   community_profile_discoverable: boolean;
   share_goals_progress: boolean;
+  /* Nul quand le profil n est pas visible, ou que son porteur a coupe
+     « Afficher le statut d activite ». */
+  last_seen_at: string | null;
 }
 
 /* Les noms de la fonction sont francais ; on les remet dans ceux des
@@ -37,6 +40,7 @@ interface LigneRpc {
   avatar: string | null;
   decouvrable: boolean;
   partage_objectifs: boolean;
+  vu_a: string | null;
 }
 
 export async function chargerProfilsPublics(ids: string[]): Promise<Map<string, ProfilPublic>> {
@@ -55,6 +59,7 @@ export async function chargerProfilsPublics(ids: string[]): Promise<Map<string, 
         avatar_url: p.avatar,
         community_profile_discoverable: p.decouvrable,
         share_goals_progress: p.partage_objectifs,
+        last_seen_at: p.vu_a,
       },
     ]),
   );

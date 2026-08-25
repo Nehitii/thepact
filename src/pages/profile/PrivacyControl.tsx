@@ -80,7 +80,7 @@ export default function PrivacyControl() {
   });
 
   const visibles = [profile?.community_profile_discoverable ?? true, profile?.show_activity_status ?? true].filter(Boolean).length;
-  const partagees = [profile?.share_goals_progress ?? true, profile?.share_achievements ?? true].filter(Boolean).length;
+  const partagees = [profile?.share_goals_progress ?? true].filter(Boolean).length;
   const nbPartages = (partages?.objectifs.length ?? 0) + (partages?.pactes.length ?? 0);
 
   if (isLoading) {
@@ -139,7 +139,7 @@ export default function PrivacyControl() {
 
       <Panneau
         code="Objectifs"
-        etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: partagees, total: 2 })}
+        etat={t("settings.console.activeOf", "{{n}} sur {{total}}", { n: partagees, total: 1 })}
         ton={tonExposition(partagees)}
         journal={journaux.objectifs ?? attente}
       >
@@ -155,49 +155,27 @@ export default function PrivacyControl() {
           />
         </Reglage>
 
-        <Reglage
-          nom={t("settings.privacy.shareAchievements")}
-          note={t("settings.privacy.shareAchievementsDesc")}
-          icone={<Award />}
-        >
-          <Switch
-            checked={profile?.share_achievements ?? true}
-            disabled={enCours}
-            onCheckedChange={(v) => basculer("share_achievements", v, "objectifs", t("settings.privacy.shareAchievements"))}
-          />
-        </Reglage>
       </Panneau>
 
-      <Panneau
-        code="Communauté"
-        etat={t("settings.console.synced", "synchronisé")}
-        ton="actif"
-        journal={journaux.communaute ?? attente}
-      >
-        <Reglage
-          nom={t("settings.privacy.communityUpdates")}
-          note={t("settings.privacy.communityUpdatesDesc")}
-          icone={<Bell />}
-        >
-          <Switch
-            checked={profile?.community_updates_enabled ?? true}
-            disabled={enCours}
-            onCheckedChange={(v) => basculer("community_updates_enabled", v, "communaute", t("settings.privacy.communityUpdates"))}
-          />
-        </Reglage>
+      {/* TROIS REGLAGES RETIRES, FAUTE D AVOIR QUOI QUE CE SOIT A GARDER.
+          « Partager les succes » : aucun ecran n expose les succes de
+          quelqu un d autre — ni la carte publique, ni la communaute.
+          Il n y avait rien a partager, donc rien a couper.
 
-        <Reglage
-          nom={t("settings.privacy.achievementCelebrations")}
-          note={t("settings.privacy.achievementCelebrationsDesc")}
-          icone={<Award />}
-        >
-          <Switch
-            checked={profile?.achievement_celebrations_enabled ?? true}
-            disabled={enCours}
-            onCheckedChange={(v) => basculer("achievement_celebrations_enabled", v, "communaute", t("settings.privacy.achievementCelebrations"))}
-          />
-        </Reglage>
-      </Panneau>
+          « Mises a jour communautaires » et « Celebrations de succes »
+          filtrent des notifications sociales. La table des
+          notifications n en a jamais porte une seule : elle ne contient
+          que « progress » et « system ». Deux robinets sur une conduite
+          vide.
+
+          Les trois colonnes restent en base — les retirer demanderait
+          une migration destructrice pour rien. Le jour ou ces
+          fonctionnalites existeront, l ecran pourra les reprendre ; en
+          attendant il ne promet plus ce qu il ne tient pas.
+
+          Note : la categorie « Notifications sociales », elle, est
+          desormais reellement appliquee — voir le declencheur
+          notifications_categorie_voulue. */}
 
       <BlockedUsersPanel />
 

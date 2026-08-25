@@ -5266,6 +5266,7 @@ export type Database = {
           id: string
           nom: string
           partage_objectifs: boolean
+          vu_a: string
         }[]
       }
       pseudonyme_de: { Args: { p_id: string }; Returns: string }
