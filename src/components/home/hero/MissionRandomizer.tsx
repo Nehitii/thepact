@@ -5,6 +5,8 @@ import { Goal } from "@/hooks/useGoals";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveMission, DeadlineType } from "@/hooks/useActiveMission";
 import { DeadlineSelector } from "./DeadlineSelector";
@@ -80,6 +82,14 @@ const SlotReel = ({ candidates, winner, onSpinComplete }: { candidates: Goal[]; 
 
 export function MissionRandomizer({ allGoals, className }: MissionRandomizerProps) {
   const navigate = useNavigate();
+  const sombre = useThemeSombre();
+
+  /* L en-tete est peint en dur a l orange neon #ff8c00, et chacune des
+     cinq difficultes recoit sa couleur en style INLINE : hors de portee
+     de toute feuille de style. Sur du papier, STANDBY tombait a 2,0:1 et
+     le titre a 2,1:1. La teinte est conservee, sa clarte descend. */
+  const orange = selonTheme("#ff8c00", sombre);
+  const orangeRgb = sombre ? "255,140,0" : "140,74,0";
   const { activeMission, hasMission, isLoading, focusMission, abandonMission, completeMissionStep } = useActiveMission();
   const [viewState, setViewState] = useState<ViewState>("idle");
   const [targetMission, setTargetMission] = useState<PendingMission | null>(null);
@@ -143,21 +153,21 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
       style={{ borderRadius: 4, border: "1px solid var(--nexus-mission-border)", background: "var(--nexus-mission-bg)", boxShadow: "var(--nexus-shadow)" }}
     >
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,140,0,0.4), transparent)" }} />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${orangeRgb},0.4), transparent)` }} />
       <style>{`@keyframes rotateSlow { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header */}
-      <div className="flex items-center justify-between" style={{ padding: "14px 24px", background: "rgba(255,140,0,0.05)", borderBottom: "1px solid rgba(255,140,0,0.12)" }}>
+      <div className="flex items-center justify-between" style={{ padding: "14px 24px", background: `rgba(${orangeRgb},0.05)`, borderBottom: `1px solid rgba(${orangeRgb},0.14)` }}>
         <div className="flex items-center gap-[10px]">
-          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" stroke="#ff8c00" strokeWidth="1.5" style={{ animation: "rotateSlow 6s linear infinite" }}>
+          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" stroke={orange} strokeWidth="1.5" style={{ animation: "rotateSlow 6s linear infinite" }}>
             <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" />
             <circle cx="8" cy="8" r="2.5" />
           </svg>
-          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "max(11px, 0.6875rem)", fontWeight: 700, letterSpacing: 4, color: "#ff8c00", textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)", textTransform: "uppercase" as const }}>
+          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "max(11px, 0.6875rem)", fontWeight: 700, letterSpacing: 4, color: orange, textShadow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none", textTransform: "uppercase" as const }}>
             Mission Randomizer
           </span>
         </div>
-        <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: "1px solid rgba(255,140,0,0.3)", color: "#ff8c00", background: "rgba(255,140,0,0.06)", clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+        <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: `1px solid rgba(${orangeRgb},0.34)`, color: orange, background: `rgba(${orangeRgb},0.06)`, clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
           STANDBY
         </div>
       </div>
@@ -208,7 +218,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
                     {DIFF_FILTERS.map((f) => (
                       <button key={f.key} onClick={() => setDiffFilter(diffFilter === f.key ? null : f.key)}
                         className={cn("ds-t-label font-orbitron font-bold uppercase tracking-wider py-1 rounded-sm border transition-all", diffFilter === f.key ? "border-current bg-current/10" : "border-[var(--nexus-separator)] hover:border-current/30")}
-                        style={{ color: f.color }}
+                        style={{ color: selonTheme(f.color, sombre) }}
                       >{f.label}</button>
                     ))}
                     <button onClick={() => setDiffFilter(null)} className="ds-t-label font-orbitron uppercase tracking-wider py-1 rounded-sm border border-[var(--nexus-separator)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-all">

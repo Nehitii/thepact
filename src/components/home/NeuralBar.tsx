@@ -9,6 +9,8 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/hooks/useShop";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 
 interface NeuralBarProps {
   pact: Pact;
@@ -16,6 +18,7 @@ interface NeuralBarProps {
 }
 
 export function NeuralBar({ pact, rankData }: NeuralBarProps) {
+  const sombre = useThemeSombre();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -123,7 +126,13 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             <BondIcon size={14} />
             <span
               className="font-mono ds-t-label tracking-[1px]"
-              style={{ color: "#ffcc00", textShadow: "0 0 6px rgba(255,204,0,0.4)" }}
+              /* Le solde etait ecrit a l or neon : 1,4:1 sur la barre
+                 claire, soit un chiffre invisible. Meme or, descendu
+                 jusqu a porter, et sans la lueur qui l empatait. */
+              style={{
+                color: selonTheme("#ffcc00", sombre),
+                textShadow: sombre ? "0 0 6px rgba(255,204,0,0.4)" : "none",
+              }}
             >
               {bondBalance.toLocaleString("fr-FR")}
             </span>

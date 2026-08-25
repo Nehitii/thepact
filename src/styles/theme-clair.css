@@ -175,12 +175,113 @@
 
 /* Les traînées et halos décoratifs : ils n'ont pas d'équivalent en
    clair, et les garder à faible opacité donne une brume grise. */
-.light .cyber-orb,
-.light .singularity-corona,
-.light .singularity-flare,
-.light .singularity-influx {
+.light .cyber-orb {
   opacity: 0.35;
   filter: saturate(1.4);
+}
+
+/* ── LA SINGULARITÉ, EN ENCRE ──────────────────────────────────────
+   « Le rond central n'est pas fou non plus. » Il ne l'était pas :
+   la première passe s'était contentée d'un opacity: 0.35 sur les
+   couches, ce qui donne exactement ce qu'on voyait — une tache bleue
+   délavée au milieu d'une carte blanche.
+
+   Le problème n'était pas le réglage, c'était le principe. Cet objet
+   est fait de LUMIÈRE : chacune de ses couches est un hsl à 62, 72,
+   96 % de clarté, posé sur du quasi-noir. Sur du papier, une couche
+   plus claire que le fond n'existe pas — le noyau, à 96 %, était
+   littéralement invisible, et le reste ne pouvait que griser.
+
+   L'inversion juste n'est pas d'assombrir les couches une à une :
+   c'est de changer ce qui fait la masse. Sur du noir, la matière se
+   voit parce qu'elle RAYONNE ; sur du papier, parce qu'elle est
+   DENSE. La singularité devient une goutte d'encre — le pigment
+   s'accumule vers le centre au lieu que la lumière en jaillisse.
+
+   Une chose est conservée telle quelle : la densité reste pilotée par
+   --sing-lum, donc par la progression réelle du pacte. Un pacte qui
+   démarre reste pâle, un pacte avancé est dense. L'objet garde son
+   sens, il change de matière.
+
+   Et le centre reste CLAIR : le symbole du pacte s'y tient, encré en
+   sombre. Le pigment s'accumule en couronne autour de lui — ce qui est
+   d'ailleurs plus juste, la masse d'un disque d'accrétion étant dans
+   le disque et non au centre. */
+
+/* La couronne : une diffusion, plus un rayonnement. Moins de flou —
+   une encre qui se répand garde un bord, une lumière n'en a pas. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 72% 42% / calc(0.3 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 78% 36% / calc(0.16 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+  filter: blur(9px);
+}
+
+/* Le noyau : une couronne de pigment autour d'une clairière. */
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 80% 38% / calc(0.34 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 84% 32% / calc(0.2 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+  box-shadow: none;
+}
+
+/* Les éjections et la chute : à 0,09 d'alpha sur du blanc, il n'en
+   restait rien. Même dessin, encre lisible. */
+.light .singularity-flare {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(var(--ds-accent-hue, 200) 76% 40% / calc(0.3 * var(--sing-lum, 1))) 12deg,
+    transparent 34deg,
+    transparent 96deg,
+    hsl(calc(var(--ds-accent-hue, 200) + 30) 74% 42% / calc(0.22 * var(--sing-lum, 1))) 122deg,
+    transparent 148deg,
+    transparent 214deg,
+    hsl(var(--ds-accent-hue, 200) 76% 44% / calc(0.18 * var(--sing-lum, 1))) 238deg,
+    transparent 266deg,
+    transparent 360deg);
+}
+.light .singularity-influx {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 7deg,
+    hsl(var(--ds-accent-hue, 200) 78% 40% / calc(0.2 * var(--sing-lum, 1))) 8deg,
+    transparent 9deg,
+    transparent 16deg);
+}
+
+/* L'anneau d'accrétion EST la jauge de progression : c'est la seule
+   couche qui porte une information, donc la seule qui doit être
+   franche. Opaque, et sans la lueur qui l'aurait floutée. */
+.light .singularity-ring {
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--ds-accent-hue, 200) 88% 34%) 0%,
+    hsl(var(--ds-accent-hue, 200) 88% 34%) var(--sing-progress, 0%),
+    transparent var(--sing-progress, 0%));
+  filter: none;
+}
+
+/* Le champ d'étoiles est fait de points BLANCS. L'inversion ne touche
+   pas la transparence : les points deviennent sombres, le vide reste
+   vide. Le ciel devient le grain du papier. */
+.light .singularity-field,
+.light .singularity-field::after {
+  filter: invert(1);
+  opacity: 0.45;
+}
+
+/* Ce que le cœur jette sur la page : une lumière en haut du tableau
+   de bord. Sur du papier, une teinte d'encre très diluée. */
+.light .singularity-cast {
+  background: radial-gradient(ellipse 90% 42% at 50% 0%,
+    hsl(var(--ds-accent-hue, 200) 70% 38% / calc(0.07 * var(--sing-lum, 1))) 0%,
+    transparent 70%);
 }
 
 /* ═══ 4. LE FOND VIVANT ═════════════════════════════════════════════
@@ -343,3 +444,114 @@
   color: #05070b;
   box-shadow: 0 0 0 1px #C7A800, 0 10px 28px -10px rgba(184, 155, 0, 0.55);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   6. LE TABLEAU DE BORD
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LES ACTIONS RAPIDES ──
+   « Les boutons des actions rapides ne sont plus visibles. » Ils
+   étaient bâtis entièrement en BLANC À FAIBLE ALPHA : fond à 0,055,
+   bordure à 0,09, jauge à 0,08. Sur du noir, c'est une tuile de verre
+   soulevée ; sur du papier, c'est du blanc sur du blanc — la cellule
+   n'avait littéralement plus de contour.
+
+   Le relief change donc de moyen : ce n'est plus une pellicule de
+   lumière posée dessus, c'est une ombre portée dessous. La carte se
+   soulève au lieu de s'éclairer. */
+.light .qa-cell {
+  background: #FFFFFF;
+  border-color: hsl(212 30% 30% / 0.16);
+  box-shadow: 0 1px 2px rgba(17, 34, 51, 0.06), 0 6px 16px -10px rgba(17, 34, 51, 0.3);
+}
+.light .qa-cell:hover:not(:disabled),
+.light .qa-cell:focus-visible {
+  background: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(17, 34, 51, 0.08), 0 16px 30px -14px rgba(17, 34, 51, 0.4);
+}
+.light .qa-cell:hover::before,
+.light .qa-cell:focus-visible::before { opacity: 0.1; }
+.light .qa-charge { background: rgba(17, 34, 51, 0.1); }
+/* Le raccourci portait la couleur d'action diluée à 0,75. La couleur
+   est déjà descendue côté composant ; la diluer encore la ramène sous
+   le seuil (3,4:1). En clair elle sort pleine. */
+.light .qa-hk { opacity: 1; }
+/* Une lueur autour d'une icône ne se voit pas sur du papier, elle la
+   rend floue. Le trait garde son poids, il perd son halo. */
+.light .qa-well svg { filter: none; }
+.light .qa-cell:hover .qa-well svg,
+.light .qa-cell:focus-visible .qa-well svg { filter: none; }
+.light .qa-cell:hover .qa-well,
+.light .qa-cell:focus-visible .qa-well {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--qa-c, #000) 72%, transparent);
+}
+
+/* ── LE MONITORING ──
+   « Le monitoring est illisible avec son effet. » Deux couches
+   peignent en NOIR par-dessus le contenu : des lignes de balayage à
+   0,26 et une vignette qui va jusqu'à 0,5 dans les angles. C'est ce
+   qui fait le tube cathodique sur un fond de nuit ; sur du papier, ça
+   pose un voile gris sur toute la carte — l'effet ne s'ajoute pas au
+   fond, il l'encrasse.
+
+   L'appareil garde sa courbure et sa trame, mais il les obtient
+   maintenant comme une impression : une trame très fine, et une
+   vignette qui ÉCLAIRCIT les bords au lieu de les noircir. */
+.light .mon-crt::after {
+  background: repeating-linear-gradient(0deg, rgba(17, 34, 51, 0.05) 0 1px, transparent 1px 3px);
+}
+.light .mon-crt::before {
+  background: radial-gradient(ellipse 125% 105% at 50% 50%, transparent 58%, rgba(206, 219, 233, 0.55) 100%);
+}
+/* Un point blanc sur du papier blanc n'existe pas. */
+.light .mon-pt { fill: #0E1826; filter: none; }
+.light .mon-poly { filter: none; }
+/* Les deux niveaux d'alerte étaient des néons pâles : 2,0:1 et 2,4:1
+   sur du blanc. Même teinte, descendue jusqu'à porter, sans halo. */
+.light .mon-dl.warn { color: #A34A00; text-shadow: none; }
+.light .mon-dl.crit { color: #C1002E; text-shadow: none; }
+.light .mon-pts { opacity: 0.5; }
+
+/* ── LE SOL DE L'APPLICATION ───────────────────────────────────────
+   « Le fond doit être adapté, trouve une variante thème clair qui est
+   esthétique. »
+
+   Il était adapté sans être dessiné : un aplat gris-bleu et un halo
+   cyan à 5 % venu du thème sombre, invisible sur du clair. Rien ne
+   disait ce qu'est cette application.
+
+   Le thème sombre a une identité nette — un affichage tête haute sur
+   fond de nuit. Sa traduction juste sur du clair n'est pas « le même
+   écran en blanc » : c'est le PAPIER dont cet affichage est le
+   négatif. Une feuille de calque technique, avec sa trame de report,
+   sa lumière froide en haut et sa chaleur en bas.
+
+   Trois couches, aucune décorative :
+   — la lumière que le cœur jette depuis le haut de la page, qui est
+     déjà le geste du thème sombre, simplement retourné ;
+   — une chaleur très basse, pour que le gris ne vire pas au clinique ;
+   — la trame, à deux échelles, comme un vrai calque : un carreau fin
+     et un carreau de report cinq fois plus grand.
+
+   La trame est fixée : la page glisse dessus au lieu de l'emporter,
+   et le contenu a l'air posé sur une feuille plutôt qu'imprimé
+   dessus. */
+:root.light body {
+  background-image:
+    radial-gradient(ellipse 120% 58% at 50% -8%, hsl(var(--primary) / 0.09) 0%, transparent 62%),
+    radial-gradient(ellipse 110% 46% at 50% 108%, hsl(28 62% 52% / 0.055) 0%, transparent 66%),
+    linear-gradient(hsl(212 34% 38% / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(212 34% 38% / 0.05) 1px, transparent 1px),
+    linear-gradient(hsl(212 34% 38% / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(212 34% 38% / 0.022) 1px, transparent 1px);
+  background-size: auto, auto, 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-attachment: fixed;
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat;
+}
+
+/* Le nom du pacte, dans la barre système, était écrit à 70 % d'alpha
+   de l'accent : lisible sur du noir, 3,3:1 sur la barre claire. En
+   clair l'accent est déjà profond, il n'a pas besoin d'être dilué.
+   La règle reste enfermée dans la barre : `text-primary/70` sert
+   ailleurs, sur des surfaces sombres où la dilution est juste. */
+.light .neural-bar .text-primary\/70 { color: hsl(var(--primary)); }

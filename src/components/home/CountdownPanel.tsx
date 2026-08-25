@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
 
 interface CountdownPanelProps {
   projectStartDate?: string | null;
@@ -60,6 +61,68 @@ const PHASE_RED = {
   statusEmoji: "⚠",
 } as const;
 
+/* ═══════════════════════════════════════════════════════════════
+   LE MÊME PANNEAU, SUR DU PAPIER
+
+   Tout ce bloc se peint en styles INLINE : aucune feuille de style,
+   même préfixée `.light`, ne peut l'atteindre. La version claire doit
+   donc vivre ici, à côté de la version sombre — c'est le contrat posé
+   pour toute la refonte : une deuxième version, jamais une retouche de
+   la première.
+
+   Deux choses changent, une troisième ne change pas.
+
+   1. LA COULEUR DE PHASE descend. Le néon (#00e676) est fait pour
+      briller sur du noir ; sur du papier il s'évapore. La teinte est
+      conservée — vert, ambre, rouge restent reconnaissables au premier
+      coup d'œil — seule la clarté tombe assez bas pour porter.
+
+   2. L'ENCRE DEVIENT OPAQUE. En sombre, la hiérarchie des relevés est
+      portée par l'alpha : 0,6 pour un libellé secondaire, 0,92 pour une
+      valeur. Sur du papier cette échelle ne peut pas fonctionner — même
+      du NOIR PUR à 0,6 d'alpha sur du blanc plafonne à 4,8:1, et la
+      moindre couleur passe sous le seuil. La hiérarchie change donc de
+      support : elle est portée par la clarté d'une encre neutre, et la
+      couleur de phase est réservée à ce qui doit vraiment crier — les
+      chiffres, l'icône, la ligne de statut.
+
+   3. LES ANIMATIONS, LES LIBELLÉS ET LES ICÔNES sont partagés : ce
+      n'est pas un autre panneau, c'est le même sous un autre éclairage.
+   ═══════════════════════════════════════════════════════════════ */
+
+/** L'échelle d'encre du papier, indexée par l'alpha qu'emploie le thème sombre. */
+const ENCRE_PAPIER: Record<string, string> = {
+  "0.6": "#5A6B7D",
+  "0.75": "#44586C",
+  "0.85": "#33475A",
+  "0.92": "#1E2E3E",
+};
+
+/** Les seuls champs qui changent de thème. Indexés par le rgb de la phase sombre. */
+const PHASES_CLAIRES: Record<string, { primary: string; rgb: string; gradStopA: string; gradStopB: string; barGradient: string }> = {
+  "0,230,118": {
+    primary: "#00794A",
+    rgb: "0,121,74",
+    gradStopA: "#00794A",
+    gradStopB: "#00A768",
+    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(0,121,74,0.9))",
+  },
+  "255,171,0": {
+    primary: "#8A5A00",
+    rgb: "138,90,0",
+    gradStopA: "#8A5A00",
+    gradStopB: "#C08A00",
+    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(138,90,0,0.9))",
+  },
+  "255,23,68": {
+    primary: "#C1002E",
+    rgb: "193,0,46",
+    gradStopA: "#C1002E",
+    gradStopB: "#E2551F",
+    barGradient: "linear-gradient(90deg, rgba(226,85,31,0.7), rgba(193,0,46,0.92))",
+  },
+};
+
 function ShieldIcon({ color }: { color: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -89,6 +152,7 @@ function TriangleIcon({ color }: { color: string }) {
 
 export function CountdownPanel({ projectStartDate, projectEndDate, goalsCompleted, totalGoals, pactName = "OPERATION ASCENSION" }: CountdownPanelProps) {
   const [now, setNow] = useState(Date.now());
+  const sombre = useThemeSombre();
 
   useVisibleInterval(() => setNow(Date.now()), 1000);
 
@@ -122,7 +186,19 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
 
   if (!projectEndDate || !calc) return null;
 
-  const c = calc.colors;
+  /* La phase garde ses libellés, ses icônes et ses animations ; seules
+     ses cinq couleurs sont remplacées quand la page est sur du papier. */
+  const c = sombre ? calc.colors : { ...calc.colors, ...PHASES_CLAIRES[calc.colors.rgb] };
+
+  /* L'encre d'un relevé, à l'intensité demandée. En sombre la chaîne
+     produite est identique au caractère près à ce qui était écrit
+     avant ; en clair l'alpha devient une clarté. */
+  const encre = (a: number) => (sombre ? `rgba(${c.rgb},${a})` : ENCRE_PAPIER[String(a)]);
+
+  /* Une lueur autour d'un chiffre se voit sur du noir. Sur du papier
+     c'est une bavure : le halo ne s'ajoute pas au fond, il le salit. */
+  const lueur = (ombre: string) => (sombre ? ombre : "none");
+
   const startStr = projectStartDate ? new Date(projectStartDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }).toUpperCase() : "—";
   const endStr = new Date(projectEndDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }).toUpperCase();
 
@@ -168,14 +244,18 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
               <StatusIcon color={c.primary} />
             </div>
           </div>
-          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: `rgba(${c.rgb},0.6)`, textTransform: "uppercase" as const, textAlign: "center", animation: c.blinkAnim }}>
+          {/* Ce libelle est le seul a garder la couleur de phase en
+              clair : il est assis sur le lavis de cette meme couleur,
+              et c est lui qui nomme l alerte. De l encre neutre a cet
+              endroit briserait le lien entre le mot et le bloc. */}
+          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: sombre ? encre(0.6) : c.primary, textTransform: "uppercase" as const, textAlign: "center", animation: c.blinkAnim }}>
             {c.labelLines[0]}<br />{c.labelLines[1]}
           </div>
         </div>
 
         {/* Center: Countdown + bar */}
         <div style={{ padding: "20px 28px" }}>
-          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 4, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginBottom: 12 }}>
+          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 4, color: encre(0.75), textTransform: "uppercase" as const, marginBottom: 12 }}>
             ⬝ PACTE EN COURS — {calc.phase} — COMPTE À REBOURS ACTIF
           </div>
 
@@ -188,15 +268,15 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
             ].map((t, i) => (
               <div key={t.label} className="flex items-center">
                 <div className="flex flex-col items-center" style={{ minWidth: t.label === "JOURS" ? "clamp(50px, 8vw, 90px)" : "clamp(44px, 6vw, 74px)" }}>
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, whiteSpace: "nowrap" }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: lueur(`0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`), lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, whiteSpace: "nowrap" }}>
                     {pad(t.val)}
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const, marginTop: 4 }}>
+                  <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: encre(0.75), textTransform: "uppercase" as const, marginTop: 4 }}>
                     {t.label}
                   </span>
                 </div>
                 {i < 3 && (
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: `rgba(${c.rgb},0.6)`, margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: encre(0.6), margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
                     :
                   </span>
                 )}
@@ -205,7 +285,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
           </div>
 
           <div style={{ marginTop: 14 }}>
-            <div className="flex justify-between" style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: `rgba(${c.rgb},0.75)`, marginBottom: 5 }}>
+            <div className="flex justify-between" style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: encre(0.75), marginBottom: 5 }}>
               <span>DÉBUT · {startStr}</span>
               <span>{Math.round(calc.progressPct)}% ÉCOULÉ</span>
               <span>FIN · {endStr}</span>
@@ -231,10 +311,10 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
             { key: "COMPLÉTION OBJ.", val: `${goalsCompleted} / ${totalGoals}`, critical: false },
           ].map((row) => (
             <div key={row.key} className="flex flex-col gap-0.5">
-              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: `rgba(${c.rgb},0.85)`, textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
+              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: encre(0.85), textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
                 {row.key}
               </span>
-              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : `rgba(${c.rgb},0.92)`, textShadow: row.critical ? `0 0 6px rgba(${c.rgb},0.5)` : "none" }}>
+              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : encre(0.92), textShadow: row.critical ? lueur(`0 0 6px rgba(${c.rgb},0.5)`) : "none" }}>
                 {row.val}
               </span>
             </div>

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 
 interface QuickAccessPanelProps {
   ownedModules: {
@@ -105,6 +107,7 @@ const EXTRA = [
  */
 export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
+  const sombre = useThemeSombre();
 
   const isLocked = (moduleKey: string | null) => {
     if (!moduleKey) return false;
@@ -139,6 +142,12 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
 
         {actions.map((btn) => {
           const locked = isLocked(btn.moduleKey);
+          /* Six neons choisis pour briller sur du noir : sur du blanc,
+             #00ff88 tombait a 1,3:1 et le raccourci clavier de la
+             cellule etait litteralement invisible. La couleur est posee
+             en style INLINE (--qa-c), donc hors de portee du CSS.
+             La cellule elle-meme est reprise dans theme-clair.css. */
+          const teinte = selonTheme(btn.color, sombre);
           return (
             <button
               key={btn.key}
@@ -148,11 +157,11 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
               }}
               title={locked ? `${btn.label} — verrouille` : btn.label}
               className="qa-cell"
-              style={{ opacity: locked ? 0.45 : 1, ["--qa-c" as string]: btn.color }}
+              style={{ opacity: locked ? 0.45 : 1, ["--qa-c" as string]: teinte }}
             >
               <span className="qa-hk">{btn.hotkey}</span>
               {locked && <Lock size={11} className="qa-lock" />}
-              <span className="qa-well">{btn.icon(btn.color)}</span>
+              <span className="qa-well">{btn.icon(teinte)}</span>
               <span className="qa-label">{btn.label}</span>
               <span className="qa-charge"><i /></span>
             </button>

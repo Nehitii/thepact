@@ -3,6 +3,8 @@ import { CornerBrackets } from "./CornerBrackets";
 import { PactVisual } from "@/components/PactVisual";
 import { RankCore } from "./RankCore";
 import { PREF } from "@/lib/preferencesAffichage";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { selonTheme } from "@/lib/encrePapier";
 
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",
@@ -18,6 +20,27 @@ const EFFECT_STYLES: Record<string, React.CSSProperties> = {
   "fire-glow": { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" },
   "purple-glow": { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" },
   "gold-glow": { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" },
+  glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
+};
+
+/* ── LES MEMES EFFETS, SUR DU PAPIER ──
+
+   Un halo de 30 px autour d une lettre, c est de la lumiere qui
+   s ajoute au noir. Sur du blanc rien ne s ajoute : le halo ne peut
+   que salir le fond autour du mot, et le titre parait flou au lieu
+   de paraitre allume.
+
+   L effet choisi par l utilisateur n est pas supprime pour autant :
+   il change de nature. Le halo devient une BAVURE D ENCRE, serree et
+   posee juste sous la lettre — ce que fait une impression appuyee sur
+   du papier. Le titre garde sa couleur et sa presence, il les obtient
+   autrement. */
+const EFFETS_PAPIER: Record<string, React.CSSProperties> = {
+  none: {},
+  "cyan-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(0,105,127,0.34)" },
+  "fire-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(150,64,0,0.34)" },
+  "purple-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(113,65,163,0.34)" },
+  "gold-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(115,90,0,0.34)" },
   glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
 };
 
@@ -72,6 +95,12 @@ export function NexusHeroBanner({
   rankXPTarget = 0,
   enCours = 0,
 }: NexusHeroBannerProps) {
+  const sombre = useThemeSombre();
+
+  /* Les quatre chiffres portent un halo de neon. Sur du papier il
+     empate le chiffre au lieu de l allumer — c est ce que l on voyait
+     sur « OBJECTIFS ATTEINTS ». Et « JOURS ACTIFS » etait ecrit a
+     l orange neon en dur : 2,2:1 sur du blanc. */
   const stats = useMemo(() => [
     /* Le libelle dit CE QUI est compte : un pourcentage nu ne se lit
        pas, et deux mesures differentes affichees pareil se confondent
@@ -80,19 +109,19 @@ export function NexusHeroBanner({
       value: `${Math.round(progression)}%`,
       label: mesure === "steps" ? "ÉTAPES FRANCHIES" : "OBJECTIFS ATTEINTS",
       color: "hsl(var(--ds-accent-primary))",
-      glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
+      glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none",
       bascule: onChangerMesure,
       titre: mesure === "steps"
         ? "Compter les objectifs atteints à la place"
         : "Compter les étapes franchies à la place",
     },
-    { value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
-    { value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
-    { value: String(activeDays), label: "JOURS ACTIFS", color: "#ff8c00", glow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" },
-  ], [progression, mesure, onChangerMesure, level, totalMissions, activeDays]);
+    { value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
+    { value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: sombre ? "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" : "none" },
+    { value: String(activeDays), label: "JOURS ACTIFS", color: selonTheme("#ff8c00", sombre), glow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none" },
+  ], [progression, mesure, onChangerMesure, level, totalMissions, activeDays, sombre]);
 
   const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
-  const effectStyle = EFFECT_STYLES[titleEffect || "none"] || {};
+  const effectStyle = (sombre ? EFFECT_STYLES : EFFETS_PAPIER)[titleEffect || "none"] || {};
 
   // La Singularite tire ses trois parametres des donnees reelles du pacte.
   // Sans cela, ce ne serait qu'un economiseur d'ecran.
