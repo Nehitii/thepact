@@ -62,7 +62,7 @@ export function usePactMutation(
         queryClient.setQueryData(["pact", userId], context.previousPact);
       }
       
-      toast.error("Update Failed", { description: error instanceof Error ? error.message : "Failed to update pact" });
+      toast.error("Enregistrement impossible", { description: error instanceof Error ? error.message : "Le pacte n’a pas pu être mis à jour." });
       
       options?.onError?.(error instanceof Error ? error : new Error("Unknown error"));
     },
@@ -70,7 +70,7 @@ export function usePactMutation(
       // Invalidate to refetch latest data
       queryClient.invalidateQueries({ queryKey: ["pact", userId] });
       
-      toast.success("Pact Updated", { description: "Your changes have been saved successfully." });
+      toast.success("Pacte mis à jour", { description: "Tes changements sont enregistrés." });
       
       options?.onSuccess?.();
     },

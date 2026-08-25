@@ -242,7 +242,9 @@ function CompassIcon({ id, size }: { id: string; size: number }) {
       {Array.from({ length: 36 }, (_, i) => (
         <line key={i} x1="24" y1="8" x2="24" y2={i % 9 === 0 ? 12 : 10} stroke="#00d4ff" strokeWidth={i % 9 === 0 ? 1.5 : 0.5} opacity={i % 9 === 0 ? 0.9 : 0.3} transform={`rotate(${i * 10} 24 24)`} />
       ))}
-      {[{ l: "N", x: 24, y: 17, col: "#00eeff" }, { l: "S", x: 24, y: 35, col: "#446677" }, { l: "E", x: 35, y: 25, col: "#446677" }, { l: "W", x: 13, y: 25, col: "#446677" }].map(({ l, x, y, col }) => (
+      {/* « O » pour Ouest : la rose des vents suit la langue de
+          l interface, pas l anglais. */}
+      {[{ l: "N", x: 24, y: 17, col: "#00eeff" }, { l: "S", x: 24, y: 35, col: "#446677" }, { l: "E", x: 35, y: 25, col: "#446677" }, { l: "O", x: 13, y: 25, col: "#446677" }].map(({ l, x, y, col }) => (
         <text key={l} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill={col} fontSize="5" fontFamily="monospace" fontWeight="bold">{l}</text>
       ))}
       <polygon points="24,8 21.5,24 24,22 26.5,24" fill={`url(#${id}-north)`} style={{ transformOrigin: "24px 24px", animation: "co-needle 3s ease-in-out infinite" }} />

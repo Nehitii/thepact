@@ -76,7 +76,7 @@ export function CustomDifficultyCard({
       code="MODULE_04"
       title="Difficulté sur mesure"
       statusText={<span className={customDifficultyActive ? "text-primary" : "text-muted-foreground"}>{customDifficultyActive ? "ACTIVE" : "INACTIVE"}</span>}
-      footerLeft={<span>NAME: <b className="text-primary">{customDifficultyName || "—"}</b></span>}
+      footerLeft={<span>Nom : <b className="text-primary">{customDifficultyName || "—"}</b></span>}
     >
       <div className="py-4 space-y-4">
         {/* Difficulty Name */}

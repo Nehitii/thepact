@@ -10,15 +10,15 @@ import { PactVisual } from "@/components/PactVisual";
 import { cn } from "@/lib/utils";
 
 const SYMBOL_OPTIONS = [
-  { key: "flame", label: "Flame" },
-  { key: "heart", label: "Heart" },
-  { key: "target", label: "Target" },
-  { key: "sparkles", label: "Sparkles" },
-  { key: "phoenix", label: "Phoenix" },
-  { key: "compass", label: "Compass" },
-  { key: "citadel", label: "Citadel" },
+  { key: "flame", label: "Flamme" },
+  { key: "heart", label: "Cœur" },
+  { key: "target", label: "Cible" },
+  { key: "sparkles", label: "Éclats" },
+  { key: "phoenix", label: "Phénix" },
+  { key: "compass", label: "Boussole" },
+  { key: "citadel", label: "Citadelle" },
   { key: "vortex", label: "Vortex" },
-  { key: "shield", label: "Shield" },
+  { key: "shield", label: "Bouclier" },
 ];
 
 const FONT_OPTIONS = [
@@ -31,11 +31,11 @@ const FONT_OPTIONS = [
 
 const EFFECT_OPTIONS = [
   { key: "none", label: "Aucun", style: {} },
-  { key: "cyan-glow", label: "Cyan Glow", style: { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" } },
-  { key: "fire-glow", label: "Fire Glow", style: { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" } },
-  { key: "purple-glow", label: "Purple Glow", style: { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" } },
-  { key: "gold-glow", label: "Gold Glow", style: { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" } },
-  { key: "glitch", label: "Glitch", style: {} },
+  { key: "cyan-glow", label: "Halo cyan", style: { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" } },
+  { key: "fire-glow", label: "Halo de feu", style: { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" } },
+  { key: "purple-glow", label: "Halo violet", style: { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" } },
+  { key: "gold-glow", label: "Halo doré", style: { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" } },
+  { key: "glitch", label: "Parasites", style: {} },
 ];
 
 interface PactIdentityCardProps {
@@ -78,14 +78,22 @@ export function PactIdentityCard({
 }: PactIdentityCardProps) {
   const handleSave = useCallback(async () => {
     if (!pactId) {
-      toast.error("No Pact Found", { description: "Please complete onboarding first." });
+      toast.error("Aucun pacte", { description: "Termine d’abord la mise en route." });
       return;
     }
     if (!pactName.trim()) {
       toast.error("Il manque le nom", { description: "Un pacte sans nom ne se retrouve pas." });
       return;
     }
-    await onSave();
+    /* `mutateAsync` rejette quand l ecriture echoue. La mutation
+       affiche deja son propre message dans `onError` ; sans ce
+       rattrapage, le rejet remontait jusqu au `onClick` et finissait
+       en promesse non geree. */
+    try {
+      await onSave();
+    } catch {
+      /* Deja signale par la mutation. */
+    }
   }, [pactId, pactName, onSave]);
 
   const selectedFontFamily = FONT_OPTIONS.find(f => f.key === titleFont)?.family || "'Orbitron', sans-serif";
@@ -95,9 +103,9 @@ export function PactIdentityCard({
     <DataPanel
       code="MODULE_02"
       title="Identité du pacte"
-      statusText={pactId ? <span className="text-primary/50">LINKED</span> : <span className="text-destructive">NO PACT</span>}
-      footerLeft={<span>NAME: <b className="text-primary">{pactName || "—"}</b></span>}
-      footerRight={<span className="text-primary/40">SYMBOL: {pactSymbol.toUpperCase()}</span>}
+      statusText={pactId ? <span className="text-primary/50">relié</span> : <span className="text-destructive">aucun pacte</span>}
+      footerLeft={<span>Nom : <b className="text-primary">{pactName || "—"}</b></span>}
+      footerRight={<span className="text-primary/40">Symbole : {pactSymbol.toUpperCase()}</span>}
     >
       <div className="py-4 space-y-5">
         {/* Live Preview */}
@@ -110,10 +118,10 @@ export function PactIdentityCard({
                 className="text-sm text-primary uppercase tracking-wider truncate"
                 style={{ fontFamily: selectedFontFamily, ...selectedEffectStyle }}
               >
-                {pactName || "Your Project"}
+                {pactName || "Ton projet"}
               </h4>
               <p className="text-xs text-muted-foreground font-rajdhani mt-0.5 line-clamp-2">
-                {pactMantra || "Your mission statement…"}
+                {pactMantra || "Ta raison d’avancer…"}
               </p>
             </div>
           </div>
@@ -123,11 +131,13 @@ export function PactIdentityCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Nom du projet</Label>
+            {/* `htmlFor` + `id` : les deux champs de cette carte
+                s annoncaient « zone d edition, vide ». */}
+            <Label htmlFor="pacte-nom" className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Nom du projet</Label>
           </div>
-          <Input value={pactName} onChange={(e) => onPactNameChange(e.target.value)} placeholder="e.g., Project Phoenix" maxLength={50} className={CY_INPUT} />
+          <Input id="pacte-nom" value={pactName} onChange={(e) => onPactNameChange(e.target.value)} placeholder="ex. Projet Phénix" maxLength={50} className={CY_INPUT} />
           <div className="flex justify-between">
-            <p className="ds-t-label text-primary/20 font-mono tracking-wider">The name that represents your mission.</p>
+            <p className="ds-t-label text-primary/20 font-mono tracking-wider">Le nom qui porte ta mission.</p>
             <span className="ds-t-label text-primary/20 font-mono">{pactName.length}/50</span>
           </div>
         </div>
@@ -136,11 +146,11 @@ export function PactIdentityCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">The "Why" Statement</Label>
+            <Label htmlFor="pacte-mantra" className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Le pourquoi</Label>
           </div>
-          <Textarea value={pactMantra} onChange={(e) => onPactMantraChange(e.target.value)} placeholder="e.g., To become the best version of myself…" maxLength={200} rows={3} className={cn(CY_INPUT, "h-auto resize-none")} />
+          <Textarea id="pacte-mantra" value={pactMantra} onChange={(e) => onPactMantraChange(e.target.value)} placeholder="ex. Devenir la meilleure version de moi-même…" maxLength={200} rows={3} className={cn(CY_INPUT, "h-auto resize-none")} />
           <div className="flex justify-between">
-            <p className="ds-t-label text-primary/20 font-mono tracking-wider">Your guiding mantra.</p>
+            <p className="ds-t-label text-primary/20 font-mono tracking-wider">La phrase qui te remet en route.</p>
             <span className="ds-t-label text-primary/20 font-mono">{pactMantra.length}/200</span>
           </div>
         </div>
@@ -191,7 +201,7 @@ export function PactIdentityCard({
                   className="text-base text-primary/80 truncate"
                   style={{ fontFamily: family }}
                 >
-                  {pactName || "Project"}
+                  {pactName || "Projet"}
                 </span>
                 <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{label}</span>
               </button>
