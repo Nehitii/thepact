@@ -25,10 +25,63 @@
    demande moins de mouvement.
    ───────────────────────────────────────────────────────────── */
 
+/* ── POURQUOI CES DEUX PROPRIETES SONT ENREGISTREES ──
+
+   Basculer la mesure fait passer la progression de 60 % a 37 %, et
+   la luminosite de 0,78 a 0,65. Les deux SAUTAIENT — mesure faite :
+   une image a l ancienne valeur, l image suivante a la nouvelle.
+
+   Deux raisons, et la premiere en cachait la seconde.
+
+   L anneau portait bien un `transition: background 1.2s`. Mais une
+   transition sur un conic-gradient n interpole rien : pour le
+   navigateur, deux degrades differents ne sont pas deux etapes d une
+   meme valeur, c est un remplacement.
+
+   Et surtout : une propriete personnalisee NON ENREGISTREE n a pas
+   de type. Le moteur ne sait pas que  36.84%  et  59.66%  sont deux
+   pourcentages entre lesquels il pourrait glisser — pour lui ce sont
+   deux chaines. Aucune transition ne peut donc s y appliquer, ou
+   qu on la declare.
+
+   @property leur donne ce type. Elles deviennent alors des valeurs
+   animables comme une longueur ou une couleur, et tout ce qui les
+   lit — l anneau, la couronne, le noyau, les ejections, la chute et
+   la lumiere jetee sur la page — suit le glissement sans qu aucune
+   de ces regles ait a changer.
+
+   Elles heritent : la valeur est posee une fois sur la scene et
+   descend a toutes les couches. C est donc SUR LA SCENE que se
+   declare la transition, pas sur chaque couche. */
+@property --sing-progress {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+@property --sing-lum {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 .singularity-stage {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+
+  /* La jauge se remplit, la lumiere suit. Deux durees differentes
+     a dessein : la jauge dit le chiffre, elle arrive la premiere ;
+     le rayonnement est une consequence, il se stabilise apres. En
+     les calant ensemble, l ensemble aurait l air d un seul curseur
+     qu on deplace au lieu d une mesure qui change et d une lumiere
+     qui y repond. */
+  transition:
+    --sing-progress 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    --sing-lum 1250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .singularity-stage { transition: none; }
 }
 
 /* ── Champ d'etoiles ────────────────────────────────────────────
@@ -190,7 +243,10 @@
   mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
   -webkit-mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
   filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.8));
-  transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Plus de transition ici : elle visait `background`, qui ne
+     s interpole pas d un conic-gradient a l autre. Le glissement
+     vient maintenant de --sing-progress, anime sur la scene, et le
+     degrade se recalcule a chaque image a partir d elle. */
 }
 
 /* ── La lumiere que le c\oeur jette sur la page ─────────────────
