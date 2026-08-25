@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Bouton } from "@/components/profile/console-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { usePact } from "@/hooks/usePact";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield } from "lucide-react";
+import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield, Trash2, AlertTriangle } from "lucide-react";
 
 // --- TYPES ---
 interface CosmeticFrame {
@@ -49,17 +50,19 @@ interface CosmeticTitle {
   is_default: boolean;
 }
 
+/* QUATRE PROPS SUR HUIT NE SERVAIENT A RIEN.
+   `avatarFrame`, `personalQuote`, `displayedBadges` et leurs trois
+   rappels etaient declares ici, passes par la page — en chaine vide,
+   en tableau vide, en fonctions creuses — et jamais destructures par
+   ce composant. Le cadre a bien un reglage, mais il vit dans l etat
+   local ; la citation et les badges n ont jamais eu d ecran, alors que
+   `profiles.personal_quote` et `profiles.displayed_badges` existent
+   en base et n ont jamais rien recu. */
 interface ProfileBoundedProfileProps {
   userId: string;
   displayName: string;
   avatarUrl: string | null;
-  avatarFrame: string;
-  personalQuote: string;
-  displayedBadges: string[];
   onAvatarUrlChange: (url: string | null) => void;
-  onAvatarFrameChange: (frame: string) => void;
-  onPersonalQuoteChange: (quote: string) => void;
-  onDisplayedBadgesChange: (badges: string[]) => void;
 }
 
 // --- SUB-COMPONENTS ---
@@ -125,20 +128,27 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* Les deux calques colores sont une aberration chromatique au survol.
+   Sans `aria-hidden`, un lecteur d ecran annoncait le pseudo trois fois
+   de suite. */
 const CyberText = ({ text, className }: { text: string; className?: string }) => {
   return (
     <div className={`relative group inline-block ${className}`}>
       <span className="relative z-10">{text}</span>
-      <span className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover:opacity-70 group-hover:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
+      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover:opacity-70 group-hover:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
         {text}
       </span>
-      <span className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover:opacity-70 group-hover:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
+      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover:opacity-70 group-hover:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
         {text}
       </span>
     </div>
   );
 };
 
+/* `rarite(x)` plutot que `rarityColors[x]` : l acces direct sur une
+   rarete absente rend `undefined`, et le `.bg` qui suit fait tomber
+   la page. Les quatre raretes en base correspondent aujourd hui ; une
+   cinquieme suffirait. */
 const rarityColors: Record<string, { bg: string; text: string; glow: string; border: string }> = {
   common: { bg: "bg-slate-500/10", text: "text-slate-400", glow: "", border: "border-slate-500/30" },
   rare: { bg: "bg-blue-500/10", text: "text-blue-400", glow: "shadow-blue-500/20", border: "border-blue-500/50" },
@@ -156,6 +166,8 @@ const rarityColors: Record<string, { bg: string; text: string; glow: string; bor
   },
 };
 
+const rarite = (r?: string | null) => rarityColors[r ?? ""] ?? rarityColors.common;
+
 // --- MAIN COMPONENT ---
 
 export function ProfileBoundedProfile({
@@ -164,6 +176,7 @@ export function ProfileBoundedProfile({
   avatarUrl,
   onAvatarUrlChange,
 }: ProfileBoundedProfileProps) {
+  const { t } = useTranslation();
   const { data: pact } = usePact(userId);
   const { data: rankData } = useRankXP(userId, pact?.id);
 
@@ -175,6 +188,8 @@ export function ProfileBoundedProfile({
   const [showBannerDialog, setShowBannerDialog] = useState(false);
   const [showTitleDialog, setShowTitleDialog] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [chargement, setChargement] = useState(true);
+  const [panne, setPanne] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Data State
@@ -195,54 +210,81 @@ export function ProfileBoundedProfile({
   const activeBanner = banners.find((b) => b.id === activeBannerId) || banners.find((b) => b.is_default);
   const activeTitle = titles.find((t) => t.id === activeTitleId) || titles.find((t) => t.is_default);
 
-  // Load Data
+  /* CINQ REQUETES, AUCUNE ERREUR LUE.
+     Un `if (data)` suffisait a tout : une panne de lecture rendait un
+     inventaire vide, impossible a distinguer d un inventaire
+     reellement vide — et l ecran laissait croire que rien n avait ete
+     acquis. On lit desormais l echec, et on le dit. */
   useEffect(() => {
+    let vivant = true;
     const loadData = async () => {
-      const [framesRes, bannersRes, titlesRes] = await Promise.all([
-        supabase.from("cosmetic_frames").select("*").eq("is_active", true),
-        supabase.from("cosmetic_banners").select("*").eq("is_active", true),
-        supabase.from("cosmetic_titles").select("*").eq("is_active", true),
-      ]);
+      setChargement(true);
+      try {
+        const [framesRes, bannersRes, titlesRes, ownershipRes, profileRes] = await Promise.all([
+          supabase.from("cosmetic_frames").select("*").eq("is_active", true),
+          supabase.from("cosmetic_banners").select("*").eq("is_active", true),
+          supabase.from("cosmetic_titles").select("*").eq("is_active", true),
+          supabase.from("user_cosmetics").select("cosmetic_type, cosmetic_id").eq("user_id", userId),
+          supabase.from("profiles").select("active_frame_id, active_banner_id, active_title_id").eq("id", userId).single(),
+        ]);
 
-      if (framesRes.data) setFrames(framesRes.data);
-      if (bannersRes.data) setBanners(bannersRes.data);
-      if (titlesRes.data) setTitles(titlesRes.data);
+        const echec = [framesRes, bannersRes, titlesRes, ownershipRes, profileRes].find((r) => r.error);
+        if (echec?.error) throw echec.error;
+        if (!vivant) return;
 
-      const { data: ownership } = await supabase
-        .from("user_cosmetics")
-        .select("cosmetic_type, cosmetic_id")
-        .eq("user_id", userId);
+        setFrames(framesRes.data ?? []);
+        setBanners(bannersRes.data ?? []);
+        setTitles(titlesRes.data ?? []);
 
-      if (ownership) {
-        setOwnedFrameIds(new Set(ownership.filter((o) => o.cosmetic_type === "frame").map((o) => o.cosmetic_id)));
-        setOwnedBannerIds(new Set(ownership.filter((o) => o.cosmetic_type === "banner").map((o) => o.cosmetic_id)));
-        setOwnedTitleIds(new Set(ownership.filter((o) => o.cosmetic_type === "title").map((o) => o.cosmetic_id)));
-      }
+        const possede = ownershipRes.data ?? [];
+        setOwnedFrameIds(new Set(possede.filter((o) => o.cosmetic_type === "frame").map((o) => o.cosmetic_id)));
+        setOwnedBannerIds(new Set(possede.filter((o) => o.cosmetic_type === "banner").map((o) => o.cosmetic_id)));
+        setOwnedTitleIds(new Set(possede.filter((o) => o.cosmetic_type === "title").map((o) => o.cosmetic_id)));
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("active_frame_id, active_banner_id, active_title_id")
-        .eq("id", userId)
-        .single();
-
-      if (profile) {
-        setActiveFrameId(profile.active_frame_id);
-        setActiveBannerId(profile.active_banner_id);
-        setActiveTitleId(profile.active_title_id);
+        setActiveFrameId(profileRes.data?.active_frame_id ?? null);
+        setActiveBannerId(profileRes.data?.active_banner_id ?? null);
+        setActiveTitleId(profileRes.data?.active_title_id ?? null);
+        setPanne(null);
+      } catch (e) {
+        if (!vivant) return;
+        setPanne(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (vivant) setChargement(false);
       }
     };
     loadData();
+    return () => { vivant = false; };
   }, [userId]);
 
   // Handlers
+  const antiCache = (u: string) => (u.includes("?") ? `${u}&t=${Date.now()}` : `${u}?t=${Date.now()}`);
+
   const handleSaveAvatar = async () => {
-    if (avatarUrlInput.trim()) {
-      const newUrl = avatarUrlInput.trim();
-      const urlWithCacheBust = newUrl.includes("?") ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
-      onAvatarUrlChange(urlWithCacheBust);
-      await supabase.from("profiles").update({ avatar_url: newUrl }).eq("id", userId);
-      toast.success("Avatar updated", { description: "Your profile image has been saved" });
+    const saisie = avatarUrlInput.trim();
+    if (!saisie) return;
+
+    /* Une adresse d image, pas n importe quelle chaine. Un \`javascript:\`
+       ne s execute pas dans un \`src\`, mais rien ne verifiait meme qu il
+       s agissait d une adresse. */
+    try {
+      const adresse = new URL(saisie);
+      if (adresse.protocol !== "https:" && adresse.protocol !== "http:") throw new Error("schéma");
+    } catch {
+      toast.error("Adresse invalide", { description: "Colle une adresse commençant par https://" });
+      return;
     }
+
+    const { error } = await supabase.from("profiles").update({ avatar_url: saisie }).eq("id", userId);
+    if (error) {
+      toast.error("Erreur", { description: error.message });
+      return;
+    }
+
+    /* Ce qu on AFFICHE porte l anti-cache ; ce qu on STOCKE ne le porte
+       pas. Les deux etaient confondus : \`handleSave\` reecrivait ensuite
+       l adresse horodatee dans la colonne, et le \`?t=…\` y restait. */
+    onAvatarUrlChange(antiCache(saisie));
+    toast.success("Avatar enregistré");
     setShowAvatarDialog(false);
     setAvatarUrlInput("");
   };
@@ -251,8 +293,12 @@ export function ProfileBoundedProfile({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
-      toast.error("Invalid file", { description: "Must be JPG/PNG/WEBP under 5MB" });
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      toast.error("Format refusé", { description: "JPG, PNG, WEBP ou GIF." });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Fichier trop lourd", { description: "5 Mo au maximum." });
       return;
     }
 
@@ -277,14 +323,20 @@ export function ProfileBoundedProfile({
         .from("goal-images")
         .createSignedUrl(filePath, 60 * 60 * 24 * 365);
 
-      if (signedUrlData) {
-        const finalUrl = `${signedUrlData.signedUrl}&t=${Date.now()}`;
-        onAvatarUrlChange(finalUrl);
-        await supabase.from("profiles").update({ avatar_url: signedUrlData.signedUrl }).eq("id", userId);
-        toast.success("Avatar uploaded", { description: "Identity updated successfully." });
-      }
-    } catch (error: any) {
-      toast.error("Upload failed", { description: error.message });
+      if (!signedUrlData?.signedUrl) throw new Error("L’adresse du fichier n’a pas pu être créée.");
+
+      const { error: majError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: signedUrlData.signedUrl })
+        .eq("id", userId);
+      if (majError) throw majError;
+
+      onAvatarUrlChange(antiCache(signedUrlData.signedUrl));
+      toast.success("Avatar envoyé");
+    } catch (error) {
+      toast.error("Envoi impossible", {
+        description: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setUploading(false);
       setShowAvatarDialog(false);
@@ -293,10 +345,13 @@ export function ProfileBoundedProfile({
 
   const handleSave = async () => {
     setSaving(true);
+    /* \`avatar_url\` n est plus reecrit ici : il est deja enregistre au
+       moment de l envoi, et le reecrire depuis l etat d affichage
+       replantait l anti-cache dans la colonne. Ce bouton ne concerne
+       que les trois cosmetiques. */
     const { error } = await supabase
       .from("profiles")
       .update({
-        avatar_url: avatarUrl,
         active_frame_id: activeFrameId,
         active_banner_id: activeBannerId,
         active_title_id: activeTitleId,
@@ -304,15 +359,46 @@ export function ProfileBoundedProfile({
       .eq("id", userId);
 
     if (error) {
-      toast.error("Error", { description: error.message });
+      /* Le declencheur \`cosmetiques_possedes\` refuse d equiper ce qui
+         n a pas ete acquis. C est une reponse, pas une panne. */
+      const refus = error.message.includes("cosmetique_non_possede");
+      toast.error(refus ? "Cosmétique non possédé" : "Erreur", {
+        description: refus
+          ? "Cet élément n’est pas dans ton inventaire. Passe par la boutique."
+          : error.message,
+      });
     } else {
-      toast.success("Identity Saved", { description: "Your bounded profile has been synchronized." });
+      toast.success("Apparence enregistrée", { description: "Ta carte publique est à jour." });
     }
     setSaving(false);
   };
 
+  const retirerAvatar = async () => {
+    const { error } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", userId);
+    if (error) {
+      toast.error("Erreur", { description: error.message });
+      return;
+    }
+    onAvatarUrlChange(null);
+    toast.success("Avatar retiré");
+    setShowAvatarDialog(false);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Une panne de lecture ne doit pas se deguiser en inventaire
+          vide : sans ce bandeau, tous les cosmetiques apparaissaient
+          simplement comme non possedes. */}
+      {panne && (
+        <p className="rg-alerte" data-ton="warn" role="status">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          Ton inventaire n’a pas pu être lu : {panne}
+        </p>
+      )}
+      {chargement && !panne && (
+        <p className="rg-releve-vide">Chargement de ton inventaire…</p>
+      )}
+
       {/* 1. PREVIEW SECTION (FULL CARD LAYOUT) */}
       <div className="flex justify-center py-6">
         {/* Container with Aspect Ratio closer to a real Trading Card (3:4 or 4:5) */}
@@ -347,14 +433,14 @@ export function ProfileBoundedProfile({
               {/* HUD Top Label */}
               <div className="absolute top-4 left-4 right-4 flex justify-between items-start opacity-70">
                 <div className="px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded ds-t-label text-white/80 font-mono tracking-widest">
-                  // {pact?.name || "INITIATE"}
+                  // {pact?.name || "SANS PACTE"}
                 </div>
                 {/* Rarity/Theme Badge (Optional) */}
                 {activeBanner?.rarity && activeBanner.rarity !== "common" && (
                   <div
-                    className={`px-2 py-0.5 rounded ds-t-label uppercase font-bold tracking-wider border ${rarityColors[activeBanner.rarity].bg} ${rarityColors[activeBanner.rarity].text} ${rarityColors[activeBanner.rarity].border}`}
+                    className={`px-2 py-0.5 rounded ds-t-label uppercase font-bold tracking-wider border ${rarite(activeBanner.rarity).bg} ${rarite(activeBanner.rarity).text} ${rarite(activeBanner.rarity).border}`}
                   >
-                    {activeBanner.rarity}
+                    {t(`shop.rarity.${activeBanner.rarity}`, activeBanner.rarity)}
                   </div>
                 )}
               </div>
@@ -404,7 +490,7 @@ export function ProfileBoundedProfile({
                 {/* Identity Text */}
                 <div className="text-center space-y-3 w-full">
                   <h3 className="text-2xl md:text-3xl font-orbitron font-black text-white tracking-wider drop-shadow-lg">
-                    <CyberText text={displayName || "UNKNOWN"} />
+                    <CyberText text={displayName || "SANS NOM"} />
                   </h3>
 
                   {/* Title Badge */}
@@ -422,7 +508,7 @@ export function ProfileBoundedProfile({
                         className="text-xs font-rajdhani uppercase tracking-[0.2em] font-bold"
                         style={{ color: activeTitle?.text_color || "#5bb4ff" }}
                       >
-                        {activeTitle?.title_text || "NO TITLE"}
+                        {activeTitle?.title_text || "AUCUN TITRE"}
                       </span>
                     </div>
                   </div>
@@ -432,11 +518,11 @@ export function ProfileBoundedProfile({
                 <div className="w-full mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="ds-t-label text-white/30 uppercase tracking-widest font-mono mb-1">
-                      Current Rank
+                      Rang actuel
                     </span>
                     <div className="flex items-center gap-2 text-white/90 font-rajdhani font-semibold text-sm">
                       <Shield className="w-4 h-4 text-primary" />
-                      {rankData?.currentRank?.name || "Unranked"}
+                      {rankData?.currentRank?.name || "Sans rang"}
                     </div>
                   </div>
 
@@ -488,12 +574,12 @@ export function ProfileBoundedProfile({
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
         <DialogContent className="bg-background/95 backdrop-blur-xl border-primary/20">
           <DialogHeader>
-            <DialogTitle className="font-orbitron text-primary">Upload Avatar</DialogTitle>
+            <DialogTitle className="font-orbitron text-primary">Changer d’avatar</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="upload" className="w-full">
             <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="upload">Upload File</TabsTrigger>
-              <TabsTrigger value="url">Image URL</TabsTrigger>
+              <TabsTrigger value="upload">Depuis un fichier</TabsTrigger>
+              <TabsTrigger value="url">Depuis une adresse</TabsTrigger>
             </TabsList>
             <TabsContent value="upload" className="mt-4">
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
@@ -503,32 +589,44 @@ export function ProfileBoundedProfile({
                 className="w-full h-32 border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 flex flex-col gap-2"
               >
                 {uploading ? <Loader2 className="animate-spin w-8 h-8" /> : <Upload className="w-8 h-8 opacity-50" />}
-                <span className="text-xs uppercase tracking-wider opacity-70">Click to Select</span>
+                <span className="text-xs uppercase tracking-wider opacity-70">Choisir un fichier</span>
               </Button>
             </TabsContent>
             <TabsContent value="url" className="mt-4 space-y-4">
               <div className="space-y-2">
-                <Label>Direct Link</Label>
+                <Label htmlFor="avatar-adresse">Adresse de l’image</Label>
                 <Input
-                  placeholder="https://..."
+                  id="avatar-adresse"
+                  type="url"
+                  placeholder="https://…"
                   value={avatarUrlInput}
                   onChange={(e) => setAvatarUrlInput(e.target.value)}
                 />
               </div>
               <Button onClick={handleSaveAvatar} className="w-full">
-                Confirm URL
+                Utiliser cette image
               </Button>
             </TabsContent>
           </Tabs>
+
+          {/* On pouvait poser un avatar, jamais le retirer. */}
+          {avatarUrl && (
+            <div className="pt-3 mt-1 border-t border-border">
+              <Bouton role="danger" pleine onClick={retirerAvatar}>
+                <Trash2 />
+                Retirer mon avatar
+              </Bouton>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
-      <SelectionDialog open={showFrameDialog} onOpenChange={setShowFrameDialog} title="Select Frame">
+      <SelectionDialog open={showFrameDialog} onOpenChange={setShowFrameDialog} title="Choisir un cadre">
         <div className="grid grid-cols-3 gap-3 p-1">
           {frames.map((frame) => {
             const owned = ownedFrameIds.has(frame.id) || frame.is_default;
             const active = activeFrameId === frame.id || (!activeFrameId && frame.is_default);
-            const rarity = rarityColors[frame.rarity] || rarityColors.common;
+            const rarity = rarite(frame.rarity);
             return (
               <InventorySlot
                 key={frame.id}
@@ -557,12 +655,12 @@ export function ProfileBoundedProfile({
         </div>
       </SelectionDialog>
 
-      <SelectionDialog open={showBannerDialog} onOpenChange={setShowBannerDialog} title="Select Banner">
+      <SelectionDialog open={showBannerDialog} onOpenChange={setShowBannerDialog} title="Choisir un fond de carte">
         <div className="grid grid-cols-2 gap-3 p-1">
           {banners.map((banner) => {
             const owned = ownedBannerIds.has(banner.id) || banner.is_default;
             const active = activeBannerId === banner.id || (!activeBannerId && banner.is_default);
-            const rarity = rarityColors[banner.rarity] || rarityColors.common;
+            const rarity = rarite(banner.rarity);
             return (
               <InventorySlot
                 key={banner.id}
@@ -586,12 +684,12 @@ export function ProfileBoundedProfile({
         </div>
       </SelectionDialog>
 
-      <SelectionDialog open={showTitleDialog} onOpenChange={setShowTitleDialog} title="Select Title">
+      <SelectionDialog open={showTitleDialog} onOpenChange={setShowTitleDialog} title="Choisir un titre">
         <div className="grid grid-cols-2 gap-3 p-1">
           {titles.map((title) => {
             const owned = ownedTitleIds.has(title.id) || title.is_default;
             const active = activeTitleId === title.id || (!activeTitleId && title.is_default);
-            const rarity = rarityColors[title.rarity] || rarityColors.common;
+            const rarity = rarite(title.rarity);
             return (
               <InventorySlot
                 key={title.id}
@@ -625,7 +723,7 @@ function CustomizationTrigger({
   value,
   onClick,
 }: {
-  icon: any;
+  icon: ReactNode;
   label: string;
   value?: string;
   onClick: () => void;
@@ -640,7 +738,7 @@ function CustomizationTrigger({
       </div>
       <span className="text-xs text-muted-foreground uppercase tracking-wider font-mono mb-1">{label}</span>
       <span className="text-sm font-bold text-foreground font-rajdhani truncate w-full text-center">
-        {value || "Default"}
+        {value || "Par défaut"}
       </span>
       <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -709,12 +807,15 @@ function InventorySlot({
 
       {active && (
         <div className="absolute top-0 right-0 bg-primary text-black ds-t-label font-bold px-1.5 py-0.5 rounded-bl font-mono">
-          EQP
+          ÉQUIPÉ
         </div>
       )}
       {!owned && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Lock className="w-4 h-4 text-white/50" />
+          <Lock className="w-4 h-4 text-white/50" aria-hidden="true" />
+          {/* Le cadenas etait muet : un lecteur d ecran annoncait un
+              bouton desactive sans dire pourquoi. */}
+          <span className="sr-only">Non possédé</span>
         </div>
       )}
     </button>

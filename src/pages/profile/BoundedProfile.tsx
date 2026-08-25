@@ -45,14 +45,8 @@ export default function BoundedProfile() {
       <ProfileBoundedProfile
         userId={user.id}
         displayName={displayName}
-        avatarUrl={avatarUrl}
-        avatarFrame=""
-        personalQuote=""
-        displayedBadges={[]}
+        avatarUrl={avatarUrl}
         onAvatarUrlChange={setAvatarUrl}
-        onAvatarFrameChange={() => {}}
-        onPersonalQuoteChange={() => {}}
-        onDisplayedBadgesChange={() => {}}
       />
       </Panneau>
     </ConsoleReglages>
