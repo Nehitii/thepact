@@ -132,8 +132,16 @@ export function FocusToolbar({
     ...panneaux.map((p) => ({ id: p.id, contenu: p.contenu })),
   ];
 
+  /* La plaque dit quel panneau est ouvert : la feuille de style lui
+     donne la largeur qui va avec. Un panneau de reglages n a pas la
+     meme forme qu une clause a composer — 520 px sont justes pour
+     une colonne de quatre champs, etroits pour juger un fond. */
   return (
-    <section className="sc-composeur" aria-label={t("focus.clause.compose")}>
+    <section
+      className="sc-composeur"
+      data-panneau={activePanel ?? "clause"}
+      aria-label={t("focus.clause.compose")}
+    >
       <header className="sc-composeur-tete">
         <span aria-hidden="true">◈</span>
         <h2>{titre}</h2>

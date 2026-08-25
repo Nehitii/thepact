@@ -26,8 +26,19 @@ export function FocusConfigPanel({
      nerveuse et empeche de comparer. */
   const montre = fond;
 
+  /* LE PANNEAU S OUVRE PLUS GRAND.
+
+     Il tenait dans 512 px, dont un apercu de 132 px de haut : une
+     meurtriere sur une scene qui occupe tout l ecran. On y choisit
+     pourtant le fond de la seance — c est le seul endroit ou on le
+     voit avant de le vivre.
+
+     Une grille a deux colonnes a ete essayee, puis retiree : la
+     colonne de Focus plafonne a 600 px, et couper cette largeur en
+     deux ramenait l apercu a 288 px — plus etroit qu avant. Mesure
+     avant de croire une intuition de mise en page. */
   return (
-    <div className="w-full max-w-lg space-y-3 p-4 bg-card/40 backdrop-blur border border-border/50" style={{ clipPath: cyberClip }}>
+    <div className="w-full max-w-3xl space-y-3 p-4 sm:p-5 bg-card/40 backdrop-blur border border-border/50" style={{ clipPath: cyberClip }}>
       <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3" aria-hidden="true">
         {t("focus.config.title")}
       </p>
@@ -91,7 +102,7 @@ function DurationRow({
 }) {
   return (
     <div
-      className="flex items-center justify-between p-3 bg-background/50 border border-border/30"
+      className="flex flex-wrap items-center justify-between gap-2 p-3 bg-background/50 border border-border/30"
       style={{ clipPath: cyberClip }}
     >
       <span className="text-xs font-mono text-foreground">{label}</span>

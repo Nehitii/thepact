@@ -70,7 +70,14 @@ interface Etat {
   ctx: CanvasRenderingContext2D;
   teinte: [number, number, number];
   or: [number, number, number];
-  pointes?: { x: number; y: number; a: number; v: number; vie: number }[];
+  /* Une pointe d hyphe. `gen` est sa generation — zero pour le tronc
+     sorti du germe, un pour ses branches, et ainsi de suite : c est
+     d elle que viennent l epaisseur et la pâleur, pas de l age.
+     `reste` est ce qu il lui reste a pousser avant de s arreter. */
+  pointes?: { x: number; y: number; a: number; v: number; vie: number; gen: number; reste: number; seg: number }[];
+  /* Les germes deja poses : une colonie neuve se tient a l ecart des
+     precedentes, sinon tout pousse au meme endroit. */
+  germes?: { x: number; y: number }[];
   parts?: { x: number; y: number; vie: number }[];
   cols?: { x: number; y: number; plan: number; v: number; lg: number }[];
   temps: number;
@@ -86,71 +93,205 @@ function rgba(c: [number, number, number], a: number) {
 }
 
 /* ═══ A — MYCELIUM ═══
-   Le trace s accumule : on ne repeint jamais ce qui existe deja, seulement
-   les pointes actives. C est ce qui le rend huit fois moins cher que les
-   autres — et c est le seul dont le fond garde une memoire de la seance. */
+
+   CE N ETAIT PAS DU MYCELIUM, C ETAIT UNE PELOTE.
+
+   Chaque pointe virait de (bruit - 0.5) * 0.42 radian A CHAQUE IMAGE.
+   Soit jusqu a douze degres, sur soixante images par seconde : une
+   pointe faisait un tour complet en une demi-seconde. Le canevas se
+   couvrait donc de BOUCLES qui se recouvraient, toutes de la meme
+   epaisseur, piquees de pastilles dorees tirees au sort — un
+   enchevetrement sature, pas un reseau.
+
+   Trois choses font qu un mycelium ressemble a un mycelium :
+
+     IL VA QUELQUE PART. Une hyphe garde sa direction et ne la corrige
+     que tres peu. Le virage tombe a 0.055 radian — sept fois moins —
+     et suit un champ de bruit lent, donc les voisines s incurvent
+     ensemble au lieu de partir chacune de son cote.
+
+     IL S AMINCIT EN S ELOIGNANT. L epaisseur vient de la GENERATION,
+     pas de l age : le tronc issu du germe est net, ses branches plus
+     fines, leurs branches plus fines encore. C est cette hierarchie
+     qu on lit comme « vivant » ; sans elle, tout se vaut et rien ne
+     se distingue.
+
+     IL PART D UN POINT. Les germes etaient poses sur les BORDS et
+     visaient le centre : la matiere arrivait de partout a la fois. Ici
+     une colonie s ouvre en eventail depuis son germe, et quand elle
+     s epuise une autre s installe ailleurs — a distance des
+     precedentes.
+
+   Les pastilles dorees ne sont plus des confettis : elles marquent les
+   NOEUDS, la ou une hyphe se divise. Elles disent donc quelque chose.
+
+   Ce qui ne change pas : le trace s accumule, on ne repeint jamais ce
+   qui existe deja. C est ce qui rend ce fond huit fois moins cher que
+   les autres, et le seul dont l ecran garde une memoire de la seance. */
+
+/** Cinq hyphes en eventail depuis un germe. */
+/** La longueur d un premier segment, a l echelle du cadre. */
+function segmentBase(e: Etat) {
+  return Math.min(e.w, e.h) * 0.16;
+}
+
+/** Trois hyphes en eventail depuis un germe. */
+function semer(e: Etat, x: number, y: number) {
+  const base = Math.random() * 6.283;
+  const seg = segmentBase(e);
+  for (let k = 0; k < 3; k++) {
+    e.pointes!.push({
+      x, y,
+      a: base + (k / 3) * 6.283 + (Math.random() - 0.5) * 0.6,
+      v: 1,
+      vie: 0,
+      gen: 0,
+      /* Six generations de segments qui retrecissent : la colonie
+         atteint environ 3,4 fois son premier segment, puis s arrete. */
+      reste: seg * 3.4,
+      seg,
+    });
+  }
+  e.germes!.push({ x, y });
+}
+
+/** Un point loin des germes deja poses. Huit essais, puis tant pis. */
+function placeLibre(e: Etat): { x: number; y: number } {
+  const marge = 0.18;
+  let mieux = { x: e.w / 2, y: e.h / 2 }, mieuxD = -1;
+  for (let i = 0; i < 8; i++) {
+    const x = e.w * (marge + Math.random() * (1 - 2 * marge));
+    const y = e.h * (marge + Math.random() * (1 - 2 * marge));
+    let d = Infinity;
+    for (const g of e.germes!) d = Math.min(d, Math.hypot(g.x - x, g.y - y));
+    if (d > mieuxD) { mieuxD = d; mieux = { x, y }; }
+  }
+  return mieux;
+}
+
 function initMycelium(e: Etat) {
   e.ctx.fillStyle = FOND;
   e.ctx.fillRect(0, 0, e.w, e.h);
   e.pointes = [];
-  /* Quatre germes tous poses sur les bords ne donnaient que de petites
-     touffes en peripherie : l ecran restait vide. Neuf germes, dont
-     quatre lances depuis l interieur, et l ecran est occupe des les
-     premieres secondes. */
-  for (let i = 0; i < 9; i++) {
-    const dedans = i >= 5;
-    const bord = i % 4;
-    const x = dedans ? e.w * (0.2 + Math.random() * 0.6) : bord === 0 ? 0 : bord === 1 ? e.w : Math.random() * e.w;
-    const y = dedans ? e.h * (0.2 + Math.random() * 0.6) : bord === 2 ? 0 : bord === 3 ? e.h : Math.random() * e.h;
-    const vers = dedans ? Math.random() * 6.283 : Math.atan2(e.h / 2 - y, e.w / 2 - x);
-    e.pointes.push({ x, y, a: vers, v: 1, vie: 0 });
+  e.germes = [];
+  /* Deux colonies pour commencer. Une seule laisse l ecran vide trop
+     longtemps ; au-dela de deux, elles se recouvrent avant d avoir eu
+     le temps de se dessiner, et on ne voit plus de reseau. */
+  for (let i = 0; i < 2; i++) {
+    const p = placeLibre(e);
+    semer(e, p.x, p.y);
   }
   e.dissipe = 0;
 }
+
 function peindreMycelium(e: Etat, dt: number, eveil: number, prog: number) {
   const ctx = e.ctx;
-  // Dissipation tres lente : sans elle, l ecran finit sature.
+  /* Dissipation tres lente : sans elle, l ecran finit sature. */
   e.dissipe += dt;
   if (e.dissipe > 900) {
     e.dissipe = 0;
     ctx.fillStyle = "rgba(4,6,10,0.055)";
     ctx.fillRect(0, 0, e.w, e.h);
   }
-  if (eveil < 0.02 || !e.pointes) return;
+  if (eveil < 0.02 || !e.pointes || !e.germes) return;
 
-  // La pousse mettait plusieurs minutes a couvrir un ecran. Doublee,
-  // elle occupe l espace en une trentaine de secondes.
-  const vitesse = (1.25 + prog * 1.5) * eveil;
-  const neuves: typeof e.pointes = [];
+  const vitesse = (1.15 + prog * 1.2) * eveil;
+  const seg0 = segmentBase(e);
+  const suite: NonNullable<Etat["pointes"]> = [];
   ctx.lineCap = "round";
-  for (const p of e.pointes) {
-    const n = bruit(p.x * 0.006, p.y * 0.006 + p.vie * 0.02);
-    p.a += (n - 0.5) * 0.42;
-    const d = p.v * vitesse * (dt / 16.7);
-    const nx = p.x + Math.cos(p.a) * d, ny = p.y + Math.sin(p.a) * d;
-    const jeune = Math.min(1, p.vie / 120);
-    ctx.strokeStyle = rgba(e.teinte, 0.42 - jeune * 0.2);
-    ctx.lineWidth = 2.8 - jeune * 1.8;
-    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny); ctx.stroke();
-    p.x = nx; p.y = ny; p.vie++;
 
-    if (Math.random() < 0.012) {
-      ctx.fillStyle = Math.random() < 0.22 ? rgba(e.or, 0.75) : rgba(e.teinte, 0.5);
-      ctx.beginPath(); ctx.arc(p.x, p.y, 1.8 + Math.random() * 2.2, 0, 6.284); ctx.fill();
+  for (const p of e.pointes) {
+    /* LE VIRAGE, SEPT FOIS PLUS DOUX QU AVANT.
+       Le champ de bruit est lu a l echelle du cadre, pas du pixel : deux
+       hyphes voisines lisent presque la meme valeur et s incurvent donc
+       ensemble, comme si le milieu avait un grain. */
+    const n = bruit(p.x * 0.0022, p.y * 0.0022 + p.vie * 0.004);
+    p.a += (n - 0.5) * 0.055;
+
+    const d = p.v * vitesse * (dt / 16.7);
+    const nx = p.x + Math.cos(p.a) * d;
+    const ny = p.y + Math.sin(p.a) * d;
+
+    /* L EPAISSEUR VIENT DE LA GENERATION. Chaque division retire plus
+       du tiers : le tronc est net, la cinquieme generation n est plus
+       qu un fil. C est cette hierarchie qu on lit comme « vivant ». */
+    const finesse = Math.pow(0.62, p.gen);
+    ctx.lineWidth = Math.max(0.4, 2.2 * finesse);
+    ctx.strokeStyle = rgba(e.teinte, 0.1 + 0.34 * finesse);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny); ctx.stroke();
+
+    p.x = nx; p.y = ny; p.vie++;
+    p.reste -= d; p.seg -= d;
+
+    const dehors = p.x < -30 || p.x > e.w + 30 || p.y < -30 || p.y > e.h + 30;
+    if (dehors || p.reste <= 0) continue;
+
+    /* LA DIVISION SE FAIT A LA DISTANCE, PAS AU DE.
+       Elle etait tiree a 3,5 % par image : une hyphe courait donc en
+       moyenne trente images — mais parfois deux cents, et elle
+       traversait tout le cadre d un trait. Le fond se lisait comme un
+       paquet de longues courbes qui se croisent, jamais comme un
+       reseau qui se ramifie.
+
+       Ici chaque hyphe court UN SEGMENT, puis se divise. Le segment
+       raccourcit d un cinquieme a chaque generation : la colonie est
+       dense pres du germe et clairseme au bord, ce qui est exactement
+       la signature d un mycelium. */
+    if (p.seg > 0 || p.gen >= 5 || e.pointes.length + suite.length > 110) {
+      suite.push(p);
+      continue;
     }
-    if (p.vie > 22 && Math.random() < 0.03 && e.pointes.length + neuves.length < 120) {
-      neuves.push({ x: p.x, y: p.y, a: p.a + (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.6), v: p.v * 0.86, vie: 0 });
+
+    const genFille = p.gen + 1;
+    const segFille = seg0 * Math.pow(0.78, genFille);
+    const ecart = 0.3 + Math.random() * 0.28;
+
+    /* LE NOEUD, exactement la ou ca se divise : il marque un evenement
+       au lieu de tomber au hasard. */
+    ctx.fillStyle = p.gen === 0 ? rgba(e.or, 0.7) : rgba(e.teinte, 0.42);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1 + 1.6 * finesse, 0, 6.284);
+    ctx.fill();
+
+    /* Deux tiers des divisions sont DICHOTOMIQUES — la pointe meurt et
+       donne deux filles en Y, ce qui se lit d emblee comme une
+       ramification. Le tiers restant est LATERAL : la pointe continue
+       et pousse une branche de cote, comme une hyphe reelle. Tout en Y
+       ferait un arbre trop regulier ; tout en lateral, une tige a
+       epines. */
+    const enY = Math.random() < 0.66;
+    const filles = enY ? [-1, 1] : [Math.random() < 0.5 ? -1 : 1];
+
+    for (const cote of filles) {
+      suite.push({
+        x: p.x, y: p.y,
+        a: p.a + cote * ecart,
+        v: p.v * 0.94,
+        vie: 0,
+        gen: genFille,
+        reste: p.reste * 0.82,
+        seg: segFille,
+      });
     }
-    if (p.x < -40 || p.x > e.w + 40 || p.y < -40 || p.y > e.h + 40 || p.vie > 900) {
-      const bord = (Math.random() * 4) | 0;
-      p.x = bord === 0 ? 0 : bord === 1 ? e.w : Math.random() * e.w;
-      p.y = bord === 2 ? 0 : bord === 3 ? e.h : Math.random() * e.h;
-      p.a = Math.atan2(e.h / 2 - p.y, e.w / 2 - p.x) + (Math.random() - 0.5);
-      p.vie = 0; p.v = 0.9;
+    if (!enY) {
+      p.gen = genFille;
+      p.seg = segFille;
+      p.vie = 0;
+      suite.push(p);
     }
   }
-  e.pointes.push(...neuves);
+
+  e.pointes = suite;
+
+  /* Quand les colonies s epuisent, une autre s installe ailleurs. Le
+     fond continue donc de vivre sans que rien ne reparte des bords. */
+  if (e.pointes.length < 8) {
+    if (e.germes.length > 14) e.germes.splice(0, e.germes.length - 8);
+    const p = placeLibre(e);
+    semer(e, p.x, p.y);
+  }
 }
+
 
 /* ═══ B — AURORES ═══ */
 function initAurores(e: Etat) {
