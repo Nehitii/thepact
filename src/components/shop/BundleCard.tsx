@@ -165,7 +165,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
           </div>
 
           {ownedItemCount > 0 && (
-            <div className="flex items-center gap-1.5 ds-t-label" style={{ color: "hsl(142 70% 50%)" }}>
+            <div className="flex items-center gap-1.5 ds-t-label" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
               <Check className="w-3 h-3" /> {t("shop.bundles.owned", { n: ownedItemCount, total: bundle.items.length })}
             </div>
           )}
@@ -186,14 +186,14 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
                 <BondIcon size={19} /> {bundle.price_bonds.toLocaleString()}
               </span>
               {remise > 0 && (
-                <span className="font-orbitron text-sm font-bold" style={{ color: "hsl(142 70% 50%)" }}>
+                <span className="font-orbitron text-sm font-bold" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
                   (−{remise} %)
                 </span>
               )}
             </div>
 
             {allOwned ? (
-              <div className="w-full py-2.5 rounded-lg text-center ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)", background: "hsl(142 70% 50% / 0.1)" }}>
+              <div className="w-full py-2.5 rounded-lg text-center ds-t-label font-orbitron tracking-wider" style={{ color: "var(--succes-papier, hsl(142 70% 50%))", background: "var(--succes-papier-01, hsl(142 70% 50% / 0.1))" }}>
                 {t("shop.bundles.allOwned", "Tout possédé")}
               </div>
             ) : (

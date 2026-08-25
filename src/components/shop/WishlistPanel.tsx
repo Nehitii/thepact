@@ -112,7 +112,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
           </span>
         </div>
         {affordableCount > 0 && (
-          <div className="flex items-center gap-1.5 text-xs font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
+          <div className="flex items-center gap-1.5 text-xs font-orbitron tracking-wider" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
             <ShoppingBag className="w-3.5 h-3.5" />
             {affordableCount} affordable
           </div>
@@ -135,7 +135,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
               className="relative rounded-2xl overflow-hidden group"
               style={{
                 background: "hsl(var(--card) / 0.7)",
-                border: `1px solid ${wishlistItem.isOwned ? "hsl(142 70% 50% / 0.2)" : r.border}`,
+                border: `1px solid ${wishlistItem.isOwned ? "var(--succes-papier-02, hsl(142 70% 50% / 0.2))" : r.border}`,
                 boxShadow: canAfford && !wishlistItem.isOwned ? `0 0 16px ${r.glow}` : undefined,
               }}
             >
@@ -145,7 +145,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
               {/* Can-afford pulse */}
               {canAfford && !wishlistItem.isOwned && (
                 <motion.div className="absolute top-4 right-3 w-2 h-2 rounded-full z-10"
-                  style={{ background: "hsl(142 70% 50%)" }}
+                  style={{ background: "var(--succes-papier, hsl(142 70% 50%))" }}
                   animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
                   transition={{ duration: 2, repeat: Infinity }} />
               )}
@@ -184,7 +184,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
 
                 {/* Action */}
                 {wishlistItem.isOwned ? (
-                  <div className="text-center ds-t-label font-orbitron tracking-wider py-1" style={{ color: "hsl(142 70% 50%)" }}>
+                  <div className="text-center ds-t-label font-orbitron tracking-wider py-1" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
                     Owned
                   </div>
                 ) : (

@@ -1409,13 +1409,23 @@
    clair : c'est la vitrine, et une vitrine montre l'article dans sa
    matière.
    ═══════════════════════════════════════════════════════════════ */
+/* Premier essai : une boite rectangulaire, opaque, avec un liseré.
+   Franc, mais brutal — « des rectangles noirs, ce n est pas très
+   beau », et c est exact : un cadre d avatar est rond, l enfermer
+   dans un carré noir le contrarie au lieu de le servir.
+
+   Une vitrine n a pas de boite : elle a un ÉCLAIRAGE. La nuit devient
+   donc une nappe circulaire qui s éteint avant le bord de la carte —
+   la pièce repose dans une flaque d ombre, et le papier reprend tout
+   autour sans arête. */
 .light .sh-scene {
-  padding: 16px 12px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #141A20 0%, #0B0F13 100%);
-  box-shadow:
-    inset 0 0 0 1px hsl(200 18% 30% / 0.55),
-    inset 0 14px 28px -18px rgba(255, 255, 255, 0.22);
+  padding: 20px 12px;
+  background: radial-gradient(ellipse 66% 78% at 50% 46%,
+    #0F151A 0%,
+    #0F151A 38%,
+    rgba(15, 21, 26, 0.9) 56%,
+    rgba(15, 21, 26, 0.5) 72%,
+    rgba(15, 21, 26, 0) 88%);
 }
 
 /* La bannière d'un lot est peinte par un fond de nuit passé en style
@@ -1432,7 +1442,7 @@
    délavé. » Le rail et les plaques étaient déjà justes ; ce qui
    grisait, c'est le seul jeton que la console garde pour elle.
 
-   `--rg-ok` vaut hsl(142 70% 50%) — un vert de diode, pensé pour
+   `--rg-ok` valait un vert de diode à 142 70% 50%, pensé pour
    s'allumer sur du noir. Sur du papier il tombe à 1,8:1, et c'est lui
    qui écrit « synchronisé » et le code de langue en tête de chaque
    plaque : les deux mots que l'œil cherche pour savoir si le réglage
@@ -1451,3 +1461,36 @@
    La carte de question porte un fond de NUIT même en thème clair
    (rgba(5,18,24,0.93)), donc le halo lumineux y était juste. La page
    était déjà bonne ; la seule bonne action était de ne rien faire. */
+
+/* La saveur d'un succès mêle sa rareté à une encre grise :
+   color-mix(… var(--su-teinte) 62%, hsl(215 16% 58%)). Le gris d'appoint
+   est celui du thème sombre, et il tire l'ensemble vers le haut —
+   4,47:1, à trois centièmes du seuil. Même mélange, encre d'appoint du
+   thème clair. */
+.light .su-saveur { color: color-mix(in srgb, var(--su-teinte) 62%, hsl(202 11% 30%)); }
+
+/* ── LE VERT DE RÉUSSITE ───────────────────────────────────────────
+   hsl(142 70% 50%) est écrit EN DUR trente et une fois, presque
+   toujours dans un style inline : « Possédé », les remises, les
+   pastilles de module, l'état « synchronisé » de la console. Un vert
+   de diode, fait pour s'allumer sur du noir — 1,6:1 sur du papier.
+
+   Aucune feuille ne peut atteindre un style inline. Les appels
+   passent donc par une variable AVEC REPLI :
+   `var(--succes-papier, hsl(142 70% 50%))`. En thème sombre la
+   variable n'existe pas et le repli rend la valeur d'origine au
+   caractère près — rien ne change. En clair, elle est définie ici.
+
+   Les lavis montent en même temps : un voile vert à 0,04 se devine
+   sur du noir, il n'existe pas sur du papier. */
+:root.light {
+  --succes-papier:    hsl(152 100% 20%);
+  --succes-papier-06: hsl(152 100% 20% / 0.6);
+  --succes-papier-025: hsl(152 100% 20% / 0.42);
+  --succes-papier-022: hsl(152 100% 20% / 0.4);
+  --succes-papier-02: hsl(152 100% 20% / 0.36);
+  --succes-papier-012: hsl(152 100% 20% / 0.16);
+  --succes-papier-010: hsl(152 100% 20% / 0.14);
+  --succes-papier-01: hsl(152 100% 20% / 0.14);
+  --succes-papier-004: hsl(152 100% 20% / 0.08);
+}

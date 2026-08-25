@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Unified difficulty color system - single source of truth
 export const DIFFICULTY_COLORS = {
-  easy: "hsl(142 70% 50%)",
+  easy: "var(--succes-papier, hsl(142 70% 50%))",
   medium: "hsl(45 95% 55%)",
   hard: "hsl(25 100% 60%)",
   extreme: "hsl(0 90% 65%)",

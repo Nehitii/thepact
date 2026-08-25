@@ -24,7 +24,7 @@
   --rg-fil: hsl(var(--primary) / 0.14);
   --rg-fil-vif: hsl(var(--primary) / 0.45);
   --rg-creux: hsl(var(--background) / 0.5);
-  --rg-ok: hsl(142 70% 50%);
+  --rg-ok: var(--succes-papier, hsl(142 70% 50%));
 
   display: grid;
   grid-template-columns: 224px minmax(0, 1fr);

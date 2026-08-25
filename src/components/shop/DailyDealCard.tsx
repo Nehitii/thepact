@@ -122,7 +122,7 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
 
         {/* Action */}
         {isOwned ? (
-          <div className="flex items-center gap-1.5 ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
+          <div className="flex items-center gap-1.5 ds-t-label font-orbitron tracking-wider" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
             <Check className="w-3.5 h-3.5" /> {t("shop.item.owned", "Possédé")}
           </div>
         ) : (

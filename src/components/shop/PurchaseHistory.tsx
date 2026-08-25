@@ -59,7 +59,7 @@ export function PurchaseHistory() {
   }
 
   const getIcon = (item: PurchaseHistoryItem) => {
-    if (item.transaction_type === "earn" || item.amount > 0) return <ArrowDownLeft className="w-3.5 h-3.5" style={{ color: "hsl(142 70% 50%)" }} />;
+    if (item.transaction_type === "earn" || item.amount > 0) return <ArrowDownLeft className="w-3.5 h-3.5" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }} />;
     switch (item.reference_type) {
       case "bundle": return <Package className="w-3.5 h-3.5" style={{ color: "hsl(270 80% 60%)" }} />;
       case "module": return <Star className="w-3.5 h-3.5" style={{ color: "hsl(45 100% 60%)" }} />;
@@ -98,7 +98,7 @@ export function PurchaseHistory() {
         }}>
           {transactions.map((tx, index) => {
             const isCredit = tx.amount > 0;
-            const color = isCredit ? "hsl(142 70% 50%)" : "hsl(350 80% 55%)";
+            const color = isCredit ? "var(--succes-papier, hsl(142 70% 50%))" : "hsl(350 80% 55%)";
             const rarityColor = getRarityColor(tx);
 
             return (
@@ -140,9 +140,9 @@ export function PurchaseHistory() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 rounded-xl" style={{ background: "hsl(142 70% 50% / 0.04)", border: "1px solid hsl(142 70% 50% / 0.12)" }}>
-          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(142 70% 50% / 0.6)" }}>{t("shop.history.totalEarned", "Total gagné")}</div>
-          <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "hsl(142 70% 50%)" }}>
+        <div className="p-4 rounded-xl" style={{ background: "var(--succes-papier-004, hsl(142 70% 50% / 0.04))", border: "1px solid var(--succes-papier-012, hsl(142 70% 50% / 0.12))" }}>
+          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "var(--succes-papier-06, hsl(142 70% 50% / 0.6))" }}>{t("shop.history.totalEarned", "Total gagné")}</div>
+          <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
             <BondIcon size={18} /> <AnimatedCounter value={totalEarned} />
           </div>
         </div>

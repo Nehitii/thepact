@@ -52,10 +52,60 @@ export const rarityConfig = {
   },
 } as const;
 
+/* -- LES MEMES QUATRE RARETES, SUR DU PAPIER --
+
+   Ces accents sont poses en style INLINE sur les cartes, donc hors de
+   portee de theme-clair.css. Ce sont des couleurs d ecran : l or de
+   legendaire, hsl(45 100% 60%), tombe a 1,2:1 sur du papier — c est
+   lui qui ecrit les prix, les etiquettes de rarete et le libelle du
+   bouton d achat, soit l essentiel de ce qu on lit dans la boutique.
+
+   La TEINTE de chaque rarete est conservee au degre pres : commun
+   reste ardoise, rare reste bleu, epique reste violet, legendaire
+   reste or. C est la clarte qui descend, et les alphas des lavis et
+   des lisereS qui montent — un voile a 0,12 se voit sur du noir, il
+   ne se voit pas sur du blanc.
+
+   Les classes Tailwind (bg, text, badge*) ne changent pas : elles
+   sont deja rattachees aux signaux du theme dans index.css. */
+const rarityConfigClair = {
+  common: {
+    accent: "hsl(212 12% 34%)",
+    glow: "hsl(212 12% 34% / 0.1)",
+    glowStrong: "hsl(212 12% 34% / 0.2)",
+    border: "hsl(212 12% 34% / 0.42)",
+  },
+  rare: {
+    accent: "hsl(212 100% 30%)",
+    glow: "hsl(212 100% 30% / 0.1)",
+    glowStrong: "hsl(212 100% 30% / 0.24)",
+    border: "hsl(212 100% 30% / 0.5)",
+  },
+  epic: {
+    accent: "hsl(272 66% 40%)",
+    glow: "hsl(272 66% 40% / 0.12)",
+    glowStrong: "hsl(272 66% 40% / 0.28)",
+    border: "hsl(272 66% 40% / 0.52)",
+  },
+  legendary: {
+    accent: "hsl(42 100% 22%)",
+    glow: "hsl(42 100% 22% / 0.12)",
+    glowStrong: "hsl(42 100% 22% / 0.3)",
+    border: "hsl(42 100% 22% / 0.55)",
+  },
+} as const;
+
 export type RarityKey = keyof typeof rarityConfig;
 
 export function getRarity(rarity: string) {
-  return rarityConfig[rarity as RarityKey] || rarityConfig.common;
+  const cle = (rarity as RarityKey) in rarityConfig ? (rarity as RarityKey) : "common";
+  const base = rarityConfig[cle];
+  /* Le theme est lu a l appel plutot que passe en parametre : les
+     dix appelants n auraient rien a en faire, et basculer le theme
+     rejoue de toute facon le rendu de la page. */
+  const sombre = typeof document === "undefined"
+    || document.documentElement.classList.contains("dark");
+  return sombre ? base : { ...base, ...rarityConfigClair[cle] };
 }
 
 /* LE NOM DE LA RARETE S AFFICHAIT BRUT.

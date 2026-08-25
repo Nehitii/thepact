@@ -77,7 +77,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
               )}
               {owned && (
                 <span className="ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1"
-                  style={{ background: "hsl(142 70% 50% / 0.12)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.25)" }}>
+                  style={{ background: "var(--succes-papier-012, hsl(142 70% 50% / 0.12))", color: "var(--succes-papier, hsl(142 70% 50%))", border: "1px solid var(--succes-papier-025, hsl(142 70% 50% / 0.25))" }}>
                   <Check className="w-3 h-3" /> Owned
                 </span>
               )}
@@ -88,7 +88,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
         {/* Price */}
         <div className="font-orbitron text-2xl font-bold flex items-center gap-2" style={{ color: r.accent }}>
           {owned ? (
-            <span className="flex items-center gap-2 text-lg" style={{ color: "hsl(142 70% 50%)" }}>
+            <span className="flex items-center gap-2 text-lg" style={{ color: "var(--succes-papier, hsl(142 70% 50%))" }}>
               <Check className="w-5 h-5" /> {t("shop.modules.unlocked", "Débloqué")}
             </span>
           ) : module.is_coming_soon ? (
@@ -111,7 +111,7 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
         {/* CTA */}
         {owned ? (
           <Button disabled className="w-full h-11 rounded-xl font-rajdhani text-sm"
-            style={{ background: "hsl(142 70% 50% / 0.1)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.2)" }}>
+            style={{ background: "var(--succes-papier-01, hsl(142 70% 50% / 0.1))", color: "var(--succes-papier, hsl(142 70% 50%))", border: "1px solid var(--succes-papier-02, hsl(142 70% 50% / 0.2))" }}>
             <Check className="w-4 h-4 mr-2" /> {t("shop.modules.owned", "Déjà acquis")}
           </Button>
         ) : module.is_coming_soon ? (

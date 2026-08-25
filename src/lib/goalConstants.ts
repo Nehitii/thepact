@@ -13,7 +13,7 @@ export const GOAL_TAGS = [
   { value: "creative", labelKey: "goals.tags.creative", color: "hsl(280 75% 55%)" },
   { value: "diy", labelKey: "goals.tags.diy", color: "hsl(175 70% 45%)" },
   { value: "financial", labelKey: "goals.tags.financial", color: "hsl(212 90% 55%)" },
-  { value: "health", labelKey: "goals.tags.health", color: "hsl(142 70% 50%)" },
+  { value: "health", labelKey: "goals.tags.health", color: "var(--succes-papier, hsl(142 70% 50%))" },
   { value: "learning", labelKey: "goals.tags.learning", color: "hsl(25 100% 60%)" },
   { value: "lifestyle", labelKey: "goals.tags.lifestyle", color: "hsl(350 65% 55%)" },
   { value: "nature", labelKey: "goals.tags.nature", color: "hsl(120 60% 45%)" },
@@ -29,7 +29,7 @@ export const GOAL_TAGS = [
 
 // Difficulty options (without custom - that comes from user profile)
 export const DIFFICULTY_OPTIONS = [
-  { value: "easy", labelKey: "goals.difficulties.easy", color: "hsl(142 70% 50%)" },
+  { value: "easy", labelKey: "goals.difficulties.easy", color: "var(--succes-papier, hsl(142 70% 50%))" },
   { value: "medium", labelKey: "goals.difficulties.medium", color: "hsl(45 95% 55%)" },
   { value: "hard", labelKey: "goals.difficulties.hard", color: "hsl(25 100% 60%)" },
   { value: "extreme", labelKey: "goals.difficulties.extreme", color: "hsl(0 90% 65%)" },

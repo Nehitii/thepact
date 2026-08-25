@@ -101,7 +101,7 @@ export const VALENCE_LABELS = [
   { value: 5, label: "Neutral", color: "hsl(210 30% 60%)" },
   { value: 6, label: "Mildly Positive", color: "hsl(160 60% 50%)" },
   { value: 7, label: "Slightly Positive", color: "hsl(150 65% 50%)" },
-  { value: 8, label: "Positive", color: "hsl(142 70% 50%)" },
+  { value: 8, label: "Positive", color: "var(--succes-papier, hsl(142 70% 50%))" },
   { value: 9, label: "Very Positive", color: "hsl(130 75% 50%)" },
   { value: 10, label: "Euphoric", color: "hsl(120 80% 50%)" },
 ];

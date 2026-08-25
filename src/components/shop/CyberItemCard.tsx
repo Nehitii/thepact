@@ -178,9 +178,9 @@ export function CyberItemCard({
               <div
                 className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-md ds-t-label"
                 style={{
-                  color: "hsl(142 70% 50%)",
-                  background: "hsl(142 70% 50% / 0.10)",
-                  border: "1px solid hsl(142 70% 50% / 0.22)",
+                  color: "var(--succes-papier, hsl(142 70% 50%))",
+                  background: "var(--succes-papier-010, hsl(142 70% 50% / 0.10))",
+                  border: "1px solid var(--succes-papier-022, hsl(142 70% 50% / 0.22))",
                 }}
               >
                 <Check className="w-3 h-3" />
