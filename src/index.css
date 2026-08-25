@@ -257,10 +257,13 @@ All colors MUST be HSL.
     --popover: 210 40% 98%;
     --popover-foreground: 210 100% 12%;
 
-    /* Primary - Neon Cyan HUD Accent */
-    --primary: 200 100% 67%;
-    --primary-foreground: 210 100% 5%;
-    --primary-glow: 200 100% 75%;
+    /* Primary — le cyan, en profondeur.
+       26 % de luminosite donne 4,97:1 sur le fond clair ; le neon a
+       67 % en donnait 1,8. Et comme il sert aussi de FOND a des
+       boutons, son encre passe au blanc. */
+    --primary: 200 100% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 200 100% 38%;
 
     /* Secondary - Soft Blue Gray */
     --secondary: 210 30% 85%;
@@ -270,21 +273,23 @@ All colors MUST be HSL.
     --muted: 210 25% 90%;
     --muted-foreground: 210 20% 40%;
 
-    /* Accent - Luminous Highlight */
-    --accent: 200 100% 75%;
-    --accent-foreground: 210 100% 5%;
+    /* Accent — un cran plus clair que primary, jamais au-dessus de
+       ce que le fond supporte. */
+    --accent: 200 90% 30%;
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Health green */
-    --health: 187 100% 50%;
+    /* Health — meme teinte, assez sombre pour se lire. */
+    --health: 187 100% 27%;
     --health-foreground: 0 0% 100%;
 
-    /* Health Biometric HUD */
-    --hud-phosphor: 187 100% 50%;
-    --hud-amber: 43 100% 50%;
+    /* HUD — le phosphore et l ambre sont des neons : en clair ils
+       descendent, sinon ils disparaissent dans le blanc. */
+    --hud-phosphor: 187 100% 27%;
+    --hud-amber: 43 100% 32%;
     --hud-health-surface: 210 40% 95%;
     --hud-health-border: 187 80% 60%;
 
@@ -295,7 +300,7 @@ All colors MUST be HSL.
     /* HUD Borders and Inputs */
     --border: 200 50% 75%;
     --input: 210 35% 92%;
-    --ring: 200 100% 67%;
+    --ring: 200 100% 38%;
 
     --radius: 0.25rem;
 
@@ -316,12 +321,12 @@ All colors MUST be HSL.
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     /* CRITICAL: Preserve Original Difficulty Colors - DO NOT MODIFY */
-    --difficulty-easy: 142 70% 50%;
-    --difficulty-medium: 45 95% 55%;
-    --difficulty-hard: 25 100% 60%;
-    --difficulty-extreme: 0 90% 65%;
-    --difficulty-impossible: 280 75% 45%;
-    --difficulty-custom: 270 90% 65%;
+    --difficulty-easy: 142 70% 30%;
+    --difficulty-medium: 38 95% 33%;
+    --difficulty-hard: 22 95% 38%;
+    --difficulty-extreme: 0 80% 42%;
+    --difficulty-impossible: 280 70% 38%;
+    --difficulty-custom: 270 75% 42%;
 
     /* Achievement Rarity Colors */
     --achievement-common: 45 95% 55%;
@@ -425,7 +430,6 @@ All colors MUST be HSL.
     /* Popover */
     --popover: 210 90% 4%;
     --popover-foreground: 205 100% 90%;
-
     /* Primary - Neon Cyan HUD Accent */
     --primary: 200 100% 67%;
     --primary-foreground: 210 100% 5%;
@@ -438,7 +442,6 @@ All colors MUST be HSL.
     /* Muted */
     --muted: 210 40% 10%;
     --muted-foreground: 210 30% 60%;
-
     /* Accent - Luminous Highlight */
     --accent: 200 100% 75%;
     --accent-foreground: 210 100% 5%;
@@ -450,7 +453,6 @@ All colors MUST be HSL.
     /* Health */
     --health: 187 100% 50%;
     --health-foreground: 0 0% 100%;
-
     /* Health Biometric HUD */
     --hud-phosphor: 187 100% 50%;
     --hud-amber: 43 100% 50%;
