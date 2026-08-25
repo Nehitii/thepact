@@ -2642,6 +2642,7 @@ export type Database = {
           created_at: string
           height_cm: number | null
           hydration_goal_glasses: number | null
+          hydration_unit: string
           id: string
           show_activity: boolean
           show_bmi: boolean
@@ -2660,6 +2661,7 @@ export type Database = {
           created_at?: string
           height_cm?: number | null
           hydration_goal_glasses?: number | null
+          hydration_unit?: string
           id?: string
           show_activity?: boolean
           show_bmi?: boolean
@@ -2678,6 +2680,7 @@ export type Database = {
           created_at?: string
           height_cm?: number | null
           hydration_goal_glasses?: number | null
+          hydration_unit?: string
           id?: string
           show_activity?: boolean
           show_bmi?: boolean

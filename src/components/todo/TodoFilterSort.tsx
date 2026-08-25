@@ -1,5 +1,6 @@
-import { Clock, Sparkles, ChevronDown, ArrowDown, ArrowUp, List, Hourglass, CalendarClock, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ArrowDown, ArrowUp, List, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NATURES_TACHE } from '@/lib/todo/natures';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTranslation } from 'react-i18next';
 
@@ -27,12 +28,11 @@ interface TodoFilterSortProps {
 
 const TRIS: SortField[] = ['manual', 'created_at', 'deadline', 'priority', 'name', 'category', 'is_urgent'];
 
+/* « Toutes » n est pas une nature : c est l absence de filtre. Les
+   quatre autres viennent du catalogue partage. */
 const FILTRES = [
   { id: null as string | null, cle: 'todo.filters.types.all', icone: List },
-  { id: 'flexible', cle: 'todo.filters.types.flexible', icone: Sparkles },
-  { id: 'waiting', cle: 'todo.filters.types.waiting', icone: Hourglass },
-  { id: 'rendezvous', cle: 'todo.filters.types.rendezvous', icone: CalendarClock },
-  { id: 'deadline', cle: 'todo.filters.types.deadline', icone: Clock },
+  ...NATURES_TACHE.map((n) => ({ id: n.id as string | null, cle: n.cle, icone: n.icone })),
 ];
 
 export function TodoFilterSort({

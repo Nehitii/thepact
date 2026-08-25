@@ -1379,7 +1379,10 @@
       "showMetrics": "Show Metrics",
       "glasses": "glasses",
       "hours": "hours",
-      "minutes": "minutes"
+      "minutes": "minutes",
+      "hydrationUnit": "Count in",
+      "liters": "liters",
+      "glassEquals": "1 glass = {{cl}} cl"
     },
     "checkin": {
       "howDidYouSleep": "How many hours did you sleep?",
@@ -1423,7 +1426,8 @@
       "sectionSleep": "Sleep",
       "sectionBody": "The body",
       "saved": "Log saved",
-      "saveError": "The log could not be saved"
+      "saveError": "The log could not be saved",
+      "hydrationLevelVolume": "Water drunk"
     },
     "mood": {
       "title": "Mood",

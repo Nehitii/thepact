@@ -20,8 +20,18 @@ const EFFECT_STYLES: Record<string, React.CSSProperties> = {
   glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
 };
 
+/** Ce que compte le pourcentage de progression. */
+export type MesureProgression = "goals" | "steps";
+
+/** La cle de retenue, partagee avec la page qui la lit. */
+export const CLE_MESURE = "vowpact.hub.mesureProgression";
+
 interface NexusHeroBannerProps {
   progression: number;
+  /** Objectifs atteints, ou etapes franchies. */
+  mesure?: MesureProgression;
+  /** Bascule d une mesure a l autre. Absent : la valeur n est pas cliquable. */
+  onChangerMesure?: () => void;
   level: number;
   totalMissions: number;
   activeDays: number;
@@ -42,6 +52,8 @@ interface NexusHeroBannerProps {
 
 export function NexusHeroBanner({
   progression,
+  mesure = "goals",
+  onChangerMesure,
   level,
   totalMissions,
   activeDays,
@@ -57,11 +69,23 @@ export function NexusHeroBanner({
   rankXPTarget = 0,
 }: NexusHeroBannerProps) {
   const stats = useMemo(() => [
-    { value: `${Math.round(progression)}%`, label: "PROGRESSION", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
+    /* Le libelle dit CE QUI est compte : un pourcentage nu ne se lit
+       pas, et deux mesures differentes affichees pareil se confondent
+       d une session a l autre. */
+    {
+      value: `${Math.round(progression)}%`,
+      label: mesure === "steps" ? "ÉTAPES FRANCHIES" : "OBJECTIFS ATTEINTS",
+      color: "hsl(var(--ds-accent-primary))",
+      glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
+      bascule: onChangerMesure,
+      titre: mesure === "steps"
+        ? "Compter les objectifs atteints à la place"
+        : "Compter les étapes franchies à la place",
+    },
     { value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: String(activeDays), label: "JOURS ACTIFS", color: "#ff8c00", glow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" },
-  ], [progression, level, totalMissions, activeDays]);
+  ], [progression, mesure, onChangerMesure, level, totalMissions, activeDays]);
 
   const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
   const effectStyle = EFFECT_STYLES[titleEffect || "none"] || {};
@@ -167,8 +191,24 @@ export function NexusHeroBanner({
 
         {/* Stats row */}
         <div className="flex justify-center flex-wrap" style={{ gap: 48, marginTop: 32 }}>
-          {stats.map((s) => (
-            <div key={s.label} className="flex flex-col items-center">
+          {stats.map((s) => {
+            /* Celle qui se bascule est un vrai bouton : elle repond au
+               clavier, s annonce comme cliquable, et dit ou elle mene.
+               Un <div onClick> ne fait aucun des trois. */
+            const Cadre = s.bascule ? "button" : "div";
+            return (
+            <Cadre
+              key={s.label}
+              {...(s.bascule
+                ? { type: "button" as const, onClick: s.bascule, title: s.titre, "aria-label": s.titre }
+                : {})}
+              className={
+                "flex flex-col items-center" +
+                (s.bascule
+                  ? " cursor-pointer rounded-sm px-2 -mx-2 transition-colors hover:bg-primary/[0.07] focus-visible:outline focus-visible:outline-1 focus-visible:outline-primary/60"
+                  : "")
+              }
+            >
               <span
                 style={{
                   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
@@ -190,8 +230,9 @@ export function NexusHeroBanner({
               >
                 {s.label}
               </span>
-            </div>
-          ))}
+            </Cadre>
+            );
+          })}
         </div>
       </div>
 

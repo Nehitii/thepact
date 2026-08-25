@@ -7,7 +7,7 @@ import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
-import { SOURCES, estImportee, sourceDe } from "../sources";
+import { estImportee, iconeDe } from "../sources";
 
 /* LA GRILLE HORAIRE — une seule fois
  *
@@ -161,7 +161,7 @@ export function GrilleHoraire({ jours, events, onEventClick, onCellClick }: Gril
           {parJour.map(({ jour, journee }) => (
             <div key={jour.toISOString()} className="cal-tg-journee-col">
               {journee.map((ev) => {
-                const Icone = SOURCES[sourceDe(ev._source)].icone;
+                const Icone = iconeDe(ev);
                 return (
                   <button
                     key={ev.id}

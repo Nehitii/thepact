@@ -8,6 +8,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useHealthByDate, useHealthSettings, useUpsertHealthData } from "@/hooks/useHealth";
 import { cleDuJour, laVeille } from "@/lib/health/journee";
+import {
+  uniteValide,
+  quantiteAffichee,
+  verresDepuisAffichage,
+  formaterQuantite,
+  pasAffiche,
+  uniteCourte,
+} from "@/lib/hydratation";
 import "@/styles/health.css";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -147,6 +155,39 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: Props) {
     </div>
   );
 
+  /* L HYDRATATION A SON PROPRE CURSEUR.
+
+     `nombre` compte en entiers, ce qui va au sommeil et a l activite.
+     L hydratation est le seul champ qui puisse se lire dans une autre
+     unite : plutot que d ajouter trois parametres a une fonction qui
+     sert a trois champs, elle a le sien.
+
+     La valeur ecrite reste un nombre de verres, quelle que soit
+     l unite lue. */
+  const hydratation = (unite: ReturnType<typeof uniteValide>, motVerres: string) => {
+    const verres = valeurs.hydration_glasses;
+    return (
+      <div className="hlt-nombre">
+        <span>
+          <Slider
+            value={[quantiteAffichee(verres ?? 4, unite)]}
+            onValueChange={(v) =>
+              setValeurs((x) => ({ ...x, hydration_glasses: verresDepuisAffichage(v[0], unite) }))
+            }
+            min={0}
+            max={quantiteAffichee(16, unite)}
+            step={pasAffiche(unite)}
+            aria-label={motVerres}
+          />
+        </span>
+        <b data-vide={verres === null ? "1" : "0"}>
+          {verres === null ? "—" : formaterQuantite(verres, unite)}
+          <i>{uniteCourte(unite, motVerres)}</i>
+        </b>
+      </div>
+    );
+  };
+
   const champ = (titre: string, controle: React.ReactNode, aide?: string) => (
     <div className="hlt-champ">
       <u>{titre}</u>
@@ -190,11 +231,23 @@ export function HealthDailyCheckin({ open, onOpenChange, date }: Props) {
           {champ(t("health.mood.title"), echelle("mood_level", humeur, VISAGES))}
           {champ(t("health.checkin.stressLevel"), echelle("stress_level", tension))}
           {champ(t("health.metrics.mentalLoad"), echelle("mental_load", tension))}
-          {champ(
-            t("health.checkin.hydrationLevel"),
-            nombre("hydration_glasses", 0, 16, 1, t("health.settings.glasses"), 4),
-            `${t("health.settings.hydrationGoal")} ${settings?.hydration_goal_glasses || 8}`,
-          )}
+          {(() => {
+            /* L unite lue une fois : le curseur, le nombre et
+               l objectif rappele en dessous doivent parler la meme
+               langue, sinon on lit « 1,5 » sous « objectif 8 ». */
+            const unite = uniteValide(settings?.hydration_unit);
+            const motVerres = t("health.settings.glasses");
+            const objectif = settings?.hydration_goal_glasses || 8;
+            /* Le titre suit l unite : « verres d eau » n a plus de
+               sens quand le curseur affiche des litres. */
+            return champ(
+              unite === "liters"
+                ? t("health.checkin.hydrationLevelVolume", "Eau bue")
+                : t("health.checkin.hydrationLevel"),
+              hydratation(unite, motVerres),
+              `${t("health.settings.hydrationGoal")} ${formaterQuantite(objectif, unite)} ${uniteCourte(unite, motVerres)}`,
+            );
+          })()}
         </div>
 
         <button

@@ -1,5 +1,6 @@
 import { CalendarDays, CheckSquare, Target, Footprints, type LucideIcon } from "lucide-react";
 import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
+import { natureDe } from "@/lib/todo/natures";
 
 /* LES QUATRE SOURCES, DEFINIES UNE FOIS
  *
@@ -30,3 +31,15 @@ export const sourceDe = (source?: CalendarSourceType | null): CalendarSourceType
 
 /** Une entree importee — tache, objectif, etape — n est pas un evenement. */
 export const estImportee = (source?: CalendarSourceType | null) => !!source && source !== "event";
+
+/**
+ * L icone d une entree.
+ *
+ * La source suffit pour un objectif ou une etape : il n en existe
+ * qu une sorte. Une tache, elle, a quatre natures — et un rendez-vous
+ * portant une case a cocher se lit comme une corvee.
+ */
+export function iconeDe(entree: { _source?: CalendarSourceType | null; _nature?: string | null }): LucideIcon {
+  if (entree._source === "todo" && entree._nature) return natureDe(entree._nature).icone;
+  return SOURCES[sourceDe(entree._source)].icone;
+}

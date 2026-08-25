@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
 import { toast } from "sonner";
 import i18next from "i18next";
+import type { UniteHydratation } from "@/lib/hydratation";
 
 export interface HealthData {
   id: string;
@@ -35,6 +36,9 @@ export interface HealthSettings {
   show_nutrition: boolean;
   sleep_goal_hours: number | null;
   hydration_goal_glasses: number | null;
+  /* L unite d AFFICHAGE. Le stockage reste en verres — voir
+     `lib/hydratation.ts` pour pourquoi. */
+  hydration_unit: UniteHydratation;
   activity_goal_minutes: number | null;
   checkin_mode: "today" | "yesterday";
   created_at: string;
@@ -83,6 +87,7 @@ export interface HealthSettingsInput {
   show_nutrition?: boolean;
   sleep_goal_hours?: number | null;
   hydration_goal_glasses?: number | null;
+  hydration_unit?: UniteHydratation;
   activity_goal_minutes?: number | null;
   checkin_mode?: "today" | "yesterday";
 }

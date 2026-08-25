@@ -14,6 +14,16 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Ruler, Weight, Droplets, Apple, AlertCircle } from "lucide-react";
 import { useHealthSettings, useUpsertHealthSettings } from "@/hooks/useHealth";
+import {
+  type UniteHydratation,
+  CL_PAR_VERRE,
+  uniteValide,
+  quantiteAffichee,
+  verresDepuisAffichage,
+  formaterQuantite,
+  pasAffiche,
+  uniteCourte,
+} from "@/lib/hydratation";
 import { useTranslation } from "react-i18next";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -57,6 +67,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
   const [heightCm, setHeightCm] = useState<string>("");
   const [weightKg, setWeightKg] = useState<string>("");
   const [hydrationGoal, setHydrationGoal] = useState(8);
+  const [hydrationUnit, setHydrationUnit] = useState<UniteHydratation>("glasses");
   const [showNutrition, setShowNutrition] = useState(false);
 
   useEffect(() => {
@@ -64,6 +75,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
       setHeightCm(settings.height_cm?.toString() || "");
       setWeightKg(settings.weight_kg?.toString() || "");
       setHydrationGoal(settings.hydration_goal_glasses || 8);
+      setHydrationUnit(uniteValide(settings.hydration_unit));
       setShowNutrition(settings.show_nutrition);
     }
   }, [settings]);
@@ -74,6 +86,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
         height_cm: heightCm ? parseFloat(heightCm) : null,
         weight_kg: weightKg ? parseFloat(weightKg) : null,
         hydration_goal_glasses: hydrationGoal,
+        hydration_unit: hydrationUnit,
         show_nutrition: showNutrition,
       });
       onOpenChange(false);
@@ -135,26 +148,70 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
 
           <Separator className="bg-border" />
 
-          {/* L objectif d hydratation : affiche sous le curseur de
-              l etape correspondante du releve. */}
+          {/* EN VERRES OU EN LITRES.
+
+              Le verre est une unite domestique : personne ne remplit
+              huit fois le meme, et une bouteille se lit en litres.
+              Les deux servent, selon comment on boit.
+
+              Ce choix ne touche QUE l affichage. La base garde des
+              verres entiers, donc basculer d une unite a l autre ne
+              reecrit pas une seule ligne d historique et se defait
+              aussi vite qu on l a fait. */}
           <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground flex items-center gap-2">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-muted-foreground flex items-center gap-2 text-sm">
                 <Droplets className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                {t("health.settings.hydrationUnit", "Compter en")}
+              </span>
+              <div className="flex rounded-md overflow-hidden border border-border" role="group" aria-label={t("health.settings.hydrationUnit", "Compter en")}>
+                {([
+                  ["glasses", t("health.settings.glasses", "verres")],
+                  ["liters", t("health.settings.liters", "litres")],
+                ] as const).map(([id, libelle]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={hydrationUnit === id}
+                    onClick={() => setHydrationUnit(id)}
+                    className={
+                      "px-3 py-1 text-xs transition-colors " +
+                      (hydrationUnit === id
+                        ? "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-medium"
+                        : "text-muted-foreground hover:bg-muted/60")
+                    }
+                  >
+                    {libelle}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-muted-foreground">
                 {t("health.settings.hydrationGoal")}
               </span>
               <span className="text-cyan-600 dark:text-cyan-400 font-medium">
-                {hydrationGoal} {t("health.settings.glasses")}
+                {formaterQuantite(hydrationGoal, hydrationUnit)}{" "}
+                {uniteCourte(hydrationUnit, t("health.settings.glasses"))}
               </span>
             </div>
+            {/* Le curseur travaille dans l unite affichee : en litres,
+                il avance par quarts — un verre — et non par unites
+                entieres, qui sauteraient quatre verres a la fois. */}
             <Slider
-              value={[hydrationGoal]}
-              onValueChange={(v) => setHydrationGoal(v[0])}
-              min={4}
-              max={16}
-              step={1}
+              value={[quantiteAffichee(hydrationGoal, hydrationUnit)]}
+              onValueChange={(v) => setHydrationGoal(verresDepuisAffichage(v[0], hydrationUnit))}
+              min={quantiteAffichee(4, hydrationUnit)}
+              max={quantiteAffichee(16, hydrationUnit)}
+              step={pasAffiche(hydrationUnit)}
               aria-label={t("health.settings.hydrationGoal")}
             />
+            {hydrationUnit === "liters" && (
+              <p className="text-[11px] text-muted-foreground mt-2">
+                {t("health.settings.glassEquals", "1 verre = {{cl}} cl", { cl: CL_PAR_VERRE })}
+              </p>
+            )}
           </div>
 
           <Separator className="bg-border" />

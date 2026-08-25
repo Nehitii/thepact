@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
-import { NexusHeroBanner } from "@/components/home/NexusHeroBanner";
+import { NexusHeroBanner, CLE_MESURE, type MesureProgression } from "@/components/home/NexusHeroBanner";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
@@ -183,9 +183,36 @@ export default function Home() {
     ? Math.max(1, Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24)))
     : 1;
 
-  const progression = dashboardData.totalGoals > 0
-    ? (dashboardData.goalsCompleted / dashboardData.totalGoals) * 100
-    : 0;
+  /* DEUX FACONS DE MESURER LA MEME AVANCEE.
+
+     Par objectifs, un chiffre bouge quand une mission entiere tombe :
+     c est juste, mais ca peut rester immobile des semaines pendant
+     qu on travaille dur. Par etapes, il avance a chaque pas franchi —
+     plus vivant, moins solennel.
+
+     Aucune des deux n a raison contre l autre : elles repondent a des
+     questions differentes, « ou j en suis » et « est-ce que j avance ».
+     Le choix est donc a celui qui regarde, et il est retenu.
+
+     En localStorage : c est un reglage de lecture sur une seule page,
+     comme le fond de Focus. Il ne merite ni colonne ni aller-retour
+     serveur. */
+  const [mesure, setMesure] = useState<MesureProgression>(() => {
+    try {
+      return localStorage.getItem(CLE_MESURE) === "steps" ? "steps" : "goals";
+    } catch { return "goals"; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
+  }, [mesure]);
+
+  const progression = (() => {
+    const [fait, total] =
+      mesure === "steps"
+        ? [dashboardData.totalStepsCompleted, dashboardData.totalSteps]
+        : [dashboardData.goalsCompleted, dashboardData.totalGoals];
+    return total > 0 ? (fait / total) * 100 : 0;
+  })();
 
   return (
     <DSPageShell
@@ -238,6 +265,8 @@ export default function Home() {
         {pact ? (
           <NexusHeroBanner
             progression={progression}
+            mesure={mesure}
+            onChangerMesure={() => setMesure((m) => (m === "goals" ? "steps" : "goals"))}
             level={level}
             totalMissions={allGoals.length}
             activeDays={activeDays}

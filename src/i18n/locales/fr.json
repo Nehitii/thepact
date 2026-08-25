@@ -1379,7 +1379,10 @@
       "showMetrics": "Afficher les métriques",
       "glasses": "verres",
       "hours": "heures",
-      "minutes": "minutes"
+      "minutes": "minutes",
+      "hydrationUnit": "Compter en",
+      "liters": "litres",
+      "glassEquals": "1 verre = {{cl}} cl"
     },
     "checkin": {
       "howDidYouSleep": "Combien d'heures as-tu dormi ?",
@@ -1423,7 +1426,8 @@
       "sectionSleep": "Le sommeil",
       "sectionBody": "Le corps",
       "saved": "Relevé enregistré",
-      "saveError": "Le relevé n’a pas pu être enregistré"
+      "saveError": "Le relevé n’a pas pu être enregistré",
+      "hydrationLevelVolume": "Eau bue"
     },
     "mood": {
       "title": "Humeur",

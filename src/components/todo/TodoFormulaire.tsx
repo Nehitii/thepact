@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   Briefcase, Heart, User, BookOpen, Cog, Tag,
-  Sparkles, Hourglass, CalendarClock, Clock,
+  Clock,
   MapPin, Bell, Calendar as CalendarIcon, Check,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { CATEGORIES_TACHE } from "@/lib/todo/categories";
+import { NATURES_TACHE } from "@/lib/todo/natures";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 import type { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from "@/hooks/useTodoList";
@@ -46,12 +47,9 @@ interface TodoFormulaireProps {
    dans la saisie rapide, dans le calendrier et dans les statistiques —
    et les quatre avaient deja diverge. */
 
-const TYPES: { id: TodoTaskType; icone: typeof Sparkles; c: string }[] = [
-  { id: "flexible", icone: Sparkles, c: "#22d3ee" },
-  { id: "waiting", icone: Hourglass, c: "#f59e0b" },
-  { id: "rendezvous", icone: CalendarClock, c: "#a855f7" },
-  { id: "deadline", icone: Clock, c: "#ff4d5e" },
-];
+/* Les natures vivent dans lib/todo/natures.ts, comme les categories :
+   elles etaient ecrites ici ET dans la barre de filtres, et le
+   calendrier les ignorait completement. */
 
 const PRIORITES: { id: TodoPriority; c: string; part: string }[] = [
   { id: "low", c: "#10b981", part: "33%" },
@@ -196,7 +194,7 @@ export function TodoFormulaire({
           {/* 03 — la nature */}
           <Section variants={bloc} bouge={!immobile} n="03" titre={t("todo.create.taskType")}>
             <div className="tsk-f-grille est-2" role="group" aria-label={t("todo.create.taskType")}>
-              {TYPES.map(({ id, icone: Icone, c }) => (
+              {NATURES_TACHE.map(({ id, icone: Icone, couleur: c }) => (
                 <button
                   key={id}
                   type="button"

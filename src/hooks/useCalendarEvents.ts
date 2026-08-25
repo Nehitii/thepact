@@ -7,9 +7,35 @@ import {
   addDays, addWeeks, addMonths, addYears,
   differenceInCalendarDays, differenceInCalendarMonths, differenceInCalendarYears,
   isBefore, isAfter, parseISO,
-  startOfDay, endOfDay,
+  startOfDay, endOfDay, addHours, format as formaterDate,
 } from "date-fns";
 import { trackCalendarEventCreated } from "@/lib/achievements";
+import type { TodoTaskType } from "@/hooks/useTodoList";
+import { natureDe, estRendezVous } from "@/lib/todo/natures";
+import { composerInstant } from "@/components/calendar/temps";
+
+/**
+ * Le moment complet d un rendez-vous : le JOUR de son echeance, a
+ * l HEURE saisie.
+ *
+ * `deadline` est un timestamptz, `appointment_time` une heure seule.
+ * Le jour se lit en LOCAL, pas en tranchant la chaine ISO : une
+ * echeance a 2026-08-25T22:00:00Z tombe deja le 26 a Paris, et la
+ * decouper donnerait le 25 — le rendez-vous glisserait d un jour
+ * pour tout le monde a l est de Greenwich.
+ *
+ * Sans duree saisie, une heure : c est la longueur qu on prete a un
+ * rendez-vous quand on n en sait rien, et un evenement de duree nulle
+ * ne se voit pas sur une grille horaire.
+ */
+function momentDuJour(echeance: string, heure: string): { debut: string; fin: string } | null {
+  const jour = new Date(echeance);
+  if (Number.isNaN(jour.getTime())) return null;
+  /* « 14:30:00 » -> « 14:30 » : composerInstant attend hh:mm. */
+  const debut = composerInstant(formaterDate(jour, "yyyy-MM-dd"), heure.slice(0, 5));
+  if (!debut) return null;
+  return { debut: debut.toISOString(), fin: addHours(debut, 1).toISOString() };
+}
 
 // ─── Types ───────────────────────────────────────────────────
 export interface RecurrenceRule {
@@ -48,6 +74,11 @@ export interface CalendarEvent {
   _originalStart?: string;
   _source?: CalendarSourceType;
   _sourceId?: string; // original ID from the source table
+  /* CE QU EST l entree, quand sa source ne suffit pas a le dire.
+     Une tache importee arrivait indifferenciee : rendez-vous,
+     echeance ou tache souple avaient la meme couleur et la meme
+     icone. La source dit D OU ca vient ; la nature dit ce que c est. */
+  _nature?: TodoTaskType;
 }
 
 export type CalendarEventInsert = Omit<CalendarEvent, "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId">;
@@ -296,7 +327,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       if (!user) return [];
       const { data, error } = await supabase
         .from("todo_tasks")
-        .select("id, name, deadline, category, location")
+        .select("id, name, deadline, category, location, task_type, appointment_time")
         .eq("user_id", user.id)
         .eq("status", "active")
         .not("deadline", "is", null)
@@ -305,16 +336,46 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .gte("deadline", bornes.debut)
         .lte("deadline", bornes.fin);
       if (error) throw error;
-      return (data ?? []).map((t: any): CalendarEvent => ({
+      /* La requete nomme ses six colonnes : le type les nomme aussi,
+         plutot que de tout abandonner a `any`. */
+      type LigneTache = {
+        id: string;
+        name: string;
+        deadline: string;
+        category: string | null;
+        location: string | null;
+        task_type: string | null;
+        appointment_time: string | null;
+      };
+      return ((data ?? []) as LigneTache[]).map((t): CalendarEvent => {
+        /* UN RENDEZ-VOUS N EST PAS UNE TACHE POSEE SUR LA JOURNEE.
+
+           Toute tache importee arrivait en journee entiere, teintee
+           d orange, avec l icone de case a cocher. Un rendez-vous
+           saisi a 14 h perdait donc son heure — la seule chose qui en
+           fait un rendez-vous — et se rangeait avec les taches du
+           jour, ou personne ne le cherche.
+
+           `appointment_time` est une heure seule (« 14:30 ») : elle se
+           colle a la date d echeance pour redonner le moment complet.
+           Sans heure saisie, on ne devine pas — la tache reste sur la
+           journee, ce qui est honnete. */
+        const nature = natureDe(t.task_type);
+        const heure = estRendezVous(t.task_type) ? t.appointment_time : null;
+        const place = heure ? momentDuJour(t.deadline, heure) : null;
+
+        return {
         id: `todo_${t.id}`,
         user_id: user.id,
         title: t.name,
         description: null,
         location: t.location || null,
-        start_time: t.deadline,
-        end_time: t.deadline,
-        all_day: true,
-        color: "#f97316",
+        start_time: place ? place.debut : t.deadline,
+        end_time: place ? place.fin : t.deadline,
+        all_day: !place,
+        /* La teinte suit la nature : violet pour un rendez-vous,
+           rouge pour une echeance, ambre pour une attente. */
+        color: nature.couleur,
         category: "todo",
         recurrence_rule: null,
         recurrence_parent_id: null,
@@ -329,7 +390,9 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         _virtual: true,
         _source: "todo",
         _sourceId: t.id,
-      }));
+        _nature: nature.id,
+        };
+      });
     },
     enabled: todoEnabled,
   });
