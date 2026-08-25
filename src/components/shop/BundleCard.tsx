@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 import { useTranslation } from "react-i18next";
 import { Package, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,15 +111,13 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
                   {profil?.display_name ?? ""}
                 </div>
                 {titre && (
-                  <div
-                    className="font-orbitron text-[0.6875rem] font-semibold tracking-wide truncate"
-                    style={{
-                      color: titre.text_color || r.accent,
-                      textShadow: titre.glow_color ? `0 0 8px ${titre.glow_color}` : undefined,
-                    }}
-                  >
-                    {titre.title_text}
-                  </div>
+                  <TitreCosmetique
+                    texte={titre.title_text}
+                    couleur={titre.text_color || r.accent}
+                    lueur={titre.glow_color}
+                    rarete={titre.rarity}
+                    taille="compacte"
+                  />
                 )}
               </div>
             </div>

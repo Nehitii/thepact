@@ -7,6 +7,7 @@ import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBond
 import { FramePreview, AvatarFrame } from "@/components/ui/avatar-frame";
 import { useProfile } from "@/hooks/useProfile";
 import { useCarteProfil } from "@/hooks/useCarteProfil";
+import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 import { ApercuFondCarte } from "./ApercuFondCarte";
 import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
@@ -198,10 +199,16 @@ export function CosmeticShop() {
                     <CyberItemCard key={title.id} id={title.id} name={title.name} rarity={title.rarity} price={title.price}
                       owned={isOwned(title.id, "title") || title.is_default} canAfford={(balance?.balance || 0) >= title.price} itemType="title" index={i}
                       preview={
-                        <span className="font-orbitron text-lg font-bold tracking-wider" style={{
-                          color: originalTitle?.text_color || 'hsl(var(--ds-accent-primary))',
-                          textShadow: originalTitle?.glow_color ? `0 0 10px ${originalTitle.glow_color}, 0 0 20px ${originalTitle.glow_color}` : undefined,
-                        }}>{originalTitle?.title_text || title.name}</span>
+                        /* Le rayon montre exactement ce qu on portera :
+                           meme composant, meme echelle de rarete. Il
+                           peignait jusqu ici son propre aplat avec une
+                           double ombre, sans rien dire du cran. */
+                        <TitreCosmetique
+                          texte={originalTitle?.title_text || title.name}
+                          couleur={originalTitle?.text_color}
+                          lueur={originalTitle?.glow_color}
+                          rarete={title.rarity}
+                        />
                       }
                       onPurchase={() => handlePurchaseClick({ id: title.id, name: title.name, type: "title", price: title.price, rarity: title.rarity })}
                       onPreview={() => originalTitle && setFittingItem({ type: "title", data: originalTitle })} />

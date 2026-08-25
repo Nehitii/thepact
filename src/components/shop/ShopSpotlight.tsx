@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { getRarity, useRarityLabel } from "./shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
+import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 
 interface ShopSpotlightProps {
   onPreview?: (item: any, type: string) => void;
@@ -70,12 +71,12 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
     }
     const title = featured as any;
     return (
-      <span className="font-orbitron text-2xl font-bold tracking-wider" style={{
-        color: title.text_color || r.accent,
-        textShadow: title.glow_color ? `0 0 16px ${title.glow_color}, 0 0 32px ${title.glow_color}` : `0 0 16px ${r.glow}`,
-      }}>
-        {title.title_text || title.name}
-      </span>
+      <TitreCosmetique
+        texte={title.title_text || title.name}
+        couleur={title.text_color || r.accent}
+        lueur={title.glow_color}
+        rarete={title.rarity}
+      />
     );
   };
 
