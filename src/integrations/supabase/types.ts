@@ -3283,7 +3283,6 @@ export type Database = {
           active_frame_id: string | null
           active_pact_id: string | null
           active_title_id: string | null
-          age: number | null
           already_funded: number | null
           avatar_frame: string | null
           avatar_url: string | null
@@ -3300,7 +3299,6 @@ export type Database = {
           displayed_badges: string[] | null
           font_size: number
           goal_unlock_code: string | null
-          height: number | null
           id: string
           journal_prompt_families: string[] | null
           language: string | null
@@ -3324,7 +3322,6 @@ export type Database = {
           theme_preference: string
           timezone: string | null
           updated_at: string | null
-          weight: number | null
         }
         Insert: {
           accent_color?: string
@@ -3333,7 +3330,6 @@ export type Database = {
           active_frame_id?: string | null
           active_pact_id?: string | null
           active_title_id?: string | null
-          age?: number | null
           already_funded?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
@@ -3350,7 +3346,6 @@ export type Database = {
           displayed_badges?: string[] | null
           font_size?: number
           goal_unlock_code?: string | null
-          height?: number | null
           id: string
           journal_prompt_families?: string[] | null
           language?: string | null
@@ -3374,7 +3369,6 @@ export type Database = {
           theme_preference?: string
           timezone?: string | null
           updated_at?: string | null
-          weight?: number | null
         }
         Update: {
           accent_color?: string
@@ -3383,7 +3377,6 @@ export type Database = {
           active_frame_id?: string | null
           active_pact_id?: string | null
           active_title_id?: string | null
-          age?: number | null
           already_funded?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
@@ -3400,7 +3393,6 @@ export type Database = {
           displayed_badges?: string[] | null
           font_size?: number
           goal_unlock_code?: string | null
-          height?: number | null
           id?: string
           journal_prompt_families?: string[] | null
           language?: string | null
@@ -3424,7 +3416,6 @@ export type Database = {
           theme_preference?: string
           timezone?: string | null
           updated_at?: string | null
-          weight?: number | null
         }
         Relationships: [
           {
