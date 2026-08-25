@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { ReinitialiserLePacte } from "@/components/profile/ReinitialiserLePacte";
 import { Panneau } from "@/components/profile/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
@@ -95,6 +96,11 @@ export default function DataPortability() {
          `pact_id = ""` — une chaine vide la ou Postgres attend un uuid —
          et la requete echouait en silence, le compte retombant a zero
          par `|| 0`. */
+      /* Le nom sert a la confirmation de reinitialisation, plus bas. */
+      const { data: pacte } = pactId
+        ? await supabase.from("pacts").select("name").eq("id", pactId).maybeSingle()
+        : { data: null };
+
       const objectifs = pactId
         ? (await supabase.from("goals").select("id").eq("pact_id", pactId)).data ?? []
         : [];
@@ -114,6 +120,8 @@ export default function DataPortability() {
 
       const etapes = etapesRes.data ?? [];
       return {
+        pactId,
+        pactName: pacte?.name ?? "",
         goalsCreated: idsObjectifs.length,
         /* « completed » est bien le statut des ETAPES — contrairement
            aux objectifs, ou il n existe pas. */
@@ -516,7 +524,16 @@ export default function DataPortability() {
       </Panneau>
 
       {/* ── Danger Zone ── */}
+      {/* LES TROIS DESTRUCTIONS, DU MOINS GRAVE AU PIRE.
+           La reinitialisation du pacte vivait dans « Regles du pacte »,
+           sous un panneau nomme « Zone sensible » — le meme nom que
+           celui-ci, avec un contenu different. Le rail en affichait deux,
+           et il fallait connaitre les deux pour savoir ce qu on pouvait
+           detruire. Ensemble, on voit l echelle et l on choisit son
+           barreau. */}
       <Panneau code="Zone sensible" etat={t("settings.data.danger", "irréversible")} ton="danger" taille="pleine">
+        <ReinitialiserLePacte pactId={stats?.pactId ?? undefined} pactName={stats?.pactName ?? ""} />
+
         <div className="border border-destructive/20 bg-destructive/5 p-4" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
           <div className="flex items-start gap-3">
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />

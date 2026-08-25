@@ -13,6 +13,7 @@ import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { texteDepuisDateCivile, aujourdHuiCivil } from "@/lib/dateCivile";
 import { noterEvenementSecurite, LIBELLES_EVENEMENT, type EvenementSecurite } from "@/lib/journalSecurite";
 import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/components/profile/console-ui";
+import { CodeDeVerrouillage } from "@/components/profile/CodeDeVerrouillage";
 
 const TIMEZONES = [
   "UTC", "Europe/Paris", "Europe/London", "America/New_York", "America/Los_Angeles",
@@ -524,6 +525,11 @@ function VoletSecurite({ userId }: { userId: string }) {
       <Panneau code={t("profile.mfaPanel", "Double authentification")} taille="pleine">
         <MfaEnrollment userId={userId} onEvenement={rafraichir} />
       </Panneau>
+
+      {/* Il vivait dans « Regles du pacte », entre l echeance et la
+          difficulte — alors qu il ne regle rien du pacte : il masque le
+          contenu d un objectif a qui regarde l ecran. */}
+      <CodeDeVerrouillage userId={userId} />
 
       <PanneauSessions userId={userId} onEvenement={rafraichir} />
       <PanneauJournal userId={userId} cle={cle} />

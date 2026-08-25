@@ -1,31 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Bouton } from "@/components/profile/console-ui";
+/* Seize imports en desservaient trois : le code de verrouillage et la
+   reinitialisation sont partis avec les leurs. */
 import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
 import { PactIdentityCard } from "./PactIdentityCard";
 import { PactOverviewCard } from "./PactOverviewCard";
-import { DataPanel, TerminalLog } from "./settings-ui";
-import { useResetPact } from "@/hooks/useResetPact";
-import { AlertTriangle, Loader2, Lock, Check, Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { PactSettingsCard } from "./PactSettingsCard";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
    L identite du pacte est un editeur a elle seule — 1 282 px — et les
@@ -90,83 +70,10 @@ export function ProfilePactSettings({
   onCustomDifficultyColorChange,
 }: ProfilePactSettingsProps) {
   const { t } = useTranslation();
-  const resetPact = useResetPact();
-  const [confirmName, setConfirmName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
-    { text: "PACT SETTINGS LOADED", type: "info" },
-    { text: "ALL MODULES ACTIVE", type: "ok" },
-  ]);
-
-  // Unlock code state
-  const [unlockCode, setUnlockCode] = useState("");
-  const [showCode, setShowCode] = useState(false);
-  const [savingCode, setSavingCode] = useState(false);
-  const [existingCodeSet, setExistingCodeSet] = useState(false);
-
-  useEffect(() => {
-    const loadCode = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("goal_unlock_code")
-        .eq("id", userId)
-        .maybeSingle();
-      if (data?.goal_unlock_code) {
-        setExistingCodeSet(true);
-        setUnlockCode(data.goal_unlock_code);
-      }
-    };
-    loadCode();
-  }, [userId]);
-
-  const handleSaveUnlockCode = async () => {
-    if (unlockCode.length !== 4 || !/^\d{4}$/.test(unlockCode)) {
-      toast.error("Code invalide", { description: "Quatre chiffres, ni plus ni moins." });
-      return;
-    }
-    setSavingCode(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ goal_unlock_code: unlockCode })
-      .eq("id", userId);
-    setSavingCode(false);
-    if (error) {
-      toast.error("Error", { description: error.message });
-    } else {
-      setExistingCodeSet(true);
-      toast.success("Code enregistré", { description: "Tes objectifs verrouillés le demanderont." });
-      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE UPDATED", type: "ok" as const }]);
-    }
-  };
-
-  const handleRemoveUnlockCode = async () => {
-    setSavingCode(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ goal_unlock_code: null })
-      .eq("id", userId);
-    setSavingCode(false);
-    if (error) {
-      toast.error("Error", { description: error.message });
-    } else {
-      setUnlockCode("");
-      setExistingCodeSet(false);
-      toast.success("Unlock code removed");
-      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE REMOVED", type: "warn" as const }]);
-    }
-  };
-
-  const handleReset = async () => {
-    if (!pactId) return;
-    try {
-      await resetPact.mutateAsync(pactId);
-      setConfirmName("");
-      setDialogOpen(false);
-      setLogLines(prev => [...prev.slice(-3), { text: "⚠ PACT RESET EXECUTED", type: "warn" as const }]);
-    } catch {
-      // Error handled by mutation onError
-    }
-  };
+  /* L ETAT DU CODE DE VERROUILLAGE ET DE LA REINITIALISATION EST
+     PARTI AVEC EUX. Restaient ici : deux etats de saisie, deux
+     gestionnaires, un journal de terminal en anglais — et
+     `useResetPact`, dont plus personne n avait besoin. */
 
   if (volet === "identite") {
     return (
@@ -213,123 +120,17 @@ export function ProfilePactSettings({
 
       <RanksCard userId={userId} />
 
-      {/* Goal Lock Code */}
-      <PactSettingsCard
-        icon={<Lock className="h-4 w-4 text-primary" />}
-        title="Code de verrouillage"
-        description="Un code à quatre chiffres pour masquer le contenu d’un objectif"
-        sectionId="goal-lock"
-      >
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground font-rajdhani">
-            {existingCodeSet
-              ? "Ton code est posé. Tu peux le changer ou le retirer ci-dessous."
-              : "Choisis un code à quatre chiffres. Une fois posé, tu pourras verrouiller un objectif pour en masquer le contenu."}
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 max-w-[180px]">
-              <Input
-                type={showCode ? "text" : "password"}
-                inputMode="numeric"
-                maxLength={4}
-                id="code-verrouillage"
-                aria-label="Code de verrouillage à quatre chiffres"
-                placeholder="0000"
-                value={unlockCode}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                  setUnlockCode(v);
-                }}
-                className="font-orbitron tracking-[0.5em] text-center pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCode(!showCode)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            <Button
-              size="sm"
-              onClick={handleSaveUnlockCode}
-              disabled={savingCode || unlockCode.length !== 4}
-              className="gap-1.5"
-            >
-              {savingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-              Enregistrer
-            </Button>
-          </div>
-          {existingCodeSet && (
-            <Bouton role="danger" onClick={handleRemoveUnlockCode} disabled={savingCode}>
-              Retirer le code
-            </Bouton>
-          )}
-        </div>
-      </PactSettingsCard>
+      {/* Le code de verrouillage est parti dans « Securite » : il
+          masque le contenu d un objectif a qui regarde l ecran, ce qui
+          ne regle rien du pacte. */}
 
-      {/* Danger Zone — Reset Pact */}
-      {pactId && (
-        <DataPanel
-          code="MODULE_06"
-          title="Zone sensible"
-          statusText={<span className="text-destructive">irréversible</span>}
-        >
-          <div className="py-4 space-y-4">
-            <p className="ds-t-label text-destructive/60 font-mono tracking-wider">
-              Cette action est sans retour. Tous tes objectifs, étapes, missions et compteurs de progression seront effacés.
-            </p>
+      {/* LA REINITIALISATION A REJOINT LES DEUX AUTRES DESTRUCTIONS,
+          dans « Mes donnees ». Deux panneaux nommes « Zone sensible »
+          coexistaient dans le rail, avec des contenus differents.
 
-            <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
-              <AlertDialogTrigger asChild>
-                <Bouton role="danger" pleine>
-                  <AlertTriangle />
-                  Réinitialiser le pacte
-                </Bouton>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Reset Pact</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Cette action est sans retour. Tous tes objectifs, étapes, missions et compteurs de progression seront effacés.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <div className="space-y-2 py-2">
-                  <p className="text-sm text-muted-foreground">
-                    Type your pact name to confirm: <strong className="text-foreground">{pactName}</strong>
-                  </p>
-                  <Input
-                    value={confirmName}
-                    onChange={(e) => setConfirmName(e.target.value)}
-                    placeholder={pactName}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <button
-                    disabled={confirmName !== pactName || resetPact.isPending}
-                    onClick={handleReset}
-                    className={cn(
-                      "h-10 px-4 font-mono ds-t-label tracking-[0.22em] uppercase",
-                      "bg-red-950/40 border border-red-500/40",
-                      "text-red-400 hover:bg-red-900/40",
-                      "disabled:opacity-30 disabled:cursor-not-allowed",
-                      "transition-all duration-200",
-                    )}
-                  >
-                    {resetPact.isPending ? "RESETTING…" : "RESET EVERYTHING"}
-                  </button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </DataPanel>
-      )}
-
-      <TerminalLog lines={logLines} />
+          Et le journal de terminal qui suivait — « SYSTEM LOG // », en
+          anglais — etait le dernier reliquat de l ancien kit : la
+          refonte epuree l a retire partout ailleurs. */}
       <div className="h-8" />
     </>
   );
