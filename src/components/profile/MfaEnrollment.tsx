@@ -6,6 +6,7 @@ import { Loader2, ShieldCheck, ShieldOff, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMfa, type MfaEnrollment as Enrollment } from "@/hooks/useMfa";
 import { noterEvenementSecurite } from "@/lib/journalSecurite";
+import { CodesDeSecours } from "@/components/profile/CodesDeSecours";
 
 /**
  * Enrôlement d'un facteur TOTP via Supabase Auth.
@@ -80,7 +81,8 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
   // ── Facteur actif ──
   if (mfa.enabled && !enrollment) {
     return (
-      <div className="p-4 bg-card/40 border border-primary/30 space-y-3">
+      <>
+        <div className="p-4 bg-card/40 border border-primary/30 space-y-3">
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-5 h-5 text-primary" />
           <div className="flex-1">
@@ -97,7 +99,11 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
           className="ds-t-label font-mono uppercase tracking-widest text-destructive hover:text-destructive">
           <ShieldOff className="w-3 h-3 mr-2" /> Retirer le second facteur
         </Button>
-      </div>
+        </div>
+
+        {/* Perdre son telephone, c etait perdre son compte. */}
+        <CodesDeSecours actif />
+      </>
     );
   }
 
