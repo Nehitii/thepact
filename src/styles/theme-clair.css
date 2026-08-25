@@ -700,7 +700,7 @@
   --encre-titre: 200 26% 10%;
   --encre-titre-douce: 200 16% 24%;
   --encre-second: 202 12% 28%;
-  --encre-discrete: 200 8% 44%;
+  --encre-discrete: 200 9% 37%;
 
   /* ── Les aplats ──
      Les signaux gardent leur teinte du thème sombre et gagnent en
@@ -1064,3 +1064,95 @@
    page, présent sur les quatre-vingt-dix-sept cartes. */
 .light .su-nom { color: hsl(200 24% 13%); }
 .light .su-carte:not([data-obtenu]) .su-nom { color: hsl(202 9% 38%); }
+
+/* ═══════════════════════════════════════════════════════════════
+   10. GOALS — LE DOSSIER D'OBJECTIFS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── L'APPEL PRINCIPAL ──
+   « Les boutons comme créer un objectif perdent tout leur shiny. »
+   En sombre c'est un aplat de jaune néon : impossible de le rater.
+   En clair, --cp-jaune descend à un olive (#6b6300) pour rester
+   lisible en ENCRE — mais employé comme FOND, cet olive donne un
+   bouton terne portant un texte presque noir, à 3,1:1.
+
+   L'équivalent imprimé d'un néon n'est pas une couleur plus vive :
+   c'est le RENVERSEMENT. Un aplat d'encre pleine avec le texte en
+   réserve — le geste le plus fort de la typographie de labeur, et
+   celui qu'on trouve sur tous les imprimés officiels de ce monde. */
+.light .gl-btn-primaire,
+.light .cp-tag.gl-titre-tag,
+.light .eclat-groupe-tag {
+  color: hsl(44 24% 97%);
+  background: #7A5C00;
+  border-color: #7A5C00;
+}
+.light .gl-btn-primaire:hover {
+  color: hsl(44 24% 97%);
+  background: #93700A;
+  border-color: #93700A;
+}
+.light .eclat-groupe-tag--dyn {
+  color: #6B5200;
+  background: transparent;
+  border-color: #6B5200;
+}
+/* Le glitch du bouton : deux calques décalés en rouge et cyan néon.
+   Sur du papier c'est un défaut de repérage — un tirage mal calé.
+   L'idée fonctionne, les couleurs descendent. */
+.light .gl-glitch::before { color: #A80017; }
+.light .gl-glitch::after { color: #005FAD; }
+
+/* ── L'ONGLET ACTIF ──
+   Il posait un dégradé partant de rgb(24 28 22) — une amorce de nuit
+   écrite en dur — sous une encre jaune. Sur du papier, l'onglet
+   devient un intercalaire : plaque claire, tranche d'encre à gauche,
+   libellé au toner. */
+.light .gl-onglet[data-actif="true"] .gl-onglet-in {
+  color: hsl(200 24% 12%);
+  background:
+    linear-gradient(90deg, #7A5C00 0 3px, transparent 3px),
+    linear-gradient(100deg, hsl(44 26% 98%) 0%, hsl(42 16% 95%) 52%);
+}
+.light .gl-onglet[data-actif="true"] .gl-onglet-nb { color: #6B5200; opacity: 1; }
+
+/* ── LE RELEVÉ D'ÉCLAT ──
+   `var(--accent)` est un triplet HSL nu : `color: var(--accent)` est
+   une déclaration invalide, donc ignorée, et le libellé HÉRITE. Sur
+   du noir l'héritage donnait un bleu pâle qui passait ; sur du papier
+   il donne 1,8:1. On pose une vraie couleur au lieu de dépendre d'un
+   héritage. */
+.light .eclat-palier,
+.light .eclat-chiffre { color: hsl(191 100% 22%); text-shadow: none; }
+.light .eclat-fraction { color: hsl(200 12% 32%); opacity: 1; }
+
+/* Les vitres de nuit et les pistes en blanc translucide. */
+.light .eclat-focus { background: hsl(44 24% 97% / 0.9); }
+.light .eclat-focus:hover { background: hsl(44 24% 97%); }
+.light .eclat-focus.active { background: hsl(191 100% 22% / 0.16); }
+.light .eclat-jauge,
+.light .eclat-piste { background: hsl(40 10% 78%); }
+
+/* ── LE DÉCROCHAGE DU BOUTON ──
+   Deux copies décalées du libellé, en rouge et cyan, posées SUR le
+   fond du bouton pour masquer l'original. Elles lisent `--cp-jaune`
+   comme fond — donc l'olive du thème clair, alors que la plaque est
+   maintenant en ocre : les fantômes ne masquaient plus rien et le
+   libellé devenait illisible sous trois calques empilés.
+
+   L'effet n'est pas supprimé, il change de nom. Sur un écran c'est un
+   décrochage de synchro ; sur un imprimé c'est un HORS-REPÉRAGE — la
+   même image, tirée deux fois avec un film décalé. Les fantômes
+   prennent donc les deux couleurs de la quadrichromie, éclaircies
+   pour se lire sur l'aplat au lieu de le trouer. */
+.light .gl-glitch::before,
+.light .gl-glitch::after { background: #7A5C00; }
+.light .gl-glitch::before { color: #F4A9C0; }
+.light .gl-glitch::after { color: #9FD8EA; }
+.light .gl-btn-primaire:hover .gl-glitch::before,
+.light .gl-btn-primaire:hover .gl-glitch::after { background: #93700A; }
+
+/* Le bandeau de télémétrie tombait à 4,4:1, juste sous le seuil.
+   Il lit --encre-discrete par une règle en :root:not(.dark), dont la
+   spécificité (0,3,1) bat le préfixe .light (0,2,1) : la corriger de
+   l'extérieur ne servait à rien, il fallait descendre le jeton. */
