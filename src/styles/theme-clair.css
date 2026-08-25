@@ -1509,3 +1509,14 @@
    fois. Sur du papier, 4,44:1 — la dilution reste le motif le plus
    fréquent de tout cet audit. */
 .light .cal-rb-heure { color: hsl(200 12% 31%); }
+
+/* Les deux derniers quasi-seuils de l'application, tous deux dus au
+   même geste : une couleur DILUÉE dans du transparent.
+
+   Le schéma de respiration retenu affiche son rythme (« 4-7-8 ») en
+   70 % du cyan mêlé de transparent ; l'aplat d'une pièce légendaire
+   pose son prix sur un lavis de son propre or. Dans les deux cas, sur
+   du noir la dilution fait reculer, sur du papier elle fait remonter
+   vers le support. */
+.light .hlt-schema[aria-pressed="true"] i { color: var(--hlt-cyan); }
+.light .hlt-schema[data-suggere="1"] i { color: var(--hlt-jaune); }

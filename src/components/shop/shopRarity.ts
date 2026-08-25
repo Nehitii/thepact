@@ -89,8 +89,8 @@ const rarityConfigClair = {
   },
   legendary: {
     accent: "hsl(42 100% 22%)",
-    glow: "hsl(42 100% 22% / 0.12)",
-    glowStrong: "hsl(42 100% 22% / 0.3)",
+    glow: "hsl(42 100% 22% / 0.09)",
+    glowStrong: "hsl(42 100% 22% / 0.22)",
     border: "hsl(42 100% 22% / 0.55)",
   },
 } as const;
