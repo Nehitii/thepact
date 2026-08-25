@@ -108,11 +108,11 @@ const PHASES_CLAIRES: Record<string, { primary: string; rgb: string; gradStopA: 
     barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(0,121,74,0.9))",
   },
   "255,171,0": {
-    primary: "#8A5A00",
-    rgb: "138,90,0",
+    primary: "#7A5000",
+    rgb: "122,80,0",
     gradStopA: "#8A5A00",
     gradStopB: "#C08A00",
-    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(138,90,0,0.9))",
+    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(122,80,0,0.9))",
   },
   "255,23,68": {
     primary: "#C1002E",

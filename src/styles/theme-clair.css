@@ -45,41 +45,56 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 :root.light {
-  /* ── Le papier ──
-     Un fond franchement teinté, pas du blanc : c'est lui qui permet
-     aux surfaces blanches de se détacher. Sans ça, « seules les cards
-     sont blanches » et le reste flotte. */
-  --ds-bg-base:       212 34% 91%;
-  --ds-bg-canvas:     212 32% 93%;
-  --ds-surface-1:     0 0% 100%;
-  --ds-surface-2:     212 30% 97%;
-  --ds-surface-3:     212 26% 94%;
-  --ds-overlay:       212 30% 88%;
+  /* ── LE SUPPORT ──
+     Premier essai : un gris-bleu (212 34% 91%). Lisible, et sans
+     aucun point de vue — « les couleurs du mode clair n'ont rien du
+     cyberpunk ». C'est le neutre d'un tableau de bord d'entreprise,
+     pas celui de cette application.
 
-  /* ── Les traits ──
-     Ils valaient 200 50% 75% — un bleu pâle prévu pour être posé à
-     8 % sur du noir. Sur du papier, invisible. Ce sont maintenant de
-     vraies lignes, et les alphas d'origine (0.08 / 0.18 / 0.35)
-     continuent de fonctionner parce que la couleur, elle, porte. */
-  --ds-border-subtle:  212 26% 34%;
-  --ds-border-default: 212 30% 28%;
-  --ds-border-strong:  212 38% 22%;
+     Le neutre est ce qui donne le genre, avant même les accents. Ici
+     ce n'est plus un gris d'interface mais deux matières de ce monde :
+     du BÉTON pour le sol, du PAPIER MACHINE pour ce qui est posé
+     dessus. Saturation très basse, mais chaude — assez pour que
+     l'aplat de cyan qui vient dessus se lise comme de l'encre sur
+     une feuille, et non comme un bouton bleu sur du blanc.
 
-  /* ── Les accents ──
-     Seul `--ds-accent-primary` avait été descendu. Les quatre autres
-     restaient des néons : lime à 71 %, ambre à 66 %, magenta à 65 %,
-     violet à 68 %. Sur du blanc, aucun ne tient. Même teinte, même
-     saturation, la luminosité descend. */
-  --ds-accent-primary:  190 100% 24%;
-  --ds-accent-success:  128 78% 26%;
-  --ds-accent-warning:  28  95% 33%;
-  --ds-accent-critical: 339 82% 42%;
-  --ds-accent-special:  263 72% 46%;
+     Et surtout : pas de blanc pur. Le blanc pur est ce qui « noyait
+     la boutique » ; une feuille réelle n'est jamais blanche. */
+  --ds-bg-base:       40 7% 86%;
+  --ds-bg-canvas:     42 9% 89%;
+  --ds-surface-1:     44 24% 97%;
+  --ds-surface-2:     42 14% 94%;
+  --ds-surface-3:     40 10% 90%;
+  --ds-overlay:       38 8% 83%;
 
-  --ds-text-primary:   212 45% 13%;
-  --ds-text-secondary: 212 22% 32%;
-  --ds-text-muted:     212 16% 44%;
-  --ds-text-disabled:  212 12% 60%;
+  /* ── LES RÈGLES ──
+     Elles valaient 200 50% 75% — un bleu pâle prévu pour être posé à
+     8 % sur du noir. Sur du papier, invisible. Ce sont maintenant des
+     règles imprimées : presque noires, à peine bleutées, et les alphas
+     d'origine (0.08 / 0.18 / 0.35) continuent de fonctionner parce que
+     la couleur, elle, porte. */
+  --ds-border-subtle:  200 12% 26%;
+  --ds-border-default: 200 16% 19%;
+  --ds-border-strong:  200 22% 11%;
+
+  /* ── LES APLATS ──
+     Pas des néons adoucis : des couleurs de tirage. La teinte de
+     chaque accent est celle du thème sombre ; ce qui change, c'est
+     qu'elle est CHARGÉE au lieu d'être lumineuse. Un cyan imprimé est
+     dense, il ne brille pas. */
+  --ds-accent-primary:  191 100% 22%;
+  --ds-accent-success:  147 100% 21%;
+  --ds-accent-warning:  31  100% 26%;
+  --ds-accent-critical: 352 100% 33%;
+  --ds-accent-special:  277 66% 42%;
+
+  /* ── LE TONER ──
+     Un noir d'impression, très légèrement froid : jamais du #000, qui
+     sur un écran clair vibre et fatigue. */
+  --ds-text-primary:   200 20% 11%;
+  --ds-text-secondary: 202 11% 27%;
+  --ds-text-muted:     200 8%  38%;
+  --ds-text-disabled: 200 5%  58%;
 
   /* ── LA LUEUR DEVIENT UNE OMBRE ──
      `--ds-glow-*` sert de `box-shadow` un peu partout. En clair, une
@@ -108,12 +123,12 @@
    spécificité en haut : il faut la reposer au même endroit. */
 .light .hlt {
   --hlt-fond:    212 34% 91%;
-  --hlt-plaque:  #FFFFFF;
-  --hlt-creux:   #EEF2F7;
-  --hlt-trait:   #C6D2E0;
-  --hlt-encre:   #0E1826;
-  --hlt-encre-2: #38495E;
-  --hlt-encre-3: #667689;
+  --hlt-plaque:  #FBFAF7;
+  --hlt-creux:   #EDEAE3;
+  --hlt-trait:   #C7C2B6;
+  --hlt-encre:   #14181A;
+  --hlt-encre-2: #3C4448;
+  --hlt-encre-3: #6C7176;
   --hlt-cyan:    #00707E;
 }
 
@@ -124,15 +139,15 @@
 /* Idem : déclarées sur `.gd, .ge` et sur `.fr`. */
 .light .gd,
 .light .ge {
-  --gd-encre:   #0E1826;
-  --gd-encre-2: #38495E;
-  --gd-encre-3: #667689;
+  --gd-encre:   #14181A;
+  --gd-encre-2: #3C4448;
+  --gd-encre-3: #6C7176;
 }
 
 .light .fr {
-  --fr-encre:   #0E1826;
-  --fr-encre-2: #38495E;
-  --fr-encre-3: #667689;
+  --fr-encre:   #14181A;
+  --fr-encre-2: #3C4448;
+  --fr-encre-3: #6C7176;
 }
 
 /* ── Le prisme d'Analytics ── « couleurs sombres et délavées » ── */
@@ -147,7 +162,7 @@
      sur blanc : c'est la page la plus touchée de tout l'audit. ── */
 :root.light {
   --su-common:    #4A5A6E;
-  --su-uncommon:  #0A7A50;
+  --su-uncommon:  #00693A;
   --su-rare:      #0B6BA8;
   --su-epic:      #7A2FA8;
   --su-legendary: #A85A00;
@@ -315,32 +330,32 @@
 .light .md,
 .light .sc-bandeau,
 .light .cyb {
-  --n0: #FFFFFF;
-  --n1: #F4F7FB;
-  --n2: #E6EDF5;
-  --bord: hsl(212 30% 30% / 0.26);
+  --n0: #FBFAF7;
+  --n1: #F2F0EB;
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
   --bord-vif: hsl(var(--primary) / 0.85);
   /* L'or à #fcee0a est un néon : sur du papier il devient illisible.
      Même teinte, descendue jusqu'à porter sur du blanc. */
-  --or: #7A6200;
+  --or: #7A5C00;
 }
 
 :root.light {
   /* Déclarée sur :root dans cyberpunk.css — l'encre secondaire de
      toute la scène. #7089a0 est un gris-bleu prévu pour du noir. */
-  --cp-texte-doux: #4A5C70;
+  --cp-texte-doux: #585D60;
 }
 
 /* Les surfaces peintes en rgba(4, 6, 10, …) : le noir translucide de
    la scène de nuit. */
 .light .sc-tele div,
 .light .md { background: rgba(255, 255, 255, 0.94); }
-.light .md-cadre { background: #F4F7FB; }
+.light .md-cadre { background: #F2F0EB; }
 
 /* Le chrono était blanc pur sur du noir. */
-.light .sc-temps { color: #0E1826; }
-.light .cyb:hover { color: #0E1826; }
-.light .md-champ button.md-ok { color: #0A7A50; }
+.light .sc-temps { color: #14181A; }
+.light .cyb:hover { color: #14181A; }
+.light .md-champ button.md-ok { color: #00693A; }
 
 /* Le grain et les scanlines sont tracés en blanc translucide : sur du
    papier ils éclaircissent au lieu de texturer. Ils passent en encre. */
@@ -357,10 +372,10 @@
 .light .sc-composeur {
   --n0: rgba(255, 255, 255, 0.92);
   --n1: rgba(244, 247, 251, 0.96);
-  --n2: #E6EDF5;
-  --bord: hsl(212 30% 30% / 0.26);
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
   --bord-vif: hsl(var(--primary) / 0.85);
-  --or: #7A6200;
+  --or: #7A5C00;
 }
 
 /* ── L'AMBIANCE ──
@@ -387,7 +402,7 @@
    beau être clairs sur l'élément, le fond restait de nuit. */
 .light .cyb-select,
 .light .sc-fenetre {
-  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
+  background: linear-gradient(180deg, #FBFAF7, #F2F0EB);
   color: hsl(var(--primary));
 }
 .light .cyb-select:hover { border-color: hsl(var(--primary) / 0.45); }
@@ -408,23 +423,23 @@
    en dur. Leur encre était devenue lisible, leur support non : de
    l'accent profond sur une plaque de nuit, 2,0:1. */
 .light .sc-immersion {
-  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
+  background: linear-gradient(180deg, #FBFAF7, #F2F0EB);
   border-color: hsl(var(--primary) / 0.38);
 }
 .light .sc-immersion:hover {
-  color: #5A4800;
-  border-color: #B99A00;
+  color: #5A4400;
+  border-color: #B39400;
   background: rgba(252, 238, 10, 0.22);
 }
 .light .dst-billet {
-  background: linear-gradient(180deg, #FFFFFF, #F4F7FB);
-  box-shadow: 0 18px 46px -14px rgba(17, 34, 51, 0.28), 0 0 0 1px hsl(var(--primary) / 0.1);
-  --n0: #FFFFFF;
-  --n1: #F4F7FB;
-  --n2: #E6EDF5;
-  --bord: hsl(212 30% 30% / 0.26);
+  background: linear-gradient(180deg, #FBFAF7, #F2F0EB);
+  box-shadow: 0 18px 46px -14px rgba(26, 24, 20, 0.28), 0 0 0 1px hsl(var(--primary) / 0.1);
+  --n0: #FBFAF7;
+  --n1: #F2F0EB;
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
   --bord-vif: hsl(var(--primary) / 0.85);
-  --or: #7A6200;
+  --or: #7A5C00;
 }
 
 /* ── L'OR SUR DU PAPIER ──
@@ -435,14 +450,14 @@
    au survol, il reprend sa pleine intensité derrière l'encre noire. */
 .light .sc-depart,
 .light .cyb--or {
-  color: #5A4800;
-  border-color: #C7A800;
+  color: #5A4400;
+  border-color: #C2A000;
   background: linear-gradient(180deg, rgba(252, 238, 10, 0.34), rgba(252, 238, 10, 0.14));
 }
 .light .sc-depart:hover,
 .light .cyb--or:hover {
   color: #05070b;
-  box-shadow: 0 0 0 1px #C7A800, 0 10px 28px -10px rgba(184, 155, 0, 0.55);
+  box-shadow: 0 0 0 1px #C2A000, 0 10px 28px -10px rgba(184, 155, 0, 0.55);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -460,18 +475,18 @@
    lumière posée dessus, c'est une ombre portée dessous. La carte se
    soulève au lieu de s'éclairer. */
 .light .qa-cell {
-  background: #FFFFFF;
-  border-color: hsl(212 30% 30% / 0.16);
-  box-shadow: 0 1px 2px rgba(17, 34, 51, 0.06), 0 6px 16px -10px rgba(17, 34, 51, 0.3);
+  background: #FBFAF7;
+  border-color: hsl(200 14% 22% / 0.16);
+  box-shadow: 0 1px 2px rgba(26, 24, 20, 0.06), 0 6px 16px -10px rgba(26, 24, 20, 0.3);
 }
 .light .qa-cell:hover:not(:disabled),
 .light .qa-cell:focus-visible {
-  background: #FFFFFF;
-  box-shadow: 0 2px 4px rgba(17, 34, 51, 0.08), 0 16px 30px -14px rgba(17, 34, 51, 0.4);
+  background: #FBFAF7;
+  box-shadow: 0 2px 4px rgba(26, 24, 20, 0.08), 0 16px 30px -14px rgba(26, 24, 20, 0.4);
 }
 .light .qa-cell:hover::before,
 .light .qa-cell:focus-visible::before { opacity: 0.1; }
-.light .qa-charge { background: rgba(17, 34, 51, 0.1); }
+.light .qa-charge { background: rgba(26, 24, 20, 0.1); }
 /* Le raccourci portait la couleur d'action diluée à 0,75. La couleur
    est déjà descendue côté composant ; la diluer encore la ramène sous
    le seuil (3,4:1). En clair elle sort pleine. */
@@ -498,13 +513,13 @@
    maintenant comme une impression : une trame très fine, et une
    vignette qui ÉCLAIRCIT les bords au lieu de les noircir. */
 .light .mon-crt::after {
-  background: repeating-linear-gradient(0deg, rgba(17, 34, 51, 0.05) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(0deg, rgba(26, 24, 20, 0.05) 0 1px, transparent 1px 3px);
 }
 .light .mon-crt::before {
   background: radial-gradient(ellipse 125% 105% at 50% 50%, transparent 58%, rgba(206, 219, 233, 0.55) 100%);
 }
 /* Un point blanc sur du papier blanc n'existe pas. */
-.light .mon-pt { fill: #0E1826; filter: none; }
+.light .mon-pt { fill: #14181A; filter: none; }
 .light .mon-poly { filter: none; }
 /* Les deux niveaux d'alerte étaient des néons pâles : 2,0:1 et 2,4:1
    sur du blanc. Même teinte, descendue jusqu'à porter, sans halo. */
@@ -540,10 +555,10 @@
   background-image:
     radial-gradient(ellipse 120% 58% at 50% -8%, hsl(var(--primary) / 0.09) 0%, transparent 62%),
     radial-gradient(ellipse 110% 46% at 50% 108%, hsl(28 62% 52% / 0.055) 0%, transparent 66%),
-    linear-gradient(hsl(212 34% 38% / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(212 34% 38% / 0.05) 1px, transparent 1px),
-    linear-gradient(hsl(212 34% 38% / 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(212 34% 38% / 0.022) 1px, transparent 1px);
+    linear-gradient(hsl(38 16% 30% / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(38 16% 30% / 0.05) 1px, transparent 1px),
+    linear-gradient(hsl(38 16% 30% / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(38 16% 30% / 0.022) 1px, transparent 1px);
   background-size: auto, auto, 100px 100px, 100px 100px, 20px 20px, 20px 20px;
   background-attachment: fixed;
   background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat;
@@ -555,3 +570,257 @@
    La règle reste enfermée dans la barre : `text-primary/70` sert
    ailleurs, sur des surfaces sombres où la dilution est juste. */
 .light .neural-bar .text-primary\/70 { color: hsl(var(--primary)); }
+
+/* ═══════════════════════════════════════════════════════════════
+   7. LE CHAMP D'ÉTOILES — LA CARTE DU CIEL
+   ───────────────────────────────────────────────────────────────
+   « Les couleurs sont sombres et délavées, seules les cards sont
+   blanches, le fond doit être adapté. » C'était littéral : sous les
+   cartes d'Analytics et de Goals, le fond n'est pas une couleur mais
+   un décor complet — un vide presque noir, un cœur de galaxie, une
+   bande galactique, quatre couches d'étoiles en parallaxe et une
+   vignette. Aucune de ces couches ne regardait le thème.
+
+   Éclaircir un ciel étoilé ne veut rien dire : une étoile n'existe
+   que contre la nuit. Mais ce décor a un jumeau de jour qui existe
+   vraiment, et depuis toujours — LA CARTE DU CIEL. Un relevé
+   d'astronome n'imprime pas un fond noir : il imprime du papier, des
+   étoiles en points d'encre, la Voie lactée en lavis pâle. Chaque
+   couche garde donc sa place, sa taille et sa composition ; c'est sa
+   VALEUR qui s'inverse, pas son dessin.
+
+   Le vide reste translucide : la trame de calque du sol se lit à
+   travers, et les deux fonds n'en font qu'un.
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .space-void {
+  background: linear-gradient(178deg,
+    hsl(210 46% 97% / 0.86) 0%,
+    hsl(214 50% 95% / 0.9) 42%,
+    hsl(210 46% 97% / 0.86) 74%,
+    hsl(206 42% 98% / 0.9) 100%);
+}
+
+/* Les six poches du bulbe galactique : mêmes ellipses, mêmes
+   positions, mêmes alphas. Seule la clarté des teintes descend —
+   la nébuleuse devient un lavis. */
+.light .space-galaxy {
+  background:
+    radial-gradient(ellipse 26% 17% at 17% 21%,
+      hsl(32 78% 38% / 0.16) 0%, hsl(24 70% 30% / 0.07) 38%, transparent 66%),
+    radial-gradient(ellipse 46% 30% at 21% 25%,
+      hsl(196 80% 34% / 0.13) 0%, transparent 70%),
+    radial-gradient(ellipse 34% 24% at 80% 74%,
+      hsl(272 64% 42% / 0.15) 0%, hsl(258 60% 34% / 0.06) 44%, transparent 72%),
+    radial-gradient(ellipse 44% 30% at 86% 68%,
+      hsl(228 70% 40% / 0.1) 0%, transparent 68%),
+    radial-gradient(ellipse 30% 20% at 12% 84%,
+      hsl(172 70% 30% / 0.1) 0%, transparent 66%),
+    radial-gradient(ellipse 24% 16% at 88% 14%,
+      hsl(340 64% 42% / 0.08) 0%, transparent 64%);
+}
+
+/* La bande galactique : trois traits, du plus large au plus fin. */
+.light .space-band {
+  background:
+    linear-gradient(180deg, transparent 44%, hsl(220 58% 34% / 0.03) 50%, transparent 56%),
+    linear-gradient(180deg, transparent 47%, hsl(210 64% 30% / 0.038) 50%, transparent 53%),
+    linear-gradient(180deg, transparent 49.2%, hsl(200 70% 26% / 0.05) 50%, transparent 50.8%);
+}
+
+/* Les quatre couches d'étoiles. L'inversion ne touche pas la
+   transparence : les points deviennent de l'encre, le vide entre eux
+   reste vide. La parallaxe continue de fonctionner — elle anime une
+   transformation, pas une couleur. */
+.light .space-layer { filter: invert(1); }
+.light .space-dust { opacity: 0.3; }
+.light .space-far  { opacity: 0.34; }
+.light .space-mid  { opacity: 0.4; }
+.light .space-near { opacity: 0.46; }
+
+/* La vignette assombrissait les bords pour creuser la nuit. Sur du
+   papier elle les encrasserait : elle devient la chute de lumière
+   d'une planche imprimée, très légère et froide. */
+.light .space-vignette {
+  background: radial-gradient(ellipse 105% 85% at 50% 42%,
+    transparent 45%, hsl(212 34% 74% / 0.22) 86%, hsl(212 36% 66% / 0.34) 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. LE TIRAGE — LA MATIÈRE DU THÈME CLAIR
+   ───────────────────────────────────────────────────────────────
+   « Tu n'as pas attaqué les couleurs ternes et délavées. Les couleurs
+   du mode clair n'ont rien du cyberpunk sombre. »
+
+   C'était juste, et le défaut n'était pas dans les accents : il était
+   dans le NEUTRE. Toute la famille --nexus-* et les jetons de base
+   étaient en 210 30–50 % — le gris-bleu d'un tableau de bord
+   d'entreprise. Un accent, même parfait, posé sur ce gris-là donne un
+   thème clair générique. Le neutre décide du genre avant les couleurs.
+
+   Le cyberpunk a un versant diurne, et ce n'est pas « le même écran en
+   blanc » : c'est le monde vu du côté du PAPIER. Le dossier, le permis,
+   le badge, la planche imprimée. Béton et papier machine, toner presque
+   noir, aplats d'encre denses, règles franches. Aucune lueur — le genre
+   ne tient pas aux lueurs, il tient au contraste dur, à la typo
+   monospace, aux biseaux et aux marquages, qui sont tous déjà là.
+
+   Trois substitutions portent tout :
+
+     LE GRIS-BLEU DEVIENT DU BÉTON. Saturation très basse mais CHAUDE.
+     C'est ce qui fait qu'un aplat de cyan posé dessus se lit comme de
+     l'encre sur une feuille, et non comme un bouton bleu sur du blanc.
+
+     LE BLANC PUR DISPARAÎT. Une feuille réelle n'est jamais blanche, et
+     c'est le blanc pur qui « noyait la boutique ».
+
+     LE NÉON DEVIENT UN APLAT. Même teinte, mais chargée au lieu d'être
+     lumineuse. Un cyan imprimé est dense ; il ne brille pas.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root.light {
+  /* ── Le support ── */
+  --background: 42 14% 91%;
+  --card: 44 24% 97%;
+  --popover: 44 26% 98%;
+  --secondary: 40 12% 86%;
+  --muted: 40 10% 89%;
+  /* Attention : --border est appliquee A PLEINE OPACITE par les
+     utilitaires Tailwind. Un trait presque noir mettrait chaque carte
+     en cage. C est une regle imprimee, pas un encadrement. */
+  --border: 200 12% 44%;
+  --input: 42 12% 92%;
+
+  /* ── Le toner ── */
+  --foreground: 200 22% 11%;
+  --card-foreground: 200 22% 11%;
+  --popover-foreground: 200 22% 11%;
+  --secondary-foreground: 200 22% 11%;
+  --muted-foreground: 200 8% 40%;
+  --encre-titre: 200 26% 10%;
+  --encre-titre-douce: 200 16% 24%;
+  --encre-second: 202 12% 28%;
+  --encre-discrete: 200 8% 44%;
+
+  /* ── Les aplats ──
+     Les signaux gardent leur teinte du thème sombre et gagnent en
+     charge. L'ambre et le jaune descendent plus bas que les autres :
+     c'est le prix de leur éclat, un jaune clair ne s'imprime pas. */
+  --signal-ambre:  33 100% 27%;
+  --signal-vert:   152 100% 21%;
+  --signal-cyan:   191 100% 22%;
+  --signal-jaune:  45 100% 24%;
+  --signal-rouge:  352 100% 33%;
+  --accent-ambre:  33 100% 25%;
+  --accent:        191 100% 24%;
+  --primary-glow:  191 100% 30%;
+
+  /* ── Le système de panneaux ──
+     C'est cette famille-là qui donnait le ton générique : elle habille
+     presque toutes les surfaces de l'application. */
+  --nexus-bg:               hsla(44, 22%, 97%, 0.96);
+  --nexus-border:           hsla(200, 20%, 22%, 0.42);
+  --nexus-shadow:           0 1px 2px hsla(38, 22%, 14%, 0.09),
+                            0 6px 18px -10px hsla(38, 22%, 14%, 0.26);
+  --nexus-glow:             hsla(191, 100%, 22%, 0.3);
+  --nexus-glow-subtle:      hsla(191, 100%, 22%, 0.14);
+  --nexus-text-label:       hsl(200, 20%, 16%);
+  --nexus-text-dim:         hsl(202, 12%, 28%);
+  --nexus-text-dimmer:      hsl(200, 9%, 36%);
+  --nexus-heading:          hsl(200, 26%, 10%);
+  --nexus-inner-bg:         hsla(42, 14%, 92%, 0.78);
+  --nexus-inner-bg-deep:    hsla(40, 12%, 89%, 0.85);
+  --nexus-separator:        hsla(200, 16%, 24%, 0.34);
+  --nexus-hover-border:     hsla(191, 100%, 24%, 0.5);
+  --nexus-hover-bg:         hsla(42, 16%, 92%, 0.7);
+  --nexus-track-bg:         hsla(40, 10%, 80%, 0.85);
+  --nexus-marker-dim:       hsla(200, 12%, 28%, 0.95);
+  --nexus-countdown-bg:     linear-gradient(90deg, hsla(40, 14%, 94%, 0.98), hsla(42, 12%, 96%, 0.97), hsla(40, 14%, 94%, 0.98));
+  --nexus-countdown-border: hsla(352, 100%, 33%, 0.28);
+  --nexus-rank-bg:          linear-gradient(160deg, hsla(44, 20%, 96%, 0.98), hsla(42, 16%, 97%, 0.99));
+  --nexus-rank-border:      hsla(191, 100%, 24%, 0.3);
+  --nexus-mission-bg:       linear-gradient(145deg, hsla(44, 26%, 96%, 0.98), hsla(38, 14%, 95%, 0.98));
+  --nexus-mission-border:   hsla(31, 100%, 28%, 0.3);
+
+  /* ── Les surfaces des autres pages ── */
+  --surface-panel:        hsla(44, 22%, 97%, 0.96);
+  --surface-panel-hover:  hsla(42, 16%, 94%, 0.96);
+  --surface-overlay:      hsla(44, 26%, 98%, 0.985);
+  --surface-elevated:     hsla(44, 30%, 99%, 0.96);
+  --surface-input:        hsl(42, 14%, 94%);
+  --surface-input-focus:  hsl(42, 12%, 91%);
+  --text-heading:         hsl(200, 26%, 12%);
+  --text-body:            hsl(202, 12%, 26%);
+  --text-muted-custom:    hsl(200, 8%, 44%);
+
+  /* ── Les raretés, en couleurs de tirage ── */
+  --su-common:    #5A5F62;
+  --su-uncommon:  #00693A;
+  --su-rare:      #00548F;
+  --su-epic:      #7228AF;
+  --su-legendary: #8B4A00;
+  --su-mythic:    #A5003C;
+
+  /* ── Le prisme d'Analytics ── */
+  --prism-bg:      40 7% 86%;
+  --prism-cyan:    191 100% 22%;
+  --prism-magenta: 327 100% 32%;
+}
+
+/* L'ombre portée était bleutée comme le reste. Sur du béton, une ombre
+   est chaude et sourde. */
+:root.light {
+  --ds-glow-sm: 0 1px 2px hsl(38 22% 14% / 0.08),
+                0 2px 6px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.1);
+  --ds-glow-md: 0 1px 2px hsl(38 22% 14% / 0.09),
+                0 6px 16px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.14);
+  --ds-glow-lg: 0 2px 4px hsl(38 22% 14% / 0.1),
+                0 12px 30px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.18);
+}
+
+/* ── LES TUILES DEVIENNENT DES PLAQUES ─────────────────────────────
+   Premier essai : une carte blanche soulevée par une ombre. Correct,
+   et parfaitement anonyme — la tuile d'application qu'on voit partout.
+
+   Le biseau sur deux angles est déjà là, il ne demandait qu'un trait
+   pour se voir. La cellule devient donc une PLAQUE découpée : une face
+   de papier, une arête d'encre franche, et presque plus d'ombre. Elle
+   n'a pas l'air posée sur la page, elle a l'air prélevée dedans. */
+.light .qa-cell {
+  border-color: hsl(200 18% 22% / 0.5);
+  box-shadow: 0 1px 0 hsl(38 22% 14% / 0.06);
+}
+.light .qa-cell:hover:not(:disabled),
+.light .qa-cell:focus-visible {
+  border-color: color-mix(in srgb, var(--qa-c, #000) 85%, transparent);
+  box-shadow: 0 2px 0 hsl(38 22% 14% / 0.1), 0 10px 22px -14px hsl(38 22% 14% / 0.5);
+}
+/* La jauge de charge devient une réglette imprimée. */
+.light .qa-charge { background: hsl(40 10% 78%); }
+
+/* ── LA SINGULARITÉ, PLUS DENSE ────────────────────────────────────
+   Sur un support de béton et non de blanc pur, les densités du premier
+   réglage retombaient dans le pâle. L'encre se charge. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 82% 34% / calc(0.42 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 86% 28% / calc(0.22 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+}
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 88% 30% / calc(0.46 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 92% 24% / calc(0.28 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+}
+.light .singularity-ring {
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--ds-accent-hue, 200) 100% 26%) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 26%) var(--sing-progress, 0%),
+    transparent var(--sing-progress, 0%));
+}
+.light .singularity-field,
+.light .singularity-field::after { opacity: 0.55; }

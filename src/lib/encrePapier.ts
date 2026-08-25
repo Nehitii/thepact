@@ -66,10 +66,17 @@ const CONTRASTE_CIBLE = 4.5;
  */
 
 /** La clarté perçue de l'encre. Toutes les couleurs y descendent. */
-const L_ENCRE = 0.48;
+const L_ENCRE = 0.46;
 
-/** L'intensité maximale d'un pigment. Au-delà, on retrouve l'écran. */
-const C_ENCRE = 0.155;
+/** L'intensité maximale d'un pigment.
+ *
+ * Réglée d'abord à 0,155, ce qui donnait des couleurs justes mais
+ * ternes — « les couleurs du mode clair n'ont rien du cyberpunk ». Une
+ * encre d'imprimerie n'est pas un pastel : un aplat de cyan ou de
+ * magenta sur du papier est DENSE. On monte donc la charge jusqu'au
+ * bord de ce que le sRGB peut tenir à cette clarté — c'est la couleur
+ * de tirage, pas la couleur d'écran ni son édulcoration. */
+const C_ENCRE = 0.2;
 
 /** Un canal sRGB, linéarisé. */
 function lineaire(canal: number): number {

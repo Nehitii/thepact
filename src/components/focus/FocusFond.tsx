@@ -102,7 +102,7 @@ const SIGNES = "01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒ�
    noir, le jour efface en papier. */
 const PALETTE = {
   sombre: { fond: "#04060a", dissipe: "rgba(4,6,10,", or: [252, 238, 10] as [number, number, number] },
-  clair:  { fond: "#EDF1F6", dissipe: "rgba(237,241,246,", or: [122, 98, 0] as [number, number, number] },
+  clair:  { fond: "#E7E5E0", dissipe: "rgba(231,229,224,", or: [122, 92, 0] as [number, number, number] },
 };
 
 function palette() {

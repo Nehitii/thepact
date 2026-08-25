@@ -499,9 +499,9 @@ export default function Focus() {
                 ? isBreak
                   ? "rgba(var(--accent-rgb), 0.03)"
                   : "rgba(var(--primary-rgb), 0.03)"
-                : sombre ? "#050508" : "#EDF1F6",
+                : sombre ? "#050508" : "#E7E5E0",
             }}
-            initial={{ backgroundColor: sombre ? "#050508" : "#EDF1F6" }}
+            initial={{ backgroundColor: sombre ? "#050508" : "#E7E5E0" }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
           />
           {/* Quantifie : l intensite du halo suit l avancement, mais par
