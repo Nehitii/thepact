@@ -120,6 +120,8 @@ export function useJournalCounts(userId: string | undefined) {
 function rafraichir(client: ReturnType<typeof useQueryClient>, userId: string) {
   client.invalidateQueries({ queryKey: ["journal-entries", userId] });
   client.invalidateQueries({ queryKey: ["journal-counts", userId] });
+  /* Voir useTheCall : le pouls de la barre systeme compte ce geste. */
+  client.invalidateQueries({ queryKey: ["pouls-du-jour"] });
 }
 
 /** Une modification sur place : epingler ne doit pas recharger dix pages. */

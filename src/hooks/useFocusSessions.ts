@@ -63,6 +63,8 @@ export function useLogFocusSession() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["focus-sessions"] });
       qc.invalidateQueries({ queryKey: ["daily-quests"] });
+      /* Voir useTheCall : le pouls de la barre systeme compte ce geste. */
+      qc.invalidateQueries({ queryKey: ["pouls-du-jour"] });
     },
   });
 }

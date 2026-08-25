@@ -96,6 +96,11 @@ export function useTheCall() {
       /* On ecrit ce que la base a rendu, jamais un « + 1 » calcule ici :
          l etat verrouille affichait un total invente. */
       client.setQueryData(cle, majour);
+      /* Le pouls de la barre systeme compte ce geste : sans
+         cette ligne, la barre ne bougerait qu au prochain
+         rafraichissement. Le prefixe suffit — la cle porte
+         l utilisateur et le jour, qu on n a pas ici. */
+      client.invalidateQueries({ queryKey: ["pouls-du-jour"] });
     },
   });
 

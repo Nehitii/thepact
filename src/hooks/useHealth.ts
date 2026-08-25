@@ -220,6 +220,8 @@ export function useUpsertHealthData(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["health-today", userId] });
       queryClient.invalidateQueries({ queryKey: ["health-history", userId] });
+      /* Voir useTheCall : le pouls de la barre systeme compte ce geste. */
+      queryClient.invalidateQueries({ queryKey: ["pouls-du-jour"] });
       toast.success(i18next.t("health.checkin.saved", "Relevé enregistré"));
     },
     onError: (error) => {

@@ -307,6 +307,8 @@ export function useTodoList() {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
       queryClient.invalidateQueries({ queryKey: ['todo-stats', userId] });
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
+      /* Voir useTheCall : le pouls de la barre systeme compte ce geste. */
+      queryClient.invalidateQueries({ queryKey: ['pouls-du-jour'] });
       toast.success(tr('todo.toasts.completed', { points: 10 }));
       if (userId) trackTodoCompleted(userId);
     },
@@ -417,6 +419,8 @@ export function useTodoList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
+      /* Voir useTheCall : le pouls de la barre systeme compte ce geste. */
+      queryClient.invalidateQueries({ queryKey: ['pouls-du-jour'] });
       toast.success(tr('todo.toasts.historyCleared'));
     },
     onError: () => {

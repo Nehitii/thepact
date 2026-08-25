@@ -8,6 +8,7 @@ import { RankXPData } from "@/hooks/useRankXP";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/hooks/useShop";
+import { usePoulsDuJour } from "@/hooks/usePoulsDuJour";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 import { selonTheme } from "@/lib/encrePapier";
@@ -26,6 +27,18 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
   const { data: bondBalanceData } = useBondBalance(user?.id);
   const bondBalance = bondBalanceData?.balance ?? 0;
+
+  const { data: pouls } = usePoulsDuJour(user?.id);
+  /* Le resume dit d abord ce qui est fait, puis ce qui manque :
+     un lecteur d ecran ne peut pas comparer cinq hauteurs. */
+  const resumePouls = (() => {
+    if (!pouls) return "";
+    const faits = pouls.filter((p) => p.etat !== "eteint").map((p) => p.nom);
+    const reste = pouls.filter((p) => p.etat === "eteint").map((p) => p.nom);
+    if (faits.length === 0) return "Aujourd'hui : aucun systeme touche.";
+    const debut = `Aujourd'hui : ${faits.join(", ")}.`;
+    return reste.length ? `${debut} Reste : ${reste.join(", ")}.` : `${debut} Les cinq systemes.`;
+  })();
 
   useVisibleInterval(() => setNow(new Date()), 1000);
 
@@ -103,23 +116,46 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
         {/* Right: Freq bars + Customize */}
         <div className="flex-1 min-w-0 flex justify-end items-center gap-3">
-          {/* Freq indicator */}
-          <div className="hidden lg:flex items-center gap-1.5">
-            <div className="flex gap-[2px] items-end h-[14px]">
-              {[4, 8, 12, 6, 10].map((h, i) => (
-                <div
-                  key={i}
-                  className="rounded-[1px] bg-primary"
-                  style={{
-                    width: 3,
-                    height: h,
-                    animation: `freqAnim 0.8s ease-in-out infinite alternate`,
-                    animationDelay: `${i * 0.15}s`,
-                  }}
-                />
-              ))}
+          {/* ── LE POULS DES CINQ SYSTEMES ──
+
+              Ces cinq barres ondulaient a vide : des hauteurs figees
+              [4, 8, 12, 6, 10] et une pulsation en boucle, quoi qu il
+              arrive. Un egaliseur qui n egalisait rien.
+
+              Elles disent maintenant lesquels des cinq systemes
+              ACTIFS ont ete touches aujourd hui — ceux ou l on fait
+              quelque chose. Objectifs, calendrier, finance et liste de
+              souhaits n y sont pas : on les consulte, on n y pose pas
+              de geste datable.
+
+              La place n est pas un hasard : a gauche la jauge dit
+              combien de la journee est passee, a droite le solde dit
+              ce qu on a accumule. Entre les deux, il manquait ce qu on
+              a FAIT.
+
+              Une barre eteinte reste visible : cinq emplacements
+              toujours la, dont certains allumes. Les faire disparaitre
+              donnerait un rang qui change de largeur, et surtout on ne
+              verrait plus ce qui manque — or c est la moitie de
+              l information. */}
+          {pouls && pouls.length > 0 && (
+            <div
+              className="hidden lg:flex items-center gap-1.5"
+              role="img"
+              aria-label={resumePouls}
+              title={pouls.map((p) => `${p.nom} : ${p.detail}`).join(" · ")}
+            >
+              <div className="flex gap-[2px] items-end h-[14px]">
+                {pouls.map((p) => (
+                  <div
+                    key={p.cle}
+                    className="nb-pouls rounded-[1px] bg-primary"
+                    data-etat={p.etat}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bond display */}
           <div className="hidden sm:flex items-center gap-1.5">
@@ -165,7 +201,30 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
       <style>{`
         @keyframes scanline { to { left: 140%; } }
         @keyframes pulseBar { 0%,100%{opacity:1} 50%{opacity:0.6} }
-        @keyframes freqAnim { from{opacity:0.28;transform:scaleY(0.6)} to{opacity:0.9;transform:scaleY(1)} }
+        /* Trois hauteurs, trois opacites. Une barre eteinte garde un
+           moignon : on doit voir qu il y a cinq emplacements, et
+           lequel est vide. */
+        .nb-pouls {
+          width: 3px;
+          transition: height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                      opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .nb-pouls[data-etat="eteint"] { height: 3px;  opacity: 0.22; }
+        .nb-pouls[data-etat="amorce"] { height: 8px;  opacity: 0.62; }
+        .nb-pouls[data-etat="plein"]  { height: 14px; opacity: 1; }
+        /* Seules les barres PLEINES respirent. L ondulation d avant
+           ne disait rien ; celle-ci dit  ce systeme est vivant
+           aujourd hui , et elle s arrete sur ce qui n a pas ete
+           fait. */
+        .nb-pouls[data-etat="plein"] { animation: nb-souffle 3.2s ease-in-out infinite; }
+        .nb-pouls:nth-child(2)[data-etat="plein"] { animation-delay: 0.24s; }
+        .nb-pouls:nth-child(3)[data-etat="plein"] { animation-delay: 0.48s; }
+        .nb-pouls:nth-child(4)[data-etat="plein"] { animation-delay: 0.72s; }
+        .nb-pouls:nth-child(5)[data-etat="plein"] { animation-delay: 0.96s; }
+        @keyframes nb-souffle { 0%,100%{opacity:0.72} 50%{opacity:1} }
+        @media (prefers-reduced-motion: reduce) {
+          .nb-pouls { transition: none; animation: none !important; }
+        }
       `}</style>
     </div>
   );
