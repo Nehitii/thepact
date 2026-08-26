@@ -1562,30 +1562,157 @@ All colors MUST be HSL.
 }
 
 /* ── Radar ── */
-.mon-grid { fill: none; stroke: hsl(var(--primary) / 0.16); }
-.mon-axe { stroke: hsl(var(--primary) / 0.13); }
+/* ── LE VISEUR ─────────────────────────────────────────────────
+   Le radar dessinait une grille d'hexagones concentriques traversée
+   de six rayons : cela ne se lit pas comme une échelle, cela se lit
+   comme un fil de fer en trois dimensions. Des anneaux gradués
+   disent ce qu'ils sont — des portées. */
+/* Le panneau se declare conteneur : depuis que le monitoring occupe
+   toute la largeur, sa bascule en une colonne doit suivre la largeur
+   du PANNEAU et non celle de la fenetre. */
+.mon-panneau { container-type: inline-size; container-name: monitoring; }
+
+.mon-anneau { fill: none; stroke: hsl(var(--primary) / 0.16); stroke-width: 1; }
+.mon-grad   { fill: none; stroke: hsl(var(--primary) / 0.26); stroke-linecap: butt; }
+.mon-axe    { stroke-opacity: 0.22; stroke-width: 1; }
+
 .mon-poly {
-  fill: hsl(var(--primary) / 0.16);
-  stroke: hsl(var(--primary));
-  stroke-width: 1.6;
-  filter: drop-shadow(0 0 8px hsl(var(--primary)));
+  fill: hsl(var(--primary) / 0.13);
+  stroke: none;
   transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.mon-pt { fill: #fff; filter: drop-shadow(0 0 7px var(--c, hsl(var(--primary)))); }
+/* Chaque arête part dans la couleur du palier qu'elle quitte : six
+   couleurs avaient été choisies pour ce panneau, une seule arrivait
+   au dessin. */
+.mon-arete {
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-opacity: 0.9;
+  transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mon-pt   { transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1); }
+.mon-halo { fill-opacity: 0.22; animation: mon-pouls 3.4s ease-in-out infinite; }
+@keyframes mon-pouls { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
 .mon-lab {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.06em;
+  font-size: 8.5px;
+  letter-spacing: 1px;
+  fill: var(--nexus-text-dim);
 }
 .mon-pct {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
+  font-weight: 700;
 }
-/* Le balayage : deux tours par cycle de respiration du c(oe)ur, pour
-   que les deux mouvements de la page ne se calent pas l'un sur l'autre. */
-.mon-sweep { transform-origin: 150px 150px; animation: mon-tourne 6s linear infinite; }
+
+/* Le balayage garde sa traîne, mais il ne porte plus l'animation à
+   lui tout seul : ce sont les POINTS qui respirent, chacun à son
+   tour. Ce qui pulse est ce qui porte une charge. */
+.mon-bal { transform-origin: 150px 150px; animation: mon-tourne 7s linear infinite; }
+.mon-bal-vif { stroke: hsl(var(--primary)); stroke-width: 1.2; stroke-opacity: 0.7; }
 @keyframes mon-tourne { to { transform: rotate(360deg); } }
+
+/* LE VIDE LATÉRAL DEVIENT LA COLONNE DE CHARGE.
+   Le SVG était en `w-full h-full` sur un viewBox carré plafonné à
+   330 px : sur 862 px de panneau, 532 px ne servaient à rien. Une
+   figure polaire est carrée et le restera ; c'est la place qui reste
+   qu'on occupe. */
+/* Le viseur RESPIRE entre 300 et 372 px. A 589 px de panneau — la
+   largeur reelle a 917 px de fenetre — une premiere colonne figee a
+   372 ne laissait pas ses 190 px a la charge : les deux se
+   empilaient, et le panneau passait de 439 a 654 px de haut. Il
+   retombe a 403 en laissant le viseur se serrer. */
+.mon-duo {
+  display: grid;
+  grid-template-columns: minmax(0, 372px) minmax(210px, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+/* Le viewBox fait 356 × 316, pas 300 × 300 : la couronne d'étiquettes
+   déborde du dessin de 17 px de chaque côté, et sous 400 px de
+   panneau c'est « IMPOSSIBLE » qui perdait 21 px. La réserve est dans
+   le viewBox, donc aucune taille de rendu ne peut plus rogner un mot. */
+.mon-viseur { width: 100%; height: auto; max-width: 372px; }
+
+/* Le seuil se lit sur la BOITE DE CONTENU du conteneur, pas sur sa
+   largeur de bordure : a 589 px de panneau il reste 553 px dedans.
+   Un seuil pose a 560 empilait donc les deux colonnes juste la ou
+   elles tenaient encore. */
+/* Entre 500 et 700 px, la piste tombait a 58 px : une barre de
+   comparaison de 58 px ne compare rien. Les effectifs quittent la
+   ligne — la barre les dit deja, le point du viseur les donne au
+   survol, et la vue Diag les enumere. */
+@container monitoring (max-width: 700px) {
+  .mon-cl > s { display: none; }
+}
+
+@container monitoring (max-width: 500px) {
+  .mon-duo { grid-template-columns: 1fr; gap: 16px; }
+  .mon-viseur { width: 100%; height: auto; max-width: 372px; margin: 0 auto; }
+}
+
+.mon-charge { display: grid; gap: 9px; align-content: center; }
+.mon-ctitre {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nexus-text-dimmer);
+  margin: 0 0 2px;
+}
+.mon-cl { display: grid; grid-template-columns: minmax(0, 82px) minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.mon-cl > i {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-style: normal;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--c);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* La piste entière vaut la part du palier dans le volume total ; la
+   portion pleine, ce qui en est fait. Deux paliers à 80 % n'ont donc
+   pas la même barre si l'un pèse trois fois l'autre — c'est
+   exactement ce que le radar seul ne pouvait pas dire. */
+.mon-cpiste {
+  position: relative;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--nexus-track-bg, rgba(255, 255, 255, 0.07));
+  overflow: hidden;
+}
+.mon-cpiste u,
+.mon-cpiste b {
+  position: absolute;
+  inset: 0 auto 0 0;
+  text-decoration: none;
+  background: var(--c);
+  transition: width 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mon-cpiste u { opacity: 0.26; }
+.mon-cl > s {
+  text-decoration: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  color: var(--nexus-text-dimmer);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mon-cpied {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.1em;
+  color: var(--nexus-text-dimmer);
+  border-top: 1px solid var(--nexus-separator);
+  padding-top: 8px;
+  margin-top: 3px;
+}
+.mon-cpied b { color: var(--nexus-text-label); font-variant-numeric: tabular-nums; }
 
 .mon-note {
   font-size: 0.82rem;
@@ -1665,7 +1792,8 @@ All colors MUST be HSL.
 @keyframes mon-cur { 50% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .mon-sweep, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
+  .mon-bal, .mon-halo, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
+  .mon-poly, .mon-arete, .mon-pt, .mon-cpiste u, .mon-cpiste b { transition: none; }
 }
 
 /* ── La barre de defilement ne doit jamais disparaitre ──

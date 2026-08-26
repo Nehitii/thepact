@@ -561,10 +561,22 @@
   background: radial-gradient(ellipse 125% 105% at 50% 50%, transparent 58%, rgba(206, 219, 233, 0.55) 100%);
 }
 /* Un point blanc sur du papier blanc n'existe pas. */
-.light .mon-pt { fill: #14181A; filter: none; }
-.light .mon-poly { filter: none; }
+/* `.light .mon-pt { fill }` a ete retire, et ce n etait pas du menage.
+   Un `fill` pose en ATTRIBUT sur un element SVG perd contre nimporte
+   quelle regle de feuille : cette ligne aurait repeint les six points
+   du viseur en encre noire, alors quils portent desormais la couleur
+   de leur palier, deja descendue par `selonTheme`. Elle existait pour
+   les anciens points blancs, invisibles sur du papier. */
 /* Les deux niveaux d'alerte étaient des néons pâles : 2,0:1 et 2,4:1
    sur du blanc. Même teinte, descendue jusqu'à porter, sans halo. */
+/* LES PORTEES DU VISEUR, SUR PAPIER.
+   Une ligne a 0,16 d alpha sur du noir est une gravure ; sur du papier
+   c est un souvenir de ligne — 1,2:1. Meme dessin, encre franche. */
+.light .mon-anneau { stroke: hsl(200 24% 30% / 0.26); }
+.light .mon-grad   { stroke: hsl(200 24% 26% / 0.44); }
+.light .mon-axe    { stroke-opacity: 0.34; }
+.light .mon-halo   { fill-opacity: 0.18; }
+
 .light .mon-dl.warn { color: #A34A00; text-shadow: none; }
 .light .mon-dl.crit { color: #C1002E; text-shadow: none; }
 .light .mon-pts { opacity: 0.5; }
