@@ -10,14 +10,51 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `Tu es Pacte Coach, un coach personnel exigeant et bienveillant intégré à l'OS Pacte de l'utilisateur.
-Tu tutoies. Tu es concis, direct, structuré. Tu cites des données concrètes du user (goals, habits, finance, journal) quand pertinent.
-Tu ne donnes jamais de conseil médical/légal/financier réglementé sans rappel de prudence.
-Quand l'utilisateur le demande, propose des actions actionnables et utilise les outils disponibles.
-Avant de répondre à une question factuelle sur la vie de l'utilisateur (goals, habits, finance, journal, valeurs, mémoire), appelle les tools pour récupérer la donnée à jour. Sinon, réponds directement.
-Format: markdown léger autorisé (titres ##, listes, gras). Quand tu cites un souvenir issu de la mémoire long-terme, mentionne la source en fin de phrase entre parenthèses.
-Pour créer un goal/habit, demande d'abord à quel pacte le rattacher si l'utilisateur n'a pas précisé (utilise list_pacts).
-Un goal "actif" = statut "in_progress" ou "not_started". Priorise toujours ceux du pacte actif (is_active_pact=true) quand pertinent.`;
+/* ═══════════════════════════════════════════════════════════════
+   LA VOIX
+
+   L'ancien prompt commençait par « Tu es Pacte Coach, un coach
+   personnel EXIGEANT ET BIENVEILLANT ». Deux adjectifs qui
+   s'annulent, et un mot — coach — qui impose un registre : celui qui
+   encourage, cadre et félicite. C'est ce registre qui produit
+   « Bravo, continue comme ça ! » et « chaque petit pas compte ».
+
+   Il ordonnait aussi d'appeler un outil AVANT TOUTE QUESTION
+   FACTUELLE. C'était une instruction de lenteur : « où j'en suis ? »
+   coûtait un tour d'outil complet. L'état du jour est désormais
+   fourni d'office (voir etatDuJour) et le prompt dit de s'en servir.
+   ═══════════════════════════════════════════════════════════════ */
+const SYSTEM_PROMPT = `Tu es M.I.A — Mysterious Intelligence Array — l'intelligence intégrée à Vowpact, l'application de suivi de vie de l'utilisateur.
+
+VOIX — ces règles priment sur tout le reste.
+1. TU TUTOIES. Jamais « vous », jamais « votre », jamais « vos ». On écrit « il te reste », pas « il vous reste ».
+2. Deux à quatre phrases. Tu ne fais une liste que si la réponse EST une liste ; sinon tu donnes le chiffre et le seul détail qui compte.
+3. Aucun encouragement qu'on ne t'a pas demandé. Pas de « bravo », pas de « continue comme ça », pas de morale en fin de message.
+4. Pas de titre markdown dans une réponse courte. Le gras sert à un chiffre qui compte, pas à chaque nom propre.
+5. Tu dis ce que tu ne sais pas au lieu de généraliser : « je n'ai pas de données de sommeil » vaut mieux qu'un paragraphe sur le sommeil.
+6. Tu assumes ce que tu fais : « j'ai ajouté la tâche », pas « veux-tu que j'ajoute la tâche ».
+
+Exemple. Question : « combien d'étapes il me reste ? »
+MAUVAIS — « Il vous reste un total de **59 étapes** à réaliser sur vos **14 objectifs en cours**. Voici le détail objectif par objectif : » suivi de quatorze puces.
+BON — « 59, sur tes 14 objectifs en cours. NOTHINGNESS en concentre 19 à lui seul. »
+
+DONNÉES
+L'état du jour est donné plus bas : sers-t'en d'abord, n'appelle un outil que s'il ne suffit pas à répondre.
+N'appelle jamais deux fois le même outil avec les mêmes arguments dans un même échange.
+Un objectif « actif » a le statut in_progress ou not_started. Priorise ceux du pacte actif (is_active_pact=true).
+Pour créer un objectif ou une habitude, demande à quel pacte le rattacher si ce n'est pas évident.
+Quand tu cites un souvenir venu de la mémoire longue, dis d'où il vient en fin de phrase.
+
+LIMITES
+Pas de conseil médical, légal ou financier réglementé sans un rappel de prudence.`;
+
+/* Le rappel de fin. Les règles de voix posées en tête d'un long prompt
+   se diluent : Gemini a rendu « Il vous reste un total de 59 étapes »
+   suivi de quatorze puces alors que la règle 1 disait de tutoyer et la
+   règle 2 de faire quatre phrases. Les deux qui sautent le plus sont
+   donc répétées en dernier, juste avant que le modèle parle. */
+const RAPPEL_VOIX =
+  "Rappel : tu tutoies (jamais « vous »), et tu réponds en deux à quatre phrases sans liste à puces, sauf si la réponse est vraiment une liste.";
 
 const TOOLS = [
   {
@@ -413,6 +450,231 @@ async function runTool(
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   L'ÉTAT DU JOUR, DONNÉ AVANT QU'ON LE DEMANDE
+
+   L'ancien prompt ordonnait d'appeler un outil AVANT TOUTE QUESTION
+   FACTUELLE. « Où j'en suis ? » coûtait donc un tour d'outil complet :
+   une génération pour décider d'appeler, une requête, une génération
+   pour répondre.
+
+   Ces quelques lignes, calculées en une salve de requêtes parallèles,
+   répondent à la moitié des questions sans un seul outil. Elles
+   coûtent une centaine de tokens et une trentaine de millisecondes.
+   ═══════════════════════════════════════════════════════════════ */
+async function etatDuJour(supabase: any, userId: string): Promise<string> {
+  const maintenant = new Date();
+  const jour = maintenant.toISOString().slice(0, 10);
+
+  const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
+    supabase.from("profiles").select("active_pact_id").eq("id", userId).maybeSingle(),
+    supabase.from("pacts").select("id,name,project_start_date,project_end_date").eq("user_id", userId),
+    /* `goals` n'a pas de user_id : le lien passe par le pacte. Les
+       politiques RLS font le filtrage, on récupère donc tout ce que
+       l'utilisateur a le droit de voir. */
+    supabase.from("goals").select("id,name,status,validated_steps,total_steps,pact_id,is_focus,deadline"),
+    supabase.from("daily_quests").select("title,progress,target,status,reward_bonds").eq("user_id", userId).eq("date", jour),
+    supabase.from("pomodoro_sessions").select("duration_minutes").eq("user_id", userId).eq("completed", true).gte("started_at", `${jour}T00:00:00`),
+    supabase.from("todo_tasks").select("name,deadline").eq("user_id", userId).eq("status", "active").limit(40),
+    supabase.from("bond_balance").select("balance").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  const lignes: string[] = [
+    `ÉTAT DU JOUR — ${maintenant.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.`,
+    `Cette donnée est fraîche : n'appelle pas d'outil pour la retrouver.`,
+  ];
+
+  const actifId = profil?.data?.active_pact_id ?? null;
+  const listePacts = pacts?.data ?? [];
+  const pacte = listePacts.find((p: any) => p.id === actifId) ?? listePacts[0] ?? null;
+
+  if (pacte) {
+    const debut = pacte.project_start_date ? new Date(pacte.project_start_date).getTime() : null;
+    const fin = pacte.project_end_date ? new Date(pacte.project_end_date).getTime() : null;
+    if (debut && fin && fin > debut) {
+      const total = Math.round((fin - debut) / 86_400_000);
+      const ecoule = Math.max(0, Math.floor((Date.now() - debut) / 86_400_000));
+      const reste = Math.max(0, Math.ceil((fin - Date.now()) / 86_400_000));
+      lignes.push(
+        `Pacte actif : ${pacte.name} — jour ${ecoule} / ${total}, ${reste} jours restants, ` +
+          `fin le ${new Date(fin).toLocaleDateString("fr-FR")}.`,
+      );
+    } else {
+      lignes.push(`Pacte actif : ${pacte.name} (pas de dates posées).`);
+    }
+    if (listePacts.length > 1) {
+      lignes.push(`Autres pactes : ${listePacts.filter((p: any) => p.id !== pacte.id).map((p: any) => p.name).join(", ")}.`);
+    }
+  } else {
+    lignes.push("Aucun pacte enregistré.");
+  }
+
+  const buts = (objectifs?.data ?? []).filter((g: any) =>
+    listePacts.some((p: any) => p.id === g.pact_id),
+  );
+  if (buts.length) {
+    const enCours = buts.filter((g: any) => g.status === "in_progress").length;
+    const aVenir = buts.filter((g: any) => g.status === "not_started").length;
+    const finis = buts.filter((g: any) => g.status === "fully_completed" || g.status === "validated").length;
+    const faites = buts.reduce((s: number, g: any) => s + (g.validated_steps ?? 0), 0);
+    const etapes = buts.reduce((s: number, g: any) => s + (g.total_steps ?? 0), 0);
+    /* ON DONNE LES TOTAUX DÉJÀ FAITS, PAS LEURS INGRÉDIENTS.
+
+       Premier essai, l'état annonçait « 14 en cours, 11 non commencés,
+       étapes 142/423 » et laissait le modèle en déduire ce qu'on lui
+       demandait. Réponse obtenue : « 48 étapes sur 11 objectifs en
+       cours, 276 au total ». Trois chiffres, trois faux — la vérité
+       était 59 sur 14, et 281 au total.
+
+       Un modèle ne somme pas quatorze lignes de tête. Chaque nombre
+       qu'on risque de lui demander est donc calculé ici, en Postgres,
+       et il n'a plus qu'à le lire. */
+    const restant = (statut: string) =>
+      buts
+        .filter((g: any) => g.status === statut)
+        .reduce((s: number, g: any) => s + Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)), 0);
+
+    lignes.push(
+      `Objectifs : ${enCours} en cours (${restant("in_progress")} étapes restantes), ` +
+        `${aVenir} non commencés (${restant("not_started")} étapes restantes), ${finis} terminés.`,
+    );
+    lignes.push(
+      `Étapes, toutes catégories : ${faites} faites sur ${etapes}, ${Math.max(0, etapes - faites)} restantes.`,
+    );
+
+    const plusGros = buts
+      .filter((g: any) => g.status === "in_progress")
+      .map((g: any) => ({ nom: g.name, reste: Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)) }))
+      .filter((g: any) => g.reste > 0)
+      .sort((a: any, b: any) => b.reste - a.reste)
+      .slice(0, 3);
+    if (plusGros.length) {
+      lignes.push(
+        `Plus gros restes en cours : ${plusGros.map((g: any) => `${g.nom} (${g.reste})`).join(", ")}.`,
+      );
+    }
+    const brigade = buts.filter((g: any) => g.is_focus && g.status !== "fully_completed").map((g: any) => g.name);
+    if (brigade.length) lignes.push(`Brigade (objectifs épinglés) : ${brigade.join(", ")}.`);
+  }
+
+  const listeOrdres = ordres?.data ?? [];
+  if (listeOrdres.length) {
+    const prime = listeOrdres.reduce((s: number, q: any) => s + (q.reward_bonds ?? 0), 0);
+    const acquise = listeOrdres
+      .filter((q: any) => q.status === "claimed")
+      .reduce((s: number, q: any) => s + (q.reward_bonds ?? 0), 0);
+    lignes.push(
+      `Ordres du jour : ` +
+        listeOrdres.map((q: any) => `${q.title} ${q.progress}/${q.target}`).join(" · ") +
+        ` — prime ${acquise}/${prime} bonds.`,
+    );
+  }
+
+  const minutes = (focus?.data ?? []).reduce((s: number, p: any) => s + (p.duration_minutes ?? 0), 0);
+  lignes.push(`Focus aujourd'hui : ${minutes} minute${minutes > 1 ? "s" : ""}.`);
+
+  const listeTaches = taches?.data ?? [];
+  if (listeTaches.length) {
+    const prochaines = listeTaches
+      .filter((t: any) => t.deadline)
+      .sort((a: any, b: any) => String(a.deadline).localeCompare(String(b.deadline)))
+      .slice(0, 4)
+      .map((t: any) => `${t.name} (${new Date(t.deadline).toLocaleDateString("fr-FR")})`);
+    lignes.push(
+      `Tâches ouvertes : ${listeTaches.length}` +
+        (prochaines.length ? `. Prochaines échéances : ${prochaines.join(", ")}.` : "."),
+    );
+  } else {
+    lignes.push("Tâches ouvertes : aucune.");
+  }
+
+  if (bonds?.data?.balance != null) lignes.push(`Solde : ${bonds.data.balance} bonds.`);
+
+  return lignes.join("\n");
+}
+
+/** Une trame SSE au format que le client sait déjà lire. */
+function trame(contenu: string): string {
+  return `data: ${JSON.stringify({ choices: [{ delta: { content: contenu } }] })}\n\n`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POMPER UN TOUR : DIFFUSER LE TEXTE, RECOLLER LES OUTILS
+
+   L'ancienne boucle faisait un appel NON DIFFUSÉ pour décider s'il
+   fallait des outils, puis un SECOND appel, diffusé celui-là, qui
+   repartait du début. Deux générations complètes pour une réponse sans
+   outil, et l'utilisateur attendait la première en entier avant de voir
+   le premier caractère.
+
+   Le flux porte les appels d'outils autant que le texte. On diffuse
+   donc dès le premier appel : le texte part au client au fil de l'eau,
+   les appels d'outils s'accumulent, et on ne rouvre un tour que s'il y
+   en a vraiment.
+
+   Les appels d'outils arrivent en morceaux — un index, un nom, puis des
+   fragments d'arguments JSON — qu'il faut recoller par index.
+   ═══════════════════════════════════════════════════════════════ */
+async function pomperUnTour(
+  amont: Response,
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  encoder: TextEncoder,
+): Promise<{ texte: string; outils: any[] }> {
+  const lecteur = amont.body!.getReader();
+  const decodeur = new TextDecoder();
+  const outils: any[] = [];
+  let reste = "";
+  let texte = "";
+
+  while (true) {
+    const { value, done } = await lecteur.read();
+    if (done) break;
+    const morceau = reste + decodeur.decode(value, { stream: true });
+    const lignes = morceau.split("\n");
+    reste = lignes.pop() ?? "";
+    for (const ligne of lignes) {
+      if (!ligne.startsWith("data: ")) continue;
+      const charge = ligne.slice(6).trim();
+      if (!charge || charge === "[DONE]") continue;
+      let json: any;
+      try {
+        json = JSON.parse(charge);
+      } catch (_) {
+        continue;
+      }
+      const delta = json?.choices?.[0]?.delta;
+      if (!delta) continue;
+      if (delta.content) {
+        texte += delta.content;
+        controller.enqueue(encoder.encode(trame(delta.content)));
+      }
+      for (const appel of delta.tool_calls ?? []) {
+        const i = appel.index ?? 0;
+        if (!outils[i]) outils[i] = { id: "", type: "function", function: { name: "", arguments: "" } };
+        if (appel.id) outils[i].id = appel.id;
+        if (appel.function?.name) outils[i].function.name = appel.function.name;
+        if (appel.function?.arguments) outils[i].function.arguments += appel.function.arguments;
+        /* LA SIGNATURE DE PENSEE VOYAGE AVEC L APPEL, ET DOIT REVENIR AVEC LUI.
+
+           Gemini 3 joint a chaque appel d outil un `extra_content.google.
+           thought_signature`, et REFUSE le tour suivant si on ne le lui
+           rend pas : 400 INVALID_ARGUMENT, « Function call is missing a
+           thought_signature in functionCall parts ».
+
+           L ancienne boucle ne diffusait pas : elle repassait l objet
+           `tool_calls` du modele tel quel, donc la signature suivait sans
+           qu on ait a y penser. En recollant les morceaux du flux, on
+           reconstruit l objet — et il faut donc la recopier a la main. */
+        if (appel.extra_content) {
+          outils[i].extra_content = { ...(outils[i].extra_content ?? {}), ...appel.extra_content };
+        }
+      }
+    }
+  }
+
+  return { texte, outils: outils.filter(Boolean) };
+}
+
 interface ChatBody {
   conversation_id: string;
   message: string;
@@ -458,7 +720,8 @@ Deno.serve(async (req) => {
     }
     const model = normalizeModel(body.model);
 
-    // Persist user message
+    // Le message de l'utilisateur est persisté d'abord : si la suite
+    // échoue, on ne perd pas ce qu'il a écrit.
     await supabase.from("coach_messages").insert({
       conversation_id: body.conversation_id,
       user_id: userId,
@@ -466,18 +729,19 @@ Deno.serve(async (req) => {
       content: body.message,
     });
 
-    // Load last 20 messages
-    const { data: history } = await supabase
+    /* L'HISTORIQUE ÉTAIT CHARGÉ À L'ENVERS.
+       `order(created_at, asc).limit(40)` renvoie les quarante messages LES
+       PLUS ANCIENS, pas les quarante derniers — et le commentaire juste
+       au-dessus annonçait « last 20 messages ». Sur une conversation
+       longue, M.I.A aurait lu le début et jamais la suite. On prend les
+       derniers, puis on les remet dans l'ordre. */
+    const { data: recents } = await supabase
       .from("coach_messages")
-      .select("role, content")
+      .select("role, content, created_at")
       .eq("conversation_id", body.conversation_id)
-      .order("created_at", { ascending: true })
-      .limit(40);
-
-    const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...((history ?? []).map((m: any) => ({ role: m.role, content: m.content }))),
-    ];
+      .order("created_at", { ascending: false })
+      .limit(24);
+    const historique = (recents ?? []).slice().reverse();
 
     const aiKey = getAiKey();
     if (!aiKey) {
@@ -487,42 +751,35 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Tool loop (max 4 hops) — non-streaming for tool resolution, then stream final.
-    const workMessages: any[] = [...messages];
-    const aggregatedCitations: ToolReceipt["citations"] = [];
-    const aggregatedActions: NonNullable<ToolReceipt["action"]>[] = [];
-    for (let hop = 0; hop < 4; hop++) {
-      const probe = await chatCompletion(
-        { model, messages: workMessages, tools: TOOLS, tool_choice: "auto" },
+    const etat = await etatDuJour(supabase, userId);
+
+    /* UN SEUL MESSAGE SYSTÈME, PAS DEUX.
+       L'état du jour était envoyé dans un second message système, après
+       les règles. Le modèle l'a lu comme la consigne la plus fraîche et
+       a répondu sur le ton d'un rapport. Les règles, l'état et le rappel
+       tiennent maintenant dans un seul bloc, le rappel en dernier. */
+    const workMessages: any[] = [
+      { role: "system", content: `${SYSTEM_PROMPT}\n\n${etat}\n\n${RAPPEL_VOIX}` },
+      ...historique.map((m: any) => ({ role: m.role, content: m.content })),
+    ];
+
+    const appeler = (messages: any[], avecOutils: boolean) =>
+      chatCompletion(
+        avecOutils
+          ? { model, messages, tools: TOOLS, tool_choice: "auto", stream: true }
+          : { model, messages, stream: true },
         aiKey,
       );
-      if (!probe.ok) break;
-      const probeJson = await probe.json();
-      const msg = probeJson?.choices?.[0]?.message;
-      const calls = msg?.tool_calls;
-      if (!calls || !calls.length) break;
-      workMessages.push({ role: "assistant", content: msg.content ?? "", tool_calls: calls });
-      for (const c of calls) {
-        let parsedArgs: any = {};
-        try { parsedArgs = JSON.parse(c.function?.arguments ?? "{}"); } catch (_) { /* ignore */ }
-        const receipts: ToolReceipt = {};
-        const result = await runTool(c.function?.name, parsedArgs, supabase, userId, aiKey, receipts);
-        if (receipts.citations?.length) aggregatedCitations.push(...receipts.citations);
-        if (receipts.action) aggregatedActions.push(receipts.action);
-        workMessages.push({ role: "tool", tool_call_id: c.id, content: result });
-      }
-    }
 
-    const upstream = await chatCompletion(
-      { model, messages: workMessages, stream: true },
-      aiKey,
-    );
-
-    if (!upstream.ok || !upstream.body) {
-      const errText = await upstream.text();
-      if (upstream.status === 429 || upstream.status === 402) {
-        return new Response(JSON.stringify({ error: upstreamErrorMessage(upstream.status) }), {
-          status: upstream.status,
+    /* Le PREMIER appel se fait hors du flux : c'est le seul endroit où
+       l'on peut encore répondre un vrai code d'erreur au client. Une fois
+       le ReadableStream ouvert, l'en-tête est parti. */
+    const premier = await appeler(workMessages, true);
+    if (!premier.ok || !premier.body) {
+      const errText = await premier.text();
+      if (premier.status === 429 || premier.status === 402) {
+        return new Response(JSON.stringify({ error: upstreamErrorMessage(premier.status) }), {
+          status: premier.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -532,52 +789,74 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Tee the stream: forward to client AND buffer to persist
-    let fullText = "";
-    const decoder = new TextDecoder();
-    const stream = new ReadableStream({
+    const TOURS_MAX = 4;
+    const citations: ToolReceipt["citations"] = [];
+    const actions: NonNullable<ToolReceipt["action"]>[] = [];
+
+    const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
-        const reader = upstream.body!.getReader();
         const encoder = new TextEncoder();
-        let leftover = "";
+        let texteTotal = "";
         try {
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            const chunk = leftover + decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n");
-            leftover = lines.pop() ?? "";
-            for (const line of lines) {
-              if (!line.startsWith("data: ")) continue;
-              const payload = line.slice(6).trim();
-              if (!payload || payload === "[DONE]") continue;
-              try {
-                const json = JSON.parse(payload);
-                const delta = json.choices?.[0]?.delta?.content;
-                if (delta) fullText += delta;
-              } catch (_) { /* ignore */ }
+          let amont = premier;
+          for (let tour = 0; ; tour++) {
+            const { texte, outils } = await pomperUnTour(amont, controller, encoder);
+            texteTotal += texte;
+            if (!outils.length) break;
+
+            workMessages.push({ role: "assistant", content: texte, tool_calls: outils });
+
+            /* LES OUTILS D'UN MÊME TOUR PARTENT ENSEMBLE.
+               C'était `for (const c of calls) await runTool(...)` : quatre
+               outils demandés dans le même tour s'exécutaient l'un après
+               l'autre. Ce sont des requêtes Postgres indépendantes. */
+            const resultats = await Promise.all(
+              outils.map(async (appel: any) => {
+                let args: any = {};
+                try {
+                  args = JSON.parse(appel.function?.arguments ?? "{}");
+                } catch (_) { /* arguments illisibles : on appelle à vide */ }
+                const recu: ToolReceipt = {};
+                const sortie = await runTool(appel.function?.name, args, supabase, userId, aiKey, recu);
+                return { appel, sortie, recu };
+              }),
+            );
+
+            for (const { appel, sortie, recu } of resultats) {
+              if (recu.citations?.length) citations.push(...recu.citations);
+              if (recu.action) actions.push(recu.action);
+              workMessages.push({ role: "tool", tool_call_id: appel.id, content: sortie });
             }
-            controller.enqueue(encoder.encode(chunk));
+
+            /* Au dernier tour on rappelle SANS outils : le modèle n'a plus
+               le choix, il répond. Sans cela une boucle d'outils pourrait
+               se terminer sur un silence. */
+            const dernier = tour >= TOURS_MAX - 1;
+            const suite = await appeler(workMessages, !dernier);
+            if (!suite.ok || !suite.body) break;
+            amont = suite;
           }
+
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
-          // Build metadata payload (dedupe citations by source_id)
-          const seen = new Set<string>();
-          const citations = aggregatedCitations.filter((c) => {
-            const key = `${c.source_type}:${c.source_id}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
+
+          const vus = new Set<string>();
+          const citationsUniques = citations.filter((c) => {
+            const cle = `${c.source_type}:${c.source_id}`;
+            if (vus.has(cle)) return false;
+            vus.add(cle);
             return true;
           });
           const metadata =
-            citations.length || aggregatedActions.length
-              ? { citations, actions: aggregatedActions }
+            citationsUniques.length || actions.length
+              ? { citations: citationsUniques, actions }
               : null;
-          // Persist assistant final
+
           await supabase.from("coach_messages").insert({
             conversation_id: body.conversation_id,
             user_id: userId,
             role: "assistant",
-            content: fullText,
+            content: texteTotal,
             model,
             metadata,
           });
