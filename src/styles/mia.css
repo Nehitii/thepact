@@ -485,8 +485,12 @@
 /* ── LE COMPOSEUR ──────────────────────────────────────────────
    DIX PIXELS DE MARGE DANS UN CHAMP DE 740, c'était un champ de
    formulaire : le texte — et le curseur avec lui — commençait collé au
-   bord. Seize pixels à gauche, douze avant le bouton, et un rayon qui
+   bord. Vingt pixels à gauche, douze avant le bouton, et un rayon qui
    suit celui du bouton : le champ devient une boîte où l'on écrit.
+
+   Vingt et non seize : seize se mesurait bien mais se voyait mal sur
+   sept cents pixels de large. Le curseur doit avoir l'air posé dans la
+   boîte, pas appuyé contre sa paroi.
 
    L'asymétrie est voulue. À gauche on lit, il faut de l'air ; à droite
    il y a un bouton, qui apporte le sien. */
@@ -498,7 +502,7 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: 11px 12px 11px 16px;
+  padding: 12px 12px 12px 20px;
   border-radius: 12px;
   border: 1px solid var(--nexus-border, hsl(var(--border)));
   background: var(--nexus-inner-bg, hsl(var(--muted) / 0.3));
