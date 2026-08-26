@@ -3520,5 +3520,17 @@
     "label": "Brigade",
     "refusPlein": "The brigade is full — release a goal first.",
     "refusType": "A constellation does not join the brigade: only ordinary goals do."
+  },
+  "palette": {
+    "drag": "Drag to move",
+    "open": "Search or jump to…",
+    "search": "Search",
+    "placeholder": "A page, a setting, an action…",
+    "empty": "Nothing under that word.",
+    "groupPages": "Pages",
+    "groupModules": "Life modules",
+    "groupSocial": "Social",
+    "groupActions": "Actions",
+    "groupSettings": "Settings"
   }
 }

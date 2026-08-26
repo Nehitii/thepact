@@ -3520,5 +3520,17 @@
     "label": "Brigade",
     "refusPlein": "La brigade est au complet — relâche un objectif d'abord.",
     "refusType": "Une constellation ne rejoint pas la brigade : seuls les objectifs ordinaires."
+  },
+  "palette": {
+    "drag": "Glisser pour déplacer",
+    "open": "Chercher ou se rendre à…",
+    "search": "Chercher",
+    "placeholder": "Une page, un réglage, une action…",
+    "empty": "Rien sous ce mot.",
+    "groupPages": "Pages",
+    "groupModules": "Modules de vie",
+    "groupSocial": "Social",
+    "groupActions": "Actions",
+    "groupSettings": "Réglages"
   }
 }
