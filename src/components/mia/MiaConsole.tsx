@@ -15,6 +15,7 @@ import {
   type SourceMia,
 } from "@/hooks/useMia";
 import { PREF } from "@/lib/preferencesAffichage";
+import { supabase } from "@/integrations/supabase/client";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
 
 /**
@@ -84,6 +85,28 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   useEffect(() => {
     if (open && !filActif && conversations.length > 0) setFilActif(conversations[0].id);
   }, [open, filActif, conversations]);
+
+  /* LA MÉMOIRE S'INDEXE SEULE.
+
+     Elle dépendait d'un bouton « cerveau » sans libellé, caché dans
+     l'en-tête : sept souvenirs en trois mois, le score d'une fonction
+     qu'il faut penser à déclencher. Le bouton est parti avec l'ancien
+     tiroir — mais le cron qui rattrapait le coup est parti avec la
+     passe 1, et l'index se serait figé pour de bon.
+
+     L'indexeur est idempotent : il saute ce qu'il a déjà vu. On le
+     réveille donc à l'ouverture de la console, une fois par session.
+     Ce n'est pas encore « au moment où le souvenir naît » — un appel
+     depuis le journal serait plus juste — mais l'index recommence à
+     grandir sans que personne ait à y penser. */
+  const memoireVue = useRef(false);
+  useEffect(() => {
+    if (!open || memoireVue.current) return;
+    memoireVue.current = true;
+    void supabase.functions.invoke("coach-index-memory", { body: {} }).catch(() => {
+      /* silencieux : ce n'est pas une action de l'utilisateur */
+    });
+  }, [open]);
 
   /* LA PASTILLE DE RECHERCHE FLOTTAIT AU-DESSUS DU COMPOSEUR.
      Elle est en z-[999], la console en 91 : elle se posait donc sur le

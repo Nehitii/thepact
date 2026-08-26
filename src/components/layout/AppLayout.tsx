@@ -126,7 +126,18 @@ export function AppLayout() {
 
       {miaOuverte && (
         <Suspense fallback={null}>
-          <MiaConsole open={miaOuverte} onClose={() => setMiaOuverte(false)} onEtat={setEtatMia} />
+          <MiaConsole
+            open={miaOuverte}
+            onClose={() => {
+              /* LA VIGNETTE RESTAIT ALLUMÉE APRÈS LA FERMETURE.
+                 La console se démonte en se fermant, donc elle cesse de
+                 remonter son état — et la vignette gardait le dernier
+                 reçu, parfois « travail », à clignoter indéfiniment. */
+              setEtatMia("repos");
+              setMiaOuverte(false);
+            }}
+            onEtat={setEtatMia}
+          />
         </Suspense>
       )}
 
