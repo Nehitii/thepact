@@ -1502,6 +1502,12 @@
   font-size: 9.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--co-texte-3, hsl(var(--muted-foreground)));
+  /* L ENCRE 2, PAS LA 3. « --co-texte-3 » a ete calibre sur le fond du
+     fil, ou il passe 4,5:1 ; ce panneau flotte sur une surface elevee,
+     ou la meme encre retombe a 4,44 — mesure. Six centiemes, mais du
+     mauvais cote, et sur la seule ligne que le fournisseur EXIGE
+     lisible en echange de ses images. Corrige ici et non sur le jeton :
+     le jeton n a rien de faux, c est le fond qui a change. */
+  color: var(--co-texte-2, hsl(var(--muted-foreground)));
   text-align: right;
 }

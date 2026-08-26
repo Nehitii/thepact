@@ -1594,7 +1594,14 @@
   letter-spacing: 0.08em;
   color: var(--wl-encre-2, hsl(var(--muted-foreground)));
   background: transparent;
-  border: 1px dashed var(--wl-trait, hsl(var(--border)));
+  /* LE POINTILLE PORTE L ENCRE DE SON LIBELLE, PAS LE FILET DES LIGNES.
+     Mesure : avec « --wl-trait », le contour tombait a 1,04:1 en clair et
+     1,46:1 en sombre — sous le seuil de 3:1 des composants non textuels,
+     et de fait invisible. Ce jeton est celui des SEPARATIONS entre
+     lignes, ou 1,04 est un bon trait ; l emprunter pour un bouton faisait
+     disparaitre le bouton. « --wl-encre-3 » bascule avec le theme comme
+     lui, et vaut 4,7:1 sur blanc. */
+  border: 1px dashed var(--wl-encre-3, hsl(var(--muted-foreground)));
   border-radius: 3px;
   cursor: pointer;
   transition: color 140ms ease, border-color 140ms ease;
