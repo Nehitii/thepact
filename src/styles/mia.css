@@ -488,11 +488,13 @@
    bord. Vingt pixels à gauche, douze avant le bouton, et un rayon qui
    suit celui du bouton : le champ devient une boîte où l'on écrit.
 
-   VINGT-HUIT, ET PAS VINGT. Ce qui clochait n'était pas la valeur mais
-   le RAPPORT : vingt à gauche contre treize en haut et en bas, l'œil ne
-   fait pas la différence, et un curseur d'un pixel seul dans cet espace
-   paraît collé quand même. L'écart horizontal doit dominer franchement
-   le vertical — vingt-huit contre douze, on ne peut plus les confondre.
+   DIX-HUIT, APRÈS ÊTRE MONTÉ À VINGT-HUIT. Vingt-huit était une
+   compensation : tant que l'anneau de focus dessinait une seconde boîte
+   autour du champ de saisie, il fallait éloigner cette boîte du bord
+   pour que le texte ne paraisse pas coincé entre deux traits. L'anneau
+   supprimé, la compensation n'a plus lieu d'être et le texte revient à
+   une distance normale — dix-huit contre dix, un composeur, pas une
+   démonstration de marge.
 
    L'asymétrie est voulue. À gauche on lit, il faut de l'air ; à droite
    il y a un bouton, qui apporte le sien. */
@@ -504,16 +506,42 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: 12px 12px 12px 28px;
+  padding: 10px 12px 10px 18px;
   border-radius: 12px;
   border: 1px solid var(--nexus-border, hsl(var(--border)));
   background: var(--nexus-inner-bg, hsl(var(--muted) / 0.3));
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
-.mia-champ:focus-within {
-  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+/* LE CADRE INTÉRIEUR QUI APPARAISSAIT AU CLIC N'EN ÉTAIT PAS UN.
+
+   `index.css` pose une règle globale d'accessibilité :
+
+     @layer base { *:focus-visible {
+       outline: 1px solid …; outline-offset: 2px;
+       box-shadow: 0 0 0 3px …; border-radius: 2px; } }
+
+   Elle s'appliquait au CHAMP DE SAISIE lui-même. Comme la marge
+   horizontale est portée par la boîte et non par le champ, l'anneau
+   dessinait exactement le contour du champ — une seconde boîte, en
+   retrait de 28 px à gauche et de 13 en haut, contre laquelle le texte
+   se trouvait effectivement collé, puisque le champ n'a pas de marge
+   propre.
+
+   `outline: none` était déjà là et gagnait — une feuille hors couche
+   bat une feuille en couche. Mais l'ombre portée, elle, n'était pas
+   annulée : c'est elle qu'on voyait.
+
+   L'indication de focus reste, elle change simplement de porteur :
+   c'est la BOÎTE qui s'allume, une seule fois, comme il se doit. */
+.mia-champ textarea:focus,
+.mia-champ textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
-.mia-champ:focus-within { border-color: hsl(var(--primary) / 0.5); }
+.mia-champ:focus-within {
+  border-color: hsl(var(--primary) / 0.55);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+}
 /* LE CHAMP GRANDIT AVEC CE QU'ON ÉCRIT.
    Il était figé à 24 px de haut : au premier retour à la ligne, le
    contenu passait à 42 px, une barre de défilement apparaissait, et le
@@ -530,7 +558,10 @@
   min-width: 0;
   min-height: 30px;
   max-height: 168px;
-  padding: 3px 0 4px;
+  /* 21 px de ligne dans 30 px de champ : 4,5 de part et d'autre. La
+     ligne était à 3 en haut et 4 en bas, décentrée d'un pixel et demi —
+     invisible seule, voyante dès qu'un anneau la cerclait. */
+  padding: 4.5px 0;
   resize: none;
   border: 0;
   background: transparent;
@@ -556,7 +587,17 @@
   color: hsl(var(--background));
   transition: opacity 180ms ease, transform 120ms ease;
 }
-.mia-envoi:disabled { opacity: 0.35; cursor: default; }
+/* DÉSACTIVÉ N'EST PAS EFFACÉ. À 0,35 d'opacité sur du papier, le
+   bouton devenait un fantôme : on ne savait plus s'il était inactif ou
+   si l'interface était cassée. Il garde sa présence et change de
+   matière — un bouton gris plein, qui dit « rien à envoyer » au lieu de
+   disparaître. */
+.mia-envoi:disabled {
+  background: var(--nexus-track-bg, hsl(var(--muted)));
+  color: var(--nexus-text-dimmer);
+  opacity: 1;
+  cursor: default;
+}
 .mia-envoi:not(:disabled):active { transform: translateY(1px); }
 .mia-note {
   display: flex;
