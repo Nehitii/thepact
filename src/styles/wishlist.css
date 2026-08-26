@@ -942,14 +942,40 @@
    n est pas paye, vert quand ca l est. Cinquante-quatre lignes se
    lisent d un balayage, sans lire un seul mot — et ici les deux
    etats se cotoient pour de bon. */
+/* ── LES PRIX S'ALIGNENT, MÊME QUAND LES OUTILS DIFFÈRENT ──
+ *
+ * CHAQUE LIGNE EST SA PROPRE GRILLE : « display: grid » est posé sur la
+ * ligne, pas sur la liste. Deux colonnes en « auto » ne peuvent donc pas
+ * s'accorder d'une ligne à l'autre — chacune se dimensionne sur son seul
+ * contenu.
+ *
+ * Mesuré sur le registre : quatorze lignes portent quatre outils (116 px)
+ * et leur prix finit à 426 ; soixante-neuf n'en portent que deux (56 px)
+ * et leur prix finit à 478 ou 486. Un poste hors pacte n'a ni suppression
+ * ni lien, il décrochait donc de soixante pixels.
+ *
+ * Les deux colonnes de droite prennent une largeur FIXE. Le prix se cale
+ * à droite dans la sienne, les outils se calent à droite dans la leur :
+ * une ligne à deux outils laisse alors un vide À GAUCHE de ses boutons,
+ * là où les autres en ont deux de plus. C'est la seule place où ce vide
+ * ne se lit pas comme un défaut. */
 .wl-poste {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto auto;
+  grid-template-columns: 26px minmax(0, 1fr) 78px 116px;
   align-items: center;
   gap: 11px;
   padding: 9px 14px;
   border-left: 3px solid var(--wl-dette);
   transition: background 120ms linear;
+}
+.wl-poste .wl-poste-prix { text-align: right; }
+.wl-poste .wl-outils { justify-content: flex-end; }
+
+/* Sous 560 px, 220 px de colonnes fixes ne laissent plus rien au nom.
+   Les outils gardent leur place — ce sont des cibles tactiles — et c'est
+   le prix qui renonce à sa largeur réservée. */
+@media (max-width: 560px) {
+  .wl-poste { grid-template-columns: 26px minmax(0, 1fr) auto 116px; gap: 8px; }
 }
 .wl-poste[data-acquis="oui"] { border-left-color: var(--wl-vert); }
 .wl-poste + .wl-poste { border-top: 1px solid var(--wl-filet); }
@@ -1031,7 +1057,12 @@
 .wl-pli-poignee svg { width: 14px; height: 14px; transition: transform 180ms linear; }
 .wl-pli[data-ouvert="oui"] .wl-pli-poignee svg { transform: rotate(180deg); }
 
-.wl-pli-corps { padding: 0 4px 6px; border-top: 1px solid var(--wl-trait); }
+/* Le corps du pli portait quatre pixels de gouttiere de chaque cote : ses
+   lignes tombaient donc huit pixels plus etroites que celles de la liste
+   de premier niveau, et les prix se rangeaient a deux abscisses
+   differentes sur la meme page. Le pli garde son filet et son fond — son
+   identite ne tenait pas a cette gouttiere. */
+.wl-pli-corps { padding: 0 0 6px; border-top: 1px solid var(--wl-trait); }
 
 /* ═══════════════════════════════════════════════════════════════
    LE CONTROLE D IMPORT

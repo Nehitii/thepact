@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { CalendarToolbar, type CalendarView } from "./CalendarToolbar";
 import { RubanView } from "./views/RubanView";
@@ -14,20 +14,22 @@ import { addDays, differenceInCalendarDays, parseISO, format, getISOWeek, startO
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { PREF } from "@/lib/preferencesAffichage";
 
 const ALL_SOURCES = new Set<CalendarSourceType>(["event", "todo", "goal", "step"]);
 const VUES: CalendarView[] = ["ruban", "day", "week", "month", "year"];
 
-/* La vue de depart est le ruban — c est lui qui dit comment le temps est
-   fait, la grille ne dit que ce qu il contient. Mais le choix suivant
-   appartient a l utilisateur : on le retient. */
+/* ON ARRIVE TOUJOURS SUR LE MOIS.
+
+   La vue de depart etait le ruban, et la derniere vue choisie etait
+   retenue d une visite a l autre. Deux idees justes separement, et
+   ensemble un calendrier qu on ouvrait sur une vue quon avait quittee
+   il y a trois jours pour une raison oubliee.
+
+   Le mois est la vue qu on cherche en ouvrant un calendrier : c est la
+   seule qui montre a la fois ou l on est et ce qui vient. Les autres se
+   choisissent, elles ne s heritent plus. */
 function vueInitiale(): CalendarView {
-  try {
-    const stockee = localStorage.getItem(PREF.CALENDRIER_VUE) as CalendarView | null;
-    if (stockee && VUES.includes(stockee)) return stockee;
-  } catch { /* stockage indisponible : le defaut suffit */ }
-  return "ruban";
+  return "month";
 }
 
 export function CalendarPage() {
@@ -41,9 +43,6 @@ export function CalendarPage() {
   const [quickAddDate, setQuickAddDate] = useState<Date | undefined>();
   const [activeFilters, setActiveFilters] = useState<Set<CalendarSourceType>>(new Set(ALL_SOURCES));
 
-  useEffect(() => {
-    try { localStorage.setItem(PREF.CALENDRIER_VUE, view); } catch { /* sans consequence */ }
-  }, [view]);
 
   const { events, isLoading, createEvent, updateEvent, deleteEvent } = useCalendarEvents(viewDate, view, activeFilters);
 

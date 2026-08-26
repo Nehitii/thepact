@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
-import { Search, Plus, Sun, Moon, MonitorSmartphone, Info } from "lucide-react";
+import { Search, Plus, Sun, Moon, MonitorSmartphone, Info, RotateCcw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry, useJournalCounts } from "@/hooks/useJournal";
@@ -9,7 +9,7 @@ import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
+import { DailyPromptBanner, useQuestionCongediee } from "@/components/journal/DailyPromptBanner";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
 import {
@@ -52,6 +52,8 @@ export default function Journal() {
   const theme = lumiere === "auto" ? (resolvedTheme === "light" ? "clair" : "sombre") : lumiere;
 
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+
+  const [questionCongediee, reglerQuestion] = useQuestionCongediee();
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -260,6 +262,21 @@ export default function Journal() {
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* LA QUESTION CONGÉDIÉE PEUT REVENIR.
+              Une croix cliquée par erreur coûtait la question du jour
+              jusqu'au lendemain. Le bouton n'existe que dans ce cas : il
+              n'y a rien à rappeler tant qu'elle est là. */}
+          {questionCongediee && (
+            <button
+              type="button"
+              className="jr-question-rappel"
+              onClick={() => reglerQuestion(false)}
+            >
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+              {t("journal.prompt.rappeler", "Revoir la question du jour")}
+            </button>
+          )}
 
           <div className="jr-doc">
             <DailyPromptBanner

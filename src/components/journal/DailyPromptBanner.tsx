@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { X, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,6 +76,54 @@ function useFrappe(texte: string, actif: boolean) {
   return { visible: texte.slice(0, n), fini: n >= texte.length };
 }
 
+/**
+ * LA QUESTION CONGÉDIÉE PEUT REVENIR.
+ *
+ * Elle se fermait pour la journée, et rien ne la rappelait : une croix
+ * cliquée par erreur coûtait la question du jour jusqu'au lendemain.
+ *
+ * L'état sort donc de la bannière. Il vivait dans un useState privé, ce
+ * qui interdisait à la page de savoir qu'il y avait quelque chose à
+ * rappeler — et une page qui ne sait pas ne peut pas proposer.
+ */
+const cleDuJour = () => `journal-prompt-dismissed-${new Date().toDateString()}`;
+
+export function useQuestionCongediee(): [boolean, (v: boolean) => void] {
+  const [congediee, setCongediee] = useState(false);
+  const cle = cleDuJour();
+
+  useEffect(() => {
+    try {
+      setCongediee(localStorage.getItem(cle) === "1");
+      /* Une clé par jour congédié s'accumulait pour toujours. */
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("journal-prompt-dismissed-") && k !== cle) localStorage.removeItem(k);
+      }
+    } catch { /* stockage indisponible : la question reste visible */ }
+  }, [cle]);
+
+  const regler = useCallback((v: boolean) => {
+    try {
+      if (v) localStorage.setItem(cle, "1");
+      else localStorage.removeItem(cle);
+    } catch { /* sans conséquence : l'état de la session suffit */ }
+    setCongediee(v);
+    /* Les deux lecteurs — la bannière et le bouton de rappel — vivent dans
+       des composants différents. Sans cet avis, celui qui n'a pas cliqué
+       ne saurait jamais que l'autre a changé d'avis. */
+    window.dispatchEvent(new CustomEvent("journal-question", { detail: v }));
+  }, [cle]);
+
+  useEffect(() => {
+    const suivre = (e: Event) => setCongediee(!!(e as CustomEvent).detail);
+    window.addEventListener("journal-question", suivre);
+    return () => window.removeEventListener("journal-question", suivre);
+  }, []);
+
+  return [congediee, regler];
+}
+
 export function DailyPromptBanner({ onUse }: Props) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -86,20 +134,7 @@ export function DailyPromptBanner({ onUse }: Props) {
   const enregistrerOrientation = useEnregistrerOrientation(user?.id);
   const [orientationOuverte, setOrientationOuverte] = useState(false);
   const retenues = famillesRetenues(profil?.journal_prompt_families);
-  const dayKey = new Date().toDateString();
-  const storageKey = `journal-prompt-dismissed-${dayKey}`;
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    setDismissed(localStorage.getItem(storageKey) === "1");
-    /* Une cle par jour masque s accumulait pour toujours. */
-    try {
-      for (let i = localStorage.length - 1; i >= 0; i--) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith("journal-prompt-dismissed-") && k !== storageKey) localStorage.removeItem(k);
-      }
-    } catch { /* stockage indisponible */ }
-  }, [storageKey]);
+  const [dismissed, setDismissed] = useQuestionCongediee();
 
   const texte = prompt?.prompt ?? "";
   const { visible, fini } = useFrappe(texte, !!prompt && !sobre);
@@ -161,10 +196,7 @@ export function DailyPromptBanner({ onUse }: Props) {
             type="button"
             className="jr-q-fermer"
             style={{ marginLeft: 6 }}
-            onClick={() => {
-              localStorage.setItem(storageKey, "1");
-              setDismissed(true);
-            }}
+            onClick={() => setDismissed(true)}
             aria-label={t("journal.prompt.dismiss")}
           >
             <X className="w-3.5 h-3.5" aria-hidden="true" />

@@ -19,6 +19,9 @@
 
 export const PREF = {
   /* ── Vues, tris, mises en page ── */
+  /* PLUS ECRITE : le calendrier ouvre toujours sur le mois. La cle reste
+     dans cette liste pour que la remise a zero nettoie la valeur laissee
+     par les visites precedentes. */
   CALENDRIER_VUE: "vowpact.calendar.vue",
   ECHEANCES_VUE: "vowpact.echeances.vue",
   MONITORING_VUE: "vowpact.monitoring.vue",

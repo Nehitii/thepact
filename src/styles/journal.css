@@ -1251,3 +1251,29 @@
   background: var(--jr-papier-2); color: var(--jr-encre);
 }
 .jr-liste [role="option"] svg { color: var(--jr-rouge-encre); }
+
+/* ── LE RAPPEL DE LA QUESTION ──
+   Il n'apparaît que si la question a été congédiée : discret, à la place
+   qu'elle occupait, pour qu'on comprenne ce qu'il rappelle. */
+.jr-question-rappel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 7px 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.08em;
+  color: var(--jr-encre-2, hsl(var(--muted-foreground)));
+  background: transparent;
+  border: 1px dashed var(--jr-filet, hsl(var(--border)));
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+.jr-question-rappel:hover,
+.jr-question-rappel:focus-visible {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.06);
+}
