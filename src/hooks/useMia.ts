@@ -50,6 +50,11 @@ export interface ActeMia {
 export interface MetaMessageMia {
   citations?: SourceMia[];
   actions?: ActeMia[];
+  /* Par quelle couche la réponse est venue. Absent = le modèle a répondu.
+     C'est ce qui permet de retrouver le badge et le visage après un
+     rechargement, au lieu de les perdre avec l'état du composant. */
+  couche?: "reflexe" | "geste";
+  expression?: string;
 }
 
 export function useFilsMia() {
@@ -87,6 +92,21 @@ export function useFilsMia() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur"),
   });
 
+  const renommer = useMutation({
+    mutationFn: async ({ id, titre }: { id: string; titre: string }) => {
+      const propre = titre.trim().slice(0, 120);
+      if (!propre) throw new Error("Un fil a besoin d'un nom");
+      const { error } = await supabase
+        .from("coach_conversations")
+        .update({ title: propre })
+        .eq("id", id);
+      if (error) throw error;
+      return propre;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["coach_conversations", user?.id] }),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur"),
+  });
+
   const archive = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -103,7 +123,147 @@ export function useFilsMia() {
     isLoading: list.isLoading,
     create: create.mutateAsync,
     archive: archive.mutateAsync,
+    renommer: renommer.mutateAsync,
   };
+}
+
+/**
+ * L'écriture des échanges gratuits.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * UNE RÉPONSE QUI N'EST PAS ÉCRITE N'A JAMAIS EU LIEU.
+ *
+ * Les couches réflexe et geste répondent sans modèle, donc sans passer
+ * par la fonction serveur — et rien ne les écrivait. Elles vivaient dans
+ * un état de composant, hors de tout fil : elles disparaissaient au
+ * changement de conversation, et s'affichaient même dans les fils où
+ * elles n'avaient pas été dites.
+ *
+ * La base le disait franchement : huit questions pour une réponse sur un
+ * fil, quatre pour une sur un autre. Ces trous sont de deux sortes — les
+ * réponses gratuites jamais écrites, et les questions restées seules
+ * quand le modèle a rendu un 429.
+ *
+ * « model » reste nul pour ces échanges, et c'est une information : une
+ * réponse sans modèle est une réponse qui n'a rien coûté.
+ * ═══════════════════════════════════════════════════════════════
+ */
+export function useEcrireEchange() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  /* LE FIL EST UN ARGUMENT, PAS UNE FERMETURE.
+     Refermé sur le fil du rendu courant, ce crochet retombait dans le
+     piège de `send` : une conversation créée juste avant l'appel reste
+     invisible pour la fonction déjà construite, et l'écriture partait
+     dans le vide. On passe donc l'identifiant. */
+  return useCallback(
+    async (conversationId: string | null, echange: {
+      question: string;
+      reponse: string;
+      couche: "reflexe" | "geste";
+      expression: string;
+      /* Vraie quand la réponse suit un refus du modèle : la question a
+         peut-être déjà été écrite par le serveur, peut-être pas — le
+         quota applicatif refuse AVANT de l'enregistrer, le modèle
+         lui-même refuse APRÈS. On ne devine pas, on regarde. */
+      apresUnRefus?: boolean;
+    }) => {
+      if (!conversationId || !user?.id) return;
+      const commun = { conversation_id: conversationId, user_id: user.id };
+
+      /* LA QUESTION DOIT PORTER UNE DATE ANTÉRIEURE À LA RÉPONSE, ET
+         C'EST LA BASE QUI DATE, JAMAIS LE NAVIGATEUR.
+
+         Deux pièges successifs. Insérées d'un seul coup, les deux lignes
+         prenaient le now() de la transaction — le MÊME horodatage à la
+         microseconde près, et la lecture les trie par created_at : rien
+         n'empêchait la réponse de s'afficher avant sa question.
+
+         Dater depuis le client réglait l'ordre et en cassait un autre :
+         mesuré, l'horloge de ce navigateur retarde de 683 ms sur celle du
+         serveur. Une excuse écrite ici se rangeait AVANT la question que
+         la fonction venait d'enregistrer là-bas.
+
+         Deux écritures successives règlent les deux : chaque ligne reçoit
+         son propre now() serveur, strictement croissant. L'affichage,
+         lui, est déjà posé — l'utilisateur n'attend pas ce deuxième
+         aller-retour. */
+      const instant = Date.now();
+
+      let questionDejaEcrite = false;
+      if (echange.apresUnRefus) {
+        const { data } = await supabase
+          .from("coach_messages")
+          .select("id")
+          .eq("conversation_id", conversationId)
+          .eq("role", "user")
+          .eq("content", echange.question)
+          .limit(1);
+        questionDejaEcrite = !!data?.length;
+      }
+
+      const reponse = {
+        ...commun,
+        role: "assistant",
+        content: echange.reponse,
+        metadata: { couche: echange.couche, expression: echange.expression },
+      };
+
+      /* L'ÉCRITURE EST INSTANTANÉE À L'ÉCRAN, DIFFÉRÉE EN BASE.
+         Une réponse réflexe est gratuite et immédiate ; lui faire attendre
+         un aller-retour de base lui retirerait sa seule qualité. On pose
+         donc les deux lignes dans le cache d'abord, et l'invalidation qui
+         suit remplace les identifiants provisoires par les vrais. */
+      qc.setQueryData<MessageMia[]>(["coach_messages", conversationId], (vieux) => [
+        ...(vieux ?? []),
+        ...(questionDejaEcrite
+          ? []
+          : [{
+              id: `provisoire-q-${instant}`,
+              conversation_id: conversationId,
+              role: "user",
+              content: echange.question,
+              created_at: new Date(instant).toISOString(),
+            } as MessageMia]),
+        {
+          id: `provisoire-r-${instant}`,
+          conversation_id: conversationId,
+          role: "assistant",
+          content: echange.reponse,
+          created_at: new Date(instant + 1).toISOString(),
+          metadata: { couche: echange.couche, expression: echange.expression },
+        } as MessageMia,
+      ]);
+
+      if (!questionDejaEcrite) {
+        const { error: erreurQuestion } = await supabase
+          .from("coach_messages")
+          .insert({ ...commun, role: "user", content: echange.question });
+        if (erreurQuestion) {
+          toast.error("Je n'ai pas pu garder cette question.");
+          void qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+          return;
+        }
+      }
+      const { error } = await supabase.from("coach_messages").insert(reponse);
+      if (error) {
+        toast.error("Je n'ai pas pu garder cette réponse.");
+        void qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+        return;
+      }
+      /* Le fil remonte dans la liste : sinon une conversation nourrie
+         sans modèle resterait datée de son dernier appel payant. */
+      await supabase
+        .from("coach_conversations")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", conversationId);
+
+      await qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["coach_conversations", user.id] });
+    },
+    [user?.id, qc],
+  );
 }
 
 export function useMessagesMia(conversationId: string | null) {

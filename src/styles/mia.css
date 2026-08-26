@@ -518,6 +518,34 @@
   white-space: pre-wrap;
 }
 .mia-bulle[data-role="assistant"] { align-self: flex-start; max-width: 94%; }
+
+/* ── QUAND UNE CHOSE A ÉTÉ DITE ──
+   Une conversation qu'on relit trois jours plus tard sans savoir quand
+   elle a eu lieu n'est pas un souvenir, c'est un texte.
+
+   La bulle de l'utilisateur reçoit une enveloppe : c'est elle qui porte
+   maintenant l'alignement à droite, la bulle n'étant plus un enfant
+   direct de la colonne. */
+.mia-dit[data-role="user"] {
+  align-self: flex-end;
+  max-width: 86%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.mia-dit[data-role="user"] .mia-bulle { max-width: 100%; }
+.mia-quand {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.1em;
+  color: var(--nexus-text-dimmer);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Dans la signature, l'heure va au bout de la ligne : à côté du nom elle
+   se lirait comme une partie du nom. */
+.mia-signature .mia-quand { margin-left: auto; padding-left: 10px; }
 .mia-signature {
   display: flex;
   align-items: center;

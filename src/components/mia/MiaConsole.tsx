@@ -13,6 +13,7 @@ import {
   type ActeMia,
   type MetaMessageMia,
   type SourceMia,
+  useEcrireEchange,
 } from "@/hooks/useMia";
 import { PREF } from "@/lib/preferencesAffichage";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,6 +85,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   const [filActif, setFilActif] = useState<string | null>(null);
   const { data: messages = [] } = useMessagesMia(filActif);
   const { send, streaming, streamText } = useFluxMia(filActif);
+  const ecrireEchange = useEcrireEchange();
   const { data: apercus = {} } = useApercusMia(conversations.map((c) => c.id));
   const [brouillon, setBrouillon] = useState("");
   const { data: etatDuJour } = useEtatDuJour();
@@ -91,9 +93,6 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
      ne sont pas des messages du modèle, et les persister ferait grossir
      l'historique qu'on lui renvoie ensuite. Elles vivent le temps de la
      conversation ouverte. */
-  const [local, setLocal] = useState<
-    { id: string; question: string; texte: string; expression: ExpressionMia; couche: "reflexe" | "geste" }[]
-  >([]);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   const fluxRef = useRef<HTMLDivElement>(null);
   const champRef = useRef<HTMLTextAreaElement>(null);
@@ -151,7 +150,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
 
   useEffect(() => {
     fluxRef.current?.scrollTo({ top: fluxRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages.length, streamText, local.length]);
+  }, [messages.length, streamText]);
 
   useEffect(() => {
     if (open) prechargerVisages();
@@ -203,9 +202,24 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
      Le choix vivait ici, en trois lignes ad hoc. Il vit maintenant dans
      humeurAmbiante(), avec le reste : l'anneau de M.I.A est l'anneau du
      pacte, et cette règle ne peut pas être écrite à deux endroits. */
+  /* SON ÉTAT VIENT DU FIL, PAS D'UN ÉTAT DE COMPOSANT.
+     L'expression de chaque réponse est écrite dans ses métadonnées : la
+     relire ici la fait survivre au changement de conversation et au
+     rechargement, et évite un deuxième endroit où la vérité serait
+     stockée. */
+  const humeurRetenue = useMemo<ExpressionMia | null>(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role !== "assistant") continue;
+      const e = messages[i].metadata?.expression;
+      return (e as ExpressionMia) ?? null;
+    }
+    return null;
+  }, [messages]);
+
   const visageDeLEtat: ExpressionMia = humeurAmbiante(etatDuJour, {
     cherche: streaming,
     ecoute: !!brouillon.trim(),
+    retenue: humeurRetenue,
   });
   useEffect(() => {
     onEtat?.(etat);
@@ -292,19 +306,19 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
      Le message d'échec entre dans le fil comme une réponse, avec un
      visage, et il s'agace si l'on insiste. C'est encore une réponse de
      la couche réflexe : gratuite, et écrite d'avance. */
-  const direLEchec = useCallback((question: string, statut: number, corps: string) => {
-    const excuse = excuseMia(causeDeLEchec(statut, corps));
-    setLocal((l) => [
-      ...l,
-      {
-        id: `e-${Date.now()}`,
+  const direLEchec = useCallback(
+    (idFil: string | null, question: string, statut: number, corps: string) => {
+      const excuse = excuseMia(causeDeLEchec(statut, corps));
+      void ecrireEchange(idFil, {
         question,
-        texte: excuse.texte,
+        reponse: excuse.texte,
+        couche: "reflexe",
         expression: excuse.expression,
-        couche: "reflexe" as const,
-      },
-    ]);
-  }, []);
+        apresUnRefus: true,
+      });
+    },
+    [ecrireEchange],
+  );
 
   const envoyer = useCallback(async () => {
     const texte = brouillon.trim();
@@ -317,23 +331,37 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
        elles renoncent volontiers : au moindre doute, elles laissent
        passer. */
     const reflexe = chercherReflexe(texte, etatDuJour);
-    if (reflexe) {
+    const geste = reflexe ? null : chercherGeste(texte, etatDuJour);
+
+    /* UN FIL D'ABORD, MÊME QUAND LA RÉPONSE EST GRATUITE.
+       Tant que les couches gratuites répondaient dans un état de
+       composant, elles pouvaient se passer de conversation. Maintenant
+       qu'elles écrivent, il leur faut un endroit où écrire. */
+    if ((reflexe || geste) && !filActif) {
+      const fil = await create(texte.slice(0, 60));
+      setFilActif(fil.id);
+      const libre = reflexe ?? geste!;
+      await ecrireEchange(fil.id, {
+        question: texte,
+        reponse: libre.texte,
+        couche: reflexe ? "reflexe" : "geste",
+        expression: libre.expression,
+      });
       apaiser();
-      setLocal((l) => [
-        ...l,
-        { id: `r-${Date.now()}`, question: texte, texte: reflexe.texte, expression: reflexe.expression, couche: "reflexe" },
-      ]);
+      if (geste) void executer(geste);
       return;
     }
 
-    const geste = chercherGeste(texte, etatDuJour);
-    if (geste) {
+    if (reflexe || geste) {
+      const libre = reflexe ?? geste!;
       apaiser();
-      setLocal((l) => [
-        ...l,
-        { id: `g-${Date.now()}`, question: texte, texte: geste.texte, expression: geste.expression, couche: "geste" },
-      ]);
-      void executer(geste);
+      void ecrireEchange(filActif, {
+        question: texte,
+        reponse: libre.texte,
+        couche: reflexe ? "reflexe" : "geste",
+        expression: libre.expression,
+      });
+      if (geste) void executer(geste);
       return;
     }
 
@@ -351,8 +379,8 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     }
     const verdict = await send(texte);
     if (verdict?.ok) apaiser();
-    else if (verdict) direLEchec(texte, verdict.statut, verdict.corps);
-  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer, direLEchec]);
+    else if (verdict) direLEchec(filActif, texte, verdict.statut, verdict.corps);
+  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer, direLEchec, ecrireEchange]);
 
 
   const enAttente = useRef<string | null>(null);
@@ -362,7 +390,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
       enAttente.current = null;
       void send(texte).then((v) => {
         if (v?.ok) apaiser();
-        else if (v) direLEchec(texte, v.statut, v.corps);
+        else if (v) direLEchec(filActif, texte, v.statut, v.corps);
       });
     }
   }, [filActif, send, direLEchec]);
@@ -497,7 +525,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             </button>
 
             <div ref={fluxRef} className="mia-flux">
-              {messages.length === 0 && local.length === 0 && !streaming ? (
+              {messages.length === 0 && !streaming ? (
                 <div className="mia-vide">
                   <VisageMia expression={visageDeLEtat} taille={96} />
                   <p>
@@ -508,21 +536,13 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
               ) : (
                 <>
                   {messages.map((m) => (
-                    <Bulle key={m.id} role={m.role} contenu={m.content} meta={m.metadata ?? null} />
-                  ))}
-                  {local.map((r) => (
-                    <div key={r.id}>
-                      <div className="mia-bulle" data-role="user">
-                        {r.question}
-                      </div>
-                      <Bulle
-                        role="assistant"
-                        contenu={r.texte}
-                        meta={null}
-                        expression={r.expression}
-                        couche={r.couche}
-                      />
-                    </div>
+                    <Bulle
+                      key={m.id}
+                      role={m.role}
+                      contenu={m.content}
+                      meta={m.metadata ?? null}
+                      quand={m.created_at}
+                    />
                   ))}
                   {streaming && <Bulle role="assistant" contenu={streamText} meta={null} enCours />}
                 </>
@@ -648,41 +668,69 @@ function quand(iso: string): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
+/**
+ * Quand une chose a été dite.
+ *
+ * Une conversation qu'on relit trois jours plus tard sans savoir quand
+ * elle a eu lieu n'est pas un souvenir, c'est un texte. L'heure suffit
+ * pour aujourd'hui ; au-delà, il faut la date, et au-delà de l'année,
+ * l'année aussi.
+ */
+function quandDit(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const heure = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const jour = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const aujourdhui = new Date();
+  const zero = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), aujourdhui.getDate()).getTime();
+  const ecart = Math.round((zero - jour) / 86_400_000);
+  if (ecart === 0) return heure;
+  if (ecart === 1) return `hier, ${heure}`;
+  if (d.getFullYear() === aujourdhui.getFullYear()) {
+    return `${d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}, ${heure}`;
+  }
+  return `${d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}, ${heure}`;
+}
+
 function Bulle({
   role,
   contenu,
   meta,
   enCours = false,
-  expression,
-  couche,
+  quand,
 }: {
   role: string;
   contenu: string;
   meta: MetaMessageMia | null;
   enCours?: boolean;
-  expression?: ExpressionMia;
-  couche?: "reflexe" | "geste";
+  quand?: string;
 }) {
+  const heure = quand ? quandDit(quand) : "";
   if (role === "user") {
     return (
-      <div className="mia-bulle" data-role="user">
-        {contenu}
+      <div className="mia-dit" data-role="user">
+        <div className="mia-bulle" data-role="user">
+          {contenu}
+        </div>
+        {heure && <time className="mia-quand" dateTime={quand}>{heure}</time>}
       </div>
     );
   }
+  /* LE VISAGE N'EST PLUS ICI.
+     Une pastille de sa tête à côté de chaque réponse répétait dix fois
+     dans une conversation ce que le bandeau dit une fois, en grand. Son
+     état vit là-haut ; ici il ne reste que la marque du réseau. */
+  const couche = meta?.couche;
   return (
     <div className="mia-bulle" data-role="assistant">
       <div className="mia-signature">
-        {expression ? (
-          <VisageMia expression={expression} taille={30} cadre="visage" />
-        ) : (
-          <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
-        )}
+        <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
         <span>M.I.A</span>
         {/* D'OÙ VIENT CETTE RÉPONSE. Ce n'est pas de la mise au point :
             c'est ce qui apprend, en deux jours, quelles questions sont
             gratuites — et donc lesquelles poser sans hésiter. */}
         {couche && <em className={`mia-couche mia-couche-${couche}`}>{couche === "reflexe" ? "réflexe" : "geste"}</em>}
+        {heure && <time className="mia-quand" dateTime={quand}>{heure}</time>}
       </div>
       <div className="mia-texte">
         {contenu ? (

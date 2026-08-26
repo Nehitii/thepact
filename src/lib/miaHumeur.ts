@@ -49,6 +49,16 @@ export interface ContexteHumeur {
   cherche?: boolean;
   /** Vraie quand l'utilisateur est en train d'écrire. */
   ecoute?: boolean;
+  /**
+   * Le visage de sa dernière réponse dans ce fil.
+   *
+   * ELLE GARDE SON ÉTAT JUSQU'À LA PROCHAINE RÉPONSE. Un visage qui
+   * revient au repos une seconde après avoir souri n'est pas une
+   * expression, c'est un clignotement. Seuls les états sans rapport avec
+   * la conversation passent devant : chercher, écouter quelqu'un taper,
+   * et le fait brut qu'un pacte soit échu.
+   */
+  retenue?: ExpressionMia | null;
 }
 
 /**
@@ -64,6 +74,12 @@ export function humeurAmbiante(etat: EtatDuJour | undefined, ctx: ContexteHumeur
   /* Le pacte est échu : elle ne commente plus. */
   if (etat.pacte && etat.pacte.total > 0 && etat.pacte.reste === 0) return "eteinte";
 
+  /* Ce qu'elle a répondu en dernier tient jusqu'à la réponse suivante.
+     En dessous ne restent que les états de fond — l'absence, l'heure, la
+     phase — qui ne doivent pas effacer une réaction. */
+  if (ctx.ecoute) return "calme";
+  if (ctx.retenue) return ctx.retenue;
+
   /* L'absence, et seulement si on l'y a autorisée. */
   if (
     reagitAuxAbsences() &&
@@ -76,8 +92,6 @@ export function humeurAmbiante(etat: EtatDuJour | undefined, ctx: ContexteHumeur
   /* Après minuit, elle a des heures. Ce n'est pas un reproche. */
   const h = new Date().getHours();
   if (h >= 0 && h < 5) return "lasse";
-
-  if (ctx.ecoute) return "calme";
 
   switch (etat.phase) {
     case "critique":
