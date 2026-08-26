@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { CoachInsightsList } from "@/components/coach/CoachInsightsList";
 
 interface Props {
   open: boolean;
@@ -157,9 +156,6 @@ export function CoachPanel({ open, onClose }: Props) {
                 ))}
               </div>
             )}
-
-            {/* Proactive insights from background cron */}
-            <CoachInsightsList />
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
