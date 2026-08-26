@@ -22,6 +22,86 @@ export interface TrendData {
   percentChange: number;
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CE QUE LA PAGE NE SAVAIT PAS ENCORE LIRE.
+ *
+ * La collecte prenait sept champs de santé sur les treize mesurables, et
+ * UN SEUL de l'historique des tâches — la date d'accomplissement — alors
+ * que la table en porte onze. Les sessions de focus étaient lues sans
+ * leur rattachement, donc sans jamais pouvoir dire À QUOI le temps est
+ * passé. Rien ne pouvait être analysé qui n'était pas d'abord ramené.
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+/* Les lignes telles qu'elles arrivent. Le reste du fichier travaille
+   encore en `any` — ce n'est pas une raison d'en ajouter. */
+interface LigneTodo {
+  completed_at: string | null;
+  task_name: string | null;
+  priority: string | null;
+  category: string | null;
+  postpone_count: number | null;
+  was_urgent: boolean | null;
+}
+interface LigneSession {
+  duration_minutes: number | null;
+  completed_at: string | null;
+  started_at: string | null;
+  linked_goal_id: string | null;
+}
+interface LigneSante {
+  entry_date: string;
+  sleep_hours: number | null;
+  energy_morning: number | null;
+  energy_afternoon: number | null;
+  energy_evening: number | null;
+}
+interface LigneDepense {
+  amount: number | null;
+  montant_total: number | null;
+  periode_mois: number | null;
+  mois_ancre: string | null;
+  decalage_mois: number | null;
+}
+interface LigneMois {
+  month: string;
+  actual_total_income: number | null;
+  actual_total_expenses: number | null;
+  unplanned_income: number | null;
+  unplanned_expenses: number | null;
+}
+
+/** Combien de fois une chose a été repoussée avant d'être faite. */
+export interface Reports {
+  reports: number;
+  faites: number;
+}
+
+/** Où le temps de focus est réellement allé. */
+export interface FocusParObjectif {
+  id: string;
+  nom: string;
+  minutes: number;
+  sessions: number;
+}
+
+/** L'heure à laquelle on est à l'ouvrage. */
+export interface HeureDOuvrage {
+  heure: number;
+  taches: number;
+  focus: number;
+}
+
+/** Un mois financier : ce qui était prévu, ce qui est tombé. */
+export interface PrevuReel {
+  month: string;
+  reelDepenses: number;
+  imprevuDepenses: number;
+  reelRevenus: number;
+  imprevuRevenus: number;
+}
+
 export interface AnalyticsData {
   goalsOverTime: { month: string; created: number; completed: number }[];
   healthTrend: { date: string; score: number }[];
@@ -71,6 +151,27 @@ export interface AnalyticsData {
     stepsCompleted: TrendData;
     healthScore: TrendData;
     focusMinutes: TrendData;
+  };
+
+  /* ── ce que la collecte élargie permet ── */
+  reports: Reports[];
+  focusParObjectif: FocusParObjectif[];
+  tachesParCategorie: { categorie: string; n: number }[];
+  tachesParDifficulte: { niveau: string; n: number }[];
+  anneeQuiPreleve: { mois: number; montant: number; lignes: number }[];
+  heureDOuvrage: HeureDOuvrage[];
+  serieTaches: { date: string; n: number }[];
+  sommeil: { date: string; heures: number }[];
+  energieTroisTemps: { date: string; matin: number | null; apresMidi: number | null; soir: number | null }[];
+  prevuReel: PrevuReel[];
+  /* Ce qui manque pour que les panneaux maigres deviennent lisibles.
+     Un panneau qui dit ce qu'il attend vaut mieux qu'un panneau vide. */
+  matiere: {
+    relevesSante: number;
+    relevesEnergie: number;
+    nuitsMesurees: number;
+    moisValides: number;
+    sessionsLiees: number;
   };
 }
 
@@ -149,7 +250,13 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["analytics-dashboard", user?.id, period],
+    /* LA CLE PORTE LA FORME, PAS SEULEMENT LES FILTRES.
+       La forme du resultat a change — dix lectures de plus. Un cache
+       ecrit avant ce changement rend un objet sans ces champs, et la
+       page casse sur le premier .reduce(). Constate en developpement,
+       et ca vaudrait pour un onglet reste ouvert pendant un deploiement.
+       La cle change donc quand la forme change. */
+    queryKey: ["analytics-dashboard", "v2", user?.id, period],
     // Le changement de periode conserve les donnees precedentes pendant le
     // chargement. Sans cela `data` repasse a undefined, la page entiere
     // bascule en squelettes, et le selecteur de periode lui-meme est
@@ -172,16 +279,17 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       const pactId = pactData?.id;
 
       // Parallel fetch all data - filter goals by pact_id
-      const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
+      const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes, depensesRes] = await Promise.all([
         pactId 
-          ? supabase.from("goals").select("id, created_at, start_date, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
+          ? supabase.from("goals").select("id, name, created_at, start_date, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
-        supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
-        supabase.from("monthly_finance_validations").select("month, actual_total_income, actual_total_expenses").eq("user_id", user.id).not("validated_at", "is", null).order("month"),
+        supabase.from("health_data").select("entry_date, sleep_hours, sleep_quality, wake_energy, mood_level, activity_level, movement_minutes, hydration_glasses, meal_balance, stress_level, mental_load, energy_morning, energy_afternoon, energy_evening").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
+        supabase.from("monthly_finance_validations").select("month, actual_total_income, actual_total_expenses, unplanned_income, unplanned_expenses").eq("user_id", user.id).not("validated_at", "is", null).order("month"),
         supabase.from("habit_logs").select("log_date, completed").eq("user_id", user.id).order("log_date", { ascending: false }).limit(400),
-        supabase.from("todo_history").select("completed_at").eq("user_id", user.id),
-        supabase.from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at").eq("user_id", user.id).eq("completed", true),
+        supabase.from("todo_history").select("completed_at, task_name, priority, category, postpone_count, was_urgent").eq("user_id", user.id),
+        supabase.from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at, linked_goal_id, linked_todo_id, linked_step_id").eq("user_id", user.id).eq("completed", true),
         supabase.from("profiles").select("already_funded").eq("id", user.id).maybeSingle(),
+        supabase.from("recurring_expenses").select("amount, category, is_active, periode_mois, mois_ancre, decalage_mois, montant_total, echeances").eq("user_id", user.id).eq("is_active", true),
       ]);
 
       const allGoals = goalsRes.data || [];
@@ -472,7 +580,167 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       });
       const prevCompletedSteps = prevSteps.length;
 
+      /* ═══════════════════════════════════════════════════════════
+         LES LECTURES QUE LA COLLECTE ÉLARGIE PERMET.
+
+         Toutes sortent de données déjà en base. Aucune n'invente une
+         moyenne pour meubler : quand la matière manque, c'est le nombre
+         de relevés qui est renvoyé, et le panneau le dit lui-même.
+         ═══════════════════════════════════════════════════════════ */
+      const todoLignes = (todoRes.data || []) as unknown as LigneTodo[];
+      const sessions = (pomodoroRes.data || []) as unknown as LigneSession[];
+      const sante = (healthRes.data || []) as unknown as LigneSante[];
+      const depenses = (depensesRes.data || []) as unknown as LigneDepense[];
+
+      /* ── COMBIEN DE FOIS IL A FALLU S'Y REMETTRE ──
+         postpone_count est écrit à chaque report et suit la tâche
+         jusqu'à son accomplissement. C'est la seule trace de ce qui a
+         été difficile à commencer — et rien ne la lisait. */
+      const parReports = new Map<number, number>();
+      for (const l of todoLignes) {
+        const r = Math.min(5, l.postpone_count || 0);
+        parReports.set(r, (parReports.get(r) || 0) + 1);
+      }
+      const reports = Array.from(parReports.entries())
+        .map(([reports, faites]) => ({ reports, faites }))
+        .sort((a, b) => a.reports - b.reports);
+
+      /* ── OÙ LE FOCUS EST RÉELLEMENT ALLÉ ──
+         Une session porte l'objectif sur lequel elle a été lancée. On
+         peut donc confronter les minutes PASSÉES à ce que le pacte
+         annonce comme priorité — la seule mesure de l'application
+         capable de contredire une intention. */
+      const nomParObjectif = new Map<string, string>();
+      for (const g of allGoals as { id: string; name?: string }[]) nomParObjectif.set(g.id, g.name || "Sans nom");
+      const parObjectif = new Map<string, { minutes: number; sessions: number }>();
+      for (const s of sessions) {
+        if (!s.linked_goal_id) continue;
+        const e = parObjectif.get(s.linked_goal_id) || { minutes: 0, sessions: 0 };
+        e.minutes += s.duration_minutes || 0;
+        e.sessions += 1;
+        parObjectif.set(s.linked_goal_id, e);
+      }
+      const focusParObjectif = Array.from(parObjectif.entries())
+        .map(([id, e]) => ({ id, nom: nomParObjectif.get(id) || "Objectif retiré", ...e }))
+        .sort((a, b) => b.minutes - a.minutes)
+        .slice(0, 8);
+
+      /* ── LES TÂCHES, PAR CATÉGORIE ET PAR DIFFICULTÉ ── */
+      const parCategorie = new Map<string, number>();
+      const parDifficulte = new Map<string, number>();
+      for (const l of todoLignes) {
+        const c = l.category || "general";
+        parCategorie.set(c, (parCategorie.get(c) || 0) + 1);
+        const d = l.priority || "medium";
+        parDifficulte.set(d, (parDifficulte.get(d) || 0) + 1);
+      }
+      const tachesParCategorie = Array.from(parCategorie.entries())
+        .map(([categorie, n]) => ({ categorie, n }))
+        .sort((a, b) => b.n - a.n);
+      const tachesParDifficulte = ["low", "medium", "high"]
+        .map((niveau) => ({ niveau, n: parDifficulte.get(niveau) || 0 }))
+        .filter((d) => d.n > 0);
+
+      /* ── LA FORME DE L'ANNÉE QUI PRÉLÈVE ──
+         Une dépense de cadence plurimensuelle ne tombe pas tous les
+         mois : elle tombe aux mois congrus à son ancre. La charge n'est
+         donc pas plate, et certains mois portent trois échéances quand
+         d'autres n'en portent aucune. */
+      const chargeParMois = Array.from({ length: 12 }, () => ({ montant: 0, lignes: 0 }));
+      for (const d of depenses) {
+        const periode = Math.max(1, d.periode_mois || 1);
+        const montant = Number(d.montant_total ?? d.amount) || 0;
+        const ancreMois = d.mois_ancre ? new Date(d.mois_ancre).getMonth() : ((d.decalage_mois || 0) % periode);
+        for (let m = 0; m < 12; m++) {
+          if (((m - ancreMois) % periode + periode) % periode !== 0) continue;
+          chargeParMois[m].montant += montant;
+          chargeParMois[m].lignes += 1;
+        }
+      }
+      const anneeQuiPreleve = chargeParMois.map((c, mois) => ({ mois, ...c }));
+
+      /* ── L'HEURE OÙ LES CHOSES SE FONT ──
+         Les tâches portent leur heure d'accomplissement, les sessions
+         leur heure de départ. Superposées, elles disent si le travail
+         déclaré et le travail fait tombent au même moment. */
+      const heures = Array.from({ length: 24 }, (_, heure) => ({ heure, taches: 0, focus: 0 }));
+      for (const l of todoLignes) {
+        if (!l.completed_at) continue;
+        heures[new Date(l.completed_at).getHours()].taches += 1;
+      }
+      for (const s of sessions) {
+        const d = s.started_at || s.completed_at;
+        if (!d) continue;
+        heures[new Date(d).getHours()].focus += 1;
+      }
+      const heureDOuvrage = heures;
+
+      /* ── LES RUPTURES DE SÉRIE ──
+         Un compteur dit la longueur d'une série ; il ne dit jamais OÙ
+         elle s'est cassée. Une bande de jours le dit. */
+      const parJour = new Map<string, number>();
+      for (const l of todoLignes) {
+        if (!l.completed_at) continue;
+        const j = format(new Date(l.completed_at), "yyyy-MM-dd");
+        parJour.set(j, (parJour.get(j) || 0) + 1);
+      }
+      const serieTaches = Array.from(parJour.entries())
+        .map(([date, n]) => ({ date, n }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      /* ── LE SOMMEIL, EN HEURES ──
+         La seule mesure de santé en unité réelle : les autres sont des
+         notes de 1 à 5, celle-ci est un nombre d'heures. */
+      const sommeil = sante
+        .filter((h) => h.sleep_hours != null)
+        .map((h) => ({ date: h.entry_date, heures: Number(h.sleep_hours) }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      /* ── LA JOURNÉE EN TROIS TEMPS ──
+         Trois relevés valent mieux qu'une moyenne : ils disent À QUEL
+         MOMENT la journée casse, ce qu'une moyenne efface. */
+      const energieTroisTemps = sante
+        .filter((h) => h.energy_morning != null || h.energy_afternoon != null || h.energy_evening != null)
+        .map((h) => ({
+          date: h.entry_date,
+          matin: h.energy_morning ?? null,
+          apresMidi: h.energy_afternoon ?? null,
+          soir: h.energy_evening ?? null,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      /* ── PRÉVU CONTRE RÉEL ──
+         L'imprévu est enregistré séparément du total : le prévu se
+         retrouve donc par soustraction, et l'écart mesure une chose
+         qu'on ne mesure jamais — la justesse d'une prévision. */
+      const prevuReel = ((financeRes.data || []) as unknown as LigneMois[]).map((m) => ({
+        month: m.month,
+        reelDepenses: Number(m.actual_total_expenses) || 0,
+        imprevuDepenses: Number(m.unplanned_expenses) || 0,
+        reelRevenus: Number(m.actual_total_income) || 0,
+        imprevuRevenus: Number(m.unplanned_income) || 0,
+      }));
+
+      const matiere = {
+        relevesSante: sante.length,
+        relevesEnergie: energieTroisTemps.length,
+        nuitsMesurees: sommeil.length,
+        moisValides: prevuReel.length,
+        sessionsLiees: sessions.filter((s) => s.linked_goal_id).length,
+      };
+
       return {
+        reports,
+        focusParObjectif,
+        tachesParCategorie,
+        tachesParDifficulte,
+        anneeQuiPreleve,
+        heureDOuvrage,
+        serieTaches,
+        sommeil,
+        energieTroisTemps,
+        prevuReel,
+        matiere,
         goalsOverTime: Array.from(goalsByMonth.entries()).map(([month, d]) => ({ month, ...d })).sort((a, b) => a.month.localeCompare(b.month)),
         healthTrend,
         financeTrend,

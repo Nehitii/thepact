@@ -391,24 +391,6 @@
       "noTasksForDay": "Aucune tâche prévue ce jour-là"
     },
     "advanced": {
-      "totalScore": "Score total",
-      "currentStreak": "Série en cours",
-      "bestStreak": "Meilleure série",
-      "thisMonth": "Ce mois-ci",
-      "tasksCompletedYear": "Tâches terminées cette année",
-      "last30Days": "30 derniers jours",
-      "activity30": "Activité sur 30 jours",
-      "monthlyCompletions": "Achèvements mensuels",
-      "mostProductiveDays": "Jours les plus productifs",
-      "difficultyDistribution": "Répartition des difficultés",
-      "categoryBreakdown": "Répartition par catégories",
-      "productivityByTime": "Productivité selon l'heure",
-      "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici.",
-      "tasksTooltip": "{{count}} tâches",
-      "morning": "Matin (6-12)",
-      "afternoon": "Après-midi (12-18)",
-      "evening": "Soir (18-24)",
-      "night": "Nuit (0-6)",
       "days_one": "{{count}} jour",
       "days_other": "{{count}} jours"
     },
@@ -457,7 +439,6 @@
       "liste": "Liste",
       "detaillee": "Détaillée",
       "calendrier": "Calendrier",
-      "stats": "Statistiques",
       "historique": "Historique",
       "switcher": "Densité de la liste",
       "panels": "Panneaux"

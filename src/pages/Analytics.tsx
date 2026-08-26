@@ -62,6 +62,32 @@ const VERT = "hsl(var(--signal-vert))";
 const ROUGE = "hsl(var(--signal-rouge))";
 const LEGENDE = { fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
 
+/* Les libellés des catégories de tâches et des priorités. Ils vivaient
+   dans les traductions de Todo ; ici on nomme en clair, parce que la page
+   n'a pas d'autre contexte pour les désambiguïser. */
+const NOM_CATEGORIE: Record<string, string> = {
+  general: "Général",
+  admin: "Administratif",
+  health: "Santé",
+  study: "Études",
+  work: "Travail",
+  personal: "Personnel",
+  home: "Maison",
+  finance: "Finance",
+};
+
+const NOM_DIFFICULTE: Record<string, string> = {
+  low: "Facile",
+  medium: "Moyenne",
+  high: "Difficile",
+};
+
+const MOIS_COURTS = ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"];
+
+/* Lundi en tête : la semaine commence le lundi ici, et getDay() rend
+   dimanche pour zéro. */
+const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
 const VUES: { id: PrismSection; nom: string; sous: string }[] = [
   { id: "trajectoire", nom: "Trajectoire", sous: "Comment j'avance dans le temps" },
   { id: "repartition", nom: "Répartition", sous: "Où va l'effort" },
@@ -216,6 +242,8 @@ export default function Analytics() {
   const {
     goalsOverTime, healthTrend, financeTrend, habitStreak, todoStats, goalShowcase,
     pomodoroTrend, goalVelocity, summary,
+    reports, focusParObjectif, tachesParCategorie, tachesParDifficulte,
+    anneeQuiPreleve, heureDOuvrage, sommeil, serieTaches, prevuReel, matiere,
   } = data;
 
   const pctObjectifs = summary.totalGoals > 0
@@ -225,6 +253,44 @@ export default function Analytics() {
   const pctPaye = summary.totalCost > 0
     ? Math.min(100, (summary.paidCost / summary.totalCost) * 100) : 0;
   const totalHabitudes = habitStreak.reduce((a, h) => a + h.completed, 0);
+  const totalTaches = reports.reduce((a, r) => a + r.faites, 0);
+  const totalReportees = reports.filter((r) => r.reports > 0).reduce((a, r) => a + r.faites, 0);
+  const moyenneSommeil = sommeil.length
+    ? (sommeil.reduce((a, s) => a + s.heures, 0) / sommeil.length).toFixed(1).replace(".", ",")
+    : "0";
+  const chargeAnnuelle = anneeQuiPreleve.reduce((a, m) => a + m.montant, 0);
+
+  /* LES JOURS QUI PORTENT.
+     Un total mensuel ne dit pas quel jour de la semaine tient l'effort.
+     Sept barres le disent — et elles disent surtout lequel décroche. */
+  const parJourDeSemaine = (() => {
+    const j = JOURS.map((nom) => ({ nom, valeur: 0 }));
+    for (const d of serieTaches) j[(new Date(d.date + "T12:00:00").getDay() + 6) % 7].valeur += d.n;
+    return j;
+  })();
+
+  /* LES RUPTURES DE SÉRIE.
+     Un compteur donne la longueur d'une série ; il ne dit jamais OÙ elle
+     s'est cassée. Il faut donc remplir les jours vides — ils ne sont pas
+     en base, et ce sont eux qu'on vient lire. */
+  const bandeDesJours = (() => {
+    if (!serieTaches.length) return [];
+    const parDate = new Map(serieTaches.map((d) => [d.date, d.n]));
+    const debut = new Date(serieTaches[0].date + "T12:00:00");
+    const fin = new Date();
+    const jours: { date: string; n: number }[] = [];
+    for (let d = new Date(debut); d <= fin; d.setDate(d.getDate() + 1)) {
+      const cle = format(d, "yyyy-MM-dd");
+      jours.push({ date: cle, n: parDate.get(cle) ?? 0 });
+    }
+    return jours.slice(-120);
+  })();
+  const joursTenus = bandeDesJours.filter((j) => j.n > 0).length;
+  /* L'heure de pointe cumule les deux séries : c'est le moment où l'on
+     est à l'ouvrage, pas celui où l'on coche le plus. */
+  const heurePleine = heureDOuvrage.some((h) => h.taches + h.focus > 0)
+    ? heureDOuvrage.reduce((m, h) => (h.taches + h.focus > m.taches + m.focus ? h : m)).heure
+    : null;
 
   return (
     <DSPageShell width="xl" background={<SpaceBackdrop />}>
@@ -386,6 +452,79 @@ export default function Analytics() {
             </div>
 
             {/* La courbe dit combien ; l'archive dit lesquels. */}
+            <div className="ana-duo">
+              {/* CE QU'IL A FALLU DE TENTATIVES.
+                  postpone_count suit chaque tâche jusqu'à son
+                  accomplissement : c'est la seule trace de ce qui a été
+                  difficile à commencer, et rien ne la lisait. */}
+              <Panneau
+                titre="Ce qu'il a fallu de tentatives"
+                droite={reports.length ? `${totalReportees} sur ${totalTaches} reportées` : undefined}
+                vide={reports.length === 0}
+                messageVide="Aucune tâche accomplie"
+              >
+                <ResponsiveContainer width="100%" height={195}>
+                  <BarChart data={reports}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis
+                      dataKey="reports" tick={AXE} stroke={TRAIT} tickLine={false}
+                      tickFormatter={(r: number) => (r === 0 ? "du premier coup" : `${r} report${r > 1 ? "s" : ""}`)}
+                    />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={30} allowDecimals={false} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Bar dataKey="faites" name="Tâches" fill={AMBRE} radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Panneau>
+
+              {/* LE SOMMEIL EST LA SEULE MESURE DE SANTÉ EN UNITÉ RÉELLE.
+                  Les autres sont des notes de 1 à 5 ; celle-ci est un
+                  nombre d'heures, et elle n'était jamais lue. */}
+              <Panneau
+                titre="Sommeil"
+                droite={sommeil.length ? `${moyenneSommeil} h en moyenne` : undefined}
+                vide={sommeil.length < 3}
+                messageVide={sommeil.length === 0
+                  ? "Aucune nuit relevée"
+                  : `${sommeil.length} nuit${sommeil.length > 1 ? "s" : ""} relevée${sommeil.length > 1 ? "s" : ""} — une courbe en demande une trentaine`}
+              >
+                <ResponsiveContainer width="100%" height={195}>
+                  <LineChart data={sommeil}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="date" tickFormatter={jourCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={30} domain={[0, "dataMax + 1"]} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Line type="monotone" dataKey="heures" name="Heures" stroke={ACCENT} strokeWidth={1.8} dot={{ r: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Panneau>
+            </div>
+
+            {/* PRÉVU CONTRE RÉEL.
+                L'imprévu est enregistré à part : le prévu se retrouve donc
+                par soustraction, et l'écart mesure une chose qu'on ne
+                mesure jamais — la justesse d'une prévision. */}
+            <Panneau
+              titre="Prévu contre réel"
+              droite={prevuReel.length ? `${prevuReel.length} mois pointés` : undefined}
+              vide={prevuReel.length < 3}
+              messageVide={prevuReel.length === 0
+                ? "Aucun mois validé"
+                : `${prevuReel.length} mois validé${prevuReel.length > 1 ? "s" : ""} — l'écart de prévision se lit à partir de six`}
+            >
+              <ResponsiveContainer width="100%" height={215}>
+                <BarChart data={prevuReel}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={44} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Legend wrapperStyle={LEGENDE} />
+                  <Bar dataKey="reelDepenses" name="Dépenses" fill={ROUGE} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="imprevuDepenses" name="Dont imprévu" fill={AMBRE} radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panneau>
+
             <Panneau
               titre="Contrats"
               droite={`${goalShowcase.length} ouverts`}
@@ -430,6 +569,72 @@ export default function Analytics() {
                 <Releve lignes={tags} teinte={ACCENT} />
               </Panneau>
             </div>
+
+            {/* OÙ LE FOCUS EST RÉELLEMENT ALLÉ.
+                Une session porte l'objectif sur lequel elle a été lancée.
+                C'est la seule mesure de l'application capable de
+                contredire une intention — le pacte annonce une priorité,
+                les minutes disent autre chose. */}
+            <Panneau
+              titre="Où part le focus"
+              droite={`${matiere.sessionsLiees} session${matiere.sessionsLiees > 1 ? "s" : ""} rattachée${matiere.sessionsLiees > 1 ? "s" : ""}`}
+              vide={focusParObjectif.length === 0}
+              messageVide="Aucune session rattachée à un objectif"
+            >
+              <Releve
+                lignes={focusParObjectif.map((f) => ({ nom: f.nom, valeur: f.minutes }))}
+                teinte={ACCENT}
+                suffixe=" min"
+              />
+            </Panneau>
+
+            <div className="ana-duo">
+              <Panneau
+                titre="Tâches par domaine"
+                droite={totalTaches ? `${totalTaches} accomplies` : undefined}
+                vide={tachesParCategorie.length === 0}
+                messageVide="Aucune tâche accomplie"
+              >
+                <Releve
+                  lignes={tachesParCategorie.map((c) => ({ nom: NOM_CATEGORIE[c.categorie] ?? c.categorie, valeur: c.n }))}
+                  teinte={AMBRE}
+                />
+              </Panneau>
+
+              <Panneau
+                titre="Tâches par difficulté"
+                vide={tachesParDifficulte.length === 0}
+                messageVide="Aucune tâche accomplie"
+              >
+                <Releve
+                  lignes={tachesParDifficulte.map((d) => ({ nom: NOM_DIFFICULTE[d.niveau] ?? d.niveau, valeur: d.n }))}
+                  teinte={VERT}
+                />
+              </Panneau>
+            </div>
+
+            {/* LA FORME DE L'ANNÉE QUI PRÉLÈVE.
+                Une dépense de cadence plurimensuelle ne tombe pas tous les
+                mois. La charge n'est donc pas plate : certains mois portent
+                trois échéances quand d'autres n'en portent aucune. Finance
+                le montre pour décider ; ici on le montre pour comprendre la
+                part de l'année qui n'est pas modulable. */}
+            <Panneau
+              titre="La forme de l'année qui prélève"
+              droite={chargeAnnuelle ? `${formatCurrency(chargeAnnuelle, currency)} sur douze mois` : undefined}
+              vide={chargeAnnuelle === 0}
+              messageVide="Aucune dépense récurrente"
+            >
+              <ResponsiveContainer width="100%" height={215}>
+                <BarChart data={anneeQuiPreleve}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="mois" tickFormatter={(m: number) => MOIS_COURTS[m]} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={44} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Bar dataKey="montant" name="Prélevé" fill={ROUGE} radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panneau>
 
             <Panneau
               titre="Coût du pacte"
@@ -540,6 +745,12 @@ export default function Analytics() {
             <Panneau
               titre="Énergie dans la journée"
               droite={energie.length ? `moyenne sur ${releves.length} relevés` : undefined}
+              /* Matin, après-midi, soir : les trois relevés d'énergie,
+                 moyennés. Une version jour par jour a été essayée et
+                 retirée — avec trois journées relevées elle montrait les
+                 mêmes trois nombres sur un axe de dates, et deux panneaux
+                 sur la même donnée sont exactement ce que la refonte de
+                 cette page a supprimé. */
               vide={energie.length < 2}
               messageVide="Pas assez de relevés"
             >
@@ -556,6 +767,62 @@ export default function Analytics() {
                 </LineChart>
               </ResponsiveContainer>
             </Panneau>
+
+            {/* L'HEURE OÙ LES CHOSES SE FONT.
+                Les tâches portent leur heure d'accomplissement, les
+                sessions leur heure de départ. Superposées, elles disent si
+                le travail déclaré et le travail fait tombent au même
+                moment de la journée. */}
+            <Panneau
+              titre="L'heure où les choses se font"
+              droite={heurePleine !== null ? `Pic à ${heurePleine} h` : undefined}
+              vide={totalTaches === 0 && summary.pomodoroMinutes === 0}
+              messageVide="Rien d'horodaté"
+            >
+              <ResponsiveContainer width="100%" height={215}>
+                <BarChart data={heureDOuvrage}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis
+                    dataKey="heure" tick={AXE} stroke={TRAIT} tickLine={false}
+                    tickFormatter={(h: number) => (h % 3 === 0 ? `${h}h` : "")}
+                    interval={0}
+                  />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Legend wrapperStyle={LEGENDE} />
+                  <Bar dataKey="taches" name="Tâches cochées" fill={AMBRE} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="focus" name="Sessions lancées" fill={ACCENT} radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panneau>
+
+            <div className="ana-duo">
+              <Panneau
+                titre="Les jours qui portent"
+                droite={totalTaches ? `${totalTaches} tâches réparties` : undefined}
+                vide={totalTaches === 0}
+                messageVide="Aucune tâche accomplie"
+              >
+                <Releve lignes={parJourDeSemaine} teinte={ACCENT} />
+              </Panneau>
+
+              <Panneau
+                titre="Les ruptures de série"
+                droite={bandeDesJours.length ? `${joursTenus} jours sur ${bandeDesJours.length}` : undefined}
+                vide={bandeDesJours.length === 0}
+                messageVide="Aucune tâche accomplie"
+              >
+                <ResponsiveContainer width="100%" height={195}>
+                  <BarChart data={bandeDesJours}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="date" tickFormatter={jourCourt} tick={AXE} stroke={TRAIT} tickLine={false} minTickGap={28} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={26} allowDecimals={false} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Bar dataKey="n" name="Tâches" fill={VERT} radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Panneau>
+            </div>
 
             <Panneau
               titre="Tâches accomplies"

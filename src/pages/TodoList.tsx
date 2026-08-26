@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Plus, BarChart3, History, Calendar as CalendarIcon, List, LayoutGrid } from 'lucide-react';
+import { Plus, History, Calendar as CalendarIcon, List, LayoutGrid } from 'lucide-react';
 import {
   DndContext, DragOverlay, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
   defaultDropAnimationSideEffects,
@@ -11,7 +11,6 @@ import { DSPageShell, DSBackground, DSPageLoader } from '@/components/ds';
 import { TodoLigne } from '@/components/todo/TodoLigne';
 import { TodoCartouche } from '@/components/todo/TodoCartouche';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
-import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
 import { TodoHistoryPanel } from '@/components/todo/TodoHistoryPanel';
 import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
 import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
@@ -43,8 +42,19 @@ import { PREF } from "@/lib/preferencesAffichage";
  * contenu s arrete. Cent cinquante pixels avant la premiere tache.
  */
 
-type Vue = 'liste' | 'detaillee' | 'calendrier' | 'stats' | 'historique';
-const VUES: Vue[] = ['liste', 'detaillee', 'calendrier', 'stats', 'historique'];
+/* LA VUE « STATS » EST PARTIE DANS ANALYTICS.
+   Elle portait quatre compteurs et huit blocs — série, activité sur
+   trente jours, complétions par mois, jours productifs, difficulté,
+   catégorie, productivité par heure. C'était une page d'analyse cachée
+   dans un outil de saisie, et son voisinage la rendait introuvable.
+
+   Tout y est repris, éclaté par question au lieu d'être empilé par
+   source : les catégories et les difficultés en Répartition, les heures,
+   les jours de semaine et les ruptures de série en Rythme, les reports
+   en Trajectoire. Les compteurs de série restent ici, sur le cartouche —
+   ce sont des jauges de jeu, pas des statistiques. */
+type Vue = 'liste' | 'detaillee' | 'calendrier' | 'historique';
+const VUES: Vue[] = ['liste', 'detaillee', 'calendrier', 'historique'];
 
 const ANIMATION_DEPOT: DropAnimation = {
   duration: 220,
@@ -242,7 +252,7 @@ export default function TodoList() {
                 </div>
 
                 <div className="tsk-groupe" role="group" aria-label={t('todo.views.panels')}>
-                  {(['calendrier', 'stats', 'historique'] as Vue[]).map((v) => (
+                  {(['calendrier', 'historique'] as Vue[]).map((v) => (
                     <button
                       key={v}
                       type="button"
@@ -254,7 +264,6 @@ export default function TodoList() {
                       className="tsk-onglet"
                     >
                       {v === 'calendrier' && <CalendarIcon className="w-3.5 h-3.5" aria-hidden="true" />}
-                      {v === 'stats' && <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />}
                       {v === 'historique' && <History className="w-3.5 h-3.5" aria-hidden="true" />}
                       <span className="hidden lg:inline" aria-hidden="true">{t(`todo.views.${v}`)}</span>
                     </button>
@@ -300,7 +309,6 @@ export default function TodoList() {
               ))}
 
               {vue === 'calendrier' && <div className="relative z-[2] p-4"><TodoCalendarView tasks={tasks} /></div>}
-              {vue === 'stats' && <div className="relative z-[2] p-4"><TodoAdvancedStats /></div>}
               {vue === 'historique' && <div className="relative z-[2] p-4"><TodoHistoryPanel /></div>}
 
               {estListe && (
