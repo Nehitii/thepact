@@ -488,9 +488,11 @@
    bord. Vingt pixels à gauche, douze avant le bouton, et un rayon qui
    suit celui du bouton : le champ devient une boîte où l'on écrit.
 
-   Vingt et non seize : seize se mesurait bien mais se voyait mal sur
-   sept cents pixels de large. Le curseur doit avoir l'air posé dans la
-   boîte, pas appuyé contre sa paroi.
+   VINGT-HUIT, ET PAS VINGT. Ce qui clochait n'était pas la valeur mais
+   le RAPPORT : vingt à gauche contre treize en haut et en bas, l'œil ne
+   fait pas la différence, et un curseur d'un pixel seul dans cet espace
+   paraît collé quand même. L'écart horizontal doit dominer franchement
+   le vertical — vingt-huit contre douze, on ne peut plus les confondre.
 
    L'asymétrie est voulue. À gauche on lit, il faut de l'air ; à droite
    il y a un bouton, qui apporte le sien. */
@@ -502,7 +504,7 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: 12px 12px 12px 20px;
+  padding: 12px 12px 12px 28px;
   border-radius: 12px;
   border: 1px solid var(--nexus-border, hsl(var(--border)));
   background: var(--nexus-inner-bg, hsl(var(--muted) / 0.3));
@@ -567,6 +569,16 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--nexus-text-dimmer);
+}
+
+/* Le reste de l habillage flottant s efface pendant que la console est
+   ouverte. La pastille de recherche est en z-[999] : la depasser aurait
+   demande un nombre plus grand, et c est ainsi qu on arrive a 999. */
+body[data-mia-ouverte] [data-chrome="palette"] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 200ms ease, transform 200ms ease;
 }
 
 .mia-voile {

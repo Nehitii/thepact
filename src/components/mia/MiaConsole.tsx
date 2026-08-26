@@ -85,6 +85,20 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     if (open && !filActif && conversations.length > 0) setFilActif(conversations[0].id);
   }, [open, filActif, conversations]);
 
+  /* LA PASTILLE DE RECHERCHE FLOTTAIT AU-DESSUS DU COMPOSEUR.
+     Elle est en z-[999], la console en 91 : elle se posait donc sur le
+     bouton d envoi, qu on ne pouvait plus atteindre. Plutot que de
+     surencherir sur les z-index — la course qui produit les 999 — la
+     console marque le corps, et la pastille s efface le temps qu elle
+     est ouverte. */
+  useEffect(() => {
+    if (!open) return;
+    document.body.dataset.miaOuverte = "";
+    return () => {
+      delete document.body.dataset.miaOuverte;
+    };
+  }, [open]);
+
   useEffect(() => {
     fluxRef.current?.scrollTo({ top: fluxRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, streamText]);
