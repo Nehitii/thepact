@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -20,7 +19,6 @@ interface NeuralBarProps {
 
 export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const sombre = useThemeSombre();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [now, setNow] = useState(new Date());
@@ -114,7 +112,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           </div>
         </div>
 
-        {/* Right: Freq bars + Customize */}
+        {/* A droite : le pouls des systemes, puis le solde. */}
         <div className="flex-1 min-w-0 flex justify-end items-center gap-3">
           {/* ── LE POULS DES CINQ SYSTEMES ──
 
@@ -174,26 +172,6 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             </span>
           </div>
 
-          {/* Customize button */}
-          <button
-            onClick={() => navigate("/profile")}
-            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono ds-t-label tracking-[2px] text-primary rounded-[4px]"
-            style={{
-              padding: "6px 14px",
-              clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
-            }}
-          >
-            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-            </svg>
-            {/* Le libelle debordait deja de la barre sous 400px (bord droit a
-                393px sur un ecran de 375, rogne par le parent sans defilement
-                possible) ; le passage de 10 a 11px aggravait la coupe. */}
-            <span className="hidden min-[400px]:inline">
-              {t("home.neuralBar.customize", "Personnaliser")}
-            </span>
-          </button>
         </div>
       </header>
 

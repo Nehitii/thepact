@@ -2196,8 +2196,7 @@
       "saveLayout": "Save Layout"
     },
     "neuralBar": {
-      "dayElapsed": "Day elapsed",
-      "customize": "Customize"
+      "dayElapsed": "Day elapsed"
     }
   },
   "settings": {
