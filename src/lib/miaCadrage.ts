@@ -45,7 +45,7 @@ const CADRES: Record<ExpressionMia, CadreVisage> = {
   contente: { z: 1.349, x: 0.503, y: 0.315 },
   contrariee: { z: 1.416, x: 0.587, y: 0.316 },
   eteinte: { z: 1.396, x: 0.508, y: 0.365 },
-  genee: { z: 1.396, x: 0.451, y: 0.39 },
+  genee: { z: 1.34, x: 0.455, y: 0.387 },
   joie: { z: 1.288, x: 0.484, y: 0.321 },
   lasse: { z: 1.377, x: 0.466, y: 0.315 },
   menacante: { z: 1.396, x: 0.487, y: 0.376 },

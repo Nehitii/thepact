@@ -16,6 +16,26 @@
  * transparents et cerne chaque sprite d'un liseré. On multiplie par
  * l'alpha avant de moyenner, on redivise après.
  
+ * ─── LA GRILLE N EST PAS LA LIMITE DU PERSONNAGE ───
+ *
+ * Decouper sur les lignes de la grille rogne les figures qui debordent
+ * de leur case. Constate sur « genee » : son halo commence a la ligne
+ * 673 de la planche alors que la ligne de grille tombe a 683 — DIX
+ * RANGEES DU SOMMET DE L ANNEAU etaient perdues, et la coupe se voyait
+ * comme un plat sur l arc.
+ *
+ * Le symptome se lit dans le profil des premieres rangees encrees. Un
+ * apex naturel commence etroit et s elargit — « neutre » fait
+ * 23, 34, 43, 50, 56. Un sommet tranche commence LARGE puis se
+ * retrecit : la version rognee faisait 40, 35, 28, 26, 24.
+ *
+ * La vraie frontiere entre deux cases n est pas la ligne de grille mais
+ * la rangee ou l encre FRANCHE s arrete. Ici : « contente » finit a 672,
+ * « genee » commence a 675, la grille tranchait a 683. Les deux figures
+ * se touchent meme en alpha faible, donc aucune bande entierement vide
+ * ne les separe — chercher les rangees sans encre franche, pas les
+ * rangees sans encre du tout.
+ *
  * ─── REMPLACER UNE SEULE VIGNETTE ───
  *
  * LES DIX-HUIT PARTAGENT UNE ECHELLE, calculee ici sur la plus grande
