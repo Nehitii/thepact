@@ -1785,3 +1785,15 @@
 .light .mia-champ {
   border-color: hsla(200, 20%, 22%, 0.62);
 }
+
+/* LA PASTILLE D ETAT QUI ALERTE.
+
+   Mesure : 3,30:1 sur la plaque claire, pour du mono de 11 px — sous
+   le seuil de 4,5. C est le rouge de « --destructive », taille pour
+   un fond sombre : pose sur du papier, il eclaircit au lieu de
+   prevenir.
+
+   Les deux autres etats passent deja — le vert de l actif et la
+   sourdine du repos. Seul celui qui alerte manquait, et c est
+   justement celui qu on doit lire du coin de l oeil. */
+.light .rg-panneau-etat[data-alerte] { color: #B01226; }

@@ -173,13 +173,22 @@
    wishlist en use deja pour ses vignettes. Avec elle, quatre points
    de luminance suffisent. */
 /* LE SOL, UN CRAN SOUS LE FOND DE PAGE.
-   En sombre il fonce, en clair il fonce aussi — c est un creux, pas
-   une couleur. La plaque se leve donc dans les deux themes. */
+
+   IL PORTAIT « filter: brightness(0.72) », ET C ETAIT LE DEFAUT.
+   Multiplier la luminosite ne fait pas un creux, ca ecrase. En clair,
+   un papier declare a 91 % de clarte se rendait a 66 % : un gris moyen
+   sous des cartes presque blanches, ce qui donnait a la page un fond
+   etrangement sombre. En sombre, un fond deja a 2 % tombait a 1,4 % —
+   plus noir que le socle de l application elle-meme, donc un trou.
+
+   Le creux n a pas besoin de filtre : les panneaux sont DEJA plus
+   clairs que le sol dans les deux themes — rgb(249 248 246) contre
+   rgb(238 236 230) en clair, rgb(3 13 23) contre rgb(0 5 10) en
+   sombre. C est la plaque qui se leve, pas le sol qui s enfonce. */
 .rg-sol {
   position: absolute;
   inset: 0;
   background: hsl(var(--background));
-  filter: brightness(0.72);
 }
 
 .rg-panneau {
