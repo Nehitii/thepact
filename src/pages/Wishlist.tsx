@@ -39,6 +39,8 @@ import { WishlistPoste } from "@/components/wishlist/WishlistPoste";
 
 /* La forme de la liste, retenue d une visite a l autre. */
 import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
+import { GestionDesListes } from "@/components/wishlist/GestionDesListes";
+import { useListesWishlist } from "@/hooks/useWishlistLists";
 import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
 import { WishlistRail } from "@/components/wishlist/WishlistRail";
 import { ChampImage } from "@/components/wishlist/ChampImage";
@@ -195,6 +197,9 @@ export default function Wishlist() {
   const [editType, setEditType] = useState<PactWishlistItemType>("optional");
   const [editNotes, setEditNotes] = useState("");
   const [editGoalId, setEditGoalId] = useState("none");
+  const [editListId, setEditListId] = useState("none");
+  const [newListId, setNewListId] = useState("none");
+  const { data: listesWishlist = [] } = useListesWishlist(user?.id);
   const [editUrl, setEditUrl] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
   const [editPriority, setEditPriority] = useState<WishlistPriority>("low");
@@ -289,6 +294,7 @@ export default function Wishlist() {
     setEditType(item.item_type);
     setEditNotes(item.notes ?? "");
     setEditGoalId(item.goal_id ?? "none");
+    setEditListId((item as { list_id?: string | null }).list_id ?? "none");
     setEditUrl(item.url ?? "");
     setEditImageUrl(item.image_url ?? "");
     setEditPriority(item.priority ?? "low");
@@ -416,11 +422,13 @@ export default function Wishlist() {
         userId: user.id, name: nom,
         estimatedCost: Number.isFinite(prix) ? prix : 0,
         itemType: newType, category: newCategory.trim() || null,
-        goalId: objectif, url: newUrl.trim() || null,
+        goalId: objectif,
+        listId: newListId === "none" ? null : newListId,
+        url: newUrl.trim() || null,
         imageUrl: newImageUrl.trim() || null, priority: newPriority,
       });
       setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional");
-      setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewPriority("low");
+      setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewListId("none"); setNewPriority("low");
       setNewOpen(false);
     } catch {
       /* La mutation a deja prevenu. */
@@ -465,7 +473,11 @@ export default function Wishlist() {
           name: nom, category: editCategory.trim() || null,
           estimated_cost: Number.isFinite(prix) ? prix : 0,
           item_type: editType, notes: editNotes.trim() || null,
-          goal_id: objectif, url: editUrl.trim() || null,
+          goal_id: objectif,
+          /* Exclusif par contrainte de table : un objectif chasse la
+             liste, et le formulaire l'a déjà fait côté écran. */
+          list_id: objectif ? null : (editListId === "none" ? null : editListId),
+          url: editUrl.trim() || null,
           image_url: editImageUrl.trim() || null, priority: editPriority,
         },
       });
@@ -583,6 +595,8 @@ export default function Wishlist() {
         url={newUrl} setUrl={setNewUrl}
         imageUrl={newImageUrl} setImageUrl={setNewImageUrl}
         goalId={newGoalId} setGoalId={setNewGoalId}
+        listId={newListId} setListId={setNewListId}
+        listes={listesWishlist}
         type={newType} setType={setNewType}
         priority={newPriority} setPriority={setNewPriority}
         goals={goals}
@@ -601,6 +615,8 @@ export default function Wishlist() {
         url={editUrl} setUrl={setEditUrl}
         imageUrl={editImageUrl} setImageUrl={setEditImageUrl}
         goalId={editGoalId} setGoalId={setEditGoalId}
+        listId={editListId} setListId={setEditListId}
+        listes={listesWishlist}
         type={editType} setType={setEditType}
         priority={editPriority} setPriority={setEditPriority}
         notes={editNotes} setNotes={setEditNotes}
@@ -786,6 +802,13 @@ export default function Wishlist() {
             )}
           </div>
 
+          {/* LES LISTES NE CONCERNENT PAS LE PACTE.
+              Un poste rattaché à un objectif est financé par le pacte et
+              ne peut pas rejoindre une liste — la table le refuse. Le
+              panneau ne se montre donc pas dans la vue du pacte, où il
+              n'aurait rien à ranger. */}
+          {vue !== "pacte" && <GestionDesListes userId={user?.id} />}
+
           {/* Cent trente tabulations separaient l en-tete de
               l archive : ce lien les enjambe, et ne se montre qu au
               clavier. */}
@@ -808,7 +831,7 @@ export default function Wishlist() {
               </div>
             ) : (
               <WishlistRegistre
-                items={vus.tous} currency={currency} pieces={pieces}
+                items={vus.tous} currency={currency} pieces={pieces} listes={listesWishlist}
                 onEdit={ouvrirEdition} onDelete={demanderSuppression} onToggleAcquired={basculerAcquis}
               />
             )
@@ -827,22 +850,17 @@ export default function Wishlist() {
                 </div>
               ) : (
                 affichage === "registre" ? (
-                  <div className="wl-liste">
-                    <div className="wl-postes">
-                      {vus.actifs.map((item) => (
-                        <WishlistPoste
-                          key={item.id}
-                          item={item}
-                          currency={currency}
-                          piece={item.source_goal_cost_id ? pieces?.get(item.source_goal_cost_id) : undefined}
-                          variante="actif"
-                          onEdit={ouvrirEdition}
-                          onDelete={demanderSuppression}
-                          onToggleAcquired={basculerAcquis}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  /* LE REGISTRE HORS PACTE SE GROUPE AUSSI.
+                     Il posait soixante-neuf lignes à plat : c'était la
+                     seule forme possible tant que rien ne les rangeait.
+                     Maintenant que les listes existent, le même composant
+                     que la vue du pacte sait les tenir — et ce qui
+                     n'appartient à rien retombe dans « Sans objectif »,
+                     comme avant. */
+                  <WishlistRegistre
+                    items={vus.actifs} currency={currency} pieces={pieces} listes={listesWishlist}
+                    onEdit={ouvrirEdition} onDelete={demanderSuppression} onToggleAcquired={basculerAcquis}
+                  />
                 ) : (
                 <div className="wl-grille">
                   {vus.actifs.map((item) => (
@@ -890,10 +908,12 @@ interface FormulaireArticleProps {
   url: string; setUrl: (v: string) => void;
   imageUrl: string; setImageUrl: (v: string) => void;
   goalId: string; setGoalId: (v: string) => void;
+  listId: string; setListId: (v: string) => void;
   type: PactWishlistItemType; setType: (v: PactWishlistItemType) => void;
   priority: WishlistPriority; setPriority: (v: WishlistPriority) => void;
   notes?: string; setNotes?: (v: string) => void;
   goals: Array<{ id: string; name: string }>;
+  listes: Array<{ id: string; name: string }>;
   userId: string | undefined;
   onSubmit: () => void;
   submitLabel: string;
@@ -939,7 +959,17 @@ function FormulaireArticle(p: FormulaireArticleProps) {
 
           <div className="space-y-2">
             <Label className={etiquette}>{t("wishlist.form.objectif", "Objectif lié")}</Label>
-            <Select value={p.goalId} onValueChange={p.setGoalId}>
+            <Select
+              value={p.goalId}
+              onValueChange={(v) => {
+                p.setGoalId(v);
+                /* UN POSTE TIENT À UN OBJECTIF OU À UNE LISTE, JAMAIS AUX
+                   DEUX : un poste financé par le pacte compterait sinon
+                   dans deux totaux. La base le refuse ; ici on évite à
+                   l'utilisateur de se heurter au refus. */
+                if (v !== "none") p.setListId("none");
+              }}
+            >
               <SelectTrigger className={champ}>
                 <SelectValue placeholder={t("wishlist.form.aucunObjectif", "Aucun")} />
               </SelectTrigger>
@@ -949,6 +979,24 @@ function FormulaireArticle(p: FormulaireArticleProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Le rattachement à une liste ne se propose que si l'article
+              n'est pas déjà pris par un objectif — proposer un choix que
+              la base refusera est pire que ne pas le proposer. */}
+          {p.goalId === "none" && p.listes.length > 0 && (
+            <div className="space-y-2">
+              <Label className={etiquette}>{t("wishlist.form.liste", "Ma liste")}</Label>
+              <Select value={p.listId} onValueChange={p.setListId}>
+                <SelectTrigger className={champ}>
+                  <SelectValue placeholder={t("wishlist.form.aucuneListe", "Aucune")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("wishlist.form.aucuneListe", "Aucune")}</SelectItem>
+                  {p.listes.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className={etiquette}>{t("wishlist.form.lien", "Lien vers la boutique")}</Label>

@@ -1515,3 +1515,94 @@
 @media (hover: none) {
   .wl-poste .wl-outils { opacity: 1; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MES LISTES
+
+   Une barre de jetons, entre la recherche et le corps. Elle ne se
+   montre pas dans la vue du pacte : un poste financé par un objectif
+   ne peut pas rejoindre une liste, la table le refuse.
+   ═══════════════════════════════════════════════════════════ */
+.wl-listes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.wl-listes-nom {
+  font-family: var(--wl-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wl-encre-3, hsl(var(--muted-foreground)));
+  padding-right: 2px;
+}
+.wl-etiquette,
+.wl-etiquette-edition {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 10px;
+  background: var(--wl-creux, hsl(var(--muted) / 0.4));
+  border: 1px solid var(--wl-trait, hsl(var(--border)));
+  border-radius: 3px;
+}
+.wl-etiquette b {
+  font-family: var(--wl-ui);
+  font-size: max(13px, 0.8125rem);
+  font-weight: 600;
+  color: var(--wl-encre, hsl(var(--foreground)));
+}
+.wl-etiquette-edition input {
+  width: 13ch;
+  font-family: var(--wl-ui);
+  font-size: max(13px, 0.8125rem);
+  font-weight: 600;
+  color: var(--wl-encre, hsl(var(--foreground)));
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.wl-etiquette-outil {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--wl-encre-3, hsl(var(--muted-foreground)));
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 120ms linear, background 120ms linear;
+}
+.wl-etiquette-outil svg { width: 13px; height: 13px; }
+.wl-etiquette-outil:hover,
+.wl-etiquette-outil:focus-visible { color: var(--wl-encre, hsl(var(--foreground))); background: hsl(var(--primary) / 0.1); }
+.wl-etiquette-outil--danger:hover,
+.wl-etiquette-outil--danger:focus-visible { color: var(--wl-dette, hsl(var(--destructive))); background: hsl(var(--destructive) / 0.1); }
+
+/* Le bouton dit la règle AVANT qu'on la subisse : la limite est tenue
+   par la base, celui-ci ne fait que l'annoncer. */
+.wl-etiquette-ajout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-family: var(--wl-mono);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.08em;
+  color: var(--wl-encre-2, hsl(var(--muted-foreground)));
+  background: transparent;
+  border: 1px dashed var(--wl-trait, hsl(var(--border)));
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+.wl-etiquette-ajout svg { width: 13px; height: 13px; }
+.wl-etiquette-ajout:hover:not(:disabled),
+.wl-etiquette-ajout:focus-visible:not(:disabled) {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / 0.5);
+}
+.wl-etiquette-ajout:disabled { opacity: 0.55; cursor: not-allowed; border-style: solid; }

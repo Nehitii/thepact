@@ -1952,7 +1952,9 @@
       "image": "Image",
       "requis": "Requis pour le pacte",
       "requisAide": "Une nécessité, pas une envie.",
-      "ajouter": "Ajouter"
+      "ajouter": "Ajouter",
+      "liste": "Ma liste",
+      "aucuneListe": "Aucune"
     },
     "delete": {
       "title": "Supprimer",
@@ -2034,7 +2036,8 @@
       "complet": "complet",
       "ouvrir": "Ouvrir l’objectif",
       "ordreReste": "Reste le plus gros",
-      "ordreProche": "Au plus proche du solde"
+      "ordreProche": "Au plus proche du solde",
+      "listeRetiree": "Liste retirée"
     },
     "archive": {
       "titre": "Archive des acquisitions",
@@ -2089,6 +2092,16 @@
       "aria": "Forme de la liste",
       "vitrine": "Vitrine",
       "registre": "Registre"
+    },
+    "listes": {
+      "aria": "Mes listes",
+      "titre": "Mes listes",
+      "nouvelle": "Nouvelle liste",
+      "plein": "Trois listes au plus",
+      "exemple": "Maison, Cadeaux…",
+      "nomAria": "Nom de la liste",
+      "renommer": "Renommer « {{nom}} »",
+      "supprimer": "Supprimer « {{nom}} »"
     }
   },
   "inbox": {

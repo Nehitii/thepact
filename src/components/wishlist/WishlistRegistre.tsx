@@ -12,6 +12,8 @@ interface WishlistRegistreProps {
   items: PactWishlistItem[];
   currency: string;
   pieces?: Map<string, PieceDeLEtape>;
+  /** Les listes personnelles, pour les nommer dans le registre. */
+  listes?: { id: string; name: string }[];
   onEdit: (item: PactWishlistItem) => void;
   onDelete: (id: string) => void;
   onToggleAcquired: (id: string, acquired: boolean) => void;
@@ -20,6 +22,8 @@ interface WishlistRegistreProps {
 interface Groupe {
   cle: string;
   goalId: string | null;
+  /** Renseigné quand le groupe est une liste personnelle. */
+  listId: string | null;
   nom: string;
   postes: PactWishlistItem[];
   total: number;
@@ -47,22 +51,34 @@ interface Groupe {
  * de cliquer.
  */
 export function WishlistRegistre({
-  items, currency, pieces, onEdit, onDelete, onToggleAcquired,
+  items, currency, pieces, listes = [], onEdit, onDelete, onToggleAcquired,
 }: WishlistRegistreProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const immobile = useReducedMotion();
 
+  /* UN POSTE APPARTIENT À UNE LISTE OU À UN OBJECTIF, JAMAIS AUX DEUX —
+     une contrainte de table le refuse. Le groupement peut donc se faire
+     sur une seule clé, sans avoir à trancher les cas mixtes. */
+  const nomDeListe = useMemo(
+    () => new Map(listes.map((l) => [l.id, l.name])),
+    [listes],
+  );
+
   const groupes = useMemo<Groupe[]>(() => {
     const parObjectif = new Map<string, Groupe>();
     for (const item of items) {
-      const cle = item.goal_id ?? "—";
+      const listId = (item as { list_id?: string | null }).list_id ?? null;
+      const cle = listId ? `liste:${listId}` : (item.goal_id ?? "—");
       let g = parObjectif.get(cle);
       if (!g) {
         g = {
           cle,
           goalId: item.goal_id ?? null,
-          nom: item.goal?.name ?? t("wishlist.registre.sansObjectif", "Sans objectif"),
+          listId,
+          nom: listId
+            ? (nomDeListe.get(listId) ?? t("wishlist.registre.listeRetiree", "Liste retirée"))
+            : (item.goal?.name ?? t("wishlist.registre.sansObjectif", "Sans objectif")),
           postes: [], total: 0, acquis: 0, nbAcquis: 0,
         };
         parObjectif.set(cle, g);
@@ -84,8 +100,13 @@ export function WishlistRegistre({
             || Number(b.estimated_cost) - Number(a.estimated_cost),
         ),
       }))
-      .sort((a, b) => (b.total - b.acquis) - (a.total - a.acquis) || b.total - a.total);
-  }, [items, t]);
+      /* Les listes personnelles passent devant : elles sont le seul
+         groupe qu'on a soi-même décidé de faire exister. */
+      .sort((a, b) =>
+        Number(!!b.listId) - Number(!!a.listId)
+        || (b.total - b.acquis) - (a.total - a.acquis)
+        || b.total - a.total);
+  }, [items, t, nomDeListe]);
 
   /* Le premier etat, calcule une seule fois, quand les donnees
      arrivent. Un ref plutot qu un effet : pas de rendu intermediaire

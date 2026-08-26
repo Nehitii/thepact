@@ -1952,7 +1952,9 @@
       "image": "Image",
       "requis": "Required for the pact",
       "requisAide": "A necessity, not a wish.",
-      "ajouter": "Add"
+      "ajouter": "Add",
+      "liste": "My list",
+      "aucuneListe": "None"
     },
     "delete": {
       "title": "Delete",
@@ -2034,7 +2036,8 @@
       "complet": "complete",
       "ouvrir": "Open the goal",
       "ordreReste": "Largest remainder",
-      "ordreProche": "Closest to settled"
+      "ordreProche": "Closest to settled",
+      "listeRetiree": "Removed list"
     },
     "archive": {
       "titre": "Acquisition archive",
@@ -2089,6 +2092,16 @@
       "aria": "List layout",
       "vitrine": "Showcase",
       "registre": "Register"
+    },
+    "listes": {
+      "aria": "My lists",
+      "titre": "My lists",
+      "nouvelle": "New list",
+      "plein": "Three lists at most",
+      "exemple": "Home, Gifts…",
+      "nomAria": "List name",
+      "renommer": "Rename “{{nom}}”",
+      "supprimer": "Delete “{{nom}}”"
     }
   },
   "inbox": {

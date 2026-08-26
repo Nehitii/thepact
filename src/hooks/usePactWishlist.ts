@@ -78,6 +78,8 @@ export function useCreatePactWishlistItem() {
       itemType: PactWishlistItemType;
       category?: string | null;
       goalId?: string | null;
+      /** Une liste personnelle, exclusive de l'objectif par contrainte. */
+      listId?: string | null;
       notes?: string | null;
       url?: string | null;
       imageUrl?: string | null;
@@ -92,6 +94,9 @@ export function useCreatePactWishlistItem() {
           item_type: input.itemType,
           category: input.category ?? null,
           goal_id: input.goalId ?? null,
+          /* Un objectif chasse la liste : la table refuse les deux, et
+             mieux vaut trancher ici que se heurter au refus. */
+          list_id: input.goalId ? null : (input.listId ?? null),
           notes: input.notes ?? null,
           url: input.url ?? null,
           image_url: input.imageUrl ?? null,

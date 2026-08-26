@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -2862,6 +2887,30 @@ export type Database = {
         }
         Relationships: []
       }
+      mfa_recovery_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_finance_validations: {
         Row: {
           actual_total_expenses: number | null
@@ -4934,6 +4983,7 @@ export type Database = {
           id: string
           image_url: string | null
           item_type: string
+          list_id: string | null
           name: string
           notes: string | null
           priority: string
@@ -4954,6 +5004,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           item_type?: string
+          list_id?: string | null
           name: string
           notes?: string | null
           priority?: string
@@ -4974,6 +5025,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           item_type?: string
+          list_id?: string | null
           name?: string
           notes?: string | null
           priority?: string
@@ -4992,7 +5044,41 @@ export type Database = {
             referencedRelation: "goals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wishlist_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_lists"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      wishlist_lists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -5022,6 +5108,31 @@ export type Database = {
         Returns: Json
       }
       assurer_offres_du_jour: { Args: never; Returns: number }
+      assurer_ordres_du_jour: {
+        Args: never
+        Returns: {
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          kind: string
+          metadata: Json | null
+          progress: number
+          reward_bonds: number
+          season_id: string | null
+          status: string
+          target: number
+          title: string
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "daily_quests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
       categories_cosmetiques: { Args: never; Returns: number }
       check_and_increment_ai_quota: {
@@ -5252,6 +5363,16 @@ export type Database = {
         }[]
       }
       mesures_du_membre: { Args: { p_user_id: string }; Returns: Json }
+      pouls_du_jour: {
+        Args: { p_debut: string; p_fin: string; p_jour: string }
+        Returns: {
+          appel: number
+          focus_minutes: number
+          journal: number
+          sante: number
+          taches: number
+        }[]
+      }
       profils_publics: {
         Args: { p_ids: string[] }
         Returns: {
@@ -5531,6 +5652,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["user", "admin"],
