@@ -1,4 +1,5 @@
 import type { EtatDuJour } from "@/hooks/useEtatDuJour";
+import { gestesConnus, reflexesConnus as _r } from "./miaPossibles";
 import type { ExpressionMia } from "@/components/mia/VisageMia";
 
 /**
@@ -60,15 +61,10 @@ const nb = (n: number) => n.toLocaleString("fr-FR");
 const enFrancais = (iso: string | null): string =>
   iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "sans échéance";
 
-/* Déclarée ici, et non importée de miaGestes : ce module est importé
-   PAR miaGestes (pour `aplatir`), et un aller-retour ferait un cycle. */
-const GESTES_CONNUS = [
-  "ouvre le journal",
-  "coche « une tâche »",
-  "ajoute une tâche : …",
-  "reporte « … » à demain",
-  "lance un focus",
-];
+/* La liste vient de miaPossibles, qui n'importe rien : ce module est
+   importé PAR miaGestes (pour `aplatir`), et un aller-retour direct
+   ferait un cycle. Elle existait ici en double, à la main. */
+const GESTES_CONNUS = gestesConnus();
 
 interface Regle {
   intention: string;
@@ -270,7 +266,7 @@ const REGLES: Regle[] = [
       intention: "aide",
       texte:
         "Sans modèle, je réponds à : " +
-        reflexesConnus().join(" · ") +
+        _r().join(" · ") +
         ". Et je fais : " +
         GESTES_CONNUS.join(" · ") +
         ". Pour le reste, pose la question normalement.",
@@ -363,14 +359,4 @@ export function chercherReflexe(question: string, etat: EtatDuJour | undefined):
 }
 
 /** La liste de ce qu'elle sait faire sans le modèle, pour l'intention « aide ». */
-export function reflexesConnus(): string[] {
-  return [
-    "où j'en suis",
-    "combien de jours il reste",
-    "combien d'étapes",
-    "mes tâches",
-    "mon focus",
-    "mes ordres du jour",
-    "mon solde",
-  ];
-}
+export { reflexesConnus } from "./miaPossibles";

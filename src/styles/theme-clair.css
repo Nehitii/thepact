@@ -1582,3 +1582,62 @@
 /* Sur du papier, un halo autour d'un filet de deux pixels ne l'allume
    pas : il le rend flou. */
 .light .neural-bar-progress { box-shadow: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LES RAILS DE DÉFILEMENT
+
+   La piste globale est peinte « #04070f » en dur dans index.css : un
+   rail NOIR posé sur du papier, sur toute la hauteur de la page et dans
+   chaque zone qui défile — la console de M.I.A, la liste des objectifs.
+   C'est la plus grande surface non thématisée du thème clair.
+
+   Deux syntaxes qui ne coexistent pas : dès que scrollbar-color est posé
+   sur un élément, Chrome ignore ses pseudo-éléments ::-webkit-scrollbar.
+   La règle Firefox reste donc isolée derrière @supports, sur la branche
+   où ::-webkit-scrollbar n'existe pas — exactement comme en sombre.
+
+   « .light » EST la balise html : il faut donc les deux formes, collée
+   pour le rail de la page, avec espace pour tout ce qui défile dedans.
+
+   Le néon est retiré : une lueur intérieure sur du papier ne brille pas,
+   elle salit. Le pouce tient par sa valeur, pas par son halo.
+   ═══════════════════════════════════════════════════════════════ */
+
+.light::-webkit-scrollbar-track,
+.light ::-webkit-scrollbar-track {
+  background:
+    linear-gradient(90deg,
+      transparent 4px,
+      hsl(210 22% 74%) 4px,
+      hsl(210 22% 74%) 5px,
+      transparent 5px),
+    #E6E8EC;
+}
+
+.light::-webkit-scrollbar-thumb,
+.light ::-webkit-scrollbar-thumb {
+  background-color: hsl(210 16% 60%);
+  box-shadow: none;
+}
+
+.light::-webkit-scrollbar-thumb:hover,
+.light ::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(210 20% 44%);
+  box-shadow: none;
+}
+
+.light::-webkit-scrollbar-thumb:active,
+.light ::-webkit-scrollbar-thumb:active {
+  background-color: hsl(210 24% 32%);
+}
+
+.light::-webkit-scrollbar-corner,
+.light ::-webkit-scrollbar-corner {
+  background: #E6E8EC;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .light {
+    scrollbar-color: hsl(210 16% 60%) #E6E8EC;
+  }
+}

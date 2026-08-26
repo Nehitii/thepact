@@ -111,9 +111,25 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
   if (!mots.length) return null;
   const a = (m: string) => mots.includes(m);
 
-  /* ── OUVRIR UNE PAGE ── */
+  /* ── OUVRIR UNE PAGE ──
+     LE MOT LE PLUS PRÉCIS GAGNE, PAS LE PREMIER TROUVÉ.
+     `find` rendait la première page dont un mot-clé figurait dans la
+     question : « ouvre la liste de souhaits » contient « liste », qui
+     appartient au todo, et partait donc vers les tâches. On garde
+     désormais la correspondance dont le mot-clé est le plus long —
+     « souhaits » bat « liste », et « ouvre la liste » toute seule mène
+     toujours au todo. */
   if (VERBES_OUVRIR.some(a)) {
-    const page = PAGES.find((p) => p.mots.some((m) => mots.includes(m)));
+    let page: (typeof PAGES)[number] | undefined;
+    let precision = 0;
+    for (const p of PAGES) {
+      for (const m of p.mots) {
+        if (mots.includes(m) && m.length > precision) {
+          precision = m.length;
+          page = p;
+        }
+      }
+    }
     if (page) {
       return {
         intention: "ouvrir",
@@ -203,12 +219,4 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
 }
 
 /** Ce qu'elle sait faire sans le modèle, pour l'intention « aide ». */
-export function gestesConnus(): string[] {
-  return [
-    "ouvre le journal · montre mes objectifs",
-    "coche « nom de la tâche »",
-    "ajoute une tâche : …",
-    "reporte « … » à demain",
-    "lance un focus",
-  ];
-}
+export { gestesConnus } from "./miaPossibles";

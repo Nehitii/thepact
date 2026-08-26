@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ChevronDown, Plus, X, Send, ArrowLeft } from "lucide-react";
+import { ChevronDown, Plus, X, Send, ArrowLeft, Pencil, Sparkles } from "lucide-react";
 import {
   useFilsMia,
   useMessagesMia,
@@ -21,8 +21,9 @@ import { ReseauMia, type EtatMia } from "./ReseauMia";
 import { VisageMia, type ExpressionMia } from "./VisageMia";
 import { prechargerVisages } from "@/lib/visagesMia";
 import { useEtatDuJour } from "@/hooks/useEtatDuJour";
-import { chercherReflexe, reflexesConnus } from "@/lib/miaReflexes";
-import { chercherGeste, gestesConnus, type Geste } from "@/lib/miaGestes";
+import { chercherReflexe } from "@/lib/miaReflexes";
+import { chercherGeste, type Geste } from "@/lib/miaGestes";
+import { POSSIBLES, GROUPES } from "@/lib/miaPossibles";
 import { causeDeLEchec, excuseMia, apaiser } from "@/lib/miaExcuses";
 import { humeurAmbiante } from "@/lib/miaHumeur";
 import { useTodoList } from "@/hooks/useTodoList";
@@ -81,7 +82,7 @@ const LARGEUR_MIN = 380;
 const LARGEUR_MAX = 900;
 
 export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
-  const { conversations, create, archive } = useFilsMia();
+  const { conversations, create, archive, renommer } = useFilsMia();
   const [filActif, setFilActif] = useState<string | null>(null);
   const { data: messages = [] } = useMessagesMia(filActif);
   const { send, streaming, streamText } = useFluxMia(filActif);
@@ -94,6 +95,20 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
      l'historique qu'on lui renvoie ensuite. Elles vivent le temps de la
      conversation ouverte. */
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
+  const [possiblesOuverts, setPossiblesOuverts] = useState(false);
+  /* Le fil en cours de renommage, et le texte tapé. */
+  const [renomme, setRenomme] = useState<{ id: string; titre: string } | null>(null);
+  /* Échap doit pouvoir devancer le flou qu'il provoque lui-même. */
+  const abandonner = useRef(false);
+  const valider = useCallback(
+    (id: string, ancien: string) => {
+      const titre = renomme?.titre ?? "";
+      setRenomme(null);
+      if (abandonner.current) { abandonner.current = false; return; }
+      if (titre.trim() && titre !== ancien) void renommer({ id, titre });
+    },
+    [renomme, renommer],
+  );
   const fluxRef = useRef<HTMLDivElement>(null);
   const champRef = useRef<HTMLTextAreaElement>(null);
 
@@ -320,8 +335,8 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     [ecrireEchange],
   );
 
-  const envoyer = useCallback(async () => {
-    const texte = brouillon.trim();
+  const envoyer = useCallback(async (impose?: string) => {
+    const texte = (impose ?? brouillon).trim();
     if (!texte || streaming) return;
     setBrouillon("");
 
@@ -502,6 +517,16 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
               </span>
 
               <span className="mia-bandeau-outils">
+                <button
+                  type="button"
+                  className="mia-b"
+                  onClick={() => setPossiblesOuverts((v) => !v)}
+                  aria-label="Ce que je fais sans modèle"
+                  title="Ce que je fais sans modèle"
+                  data-actif={possiblesOuverts ? "" : undefined}
+                >
+                  <Sparkles className="h-4 w-4" />
+                </button>
                 <button type="button" className="mia-b" onClick={nouveauFil} aria-label="Nouvelle conversation">
                   <Plus className="h-4 w-4" />
                 </button>
@@ -581,6 +606,79 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             </div>
 
             <AnimatePresence>
+              {possiblesOuverts && (
+                <motion.div
+                  className="mia-tiroir mia-possibles"
+                  initial={{ opacity: 0, y: -12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <div className="mia-tiroir-tete">
+                    <button
+                      type="button"
+                      className="mia-b"
+                      onClick={() => setPossiblesOuverts(false)}
+                      aria-label="Revenir à la conversation"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <span>Sans modèle · {POSSIBLES.length} tournures</span>
+                  </div>
+
+                  {/* UNE CAPACITÉ QU'ON NE SAIT PAS INVOQUER N'EXISTE PAS.
+                      Les deux couches gratuites ne se déclenchent que sur
+                      des tournures précises. Les montrer ne suffit pas :
+                      on peut les taper d'un clic, et celles qui demandent
+                      d'être complétées se posent dans le champ au lieu de
+                      partir toutes seules. */}
+                  <div
+                    className="mia-tiroir-liste"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) setPossiblesOuverts(false);
+                    }}
+                  >
+                    {GROUPES.map((g) => (
+                      <section key={g.couche} className="mia-groupe">
+                        <h4>
+                          {g.titre}
+                          <em>{g.note}</em>
+                        </h4>
+                        {POSSIBLES.filter((p) => p.couche === g.couche).map((p) => (
+                          <button
+                            key={p.exemple}
+                            type="button"
+                            className="mia-possible"
+                            data-couche={g.couche}
+                            onClick={() => {
+                              setPossiblesOuverts(false);
+                              if (p.aCompleter) {
+                                setBrouillon(p.exemple);
+                                champRef.current?.focus();
+                              } else {
+                                void envoyer(p.exemple);
+                              }
+                            }}
+                          >
+                            <b>
+                              {p.exemple}
+                              {p.aCompleter ? <i>…</i> : null}
+                            </b>
+                            <span>{p.quoi}</span>
+                          </button>
+                        ))}
+                      </section>
+                    ))}
+                  </div>
+
+                  <p className="mia-tiroir-pied" style={{ cursor: "default" }}>
+                    Tout ceci est instantané et ne consomme aucun quota.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
               {tiroirOuvert && (
                 <motion.div
                   className="mia-tiroir"
@@ -604,22 +702,73 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
                     </span>
                   </div>
 
-                  <div className="mia-tiroir-liste">
+                  {/* LE VIDE SOUS LA LISTE EST UNE SORTIE.
+                      Une liste qui occupe la moitié haute d'un panneau
+                      laisse en dessous une zone qui ne fait rien : c'est
+                      le premier endroit où l'on clique pour en sortir. */}
+                  <div
+                    className="mia-tiroir-liste"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) setTiroirOuvert(false);
+                    }}
+                  >
                     {conversations.map((c) => (
                       <div key={c.id} className="mia-ligne" data-actif={c.id === filActif ? "" : undefined}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFilActif(c.id);
-                            setTiroirOuvert(false);
-                          }}
-                          className="text-left min-w-0 bg-transparent border-0 p-0 cursor-pointer"
-                        >
-                          <h3>{c.title}</h3>
-                          <p>{apercus[c.id] || "Rien encore."}</p>
-                        </button>
+                        {renomme?.id === c.id ? (
+                          /* LE RENOMMAGE SE FAIT SUR PLACE.
+                             Une boîte de dialogue pour changer trois mots
+                             ferait perdre la liste de vue, qui est
+                             justement ce qu'on est en train de trier. */
+                          <form
+                            className="mia-renomme"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              valider(c.id, c.title);
+                            }}
+                          >
+                            <input
+                              value={renomme.titre}
+                              autoFocus
+                              maxLength={120}
+                              onChange={(e) => setRenomme({ id: c.id, titre: e.target.value })}
+                              onKeyDown={(e) => {
+                                /* Échap abandonne — et c'est le SEUL abandon,
+                                   parce qu'un champ perd le focus pour mille
+                                   raisons dont aucune ne veut dire « annule ». */
+                                if (e.key === "Escape") {
+                                  abandonner.current = true;
+                                  setRenomme(null);
+                                }
+                              }}
+                              onBlur={() => valider(c.id, c.title)}
+                              aria-label="Nom de la conversation"
+                            />
+                          </form>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFilActif(c.id);
+                              setTiroirOuvert(false);
+                            }}
+                            onDoubleClick={() => setRenomme({ id: c.id, titre: c.title })}
+                            className="text-left min-w-0 bg-transparent border-0 p-0 cursor-pointer"
+                          >
+                            <h3>{c.title}</h3>
+                            <p>{apercus[c.id] || "Rien encore."}</p>
+                          </button>
+                        )}
                         <span className="mia-ligne-droite">
                           <time dateTime={c.last_message_at}>{quand(c.last_message_at)}</time>
+                          <button
+                            type="button"
+                            className="mia-fermer-fil"
+                            onClick={() => setRenomme({ id: c.id, titre: c.title })}
+                            aria-label={`Renommer « ${c.title} »`}
+                            title="Renommer"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
                           <button
                             type="button"
                             className="mia-fermer-fil"

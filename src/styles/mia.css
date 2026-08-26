@@ -479,6 +479,78 @@
   border-color: var(--nexus-border, hsl(var(--border)));
   background: var(--nexus-inner-bg, hsl(var(--muted) / 0.4));
 }
+/* ── LE RENOMMAGE SUR PLACE ──
+   Le champ prend exactement la place du titre : rien ne saute quand on
+   passe de l'un à l'autre. */
+.mia-renomme { flex: 1; min-width: 0; }
+.mia-renomme input {
+  width: 100%;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--nexus-text-label, hsl(var(--foreground)));
+  background: var(--nexus-inner-bg, hsl(var(--muted) / 0.4));
+  border: 1px solid hsl(var(--primary) / 0.45);
+  border-radius: 4px;
+  padding: 5px 8px;
+  outline: none;
+}
+
+/* ── CE QU'ELLE FAIT SANS MODÈLE ── */
+.mia-groupe { padding: 14px 16px 4px; }
+.mia-groupe h4 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: hsl(var(--primary));
+}
+.mia-groupe h4 em {
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--nexus-text-dimmer);
+}
+.mia-possible {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.mia-possible:hover,
+.mia-possible:focus-visible {
+  background: var(--nexus-inner-bg, hsl(var(--muted) / 0.35));
+  border-color: hsl(var(--primary) / 0.3);
+}
+.mia-possible b {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--nexus-text-label, hsl(var(--foreground)));
+}
+/* Les tournures à compléter le disent : elles se posent dans le champ au
+   lieu de partir, et le lecteur doit le voir avant de cliquer. */
+.mia-possible b i { font-style: normal; color: hsl(var(--primary)); padding-left: 2px; }
+.mia-possible span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--nexus-text-dimmer);
+}
+
 .mia-tiroir-pied {
   padding: 11px 14px;
   border-top: 1px solid var(--nexus-border, hsl(var(--border)));
