@@ -194,6 +194,15 @@
   text-transform: uppercase;
   color: var(--nexus-text-dimmer);
 }
+/* Quand le sigle porte un visage, le cadre s'efface : un portrait dans
+   une boîte bleue ressemble à une photo d'identité. */
+.mia-sigle-visage {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border-color: transparent;
+}
+
 .mia-outils { margin-left: auto; display: flex; gap: 3px; }
 .mia-b {
   display: grid;

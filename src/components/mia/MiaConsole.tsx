@@ -145,6 +145,15 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   }, [open]);
 
   const etat: EtatMia = streaming ? "travail" : brouillon.trim() ? "ecoute" : "repos";
+  /* Trois états d'interface, trois visages. « lasse » après minuit :
+     elle a le droit d'avoir des heures, ce n'est pas un reproche. */
+  const visageDeLEtat: ExpressionMia = streaming
+    ? "reflexion"
+    : brouillon.trim()
+      ? "calme"
+      : new Date().getHours() >= 0 && new Date().getHours() < 5
+        ? "lasse"
+        : "neutre";
   useEffect(() => {
     onEtat?.(etat);
   }, [etat, onEtat]);
@@ -348,8 +357,12 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             />
 
             <header className="mia-tete">
-              <span className="mia-sigle">
-                <ReseauMia etat={etat} />
+              {/* SON VISAGE EN TÊTE, PAS UN SIGLE.
+                  Le réseau reste le sigle de la vignette — une commande
+                  doit rester neutre et lisible à 22 px. Ici on est dans
+                  la conversation : c'est elle qu'on regarde. */}
+              <span className="mia-sigle mia-sigle-visage">
+                <VisageMia expression={visageDeLEtat} taille={44} />
               </span>
               <span>
                 <span className="mia-nom">M.I.A</span>
@@ -558,7 +571,7 @@ function Bulle({
     <div className="mia-bulle" data-role="assistant">
       <div className="mia-signature">
         {expression ? (
-          <VisageMia expression={expression} taille={22} />
+          <VisageMia expression={expression} taille={30} />
         ) : (
           <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
         )}
