@@ -3581,6 +3581,13 @@
       "inbox": "Boîte de réception",
       "changerPacte": "Changer de pacte",
       "deconnexion": "Se déconnecter"
-    }
+    },
+    "chercherQuoi": "Une page, un objectif, une tâche…",
+    "chercherAmorce": "Tapez un mot : les pages d'abord, puis vos objectifs et vos tâches.",
+    "chercherRien": "Rien sous ce mot — ni page, ni objectif, ni tâche.",
+    "chercherEntree": "Entrée pour la première réponse",
+    "groupePages": "Pages",
+    "groupeObjectifs": "Objectifs",
+    "groupeTaches": "Tâches"
   }
 }

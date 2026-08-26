@@ -15,14 +15,16 @@ import {
   Mail, RefreshCw, User, Crown, CalendarDays, Search, Menu, ChevronRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { prefetchRoute } from "@/lib/prefetchRoutes";
 import { raccourciPalette } from "@/lib/toucheRaccourci";
-import { OUVRIR_PALETTE } from "@/components/CommandPalette";
+import { AvatarFrame } from "@/components/ui/avatar-frame";
+import { useCarteProfil } from "@/hooks/useCarteProfil";
+import { RechercheBarre, type EntreeCherchable } from "./RechercheBarre";
 
 /* ═══════════════════════════════════════════════════════════════
    LA BARRE LATERALE
@@ -164,6 +166,7 @@ export const AppSidebar = memo(function AppSidebar() {
     try { return localStorage.getItem(CLE_REPLI) === "oui"; } catch { return false; }
   });
   const [mobileOuvert, setMobileOuvert] = useState(false);
+  const [chercheOuverte, setChercheOuverte] = useState(false);
 
   const { unreadCount, unreadByModule } = useNotifications();
   const { unreadCount: messagesNonLus } = useMessages();
@@ -175,6 +178,12 @@ export const AppSidebar = memo(function AppSidebar() {
   const { data: modulesAchetes = [] } = useUserModulePurchases(user?.id);
   const { data: profil } = useProfile(user?.id);
   const { profile: reglages, updateProfile } = useProfileSettings();
+  /* LE CADRE D AVATAR SE VOIT AUSSI ICI. C est un cosmetique qu on
+     achete et qu on equipe ; ne le montrer que sur la carte publique
+     revenait a le cacher a celui qui l a paye. Un seul appel, mis en
+     cache cinq minutes, et partage avec la carte de survol. */
+  const { data: carte } = useCarteProfil(user?.id, true);
+  const cadre = carte?.cadre;
 
   const clesAchetees = useMemo(
     () => tousModules.filter((m) => modulesAchetes.includes(m.id)).map((m) => m.key),
@@ -227,6 +236,41 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const aUnModule = clesAchetees.some((k) => k in MODULES);
 
+  /* CE QUE LA RECHERCHE CONNAIT VIENT D ICI, pas d une seconde liste.
+     Deux inventaires finiraient par diverger — une page ajoutee a la
+     barre et oubliee dans la recherche est une page introuvable. */
+  const cherchables = useMemo<EntreeCherchable[]>(() => {
+    const l: EntreeCherchable[] = [];
+    for (const cat of ORDRE) {
+      for (const e of categories[cat]) {
+        l.push({ to: e.to, libelle: t(`nav.pages.${e.cle}`), icone: e.icone, groupe: t(`nav.sections.${cat}`) });
+      }
+    }
+    for (const r of REGLAGES) {
+      l.push({ to: r.to, libelle: t(`nav.compte.${r.cle}`), icone: r.icone, groupe: t("nav.options", "Compte") });
+    }
+    return l;
+  }, [categories, t]);
+
+  /* Fermer au clic dehors et a Echap. Le volet n a pas de fond
+     opaque : sans cela, il resterait ouvert pendant qu on travaille
+     ailleurs. */
+  useEffect(() => {
+    if (!chercheOuverte) return;
+    const dehors = (ev: PointerEvent) => {
+      const c = ev.target as Element | null;
+      if (c?.closest?.(".sb-volet") || c?.closest?.(".sb-cherche")) return;
+      setChercheOuverte(false);
+    };
+    const echap = (ev: KeyboardEvent) => { if (ev.key === "Escape") setChercheOuverte(false); };
+    document.addEventListener("pointerdown", dehors);
+    document.addEventListener("keydown", echap);
+    return () => {
+      document.removeEventListener("pointerdown", dehors);
+      document.removeEventListener("keydown", echap);
+    };
+  }, [chercheOuverte]);
+
   /* ── Le voile de debordement ──────────────────────────────
      La barre de defilement est invisible, par choix. Mais un
      debordement muet est un piege : l ancienne cachait « Boutique »
@@ -254,6 +298,42 @@ export const AppSidebar = memo(function AppSidebar() {
     oeil.observe(el);
     for (const enfant of Array.from(el.children)) oeil.observe(enfant);
     return () => { el.removeEventListener("scroll", relire); oeil.disconnect(); };
+  }, [categories, mini]);
+
+  /* ── LE CURSEUR SUIT L ENTREE ACTIVE ──────────────────────
+     On pourrait lire « useLocation() », mais cela redessinerait la
+     barre entiere a chaque navigation — precisement ce qu on vient
+     d eviter. NavLink pose lui-meme « aria-current » ; il suffit de
+     regarder cet attribut changer. */
+  const curseur = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const nav = zone.current;
+    const barre = curseur.current;
+    if (!nav || !barre) return;
+    let attente = 0;
+    const placer = () => {
+      const actif = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!actif) { barre.dataset.vu = "non"; return; }
+      barre.style.height = actif.offsetHeight + "px";
+      barre.style.transform = "translateY(" + actif.offsetTop + "px)";
+      barre.dataset.vu = "oui";
+    };
+    const differer = () => {
+      cancelAnimationFrame(attente);
+      attente = requestAnimationFrame(placer);
+    };
+    differer();
+    const oeil = new MutationObserver(differer);
+    oeil.observe(nav, { subtree: true, attributes: true, attributeFilter: ["aria-current", "class"] });
+    const taille = new ResizeObserver(differer);
+    taille.observe(nav);
+    nav.addEventListener("scroll", differer, { passive: true });
+    return () => {
+      cancelAnimationFrame(attente);
+      oeil.disconnect();
+      taille.disconnect();
+      nav.removeEventListener("scroll", differer);
+    };
   }, [categories, mini]);
 
   const seDeconnecter = useCallback(async () => {
@@ -335,8 +415,9 @@ export const AppSidebar = memo(function AppSidebar() {
         <button
           type="button"
           className="sb-cherche"
-          onClick={() => window.dispatchEvent(new Event(OUVRIR_PALETTE))}
+          onClick={() => setChercheOuverte((v) => !v)}
           aria-label={t("nav.chercher", "Rechercher")}
+          aria-expanded={chercheOuverte}
         >
           <Search aria-hidden />
           {!mini && (
@@ -351,6 +432,7 @@ export const AppSidebar = memo(function AppSidebar() {
           <span className="sb-voile" data-cote="haut" data-actif={debord.haut ? "oui" : "non"} style={{ top: 0 }} aria-hidden />
 
           <nav className="sb-nav" ref={zone} aria-label={t("nav.ouvrir", "Navigation")}>
+            <span className="sb-curseur" ref={curseur} data-vu="non" aria-hidden />
             {ORDRE.map((cat) => {
               const entrees = categories[cat];
               if (!entrees.length) return null;
@@ -392,12 +474,31 @@ export const AppSidebar = memo(function AppSidebar() {
             entrees sur sept, sous un en-tete « System_Config ».
             Une colonne, 14 px, rien de coupe — et le theme se regle
             ici, ce qu on venait justement y chercher. */}
+        <RechercheBarre
+          ouverte={chercheOuverte}
+          fermer={() => setChercheOuverte(false)}
+          entrees={cherchables}
+          pactId={profil?.active_pact_id}
+          userId={user?.id}
+        />
+
         <div className="sb-pied">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="sb-profil" aria-label={t("nav.options", "Compte et réglages")}>
-                <span className="sb-av">
-                  {profil?.avatar_url ? <img src={profil.avatar_url} alt="" /> : initiale}
+                <span className="sb-av-boite">
+                  <AvatarFrame
+                    avatarUrl={profil?.avatar_url ?? null}
+                    fallback={initiale}
+                    size="sm"
+                    frameImage={cadre?.image ?? undefined}
+                    borderColor={cadre?.bordure ?? "transparent"}
+                    glowColor={cadre?.lueur ?? "transparent"}
+                    frameScale={Number(cadre?.echelle) || 1}
+                    frameOffsetX={Number(cadre?.decalageX) || 0}
+                    frameOffsetY={Number(cadre?.decalageY) || 0}
+                    showBorder={cadre?.montrerBordure !== false}
+                  />
                   {totalNonLus > 0 && <span className="sb-point" aria-hidden />}
                 </span>
                 {!mini && (
@@ -414,8 +515,19 @@ export const AppSidebar = memo(function AppSidebar() {
 
             <DropdownMenuContent side="right" align="end" sideOffset={12} className="sb-panneau">
               <div className="sb-pan-tete">
-                <span className="sb-pan-av">
-                  {profil?.avatar_url ? <img src={profil.avatar_url} alt="" /> : initiale}
+                <span className="sb-pan-av-boite">
+                  <AvatarFrame
+                    avatarUrl={profil?.avatar_url ?? null}
+                    fallback={initiale}
+                    size="md"
+                    frameImage={cadre?.image ?? undefined}
+                    borderColor={cadre?.bordure ?? "transparent"}
+                    glowColor={cadre?.lueur ?? "transparent"}
+                    frameScale={Number(cadre?.echelle) || 1}
+                    frameOffsetX={Number(cadre?.decalageX) || 0}
+                    frameOffsetY={Number(cadre?.decalageY) || 0}
+                    showBorder={cadre?.montrerBordure !== false}
+                  />
                 </span>
                 <span className="sb-pan-id">
                   <b>{profil?.display_name ?? "—"}</b>
@@ -427,15 +539,14 @@ export const AppSidebar = memo(function AppSidebar() {
                 {REGLAGES.map((r) => {
                   const Icone = r.icone;
                   return (
-                    <button
+                    <DropdownMenuItem
                       key={r.to}
-                      type="button"
                       className="sb-pan-item"
-                      onClick={() => { navigate(r.to); fermerMobile(); }}
+                      onSelect={() => { navigate(r.to); fermerMobile(); }}
                     >
                       <Icone aria-hidden />
                       {t(`nav.compte.${r.cle}`)}
-                    </button>
+                    </DropdownMenuItem>
                   );
                 })}
               </div>
@@ -462,20 +573,20 @@ export const AppSidebar = memo(function AppSidebar() {
 
               <div className="sb-pan-liste">
                 {social.inbox && (
-                  <button type="button" className="sb-pan-item" onClick={() => { navigate("/inbox"); fermerMobile(); }}>
+                  <DropdownMenuItem className="sb-pan-item" onSelect={() => { navigate("/inbox"); fermerMobile(); }}>
                     <Mail aria-hidden />
                     {t("nav.compte.inbox")}
                     {totalNonLus > 0 && <span className="sb-pastille">{totalNonLus > 99 ? "99+" : totalNonLus}</span>}
-                  </button>
+                  </DropdownMenuItem>
                 )}
-                <button type="button" className="sb-pan-item" onClick={() => { navigate("/pact-selector"); fermerMobile(); }}>
+                <DropdownMenuItem className="sb-pan-item" onSelect={() => { navigate("/pact-selector"); fermerMobile(); }}>
                   <RefreshCw aria-hidden />
                   {t("nav.compte.changerPacte")}
-                </button>
-                <button type="button" className="sb-pan-item sb-pan-sortie" onClick={seDeconnecter}>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="sb-pan-item sb-pan-sortie" onSelect={seDeconnecter}>
                   <LogOut aria-hidden />
                   {t("nav.compte.deconnexion")}
-                </button>
+                </DropdownMenuItem>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -3581,6 +3581,13 @@
       "inbox": "Inbox",
       "changerPacte": "Switch pact",
       "deconnexion": "Sign out"
-    }
+    },
+    "chercherQuoi": "A page, a goal, a task…",
+    "chercherAmorce": "Type a word: pages first, then your goals and tasks.",
+    "chercherRien": "Nothing under that word — no page, no goal, no task.",
+    "chercherEntree": "Enter for the first result",
+    "groupePages": "Pages",
+    "groupeObjectifs": "Goals",
+    "groupeTaches": "Tasks"
   }
 }

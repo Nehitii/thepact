@@ -236,9 +236,33 @@
 .sb-lien svg { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 1.9; }
 .sb-lien:hover { background: var(--sb-creux); color: var(--sb-encre); }
 .sb-lien:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: -2px; }
-.sb-lien[aria-current="page"] { background: var(--sb-creux); color: var(--sb-encre); }
+.sb-lien[aria-current="page"] { color: var(--sb-encre); }
 .sb-lien[aria-current="page"] svg { color: var(--sb-signal); }
-.sb-lien[aria-current="page"]::before {
+
+/* ── LE CURSEUR GLISSE, IL NE SAUTE PAS ───────────────────────
+   Chaque entree portait son propre fond et sa propre barre : au
+   changement de page, l ancienne s eteignait et la nouvelle
+   s allumait — deux evenements sans rapport, que l oeil lit comme un
+   clignotement. Un SEUL element se deplace maintenant d une entree a
+   l autre, en « transform ». Le mouvement dit ce qui s est passe :
+   on est alle de la a la.
+   Il est pose en dessous du texte, jamais au-dessus. */
+.sb-curseur {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  height: 0;
+  border-radius: 8px;
+  background: var(--sb-creux);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 0;
+  transform: translateY(0);
+  transition: transform 380ms var(--sb-e), height 380ms var(--sb-e), opacity 200ms linear;
+}
+.sb-curseur[data-vu="oui"] { opacity: 1; }
+.sb-curseur::before {
   content: "";
   position: absolute;
   left: 0;
@@ -248,6 +272,10 @@
   border-radius: 0 2px 2px 0;
   background: var(--sb-signal);
 }
+.sb[data-replie="oui"] .sb-curseur { left: 6px; right: 6px; }
+/* Le texte passe devant le curseur. */
+.sb-lien { z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .sb-curseur { transition: opacity 120ms linear; } }
 .sb-lien-mot { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sb[data-replie="oui"] .sb-lien { justify-content: center; padding: 8px 0; gap: 0; }
 .sb[data-replie="oui"] .sb-lien-mot { display: none; }
@@ -329,22 +357,27 @@
 .sb-profil:hover { border-color: var(--sb-trait-fort); background: var(--sb-releve); }
 .sb-profil:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: 2px; }
 .sb[data-replie="oui"] .sb-profil { justify-content: center; padding: 5px 0; gap: 0; }
-.sb-av {
+/* LE CADRE D AVATAR EST UN COMPOSANT, PAS UNE BORDURE.
+   « AvatarFrame » empile la photo et l image du cadre, qui deborde
+   volontairement de la photo. On ne peut donc ni la rogner ni lui
+   imposer une taille : la boite se contente de la porter et de tenir
+   la pastille de notification. */
+.sb-av-boite {
   position: relative;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  overflow: hidden;
   flex-shrink: 0;
-  background: var(--sb-releve);
   display: grid;
   place-items: center;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--sb-signal);
+  width: 32px;
+  height: 32px;
 }
-.sb-av img { width: 100%; height: 100%; object-fit: cover; }
+.sb-pan-av-boite {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+}
 .sb-profil-mots { flex: 1; min-width: 0; }
 .sb[data-replie="oui"] .sb-profil-mots,
 .sb[data-replie="oui"] .sb-profil > svg { display: none; }
@@ -368,8 +401,9 @@
 .sb-profil > svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--sb-encre-3); }
 .sb-point {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: -1px;
+  right: -1px;
+  z-index: 3;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -424,11 +458,36 @@
    qu on vient y chercher.
    ═══════════════════════════════════════════════════════════════ */
 .sb-panneau {
+  /* IL FAUT REDECLARER LES JETONS ICI. Ce panneau est rendu dans un
+     PORTAIL, accroche au corps du document : il ne descend pas de
+     « .sb », donc aucune des variables « --sb-* » definies la ne
+     l atteint. Sans ce bloc, « background: var(--sb-plaque) » est
+     invalide, et le fond retombe sur celui de la bibliotheque —
+     transparent. Constate a l ecran : le menu flottait sur le texte
+     de la page. */
+  --sb-plaque:   hsl(var(--ds-surface-1));
+  --sb-creux:    hsl(var(--ds-surface-2));
+  --sb-releve:   hsl(var(--ds-surface-3));
+  --sb-trait:    hsl(var(--ds-border-default) / 0.16);
+  --sb-trait-fort: hsl(var(--ds-border-default) / 0.32);
+  --sb-signal:   hsl(var(--ds-accent-primary));
+  --sb-encre:    hsl(var(--ds-text-primary));
+  --sb-encre-2:  hsl(var(--ds-text-secondary));
+  --sb-encre-3:  hsl(var(--ds-text-muted));
+  --sb-alerte:   hsl(var(--ds-accent-critical));
+  --sb-e:        var(--ds-ease-out, cubic-bezier(.16, 1, .3, 1));
+
   width: 288px;
   padding: 0;
   border: 1px solid var(--sb-trait-fort);
   border-radius: 12px;
   background: var(--sb-plaque);
+  /* UNE OMBRE EST SOMBRE DANS LES DEUX THEMES. Tiree de
+     « --ds-bg-base », elle devenait claire sur clair — donc
+     invisible : mesure, rgb(222 220 217) sur un fond a rgb(249 248
+     246). C est le seul endroit du fichier ou une valeur est ecrite
+     en dur, et c est pour cette raison. */
+  box-shadow: 0 8px 28px rgb(10 14 20 / 0.16), 0 2px 6px rgb(10 14 20 / 0.10);
   font-family: 'Rajdhani', system-ui, sans-serif;
   overflow: hidden;
 }
@@ -439,21 +498,7 @@
   padding: 14px 14px 12px;
   border-bottom: 1px solid var(--sb-trait);
 }
-.sb-pan-av {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--sb-releve);
-  display: grid;
-  place-items: center;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--sb-signal);
-}
-.sb-pan-av img { width: 100%; height: 100%; object-fit: cover; }
+
 .sb-pan-id { min-width: 0; flex: 1; }
 .sb-pan-id b {
   display: block;
@@ -575,4 +620,158 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sb, .sb-marque, .sb-marque::before, .sb-lien, .sb-poignee, .sb-voile { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE VOLET DE RECHERCHE
+
+   Il se deplie CONTRE la barre, et non au centre de l ecran : on
+   garde la navigation sous les yeux pendant qu on cherche. C est
+   toute la difference avec la palette, qui recouvre la page.
+
+   Il n est jamais demonte — seulement rendu inerte. Le monter au
+   moment du clic ferait perdre la premiere frappe, et couperait
+   l animation d entree.
+   ═══════════════════════════════════════════════════════════════ */
+.sb-volet {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  bottom: 0;
+  z-index: 8;
+  width: 304px;
+  max-width: calc(100vw - 100% - 16px);
+  display: flex;
+  flex-direction: column;
+  background: var(--sb-plaque);
+  border-right: 1px solid var(--sb-trait);
+  box-shadow: 14px 0 34px rgb(10 14 20 / 0.16);
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 200ms linear, transform 320ms var(--sb-e), visibility 0s linear 320ms;
+}
+.sb-volet[data-ouvert="oui"] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  visibility: visible;
+  transition: opacity 160ms linear, transform 340ms var(--sb-e), visibility 0s;
+}
+
+.sb-volet-tete {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--sb-trait);
+  flex-shrink: 0;
+}
+.sb-volet-tete > svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--sb-encre-3); }
+.sb-volet-champ {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--sb-encre);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.sb-volet-champ::placeholder { color: var(--sb-encre-3); font-weight: 500; }
+.sb-volet-champ:focus { outline: none; }
+/* La croix native du champ « search » double la notre. */
+.sb-volet-champ::-webkit-search-cancel-button { display: none; }
+.sb-volet-fermer {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--sb-encre-3);
+  cursor: pointer;
+}
+.sb-volet-fermer:hover { background: var(--sb-creux); color: var(--sb-encre); }
+.sb-volet-fermer:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: 1px; }
+.sb-volet-fermer svg { width: 14px; height: 14px; }
+
+.sb-volet-corps {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px 10px;
+  scrollbar-width: none;
+}
+.sb-volet-corps::-webkit-scrollbar { width: 0; display: none; }
+
+.sb-volet-groupe {
+  margin: 0;
+  padding: 12px 8px 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sb-encre-3);
+}
+.sb-volet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--sb-encre-2);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms var(--sb-e), color 140ms var(--sb-e);
+}
+.sb-volet-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sb-volet-item:hover,
+.sb-volet-item:focus-visible { background: var(--sb-creux); color: var(--sb-encre); }
+.sb-volet-item:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: -2px; }
+.sb-volet-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-volet-ou {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sb-encre-3);
+}
+.sb-volet-vide {
+  margin: 0;
+  padding: 18px 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--sb-encre-3);
+}
+.sb-volet-pied {
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--sb-trait);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sb-encre-3);
+}
+.sb-volet-pied svg { width: 12px; height: 12px; }
+
+/* Repliee, la barre ne fait que 68 px : le volet garde sa largeur et
+   deborde simplement plus loin sur la page. */
+@media (max-width: 720px) {
+  .sb-volet { width: min(304px, calc(100vw - 84px)); }
 }

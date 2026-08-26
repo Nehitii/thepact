@@ -21,6 +21,7 @@ import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { PREF } from "@/lib/preferencesAffichage";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { raccourciPalette } from "@/lib/toucheRaccourci";
+import { classer } from "@/lib/rechercheMots";
 
 /**
  * LA BARRE ⌘K.
@@ -138,33 +139,10 @@ const NOM_DE_GROUPE: Record<string, [string, string]> = {
  * que CHAQUE mot tapé se retrouve. Une entrée à qui il manque un mot
  * n'est pas une entrée moins bonne : ce n'est pas une réponse.
  */
-function plat(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[.'’-]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function classer(valeur: string, recherche: string): number {
-  const q = plat(recherche);
-  if (!q) return 1;
-  const v = plat(valeur);
-  const mots = q.split(" ").filter(Boolean);
-  let score = 0;
-  for (const m of mots) {
-    const i = v.indexOf(m);
-    if (i < 0) return 0;
-    /* Un mot trouvé en tête vaut mieux qu'un mot trouvé au fond des
-       synonymes : c'est ce qui fait remonter le nom avant les
-       mots-clés. */
-    const debutDeMot = i === 0 || v[i - 1] === " ";
-    score += (debutDeMot ? 1 : 0.6) / mots.length;
-  }
-  return Math.max(0.01, score);
-}
+/* « plat » et « classer » vivent desormais dans
+   lib/rechercheMots.ts : le volet de recherche de la barre laterale
+   s en sert aussi, et deux comparateurs pour un meme geste finiraient
+   par diverger. */
 
 /** L'évènement que la charpente écoute pour ouvrir la console. */
 export const OUVRIR_MIA = "vowpact-ouvrir-mia";
