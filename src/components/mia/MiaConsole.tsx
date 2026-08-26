@@ -22,6 +22,7 @@ import { prechargerVisages } from "@/lib/visagesMia";
 import { useEtatDuJour } from "@/hooks/useEtatDuJour";
 import { chercherReflexe, reflexesConnus } from "@/lib/miaReflexes";
 import { chercherGeste, gestesConnus, type Geste } from "@/lib/miaGestes";
+import { causeDeLEchec, excuseMia, apaiser } from "@/lib/miaExcuses";
 import { useTodoList } from "@/hooks/useTodoList";
 
 /**
@@ -235,6 +236,24 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     [navigate, onClose, completeTask, createTask, postponeTask],
   );
 
+  /* ELLE DIT ELLE-MÊME QU'ELLE NE PEUT PAS.
+     Le message d'échec entre dans le fil comme une réponse, avec un
+     visage, et il s'agace si l'on insiste. C'est encore une réponse de
+     la couche réflexe : gratuite, et écrite d'avance. */
+  const direLEchec = useCallback((question: string, statut: number, corps: string) => {
+    const excuse = excuseMia(causeDeLEchec(statut, corps));
+    setLocal((l) => [
+      ...l,
+      {
+        id: `e-${Date.now()}`,
+        question,
+        texte: excuse.texte,
+        expression: excuse.expression,
+        couche: "reflexe" as const,
+      },
+    ]);
+  }, []);
+
   const envoyer = useCallback(async () => {
     const texte = brouillon.trim();
     if (!texte || streaming) return;
@@ -247,6 +266,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
        passer. */
     const reflexe = chercherReflexe(texte, etatDuJour);
     if (reflexe) {
+      apaiser();
       setLocal((l) => [
         ...l,
         { id: `r-${Date.now()}`, question: texte, texte: reflexe.texte, expression: reflexe.expression, couche: "reflexe" },
@@ -256,6 +276,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
 
     const geste = chercherGeste(texte, etatDuJour);
     if (geste) {
+      apaiser();
       setLocal((l) => [
         ...l,
         { id: `g-${Date.now()}`, question: texte, texte: geste.texte, expression: geste.expression, couche: "geste" },
@@ -276,17 +297,23 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
       setFilActif(fil.id);
       return;
     }
-    await send(texte);
-  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer]);
+    const verdict = await send(texte);
+    if (verdict?.ok) apaiser();
+    else if (verdict) direLEchec(texte, verdict.statut, verdict.corps);
+  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer, direLEchec]);
+
 
   const enAttente = useRef<string | null>(null);
   useEffect(() => {
     if (enAttente.current && filActif) {
       const texte = enAttente.current;
       enAttente.current = null;
-      void send(texte);
+      void send(texte).then((v) => {
+        if (v?.ok) apaiser();
+        else if (v) direLEchec(texte, v.statut, v.corps);
+      });
     }
-  }, [filActif, send]);
+  }, [filActif, send, direLEchec]);
 
   /* ENTRÉE ENVOIE, MAJ+ENTRÉE VA À LA LIGNE.
      Seul ⌘+Entrée envoyait, donc une Entrée seule insérait un retour à

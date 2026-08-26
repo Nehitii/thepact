@@ -137,7 +137,7 @@ export function useFluxMia(conversationId: string | null) {
   // ici obligerait à reconstruire le front à chaque changement de modèle.
   const send = useCallback(
     async (message: string) => {
-      if (!conversationId || !message.trim()) return;
+      if (!conversationId || !message.trim()) return { ok: false as const, statut: 0, corps: "pas de fil" };
       setStreaming(true);
       setStreamText("");
       try {
@@ -156,8 +156,14 @@ export function useFluxMia(conversationId: string | null) {
         });
 
         if (!res.ok || !res.body) {
-          const err = await res.text();
-          throw new Error(err || `HTTP ${res.status}`);
+          /* UNE PANNE N'EST PAS UN OBJET JSON.
+             On rendait le corps brut à l'appelant, qui l'affichait tel
+             quel dans une notification : l'utilisateur lisait
+             {"error":"Limite atteinte…"} et le fil restait sans réponse.
+             On remonte le code et le corps ; c'est la console qui décide
+             quoi en dire, et elle le dit avec la voix de M.I.A. */
+          const corps = await res.text();
+          return { ok: false as const, statut: res.status, corps };
         }
 
         // Refresh user message immediately
@@ -190,8 +196,13 @@ export function useFluxMia(conversationId: string | null) {
         // Final refresh to load persisted assistant message
         await qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
         await qc.invalidateQueries({ queryKey: ["coach_conversations"] });
+        return { ok: true as const };
       } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : "M.I.A n a pas repondu");
+        return {
+          ok: false as const,
+          statut: 0,
+          corps: e instanceof Error ? e.message : "échec réseau",
+        };
       } finally {
         setStreaming(false);
         setStreamText("");
