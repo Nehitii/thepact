@@ -312,7 +312,17 @@ export function useFluxMia(conversationId: string | null) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ conversation_id: conversationId, message }),
+          /* LE FUSEAU VIENT DU NAVIGATEUR, PAS DE LA BASE.
+             La colonne « profiles.timezone » existe et vaut « UTC » pour
+             tout le monde : personne ne l'a jamais renseignée. La
+             fonction serveur, elle, tourne en UTC — elle datait donc
+             chaque échéance dans le mauvais jour. Le navigateur sait, et
+             c'est la seule source qui ne ment pas. */
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            message,
+            fuseau: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }),
         });
 
         if (!res.ok || !res.body) {

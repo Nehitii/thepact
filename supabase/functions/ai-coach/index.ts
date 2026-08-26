@@ -850,9 +850,53 @@ async function runTool(
    répondent à la moitié des questions sans un seul outil. Elles
    coûtent une centaine de tokens et une trentaine de millisecondes.
    ═══════════════════════════════════════════════════════════════ */
-async function etatDuJour(supabase: any, userId: string): Promise<string> {
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CETTE FONCTION TOURNE EN UTC, L'UTILISATEUR NON.
+ *
+ * Un rendez-vous saisi pour le 27 est enregistré à minuit heure locale —
+ * soit 22 h UTC le 26. Daté ici avec un simple toLocaleDateString(), il
+ * ressortait « 26/08 », et M.I.A annonçait au matin du 26 un rendez-vous
+ * qui « attend aujourd'hui ». Ce n'était pas un cas limite de minuit :
+ * TOUTE échéance datée se décalait d'un jour, à toute heure, pour tout
+ * utilisateur à l'est de Greenwich.
+ *
+ * La colonne « profiles.timezone » existait déjà — et valait « UTC » pour
+ * tout le monde, personne ne l'ayant jamais renseignée. Le fuseau vient
+ * donc du navigateur, avec la question. La colonne sert de second recours.
+ * ═══════════════════════════════════════════════════════════════
+ */
+async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promise<string> {
   const maintenant = new Date();
-  const jour = maintenant.toISOString().slice(0, 10);
+
+  /* Un fuseau inventé ferait lever Intl : on vérifie avant de s'en
+     servir, et on retombe sur UTC plutôt que de rendre une erreur. */
+  const zone = (() => {
+    for (const z of [fuseau, "UTC"]) {
+      if (!z) continue;
+      try {
+        new Intl.DateTimeFormat("fr-FR", { timeZone: z }).format(maintenant);
+        return z;
+      } catch {
+        /* zone refusée : on essaie la suivante */
+      }
+    }
+    return "UTC";
+  })();
+
+  /** Le jour calendaire d'un instant, DANS LE FUSEAU DE L'UTILISATEUR. */
+  const jourDe = (d: Date): string =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit",
+    }).format(d);
+  /** La même date, écrite pour être lue. */
+  const dateLisible = (d: Date, long = false): string =>
+    new Intl.DateTimeFormat("fr-FR", long
+      ? { timeZone: zone, weekday: "long", day: "numeric", month: "long", year: "numeric" }
+      : { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" },
+    ).format(d);
+
+  const jour = jourDe(maintenant);
 
   const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
     supabase.from("profiles").select("active_pact_id, display_name, timezone").eq("id", userId).maybeSingle(),
@@ -868,7 +912,7 @@ async function etatDuJour(supabase: any, userId: string): Promise<string> {
   ]);
 
   const lignes: string[] = [
-    `ÉTAT DU JOUR — ${maintenant.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.`,
+    `ÉTAT DU JOUR — ${dateLisible(maintenant, true)}.`,
     `Cette donnée est fraîche : n'appelle pas d'outil pour la retrouver.`,
   ];
 
@@ -890,7 +934,7 @@ async function etatDuJour(supabase: any, userId: string): Promise<string> {
       const reste = Math.max(0, Math.ceil((fin - Date.now()) / 86_400_000));
       lignes.push(
         `Pacte actif : ${pacte.name} — jour ${ecoule} / ${total}, ${reste} jours restants, ` +
-          `fin le ${new Date(fin).toLocaleDateString("fr-FR")}.`,
+          `fin le ${dateLisible(new Date(fin))}.`,
       );
     } else {
       lignes.push(`Pacte actif : ${pacte.name} (pas de dates posées).`);
@@ -972,7 +1016,15 @@ async function etatDuJour(supabase: any, userId: string): Promise<string> {
       .filter((t: any) => t.deadline)
       .sort((a: any, b: any) => String(a.deadline).localeCompare(String(b.deadline)))
       .slice(0, 4)
-      .map((t: any) => `${t.name} (${new Date(t.deadline).toLocaleDateString("fr-FR")})`);
+      .map((t: any) => {
+        /* « Aujourd'hui » et « demain » plutôt qu'une date : c'est ce
+           qu'on dit en parlant, et c'est ce que le modèle recopiera. */
+        const d = new Date(t.deadline);
+        const j = jourDe(d);
+        const demain = jourDe(new Date(maintenant.getTime() + 86_400_000));
+        const quand = j === jour ? "aujourd'hui" : j === demain ? "demain" : dateLisible(d);
+        return `${t.name} (${quand})`;
+      });
     lignes.push(
       `Tâches ouvertes : ${listeTaches.length}` +
         (prochaines.length ? `. Prochaines échéances : ${prochaines.join(", ")}.` : "."),
@@ -1070,6 +1122,8 @@ async function pomperUnTour(
 
 interface ChatBody {
   conversation_id: string;
+  /** Le fuseau du navigateur, seule source qui ne mente pas sur le jour. */
+  fuseau?: string;
   message: string;
   model?: string;
 }
@@ -1144,7 +1198,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const etat = await etatDuJour(supabase, userId);
+    const etat = await etatDuJour(supabase, userId, body.fuseau);
 
     /* UN SEUL MESSAGE SYSTÈME, PAS DEUX.
        L'état du jour était envoyé dans un second message système, après
