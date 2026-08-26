@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
+import { useFuseauDuProfil } from "@/hooks/useFuseauDuProfil";
 import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import type { ReviewType } from "@/hooks/useReviews";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -21,6 +22,7 @@ export function AppLayout() {
   const [miaOuverte, setMiaOuverte] = useState(false);
   const [vignetteVisible] = useChromeFlottant("mia");
 
+
   /* LA CONSOLE S'OUVRE AUSSI SANS LA VIGNETTE.
      La palette porte « Ouvrir M.I.A » : sans cet écouteur, l'entrée
      n'aurait rien fait — et elle est le seul chemin qui reste quand on a
@@ -37,6 +39,10 @@ export function AppLayout() {
   const [ritualType, setRitualType] = useState<ReviewType | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { user } = useAuth();
+
+  /* La colonne « timezone » du profil valait UTC pour tout le monde ;
+     deux fonctions serveur la lisaient quand meme. */
+  useFuseauDuProfil(user?.id);
   const queryClient = useQueryClient();
 
   useEffect(() => {
