@@ -15,6 +15,9 @@ interface QuickAccessPanelProps {
      lequel pour le dire. */
   onMissionRandomizer?: () => void;
   missionRandomizerOuvert?: boolean;
+  /* Une seule mission a la fois : tant qu il y en a une, il n y a rien
+     a tirer. Le bouton le dit au lieu d ouvrir une fenetre vide. */
+  missionRandomizerDisponible?: boolean;
   className?: string;
 }
 
@@ -127,7 +130,7 @@ const EXTRA = [
  * colonne de droite liberee, et les coins supprimes. Sous 900px la rangee
  * defile lateralement plutot que de comprimer les libelles.
  */
-export function QuickAccessPanel({ ownedModules, onWeeklyReview, onMissionRandomizer, missionRandomizerOuvert = false, className = "" }: QuickAccessPanelProps) {
+export function QuickAccessPanel({ ownedModules, onWeeklyReview, onMissionRandomizer, missionRandomizerOuvert = false, missionRandomizerDisponible = true, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
   const sombre = useThemeSombre();
 
@@ -165,7 +168,8 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, onMissionRandom
         {actions.map((btn) => {
           const locked = isLocked(btn.moduleKey);
           const outil = btn.key === "randomizer";
-          const ouvert = outil && missionRandomizerOuvert;
+          const indisponible = outil && !missionRandomizerDisponible;
+          const ouvert = outil && missionRandomizerOuvert && !indisponible;
           /* Six neons choisis pour briller sur du noir : sur du blanc,
              #00ff88 tombait a 1,3:1 et le raccourci clavier de la
              cellule etait litteralement invisible. La couleur est posee
@@ -180,17 +184,20 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, onMissionRandom
                 if (outil) { onMissionRandomizer?.(); return; }
                 navigate(locked ? "/shop" : (btn.route as string));
               }}
+              disabled={indisponible || undefined}
               title={
                 locked
                   ? `${btn.label} — verrouille`
-                  : outil
-                    ? (ouvert ? "Fermer le tirage de mission" : "Ouvrir le tirage de mission")
-                    : btn.label
+                  : indisponible
+                    ? "Une mission est deja en cours"
+                    : outil
+                      ? (ouvert ? "Fermer le tirage de mission" : "Ouvrir le tirage de mission")
+                      : btn.label
               }
-              aria-pressed={outil ? ouvert : undefined}
+              aria-pressed={outil && !indisponible ? ouvert : undefined}
               data-actif={ouvert ? "" : undefined}
               className="qa-cell"
-              style={{ opacity: locked ? 0.45 : 1, ["--qa-c" as string]: teinte }}
+              style={{ opacity: locked ? 0.45 : indisponible ? 0.5 : 1, ["--qa-c" as string]: teinte }}
             >
               <span className="qa-hk">{btn.hotkey}</span>
               {locked && <Lock size={11} className="qa-lock" />}

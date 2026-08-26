@@ -1141,6 +1141,11 @@ All colors MUST be HSL.
 .qa-cell[data-actif]::before { opacity: 0.13; }
 .qa-cell[data-actif] .qa-charge i { inset: 0 0 0 0; }
 
+/* Indisponible n est pas verrouille : le module est bien la, c est
+   l instant qui ne s y prete pas. Pas de cadenas, pas de renvoi vers
+   la boutique — juste un bouton qui ne repond pas et dit pourquoi. */
+.qa-cell:disabled { cursor: not-allowed; }
+
 /* Le bouton de fermeture du tirage. Il herite sa teinte du panneau
    (couleur posee en style inline), donc une seule regle sert aux deux
    themes. */

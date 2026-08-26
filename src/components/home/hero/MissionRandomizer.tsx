@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { Dices, Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw, X } from "lucide-react";
 import { Goal } from "@/hooks/useGoals";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
@@ -33,6 +34,13 @@ interface MissionRandomizerProps {
      l on ait ouvert le tirage ou non. */
   ouvert?: boolean;
   onFermer?: () => void;
+  /* Le pere ne peut pas savoir seul si le tirage est disponible :
+     `useActiveMission` fait sa PROPRE requete a chaque appel, donc
+     l appeler une deuxieme fois dans Home doublerait le trafic et
+     ouvrirait deux etats libres de diverger. C est donc l enfant qui
+     remonte l information, pour que le bouton d ouverture puisse dire
+     qu il n y a rien a ouvrir tant qu une mission tient. */
+  onDisponible?: (disponible: boolean) => void;
 }
 
 interface PendingMission {
@@ -92,7 +100,7 @@ const SlotReel = ({ candidates, winner, onSpinComplete }: { candidates: Goal[]; 
   );
 };
 
-export function MissionRandomizer({ allGoals, className, ouvert = false, onFermer }: MissionRandomizerProps) {
+export function MissionRandomizer({ allGoals, className, ouvert = false, onFermer, onDisponible }: MissionRandomizerProps) {
   const navigate = useNavigate();
   const sombre = useThemeSombre();
 
@@ -139,6 +147,19 @@ export function MissionRandomizer({ allGoals, className, ouvert = false, onFerme
     }
   };
 
+  /* Une seule mission a la fois, cote base comme cote ecran : tant
+     qu il y en a une, il n y a pas de tirage a ouvrir.
+
+     On ne dit rien PENDANT le chargement. Repondre  indisponible  a ce
+     moment-la ferait afficher au bouton  une mission est deja en cours 
+     alors qu on ne sait pas encore s il y en a une. Un clic pendant ce
+     temps n est pas perdu pour autant : la fenetre s ouvre des que la
+     reponse arrive, ou se referme si une mission tenait deja. */
+  useEffect(() => {
+    if (isLoading) return;
+    onDisponible?.(!hasMission);
+  }, [isLoading, hasMission, onDisponible]);
+
   const handleSpinEnd = () => setViewState("confirm");
   const handleConfirm = () => setViewState("deadline");
   const handleReroll = () => { setViewState("idle"); setTargetMission(null); setTempWinner(null); };
@@ -151,170 +172,182 @@ export function MissionRandomizer({ allGoals, className, ouvert = false, onFerme
     setIsFocusing(false);
   };
 
-  /* Ferme, on n annonce rien pendant le chargement : un tourniquet
-     permanent pour un outil qui n est pas la remettrait sur la page
-     ce qu on vient d en retirer. */
-  if (isLoading) return ouvert ? (
-    <div className="p-8 flex justify-center">
-      <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-    </div>
-  ) : null;
+  /* Rien a montrer pendant le chargement : le tirage n est plus sur
+     la page, et la mission en cours n est pas encore connue. */
+  if (isLoading) return null;
 
+  /* CE QUI RESTE DANS LA PAGE. Un engagement date n est pas un outil
+     qu on ouvre : la mission en cours s affiche la ou elle etait. */
   if (hasMission && activeMission) return <ActiveMissionCard mission={activeMission} onAbandon={abandonMission} onComplete={completeMissionStep} className={className} />;
 
-  if (!ouvert) return null;
-
+  /* ET CE QUI PASSE EN FENETRE. Le tirage occupait 356 px du tableau
+     de bord en permanence pour un geste qu on fait quand on le decide.
+     Il devient un formulaire : on l ouvre, on tire, on engage, il se
+     ferme. La fenetre ne pose ni cadre ni fond ni bouton de fermeture
+     — le panneau garde les siens, arete orange comprise, et c est lui
+     qu on voit. */
   return (
-    <div
-      className={cn("relative overflow-hidden", className)}
-      style={{ borderRadius: 4, border: "1px solid var(--nexus-mission-border)", background: "var(--nexus-mission-bg)", boxShadow: "var(--nexus-shadow)" }}
-    >
-      <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${orangeRgb},0.4), transparent)` }} />
-      <style>{`@keyframes rotateSlow { to { transform: rotate(360deg); } }`}</style>
+    <Dialog open={ouvert} onOpenChange={(v) => { if (!v) onFermer?.(); }}>
+      <DialogContent
+        className="p-0 sm:p-0 gap-0 border-0 bg-transparent rounded-[4px] sm:max-w-2xl [&>button]:hidden"
+        aria-describedby={undefined}
+      >
+        <div
+          className={cn("relative overflow-hidden", className)}
+          style={{ borderRadius: 4, border: "1px solid var(--nexus-mission-border)", background: "var(--nexus-mission-bg)", boxShadow: "var(--nexus-shadow)" }}
+        >
+          <CornerBrackets />
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${orangeRgb},0.4), transparent)` }} />
+          <style>{`@keyframes rotateSlow { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Header */}
-      <div className="flex items-center justify-between" style={{ padding: "14px 24px", background: `rgba(${orangeRgb},0.05)`, borderBottom: `1px solid rgba(${orangeRgb},0.14)` }}>
-        <div className="flex items-center gap-[10px]">
-          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" stroke={orange} strokeWidth="1.5" style={{ animation: "rotateSlow 6s linear infinite" }}>
-            <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" />
-            <circle cx="8" cy="8" r="2.5" />
-          </svg>
-          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "max(11px, 0.6875rem)", fontWeight: 700, letterSpacing: 4, color: orange, textShadow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none", textTransform: "uppercase" as const }}>
-            Mission Randomizer
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: `1px solid rgba(${orangeRgb},0.34)`, color: orange, background: `rgba(${orangeRgb},0.06)`, clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
-            STANDBY
+          {/* Header */}
+          <div className="flex items-center justify-between" style={{ padding: "14px 24px", background: `rgba(${orangeRgb},0.05)`, borderBottom: `1px solid rgba(${orangeRgb},0.14)` }}>
+            <div className="flex items-center gap-[10px]">
+              <svg width={16} height={16} viewBox="0 0 16 16" fill="none" stroke={orange} strokeWidth="1.5" style={{ animation: "rotateSlow 6s linear infinite" }}>
+                <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" />
+                <circle cx="8" cy="8" r="2.5" />
+              </svg>
+              {/* Le titre de la fenetre EST le titre du panneau : un
+                  deuxieme, meme invisible, serait annonce deux fois. */}
+              <DialogTitle asChild>
+                <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "max(11px, 0.6875rem)", fontWeight: 700, letterSpacing: 4, color: orange, textShadow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none", textTransform: "uppercase" as const }}>
+                  Mission Randomizer
+                </span>
+              </DialogTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: `1px solid rgba(${orangeRgb},0.34)`, color: orange, background: `rgba(${orangeRgb},0.06)`, clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+                STANDBY
+              </div>
+              {/* Un outil qu on ouvre doit pouvoir se fermer de l endroit
+                  ou on le regarde, pas seulement d ou on l a ouvert. */}
+              {onFermer && (
+                <button
+                  type="button"
+                  onClick={onFermer}
+                  aria-label="Fermer le tirage de mission"
+                  title="Fermer"
+                  className="mr-tirage-fermer"
+                  style={{ color: orange }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
-          {/* Un outil qu on ouvre doit pouvoir se fermer de l endroit
-              ou on le regarde, pas seulement d ou on l a ouvert. */}
-          {onFermer && (
-            <button
-              type="button"
-              onClick={onFermer}
-              aria-label="Fermer le tirage de mission"
-              title="Fermer"
-              className="mr-tirage-fermer"
-              style={{ color: orange }}
-            >
-              <X size={14} />
-            </button>
-          )}
+
+          <AnimatePresence mode="wait">
+            {viewState === "idle" && (
+              <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="flex gap-4 flex-col md:flex-row">
+                  <div className="flex-1 flex flex-col items-center justify-center py-10 rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] min-h-[180px]">
+                    <Crosshair className="w-10 h-10 text-[var(--nexus-text-dimmer)] mb-4" />
+                    <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
+                      INITIALISER LE SCAN DE MISSION
+                    </span>
+                    {/* Le vivier du tirage se dit. Il se retrecissait deja a
+                        la brigade quand elle existait, mais en silence : on
+                        pouvait croire le tirage casse en le voyant proposer
+                        trois fois le meme objectif. */}
+                    <span className="ds-t-label mt-2 uppercase tracking-[0.12em] text-[var(--nexus-text-dimmer)] opacity-70">
+                      {vivierBrigade
+                        ? `▸ BRIGADE · ${eligibleGoals.length} OBJECTIF${eligibleGoals.length > 1 ? "S" : ""}`
+                        : `▸ TOUT LE PACTE · ${eligibleGoals.length} OBJECTIFS`}
+                    </span>
+                  </div>
+
+                  <div className="w-full md:w-[200px] flex flex-col gap-3">
+                    <Button onClick={handleSpinStart} disabled={!hasEligibleGoals} className="w-full h-12 bg-transparent border border-primary/40 text-primary hover:bg-primary hover:text-black font-orbitron text-sm uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(0,210,255,0.15)] hover:shadow-[0_0_20px_rgba(0,210,255,0.4)] transition-all" style={{ borderRadius: 4 }}>
+                      {hasEligibleGoals ? "SCAN" : "NO GOALS"}
+                    </Button>
+
+                    <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
+                      <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">STATISTIQUES</span>
+                      <div className="space-y-1.5 ds-t-label font-mono">
+                        <div className="flex justify-between text-[var(--nexus-text-dimmer)]">
+                          <span>GÉNÉRÉES:</span>
+                          <span className="text-primary tabular-nums">{scanCount}</span>
+                        </div>
+                        <div className="h-px bg-[var(--nexus-separator)]" />
+                        <div className="flex justify-between text-[var(--nexus-text-dimmer)]">
+                          <span>ÉLIGIBLES:</span>
+                          <span className="text-primary tabular-nums">{eligibleGoals.length}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
+                      <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">FILTRE DIFF.</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {DIFF_FILTERS.map((f) => (
+                          <button key={f.key} onClick={() => setDiffFilter(diffFilter === f.key ? null : f.key)}
+                            className={cn("ds-t-label font-orbitron font-bold uppercase tracking-wider py-1 rounded-sm border transition-all", diffFilter === f.key ? "border-current bg-current/10" : "border-[var(--nexus-separator)] hover:border-current/30")}
+                            style={{ color: selonTheme(f.color, sombre) }}
+                          >{f.label}</button>
+                        ))}
+                        <button onClick={() => setDiffFilter(null)} className="ds-t-label font-orbitron uppercase tracking-wider py-1 rounded-sm border border-[var(--nexus-separator)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-all">
+                          <RotateCw className="w-2.5 h-2.5 mx-auto" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {viewState === "spinning" && tempWinner && (
+              <motion.div key="spinning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-6 flex flex-col items-center gap-4">
+                <div className="ds-t-label font-mono text-primary animate-pulse tracking-[0.3em] uppercase">Running Algorithm...</div>
+                <SlotReel candidates={eligibleGoals} winner={tempWinner} onSpinComplete={handleSpinEnd} />
+                <div className="flex gap-2 mt-2">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary" animate={{ opacity: [0.2, 1, 0.2], scale: [1, 1.2, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {viewState === "confirm" && targetMission && (
+              <motion.div key="confirm" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="flex items-center justify-between border-b border-amber-500/20 pb-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-amber-500 animate-pulse" />
+                    <span className="ds-t-label font-orbitron font-bold text-amber-500 uppercase tracking-[0.15em]">Target Locked</span>
+                  </div>
+                </div>
+                <div className="space-y-1 mb-4">
+                  <span className="ds-t-label text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1">
+                    <Target className="w-3 h-3" /> Mission Objective
+                  </span>
+                  <h2 className="text-xl font-bold text-foreground leading-tight tracking-wide">{targetMission.goal.name}</h2>
+                </div>
+                <div className="p-4 bg-[var(--nexus-inner-bg-deep)] border-l-2 border-amber-500 rounded-sm mb-4">
+                  <span className="ds-t-label text-amber-400 uppercase tracking-wider font-mono block mb-1">{">"} Next Actionable Step</span>
+                  <p className="text-sm font-medium text-foreground/80">{targetMission.stepTitle}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button onClick={handleConfirm} className="bg-amber-500 hover:bg-amber-400 text-black font-bold tracking-wider border border-amber-400" style={{ borderRadius: 4 }}>
+                    <Focus className="w-4 h-4 mr-2" /> ENGAGE
+                  </Button>
+                  <Button onClick={handleReroll} variant="outline" className="border-border hover:bg-muted/50" style={{ borderRadius: 4 }}>
+                    <RotateCcw className="w-4 h-4 mr-2" /> DISMISS
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {viewState === "deadline" && targetMission && (
+              <motion.div key="deadline" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="p-5">
+                <div className="mb-4 pb-4 border-b border-[var(--nexus-separator)] flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Set Timeline</h3>
+                </div>
+                <DeadlineSelector onSelect={handleDeadlineSelect} onCancel={() => setViewState("confirm")} isLoading={isFocusing} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {viewState === "idle" && (
-          <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5">
-            <div className="flex gap-4 flex-col md:flex-row">
-              <div className="flex-1 flex flex-col items-center justify-center py-10 rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] min-h-[180px]">
-                <Crosshair className="w-10 h-10 text-[var(--nexus-text-dimmer)] mb-4" />
-                <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
-                  INITIALISER LE SCAN DE MISSION
-                </span>
-                {/* Le vivier du tirage se dit. Il se retrecissait deja a
-                    la brigade quand elle existait, mais en silence : on
-                    pouvait croire le tirage casse en le voyant proposer
-                    trois fois le meme objectif. */}
-                <span className="ds-t-label mt-2 uppercase tracking-[0.12em] text-[var(--nexus-text-dimmer)] opacity-70">
-                  {vivierBrigade
-                    ? `▸ BRIGADE · ${eligibleGoals.length} OBJECTIF${eligibleGoals.length > 1 ? "S" : ""}`
-                    : `▸ TOUT LE PACTE · ${eligibleGoals.length} OBJECTIFS`}
-                </span>
-              </div>
-
-              <div className="w-full md:w-[200px] flex flex-col gap-3">
-                <Button onClick={handleSpinStart} disabled={!hasEligibleGoals} className="w-full h-12 bg-transparent border border-primary/40 text-primary hover:bg-primary hover:text-black font-orbitron text-sm uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(0,210,255,0.15)] hover:shadow-[0_0_20px_rgba(0,210,255,0.4)] transition-all" style={{ borderRadius: 4 }}>
-                  {hasEligibleGoals ? "SCAN" : "NO GOALS"}
-                </Button>
-
-                <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
-                  <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">STATISTIQUES</span>
-                  <div className="space-y-1.5 ds-t-label font-mono">
-                    <div className="flex justify-between text-[var(--nexus-text-dimmer)]">
-                      <span>GÉNÉRÉES:</span>
-                      <span className="text-primary tabular-nums">{scanCount}</span>
-                    </div>
-                    <div className="h-px bg-[var(--nexus-separator)]" />
-                    <div className="flex justify-between text-[var(--nexus-text-dimmer)]">
-                      <span>ÉLIGIBLES:</span>
-                      <span className="text-primary tabular-nums">{eligibleGoals.length}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
-                  <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">FILTRE DIFF.</span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {DIFF_FILTERS.map((f) => (
-                      <button key={f.key} onClick={() => setDiffFilter(diffFilter === f.key ? null : f.key)}
-                        className={cn("ds-t-label font-orbitron font-bold uppercase tracking-wider py-1 rounded-sm border transition-all", diffFilter === f.key ? "border-current bg-current/10" : "border-[var(--nexus-separator)] hover:border-current/30")}
-                        style={{ color: selonTheme(f.color, sombre) }}
-                      >{f.label}</button>
-                    ))}
-                    <button onClick={() => setDiffFilter(null)} className="ds-t-label font-orbitron uppercase tracking-wider py-1 rounded-sm border border-[var(--nexus-separator)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-all">
-                      <RotateCw className="w-2.5 h-2.5 mx-auto" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {viewState === "spinning" && tempWinner && (
-          <motion.div key="spinning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-6 flex flex-col items-center gap-4">
-            <div className="ds-t-label font-mono text-primary animate-pulse tracking-[0.3em] uppercase">Running Algorithm...</div>
-            <SlotReel candidates={eligibleGoals} winner={tempWinner} onSpinComplete={handleSpinEnd} />
-            <div className="flex gap-2 mt-2">
-              {[0, 1, 2].map((i) => (
-                <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-primary" animate={{ opacity: [0.2, 1, 0.2], scale: [1, 1.2, 1] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {viewState === "confirm" && targetMission && (
-          <motion.div key="confirm" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="p-5">
-            <div className="flex items-center justify-between border-b border-amber-500/20 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-amber-500 animate-pulse" />
-                <span className="ds-t-label font-orbitron font-bold text-amber-500 uppercase tracking-[0.15em]">Target Locked</span>
-              </div>
-            </div>
-            <div className="space-y-1 mb-4">
-              <span className="ds-t-label text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1">
-                <Target className="w-3 h-3" /> Mission Objective
-              </span>
-              <h2 className="text-xl font-bold text-foreground leading-tight tracking-wide">{targetMission.goal.name}</h2>
-            </div>
-            <div className="p-4 bg-[var(--nexus-inner-bg-deep)] border-l-2 border-amber-500 rounded-sm mb-4">
-              <span className="ds-t-label text-amber-400 uppercase tracking-wider font-mono block mb-1">{">"} Next Actionable Step</span>
-              <p className="text-sm font-medium text-foreground/80">{targetMission.stepTitle}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button onClick={handleConfirm} className="bg-amber-500 hover:bg-amber-400 text-black font-bold tracking-wider border border-amber-400" style={{ borderRadius: 4 }}>
-                <Focus className="w-4 h-4 mr-2" /> ENGAGE
-              </Button>
-              <Button onClick={handleReroll} variant="outline" className="border-border hover:bg-muted/50" style={{ borderRadius: 4 }}>
-                <RotateCcw className="w-4 h-4 mr-2" /> DISMISS
-              </Button>
-            </div>
-          </motion.div>
-        )}
-
-        {viewState === "deadline" && targetMission && (
-          <motion.div key="deadline" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="p-5">
-            <div className="mb-4 pb-4 border-b border-[var(--nexus-separator)] flex items-center gap-2">
-              <Zap className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Set Timeline</h3>
-            </div>
-            <DeadlineSelector onSelect={handleDeadlineSelect} onCancel={() => setViewState("confirm")} isLoading={isFocusing} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

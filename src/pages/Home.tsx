@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -46,14 +46,16 @@ export default function Home() {
      L etat ne se retient pas d une session a l autre : un outil
      qu on ouvre se referme quand on a fini. */
   const [tirageOuvert, setTirageOuvert] = useState(false);
-  const tirageRef = useRef<HTMLDivElement>(null);
+  const [tirageDisponible, setTirageDisponible] = useState(true);
 
-  /* Le bouton est en haut de la page, l outil s ouvre en bas : sans
-     cela, on cliquerait sans rien voir se passer. */
-  useEffect(() => {
-    if (!tirageOuvert) return;
-    tirageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [tirageOuvert]);
+  /* C est le tirage qui sait s il y a une mission en cours — lui seul
+     interroge la table. Quand une mission est engagee, la fenetre se
+     ferme d elle-meme : la carte de mission prend le relais dans la
+     page, et il n y a plus rien a tirer. */
+  const noterTirageDisponible = useCallback((disponible: boolean) => {
+    setTirageDisponible(disponible);
+    if (!disponible) setTirageOuvert(false);
+  }, []);
 
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
@@ -338,6 +340,7 @@ export default function Home() {
             <QuickAccessPanel
               onMissionRandomizer={() => setTirageOuvert((v) => !v)}
               missionRandomizerOuvert={tirageOuvert}
+              missionRandomizerDisponible={tirageDisponible}
               ownedModules={{
                 "todo-list": ownedModules["todo-list"],
                 journal: ownedModules["journal"],
@@ -397,21 +400,22 @@ export default function Home() {
             Monitoring" est supprime : il ne contenait plus que le
             monitoring, qui a rejoint le compte a rebours. */}
         <section className="space-y-2">
-          {/* Le tirage ne s affiche plus par defaut : il s ouvre depuis
-              la barre d acces rapide. La MISSION EN COURS, elle,
-              s affiche toujours — c est le composant lui-meme qui
-              tranche, puisque c est lui qui sait s il y en a une. */}
-          <div ref={tirageRef}>
-            {isGoalsReady ? (
-              <MissionRandomizer
-                allGoals={focusGoals.length ? focusGoals : allGoals}
-                ouvert={tirageOuvert}
-                onFermer={() => setTirageOuvert(false)}
-              />
-            ) : tirageOuvert ? (
-              <Skeleton className="h-32 w-full rounded-xl" />
-            ) : null}
-          </div>
+          {/* Le tirage ne prend plus de place ici : il s ouvre en
+              FENETRE depuis la barre d acces rapide. Ce qui reste dans
+              la page, c est la MISSION EN COURS quand il y en a une —
+              et c est le composant lui-meme qui tranche, puisque c est
+              lui qui interroge la table.
+
+              Il est monte sans attendre `isGoalsReady` : sinon le
+              bouton d ouverture s allumerait sur une fenetre qui
+              n existe pas encore. Le vivier vide se dit tout seul —
+              le bouton du panneau affiche NO GOALS. */}
+          <MissionRandomizer
+            allGoals={focusGoals.length ? focusGoals : allGoals}
+            ouvert={tirageOuvert}
+            onFermer={() => setTirageOuvert(false)}
+            onDisponible={noterTirageDisponible}
+          />
 
           {pact && isGoalsReady && userState === "onboarding" && (
             <GettingStartedCard
