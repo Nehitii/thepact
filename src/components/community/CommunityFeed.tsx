@@ -10,6 +10,7 @@ import { Pastille } from "./Pastille";
 import { useCadres } from "@/hooks/community/useCadres";
 import { ChoixObjectif } from "./ChoixObjectif";
 import { ChoixEmoji } from "./ChoixEmoji";
+import { ChoixGif } from "./ChoixGif";
 import { deposerMedia, estUnTypeAccepte, retirerMedia, TYPES_ACCEPTES } from "@/lib/communityMedia";
 import {
   useCommunityPosts,
@@ -65,7 +66,11 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
      on voit l aperçu tout de suite, et une image lourde ne fait pas
      attendre au moment ou l on clique sur Publier. Le chemin est
      garde pour pouvoir la retirer du depot si on change d avis. */
-  const [media, setMedia] = useState<{ url: string; chemin: string } | null>(null);
+  /* UN GIF CHOISI CHEZ GIPHY N'EST PAS DÉPOSÉ CHEZ NOUS : on garde son
+     adresse plutôt que d'en recopier huit mégaoctets dans le stockage.
+     Le chemin est alors nul — c'est ce qui distingue « ce média est à
+     nous, il faudra l'effacer » de « il n'est qu'affiché ». */
+  const [media, setMedia] = useState<{ url: string; chemin: string | null } | null>(null);
   const [depotEnCours, setDepotEnCours] = useState(false);
   const fichier = useRef<HTMLInputElement>(null);
   const [deploye, setDeploye] = useState(false);
@@ -115,7 +120,8 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     }
     setDepotEnCours(true);
     try {
-      if (media) await retirerMedia(media.chemin);
+      /* Un GIF distant na pas de chemin : rien a rendre. */
+      if (media?.chemin) await retirerMedia(media.chemin);
       const depose = await deposerMedia(f, user.id);
       setMedia(depose);
     } catch (e) {
@@ -133,7 +139,15 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
     if (!media) return;
     const aRetirer = media.chemin;
     setMedia(null);
-    await retirerMedia(aRetirer);
+    /* Rien à effacer pour un GIF distant : il n'a jamais été déposé. */
+    if (aRetirer) await retirerMedia(aRetirer);
+  };
+
+  const choisirGif = async (gif: { url: string; titre: string }) => {
+    /* Le média précédent était peut-être un dépôt à nous : on le rend
+       avant d'en poser un autre, sinon il resterait orphelin. */
+    if (media?.chemin) await retirerMedia(media.chemin);
+    setMedia({ url: gif.url, chemin: null });
   };
 
   /* L emoji s insere LA OU EST LE CURSEUR, pas au bout du texte :
@@ -261,6 +275,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                   </button>
 
                   <ChoixEmoji onChoisir={insererEmoji} />
+                  <ChoixGif onChoisir={choisirGif} />
 
                   <ChoixObjectif
                     valeur={objectif.id}

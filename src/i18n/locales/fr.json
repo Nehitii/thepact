@@ -1897,7 +1897,8 @@
       "removeImage": "Retirer l'image",
       "badType": "Format non accepté : images et GIF seulement",
       "tooHeavy": "Fichier trop lourd (8 Mo maximum)",
-      "uploadFailed": "Le dépôt a échoué"
+      "uploadFailed": "Le dépôt a échoué",
+      "gif": "GIF"
     },
     "reactions": {
       "support": "Soutien",
@@ -1937,6 +1938,13 @@
       "effort": "Effort",
       "esprit": "Esprit",
       "lien": "Lien"
+    },
+    "gif": {
+      "chercher": "Chercher un GIF…",
+      "rien": "Rien sous ce mot.",
+      "indisponible": "Les GIF sont injoignables pour le moment.",
+      "cleAbsente": "Le service de GIF n'est pas configuré.",
+      "source": "Propulsé par GIPHY"
     }
   },
   "wishlist": {

@@ -1897,7 +1897,8 @@
       "removeImage": "Remove the image",
       "badType": "Format not accepted: images and GIFs only",
       "tooHeavy": "File too heavy (8 MB maximum)",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "gif": "GIF"
     },
     "reactions": {
       "support": "Support",
@@ -1937,6 +1938,13 @@
       "effort": "Effort",
       "esprit": "Mind",
       "lien": "Bond"
+    },
+    "gif": {
+      "chercher": "Search a GIF…",
+      "rien": "Nothing under that word.",
+      "indisponible": "GIFs are unreachable right now.",
+      "cleAbsente": "The GIF service is not configured.",
+      "source": "Powered by GIPHY"
     }
   },
   "wishlist": {
