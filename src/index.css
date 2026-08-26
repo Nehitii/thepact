@@ -1129,6 +1129,41 @@ All colors MUST be HSL.
   color: var(--nexus-text-dimmer);
 }
 
+/* UNE CELLULE QUI N EN MENE PAS UNE AUTRE.
+   Six des sept acces conduisent AILLEURS — une page, une fenetre. Le
+   septieme ouvre un outil DANS cette page-ci : il a donc deux etats,
+   et il doit le dire sans quoi on clique deux fois sans comprendre.
+   La charge, qui se remplit au survol, reste pleine tant que l outil
+   est ouvert ; l arete prend la couleur de la cellule. */
+.qa-cell[data-actif] {
+  border-color: color-mix(in srgb, var(--qa-c, #fff) 55%, transparent);
+}
+.qa-cell[data-actif]::before { opacity: 0.13; }
+.qa-cell[data-actif] .qa-charge i { inset: 0 0 0 0; }
+
+/* Le bouton de fermeture du tirage. Il herite sa teinte du panneau
+   (couleur posee en style inline), donc une seule regle sert aux deux
+   themes. */
+.mr-tirage-fermer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+.mr-tirage-fermer:hover,
+.mr-tirage-fermer:focus-visible {
+  opacity: 1;
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .qa-cell, .qa-well, .qa-charge i, .qa-well svg { transition-duration: 120ms; }
   .qa-cell:hover, .qa-cell:focus-visible { transform: none; }
@@ -1278,6 +1313,84 @@ All colors MUST be HSL.
   inset: 0 auto 0 0;
   border-radius: 2px;
   transition: width 900ms cubic-bezier(0.16, 1, 0.3, 1), background 600ms ease;
+}
+
+/* ── LE REPLI ──────────────────────────────────────────────────
+   Cette carte a DEJA ete repliee une fois dans son histoire, sous une
+   etiquette « Advanced Monitoring » : elle n etait alors jamais vue, et
+   c est exactement pour ca qu elle en est sortie. Le repli revient donc
+   a deux conditions.
+
+   DEPLIEE PAR DEFAUT. Seul un choix explicite la referme, et ce choix
+   tient d une session a l autre.
+
+   REPLIEE, ELLE DIT ENCORE L ESSENTIEL. La prime acquise sur totale, sa
+   jauge, le temps restant, et le lisere du haut qui passe a l or des
+   qu une prime attend. On ne cache que le detail des trois ordres —
+   jamais le fait qu il y a quelque chose a prendre. */
+.od-droite {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.od-bascule {
+  align-self: center;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--nexus-text-dimmer);
+  cursor: pointer;
+  transition: color 200ms ease, background 200ms ease, border-color 200ms ease;
+}
+.od-bascule:hover,
+.od-bascule:focus-visible {
+  color: var(--od-c);
+  border-color: color-mix(in srgb, var(--od-c) 38%, transparent);
+  background: color-mix(in srgb, var(--od-c) 9%, transparent);
+}
+.od-bascule svg { transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.od-carte[data-replie] .od-bascule svg { transform: rotate(-90deg); }
+
+/* La hauteur s anime par les rangees de la grille : c est le seul moyen
+   d aller de la hauteur reelle du contenu a zero sans la coder en dur. */
+.od-corps {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.od-carte[data-replie] .od-corps { grid-template-rows: 0fr; }
+
+/* La visibilite retire du parcours de tabulation ET de l arbre
+   d accessibilite. Sans elle, les boutons « Reclamer » resteraient
+   atteignables au clavier dans une boite de zero pixel. Le delai la
+   laisse tomber une fois le repli fini ; au deploiement elle revient
+   sans attendre. */
+.od-corps > * {
+  overflow: hidden;
+  min-height: 0;
+  visibility: visible;
+  transition: visibility 0s;
+}
+.od-carte[data-replie] .od-corps > * {
+  visibility: hidden;
+  transition: visibility 0s linear 320ms;
+}
+
+/* Repliee, la jauge n a plus de liste a annoncer : elle se recolle au
+   bas de la carte. */
+.od-jauge { transition: margin-bottom 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.od-carte[data-replie] .od-jauge { margin-bottom: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .od-corps, .od-bascule svg, .od-jauge { transition: none; }
 }
 
 .od-liste { display: flex; flex-direction: column; gap: 5px; }

@@ -22,6 +22,7 @@ export const PREF = {
   CALENDRIER_VUE: "vowpact.calendar.vue",
   ECHEANCES_VUE: "vowpact.echeances.vue",
   MONITORING_VUE: "vowpact.monitoring.vue",
+  ORDRES_REPLIES: "vowpact.ordres.replies",
   TODO_VUE: "vowpact.todo.vue",
   WISHLIST_VUE: "vowpact.wishlist.vue",
   WISHLIST_AFFICHAGE: "vowpact.wishlist.affichage",

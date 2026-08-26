@@ -10,6 +10,11 @@ interface QuickAccessPanelProps {
     "track-health": boolean;
   };
   onWeeklyReview?: () => void;
+  /* Le septieme acces n en mene pas un huitieme : il ouvre un outil
+     DANS cette page. Il a donc deux etats, et la barre doit savoir
+     lequel pour le dire. */
+  onMissionRandomizer?: () => void;
+  missionRandomizerOuvert?: boolean;
   className?: string;
 }
 
@@ -77,6 +82,23 @@ const EXTRA = [
     ),
   },
   {
+    /* La couleur est celle du panneau qu il ouvre — meme orange que
+       son en-tete et son hexagone. Elle est deja celle de NEW TASK,
+       mais cinq cellules les separent : c est la verite du lien
+       plutot qu une teinte inventee pour eviter la repetition. */
+    key: "randomizer", label: "RANDOMIZER", color: "#ff8c00", hotkey: "F7",
+    moduleKey: null, route: null,
+    icon: (c: string) => (
+      <svg width={22} height={22} viewBox="0 0 26 26" fill="none" stroke={c} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13,2 23,7.5 23,18.5 13,24 3,18.5 3,7.5" strokeOpacity="0.5" />
+        <circle cx="13" cy="13" r="4.5" strokeOpacity="0.85" />
+        <circle cx="13" cy="13" r="1.3" fill={c} fillOpacity="0.9" stroke="none" />
+        <line x1="13" y1="4" x2="13" y2="7" strokeOpacity="0.6" />
+        <line x1="13" y1="19" x2="13" y2="22" strokeOpacity="0.6" />
+      </svg>
+    ),
+  },
+  {
     key: "weekly", label: "WEEKLY REVIEW", color: "#818cf8", hotkey: "F6",
     moduleKey: null, route: null,
     icon: (c: string) => (
@@ -105,7 +127,7 @@ const EXTRA = [
  * colonne de droite liberee, et les coins supprimes. Sous 900px la rangee
  * defile lateralement plutot que de comprimer les libelles.
  */
-export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" }: QuickAccessPanelProps) {
+export function QuickAccessPanel({ ownedModules, onWeeklyReview, onMissionRandomizer, missionRandomizerOuvert = false, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
   const sombre = useThemeSombre();
 
@@ -142,6 +164,8 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
 
         {actions.map((btn) => {
           const locked = isLocked(btn.moduleKey);
+          const outil = btn.key === "randomizer";
+          const ouvert = outil && missionRandomizerOuvert;
           /* Six neons choisis pour briller sur du noir : sur du blanc,
              #00ff88 tombait a 1,3:1 et le raccourci clavier de la
              cellule etait litteralement invisible. La couleur est posee
@@ -153,9 +177,18 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
               key={btn.key}
               onClick={() => {
                 if (btn.key === "weekly") { onWeeklyReview?.(); return; }
+                if (outil) { onMissionRandomizer?.(); return; }
                 navigate(locked ? "/shop" : (btn.route as string));
               }}
-              title={locked ? `${btn.label} — verrouille` : btn.label}
+              title={
+                locked
+                  ? `${btn.label} — verrouille`
+                  : outil
+                    ? (ouvert ? "Fermer le tirage de mission" : "Ouvrir le tirage de mission")
+                    : btn.label
+              }
+              aria-pressed={outil ? ouvert : undefined}
+              data-actif={ouvert ? "" : undefined}
               className="qa-cell"
               style={{ opacity: locked ? 0.45 : 1, ["--qa-c" as string]: teinte }}
             >

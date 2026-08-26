@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDailyQuests, useClaimQuest } from "@/hooks/useDailyQuests";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { Button } from "@/components/ui/button";
+import { PREF } from "@/lib/preferencesAffichage";
 
 const OR = "#ffd700";
 const VERT = "#34d399";
@@ -48,6 +49,28 @@ export function DailyQuestsPanel() {
   const [maintenant, setMaintenant] = useState(() => Date.now());
   useVisibleInterval(() => setMaintenant(Date.now()), 60_000);
 
+  /* LE REPLI EST DÉPLIÉ PAR DÉFAUT, et c'est délibéré : cette carte
+     sortait justement d'un repli où elle n'était jamais vue. Seul un
+     choix explicite la referme — et ce choix tient. */
+  const [replie, setReplie] = useState(() => {
+    try {
+      return localStorage.getItem(PREF.ORDRES_REPLIES) === "1";
+    } catch {
+      return false; /* navigation privée, quota, politique */
+    }
+  });
+
+  const basculerRepli = () =>
+    setReplie((v) => {
+      const suivant = !v;
+      try {
+        localStorage.setItem(PREF.ORDRES_REPLIES, suivant ? "1" : "0");
+      } catch {
+        /* le pli tiendra le temps de la session, pas plus */
+      }
+      return suivant;
+    });
+
   const aReclamer = quests.some((q) => q.progress >= q.target && q.status !== "claimed");
   const primeTotale = quests.reduce((s, q) => s + (q.reward_bonds || 0), 0);
   const primeAcquise = quests
@@ -72,24 +95,41 @@ export function DailyQuestsPanel() {
       className="od-carte"
       aria-label="Ordres du jour"
       data-etat={toutFait ? "clos" : aReclamer ? "a-reclamer" : "en-cours"}
+      data-replie={replie ? "" : undefined}
     >
       <header className="od-tete">
         <span className="od-titre" style={{ color: teinteTitre }}>
           Ordres du jour
         </span>
 
-        {quests.length > 0 && (
-          <>
-            <span className="od-prime">
-              <b style={{ color: teinteTitre }}>{primeAcquise}</b>
-              <s>/{primeTotale}</s>
-              <em>bonds</em>
-            </span>
-            <span className="od-reste" title="Les ordres du jour tombent à minuit UTC">
-              {toutFait ? "journée close" : `reste ${reste}`}
-            </span>
-          </>
-        )}
+        <div className="od-droite">
+          {quests.length > 0 && (
+            <>
+              <span className="od-prime">
+                <b style={{ color: teinteTitre }}>{primeAcquise}</b>
+                <s>/{primeTotale}</s>
+                <em>bonds</em>
+              </span>
+              <span className="od-reste" title="Les ordres du jour tombent à minuit UTC">
+                {toutFait ? "journée close" : `reste ${reste}`}
+              </span>
+            </>
+          )}
+
+          <button
+            type="button"
+            className="od-bascule"
+            onClick={basculerRepli}
+            aria-expanded={!replie}
+            aria-controls="od-corps"
+            aria-label={replie ? "Déplier les ordres du jour" : "Replier les ordres du jour"}
+            title={replie ? "Déplier" : "Replier"}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {quests.length > 0 && (
@@ -98,65 +138,72 @@ export function DailyQuestsPanel() {
         </div>
       )}
 
-      {isLoading ? (
-        <p className="od-mot">Ouverture des ordres…</p>
-      ) : quests.length === 0 ? (
-        /* Devenu rare : il faut n'avoir ni pas à franchir, ni rituel
-           tenu, et avoir déjà tout réclamé. On le dit sans impasse —
-           aucun bouton, puisqu'il n'y a rien à déclencher. */
-        <p className="od-mot">
-          Rien à ordonner aujourd'hui. Ouvre une mission et les ordres suivront.
-        </p>
-      ) : (
-        <div className="od-liste">
-          {quests.map((q) => {
-            const pct = Math.min(100, Math.round((q.progress / Math.max(1, q.target)) * 100));
-            const prete = q.progress >= q.target && q.status !== "claimed";
-            const reclamee = q.status === "claimed";
-            const teinte = reclamee ? VERT : prete ? OR : "hsl(var(--primary))";
+      {/* Tout ce qui se replie tient ici. La jauge et l en-tete
+          restent dehors : repliee, la carte doit encore dire ce
+          qu il y a a prendre. */}
+      <div className="od-corps" id="od-corps">
+        <div>
+          {isLoading ? (
+            <p className="od-mot">Ouverture des ordres…</p>
+          ) : quests.length === 0 ? (
+            /* Devenu rare : il faut n'avoir ni pas à franchir, ni rituel
+               tenu, et avoir déjà tout réclamé. On le dit sans impasse —
+               aucun bouton, puisqu'il n'y a rien à déclencher. */
+            <p className="od-mot">
+              Rien à ordonner aujourd'hui. Ouvre une mission et les ordres suivront.
+            </p>
+          ) : (
+            <div className="od-liste">
+              {quests.map((q) => {
+                const pct = Math.min(100, Math.round((q.progress / Math.max(1, q.target)) * 100));
+                const prete = q.progress >= q.target && q.status !== "claimed";
+                const reclamee = q.status === "claimed";
+                const teinte = reclamee ? VERT : prete ? OR : "hsl(var(--primary))";
 
-            return (
-              <div
-                key={q.id}
-                className="quest-order"
-                data-reclamee={reclamee ? "" : undefined}
-                style={{
-                  ["--qo-c" as string]: teinte,
-                  ["--qo-pct" as string]: `${pct}%`,
-                }}
-              >
-                <span className="quest-seal">
-                  <span>{reclamee ? "✓" : prete ? "✦" : `${pct}%`}</span>
-                </span>
-
-                <div className="quest-body">
-                  <h3>{q.title}</h3>
-                  {q.description && <p>{q.description}</p>}
-                  <div className="quest-track">
-                    <i />
-                  </div>
-                </div>
-
-                {prete ? (
-                  <Button
-                    size="sm"
-                    className="od-reclamer h-8 px-3.5 shrink-0"
-                    onClick={() => claim.mutate(q.id)}
-                    disabled={claim.isPending}
+                return (
+                  <div
+                    key={q.id}
+                    className="quest-order"
+                    data-reclamee={reclamee ? "" : undefined}
+                    style={{
+                      ["--qo-c" as string]: teinte,
+                      ["--qo-pct" as string]: `${pct}%`,
+                    }}
                   >
-                    Réclamer <b>{q.reward_bonds}</b>
-                  </Button>
-                ) : (
-                  <span className="quest-prime">
-                    <b>{q.progress}/{q.target}</b>
-                    <span>{q.reward_bonds} bonds</span>
-                  </span>
-                )}
-              </div>
-            );
-          })}
+                    <span className="quest-seal">
+                      <span>{reclamee ? "✓" : prete ? "✦" : `${pct}%`}</span>
+                    </span>
+
+                    <div className="quest-body">
+                      <h3>{q.title}</h3>
+                      {q.description && <p>{q.description}</p>}
+                      <div className="quest-track">
+                        <i />
+                      </div>
+                    </div>
+
+                    {prete ? (
+                      <Button
+                        size="sm"
+                        className="od-reclamer h-8 px-3.5 shrink-0"
+                        onClick={() => claim.mutate(q.id)}
+                        disabled={claim.isPending}
+                      >
+                        Réclamer <b>{q.reward_bonds}</b>
+                      </Button>
+                    ) : (
+                      <span className="quest-prime">
+                        <b>{q.progress}/{q.target}</b>
+                        <span>{q.reward_bonds} bonds</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }

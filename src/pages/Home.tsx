@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -33,6 +33,27 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [weeklyReviewOpen, setWeeklyReviewOpen] = useState(false);
+
+  /* LE TIRAGE DE MISSION DEVIENT UN OUTIL QU ON OUVRE.
+
+     Il tenait 380 px sous le pli, en permanence, pour un geste qu on
+     fait quand on le decide — et tant qu on ne l a pas lance il ne
+     montrait rien : un viseur gris, un compteur a zero, un bouton
+     SCAN. Il rejoint la barre d acces rapide, ou il devient le
+     septieme bouton. La mission EN COURS, elle, reste sur la page :
+     c est un engagement date, pas un outil.
+
+     L etat ne se retient pas d une session a l autre : un outil
+     qu on ouvre se referme quand on a fini. */
+  const [tirageOuvert, setTirageOuvert] = useState(false);
+  const tirageRef = useRef<HTMLDivElement>(null);
+
+  /* Le bouton est en haut de la page, l outil s ouvre en bas : sans
+     cela, on cliquerait sans rien voir se passer. */
+  useEffect(() => {
+    if (!tirageOuvert) return;
+    tirageRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [tirageOuvert]);
 
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
@@ -198,9 +219,25 @@ export default function Home() {
     return idx >= 0 ? idx + 1 : 1;
   })();
 
-  const activeDays = pact?.created_at
-    ? Math.max(1, Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24)))
-    : 1;
+  /* JOURS ACTIFS COMPTAIT DEPUIS LA MAUVAISE DATE.
+
+     `created_at` est l instant ou la LIGNE a ete ecrite en base : le
+     jour ou l on a saisi son pacte dans l application, pas le jour ou
+     le pacte commence. Un pacte ouvert le 01 nov. 23 mais saisi ici en
+     novembre 25 affichait 276 jours, alors que le monitoring, deux
+     panneaux plus bas, disait « Jour 1029 / 2252 » — deux chiffres
+     pour la meme duree, dans le meme ecran.
+
+     LA DATE DECLAREE FAIT FOI. `created_at` ne sert plus que de repli
+     pour un pacte sans date de debut, ou compter depuis la saisie est
+     la seule chose possible. */
+  const activeDays = (() => {
+    const source = pact?.project_start_date || pact?.created_at;
+    if (!source) return 1;
+    const debut = new Date(source).getTime();
+    if (Number.isNaN(debut)) return 1;
+    return Math.max(1, Math.floor((Date.now() - debut) / 86_400_000));
+  })();
 
   /* DEUX FACONS DE MESURER LA MEME AVANCEE.
 
@@ -299,6 +336,8 @@ export default function Home() {
         <section className="space-y-2">
           {isShopReady ? (
             <QuickAccessPanel
+              onMissionRandomizer={() => setTirageOuvert((v) => !v)}
+              missionRandomizerOuvert={tirageOuvert}
               ownedModules={{
                 "todo-list": ownedModules["todo-list"],
                 journal: ownedModules["journal"],
@@ -358,11 +397,21 @@ export default function Home() {
             Monitoring" est supprime : il ne contenait plus que le
             monitoring, qui a rejoint le compte a rebours. */}
         <section className="space-y-2">
-          {isGoalsReady ? (
-            <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
-          ) : (
-            <Skeleton className="h-32 w-full rounded-xl" />
-          )}
+          {/* Le tirage ne s affiche plus par defaut : il s ouvre depuis
+              la barre d acces rapide. La MISSION EN COURS, elle,
+              s affiche toujours — c est le composant lui-meme qui
+              tranche, puisque c est lui qui sait s il y en a une. */}
+          <div ref={tirageRef}>
+            {isGoalsReady ? (
+              <MissionRandomizer
+                allGoals={focusGoals.length ? focusGoals : allGoals}
+                ouvert={tirageOuvert}
+                onFermer={() => setTirageOuvert(false)}
+              />
+            ) : tirageOuvert ? (
+              <Skeleton className="h-32 w-full rounded-xl" />
+            ) : null}
+          </div>
 
           {pact && isGoalsReady && userState === "onboarding" && (
             <GettingStartedCard

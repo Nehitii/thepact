@@ -84,7 +84,11 @@ export function MonitoringPanel({
     const fin = new Date(projectEndDate).getTime();
     if (!(fin > debut)) return null;
     const total = Math.round((fin - debut) / 86400000);
-    const ecoule = Math.max(0, Math.min(total, Math.round((Date.now() - debut) / 86400000)));
+    /* `floor`, pas `round` : un jour n est ecoule que lorsqu il l est.
+       Avec `round`, cette frise passait au jour suivant des midi et se
+       mettait a contredire les JOURS ACTIFS du bandeau une demi-journee
+       sur deux. */
+    const ecoule = Math.max(0, Math.min(total, Math.floor((Date.now() - debut) / 86400000)));
     return { total, ecoule, pct: (ecoule / total) * 100 };
   }, [projectStartDate, projectEndDate]);
 

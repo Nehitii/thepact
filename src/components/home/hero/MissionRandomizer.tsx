@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import { Dices, Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw } from "lucide-react";
+import { Dices, Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw, X } from "lucide-react";
 import { Goal } from "@/hooks/useGoals";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,18 @@ const REEL_ITEMS = 40;
 interface MissionRandomizerProps {
   allGoals: Goal[];
   className?: string;
+  /* LE TIRAGE EST UN OUTIL, PAS UN RELEVE.
+
+     Il occupait 380 px du tableau de bord en permanence pour un geste
+     qu on fait quand on le decide — et il n a rien a dire tant qu on
+     ne l a pas lance : un viseur gris et un bouton SCAN. Il s ouvre
+     desormais depuis la barre d acces rapide.
+
+     LA MISSION EN COURS, ELLE, N EST PAS UN OUTIL : c est un
+     engagement avec une echeance. Elle reste donc sur la page, que
+     l on ait ouvert le tirage ou non. */
+  ouvert?: boolean;
+  onFermer?: () => void;
 }
 
 interface PendingMission {
@@ -80,7 +92,7 @@ const SlotReel = ({ candidates, winner, onSpinComplete }: { candidates: Goal[]; 
   );
 };
 
-export function MissionRandomizer({ allGoals, className }: MissionRandomizerProps) {
+export function MissionRandomizer({ allGoals, className, ouvert = false, onFermer }: MissionRandomizerProps) {
   const navigate = useNavigate();
   const sombre = useThemeSombre();
 
@@ -139,13 +151,18 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
     setIsFocusing(false);
   };
 
-  if (isLoading) return (
+  /* Ferme, on n annonce rien pendant le chargement : un tourniquet
+     permanent pour un outil qui n est pas la remettrait sur la page
+     ce qu on vient d en retirer. */
+  if (isLoading) return ouvert ? (
     <div className="p-8 flex justify-center">
       <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
     </div>
-  );
+  ) : null;
 
   if (hasMission && activeMission) return <ActiveMissionCard mission={activeMission} onAbandon={abandonMission} onComplete={completeMissionStep} className={className} />;
+
+  if (!ouvert) return null;
 
   return (
     <div
@@ -167,8 +184,24 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
             Mission Randomizer
           </span>
         </div>
-        <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: `1px solid rgba(${orangeRgb},0.34)`, color: orange, background: `rgba(${orangeRgb},0.06)`, clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
-          STANDBY
+        <div className="flex items-center gap-2">
+          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: `1px solid rgba(${orangeRgb},0.34)`, color: orange, background: `rgba(${orangeRgb},0.06)`, clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+            STANDBY
+          </div>
+          {/* Un outil qu on ouvre doit pouvoir se fermer de l endroit
+              ou on le regarde, pas seulement d ou on l a ouvert. */}
+          {onFermer && (
+            <button
+              type="button"
+              onClick={onFermer}
+              aria-label="Fermer le tirage de mission"
+              title="Fermer"
+              className="mr-tirage-fermer"
+              style={{ color: orange }}
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 

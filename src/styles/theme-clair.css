@@ -836,6 +836,21 @@
   border-color: color-mix(in srgb, var(--qa-c, #000) 85%, transparent);
   box-shadow: 0 2px 0 hsl(38 22% 14% / 0.1), 0 10px 22px -14px hsl(38 22% 14% / 0.5);
 }
+/* La cellule ouverte, sur papier. `.light .qa-cell` redéfinit la
+   bordure et arrive APRÈS index.css : sans ce doublon préfixé, l état
+   ouvert serait battu à spécificité égale et ne se verrait pas. */
+.light .qa-cell[data-actif] {
+  border-color: color-mix(in srgb, var(--qa-c, #000) 85%, transparent);
+  box-shadow: 0 2px 0 hsl(38 22% 14% / 0.1);
+}
+.light .qa-cell[data-actif]::before { opacity: 0.1; }
+
+/* Meme dilution, meme defaut : une icone a 0,7 d alpha recule sur du
+   papier au lieu de s effacer poliment — 3,17:1, a un cheveu du seuil
+   des commandes. Sur papier elle sort pleine, comme le raccourci
+   clavier des cellules plus haut. */
+.light .mr-tirage-fermer { opacity: 1; }
+
 /* La jauge de charge devient une réglette imprimée. */
 .light .qa-charge { background: hsl(40 10% 78%); }
 
