@@ -1530,3 +1530,13 @@
    densité de l'encre. */
 .light .nb-pouls[data-etat="eteint"] { opacity: 0.45; }
 .light .nb-pouls[data-etat="amorce"] { opacity: 0.72; }
+
+/* ── LA PISTE D'UN ORDRE ────────────────────────────────────────────
+   Encore du blanc à faible alpha — rgba(255,255,255,0.07) — le motif
+   le plus tenace de tout ce thème. Sur du noir c'est une rainure ; sur
+   du papier, c'est du blanc sur du blanc, et la piste vide disparaît :
+   on ne voit plus que le rempli, donc plus la mesure. */
+.light .quest-track { background: hsl(40 10% 80%); }
+/* La lueur du remplissage devient un appui : une jauge de trois pixels
+   qui irradie sur du papier n'a pas l'air allumée, elle a l'air floue. */
+.light .quest-track i { box-shadow: none; }

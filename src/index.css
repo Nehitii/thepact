@@ -1155,6 +1155,142 @@ All colors MUST be HSL.
    Le passage a l'or est le seul moment ou la bande demande une action
    plutot que d'informer — il doit se voir de loin.
    ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   ORDRES DU JOUR — la feuille
+
+   L ancienne carte etait un filet : un libelle minuscule, un trait,
+   une mention a droite, et sous les trois quarts du temps une phrase
+   grise avec un bouton. Elle avait la hauteur d une barre d outils
+   et l air d un element desactive.
+
+   Ce qui la remplit maintenant, ce n est pas de la decoration : c est
+   la prime du jour et sa barre. Une carte d ordres doit dire ce qui
+   est en jeu, et cette mesure resume les trois lignes d un coup.
+   ───────────────────────────────────────────────────────────── */
+.od-carte {
+  position: relative;
+  padding: 14px 16px 15px;
+  border-radius: 4px;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  box-shadow: var(--nexus-shadow);
+  /* Le liseré du haut prend la couleur de l etat : bleu tant qu on
+     travaille, or des qu une prime attend, vert quand tout est pris. */
+  --od-c: hsl(var(--primary));
+}
+.od-carte[data-etat="a-reclamer"] { --od-c: #ffd700; }
+.od-carte[data-etat="clos"]       { --od-c: #34d399; }
+.od-carte::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--od-c), transparent);
+  opacity: 0.75;
+  transition: background 600ms ease;
+}
+
+.od-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.od-titre {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: color 400ms ease;
+}
+/* La prime pousse le temps restant tout a droite. */
+.od-prime { margin-left: auto; display: inline-flex; align-items: baseline; gap: 3px; }
+.od-prime b {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 400ms ease;
+}
+.od-prime s {
+  text-decoration: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--nexus-text-dim);
+}
+.od-prime em {
+  font-style: normal;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nexus-text-dimmer);
+  margin-left: 2px;
+}
+.od-reste {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nexus-text-dimmer);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* La barre de prime. Elle ne mesure pas l avancement des ordres mais
+   ce qui est DEJA ENCAISSE : un ordre fini mais non reclame ne la
+   remplit pas, et c est voulu — il reste un geste a faire. */
+.od-jauge {
+  position: relative;
+  height: 2px;
+  margin-bottom: 11px;
+  background: var(--nexus-track-bg, rgba(255, 255, 255, 0.07));
+  border-radius: 2px;
+  overflow: hidden;
+}
+.od-jauge i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  transition: width 900ms cubic-bezier(0.16, 1, 0.3, 1), background 600ms ease;
+}
+
+.od-liste { display: flex; flex-direction: column; gap: 5px; }
+.od-mot {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  color: var(--nexus-text-dim);
+  margin: 2px 0 0;
+}
+
+/* Le geste de la carte. C etait un bouton fantome, du meme gris que
+   le texte a cote : la seule action de la bande ne se voyait pas.
+   Sur un aplat d or, l encre passe en reserve — le meme renversement
+   que partout ailleurs. */
+.od-reclamer {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #241c00;
+  background: linear-gradient(180deg, #ffd700, #e8b800);
+  border: 0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms;
+}
+.od-reclamer:hover {
+  background: linear-gradient(180deg, #ffe14d, #f0c400);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28), 0 0 18px -4px #ffd700;
+}
+.od-reclamer:active { transform: translateY(1px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.25); }
+
+/* Un ordre reclame se retire sans disparaitre : il a ete tenu, il
+   reste lisible, il cesse seulement de demander l attention. */
+.quest-order[data-reclamee] { opacity: 0.55; }
+
 .quest-order {
   position: relative;
   display: grid;
