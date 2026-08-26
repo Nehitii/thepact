@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +25,7 @@ import { chercherGeste, gestesConnus, type Geste } from "@/lib/miaGestes";
 import { causeDeLEchec, excuseMia, apaiser } from "@/lib/miaExcuses";
 import { humeurAmbiante } from "@/lib/miaHumeur";
 import { useTodoList } from "@/hooks/useTodoList";
+import { useThemeSombre } from "@/hooks/useThemeSombre";
 
 /**
  * M.I.A — Mysterious Intelligence Array.
@@ -63,6 +64,16 @@ interface MiaConsoleProps {
   /** Remonté au parent pour que la vignette sache quoi montrer. */
   onEtat?: (etat: EtatMia) => void;
 }
+
+/* Le vocabulaire des phases. Le compte à rebours dit NOMINAL, ATTENTION,
+   CRITIQUE, parce qu'il s'agit d'un instrument ; ici elle parle, donc on
+   accorde. La même phase, deux registres — et un seul seuil, calculé une
+   fois dans useEtatDuJour. */
+const PHASE_DITE: Record<string, string> = {
+  nominal: "phase nominale",
+  attention: "phase d'attention",
+  critique: "phase critique",
+};
 
 const LARGEUR_DEFAUT = 560;
 const LARGEUR_MIN = 380;
@@ -147,6 +158,47 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   }, [open]);
 
   const etat: EtatMia = streaming ? "travail" : brouillon.trim() ? "ecoute" : "repos";
+  /* ── LE RELEVÉ DU BANDEAU ──
+     Rien n'est calculé ici : useEtatDuJour fait déjà ces nombres pour le
+     préambule qu'on envoie au modèle. Le bandeau les montre, c'est tout.
+
+     Les teintes de phase sont posées EN LIGNE, comme dans CountdownPanel :
+     le néon est fait pour briller sur du noir, sur du papier il s'évapore,
+     et une feuille préfixée « .light » ne peut pas atteindre un style en
+     ligne. La version claire vit donc ici, à côté de la sombre. */
+  const sombre = useThemeSombre();
+  const bandeau = useMemo(() => {
+    const p = etatDuJour?.pacte ?? null;
+    const teintes = sombre
+      ? { nominal: "#00e676", attention: "#ffab00", critique: "#ff1744" }
+      : { nominal: "#00794A", attention: "#7A5000", critique: "#C1002E" };
+    const phase = etatDuJour?.phase ?? "inconnue";
+    const teinte = phase === "inconnue" ? undefined : teintes[phase];
+
+    const o = etatDuJour?.objectifs;
+    const morceaux: { rang: number; texte: string }[] = [];
+    if (p) morceaux.push({ rang: 1, texte: `jour ${p.jour} / ${p.total}` });
+    /* `etapes` est le TOTAL des étapes du pacte, terminées comprises
+       — 418 ici. Ce qu'on veut montrer est ce qui reste sur les objectifs
+       en cours : 59. Le bandeau dit ce qu'il reste à faire, pas la taille
+       du projet. */
+    const reste = o?.restantEnCours ?? 0;
+    if (reste) morceaux.push({ rang: 2, texte: `${reste} étape${reste > 1 ? "s" : ""} restante${reste > 1 ? "s" : ""}` });
+    const ouvertes = etatDuJour?.taches.ouvertes ?? 0;
+    if (ouvertes) morceaux.push({ rang: 3, texte: `${ouvertes} tâche${ouvertes > 1 ? "s" : ""}` });
+
+    return {
+      teinte,
+      /* Le halo derrière elle prend la teinte, très bas en opacité :
+         c'est une lumière, pas une pastille de couleur. */
+      halo: teinte ? ({ "--mia-halo": `${teinte}${sombre ? "26" : "1A"}` } as CSSProperties) : {},
+      ligne: PHASE_DITE[phase] ?? "mysterious intelligence array",
+      grand: p ? `${p.reste} jour${p.reste > 1 ? "s" : ""}` : null,
+      pct: p ? Math.min(100, Math.max(0, p.pctEcoule)) : 0,
+      detail: morceaux.length ? morceaux : [{ rang: 1, texte: "aucun pacte en cours" }],
+    };
+  }, [etatDuJour, sombre]);
+
   /* SON VISAGE AU REPOS PORTE LA PHASE DU PACTE.
      Le choix vivait ici, en trois lignes ad hoc. Il vit maintenant dans
      humeurAmbiante(), avec le reste : l'anneau de M.I.A est l'anneau du
@@ -383,21 +435,45 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
               }}
             />
 
-            <header className="mia-tete">
-              {/* SON VISAGE EN TÊTE, PAS UN SIGLE.
-                  Le réseau reste le sigle de la vignette — une commande
-                  doit rester neutre et lisible à 22 px. Ici on est dans
-                  la conversation : c'est elle qu'on regarde. */}
-              <span className="mia-sigle mia-sigle-visage">
-                <VisageMia expression={visageDeLEtat} taille={44} />
+            <header className="mia-bandeau" style={bandeau.halo}>
+              {/* ELLE DÉBORDE DU CADRE PAR LE BAS.
+                  C'est ce qui la rend incrustée plutôt que posée : une
+                  vignette alignée sur une ligne de texte reste une image
+                  collée à côté d'un titre, quelle que soit sa taille. */}
+              <span className="mia-bandeau-elle">
+                {/* La taille vient de la feuille : elle tombe à 130 au
+                    palier étroit. Ce nombre ne sert qu'au repli, quand le
+                    fichier manque et que le sigle prend la place. */}
+                <VisageMia expression={visageDeLEtat} taille={164} />
               </span>
-              <span>
-                <span className="mia-nom">M.I.A</span>
-                <span className="mia-etat">
-                  {streaming ? "en train de chercher" : "mysterious intelligence array"}
+
+              <span className="mia-bandeau-releve">
+                <span className="mia-nom">
+                  M.I.A
+                  <span className="mia-etat">
+                    {streaming ? "en train de chercher" : bandeau.ligne}
+                  </span>
+                </span>
+                {bandeau.grand ? (
+                  <>
+                    <span className="mia-grand" style={{ color: bandeau.teinte }}>
+                      {bandeau.grand}
+                    </span>
+                    <span className="mia-jauge">
+                      <i style={{ width: `${bandeau.pct}%`, background: bandeau.teinte }} />
+                    </span>
+                  </>
+                ) : null}
+                <span className="mia-detail">
+                  {bandeau.detail.map((m) => (
+                    <b key={m.rang} data-rang={m.rang}>
+                      {m.texte}
+                    </b>
+                  ))}
                 </span>
               </span>
-              <span className="mia-outils">
+
+              <span className="mia-bandeau-outils">
                 <button type="button" className="mia-b" onClick={nouveauFil} aria-label="Nouvelle conversation">
                   <Plus className="h-4 w-4" />
                 </button>
@@ -598,7 +674,7 @@ function Bulle({
     <div className="mia-bulle" data-role="assistant">
       <div className="mia-signature">
         {expression ? (
-          <VisageMia expression={expression} taille={30} />
+          <VisageMia expression={expression} taille={30} cadre="visage" />
         ) : (
           <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
         )}

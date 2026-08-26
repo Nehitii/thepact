@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
+import { cadrerLeVisage } from "@/lib/miaCadrage";
 
 /**
  * Le visage de M.I.A.
@@ -76,14 +77,53 @@ interface VisageMiaProps {
   /** Décrit l'expression aux lecteurs d'écran. Vide par défaut : dans une
    *  conversation, le visage double ce que le texte dit déjà. */
   alt?: string;
+  /**
+   * `buste` montre la vignette entière : le manteau, les mains, l'anneau.
+   * `visage` recadre sur la tête — indispensable dès qu'on descend sous
+   * la cinquantaine de pixels, où un buste entier ne montre plus rien.
+   */
+  cadre?: "buste" | "visage";
 }
 
-export function VisageMia({ expression, taille = 34, className, alt = "" }: VisageMiaProps) {
+export function VisageMia({
+  expression,
+  taille = 34,
+  className,
+  alt = "",
+  cadre = "buste",
+}: VisageMiaProps) {
   const fichier = `/mia/mia-${expression}.png`;
   const [absent, setAbsent] = useState(() => manquants.has(fichier));
 
   if (absent) {
     return <ReseauMia etat={REPLI[expression]} taille={Math.round(taille * 0.62)} className={className} />;
+  }
+
+  const echec = () => {
+    manquants.add(fichier);
+    setAbsent(true);
+  };
+
+  /* Le recadrage a besoin d'une fenêtre : l'image déborde, et c'est le
+     parent qui la coupe. Un simple object-position ne suffirait pas —
+     l'agrandissement varie d'une expression à l'autre. */
+  if (cadre === "visage") {
+    return (
+      <span
+        className={`mia-portrait${className ? ` ${className}` : ""}`}
+        style={{ width: taille, height: taille }}
+      >
+        <img
+          src={fichier}
+          alt={alt}
+          aria-hidden={alt ? undefined : true}
+          className="mia-visage"
+          style={cadrerLeVisage(expression)}
+          onError={echec}
+          draggable={false}
+        />
+      </span>
+    );
   }
 
   return (
@@ -95,10 +135,7 @@ export function VisageMia({ expression, taille = 34, className, alt = "" }: Visa
       height={taille}
       className={`mia-visage${className ? ` ${className}` : ""}`}
       style={{ width: taille, height: taille }}
-      onError={() => {
-        manquants.add(fichier);
-        setAbsent(true);
-      }}
+      onError={echec}
       draggable={false}
     />
   );

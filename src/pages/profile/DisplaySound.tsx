@@ -315,7 +315,7 @@ export default function DisplaySound() {
         <Reglage
           nom="Elle peut réagir à mes absences"
           note="Par défaut, M.I.A ne commente jamais ce que tu n'as pas fait : elle réagit à ce que tu fais et à l'état du pacte. Activé, elle prend un air abattu après dix jours sans pointage."
-          icone={<VisageMia expression={miaAbsences ? "abattue" : "calme"} taille={18} />}
+          icone={<VisageMia expression={miaAbsences ? "abattue" : "calme"} taille={18} cadre="visage" />}
         >
           <Switch
             checked={miaAbsences}
