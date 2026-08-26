@@ -215,10 +215,13 @@
   width: 164px;
   height: 164px;
   pointer-events: none;
-  /* Elle sort du cadre par le bas : c'est ce qui fait l'incrustation.
-     Le fondu évite la coupe nette sur la bordure. */
-  mask-image: linear-gradient(180deg, #000 82%, transparent 99%);
-  -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 99%);
+  /* ELLE EST POSÉE SUR LA LIGNE, PAS EFFACÉE AVANT.
+     Un fondu partait de 82 % de sa hauteur : les douze derniers pixels de
+     chaque figure s'évaporaient avant d'atteindre la bordure, et elle
+     semblait flotter au-dessus. La bordure est une arête franche de
+     l'interface — s'y arrêter net, c'est passer DERRIÈRE le panneau, et
+     c'est précisément ce qui fait l'incrustation. Le débordement reste :
+     l'overflow du bandeau la coupe. */
 }
 .mia-bandeau-elle .mia-visage { width: 100%; height: 100%; }
 
