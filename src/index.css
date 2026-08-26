@@ -601,19 +601,13 @@ All colors MUST be HSL.
     background: rgba(2, 4, 10, 0.97);
     border-bottom: 1px solid rgba(0, 210, 255, 0.4);
   }
-  .neural-bar-scanline {
-    width: 60%;
-    background: linear-gradient(90deg, transparent, hsl(200 100% 50% / 0.5), transparent);
-    animation: scanline 4s linear infinite;
-    left: -100%;
-  }
+  /* La jauge du jour tient maintenant toute la largeur de la barre.
+     A 120 px, une lueur pulsee se lisait comme un temoin ; sur 627, la
+     meme pulsation devient un clignotant en haut de chaque page. Le
+     halo reste, discret, la respiration part. */
   .neural-bar-progress {
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
-    box-shadow: 0 0 8px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.15);
-    animation: pulseBar 3s ease-in-out infinite;
-  }
-  .neural-bar-clock {
-    text-shadow: 0 0 8px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.15);
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.35);
   }
 }
 

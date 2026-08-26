@@ -224,7 +224,6 @@
 
 .light .ds-glow-text,
 .light [class*="drop-shadow-[0_0"],
-.light .neural-bar-clock,
 .light .nexus-stat,
 .light .cyber-title,
 .light .sc-enonce b {
@@ -1540,3 +1539,20 @@
 /* La lueur du remplissage devient un appui : une jauge de trois pixels
    qui irradie sur du papier n'a pas l'air allumée, elle a l'air floue. */
 .light .quest-track i { box-shadow: none; }
+
+/* ── LE BORD BAS DE LA BARRE SYSTÈME ────────────────────────────────
+   La jauge du jour occupe désormais toute la largeur, posée sur la
+   bordure : les deux forment ensemble l'arête basse de la barre. Deux
+   corrections que la pleine largeur rend nécessaires.
+
+   Le creux de la jauge est l'accent à 10 % d'alpha. Sur du noir c'est
+   une rainure ; sur du papier, 1,05:1 — la part NON écoulée du jour
+   disparaît, et avec elle la mesure. Un creux d'encre la rend.
+
+   Et la bordure elle-même valait un bleu pâle à 30 %, hérité du thème
+   sombre : la barre n'avait plus d'arête franche sur le sol de béton. */
+.light .neural-bar { border-bottom-color: hsl(200 16% 26% / 0.34); }
+.light .neural-bar [role="progressbar"] { background: hsl(40 10% 78%); }
+/* Sur du papier, un halo autour d'un filet de deux pixels ne l'allume
+   pas : il le rend flou. */
+.light .neural-bar-progress { box-shadow: none; }

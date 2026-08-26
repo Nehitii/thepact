@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { Pact } from "@/hooks/usePact";
-import { RankXPData } from "@/hooks/useRankXP";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/hooks/useShop";
@@ -12,12 +10,13 @@ import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 import { selonTheme } from "@/lib/encrePapier";
 
+/* `rankData` etait declaree ici, passee par Home, et jamais lue :
+   un reste de la jauge de rang retiree de cette barre. */
 interface NeuralBarProps {
   pact: Pact;
-  rankData: RankXPData;
 }
 
-export function NeuralBar({ pact, rankData }: NeuralBarProps) {
+export function NeuralBar({ pact }: NeuralBarProps) {
   const sombre = useThemeSombre();
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -62,58 +61,28 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   })();
 
   const timeStr = format(now, "HH:mm:ss");
-  const dateStr = format(now, "EEE dd MMM yyyy", { locale: fr }).toUpperCase();
 
   return (
     <div className="sticky top-0 z-[100] w-full">
       {/* Main bar */}
-      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative">
-        {/* Scanline sweep */}
-        <div className="neural-bar-scanline absolute bottom-0 h-px pointer-events-none" />
+      <header className="neural-bar h-12 flex items-center justify-between gap-5 px-6 overflow-hidden relative">
+        {/* ── LE NOM DU PACTE, A SA VRAIE LARGEUR ──
 
-        {/* Left: SYS + progress + coords */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className="uppercase font-mono ds-t-label tracking-[2px] text-muted-foreground">
-            SYS
-          </span>
+            Il etait rogne a vingt-six pixels et s affichait « An… ».
+            Pas par manque de place : les trois groupes portaient tous
+            `flex-1`, donc chacun faisait 194 px quoi qu il contienne —
+            la jauge en prenait 120, le libelle SYS 26, il restait 26 px
+            pour le nom. La barre n a plus que deux groupes, ecartes,
+            et le nom prend ce qu il lui faut.
 
-          {/* La journee ecoulee. Une jauge muette de 120 px ne se lit
-              pas : elle porte son role et sa valeur, pour la souris
-              comme pour un lecteur d ecran. */}
-          <div
-            className="overflow-hidden shrink-0 rounded-sm bg-primary/10"
-            style={{ width: 120, height: 4 }}
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(partDuJour)}
-            aria-label={t("home.neuralBar.dayElapsed", "Journée écoulée")}
-            title={`${t("home.neuralBar.dayElapsed", "Journée écoulée")} — ${Math.round(partDuJour)} %`}
-          >
-            <div
-              className="h-full neural-bar-progress"
-              style={{ width: `${partDuJour}%` }}
-            />
-          </div>
-
-          {/* Pact name + ID */}
-          <span className="hidden sm:inline truncate max-w-[200px] font-mono ds-t-label tracking-[1px] text-primary/70">
-            {pact.name}
-          </span>
-        </div>
-
-        {/* Center: Clock */}
-        <div className="flex-1 min-w-0 text-center leading-none">
-          <div className="font-mono text-[0.9375rem] tracking-[3px] text-primary neural-bar-clock">
-            {timeStr}
-          </div>
-          <div className="font-mono ds-t-label tracking-[2px] uppercase mt-px text-muted-foreground">
-            {dateStr}
-          </div>
-        </div>
+            SYS est parti : vingt-six pixels et une gouttiere pour un
+            mot sans donnee derriere lui, le seul de la barre. */}
+        <span className="truncate max-w-[42vw] font-orbitron text-[13px] font-bold uppercase tracking-[0.16em] text-foreground">
+          {pact.name}
+        </span>
 
         {/* A droite : le pouls des systemes, puis le solde. */}
-        <div className="flex-1 min-w-0 flex justify-end items-center gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-4">
           {/* ── LE POULS DES CINQ SYSTEMES ──
 
               Ces cinq barres ondulaient a vide : des hauteurs figees
@@ -172,13 +141,41 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             </span>
           </div>
 
+
+          {/* L horloge cesse d etre la vedette. C etait le plus gros
+              element de la barre, au centre — et la seule information
+              que le systeme affiche deja, a trois centimetres de la.
+              Elle reste, en second plan, la ou on la cherche. */}
+          <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground tabular-nums">
+            {timeStr}
+          </span>
+        </div>
+
+        {/* ── LA JOURNEE PASSE SOUS TOUT LE RESTE ──
+
+            La jauge du jour occupait 120 px dans un coin, ou elle se
+            lisait comme un reglage parmi d autres. Elle devient la
+            BORDURE BASSE de la barre, sur toute sa largeur : le jour
+            avance sous la page entiere, tout seul, que l on fasse
+            quelque chose ou non. C est exactement son propos.
+
+            Elle remplace la scanline, qui balayait le meme bord sans
+            rien signifier. */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-[2px] bg-primary/10"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(partDuJour)}
+          aria-label={t("home.neuralBar.dayElapsed", "Journée écoulée")}
+          title={`${t("home.neuralBar.dayElapsed", "Journée écoulée")} — ${Math.round(partDuJour)} %`}
+        >
+          <div className="h-full neural-bar-progress" style={{ width: `${partDuJour}%` }} />
         </div>
       </header>
 
       {/* CSS keyframes */}
       <style>{`
-        @keyframes scanline { to { left: 140%; } }
-        @keyframes pulseBar { 0%,100%{opacity:1} 50%{opacity:0.6} }
         /* Trois hauteurs, trois opacites. Une barre eteinte garde un
            moignon : on doit voir qu il y a cinq emplacements, et
            lequel est vide. */

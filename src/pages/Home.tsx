@@ -245,7 +245,7 @@ export default function Home() {
     >
       {/* Neural Bar — sticky header, stays as first child */}
       {pact ? (
-        <NeuralBar pact={pact} rankData={safeRankData} />
+        <NeuralBar pact={pact} />
       ) : (
         <div className="sticky top-0 z-40 h-12 border-b border-[rgba(0,180,255,0.08)] bg-background/80 px-4 flex items-center gap-3">
           <Skeleton className="h-4 w-32" />
