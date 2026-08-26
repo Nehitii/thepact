@@ -43,7 +43,6 @@ const Focus = lazy(routeImports.focus);
 const Analytics = lazy(routeImports.analytics);
 const Friends = lazy(() => import("./pages/Friends"));
 const Calendar = lazy(routeImports.calendar);
-const Reviews = lazy(routeImports.reviews);
 const ContractSign = lazy(() => import("./pages/ContractSign"));
 const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
@@ -133,7 +132,6 @@ function AppRoutes() {
         <Route path="friends" element={<SocialGate enabled={social.friends} loading={social.loadingMap.friends}><Friends /></SocialGate>} />
         <Route path="guild/:id" element={<SocialGate enabled={social.guilds} loading={social.loadingMap.guilds}><GuildPage /></SocialGate>} />
         <Route path="calendar" element={<Calendar />} />
-        <Route path="reviews" element={<Reviews />} />
         <Route path="contracts/sign/:contractId" element={<ContractSign />} />
       </Route>
 

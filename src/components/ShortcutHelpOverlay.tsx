@@ -23,14 +23,6 @@ const GROUPS: ShortcutGroup[] = [
     ],
   },
   {
-    title: "Reviews (rituels)",
-    items: [
-      { keys: ["F7"], label: "Daily Review" },
-      { keys: ["F8"], label: "Monthly Review" },
-      { keys: ["F9"], label: "Quarterly Review" },
-    ],
-  },
-  {
     title: "Focus session (timer actif)",
     items: [
       { keys: ["Espace"], label: "Pause / Reprise" },

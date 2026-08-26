@@ -938,10 +938,13 @@ function Actes({ actes }: { actes: ActeMia[] }) {
   );
 }
 
+/* « /reviews » n existe plus. La revue hebdomadaire vit dans une
+   modale du tableau de bord : c est la qu on envoie. Quant aux
+   decisions, plus aucun ecran ne les montre — le bouton ne s affiche
+   que si le type figure ici, donc l entree retiree ne casse rien. */
 const OU_VA: Record<string, (id: string) => string> = {
   journal_entry: () => "/journal",
-  decision: () => "/reviews",
-  weekly_review: () => "/reviews",
+  weekly_review: () => "/",
   goal: (id) => `/goals/${id}`,
 };
 

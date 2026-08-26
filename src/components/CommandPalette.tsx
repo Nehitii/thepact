@@ -98,7 +98,6 @@ const ENTREES: Entree[] = [
   { cle: "cmd.mia", repli: "Ouvrir M.I.A", icone: Sparkles, route: "__mia", groupe: "actions", mots: "mia assistant coach ia", action: "ouvrir-mia" },
   { cle: "nav.achievements", repli: "Hauts faits", icone: Trophy, route: "/achievements", groupe: "actions", mots: "achievements badges succes" },
   { cle: "nav.shop", repli: "Boutique", icone: ShoppingBag, route: "/shop", groupe: "actions", mots: "shop bonds cosmetiques" },
-  { cle: "nav.reviews", repli: "Bilans", icone: BookOpen, route: "/reviews", groupe: "actions", mots: "reviews bilan hebdomadaire retour" },
 
   /* ── Les réglages ── */
   { cle: "set.account", repli: "Compte", icone: UserCircle, route: "/profile", groupe: "reglages", mots: "profil compte" },

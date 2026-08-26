@@ -4,8 +4,6 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { useFuseauDuProfil } from "@/hooks/useFuseauDuProfil";
-import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
-import type { ReviewType } from "@/hooks/useReviews";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ReseauMia, type EtatMia } from "@/components/mia/ReseauMia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
@@ -36,7 +34,6 @@ export function AppLayout() {
      sait, elle le remonte. Fermee alors qu une reponse vient
      d arriver, la vignette reste allumee. */
   const [etatMia, setEtatMia] = useState<EtatMia>("repos");
-  const [ritualType, setRitualType] = useState<ReviewType | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { user } = useAuth();
 
@@ -65,16 +62,11 @@ export function AppLayout() {
       }
 
       if (inEditable) return;
-      if (e.key === "F7") {
-        e.preventDefault();
-        setRitualType("daily");
-      } else if (e.key === "F8") {
-        e.preventDefault();
-        setRitualType("monthly");
-      } else if (e.key === "F9") {
-        e.preventDefault();
-        setRitualType("quarterly");
-      }
+      /* F7, F8 et F9 ouvraient les rituels quotidien, mensuel et
+         trimestriel. La page qui les relisait a ete retiree — sa table
+         « reviews » n a jamais recu une seule ligne — et trois
+         raccourcis qui ecrivent dans un tiroir qu on ne peut plus
+         ouvrir valent moins que rien. */
     };
     window.addEventListener("keydown", onKey);
     const onOpenHelp = () => setShortcutsOpen(true);
@@ -159,14 +151,6 @@ export function AppLayout() {
             onEtat={setEtatMia}
           />
         </Suspense>
-      )}
-
-      {ritualType && (
-        <ReviewRitualModal
-          open={!!ritualType}
-          onClose={() => setRitualType(null)}
-          type={ritualType}
-        />
       )}
 
       <ShortcutHelpOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

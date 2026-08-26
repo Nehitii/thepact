@@ -24,7 +24,6 @@ export const routeImports = {
   dataPortability: () => import("@/pages/profile/DataPortability"),
   healthSettings: () => import("@/pages/profile/HealthSettings"),
   wishlist: () => import("@/pages/Wishlist"),
-  reviews: () => import("@/pages/Reviews"),
 } as const;
 
 export type RouteImportKey = keyof typeof routeImports;
@@ -52,7 +51,6 @@ export const routePathToImport: Record<string, () => Promise<unknown>> = {
   "/profile/health": routeImports.healthSettings,
   "/profile/data": routeImports.dataPortability,
   "/wishlist": routeImports.wishlist,
-  "/reviews": routeImports.reviews,
 };
 
 const prefetched = new Set<string>();
