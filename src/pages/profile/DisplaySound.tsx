@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { Panneau, Reglage, Segmente, Jauge } from "@/components/profile/console-ui";
+import { reagitAuxAbsences, reglerReactionAuxAbsences } from "@/lib/miaHumeur";
+import { VisageMia } from "@/components/mia/VisageMia";
 
 const ACCENTS = [
   { hex: "#5bb4ff", cle: "cyber" },
@@ -33,6 +35,13 @@ const SONS: Record<string, string> = { ui: "/sounds/ui-click.mp3" };
 
 export default function DisplaySound() {
   const { t } = useTranslation();
+
+  /* CE RÉGLAGE VIT DANS LE NAVIGATEUR, PAS EN BASE.
+     C'est une préférence de lecture — comment M.I.A se comporte sur cet
+     écran — au même titre que la vue du calendrier ou le fond de Focus.
+     Il rejoint donc PREF, et la remise à zéro des préférences l'emporte
+     comme les autres. */
+  const [miaAbsences, setMiaAbsences] = useState(() => reagitAuxAbsences());
   const { user } = useAuth();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
   const { settings, isLoading, save } = useSoundSettings();
@@ -291,6 +300,32 @@ export default function DisplaySound() {
             </div>
           </Reglage>
         ))}
+      </Panneau>
+
+      {/* ── M.I.A ──
+          Un compagnon qui commente vos absences devient insupportable en
+          trois semaines. Elle se tait là-dessus par défaut ; ce
+          commutateur l'autorise, pour qui le veut. */}
+      <Panneau
+        code="M.I.A"
+        etat={miaAbsences ? "réagit aux absences" : "silencieuse"}
+        ton={miaAbsences ? "actif" : "neutre"}
+        journal={null}
+      >
+        <Reglage
+          nom="Elle peut réagir à mes absences"
+          note="Par défaut, M.I.A ne commente jamais ce que tu n'as pas fait : elle réagit à ce que tu fais et à l'état du pacte. Activé, elle prend un air abattu après dix jours sans pointage."
+          icone={<VisageMia expression={miaAbsences ? "abattue" : "calme"} taille={18} />}
+        >
+          <Switch
+            checked={miaAbsences}
+            onCheckedChange={(v) => {
+              reglerReactionAuxAbsences(v);
+              setMiaAbsences(v);
+              toast.success(v ? "M.I.A réagira à tes absences." : "M.I.A se taira sur tes absences.");
+            }}
+          />
+        </Reglage>
       </Panneau>
 
       {/* ── PARTICULES ── */}

@@ -23,6 +23,7 @@ import { useEtatDuJour } from "@/hooks/useEtatDuJour";
 import { chercherReflexe, reflexesConnus } from "@/lib/miaReflexes";
 import { chercherGeste, gestesConnus, type Geste } from "@/lib/miaGestes";
 import { causeDeLEchec, excuseMia, apaiser } from "@/lib/miaExcuses";
+import { humeurAmbiante } from "@/lib/miaHumeur";
 import { useTodoList } from "@/hooks/useTodoList";
 
 /**
@@ -146,15 +147,14 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   }, [open]);
 
   const etat: EtatMia = streaming ? "travail" : brouillon.trim() ? "ecoute" : "repos";
-  /* Trois états d'interface, trois visages. « lasse » après minuit :
-     elle a le droit d'avoir des heures, ce n'est pas un reproche. */
-  const visageDeLEtat: ExpressionMia = streaming
-    ? "reflexion"
-    : brouillon.trim()
-      ? "calme"
-      : new Date().getHours() >= 0 && new Date().getHours() < 5
-        ? "lasse"
-        : "neutre";
+  /* SON VISAGE AU REPOS PORTE LA PHASE DU PACTE.
+     Le choix vivait ici, en trois lignes ad hoc. Il vit maintenant dans
+     humeurAmbiante(), avec le reste : l'anneau de M.I.A est l'anneau du
+     pacte, et cette règle ne peut pas être écrite à deux endroits. */
+  const visageDeLEtat: ExpressionMia = humeurAmbiante(etatDuJour, {
+    cherche: streaming,
+    ecoute: !!brouillon.trim(),
+  });
   useEffect(() => {
     onEtat?.(etat);
   }, [etat, onEtat]);
@@ -423,7 +423,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             <div ref={fluxRef} className="mia-flux">
               {messages.length === 0 && local.length === 0 && !streaming ? (
                 <div className="mia-vide">
-                  <ReseauMia etat="repos" taille={34} />
+                  <VisageMia expression={visageDeLEtat} taille={96} />
                   <p>
                     Demande-moi où tu en es, ce qu'il reste à faire, ou fais-moi ajouter
                     quelque chose. J'ai accès à tes objectifs, tes tâches et ton journal.

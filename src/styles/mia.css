@@ -680,3 +680,74 @@ body[data-mia-ouverte] [data-chrome="palette"] {
   .mia-b,
   .mia-ligne { transition: none; }
 }
+
+/* ── L'APPARITION ───────────────────────────────────────────────
+   Elle vient aux passages : un pacte qui bascule de phase, une journée
+   close, un pacte qui arrive à son terme. Trois évènements, jamais deux
+   fois le même — et douze secondes, puis elle s'efface.
+
+   C'est ce qui la sépare d'un bandeau. La pile d'insights automatiques
+   retirée à la première passe en était la preuve : quarante-deux
+   produits, trente-six balayés. Ce qui parle à chaque ouverture devient
+   un décor qu'on ne lit plus. */
+.mia-passage {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 4px;
+  background: var(--nexus-bg, hsl(var(--card)));
+  border: 1px solid hsl(var(--primary) / 0.28);
+  box-shadow: var(--nexus-shadow), 0 0 24px -12px hsl(var(--primary) / 0.5);
+}
+.mia-passage::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.5), transparent);
+}
+/* La colère et la fin de pacte prennent le rouge de la phase : c'est le
+   même instrument que l'anneau du compte à rebours. */
+.mia-passage[data-cle="pacte-echu"] { border-color: hsl(var(--destructive) / 0.35); }
+.mia-passage-nom {
+  display: block;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 900;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.22em;
+  color: hsl(var(--primary));
+  margin-bottom: 5px;
+}
+.mia-passage-dit p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--nexus-text-label, hsl(var(--foreground)));
+}
+.mia-passage-fermer {
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--nexus-text-dimmer);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.mia-passage-fermer:hover,
+.mia-passage-fermer:focus-visible {
+  color: var(--nexus-text-label, hsl(var(--foreground)));
+  border-color: var(--nexus-border, hsl(var(--border)));
+  background: var(--nexus-inner-bg, hsl(var(--muted) / 0.4));
+}
+@media (max-width: 560px) {
+  .mia-passage { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+  .mia-passage-fermer { position: absolute; top: 8px; right: 8px; }
+  .mia-passage .mia-visage { width: 72px !important; height: 72px !important; }
+}

@@ -24,6 +24,8 @@ export const PREF = {
   MONITORING_VUE: "vowpact.monitoring.vue",
   ORDRES_REPLIES: "vowpact.ordres.replies",
   MIA_LARGEUR: "vowpact.mia.largeur",
+  MIA_ABSENCES: "vowpact.mia.absences",
+  MIA_PASSAGE: "vowpact.mia.passage",
   TODO_VUE: "vowpact.todo.vue",
   WISHLIST_VUE: "vowpact.wishlist.vue",
   WISHLIST_AFFICHAGE: "vowpact.wishlist.affichage",

@@ -52,6 +52,9 @@ export interface EtatDuJour {
     fin: string | null;
   } | null;
   phase: PhaseDuPacte;
+  /* Jours depuis le dernier pointage. `null` s il n y en a jamais eu :
+     une absence n a de sens que par rapport a une presence. */
+  joursSansPointage: number | null;
   objectifs: {
     enCours: number;
     aVenir: number;
@@ -75,6 +78,7 @@ interface LignePacte {
   name: string;
   project_start_date: string | null;
   project_end_date: string | null;
+  last_checkin_date: string | null;
 }
 interface LigneObjectif {
   id: string;
@@ -97,7 +101,7 @@ export function useEtatDuJour() {
       const jour = new Date().toISOString().slice(0, 10);
       const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
         supabase.from("profiles").select("display_name, active_pact_id").eq("id", user!.id).maybeSingle(),
-        supabase.from("pacts").select("id,name,project_start_date,project_end_date").eq("user_id", user!.id),
+        supabase.from("pacts").select("id,name,project_start_date,project_end_date,last_checkin_date").eq("user_id", user!.id),
         /* `goals` n'a pas de user_id : le lien passe par le pacte, et RLS filtre. */
         supabase.from("goals").select("id,name,status,validated_steps,total_steps,pact_id,is_focus"),
         supabase.from("daily_quests").select("title,progress,target,status,reward_bonds").eq("user_id", user!.id).eq("date", jour),
@@ -158,10 +162,15 @@ export function useEtatDuJour() {
           enRetard: new Date(t.deadline as string).getTime() < aujourdhui,
         }));
 
+      const pointage = choisi?.last_checkin_date ? new Date(choisi.last_checkin_date).getTime() : null;
+      const joursSansPointage =
+        pointage === null ? null : Math.max(0, Math.floor((Date.now() - pointage) / JOUR_MS));
+
       return {
         nom: profil.data?.display_name ?? null,
         pacte,
         phase,
+        joursSansPointage,
         objectifs: {
           enCours: buts.filter((g) => g.status === "in_progress").length,
           aVenir: buts.filter((g) => g.status === "not_started").length,

@@ -14,6 +14,7 @@ import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
+import { PassageMia } from "@/components/mia/PassageMia";
 import { MonitoringPanel } from "@/components/home/MonitoringPanel";
 import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
@@ -395,6 +396,8 @@ export default function Home() {
             <Skeleton className="h-40 w-full rounded-xl" />
           )}
         </section>
+
+        <PassageMia />
 
         {/* EXPLORER — ce qu on ouvre quand on cherche. Le repli "Advanced
             Monitoring" est supprime : il ne contenait plus que le
