@@ -2,8 +2,16 @@ LES DIX-HUIT VISAGES DE M.I.A
 =============================
 
 Déposer ici dix-huit PNG à fond transparent, carrés, nommés exactement
-comme ci-dessous. 256 x 256 suffit : le plus grand usage est 120 px sur
-le tableau de bord.
+comme ci-dessous. 256 x 256 suffit : le plus grand usage est le bandeau
+de la console, 164 px.
+
+LES DIX-HUIT PARTAGENT UNE ÉCHELLE. Sa tête doit faire la même taille
+d’une expression à l’autre, sinon elle avance et recule à chaque
+changement d’humeur. Remplacer une seule vignette demande donc de
+retrouver cette échelle : le repère qui tient est l’écart entre les yeux
+(43,8 px, mesuré identique à un dixième près sur « calme » et « sévère »).
+Ni l’anneau ni la boîte du visage ne conviennent — voir le journal de
+scripts/decouper-planches-mia.mjs.
 
 Tant qu'un fichier manque, l'application affiche le sigle du réseau à sa
 place. Rien ne casse, rien ne clignote en cadre vide.

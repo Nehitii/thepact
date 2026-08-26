@@ -15,6 +15,28 @@
  * compte de leur opacité fait remonter la couleur des pixels
  * transparents et cerne chaque sprite d'un liseré. On multiplie par
  * l'alpha avant de moyenner, on redivise après.
+ 
+ * ─── REMPLACER UNE SEULE VIGNETTE ───
+ *
+ * LES DIX-HUIT PARTAGENT UNE ECHELLE, calculee ici sur la plus grande
+ * boite des dix-huit. Redecouper une seule case depuis une planche
+ * re-rendue dans un autre format demande donc de retrouver cette
+ * echelle. Deux reperes ont ete essayes et rejetes :
+ *
+ * L ANNEAU. Il paraissait rigide — 145, 146 et 148 px sur trois
+ * vignettes. Mais une planche re-rendue le dessine plus grand par
+ * rapport a la tete : cale dessus, le visage tombait a 94 px de haut
+ * contre 129 pour les autres.
+ *
+ * LA BOITE DE PEAU. Le detecteur la sous-estime sur un rendu dont
+ * l eclairage differe, et l echelle deduite depassait de vingt pour
+ * cent — la tete devenait visiblement trop grosse.
+ *
+ * L ECART ENTRE LES YEUX TIENT. Les iris sont deux taches ambrees de
+ * part et d autre du nez, a la meme place quelle que soit l expression.
+ * Mesure : 43,8 px sur « calme » et 43,9 sur « severe » — un dixieme de
+ * pixel d ecart. C est ce qui a permis de replacer « genee » au
+ * millimetre quand sa planche a ete refaite pour lui rendre son coude.
  */
 import fs from "node:fs";
 import path from "node:path";
