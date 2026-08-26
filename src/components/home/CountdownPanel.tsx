@@ -3,94 +3,96 @@ import { CornerBrackets } from "./CornerBrackets";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 
+/**
+ * Le compte a rebours du pacte, en regle.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE PANNEAU DISAIT UNE SEULE CHOSE — COMBIEN IL RESTE — DE NEUF
+ * FACONS, ET IL CASSAIT EN LE DISANT.
+ *
+ * LA CASSE. Les chiffres etaient en `clamp(28px, 4vw, 48px)` : ils
+ * suivaient la FENETRE, alors que la largeur du panneau vient de son
+ * CONTENEUR depuis qu'il partage une rangee avec le monitoring. Les
+ * deux sont independants — le composant avait ete rendu sensible a son
+ * conteneur pour sa GRILLE, jamais pour sa TYPOGRAPHIE. Dans une
+ * fenetre de 1400 px et une colonne de 560, les chiffres prenaient
+ * leur taille maximale dans la boite minimale : trois lignes, des
+ * deux-points orphelins, 753 px de haut.
+ *
+ * LA REDITE. Cinq releves disaient le meme segment de temps — jours
+ * restants, jours au total, part ecoulee, debut, fin. Trois autres
+ * etaient deja ailleurs sur le meme ecran : le nom du pacte (barre
+ * systeme + bandeau), la completion des objectifs (bandeau), et le
+ * statut, ecrit DEUX FOIS dans ce cadre-ci — « NIVEAU / ATTENTION » a
+ * gauche, « STATUT ◆ ATTENTION » a droite.
+ *
+ * LE PARTI. Une duree ne s'enumere pas, elle se montre. Les cinq
+ * releves deviennent un dessin : une regle bornee par les deux dates,
+ * la part faite en plein, le curseur sur aujourd'hui, et ce qu'il
+ * reste se lit dans le vide. C'est la meme langue que la jauge du jour
+ * de la barre systeme.
+ *
+ * Ce qui disparait avec : les secondes (un redessin par seconde pour
+ * une echeance a six ans), l'anneau tournant, les trois icones de
+ * statut, la colonne de metadonnees, et les props `pactName`,
+ * `goalsCompleted`, `totalGoals` — le panneau ne depend plus des
+ * objectifs.
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 interface CountdownPanelProps {
   projectStartDate?: string | null;
   projectEndDate?: string | null;
-  goalsCompleted: number;
-  totalGoals: number;
-  pactName?: string;
 }
 
-function pad(n: number) {
-  return String(Math.max(0, n)).padStart(2, "0");
-}
-
-// Phase color configs
-const PHASE_GREEN = {
+/* Les phases gardent leurs teintes, leurs sceaux et leurs animations :
+   ce n'est pas un autre panneau, c'est le meme sous un autre parti.
+   `label` remplace l'ancien couple label/statusLabel, qui nommait la
+   meme chose a partir du meme seuil, avec deux mots differents. */
+const PHASE_VERTE = {
   primary: "#00e676",
   rgb: "0,230,118",
   label: "NOMINAL",
-  labelLines: ["STATUT", "NOMINAL"],
-  statusIcon: "shield",
-  pulseAnim: "none",
-  blinkAnim: "none",
-  flickerAnim: "none",
-  barGradient: "linear-gradient(90deg, rgba(0,230,118,0.5), rgba(0,230,118,0.8))",
-  gradStopA: "#00e676",
-  gradStopB: "#69f0ae",
-  statusEmoji: "✓",
+  sceau: "✓",
+  pouls: "none",
+  clignote: "none",
 } as const;
 
-const PHASE_AMBER = {
+const PHASE_AMBREE = {
   primary: "#ffab00",
   rgb: "255,171,0",
   label: "ATTENTION",
-  labelLines: ["NIVEAU", "ATTENTION"],
-  statusIcon: "clock",
-  pulseAnim: "alertPulse 2.5s ease-in-out infinite",
-  blinkAnim: "none",
-  flickerAnim: "none",
-  barGradient: "linear-gradient(90deg, rgba(0,230,118,0.5), rgba(255,171,0,0.8))",
-  gradStopA: "#ffab00",
-  gradStopB: "#ffd740",
-  statusEmoji: "◆",
+  sceau: "◆",
+  pouls: "cdPouls 2.5s ease-in-out infinite",
+  clignote: "none",
 } as const;
 
-const PHASE_RED = {
+const PHASE_ROUGE = {
   primary: "#ff1744",
   rgb: "255,23,68",
   label: "CRITIQUE",
-  labelLines: ["ALERTE", "CRITIQUE"],
-  statusIcon: "triangle",
-  pulseAnim: "alertPulse 1s ease-in-out infinite",
-  blinkAnim: "blink 2s step-end infinite",
-  flickerAnim: "numFlicker 2s ease-in-out infinite",
-  barGradient: "linear-gradient(90deg, rgba(255,100,0,0.7), rgba(255,23,68,0.9))",
-  gradStopA: "#ff1744",
-  gradStopB: "#ff8c00",
-  statusEmoji: "⚠",
+  sceau: "⚠",
+  pouls: "cdPouls 1s ease-in-out infinite",
+  clignote: "cdClignote 2s step-end infinite",
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════
-   LE MÊME PANNEAU, SUR DU PAPIER
+/* ─── LE MEME PANNEAU, SUR DU PAPIER ───
+   Tout se peint en styles INLINE : aucune feuille, meme prefixee
+   `.light`, ne peut l'atteindre. La version claire vit donc ici, a
+   cote de la sombre. Le neon est fait pour briller sur du noir ; sur
+   du papier il s'evapore. La teinte est conservee — vert, ambre,
+   rouge restent reconnaissables — seule la clarte tombe assez bas
+   pour porter. */
+const PHASES_CLAIRES: Record<string, { primary: string; rgb: string }> = {
+  "0,230,118": { primary: "#00794A", rgb: "0,121,74" },
+  "255,171,0": { primary: "#7A5000", rgb: "122,80,0" },
+  "255,23,68": { primary: "#C1002E", rgb: "193,0,46" },
+};
 
-   Tout ce bloc se peint en styles INLINE : aucune feuille de style,
-   même préfixée `.light`, ne peut l'atteindre. La version claire doit
-   donc vivre ici, à côté de la version sombre — c'est le contrat posé
-   pour toute la refonte : une deuxième version, jamais une retouche de
-   la première.
-
-   Deux choses changent, une troisième ne change pas.
-
-   1. LA COULEUR DE PHASE descend. Le néon (#00e676) est fait pour
-      briller sur du noir ; sur du papier il s'évapore. La teinte est
-      conservée — vert, ambre, rouge restent reconnaissables au premier
-      coup d'œil — seule la clarté tombe assez bas pour porter.
-
-   2. L'ENCRE DEVIENT OPAQUE. En sombre, la hiérarchie des relevés est
-      portée par l'alpha : 0,6 pour un libellé secondaire, 0,92 pour une
-      valeur. Sur du papier cette échelle ne peut pas fonctionner — même
-      du NOIR PUR à 0,6 d'alpha sur du blanc plafonne à 4,8:1, et la
-      moindre couleur passe sous le seuil. La hiérarchie change donc de
-      support : elle est portée par la clarté d'une encre neutre, et la
-      couleur de phase est réservée à ce qui doit vraiment crier — les
-      chiffres, l'icône, la ligne de statut.
-
-   3. LES ANIMATIONS, LES LIBELLÉS ET LES ICÔNES sont partagés : ce
-      n'est pas un autre panneau, c'est le même sous un autre éclairage.
-   ═══════════════════════════════════════════════════════════════ */
-
-/** L'échelle d'encre du papier, indexée par l'alpha qu'emploie le thème sombre. */
+/* En sombre la hierarchie des releves est portee par l'alpha. Sur du
+   papier cette echelle ne peut pas fonctionner — meme du NOIR PUR a
+   0,6 d'alpha sur du blanc plafonne a 4,8:1. La hierarchie change donc
+   de support : une encre neutre, opaque, a la bonne clarte. */
 const ENCRE_PAPIER: Record<string, string> = {
   "0.6": "#5A6B7D",
   "0.75": "#44586C",
@@ -98,237 +100,177 @@ const ENCRE_PAPIER: Record<string, string> = {
   "0.92": "#1E2E3E",
 };
 
-/** Les seuls champs qui changent de thème. Indexés par le rgb de la phase sombre. */
-const PHASES_CLAIRES: Record<string, { primary: string; rgb: string; gradStopA: string; gradStopB: string; barGradient: string }> = {
-  "0,230,118": {
-    primary: "#00794A",
-    rgb: "0,121,74",
-    gradStopA: "#00794A",
-    gradStopB: "#00A768",
-    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(0,121,74,0.9))",
-  },
-  "255,171,0": {
-    primary: "#7A5000",
-    rgb: "122,80,0",
-    gradStopA: "#8A5A00",
-    gradStopB: "#C08A00",
-    barGradient: "linear-gradient(90deg, rgba(0,121,74,0.55), rgba(122,80,0,0.9))",
-  },
-  "255,23,68": {
-    primary: "#C1002E",
-    rgb: "193,0,46",
-    gradStopA: "#C1002E",
-    gradStopB: "#E2551F",
-    barGradient: "linear-gradient(90deg, rgba(226,85,31,0.7), rgba(193,0,46,0.92))",
-  },
-};
+const JOUR_MS = 86_400_000;
+const HEURE_MS = 3_600_000;
 
-function ShieldIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  );
-}
-
-function ClockIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
-
-function TriangleIcon({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
-
-export function CountdownPanel({ projectStartDate, projectEndDate, goalsCompleted, totalGoals, pactName = "OPERATION ASCENSION" }: CountdownPanelProps) {
-  const [now, setNow] = useState(Date.now());
+export function CountdownPanel({ projectStartDate, projectEndDate }: CountdownPanelProps) {
   const sombre = useThemeSombre();
+  const [maintenant, setMaintenant] = useState(() => Date.now());
 
-  useVisibleInterval(() => setNow(Date.now()), 1000);
+  const finMs = projectEndDate ? new Date(projectEndDate).getTime() : null;
+  const resteMs = finMs === null ? 0 : Math.max(0, finMs - maintenant);
+
+  /* Une seconde pour une echeance a six ans, c'etait soixante
+     redessins par minute pour un chiffre qui bouge une fois par jour.
+     La cadence suit l'unite affichee : la minute tant qu'on compte en
+     jours, la seconde seulement dans les deux derniers jours. */
+  useVisibleInterval(() => setMaintenant(Date.now()), resteMs > 2 * JOUR_MS ? 60_000 : 1_000);
 
   const calc = useMemo(() => {
-    if (!projectEndDate) return null;
-    const start = projectStartDate ? new Date(projectStartDate).getTime() : now;
-    const end = new Date(projectEndDate).getTime();
-    const total = end - start;
-    const elapsed = now - start;
-    const remaining = Math.max(0, end - now);
-    const pct = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+    if (finMs === null) return null;
+    const debutMs = projectStartDate ? new Date(projectStartDate).getTime() : maintenant;
+    const total = finMs - debutMs;
+    const reste = Math.max(0, finMs - maintenant);
+    const pct = total > 0 ? Math.min(100, Math.max(0, ((maintenant - debutMs) / total) * 100)) : 0;
 
-    const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
-    const h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((remaining % (1000 * 60)) / 1000);
+    const partRestante = 100 - pct;
+    const phase = partRestante > 75 ? PHASE_VERTE : partRestante > 25 ? PHASE_AMBREE : PHASE_ROUGE;
 
-    const totalDays = Math.max(1, Math.ceil(total / (1000 * 60 * 60 * 24)));
-    const remainingDays = Math.ceil(remaining / (1000 * 60 * 60 * 24));
+    /* Le gros chiffre change d'unite quand les jours ne disent plus
+       rien : « 0 JOUR » le dernier matin serait un cadran arrete. */
+    const gros =
+      reste >= 2 * JOUR_MS
+        ? { val: Math.ceil(reste / JOUR_MS), unite: "jours restants" }
+        : reste >= 2 * HEURE_MS
+          ? { val: Math.floor(reste / HEURE_MS), unite: "heures restantes" }
+          : { val: Math.floor(reste / 60_000), unite: reste >= 120_000 ? "minutes restantes" : "minute restante" };
 
-    const remainingPct = 100 - pct;
-    let phase = "PHASE TERMINALE";
-    let statusLabel = "CRITIQUE";
-    if (remainingPct > 75) { phase = "PHASE INITIALE"; statusLabel = "STABLE"; }
-    else if (remainingPct > 25) { phase = "PHASE INTERMÉDIAIRE"; statusLabel = "ATTENTION"; }
-
-    const colors = remainingPct > 75 ? PHASE_GREEN : remainingPct > 25 ? PHASE_AMBER : PHASE_RED;
-
-    return { days: d, hours: h, minutes: m, seconds: s, progressPct: pct, phase, statusLabel, totalDays, remainingDays, colors };
-  }, [now, projectStartDate, projectEndDate]);
+    return { pct, phase, gros };
+  }, [maintenant, projectStartDate, finMs]);
 
   if (!projectEndDate || !calc) return null;
 
-  /* La phase garde ses libellés, ses icônes et ses animations ; seules
-     ses cinq couleurs sont remplacées quand la page est sur du papier. */
-  const c = sombre ? calc.colors : { ...calc.colors, ...PHASES_CLAIRES[calc.colors.rgb] };
+  const c = sombre ? calc.phase : { ...calc.phase, ...PHASES_CLAIRES[calc.phase.rgb] };
 
-  /* L'encre d'un relevé, à l'intensité demandée. En sombre la chaîne
-     produite est identique au caractère près à ce qui était écrit
-     avant ; en clair l'alpha devient une clarté. */
+  /* L'encre d'un releve, a l'intensite demandee. En sombre la chaine
+     produite est identique au caractere pres a ce qui etait ecrit
+     avant ; en clair l'alpha devient une clarte. */
   const encre = (a: number) => (sombre ? `rgba(${c.rgb},${a})` : ENCRE_PAPIER[String(a)]);
 
   /* Une lueur autour d'un chiffre se voit sur du noir. Sur du papier
      c'est une bavure : le halo ne s'ajoute pas au fond, il le salit. */
   const lueur = (ombre: string) => (sombre ? ombre : "none");
 
-  const startStr = projectStartDate ? new Date(projectStartDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }).toUpperCase() : "—";
-  const endStr = new Date(projectEndDate).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }).toUpperCase();
+  const dateCourte = (iso: string) =>
+    new Date(iso)
+      .toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "2-digit" })
+      .toUpperCase();
 
-  const StatusIcon = c.statusIcon === "shield" ? ShieldIcon : c.statusIcon === "clock" ? ClockIcon : TriangleIcon;
+  const debutTxt = projectStartDate ? dateCourte(projectStartDate) : "—";
+  const finTxt = dateCourte(projectEndDate);
+  const pct = calc.pct;
+  const pctArrondi = Math.round(pct);
+
+  /* Le libelle du curseur est centre sur son trait, sauf aux deux
+     extremites ou il sortirait du cadre : il s'accroche alors par le
+     bord qui reste a l'interieur. */
+  const ancrage = pct < 14 ? "0" : pct > 86 ? "-100%" : "-50%";
 
   return (
     <div
-      /* countdown-shell etablit la requete de conteneur : depuis que ce
-         panneau partage une rangee avec le rang, il doit se disposer sur
-         sa propre largeur et non sur celle du viewport. */
       className="countdown-shell relative overflow-hidden"
+      role="group"
+      aria-label={`Pacte : ${calc.gros.val} ${calc.gros.unite}, ${pctArrondi} % écoulé, statut ${c.label}`}
       style={{
         borderRadius: 4,
         border: `1px solid rgba(${c.rgb},0.15)`,
         background: "var(--nexus-countdown-bg)",
-        boxShadow: `0 0 20px rgba(${c.rgb},0.05)`,
-        ["--countdown-edge" as string]: `rgba(${c.rgb},0.22)`,
+        boxShadow: lueur(`0 0 20px rgba(${c.rgb},0.05)`),
       }}
     >
       <CornerBrackets color={`rgba(${c.rgb},0.4)`} />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${c.rgb},0.4), transparent)` }} />
-      <div className="absolute top-0 bottom-0 left-0" style={{ width: 3, background: `linear-gradient(180deg, rgba(${c.rgb},0.8), rgba(${c.rgb},0.1))`, boxShadow: `0 0 12px rgba(${c.rgb},0.6)` }} />
+      <div
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, rgba(${c.rgb},0.4), transparent)` }}
+      />
+      <div
+        className="absolute top-0 bottom-0 left-0"
+        style={{
+          width: 3,
+          background: `linear-gradient(180deg, rgba(${c.rgb},0.8), rgba(${c.rgb},0.1))`,
+          boxShadow: lueur(`0 0 12px rgba(${c.rgb},0.6)`),
+        }}
+      />
 
-      <div className="countdown-grid grid grid-cols-1 items-center" style={{ minHeight: 100 }}>
-        {/* Left: Alert status */}
-        <div
-          className="countdown-aside-left flex flex-col items-center justify-center gap-2 border-b"
-          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.28)`, background: `rgba(${c.rgb},0.11)` }}
-        >
-          <div className="relative" style={{ width: 44, height: 44 }}>
-            <svg viewBox="0 0 44 44" style={{ width: 44, height: 44, animation: "ringRotate 8s linear infinite" }}>
-              <defs>
-                <linearGradient id="alertGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={c.gradStopA} />
-                  <stop offset="100%" stopColor={c.gradStopB} />
-                </linearGradient>
-              </defs>
-              <circle cx="22" cy="22" r="20" fill="none" stroke={`rgba(${c.rgb},0.1)`} strokeWidth="2" />
-              <circle cx="22" cy="22" r="20" fill="none" stroke="url(#alertGrad)" strokeWidth="2" strokeDasharray="30 95" strokeLinecap="round" />
-              <circle cx="22" cy="22" r="14" fill="none" stroke={`rgba(${c.rgb},0.15)`} strokeWidth="1" />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center" style={{ animation: c.pulseAnim }}>
-              <StatusIcon color={c.primary} />
-            </div>
-          </div>
-          {/* Ce libelle est le seul a garder la couleur de phase en
-              clair : il est assis sur le lavis de cette meme couleur,
-              et c est lui qui nomme l alerte. De l encre neutre a cet
-              endroit briserait le lien entre le mot et le bloc. */}
-          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: sombre ? encre(0.6) : c.primary, textTransform: "uppercase" as const, textAlign: "center", animation: c.blinkAnim }}>
-            {c.labelLines[0]}<br />{c.labelLines[1]}
-          </div>
+      <div className="cd-corps">
+        <div className="cd-tete">
+          <span
+            className="cd-chiffre"
+            style={{
+              color: c.primary,
+              textShadow: lueur(`0 0 10px rgba(${c.rgb},0.7), 0 0 34px rgba(${c.rgb},0.28)`),
+            }}
+          >
+            {calc.gros.val.toLocaleString("fr-FR")}
+          </span>
+          <span className="cd-unite" style={{ color: encre(0.75) }}>
+            {calc.gros.unite}
+          </span>
+          <span
+            className="cd-sceau"
+            style={{
+              color: c.primary,
+              borderColor: `rgba(${c.rgb},0.45)`,
+              background: `rgba(${c.rgb},${sombre ? 0.12 : 0.1})`,
+              textShadow: lueur(`0 0 6px rgba(${c.rgb},0.45)`),
+              animation: c.clignote,
+            }}
+          >
+            {c.sceau} {c.label}
+          </span>
         </div>
 
-        {/* Center: Countdown + bar */}
-        <div style={{ padding: "20px 28px" }}>
-          <div style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 4, color: encre(0.75), textTransform: "uppercase" as const, marginBottom: 12 }}>
-            ⬝ PACTE EN COURS — {calc.phase} — COMPTE À REBOURS ACTIF
-          </div>
-
-          <div className="flex items-center flex-wrap gap-y-2">
-            {[
-              { val: calc.days, label: "JOURS" },
-              { val: calc.hours, label: "HEURES" },
-              { val: calc.minutes, label: "MIN" },
-              { val: calc.seconds, label: "SEC" },
-            ].map((t, i) => (
-              <div key={t.label} className="flex items-center">
-                <div className="flex flex-col items-center" style={{ minWidth: t.label === "JOURS" ? "clamp(50px, 8vw, 90px)" : "clamp(44px, 6vw, 74px)" }}>
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: lueur(`0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`), lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, whiteSpace: "nowrap" }}>
-                    {pad(t.val)}
-                  </span>
-                  <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: encre(0.75), textTransform: "uppercase" as const, marginTop: 4 }}>
-                    {t.label}
-                  </span>
-                </div>
-                {i < 3 && (
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: encre(0.6), margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
-                    :
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div style={{ marginTop: 14 }}>
-            <div className="flex justify-between" style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: encre(0.75), marginBottom: 5 }}>
-              <span>DÉBUT · {startStr}</span>
-              <span>{Math.round(calc.progressPct)}% ÉCOULÉ</span>
-              <span>FIN · {endStr}</span>
-            </div>
-            <div className="relative overflow-hidden" style={{ height: 6, background: `rgba(${c.rgb},0.06)`, border: `1px solid rgba(${c.rgb},0.12)`, borderRadius: 1 }}>
-              <div className="relative" style={{ height: "100%", width: `${calc.progressPct}%`, background: c.barGradient, boxShadow: `0 0 8px rgba(${c.rgb},0.5)`, borderRadius: 1 }}>
-                <div className="absolute top-0 left-0 right-0" style={{ height: "50%", background: "rgba(255,255,255,0.08)" }} />
-                <div className="absolute top-0 right-0" style={{ width: 20, height: "100%", background: `linear-gradient(90deg, transparent, rgba(${c.rgb},0.6))`, animation: "barPulse 2s ease-in-out infinite" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Info rows */}
+        {/* LA REGLE. Debut et fin la bornent, la part faite est en
+            plein, le curseur marque aujourd'hui — et ce qu'il reste se
+            lit dans le vide, a droite du curseur. */}
         <div
-          className="countdown-aside-right flex flex-col justify-center gap-[14px] border-t"
-          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.22)`, background: `rgba(${c.rgb},0.05)`, minWidth: 215 }}
+          className="cd-regle"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={pctArrondi}
+          aria-label="Part du pacte écoulée"
+          title={`${debutTxt} → ${finTxt} · ${pctArrondi} % écoulé`}
         >
-          {[
-            { key: "NOM DU PACTE", val: pactName, critical: false },
-            { key: "DURÉE TOTALE", val: `${calc.totalDays} jours`, critical: false },
-            { key: "STATUT", val: `${c.statusEmoji} ${calc.statusLabel}`, critical: true },
-            { key: "COMPLÉTION OBJ.", val: `${goalsCompleted} / ${totalGoals}`, critical: false },
-          ].map((row) => (
-            <div key={row.key} className="flex flex-col gap-0.5">
-              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: encre(0.85), textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
-                {row.key}
-              </span>
-              <span style={{ fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : encre(0.92), textShadow: row.critical ? lueur(`0 0 6px rgba(${c.rgb},0.5)`) : "none" }}>
-                {row.val}
-              </span>
-            </div>
-          ))}
+          <div className="cd-voie" style={{ background: `rgba(${c.rgb},${sombre ? 0.12 : 0.18})` }} />
+          <div
+            className="cd-fait"
+            style={{
+              width: `${pct}%`,
+              background: `rgba(${c.rgb},${sombre ? 0.85 : 0.9})`,
+              boxShadow: lueur(`0 0 8px rgba(${c.rgb},0.45)`),
+            }}
+          />
+
+          <div className="cd-borne" style={{ left: 0, background: encre(0.6) }}>
+            <b style={{ color: encre(0.75) }}>DÉBUT · {debutTxt}</b>
+          </div>
+          <div className="cd-borne cd-borne-fin" style={{ left: "calc(100% - 1px)", background: encre(0.6) }}>
+            <b style={{ color: encre(0.75) }}>FIN · {finTxt}</b>
+          </div>
+
+          <div
+            className="cd-ici"
+            style={{
+              left: `${pct}%`,
+              background: c.primary,
+              boxShadow: lueur(`0 0 8px rgba(${c.rgb},0.8)`),
+              animation: c.pouls,
+            }}
+          >
+            <b style={{ color: c.primary, transform: `translateX(${ancrage})` }}>
+              AUJOURD'HUI · {pctArrondi} %
+            </b>
+          </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes ringRotate { to { transform: rotate(360deg); } }
-        @keyframes alertPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        @keyframes blink { 50%{opacity:0} }
-        @keyframes numFlicker { 0%,90%,100%{opacity:1} 92%,97%{opacity:0.7} }
-        @keyframes colonBlink { 50%{opacity:0.1} }
-        @keyframes barPulse { 0%,100%{opacity:0} 50%{opacity:1} }
+        @keyframes cdPouls { 0%,100%{opacity:1} 50%{opacity:0.45} }
+        @keyframes cdClignote { 50%{opacity:0.35} }
+        @media (prefers-reduced-motion: reduce) {
+          .cd-ici, .cd-sceau { animation: none !important; }
+        }
       `}</style>
     </div>
   );

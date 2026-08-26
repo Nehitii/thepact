@@ -357,7 +357,6 @@ All colors MUST be HSL.
     /* Meme correction cote theme clair : 0.4 sur fond clair etait sous le seuil. */
     --nexus-marker-dim: hsla(210, 15%, 32%, 0.95);
     --nexus-countdown-bg: linear-gradient(90deg, hsla(345, 50%, 96%, 0.98), hsla(345, 30%, 97%, 0.97), hsla(345, 40%, 97%, 0.98));
-    --nexus-countdown-border: hsla(345, 80%, 55%, 0.25);
     --nexus-rank-bg: linear-gradient(160deg, hsla(210, 45%, 96%, 0.97), hsla(210, 35%, 97%, 0.99));
     --nexus-rank-border: hsla(210, 80%, 55%, 0.25);
     --nexus-mission-bg: linear-gradient(145deg, hsla(40, 40%, 97%, 0.98), hsla(220, 25%, 97%, 0.98));
@@ -544,7 +543,6 @@ All colors MUST be HSL.
        paliers de difficulte : ce sont des donnees, pas du decor. */
     --nexus-marker-dim: rgba(255, 255, 255, 0.6);
     --nexus-countdown-bg: linear-gradient(90deg, rgba(20,0,4,0.98) 0%, rgba(10,2,6,0.97) 40%, rgba(8,0,3,0.98) 100%);
-    --nexus-countdown-border: rgba(255,23,68,0.3);
     --nexus-rank-bg: linear-gradient(160deg, rgba(0,15,40,0.97) 0%, rgba(3,8,20,0.99) 100%);
     --nexus-rank-border: rgba(0,140,255,0.25);
     --nexus-mission-bg: linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%);
@@ -895,38 +893,104 @@ All colors MUST be HSL.
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Compte a rebours : mise en page sur sa propre largeur
+   Compte a rebours : la regle
 
-   Son point de rupture etait une requete de viewport (lg:grid-cols).
-   Tant qu'il occupait toute la largeur, viewport et element se
-   confondaient. Depuis qu'il partage une rangee avec le panneau de
-   rang, il ne fait plus qu'une demi-colonne — mais la requete
-   continue de lire le viewport et lui impose trois colonnes dans
-   600px, ce qui rogne la colonne de metadonnees.
+   CE PANNEAU DISAIT UNE SEULE CHOSE — COMBIEN IL RESTE — DE NEUF
+   FACONS, ET IL CASSAIT EN LE DISANT.
 
-   Une requete de conteneur lit la largeur de l'element lui-meme.
-   C'est le seul outil correct ici : un composant place dans une
-   grille ne connait pas d'avance la place qu'on lui donnera.
+   Il cassait pour une raison precise : ses chiffres etaient en
+   clamp(28px, 4vw, 48px), donc dimensionnes par le VIEWPORT, alors
+   que sa largeur vient de son CONTENEUR depuis qu'il partage une
+   rangee avec le monitoring. Les deux sont independants. Dans une
+   fenetre de 1400 px et une colonne de 560, les chiffres prenaient
+   leur taille maximale dans la boite minimale : trois lignes de
+   chiffres, des deux-points orphelins, 753 px de hauteur mesures.
+
+   Il disait aussi CINQ FOIS le meme segment de temps — jours
+   restants, jours au total, part ecoulee, debut, fin — plus le nom
+   du pacte (deja dans la barre systeme et dans le bandeau), la
+   completion des objectifs (deja dans le bandeau), et le statut
+   ecrit DEUX FOIS dans le meme cadre.
+
+   Une duree ne s'enumere pas, elle se montre. Les cinq releves
+   deviennent un dessin : une regle bornee par les deux dates, la
+   part faite en plein, le curseur sur aujourd'hui, et ce qu'il reste
+   se lit dans le vide. C'est la meme langue que la jauge du jour de
+   la barre systeme.
+
+   Les libelles de la regle sont en position absolue : ils ne
+   participent pas a la hauteur, qui reste donc constante d'une
+   largeur a l'autre. Et la typographie est en cqw : elle suit enfin
+   la boite qui la contient.
    ───────────────────────────────────────────────────────────── */
 .countdown-shell {
   container-type: inline-size;
   container-name: countdown;
 }
 
-@container countdown (min-width: 860px) {
-  .countdown-grid {
-    display: grid;
-    grid-template-columns: auto 1fr minmax(215px, auto);
-    align-items: center;
-  }
-  .countdown-aside-left {
-    border-right: 1px solid var(--countdown-edge, transparent);
-    border-bottom: 0;
-  }
-  .countdown-aside-right {
-    border-left: 1px solid var(--countdown-edge, transparent);
-    border-top: 0;
-  }
+.cd-corps { padding: 18px 22px 22px 26px; }
+
+.cd-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cd-chiffre {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 900;
+  font-size: clamp(30px, 6cqw, 44px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cd-unite,
+.cd-sceau,
+.cd-regle b {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.cd-unite { font-size: max(11px, 0.6875rem); }
+
+.cd-sceau {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: max(11px, 0.6875rem);
+  border: 1px solid;
+  border-radius: 2px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.cd-regle { position: relative; height: 48px; margin-top: 18px; }
+.cd-voie  { position: absolute; left: 0; right: 0; top: 20px; height: 4px; border-radius: 2px; }
+.cd-fait  { position: absolute; left: 0; top: 20px; height: 4px; border-radius: 2px; }
+.cd-borne { position: absolute; top: 12px; width: 1px; height: 20px; }
+.cd-ici   { position: absolute; top: 6px;  width: 2px; height: 32px; }
+
+.cd-regle b     { position: absolute; left: 0; font-size: 10px; white-space: nowrap; }
+.cd-borne b     { top: 22px; font-weight: 400; }
+.cd-borne-fin b { left: auto; right: 0; }
+.cd-ici b       { top: -15px; font-weight: 700; }
+
+/* Le remplissage et le curseur glissent. La part ecoulee d'un pacte
+   de six ans bouge d'un cheveu par minute, mais elle bouge — et un
+   saut sec la ferait passer pour un rechargement. */
+.cd-fait { transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+.cd-ici  { transition: left  600ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Sous 430 px les deux dates se rejoindraient. La date de fin est
+   celle qui compte : l'autre garde son trait, pas son libelle. */
+@container countdown (max-width: 430px) {
+  .cd-borne:not(.cd-borne-fin) b { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-fait, .cd-ici { transition: none; }
 }
 /* ─────────────────────────────────────────────────────────────
    Acces rapide — cellule d'energie
@@ -1098,41 +1162,6 @@ All colors MUST be HSL.
   .quest-ring > * {
     mask-image: none;
     -webkit-mask-image: none;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Compte a rebours : mise en page sur sa propre largeur
-
-   Son point de rupture etait une requete de viewport (lg:grid-cols).
-   Tant qu'il occupait toute la largeur, viewport et element se
-   confondaient. Depuis qu'il partage une rangee avec le panneau de
-   rang, il ne fait plus qu'une demi-colonne — mais la requete
-   continue de lire le viewport et lui impose trois colonnes dans
-   600px, ce qui rogne la colonne de metadonnees.
-
-   Une requete de conteneur lit la largeur de l'element lui-meme.
-   C'est le seul outil correct ici : un composant place dans une
-   grille ne connait pas d'avance la place qu'on lui donnera.
-   ───────────────────────────────────────────────────────────── */
-.countdown-shell {
-  container-type: inline-size;
-  container-name: countdown;
-}
-
-@container countdown (min-width: 860px) {
-  .countdown-grid {
-    display: grid;
-    grid-template-columns: auto 1fr minmax(215px, auto);
-    align-items: center;
-  }
-  .countdown-aside-left {
-    border-right: 1px solid var(--countdown-edge, transparent);
-    border-bottom: 0;
-  }
-  .countdown-aside-right {
-    border-left: 1px solid var(--countdown-edge, transparent);
-    border-top: 0;
   }
 }
 

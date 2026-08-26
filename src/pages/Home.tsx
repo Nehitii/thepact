@@ -320,18 +320,24 @@ export default function Home() {
             reste, le monitoring dit le chemin parcouru : les deux repondent
             a la meme question et se lisent ensemble. Le monitoring sortait
             d'un repli "Advanced Monitoring" ou il etait invisible par
-            defaut, alors qu'il porte l'avancement reel du pacte. */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-stretch">
+            defaut, alors qu'il porte l'avancement reel du pacte.
+
+            LES DEUX PANNEAUX NE SE PARTAGENT PLUS LA RANGEE. Ils etaient
+            cote a cote parce qu'ils etaient tous les deux hauts : 540 px
+            et 439 px mesures. Le compte a rebours est devenu une regle de
+            150 px — une duree tracee sur toute la largeur — et une regle
+            de 150 px assise dans une rangee de 439 laisse 290 px de vide
+            sous elle. Elle prend donc la largeur, ce qui est exactement
+            ce qu'un segment de temps demande, et le monitoring recupere
+            la sienne pour ses courbes. */}
+        <section className="space-y-2">
           {pact ? (
             <CountdownPanel
               projectStartDate={pact.project_start_date}
               projectEndDate={pact.project_end_date}
-              goalsCompleted={dashboardData.goalsCompleted}
-              totalGoals={dashboardData.totalGoals}
-              pactName={pact.name}
             />
           ) : (
-            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-[150px] w-full rounded" />
           )}
 
           {pact && isGoalsReady ? (

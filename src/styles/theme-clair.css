@@ -778,7 +778,6 @@
   --nexus-track-bg:         hsla(40, 10%, 80%, 0.85);
   --nexus-marker-dim:       hsla(200, 12%, 28%, 0.95);
   --nexus-countdown-bg:     linear-gradient(90deg, hsla(40, 14%, 94%, 0.98), hsla(42, 12%, 96%, 0.97), hsla(40, 14%, 94%, 0.98));
-  --nexus-countdown-border: hsla(352, 100%, 33%, 0.28);
   --nexus-rank-bg:          linear-gradient(160deg, hsla(44, 20%, 96%, 0.98), hsla(42, 16%, 97%, 0.99));
   --nexus-rank-border:      hsla(191, 100%, 24%, 0.3);
   --nexus-mission-bg:       linear-gradient(145deg, hsla(44, 26%, 96%, 0.98), hsla(38, 14%, 95%, 0.98));
