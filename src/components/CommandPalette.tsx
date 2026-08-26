@@ -20,6 +20,7 @@ import {
 import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { PREF } from "@/lib/preferencesAffichage";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
+import { raccourciPalette } from "@/lib/toucheRaccourci";
 
 /**
  * LA BARRE ⌘K.
@@ -168,6 +169,13 @@ function classer(valeur: string, recherche: string): number {
 /** L'évènement que la charpente écoute pour ouvrir la console. */
 export const OUVRIR_MIA = "vowpact-ouvrir-mia";
 
+/* LA PALETTE S OUVRE AUSSI DE L EXTERIEUR.
+   Son etat vivait uniquement ici, donc seul ⌘K et son propre bouton
+   pouvaient l ouvrir. La barre laterale porte desormais une entree de
+   recherche : elle a besoin d une porte, et un evenement en est une —
+   c est deja le procede retenu pour M.I.A juste au-dessus. */
+export const OUVRIR_PALETTE = "vowpact-ouvrir-palette";
+
 interface Position { x: number; y: number }
 
 function positionRetenue(): Position {
@@ -201,7 +209,12 @@ export function CommandPalette() {
       }
     };
     document.addEventListener("keydown", auClavier);
-    return () => document.removeEventListener("keydown", auClavier);
+    const aLaDemande = () => setOuverte(true);
+    window.addEventListener(OUVRIR_PALETTE, aLaDemande);
+    return () => {
+      document.removeEventListener("keydown", auClavier);
+      window.removeEventListener(OUVRIR_PALETTE, aLaDemande);
+    };
   }, []);
 
   const groupes = useMemo(() => {
@@ -286,9 +299,7 @@ export function CommandPalette() {
             >
               <Search aria-hidden="true" />
               <span className="cmdk-mot">{t("palette.search", "Chercher")}</span>
-              <kbd className="cmdk-touche">
-                <span>⌘</span>K
-              </kbd>
+              <kbd className="cmdk-touche">{raccourciPalette()}</kbd>
             </button>
           </motion.div>
         </>

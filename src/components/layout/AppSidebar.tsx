@@ -1,679 +1,481 @@
-import { useState, memo, useCallback, useMemo } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useState, memo, useCallback, useMemo, useRef, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import {
-  Home,
-  Target,
-  ShoppingBag,
-  ShoppingCart,
-  Users,
-  LogOut,
-  Settings,
-  UserCircle,
-  Bell,
-  Shield,
-  Database,
-  Volume2,
-  ListTodo,
-  BookOpen,
-  Wallet,
-  Zap,
-  Heart,
-  Sparkles,
-  Trophy,
-  Timer,
-  BarChart3,
-  Handshake,
-  ChevronsLeft,
-  ChevronsRight,
-  Mail,
-  RefreshCw,
-  Hexagon,
-  User,
-  TerminalSquare,
-  Crown,
-  CalendarDays,
+  Home, Target, ShoppingBag, ShoppingCart, Users, LogOut, Settings, UserCircle,
+  Bell, Shield, Database, Volume2, ListTodo, BookOpen, Wallet, Zap, Heart,
+  Sparkles, Trophy, Timer, BarChart3, Handshake, ChevronsLeft, ChevronsRight,
+  Mail, RefreshCw, User, Crown, CalendarDays, Search, Menu, ChevronRight,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { NotificationBadge } from "@/components/notifications/NotificationBadge";
+import type { LucideIcon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 import { prefetchRoute } from "@/lib/prefetchRoutes";
+import { raccourciPalette } from "@/lib/toucheRaccourci";
+import { OUVRIR_PALETTE } from "@/components/CommandPalette";
 
-// ─── CONFIGURATION DE LA NAVIGATION ────────────────────────
+/* ═══════════════════════════════════════════════════════════════
+   LA BARRE LATERALE
 
-type NavCategory = "overview" | "operations" | "lifeSystems" | "network" | "system";
+   Ce qui a change, et pourquoi. Les chiffres sont ceux mesures sur
+   la version precedente, dans une fenetre de 940 px de haut :
 
-interface NavItem {
+   1. ELLE A UN MODE CLAIR. L ancienne portait la classe « dark » en
+      dur et un fond « #050508 » ecrit a la main : une dalle noire,
+      quel que soit le theme choisi. Tout descend desormais de
+      « --ds-* », qui possede deja son miroir clair. Voir sidebar.css.
+
+   2. ELLE TIENT DANS LA HAUTEUR. Il en fallait 1 064 ; « Boutique »
+      etait hors champ, et la barre de defilement etait masquee, donc
+      rien ne le disait. Les rangees passent de 44 a 32 px, l en-tete
+      de 44 px de texte a une marque seule. La barre de defilement
+      reste invisible — c est voulu — mais UN VOILE parait des qu il
+      reste du contenu dessous. Cacher n est pas taire.
+
+   3. SES LIBELLES SONT TRADUITS. « Dashboard », « Operations »,
+      « Life Systems » etaient des chaines anglaises en dur, juste
+      au-dessus d un menu reglages en francais. Racine « nav ».
+
+   4. L ETAT REPLIE EST RETENU. C etait un « useState(false) » :
+      chaque rechargement rouvrait la barre.
+
+   5. LA RECHERCHE A UNE PORTE. La palette existait, elle est bonne,
+      et rien dans l interface ne disait qu elle etait la.
+   ═══════════════════════════════════════════════════════════════ */
+
+type Categorie = "overview" | "operations" | "lifeSystems" | "network" | "system";
+
+interface Entree {
   to: string;
-  icon: React.ComponentType<any>;
-  label: string;
-  badgeKey?: "friends" | "messages" | "inbox";
-  moduleKey?: string;
+  icone: LucideIcon;
+  cle: string;
+  badge?: "friends" | "messages" | "inbox";
+  module?: string;
 }
 
-const baseNavigation: Record<NavCategory, NavItem[]> = {
+const BASE: Record<Categorie, Entree[]> = {
   overview: [
-    { to: "/", icon: Home, label: "Dashboard", moduleKey: "dashboard" },
-    { to: "/analytics", icon: BarChart3, label: "Analytics", moduleKey: "analytics" },
+    { to: "/", icone: Home, cle: "dashboard", module: "dashboard" },
+    { to: "/analytics", icone: BarChart3, cle: "analytics", module: "analytics" },
   ],
   operations: [
-    { to: "/goals", icon: Target, label: "Goals", moduleKey: "goals" },
-    { to: "/focus", icon: Timer, label: "Focus", moduleKey: "focus" },
-    { to: "/calendar", icon: CalendarDays, label: "Calendar", moduleKey: "calendar" },
+    { to: "/goals", icone: Target, cle: "goals", module: "goals" },
+    { to: "/focus", icone: Timer, cle: "focus", module: "focus" },
+    { to: "/calendar", icone: CalendarDays, cle: "calendar", module: "calendar" },
   ],
   lifeSystems: [],
   network: [
-    { to: "/community", icon: Users, label: "Community", moduleKey: "community" },
-    { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
-    // On utilise badgeKey: "inbox" pour englober les messages ET les notifications
-    
-    { to: "/leaderboard", icon: Crown, label: "Leaderboard", moduleKey: "leaderboard" },
-    { to: "/achievements", icon: Trophy, label: "Achievements", moduleKey: "achievements" },
+    { to: "/community", icone: Users, cle: "community", module: "community" },
+    { to: "/friends", icone: Handshake, cle: "friends", badge: "friends" },
+    { to: "/leaderboard", icone: Crown, cle: "leaderboard", module: "leaderboard" },
+    { to: "/achievements", icone: Trophy, cle: "achievements", module: "achievements" },
   ],
-  system: [{ to: "/shop", icon: ShoppingBag, label: "Shop", moduleKey: "shop" }],
+  system: [{ to: "/shop", icone: ShoppingBag, cle: "shop", module: "shop" }],
 };
 
-const moduleConfig: Record<string, NavItem & { category: NavCategory }> = {
-  "todo-list": { icon: ListTodo, to: "/todo", label: "Todo List", category: "operations" },
-  "the-call": { icon: Zap, to: "/the-call", label: "The Call", category: "operations" },
-  journal: { icon: BookOpen, to: "/journal", label: "Journal", category: "lifeSystems" },
-  finance: { icon: Wallet, to: "/finance", label: "Finance", category: "lifeSystems" },
-  "track-health": { icon: Heart, to: "/health", label: "Health", category: "lifeSystems" },
-  wishlist: { icon: ShoppingCart, to: "/wishlist", label: "Wishlist", category: "lifeSystems" },
+const MODULES: Record<string, Entree & { categorie: Categorie }> = {
+  "todo-list": { icone: ListTodo, to: "/todo", cle: "todo", categorie: "operations" },
+  "the-call": { icone: Zap, to: "/the-call", cle: "theCall", categorie: "operations" },
+  journal: { icone: BookOpen, to: "/journal", cle: "journal", categorie: "lifeSystems" },
+  finance: { icone: Wallet, to: "/finance", cle: "finance", categorie: "lifeSystems" },
+  "track-health": { icone: Heart, to: "/health", cle: "health", categorie: "lifeSystems" },
+  wishlist: { icone: ShoppingCart, to: "/wishlist", cle: "wishlist", categorie: "lifeSystems" },
 };
 
-// Paramètres originaux restaurés
-const settingsItems = [
-  { to: "/profile", icon: UserCircle, label: "Compte" },
-  { to: "/profile/bounded", icon: User, label: "Profil public" },
-  { to: "/profile/pact-settings", icon: Settings, label: "Mon Pacte" },
-  { to: "/profile/display-sound", icon: Volume2, label: "Apparence & sons" },
-  { to: "/profile/notifications", icon: Bell, label: "Notifications" },
-  { to: "/profile/privacy", icon: Shield, label: "Confidentialité" },
-  { to: "/profile/data", icon: Database, label: "Mes données" },
+const ORDRE: Categorie[] = ["overview", "operations", "lifeSystems", "network", "system"];
+
+const REGLAGES = [
+  { to: "/profile", icone: UserCircle, cle: "compte" },
+  { to: "/profile/bounded", icone: User, cle: "public" },
+  { to: "/profile/pact-settings", icone: Settings, cle: "pacte" },
+  { to: "/profile/display-sound", icone: Volume2, cle: "apparence" },
+  { to: "/profile/notifications", icone: Bell, cle: "notifications" },
+  { to: "/profile/privacy", icone: Shield, cle: "confidentialite" },
+  { to: "/profile/data", icone: Database, cle: "donnees" },
 ];
 
-// ─── UI COMPONENTS (HUD STYLE) ─────────────────────────────
+const CLE_REPLI = "vowpact-barre-repliee";
 
-interface NavItemProps extends NavItem {
-  badge?: number;
+/* ── Une entree ───────────────────────────────────────────────
+   Memoisee, et elle ne recoit que des valeurs simples. L ancienne
+   version passait l objet « location » a chacune des dix-huit :
+   tout changement de page les redessinait toutes, alors que NavLink
+   sait deja se teindre seul. */
+const Lien = memo(function Lien({
+  to, icone: Icone, libelle, badge, mini, fermer,
+}: {
+  to: string;
+  icone: Entree["icone"];
+  libelle: string;
+  badge: number;
   mini: boolean;
-  closeMobile: () => void;
-  navigate: (to: string) => void;
-  location: { pathname: string };
-}
+  fermer: () => void;
+}) {
+  const prefetch = useCallback(() => prefetchRoute(to), [to]);
 
-function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navigate, location }: NavItemProps) {
-  const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
-  const prefetch = () => prefetchRoute(to);
-
-  if (mini) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => {
-              navigate(to);
-              closeMobile();
-            }}
-            onMouseEnter={prefetch}
-            onFocus={prefetch}
-            onTouchStart={prefetch}
-            aria-label={label}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
-              "border-l-2",
-              isActive
-                ? "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_hsl(var(--primary)/0.3)]"
-                : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
-            )}
-            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
-          >
-            <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_hsl(var(--primary)/1)]")} />
-            {badge != null && badge > 0 && (
-              <span className="absolute top-1 right-1 ds-t-label leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
-                {badge > 99 ? "99" : badge}
-              </span>
-            )}
-          </button>
-        </TooltipTrigger>
-        <TooltipContent
-          side="right"
-          className="font-mono font-bold text-xs tracking-wider border-primary/50 bg-black/95 text-primary rounded-none uppercase"
-        >
-          {label} {badge != null && badge > 0 && `[${badge}]`}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return (
+  const lien = (
     <NavLink
       to={to}
       end={to === "/"}
-      onClick={closeMobile}
+      className="sb-lien"
+      onClick={fermer}
       onMouseEnter={prefetch}
       onFocus={prefetch}
       onTouchStart={prefetch}
-      aria-label={label}
-      className={({ isActive }) =>
-        cn(
-          "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
-          "border-l-2 before:absolute before:inset-0 before:z-0",
-          isActive
-            ? "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,hsl(var(--primary)/0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]"
-            : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
-        )
-      }
-      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
+      aria-label={mini ? libelle : undefined}
     >
-      {({ isActive }) => (
-        <>
-          <div className="relative z-10 shrink-0 flex items-center justify-center mr-3">
-            <Icon
-              size={18}
-              className={cn(
-                "transition-all duration-300",
-                isActive
-                  ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.9)]"
-                  : "group-hover:text-primary group-hover:scale-110",
-              )}
-            />
-          </div>
-          <span
-            className={cn(
-              "relative z-10 text-xs font-bold tracking-[0.1em] font-mono uppercase transition-all duration-300",
-              isActive
-                ? "text-primary drop-shadow-[0_0_4px_hsl(var(--primary)/0.5)] translate-x-1"
-                : "group-hover:translate-x-1",
-            )}
-          >
-            {isActive && <span className="opacity-50 mr-1">{">"}</span>}
-            {label}
-            {!isActive && (
-              <span className="opacity-0 group-hover:opacity-100 ml-1 text-primary/80 transition-opacity">_</span>
-            )}
-          </span>
-
-          {isActive && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 ds-t-label font-mono text-primary/80 tracking-widest">
-              ACTV
-            </span>
-          )}
-
-          {badge != null && badge > 0 && (
-            <span className="relative z-20 ml-auto ds-t-label bg-destructive text-destructive-foreground min-w-[16px] h-[16px] flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
-              {badge > 99 ? "99+" : badge}
-            </span>
-          )}
-        </>
-      )}
+      <Icone aria-hidden />
+      <span className="sb-lien-mot">{libelle}</span>
+      {badge > 0 && <span className="sb-pastille">{badge > 99 ? "99+" : badge}</span>}
     </NavLink>
   );
-}
 
-function SectionLabel({ label }: { label: string }) {
+  if (!mini) return lien;
   return (
-    <div className="flex items-center gap-2 mb-2 mt-5 px-3">
-      <Hexagon size={10} className="text-primary/80 fill-primary/20" />
-      <p className="ds-t-label font-black uppercase tracking-[0.25em] text-primary/80 font-orbitron">{label}</p>
-      <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>{lien}</TooltipTrigger>
+      <TooltipContent side="right" className="sb-bulle">
+        {badge > 0 ? `${libelle} · ${badge}` : libelle}
+      </TooltipContent>
+    </Tooltip>
   );
-}
-
-// ─── MAIN COMPONENT ────────────────────────────────────────
+});
 
 export const AppSidebar = memo(function AppSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
+  const { setTheme } = useTheme();
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  /* L etat replie est RETENU, et lu des le premier rendu : le lire
+     dans un effet ferait battre la barre a chaque chargement. */
+  const [replie, setReplie] = useState(() => {
+    try { return localStorage.getItem(CLE_REPLI) === "oui"; } catch { return false; }
+  });
+  const [mobileOuvert, setMobileOuvert] = useState(false);
 
   const { unreadCount, unreadByModule } = useNotifications();
-  const { unreadCount: messageUnreadCount } = useMessages();
-  const { count: friendRequestCount } = usePendingFriendCount();
+  const { unreadCount: messagesNonLus } = useMessages();
+  const { count: demandesAmis } = usePendingFriendCount();
   const social = useSocialFeatures();
-  const totalUnread = unreadCount + messageUnreadCount + friendRequestCount;
+  const totalNonLus = unreadCount + messagesNonLus + demandesAmis;
 
-  const { data: allModules = [] } = useShopModules();
-  const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
-  const { data: profile } = useProfile(user?.id);
+  const { data: tousModules = [] } = useShopModules();
+  const { data: modulesAchetes = [] } = useUserModulePurchases(user?.id);
+  const { data: profil } = useProfile(user?.id);
+  const { profile: reglages, updateProfile } = useProfileSettings();
 
-  const purchasedModuleKeys = useMemo(
-    () => allModules.filter((m) => purchasedModuleIds.includes(m.id)).map((m) => m.key),
-    [allModules, purchasedModuleIds],
+  const clesAchetees = useMemo(
+    () => tousModules.filter((m) => modulesAchetes.includes(m.id)).map((m) => m.key),
+    [tousModules, modulesAchetes],
   );
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
-
-  const closeMobile = useCallback(() => {
-    if (isMobile) setMobileOpen(false);
+  const fermerMobile = useCallback(() => {
+    if (isMobile) setMobileOuvert(false);
   }, [isMobile]);
 
-  // Récupère intelligemment les notifications par badgeKey OU moduleKey
-  const getBadgeCount = (item: NavItem) => {
-    let count = 0;
-    if (item.badgeKey === "friends") count += friendRequestCount;
-    if (item.badgeKey === "messages") count += messageUnreadCount;
-    // INBOX montre la somme des messages ET des notifications globales
-    if (item.badgeKey === "inbox") count += messageUnreadCount + unreadCount;
-    if (item.moduleKey && unreadByModule[item.moduleKey]) count += unreadByModule[item.moduleKey];
-    return count;
-  };
+  const basculerRepli = useCallback(() => {
+    setReplie((v) => {
+      const suivant = !v;
+      try { localStorage.setItem(CLE_REPLI, suivant ? "oui" : "non"); } catch { /* navigation privee */ }
+      return suivant;
+    });
+  }, []);
 
-  const mini = collapsed && !isMobile;
+  const mini = replie && !isMobile;
 
-  const activeCategories = useMemo(() => {
-    const categories: Record<NavCategory, NavItem[]> = {
-      overview: [...baseNavigation.overview],
-      operations: [...baseNavigation.operations],
-      lifeSystems: [...baseNavigation.lifeSystems],
-      network: baseNavigation.network.filter((item) => {
-        if (item.to === "/community") return social.community;
-        if (item.to === "/friends") return social.friends;
-        if (item.to === "/leaderboard") return social.leaderboard;
-        // /achievements stays always visible (solo gamification)
+  const compte = useCallback((e: Entree) => {
+    let n = 0;
+    if (e.badge === "friends") n += demandesAmis;
+    if (e.badge === "messages") n += messagesNonLus;
+    if (e.badge === "inbox") n += messagesNonLus + unreadCount;
+    if (e.module && unreadByModule[e.module]) n += unreadByModule[e.module];
+    return n;
+  }, [demandesAmis, messagesNonLus, unreadCount, unreadByModule]);
+
+  const categories = useMemo(() => {
+    const c: Record<Categorie, Entree[]> = {
+      overview: [...BASE.overview],
+      operations: [...BASE.operations],
+      lifeSystems: [...BASE.lifeSystems],
+      network: BASE.network.filter((e) => {
+        if (e.to === "/community") return social.community;
+        if (e.to === "/friends") return social.friends;
+        if (e.to === "/leaderboard") return social.leaderboard;
         return true;
       }),
-      system: [...baseNavigation.system],
+      system: [...BASE.system],
     };
-
-    Object.entries(moduleConfig).forEach(([key, config]) => {
-      if (purchasedModuleKeys.includes(key)) {
-        categories[config.category].push({
-          to: config.to,
-          icon: config.icon,
-          label: config.label,
-          moduleKey: key, // On lie la clé du module pour les notifications dynamiques
-        });
+    for (const [cle, conf] of Object.entries(MODULES)) {
+      if (clesAchetees.includes(cle)) {
+        c[conf.categorie].push({ to: conf.to, icone: conf.icone, cle: conf.cle, module: cle });
       }
-    });
+    }
+    return c;
+  }, [clesAchetees, social.community, social.friends, social.leaderboard]);
 
-    return categories;
-  }, [purchasedModuleKeys, social.community, social.friends, social.leaderboard]);
+  const aUnModule = clesAchetees.some((k) => k in MODULES);
 
-  const hasAnyModule = purchasedModuleKeys.some((k) => k in moduleConfig);
+  /* ── Le voile de debordement ──────────────────────────────
+     La barre de defilement est invisible, par choix. Mais un
+     debordement muet est un piege : l ancienne cachait « Boutique »
+     sans rien dire. Le voile ne parait que s il reste du contenu, et
+     s efface quand on touche le fond. Il ne prend pas de place et ne
+     se clique pas. */
+  const zone = useRef<HTMLElement>(null);
+  const [debord, setDebord] = useState({ haut: false, bas: false });
+  useEffect(() => {
+    const el = zone.current;
+    if (!el) return;
+    const relire = () => {
+      const reste = el.scrollHeight - el.clientHeight - el.scrollTop;
+      const haut = el.scrollTop > 2;
+      const bas = reste > 2;
+      /* On ne repose l etat que s il change : ce lecteur tourne a
+         chaque pixel de defilement. */
+      setDebord((p) => (p.haut === haut && p.bas === bas ? p : { haut, bas }));
+    };
+    relire();
+    el.addEventListener("scroll", relire, { passive: true });
+    /* Le contenu bouge sans qu on defile : un module achete, une
+       fonction sociale coupee, la barre qu on replie. */
+    const oeil = new ResizeObserver(relire);
+    oeil.observe(el);
+    for (const enfant of Array.from(el.children)) oeil.observe(enfant);
+    return () => { el.removeEventListener("scroll", relire); oeil.disconnect(); };
+  }, [categories, mini]);
+
+  const seDeconnecter = useCallback(async () => {
+    await signOut();
+    navigate("/auth");
+  }, [signOut, navigate]);
+
+  const poserTheme = useCallback((v: ThemePreference) => {
+    /* Les deux, dans cet ordre : « setTheme » pour que ce soit
+       immediat, la preference pour que ce soit retenu. Sans elle,
+       ProfilePreferencesSync remettrait l ancien theme au prochain
+       chargement. */
+    setTheme(v);
+    updateProfile.mutate({ theme_preference: v } as never);
+  }, [setTheme, updateProfile]);
+
+  const themeCourant = (reglages?.theme_preference ?? "system") as ThemePreference;
+  const initiale = profil?.display_name?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <TooltipProvider delayDuration={100}>
-      {isMobile && mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm animate-in fade-in-0 duration-300"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {isMobile && !mobileOpen && (
+    <TooltipProvider delayDuration={120}>
+      {isMobile && !mobileOuvert && (
         <button
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open navigation"
+          type="button"
+          onClick={() => setMobileOuvert(true)}
+          aria-label={t("nav.ouvrir", "Ouvrir la navigation")}
           data-chrome="sidebar-mobile"
-          className="fixed top-14 left-4 z-50 p-2.5 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
-          style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
+          className="sb-declencheur"
         >
-          <ChevronsRight size={20} />
+          <Menu aria-hidden size={19} />
         </button>
       )}
 
+      {isMobile && mobileOuvert && (
+        <div className="sb-fond" onClick={() => setMobileOuvert(false)} aria-hidden />
+      )}
+
       <aside
-        role="navigation"
-        aria-label="Main navigation"
+        className="sb"
+        data-replie={mini ? "oui" : "non"}
         data-chrome="sidebar"
-        style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
-        className={cn(
-          /* « dark » n est pas un choix de theme ici, c est une
-             description : la barre porte un fond noir en dur quel que
-             soit le theme du systeme. Sans cette classe, ses jetons
-             suivaient le theme clair et posaient de l encre foncee sur
-             du noir — vingt-deux textes a 1,2 de contraste. */
-          "dark flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
-          "shadow-[8px_0_30px_-10px_hsl(var(--primary)/0.15)]",
-          "transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]",
-          !isMobile && "sticky top-0 h-screen overflow-hidden",
-          isMobile && "fixed top-0 left-0 h-full transition-transform duration-300",
-          isMobile && (mobileOpen ? "translate-x-0" : "-translate-x-full"),
-        )}
+        style={
+          isMobile
+            ? {
+                position: "fixed", top: 0, left: 0, height: "100%", zIndex: 50, width: 264,
+                transform: mobileOuvert ? "translateX(0)" : "translateX(-100%)",
+                transition: "transform 300ms cubic-bezier(.16,1,.3,1)",
+              }
+            : { position: "sticky", top: 0, height: "100vh", zIndex: 30 }
+        }
       >
-        {/* HUD Grid Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-        {/* Decorative Corner Brackets */}
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary/50 pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary/50 pointer-events-none" />
-
-        {/* ─── HEADER ─── */}
-        <div className="relative mb-4" style={{ padding: mini ? "20px 8px" : "24px 20px" }}>
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-
-          <div
-            className={cn(
-              "flex items-center relative z-10 transition-all duration-300",
-              mini ? "justify-center" : "gap-4",
-            )}
+        {!isMobile && (
+          <button
+            type="button"
+            className="sb-poignee"
+            onClick={basculerRepli}
+            aria-expanded={!mini}
+            aria-label={mini ? t("nav.deplier", "Déplier la navigation") : t("nav.replier", "Replier la navigation")}
           >
-            {/* HUD Logo */}
-            <div
-              className="relative shrink-0 group cursor-pointer"
-              onClick={() => {
-                navigate("/");
-                closeMobile();
-              }}
-            >
-              <div className="absolute -inset-3 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
-              <div
-                className={cn(
-                  "dark relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]",
-                  mini ? "w-10 h-10" : "w-12 h-12",
-                )}
-                style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}
-              >
-                <span
-                  className={cn(
-                    "font-black font-orbitron text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/1)]",
-                    mini ? "text-lg" : "text-2xl",
-                  )}
-                >
-                  V
-                </span>
-              </div>
-            </div>
+            {mini ? <ChevronsRight aria-hidden /> : <ChevronsLeft aria-hidden />}
+          </button>
+        )}
 
-            <div
-              className={cn(
-                "flex flex-col transition-all duration-300",
-                mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible",
-              )}
-            >
-              {/* Le nom du produit est une marque, pas le titre de la page.
-                  En <h1>, il en creait un second sur chaque ecran — la barre
-                  laterale etant rendue en permanence — et le plan du document
-                  devenait illisible pour un lecteur d'ecran. */}
-              <span className="block text-xl font-black font-orbitron text-foreground tracking-[0.25em] leading-none mb-1 drop-shadow-md whitespace-nowrap">
-                VOWPACT
-              </span>
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <div className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_5px_#10b981]" />
-                </div>
-                <span className="ds-t-label uppercase font-bold tracking-[0.2em] text-emerald-400 font-mono">
-                  SYS.ONLINE // v4.0.1
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* ── La marque, seule ──────────────────────────────
+            « VOWPACT » en Orbitron, une diode verte clignotante et
+            « SYS.ONLINE // v4.0.1 » tenaient 44 px sous le logo. Le
+            logo dit deja le nom ; sa lueur est dans la feuille. */}
+        <div className="sb-tete">
+          <button
+            type="button"
+            className="sb-marque"
+            onClick={() => { navigate("/"); fermerMobile(); }}
+            aria-label="Vowpact"
+          >
+            <img src="/logo-vowpact.webp" alt="" width={44} height={44} decoding="async" />
+          </button>
         </div>
 
-        {/* Desktop collapse toggle */}
-        {!isMobile && (
-          <div className={cn("flex mb-2 px-3", mini ? "justify-center" : "justify-end")}>
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1 text-primary/80 hover:text-primary transition-all duration-200 border border-transparent hover:border-primary/40 bg-black/40 hover:bg-primary/10"
-              style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)" }}
-              aria-label={collapsed ? "Expand" : "Collapse"}
-            >
-              {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />}
-            </button>
-          </div>
-        )}
-
-        {/* ─── NAVIGATION ─── */}
-        <nav className={cn("flex-1 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-1.5" : "px-3")}>
-          <div className="space-y-0.5 mb-2">
-            {!mini && <SectionLabel label="Dashboard" />}
-            {activeCategories.overview.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                badge={getBadgeCount(item)}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
-          </div>
-
-          <div className="space-y-0.5 mb-2">
-            {!mini && <SectionLabel label="Operations" />}
-            {activeCategories.operations.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                badge={getBadgeCount(item)}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
-
-            {!hasAnyModule && !mini && (
-              <button
-                onClick={() => {
-                  navigate("/shop");
-                  closeMobile();
-                }}
-                className="mt-2 px-3 py-2.5 w-full border border-dashed border-primary/30 text-primary/80 hover:text-primary hover:border-primary hover:bg-primary/10 transition-all text-xs font-bold tracking-[0.1em] font-mono text-left flex items-center gap-3 group"
-                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-              >
-                <Sparkles size={14} className="opacity-50 group-hover:opacity-100 group-hover:animate-pulse" />
-                INSTALL_MODULES
-              </button>
-            )}
-          </div>
-
-          {activeCategories.lifeSystems.length > 0 && (
-            <div className="space-y-0.5 mb-2">
-              {!mini && <SectionLabel label="Life Systems" />}
-              {activeCategories.lifeSystems.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  {...item}
-                  badge={getBadgeCount(item)}
-                  mini={mini}
-                  closeMobile={closeMobile}
-                  navigate={navigate}
-                  location={location}
-                />
-              ))}
-            </div>
+        <button
+          type="button"
+          className="sb-cherche"
+          onClick={() => window.dispatchEvent(new Event(OUVRIR_PALETTE))}
+          aria-label={t("nav.chercher", "Rechercher")}
+        >
+          <Search aria-hidden />
+          {!mini && (
+            <>
+              <span className="sb-cherche-mot">{t("nav.chercher", "Rechercher")}</span>
+              <kbd className="sb-cherche-touche">{raccourciPalette()}</kbd>
+            </>
           )}
+        </button>
 
-          {activeCategories.network.length > 0 && (
-            <div className="space-y-0.5 mb-2">
-              {!mini && <SectionLabel label="Social" />}
-              {activeCategories.network.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  {...item}
-                  badge={getBadgeCount(item)}
-                  mini={mini}
-                  closeMobile={closeMobile}
-                  navigate={navigate}
-                  location={location}
-                />
-              ))}
-            </div>
-          )}
+        <div style={{ position: "relative", flex: 1, minHeight: 0, display: "flex" }}>
+          <span className="sb-voile" data-cote="haut" data-actif={debord.haut ? "oui" : "non"} style={{ top: 0 }} aria-hidden />
 
-          <div className="space-y-0.5 mb-2">
-            {!mini && <SectionLabel label="System" />}
-            {activeCategories.system.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                badge={getBadgeCount(item)}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
-          </div>
-        </nav>
-
-        {/* ─── TERMINAL FOOTER (PARAMÈTRES RESTAURÉS) ─── */}
-        <div className={cn("dark mt-auto relative bg-[#0a0a0c] border-t border-primary/30", mini ? "p-1.5" : "p-3")}>
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_10px_hsl(var(--primary)/0.8)]" />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-full group outline-none">
-                <div
-                  className={cn(
-                    "flex items-center transition-all duration-300 hover:bg-primary/10 border border-transparent hover:border-primary/40 relative overflow-hidden",
-                    mini ? "justify-center p-2 rounded-none" : "gap-3 p-2",
-                  )}
-                  style={{
-                    clipPath: mini
-                      ? "none"
-                      : "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)",
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent -translate-y-full group-hover:animate-[scan_2s_linear_infinite]" />
-
-                  <div className="relative shrink-0">
-                    <Avatar
-                      className={cn(
-                        "border border-primary/40 rounded-none transition-all group-hover:border-primary group-hover:shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
-                        mini ? "h-8 w-8" : "h-9 w-9",
-                      )}
+          <nav className="sb-nav" ref={zone} aria-label={t("nav.ouvrir", "Navigation")}>
+            {ORDRE.map((cat) => {
+              const entrees = categories[cat];
+              if (!entrees.length) return null;
+              return (
+                <div key={cat}>
+                  <p className="sb-sect">{t(`nav.sections.${cat}`)}</p>
+                  {entrees.map((e) => (
+                    <Lien
+                      key={e.to}
+                      to={e.to}
+                      icone={e.icone}
+                      libelle={t(`nav.pages.${e.cle}`)}
+                      badge={compte(e)}
+                      mini={mini}
+                      fermer={fermerMobile}
+                    />
+                  ))}
+                  {cat === "operations" && !aUnModule && !mini && (
+                    <button
+                      type="button"
+                      className="sb-invite"
+                      onClick={() => { navigate("/shop"); fermerMobile(); }}
                     >
-                      <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                      <AvatarFallback className="bg-black text-primary font-orbitron text-xs rounded-none">
-                        {profile?.display_name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    {totalUnread > 0 && (
-                      <NotificationBadge
-                        count={totalUnread}
-                        size="sm"
-                        className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_hsl(var(--primary)/0.8)] rounded-none border border-black"
-                      />
-                    )}
-                  </div>
-
-                  {!mini && (
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-bold text-primary uppercase tracking-widest font-orbitron truncate group-hover:text-primary drop-shadow-[0_0_2px_hsl(var(--primary)/0.8)]">
-                        {profile?.display_name || "AGENT_UNKNOWN"}
-                      </p>
-                    </div>
-                  )}
-
-                  {!mini && (
-                    <div className="text-primary/80 group-hover:text-primary transition-colors">
-                      <TerminalSquare size={16} className="group-hover:animate-pulse" />
-                    </div>
+                      <Sparkles aria-hidden />
+                      {t("nav.installer", "Installer des modules")}
+                    </button>
                   )}
                 </div>
+              );
+            })}
+          </nav>
+
+          <span className="sb-voile" data-cote="bas" data-actif={debord.bas ? "oui" : "non"} style={{ bottom: 0 }} aria-hidden />
+        </div>
+
+        {/* ── L acces au compte ─────────────────────────────
+            Sept reglages etaient serres dans une grille de deux
+            colonnes, en libelles de 10 px tronques sur quatre
+            entrees sur sept, sous un en-tete « System_Config ».
+            Une colonne, 14 px, rien de coupe — et le theme se regle
+            ici, ce qu on venait justement y chercher. */}
+        <div className="sb-pied">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="sb-profil" aria-label={t("nav.options", "Compte et réglages")}>
+                <span className="sb-av">
+                  {profil?.avatar_url ? <img src={profil.avatar_url} alt="" /> : initiale}
+                  {totalNonLus > 0 && <span className="sb-point" aria-hidden />}
+                </span>
+                {!mini && (
+                  <>
+                    <span className="sb-profil-mots">
+                      <b>{profil?.display_name ?? "—"}</b>
+                      {profil?.custom_difficulty_name && <span>{profil.custom_difficulty_name}</span>}
+                    </span>
+                    <ChevronRight aria-hidden />
+                  </>
+                )}
               </button>
             </DropdownMenuTrigger>
 
-            {/* Menu Dropdown Type Terminal HUD */}
-            <DropdownMenuContent
-              align={mini ? "start" : "end"}
-              side="right"
-              className="dark w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_hsl(var(--primary)/0.15)] rounded-none backdrop-blur-xl p-0"
-              sideOffset={16}
-            >
-              {/* Header du dropdown */}
-              <div className="px-3 py-2 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
-                <span className="ds-t-label uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.5)]">
-                  System_Config
+            <DropdownMenuContent side="right" align="end" sideOffset={12} className="sb-panneau">
+              <div className="sb-pan-tete">
+                <span className="sb-pan-av">
+                  {profil?.avatar_url ? <img src={profil.avatar_url} alt="" /> : initiale}
                 </span>
-                <div className="w-1.5 h-1.5 bg-primary animate-pulse shadow-[0_0_5px_hsl(var(--primary)/1)]" />
+                <span className="sb-pan-id">
+                  <b>{profil?.display_name ?? "—"}</b>
+                  {profil?.custom_difficulty_name && <span>{profil.custom_difficulty_name}</span>}
+                </span>
               </div>
 
-              {/* Grille de paramètres restaurée (2 colonnes) */}
-              <div className="p-2 grid grid-cols-2 gap-1 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:10px_10px]">
-                {settingsItems.map((item) => {
-                  const ItemIcon = item.icon;
+              <div className="sb-pan-liste">
+                {REGLAGES.map((r) => {
+                  const Icone = r.icone;
                   return (
-                    <DropdownMenuItem
-                      key={item.to}
-                      onClick={() => {
-                        navigate(item.to);
-                        closeMobile();
-                      }}
-                      className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none border border-transparent hover:border-primary/30 transition-all flex items-center h-10"
+                    <button
+                      key={r.to}
+                      type="button"
+                      className="sb-pan-item"
+                      onClick={() => { navigate(r.to); fermerMobile(); }}
                     >
-                      <ItemIcon className="mr-2 h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:text-primary" />
-                      <span className="ds-t-label font-bold tracking-wider uppercase truncate">{item.label}</span>
-                    </DropdownMenuItem>
+                      <Icone aria-hidden />
+                      {t(`nav.compte.${r.cle}`)}
+                    </button>
                   );
                 })}
               </div>
 
-              <div className="h-px bg-primary/20" />
+              <div className="sb-pan-filet" />
 
-              {/* Actions Globales */}
-              <div className="p-2 space-y-1">
-                {/* 1. Redirige vers /inbox (au lieu de /notifications)
-                  2. Affiche totalUnread pour être strictement cohérent avec la pastille de l'avatar 
-                */}
+              <div className="sb-pan-theme">
+                <span>{t("nav.theme", "Thème")}</span>
+                <span className="sb-pan-bascule">
+                  {(["light", "dark", "system"] as ThemePreference[]).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={themeCourant === v}
+                      onClick={() => poserTheme(v)}
+                    >
+                      {v === "light" ? t("nav.themeClair") : v === "dark" ? t("nav.themeSombre") : t("nav.themeSysteme")}
+                    </button>
+                  ))}
+                </span>
+              </div>
+
+              <div className="sb-pan-filet" />
+
+              <div className="sb-pan-liste">
                 {social.inbox && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      navigate("/inbox");
-                      closeMobile();
-                    }}
-                    className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      <Mail className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                      <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
-                    </div>
-                    {totalUnread > 0 && (
-                      <span className="bg-primary text-[#050508] ds-t-label px-1.5 py-0.5 font-bold rounded-sm">
-                        {totalUnread}
-                      </span>
-                    )}
-                  </DropdownMenuItem>
+                  <button type="button" className="sb-pan-item" onClick={() => { navigate("/inbox"); fermerMobile(); }}>
+                    <Mail aria-hidden />
+                    {t("nav.compte.inbox")}
+                    {totalNonLus > 0 && <span className="sb-pastille">{totalNonLus > 99 ? "99+" : totalNonLus}</span>}
+                  </button>
                 )}
-
-                <DropdownMenuItem
-                  onClick={() => {
-                    navigate("/pact-selector");
-                    closeMobile();
-                  }}
-                  className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center"
-                >
-                  <RefreshCw className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                  <span className="text-xs font-bold tracking-widest uppercase">Switch_Pact</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="p-2 text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer group rounded-none flex items-center"
-                >
-                  <LogOut className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                  <span className="text-xs font-bold tracking-widest uppercase">Terminate_Session</span>
-                </DropdownMenuItem>
+                <button type="button" className="sb-pan-item" onClick={() => { navigate("/pact-selector"); fermerMobile(); }}>
+                  <RefreshCw aria-hidden />
+                  {t("nav.compte.changerPacte")}
+                </button>
+                <button type="button" className="sb-pan-item sb-pan-sortie" onClick={seDeconnecter}>
+                  <LogOut aria-hidden />
+                  {t("nav.compte.deconnexion")}
+                </button>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

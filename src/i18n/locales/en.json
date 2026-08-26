@@ -3532,5 +3532,55 @@
     "groupSocial": "Social",
     "groupActions": "Actions",
     "groupSettings": "Settings"
+  },
+  "nav": {
+    "chercher": "Search",
+    "ouvrir": "Open navigation",
+    "replier": "Collapse navigation",
+    "deplier": "Expand navigation",
+    "installer": "Install modules",
+    "options": "Account and settings",
+    "theme": "Theme",
+    "themeClair": "Light",
+    "themeSombre": "Dark",
+    "themeSysteme": "Auto",
+    "niveau": "Level {{n}}",
+    "sections": {
+      "overview": "Dashboard",
+      "operations": "Operations",
+      "lifeSystems": "Life systems",
+      "network": "Social",
+      "system": "System"
+    },
+    "pages": {
+      "dashboard": "Dashboard",
+      "analytics": "Analytics",
+      "goals": "Goals",
+      "focus": "Focus",
+      "calendar": "Calendar",
+      "todo": "Tasks",
+      "theCall": "The Call",
+      "journal": "Journal",
+      "finance": "Finance",
+      "health": "Health",
+      "wishlist": "Wishlist",
+      "community": "Community",
+      "friends": "Friends",
+      "leaderboard": "Leaderboard",
+      "achievements": "Achievements",
+      "shop": "Shop"
+    },
+    "compte": {
+      "compte": "My account",
+      "public": "Public profile",
+      "pacte": "My pact",
+      "apparence": "Appearance and sounds",
+      "notifications": "Notifications",
+      "confidentialite": "Privacy",
+      "donnees": "My data",
+      "inbox": "Inbox",
+      "changerPacte": "Switch pact",
+      "deconnexion": "Sign out"
+    }
   }
 }

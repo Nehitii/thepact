@@ -3532,5 +3532,55 @@
     "groupSocial": "Social",
     "groupActions": "Actions",
     "groupSettings": "Réglages"
+  },
+  "nav": {
+    "chercher": "Rechercher",
+    "ouvrir": "Ouvrir la navigation",
+    "replier": "Replier la navigation",
+    "deplier": "Déplier la navigation",
+    "installer": "Installer des modules",
+    "options": "Compte et réglages",
+    "theme": "Thème",
+    "themeClair": "Clair",
+    "themeSombre": "Sombre",
+    "themeSysteme": "Auto",
+    "niveau": "Niveau {{n}}",
+    "sections": {
+      "overview": "Tableau de bord",
+      "operations": "Opérations",
+      "lifeSystems": "Systèmes de vie",
+      "network": "Social",
+      "system": "Système"
+    },
+    "pages": {
+      "dashboard": "Tableau de bord",
+      "analytics": "Analytique",
+      "goals": "Objectifs",
+      "focus": "Focus",
+      "calendar": "Calendrier",
+      "todo": "Tâches",
+      "theCall": "The Call",
+      "journal": "Journal",
+      "finance": "Finances",
+      "health": "Santé",
+      "wishlist": "Souhaits",
+      "community": "Communauté",
+      "friends": "Amis",
+      "leaderboard": "Classement",
+      "achievements": "Succès",
+      "shop": "Boutique"
+    },
+    "compte": {
+      "compte": "Mon compte",
+      "public": "Profil public",
+      "pacte": "Mon pacte",
+      "apparence": "Apparence et sons",
+      "notifications": "Notifications",
+      "confidentialite": "Confidentialité",
+      "donnees": "Mes données",
+      "inbox": "Boîte de réception",
+      "changerPacte": "Changer de pacte",
+      "deconnexion": "Se déconnecter"
+    }
   }
 }
