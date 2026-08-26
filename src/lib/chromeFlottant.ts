@@ -26,10 +26,14 @@ import { PREF } from "./preferencesAffichage";
 
 const AVIS = "vowpact-chrome-flottant";
 
-type Objet = "barre" | "mia";
+/* « barre » a disparu de cette liste avec la barre ⌘K flottante :
+   la barre laterale porte maintenant sa propre recherche, et deux
+   portes cote a cote pour la meme piece ne valent pas un reglage. Il
+   ne reste qu un objet flottant, mais le mecanisme est garde tel
+   quel — le jour ou un second reapparait, il se branche ici. */
+type Objet = "mia";
 
 const CLE: Record<Objet, string> = {
-  barre: PREF.BARRE_FLOTTANTE,
   mia: PREF.MIA_VIGNETTE,
 };
 

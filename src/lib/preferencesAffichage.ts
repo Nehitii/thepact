@@ -29,8 +29,10 @@ export const PREF = {
   MIA_LARGEUR: "vowpact.mia.largeur",
   MIA_ABSENCES: "vowpact.mia.absences",
   /* ── Ce qui flotte au-dessus de toutes les pages ── */
-  BARRE_FLOTTANTE: "vowpact.barre.visible",
-  BARRE_POSITION: "vowpact.barre.position",
+  /* BARRE_FLOTTANTE et BARRE_POSITION ont ete retirees avec la barre
+     ⌘K flottante. Les valeurs deja ecrites chez les gens restent dans
+     leur stockage : les effacer demanderait un passage de nettoyage
+     pour deux clefs mortes qui ne genent personne. */
   MIA_VIGNETTE: "vowpact.mia.vignette",
   MIA_PASSAGE: "vowpact.mia.passage",
   TODO_VUE: "vowpact.todo.vue",

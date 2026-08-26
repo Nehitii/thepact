@@ -44,7 +44,6 @@ export default function DisplaySound() {
      Il rejoint donc PREF, et la remise à zéro des préférences l'emporte
      comme les autres. */
   const [miaAbsences, setMiaAbsences] = useState(() => reagitAuxAbsences());
-  const [barreVisible, reglerBarre] = useChromeFlottant("barre");
   const [vignetteVisible, reglerVignette] = useChromeFlottant("mia");
   const { user } = useAuth();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
@@ -307,30 +306,16 @@ export default function DisplaySound() {
       </Panneau>
 
       {/* ── CE QUI FLOTTE ──
-          La barre ⌘K et la vignette de M.I.A sont les deux seuls objets
-          qui ne quittent jamais l'écran, et les deux seuls qu'on puisse
-          trouver de trop. Ils partagent donc un panneau : on ne les
-          cherche pas séparément, on cherche « comment enlever ce qui
-          flotte ». */}
+          Il n'en reste qu'un. La barre ⌘K flottante a été retirée : la
+          barre latérale porte désormais sa propre recherche, et deux
+          portes côte à côte pour la même pièce ne valent pas un
+          réglage. Le raccourci ⌘K, lui, fonctionne toujours. */}
       <Panneau
         code="Éléments flottants"
-        etat={`${(barreVisible ? 1 : 0) + (vignetteVisible ? 1 : 0)} sur 2 affichés`}
-        ton={barreVisible || vignetteVisible ? "actif" : "neutre"}
+        etat={vignetteVisible ? "affichée" : "retirée"}
+        ton={vignetteVisible ? "actif" : "neutre"}
         journal={null}
       >
-        <Reglage
-          nom="Barre de recherche flottante"
-          note="La pastille ⌘K, déplaçable, posée sur toutes les pages. La retirer ne désarme pas le raccourci : ⌘K ouvre la palette même sans elle."
-          icone={<Search />}
-        >
-          <Switch
-            checked={barreVisible}
-            onCheckedChange={(v) => {
-              reglerBarre(v);
-              toast.success(v ? "La barre est de retour." : "Barre retirée. ⌘K fonctionne toujours.");
-            }}
-          />
-        </Reglage>
 
         <Reglage
           nom="Vignette de M.I.A"

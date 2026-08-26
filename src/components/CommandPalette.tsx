@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion, type PanInfo } from "framer-motion";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,15 +11,12 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  BarChart3, Bell, BookOpen, CalendarDays, Database, Focus, GripVertical,
+  BarChart3, Bell, BookOpen, CalendarDays, Database, Focus,
   Heart, Home, Inbox, Keyboard, ListTodo, Medal, Search, Settings, Share2,
   Shield, ShoppingBag, ShoppingCart, Sparkles, Swords, Target, Trophy,
   User, UserCircle, Users, Volume2, Wallet, Zap,
 } from "lucide-react";
 import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
-import { PREF } from "@/lib/preferencesAffichage";
-import { useChromeFlottant } from "@/lib/chromeFlottant";
-import { raccourciPalette } from "@/lib/toucheRaccourci";
 import { classer } from "@/lib/rechercheMots";
 
 /**
@@ -153,31 +149,16 @@ export const OUVRIR_MIA = "vowpact-ouvrir-mia";
    c est deja le procede retenu pour M.I.A juste au-dessus. */
 export const OUVRIR_PALETTE = "vowpact-ouvrir-palette";
 
-interface Position { x: number; y: number }
-
-function positionRetenue(): Position {
-  try {
-    const brut = localStorage.getItem(PREF.BARRE_POSITION);
-    if (!brut) return { x: 0, y: 0 };
-    const p = JSON.parse(brut) as Position;
-    return Number.isFinite(p?.x) && Number.isFinite(p?.y) ? p : { x: 0, y: 0 };
-  } catch {
-    return { x: 0, y: 0 };
-  }
-}
-
 export function CommandPalette() {
   const [ouverte, setOuverte] = useState(false);
-  const [visible] = useChromeFlottant("barre");
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const limites = useRef<HTMLDivElement>(null);
-  const enDeplacement = useRef(false);
-  const depart = useRef<Position>(positionRetenue());
 
-  /* ⌘K RESTE ARMÉ MÊME QUAND LA BARRE EST RETIRÉE.
-     Ce qu'on retire dans les réglages est un bouton, pas une fonction. */
+  /* LA BARRE FLOTTANTE A ÉTÉ RETIRÉE, PAS LA PALETTE.
+     Sa pastille ⌘K doublait désormais la recherche de la barre
+     latérale — deux portes côte à côte pour la même pièce. Le
+     raccourci, lui, reste : c'est la fonction, pas le bouton. */
   useEffect(() => {
     const auClavier = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -220,68 +201,8 @@ export function CommandPalette() {
     [navigate],
   );
 
-  /* La position est écrite à la FIN du déplacement, pas à chaque image :
-     un glissement de deux secondes écrirait cent fois dans le stockage. */
-  const poser = useCallback((_e: unknown, info: PanInfo) => {
-    depart.current = {
-      x: depart.current.x + info.offset.x,
-      y: depart.current.y + info.offset.y,
-    };
-    try {
-      localStorage.setItem(PREF.BARRE_POSITION, JSON.stringify(depart.current));
-    } catch {
-      /* stockage indisponible : la position ne tiendra que la session */
-    }
-    window.setTimeout(() => { enDeplacement.current = false; }, 150);
-  }, []);
-
   return (
     <>
-      {visible && (
-        <>
-          <div ref={limites} className="cmdk-limites" aria-hidden="true" />
-
-          <motion.div
-            drag
-            dragConstraints={limites}
-            dragElastic={0.15}
-            dragMomentum={false}
-            initial={{ x: depart.current.x, y: depart.current.y }}
-            onDragStart={() => { enDeplacement.current = true; }}
-            onDragEnd={poser}
-            whileHover={{ scale: 1.02 }}
-            whileDrag={{ scale: 1.05 }}
-            data-chrome="palette"
-            className="cmdk-barre"
-          >
-            <span className="cmdk-poignee" title={t("palette.drag", "Glisser pour déplacer")}>
-              <GripVertical aria-hidden="true" />
-            </span>
-
-            <button
-              type="button"
-              className="cmdk-declencheur"
-              onClick={(e) => {
-                /* Un relâchement après un glissement est un clic pour le
-                   navigateur : sans ce garde, déplacer la barre ouvrirait
-                   la palette à chaque fois. */
-                if (enDeplacement.current) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  return;
-                }
-                setOuverte(true);
-              }}
-              aria-label={t("palette.open", "Chercher ou se rendre à…")}
-            >
-              <Search aria-hidden="true" />
-              <span className="cmdk-mot">{t("palette.search", "Chercher")}</span>
-              <kbd className="cmdk-touche">{raccourciPalette()}</kbd>
-            </button>
-          </motion.div>
-        </>
-      )}
-
       <CommandDialog open={ouverte} onOpenChange={setOuverte} filter={classer}>
         <CommandInput placeholder={t("palette.placeholder", "Une page, un réglage, une action…")} />
         <CommandList>

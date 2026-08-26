@@ -1955,96 +1955,11 @@ html body[data-scroll-locked] {
    l application qui refusait le theme. Ses couleurs viennent des
    jetons, et le theme clair la reprend dans theme-clair.css.
    ═══════════════════════════════════════════════════════════ */
-.cmdk-limites {
-  position: fixed;
-  inset: 16px;
-  z-index: 50;
-  pointer-events: none;
-}
-@media (min-width: 768px) { .cmdk-limites { inset: 32px; } }
-
-.cmdk-barre {
-  position: fixed;
-  bottom: 9rem;
-  right: 1rem;
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  border-radius: 999px;
-  background: hsl(var(--card) / 0.88);
-  border: 1px solid hsl(var(--primary) / 0.3);
-  box-shadow: 0 0 20px hsl(var(--primary) / 0.15);
-  backdrop-filter: blur(10px);
-  cursor: grab;
-  pointer-events: auto;
-}
-.cmdk-barre:active { cursor: grabbing; }
-@media (min-width: 768px) { .cmdk-barre { bottom: 6rem; right: 1.5rem; } }
-
-.cmdk-poignee {
-  display: grid;
-  place-items: center;
-  padding: 8px;
-  /* MESUREE : a 0,5 dopacite la poignee tombait a 2,46 sur le fond
-     sombre, sous les 3:1 quun element non textuel doit tenir. Elle
-     nest pas du texte, mais cest la seule chose qui dit que lobjet se
-     deplace — invisible, elle ne dit rien. */
-  color: hsl(var(--muted-foreground) / 0.78);
-  transition: color 160ms ease;
-}
-.cmdk-poignee svg { width: 16px; height: 16px; }
-.cmdk-barre:hover .cmdk-poignee { color: hsl(var(--muted-foreground)); }
-
-.cmdk-declencheur {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px 8px 4px;
-  color: hsl(var(--primary) / 0.85);
-  background: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: color 160ms ease;
-}
-.cmdk-declencheur:hover { color: hsl(var(--primary)); }
-.cmdk-declencheur:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-  border-radius: 999px;
-}
-.cmdk-declencheur svg { width: 16px; height: 16px; }
-
-.cmdk-mot {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-.cmdk-touche {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: 6px;
-  padding: 2px 8px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: hsl(var(--primary));
-  background: hsl(var(--primary) / 0.1);
-  border: 1px solid hsl(var(--primary) / 0.2);
-  border-radius: 4px;
-}
-/* Sous 640 px, le mot et la touche cedent : il reste la loupe, qui
-   suffit — personne ne tape ⌘K sur un telephone. */
-@media (max-width: 639px) {
-  .cmdk-mot, .cmdk-touche { display: none; }
-  .cmdk-declencheur { padding-right: 10px; }
-}
+/* LA BARRE FLOTTANTE A ETE RETIREE.
+   Sa pastille doublait la recherche de la barre laterale — deux portes
+   cote a cote pour la meme piece. Le raccourci reste : c est la
+   fonction, pas le bouton. Ses regles vivaient ici (limites, barre,
+   poignee, declencheur, mot, touche) et ne servaient plus. */
 
 .cmdk-entree {
   display: flex;
