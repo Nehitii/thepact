@@ -44,6 +44,10 @@ export function ChoixGif({ onChoisir }: ChoixGifProps) {
   const [gifs, setGifs] = useState<Gif[]>([]);
   const [enCours, setEnCours] = useState(false);
   const [souci, setSouci] = useState<string | null>(null);
+  /* Les deux services demandent d'être nommés quand on montre leurs
+     images. Le relais dit lequel a répondu — le composeur ne le choisit
+     pas, il ne fait que le créditer. */
+  const [source, setSource] = useState<"giphy" | "tenor" | null>(null);
   const boite = useRef<HTMLDivElement>(null);
   const champ = useRef<HTMLInputElement>(null);
 
@@ -83,6 +87,7 @@ export function ChoixGif({ onChoisir }: ChoixGifProps) {
           return;
         }
         setGifs(Array.isArray(data?.gifs) ? data.gifs : []);
+        setSource(data?.source === "tenor" ? "tenor" : data?.source === "giphy" ? "giphy" : null);
       } catch {
         if (vivant) setSouci(t("community.gif.indisponible", "Les GIF sont injoignables pour le moment."));
       } finally {
@@ -146,8 +151,13 @@ export function ChoixGif({ onChoisir }: ChoixGifProps) {
             </div>
           )}
 
-          {/* Tenor demande d'être nommé quand on affiche ses images. */}
-          <p className="co-gifs-source">{t("community.gif.source", "Propulsé par Tenor")}</p>
+          {source && (
+            <p className="co-gifs-source">
+              {t("community.gif.source", "Propulsé par {{service}}", {
+                service: source === "giphy" ? "GIPHY" : "Tenor",
+              })}
+            </p>
+          )}
         </div>
       )}
     </div>

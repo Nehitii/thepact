@@ -1944,7 +1944,7 @@
       "rien": "Nothing under that word.",
       "indisponible": "GIFs are unreachable right now.",
       "cleAbsente": "The GIF service is not configured.",
-      "source": "Powered by Tenor"
+      "source": "Powered by {{service}}"
     }
   },
   "wishlist": {

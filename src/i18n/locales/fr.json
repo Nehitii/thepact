@@ -1944,7 +1944,7 @@
       "rien": "Rien sous ce mot.",
       "indisponible": "Les GIF sont injoignables pour le moment.",
       "cleAbsente": "Le service de GIF n'est pas configuré.",
-      "source": "Propulsé par Tenor"
+      "source": "Propulsé par {{service}}"
     }
   },
   "wishlist": {
