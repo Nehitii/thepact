@@ -7,13 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
  * LE CHOIX D'UN GIF.
  *
  * ═══════════════════════════════════════════════════════════════
- * LA CLÉ NE DESCEND PAS ICI. Une clé Giphy dans le paquet du client est
+ * LA CLÉ NE DESCEND PAS ICI. Une clé dans le paquet du client est
  * lisible par quiconque ouvre l'onglet réseau, et elle porte le quota de
- * tout le monde. La fonction « giphy-search » relaie ; ce composant ne
- * connaît que l'adresse de la fonction.
+ * tout le monde. La fonction « gif-search » relaie ; ce composant ne
+ * connaît ni la clé ni le fournisseur — Giphy ne répondait pas, on est
+ * passé à Tenor sans toucher à une ligne d'ici.
  *
- * UN GIF CHOISI N'EST PAS DÉPOSÉ. Le composeur garde son adresse chez
- * Giphy plutôt que d'en recopier huit mégaoctets dans le stockage : un
+ * UN GIF CHOISI N'EST PAS DÉPOSÉ. Le composeur garde son adresse chez le
+ * fournisseur plutôt que d'en recopier huit mégaoctets dans le stockage : un
  * GIF de réaction est un objet qu'on montre, pas qu'on archive. C'est
  * pourquoi le média porte alors un chemin nul — il n'y a rien à
  * effacer si l'on change d'avis.
@@ -71,7 +72,7 @@ export function ChoixGif({ onChoisir }: ChoixGifProps) {
       setEnCours(true);
       setSouci(null);
       try {
-        const { data, error } = await supabase.functions.invoke("giphy-search", {
+        const { data, error } = await supabase.functions.invoke("gif-search", {
           body: { recherche },
         });
         if (!vivant) return;
@@ -145,8 +146,8 @@ export function ChoixGif({ onChoisir }: ChoixGifProps) {
             </div>
           )}
 
-          {/* Giphy demande d'être nommé quand on affiche ses images. */}
-          <p className="co-gifs-source">{t("community.gif.source", "Propulsé par GIPHY")}</p>
+          {/* Tenor demande d'être nommé quand on affiche ses images. */}
+          <p className="co-gifs-source">{t("community.gif.source", "Propulsé par Tenor")}</p>
         </div>
       )}
     </div>

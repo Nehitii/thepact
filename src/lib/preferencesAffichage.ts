@@ -28,6 +28,10 @@ export const PREF = {
   ORDRES_REPLIES: "vowpact.ordres.replies",
   MIA_LARGEUR: "vowpact.mia.largeur",
   MIA_ABSENCES: "vowpact.mia.absences",
+  /* ── Ce qui flotte au-dessus de toutes les pages ── */
+  BARRE_FLOTTANTE: "vowpact.barre.visible",
+  BARRE_POSITION: "vowpact.barre.position",
+  MIA_VIGNETTE: "vowpact.mia.vignette",
   MIA_PASSAGE: "vowpact.mia.passage",
   TODO_VUE: "vowpact.todo.vue",
   WISHLIST_VUE: "vowpact.wishlist.vue",
