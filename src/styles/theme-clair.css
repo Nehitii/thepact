@@ -1740,3 +1740,31 @@
     repeating-linear-gradient(-45deg, rgb(20 30 40 / .05) 0 9px, transparent 9px 18px),
     var(--nexus-bg);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LA BARRE ⌘K SUR DU PAPIER
+
+   Elle écrivait « dark » dans son propre className et peignait son fond
+   « #03060A » : une pastille presque noire flottait au-dessus d'une page
+   blanche, le seul objet de l'application qui refusait le thème.
+
+   Les jetons font l'essentiel une fois la classe « dark » retirée. Ce
+   qui reste ici est ce qu'aucun jeton ne dit : le halo de néon, qui sur
+   du papier ne rayonne pas mais salit, et l'encre de la loupe, qui doit
+   descendre pour porter sur du clair.
+   ═══════════════════════════════════════════════════════════════ */
+.light .cmdk-barre {
+  background: hsl(44 24% 99% / 0.94);
+  border-color: hsl(210 20% 74%);
+  box-shadow: 0 2px 14px -6px rgb(20 30 40 / 0.28);
+}
+.light .cmdk-declencheur { color: #1E4F73; }
+.light .cmdk-declencheur:hover { color: #0B3B5C; }
+.light .cmdk-touche {
+  color: #0B3B5C;
+  background: hsl(210 30% 92%);
+  border-color: hsl(210 22% 78%);
+}
+.light .cmdk-poignee { color: hsl(210 12% 52%); }
+.light .cmdk-barre:hover .cmdk-poignee { color: hsl(210 18% 34%); }
+.light .cmdk-entree svg { color: #2A6489; }

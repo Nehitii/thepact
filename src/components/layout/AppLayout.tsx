@@ -1,7 +1,8 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { CommandPalette } from "@/components/CommandPalette";
+import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
+import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import type { ReviewType } from "@/hooks/useReviews";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -18,6 +19,17 @@ const MiaConsole = lazy(() =>
 
 export function AppLayout() {
   const [miaOuverte, setMiaOuverte] = useState(false);
+  const [vignetteVisible] = useChromeFlottant("mia");
+
+  /* LA CONSOLE S'OUVRE AUSSI SANS LA VIGNETTE.
+     La palette porte « Ouvrir M.I.A » : sans cet écouteur, l'entrée
+     n'aurait rien fait — et elle est le seul chemin qui reste quand on a
+     retiré la vignette des réglages. */
+  useEffect(() => {
+    const ouvrir = () => setMiaOuverte(true);
+    window.addEventListener(OUVRIR_MIA, ouvrir);
+    return () => window.removeEventListener(OUVRIR_MIA, ouvrir);
+  }, []);
   /* La vignette montre ce que M.I.A fait : c est la console qui le
      sait, elle le remonte. Fermee alors qu une reponse vient
      d arriver, la vignette reste allumee. */
@@ -112,6 +124,7 @@ export function AppLayout() {
           C etait un rond bleu plein portant le petit robot a antennes
           de lucide — celui de dix mille applications — et il ne disait
           jamais rien. Le reseau porte le nom et porte l etat. */}
+      {vignetteVisible && (
       <button
         type="button"
         onClick={() => setMiaOuverte(true)}
@@ -123,6 +136,7 @@ export function AppLayout() {
       >
         <ReseauMia etat={etatMia} taille={22} />
       </button>
+      )}
 
       {miaOuverte && (
         <Suspense fallback={null}>
