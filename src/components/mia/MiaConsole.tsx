@@ -68,6 +68,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   const [brouillon, setBrouillon] = useState("");
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   const fluxRef = useRef<HTMLDivElement>(null);
+  const champRef = useRef<HTMLTextAreaElement>(null);
 
   /* La largeur tient d'une session à l'autre : c'est une préférence de
      lecture, pas un réglage de compte. */
@@ -167,12 +168,34 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     }
   }, [filActif, send]);
 
+  /* ENTRÉE ENVOIE, MAJ+ENTRÉE VA À LA LIGNE.
+     Seul ⌘+Entrée envoyait, donc une Entrée seule insérait un retour à
+     la ligne — le geste que tout le monde fait dans un champ de
+     conversation. Le champ se remplissait sans le dire et rognait sa
+     première ligne. ⌘+Entrée continue de marcher, par habitude. */
   const auClavier = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      void envoyer();
-    }
+    if (e.key !== "Enter") return;
+    if (e.shiftKey) return;
+    e.preventDefault();
+    void envoyer();
   };
+
+  /* La hauteur suit le contenu : on la remet à zéro pour lire la vraie
+     hauteur du texte, puis on la pose, plafonnée. */
+  const ajusterHauteur = useCallback(() => {
+    const el = champRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const plafond = 168;
+    const voulue = Math.min(plafond, el.scrollHeight);
+    el.style.height = `${voulue}px`;
+    if (el.scrollHeight > plafond) el.dataset.plein = "";
+    else delete el.dataset.plein;
+  }, []);
+
+  useEffect(() => {
+    ajusterHauteur();
+  }, [brouillon, ajusterHauteur]);
 
   const titreCourant = useMemo(
     () => conversations.find((c) => c.id === filActif)?.title ?? "Nouvelle conversation",
@@ -268,6 +291,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             <div className="mia-pied">
               <div className="mia-champ">
                 <textarea
+                  ref={champRef}
                   value={brouillon}
                   onChange={(e) => setBrouillon(e.target.value)}
                   onKeyDown={auClavier}
@@ -286,9 +310,12 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
                   <Send className="h-3.5 w-3.5" />
                 </button>
               </div>
+              {/* La largeur ne s'affiche que pendant qu'on la règle :
+                  affichée en permanence, c'était un relevé de mise au
+                  point qui traînait sous chaque conversation. */}
               <div className="mia-note">
-                <span>⌘J ouvrir · ⌘↵ envoyer</span>
-                <span>{largeur} px</span>
+                <span>↵ envoyer · ⇧↵ aller à la ligne</span>
+                <span>{redim ? `${Math.round(largeur)} px` : ""}</span>
               </div>
             </div>
 
