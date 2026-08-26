@@ -243,7 +243,7 @@ export default function Analytics() {
     goalsOverTime, healthTrend, financeTrend, habitStreak, todoStats, goalShowcase,
     pomodoroTrend, goalVelocity, summary,
     reports, focusParObjectif, tachesParCategorie, tachesParDifficulte,
-    anneeQuiPreleve, heureDOuvrage, sommeil, serieTaches, prevuReel, matiere,
+    anneeQuiPreleve, heureDOuvrage, sommeil, serieTaches, cequiTombe, prevuReel, matiere,
   } = data;
 
   const pctObjectifs = summary.totalGoals > 0
@@ -286,6 +286,7 @@ export default function Analytics() {
     return jours.slice(-120);
   })();
   const joursTenus = bandeDesJours.filter((j) => j.n > 0).length;
+  const totalQuiTombe = cequiTombe.reduce((a, m) => a + m.evenements + m.echeances, 0);
   /* L'heure de pointe cumule les deux séries : c'est le moment où l'on
      est à l'ouvrage, pas celui où l'on coche le plus. */
   const heurePleine = heureDOuvrage.some((h) => h.taches + h.focus > 0)
@@ -823,6 +824,32 @@ export default function Analytics() {
                 </ResponsiveContainer>
               </Panneau>
             </div>
+
+            {/* CE QUI TOMBE, MOIS PAR MOIS.
+                Le calendrier portait « charge du mois » et « jours
+                occupés » : deux nombres qui ne valent que pour le mois
+                affiché, dans un flanc qu'on ne regarde pas en planifiant.
+                Étendus à l'année, ils répondent enfin à une question de
+                rythme — quels mois portent quelque chose, lesquels sont
+                vides, et si la charge se concentre. */}
+            <Panneau
+              titre="Ce qui tombe à date"
+              droite={totalQuiTombe ? `${totalQuiTombe} sur ${cequiTombe.length} mois` : undefined}
+              vide={cequiTombe.length === 0}
+              messageVide="Rien de daté : ni événement, ni échéance"
+            >
+              <ResponsiveContainer width="100%" height={215}>
+                <BarChart data={cequiTombe}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="mois" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Legend wrapperStyle={LEGENDE} />
+                  <Bar dataKey="echeances" name="Échéances" fill={AMBRE} radius={[2, 2, 0, 0]} stackId="a" />
+                  <Bar dataKey="evenements" name="Événements" fill={ACCENT} radius={[2, 2, 0, 0]} stackId="a" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panneau>
 
             <Panneau
               titre="Tâches accomplies"

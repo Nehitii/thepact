@@ -1,13 +1,12 @@
 import { memo, useMemo } from "react";
 import {
-  format, parseISO, getDaysInMonth, isSameMonth, isSameDay,
+  format, parseISO, isSameMonth, isSameDay,
   formatDistanceToNowStrict, isBefore,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
-import { estImportee } from "./sources";
 
 /* LA TELEMETRIE
  *
@@ -43,35 +42,17 @@ export const CalendarSidebar = memo(({ events, viewDate, onEventClick, onDayClic
     const aVenir = vivants.filter((e) => isBefore(maintenant, parseISO(e.start_time)));
     const prochain = aVenir[0] ?? tries[0] ?? null;
 
-    const evenements = tries.filter((e) => !estImportee(e._source)).length;
-    const echeances = tries.length - evenements;
-
-    const parJour = new Map<string, number>();
-    for (const e of tries) {
-      const cle = format(parseISO(e.start_time), "yyyy-MM-dd");
-      parJour.set(cle, (parJour.get(cle) ?? 0) + 1);
-    }
-    let plusCharge: { cle: string; n: number } | null = null;
-    for (const [cle, n] of parJour) {
-      if (!plusCharge || n > plusCharge.n) plusCharge = { cle, n };
-    }
-
-    const joursDuMois = getDaysInMonth(viewDate);
+    /* Le comptage par jour, le total, le jour le plus chargé et le nombre
+       de jours du mois vivaient ici pour deux blocs de mesure qui sont
+       partis dans Analytics. Ce qui reste ne compte plus : il montre. */
     return {
       prochain,
       prochainEstAVenir: aVenir.length > 0,
       enCours,
-      total: tries.length,
-      evenements,
-      echeances,
-      joursOccupes: parJour.size,
-      joursDuMois,
-      plusCharge,
       liste: (aVenir.length ? aVenir : tries).slice(0, 4),
     };
-  }, [events, viewDate]);
+  }, [events]);
 
-  const barres = Math.round((mesures.joursOccupes / Math.max(1, mesures.joursDuMois)) * 10);
 
   return (
     <div className="cal-tel">
@@ -134,34 +115,15 @@ export const CalendarSidebar = memo(({ events, viewDate, onEventClick, onDayClic
         )}
       </div>
 
-      <div className="cal-tel-bloc">
-        <span className="cal-tel-nom">{t("calendar.tel.load", "Month load")}</span>
-        <span className="cal-tel-val">{mesures.total}</span>
-        <span className="cal-tel-note">
-          {t("calendar.tel.breakdown", "{{events}} events, {{deadlines}} deadlines", {
-            events: mesures.evenements,
-            deadlines: mesures.echeances,
-          })}
-        </span>
-        <div className="cal-tel-jauge" aria-hidden="true">
-          {Array.from({ length: 10 }, (_, i) => (
-            <i key={i} className={i < barres ? "est-plein" : undefined} />
-          ))}
-        </div>
-      </div>
+      {/* CE QUI EST PARTI, ET OÙ.
+          « Charge du mois » et « jours occupés » ne valaient que pour le
+          mois affiché, dans un flanc qu'on ne consulte pas en planifiant.
+          Ils vivent maintenant dans Analytics, étendus à l'année, où ils
+          répondent enfin à une question de rythme.
 
-      <div className="cal-tel-bloc">
-        <span className="cal-tel-nom">{t("calendar.tel.busyDays", "Busy days")}</span>
-        <span className="cal-tel-val">{mesures.joursOccupes} / {mesures.joursDuMois}</span>
-        {mesures.plusCharge && (
-          <span className="cal-tel-note">
-            {t("calendar.tel.busiest", "Busiest: {{date}}", {
-              date: format(parseISO(mesures.plusCharge.cle), "EEEE d", { locale }),
-            })}
-          </span>
-        )}
-      </div>
-
+          CE QUI RESTE EST CE QU'ON VIENT CHERCHER : ce qui court, ce qui
+          vient ensuite, et la suite. « À venir » fermait la colonne — on
+          le lisait après deux mesures qui ne s'adressaient pas à lui. */}
       {mesures.liste.length > 0 && (
         <div className="cal-tel-bloc">
           <span className="cal-tel-nom">{t("calendar.tel.upcoming", "Upcoming")}</span>

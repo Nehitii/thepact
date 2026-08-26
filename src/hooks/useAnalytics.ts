@@ -161,6 +161,8 @@ export interface AnalyticsData {
   anneeQuiPreleve: { mois: number; montant: number; lignes: number }[];
   heureDOuvrage: HeureDOuvrage[];
   serieTaches: { date: string; n: number }[];
+  /** Ce qui tombe à date, mois par mois, toutes sources confondues. */
+  cequiTombe: { mois: string; evenements: number; echeances: number; jours: number }[];
   sommeil: { date: string; heures: number }[];
   energieTroisTemps: { date: string; matin: number | null; apresMidi: number | null; soir: number | null }[];
   prevuReel: PrevuReel[];
@@ -256,7 +258,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
        page casse sur le premier .reduce(). Constate en developpement,
        et ca vaudrait pour un onglet reste ouvert pendant un deploiement.
        La cle change donc quand la forme change. */
-    queryKey: ["analytics-dashboard", "v2", user?.id, period],
+    queryKey: ["analytics-dashboard", "v3", user?.id, period],
     // Le changement de periode conserve les donnees precedentes pendant le
     // chargement. Sans cela `data` repasse a undefined, la page entiere
     // bascule en squelettes, et le selecteur de periode lui-meme est
@@ -279,7 +281,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       const pactId = pactData?.id;
 
       // Parallel fetch all data - filter goals by pact_id
-      const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes, depensesRes] = await Promise.all([
+      const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes, depensesRes, agendaRes, echeancesRes] = await Promise.all([
         pactId 
           ? supabase.from("goals").select("id, name, created_at, start_date, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
@@ -290,6 +292,8 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         supabase.from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at, linked_goal_id, linked_todo_id, linked_step_id").eq("user_id", user.id).eq("completed", true),
         supabase.from("profiles").select("already_funded").eq("id", user.id).maybeSingle(),
         supabase.from("recurring_expenses").select("amount, category, is_active, periode_mois, mois_ancre, decalage_mois, montant_total, echeances").eq("user_id", user.id).eq("is_active", true),
+        supabase.from("calendar_events").select("start_time").eq("user_id", user.id),
+        supabase.from("todo_tasks").select("deadline").eq("user_id", user.id).not("deadline", "is", null),
       ]);
 
       const allGoals = goalsRes.data || [];
@@ -721,6 +725,29 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         imprevuRevenus: Number(m.unplanned_income) || 0,
       }));
 
+      /* ── CE QUI TOMBE, MOIS PAR MOIS ──
+         Le calendrier disait « charge du mois » et « jours occupés » pour
+         le mois affiché : deux nombres qui ne valent que pour ce mois-là,
+         posés dans un flanc qu'on ne regarde pas en planifiant. Étendus à
+         l'année, ils répondent à une question de rythme — quels mois
+         portent quelque chose, lesquels sont vides. */
+      const parMois = new Map<string, { evenements: number; echeances: number; jours: Set<string> }>();
+      const poser = (iso: string | null, quoi: "evenements" | "echeances") => {
+        if (!iso) return;
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return;
+        const mois = format(d, "yyyy-MM");
+        const e = parMois.get(mois) ?? { evenements: 0, echeances: 0, jours: new Set<string>() };
+        e[quoi] += 1;
+        e.jours.add(format(d, "yyyy-MM-dd"));
+        parMois.set(mois, e);
+      };
+      for (const a of ((agendaRes.data || []) as { start_time: string | null }[])) poser(a.start_time, "evenements");
+      for (const e of ((echeancesRes.data || []) as { deadline: string | null }[])) poser(e.deadline, "echeances");
+      const cequiTombe = Array.from(parMois.entries())
+        .map(([mois, e]) => ({ mois, evenements: e.evenements, echeances: e.echeances, jours: e.jours.size }))
+        .sort((a, b) => a.mois.localeCompare(b.mois));
+
       const matiere = {
         relevesSante: sante.length,
         relevesEnergie: energieTroisTemps.length,
@@ -737,6 +764,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         anneeQuiPreleve,
         heureDOuvrage,
         serieTaches,
+        cequiTombe,
         sommeil,
         energieTroisTemps,
         prevuReel,
