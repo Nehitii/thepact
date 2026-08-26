@@ -424,8 +424,14 @@ const ACTES: Record<string, { verbe: string; route?: (id?: string) => string }> 
   create_goal: { verbe: "objectif créé", route: (id) => `/goals/${id}` },
   create_habit_goal: { verbe: "habitude créée", route: (id) => `/goals/${id}` },
   create_todo: { verbe: "tâche ajoutée", route: () => "/todo" },
+  complete_todo: { verbe: "tâche cochée", route: () => "/todo" },
+  reschedule_todo: { verbe: "tâche replanifiée", route: () => "/todo" },
+  complete_step: { verbe: "étape cochée" },
+  add_step: { verbe: "étape ajoutée" },
+  reschedule_step: { verbe: "étape replanifiée" },
   create_journal_entry: { verbe: "entrée écrite", route: () => "/journal" },
-  create_decision: { verbe: "décision consignée", route: () => "/reviews" },
+  create_calendar_event: { verbe: "évènement posé", route: () => "/calendar" },
+  add_wishlist_item: { verbe: "souhait ajouté", route: () => "/wishlist" },
 };
 
 function Actes({ actes }: { actes: ActeMia[] }) {

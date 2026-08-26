@@ -38,6 +38,13 @@ Exemple. Question : « combien d'étapes il me reste ? »
 MAUVAIS — « Il vous reste un total de **59 étapes** à réaliser sur vos **14 objectifs en cours**. Voici le détail objectif par objectif : » suivi de quatorze puces.
 BON — « 59, sur tes 14 objectifs en cours. NOTHINGNESS en concentre 19 à lui seul. »
 
+CE QUE TU PEUX FAIRE
+Tu vois et tu agis sur : objectifs et leurs étapes, tâches, journal, agenda, souhaits, concentration, santé, finances, pacte, mémoire longue.
+Tu peux cocher une étape ou une tâche, en ajouter, déplacer une échéance, poser un évènement, ajouter un souhait, écrire une entrée de journal, créer un objectif.
+TU NE DÉTRUIS RIEN. Aucun outil ne supprime ni n'archive quoi que ce soit : si on te le demande, dis où le faire à la main.
+Avant de cocher ou de déplacer quelque chose, récupère son identifiant avec l'outil de liste correspondant. Ne devine jamais un identifiant.
+Quand tu as agi, dis-le en une phrase : ce que tu as fait s'affiche déjà sous ta réponse, inutile de le répéter en détail.
+
 DONNÉES
 L'état du jour est donné plus bas : sers-t'en d'abord, n'appelle un outil que s'il ne suffit pas à répondre.
 N'appelle jamais deux fois le même outil avec les mêmes arguments dans un même échange.
@@ -63,22 +70,6 @@ const TOOLS = [
       name: "list_active_goals",
       description: "Liste les goals en cours et à démarrer du user (max 20, triés in_progress puis not_started, focus en tête). Retourne id, nom, difficulté, progression, pact_id, is_active_pact.",
       parameters: { type: "object", properties: { limit: { type: "number", default: 20 } } },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_recent_habits",
-      description: "Liste les complétions d'habitudes des 14 derniers jours.",
-      parameters: { type: "object", properties: {} },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_recent_transactions",
-      description: "Liste les 30 dernières transactions financières (date, libellé, montant, type, catégorie).",
-      parameters: { type: "object", properties: { limit: { type: "number", default: 30 } } },
     },
   },
   {
@@ -146,37 +137,8 @@ const TOOLS = [
   {
     type: "function",
     function: {
-      name: "create_decision",
-      description: "Enregistre une décision dans le Decision Log (contexte + hypothèse + confiance).",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          context: { type: "string" },
-          hypothesis: { type: "string" },
-          decision_text: { type: "string", description: "La décision prise" },
-          expected_outcome: { type: "string" },
-          confidence: { type: "number", description: "1-5" },
-          review_at: { type: "string", description: "Date ISO de revue future" },
-          reversibility: { type: "string", enum: ["reversible", "hard_to_reverse", "irreversible"] },
-        },
-        required: ["title", "decision_text"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
       name: "list_pacts",
       description: "Liste les pactes du user (id, nom, mantra, couleur). Utile avant create_goal pour choisir le pact_id.",
-      parameters: { type: "object", properties: {} },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_life_areas",
-      description: "Liste les domaines de vie du user (id, nom, poids, couleur). Utile avant create_goal pour rattacher un domaine.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -216,6 +178,228 @@ const TOOLS = [
         },
         required: ["pact_id", "name"],
       },
+    },
+  },
+  /* ═════════════ LES MAINS ═════════════
+     M.I.A avait treize outils, dont QUATRE MORTS :
+
+       list_recent_habits      habit_logs : 0 ligne
+       list_life_areas         life_areas : 0 ligne
+       create_decision         decisions  : 0 ligne
+       list_recent_transactions  bank_transactions N'EXISTE PAS —
+                               la requête échouait en silence et
+                               renvoyait [] depuis toujours
+
+     Et ses cinq outils d'écriture commençaient TOUS par `create` :
+     elle savait ajouter une tâche, elle ne savait pas en cocher une.
+
+     ELLE ÉCRIT, ELLE NE DÉTRUIT PAS. Aucun outil de suppression ni
+     d'archivage n'existe ici, et c'est la garantie : ce qui n'est pas
+     outillé ne peut pas arriver. Tout ce qu'elle fait se défait à la
+     main en un geste — décocher, replanifier, supprimer une ligne.
+
+     Chaque outil passe par le client `supabase` de l'utilisateur, celui
+     qui porte son jeton : les politiques RLS gardent le dernier mot. */
+
+  /* ── ÉTAPES ── */
+  {
+    type: "function",
+    function: {
+      name: "list_steps",
+      description:
+        "Liste les étapes d'un objectif, ou toutes les étapes en attente si aucun objectif n'est précisé. Retourne id, titre, statut, échéance, nom de l'objectif.",
+      parameters: {
+        type: "object",
+        properties: {
+          goal_id: { type: "string", description: "UUID de l'objectif. Omettre pour toutes les étapes en attente." },
+          only_pending: { type: "boolean", default: true },
+          limit: { type: "number", default: 40 },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "complete_step",
+      description:
+        "Coche une étape comme faite. Demander l'identifiant via list_steps avant, jamais deviner.",
+      parameters: {
+        type: "object",
+        properties: { step_id: { type: "string" } },
+        required: ["step_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_step",
+      description: "Ajoute une étape à un objectif existant, en fin de liste.",
+      parameters: {
+        type: "object",
+        properties: {
+          goal_id: { type: "string" },
+          title: { type: "string", description: "Intitulé (max 200 caractères)" },
+          due_date: { type: "string", description: "Échéance ISO (YYYY-MM-DD), facultative" },
+        },
+        required: ["goal_id", "title"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "reschedule_step",
+      description: "Déplace l'échéance d'une étape.",
+      parameters: {
+        type: "object",
+        properties: {
+          step_id: { type: "string" },
+          due_date: { type: "string", description: "Nouvelle échéance ISO (YYYY-MM-DD), ou null pour l'enlever" },
+        },
+        required: ["step_id"],
+      },
+    },
+  },
+
+  /* ── TÂCHES ── */
+  {
+    type: "function",
+    function: {
+      name: "list_todos",
+      description: "Liste les tâches ouvertes de l'utilisateur, échéance la plus proche en tête.",
+      parameters: {
+        type: "object",
+        properties: {
+          include_done: { type: "boolean", default: false },
+          limit: { type: "number", default: 30 },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "complete_todo",
+      description: "Coche une tâche comme faite. Demander l'identifiant via list_todos avant.",
+      parameters: {
+        type: "object",
+        properties: { todo_id: { type: "string" } },
+        required: ["todo_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "reschedule_todo",
+      description: "Déplace l'échéance d'une tâche.",
+      parameters: {
+        type: "object",
+        properties: {
+          todo_id: { type: "string" },
+          deadline: { type: "string", description: "Nouvelle échéance ISO (YYYY-MM-DD), ou null pour l'enlever" },
+        },
+        required: ["todo_id"],
+      },
+    },
+  },
+
+  /* ── FOCUS ── */
+  {
+    type: "function",
+    function: {
+      name: "focus_summary",
+      description:
+        "Séances de concentration terminées sur les N derniers jours : total de minutes, nombre de séances, répartition par jour.",
+      parameters: { type: "object", properties: { days: { type: "number", default: 7 } } },
+    },
+  },
+
+  /* ── SANTÉ ── */
+  {
+    type: "function",
+    function: {
+      name: "health_summary",
+      description:
+        "Relevés de santé des N derniers jours : sommeil, énergie, stress, hydratation, mouvement, humeur, plus la série de pointages.",
+      parameters: { type: "object", properties: { days: { type: "number", default: 14 } } },
+    },
+  },
+
+  /* ── AGENDA ── */
+  {
+    type: "function",
+    function: {
+      name: "list_calendar_events",
+      description: "Évènements de l'agenda sur une fenêtre de jours autour d'aujourd'hui.",
+      parameters: {
+        type: "object",
+        properties: {
+          days_ahead: { type: "number", default: 14 },
+          days_back: { type: "number", default: 0 },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_calendar_event",
+      description: "Pose un évènement dans l'agenda.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          start_time: { type: "string", description: "Début, ISO 8601 complet" },
+          end_time: { type: "string", description: "Fin, ISO 8601 complet. Par défaut une heure après le début." },
+          all_day: { type: "boolean", default: false },
+          location: { type: "string" },
+        },
+        required: ["title", "start_time"],
+      },
+    },
+  },
+
+  /* ── SOUHAITS ── */
+  {
+    type: "function",
+    function: {
+      name: "list_wishlist",
+      description: "Liste des souhaits, non acquis d'abord, avec coût estimé et priorité.",
+      parameters: { type: "object", properties: { limit: { type: "number", default: 30 } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_wishlist_item",
+      description: "Ajoute un souhait à la liste.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          estimated_cost: { type: "number" },
+          category: { type: "string" },
+          url: { type: "string" },
+        },
+        required: ["name"],
+      },
+    },
+  },
+
+  /* ── FINANCE ──
+     Remplace list_recent_transactions, qui interrogeait une table
+     inexistante. Ce que la base contient vraiment : un bilan mensuel et
+     des récurrents. */
+  {
+    type: "function",
+    function: {
+      name: "finance_summary",
+      description:
+        "Bilan financier : le mois courant (revenus, charges fixes et variables, épargne, reste) et les récurrents actifs.",
+      parameters: { type: "object", properties: { months: { type: "number", default: 3 } } },
     },
   },
 ];
@@ -259,26 +443,6 @@ async function runTool(
           return 0;
         });
       return JSON.stringify(enriched);
-    }
-    if (name === "list_recent_habits") {
-      const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("habit_logs")
-        .select("goal_id,log_date,completed,streak_count")
-        .eq("user_id", userId)
-        .gte("log_date", since)
-        .order("log_date", { ascending: false })
-        .limit(200);
-      return JSON.stringify(data ?? []);
-    }
-    if (name === "list_recent_transactions") {
-      const { data } = await supabase
-        .from("bank_transactions")
-        .select("transaction_date,description,amount,transaction_type,category")
-        .eq("user_id", userId)
-        .order("transaction_date", { ascending: false })
-        .limit(args?.limit ?? 30);
-      return JSON.stringify(data ?? []);
     }
     if (name === "list_recent_journal") {
       const { data } = await supabase
@@ -327,14 +491,6 @@ async function runTool(
         .select("id,name,mantra,color,symbol")
         .eq("user_id", userId)
         .order("created_at");
-      return JSON.stringify(data ?? []);
-    }
-    if (name === "list_life_areas") {
-      const { data } = await supabase
-        .from("life_areas")
-        .select("id,name,weight,color,icon")
-        .eq("user_id", userId)
-        .order("sort_order");
       return JSON.stringify(data ?? []);
     }
     if (name === "create_goal") {
@@ -421,29 +577,261 @@ async function runTool(
       receipts.action = { tool: "create_journal_entry", status: "ok", label: data.title, ref_id: data.id, ref_type: "journal" };
       return JSON.stringify({ ok: true, entry: data });
     }
-    if (name === "create_decision") {
-      const title = String(args?.title ?? "").trim().slice(0, 200);
-      const decision_text = String(args?.decision_text ?? "").trim();
-      if (!title || !decision_text) return JSON.stringify({ error: "title_and_decision_required" });
-      const payload: any = {
-        user_id: userId,
-        title,
-        decision_text,
-        context: args?.context ?? null,
-        hypothesis: args?.hypothesis ?? null,
-        expected_outcome: args?.expected_outcome ?? null,
-        confidence: typeof args?.confidence === "number" ? args.confidence : null,
-        review_at: args?.review_at ?? null,
-        reversibility: args?.reversibility ?? null,
-      };
-      const { data, error } = await supabase.from("decisions").insert(payload).select("id,title").single();
+    /* ═════════════ LES MAINS ═════════════ */
+
+    /* Les objectifs n'ont pas de user_id : on passe par les pactes.
+       Les politiques RLS filtrent déjà, mais un `in` explicite évite de
+       rapatrier ce qu'on jetterait ensuite. */
+    const mesPactes = async (): Promise<string[]> => {
+      const { data } = await supabase.from("pacts").select("id").eq("user_id", userId);
+      return (data ?? []).map((p: { id: string }) => p.id);
+    };
+
+    if (name === "list_steps") {
+      const ids = await mesPactes();
+      if (!ids.length) return JSON.stringify([]);
+      const { data: buts } = await supabase.from("goals").select("id,name").in("pact_id", ids);
+      const parId = new Map((buts ?? []).map((g: { id: string; name: string }) => [g.id, g.name]));
+      const idsButs = args?.goal_id ? [args.goal_id] : [...parId.keys()];
+      if (!idsButs.length) return JSON.stringify([]);
+      let q = supabase
+        .from("steps")
+        .select("id,goal_id,title,status,due_date,order")
+        .in("goal_id", idsButs)
+        .order("due_date", { ascending: true, nullsFirst: false })
+        .limit(args?.limit ?? 40);
+      if (args?.only_pending !== false) q = q.eq("status", "pending");
+      const { data } = await q;
+      return JSON.stringify(
+        (data ?? []).map((s: Record<string, unknown>) => ({ ...s, objectif: parId.get(s.goal_id as string) })),
+      );
+    }
+
+    if (name === "complete_step") {
+      const { data, error } = await supabase
+        .from("steps")
+        .update({ status: "completed", validated_at: new Date().toISOString() })
+        .eq("id", args?.step_id)
+        .select("id,title")
+        .maybeSingle();
+      if (error || !data) {
+        receipts.action = { tool: "complete_step", status: "error", label: String(args?.step_id ?? ""), error: error?.message ?? "étape introuvable" };
+        return JSON.stringify({ error: error?.message ?? "not_found" });
+      }
+      receipts.action = { tool: "complete_step", status: "ok", label: data.title, ref_id: data.id, ref_type: "step" };
+      return JSON.stringify({ ok: true, step: data });
+    }
+
+    if (name === "add_step") {
+      const titre = String(args?.title ?? "").slice(0, 200);
+      const { data: dernieres } = await supabase
+        .from("steps")
+        .select("order")
+        .eq("goal_id", args?.goal_id)
+        .order("order", { ascending: false })
+        .limit(1);
+      const rang = ((dernieres?.[0]?.order as number) ?? 0) + 1;
+      const { data, error } = await supabase
+        .from("steps")
+        .insert({ goal_id: args?.goal_id, title: titre, status: "pending", order: rang, due_date: args?.due_date ?? null })
+        .select("id,title")
+        .single();
       if (error) {
-        receipts.action = { tool: "create_decision", status: "error", label: title, error: error.message };
+        receipts.action = { tool: "add_step", status: "error", label: titre, error: error.message };
         return JSON.stringify({ error: error.message });
       }
-      receipts.action = { tool: "create_decision", status: "ok", label: data.title, ref_id: data.id, ref_type: "decision" };
-      return JSON.stringify({ ok: true, decision: data });
+      receipts.action = { tool: "add_step", status: "ok", label: data.title, ref_id: data.id, ref_type: "step" };
+      return JSON.stringify({ ok: true, step: data });
     }
+
+    if (name === "reschedule_step") {
+      const { data, error } = await supabase
+        .from("steps")
+        .update({ due_date: args?.due_date ?? null })
+        .eq("id", args?.step_id)
+        .select("id,title,due_date")
+        .maybeSingle();
+      if (error || !data) {
+        receipts.action = { tool: "reschedule_step", status: "error", label: String(args?.step_id ?? ""), error: error?.message ?? "étape introuvable" };
+        return JSON.stringify({ error: error?.message ?? "not_found" });
+      }
+      receipts.action = { tool: "reschedule_step", status: "ok", label: `${data.title} → ${data.due_date ?? "sans échéance"}`, ref_id: data.id, ref_type: "step" };
+      return JSON.stringify({ ok: true, step: data });
+    }
+
+    if (name === "list_todos") {
+      let q = supabase
+        .from("todo_tasks")
+        .select("id,name,deadline,priority,is_urgent,status,category,appointment_time")
+        .eq("user_id", userId)
+        .order("deadline", { ascending: true, nullsFirst: false })
+        .limit(args?.limit ?? 30);
+      if (!args?.include_done) q = q.eq("status", "active");
+      const { data } = await q;
+      return JSON.stringify(data ?? []);
+    }
+
+    if (name === "complete_todo") {
+      const { data, error } = await supabase
+        .from("todo_tasks")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", args?.todo_id)
+        .eq("user_id", userId)
+        .select("id,name")
+        .maybeSingle();
+      if (error || !data) {
+        receipts.action = { tool: "complete_todo", status: "error", label: String(args?.todo_id ?? ""), error: error?.message ?? "tâche introuvable" };
+        return JSON.stringify({ error: error?.message ?? "not_found" });
+      }
+      receipts.action = { tool: "complete_todo", status: "ok", label: data.name, ref_id: data.id, ref_type: "todo" };
+      return JSON.stringify({ ok: true, todo: data });
+    }
+
+    if (name === "reschedule_todo") {
+      const { data, error } = await supabase
+        .from("todo_tasks")
+        .update({ deadline: args?.deadline ?? null })
+        .eq("id", args?.todo_id)
+        .eq("user_id", userId)
+        .select("id,name,deadline")
+        .maybeSingle();
+      if (error || !data) {
+        receipts.action = { tool: "reschedule_todo", status: "error", label: String(args?.todo_id ?? ""), error: error?.message ?? "tâche introuvable" };
+        return JSON.stringify({ error: error?.message ?? "not_found" });
+      }
+      receipts.action = { tool: "reschedule_todo", status: "ok", label: `${data.name} → ${data.deadline ?? "sans échéance"}`, ref_id: data.id, ref_type: "todo" };
+      return JSON.stringify({ ok: true, todo: data });
+    }
+
+    if (name === "focus_summary") {
+      const jours = Math.min(90, Math.max(1, Number(args?.days ?? 7)));
+      const depuis = new Date(Date.now() - jours * 86400000).toISOString();
+      const { data } = await supabase
+        .from("pomodoro_sessions")
+        .select("duration_minutes,started_at,linked_goal_id")
+        .eq("user_id", userId)
+        .eq("completed", true)
+        .gte("started_at", depuis)
+        .order("started_at", { ascending: false });
+      const seances = data ?? [];
+      const parJour: Record<string, number> = {};
+      let minutes = 0;
+      for (const s of seances as { duration_minutes: number; started_at: string }[]) {
+        minutes += s.duration_minutes ?? 0;
+        const j = String(s.started_at).slice(0, 10);
+        parJour[j] = (parJour[j] ?? 0) + (s.duration_minutes ?? 0);
+      }
+      return JSON.stringify({ jours, seances: seances.length, minutes, par_jour: parJour });
+    }
+
+    if (name === "health_summary") {
+      const jours = Math.min(120, Math.max(1, Number(args?.days ?? 14)));
+      const depuis = new Date(Date.now() - jours * 86400000).toISOString().slice(0, 10);
+      const [{ data: releves }, { data: serie }] = await Promise.all([
+        supabase
+          .from("health_data")
+          .select(
+            "entry_date,sleep_hours,sleep_quality,wake_energy,movement_minutes,stress_level,mental_load,hydration_glasses,mood_level",
+          )
+          .eq("user_id", userId)
+          .gte("entry_date", depuis)
+          .order("entry_date", { ascending: false }),
+        supabase.from("health_streaks").select("current_streak,longest_streak,total_checkins").eq("user_id", userId).maybeSingle(),
+      ]);
+      return JSON.stringify({ jours, releves: releves ?? [], serie: serie ?? null });
+    }
+
+    if (name === "list_calendar_events") {
+      const avant = Math.min(90, Math.max(0, Number(args?.days_back ?? 0)));
+      const apres = Math.min(180, Math.max(1, Number(args?.days_ahead ?? 14)));
+      const debut = new Date(Date.now() - avant * 86400000).toISOString();
+      const fin = new Date(Date.now() + apres * 86400000).toISOString();
+      const { data } = await supabase
+        .from("calendar_events")
+        .select("id,title,start_time,end_time,all_day,location,category")
+        .eq("user_id", userId)
+        .gte("start_time", debut)
+        .lte("start_time", fin)
+        .order("start_time", { ascending: true })
+        .limit(60);
+      return JSON.stringify(data ?? []);
+    }
+
+    if (name === "create_calendar_event") {
+      const titre = String(args?.title ?? "").slice(0, 200);
+      const debut = args?.start_time ? new Date(args.start_time) : null;
+      if (!debut || Number.isNaN(debut.getTime())) {
+        receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: "début illisible" };
+        return JSON.stringify({ error: "start_time invalide" });
+      }
+      const fin = args?.end_time ? new Date(args.end_time) : new Date(debut.getTime() + 3600000);
+      const { data, error } = await supabase
+        .from("calendar_events")
+        .insert({
+          user_id: userId,
+          title: titre,
+          start_time: debut.toISOString(),
+          end_time: fin.toISOString(),
+          all_day: !!args?.all_day,
+          location: args?.location ?? null,
+        })
+        .select("id,title,start_time")
+        .single();
+      if (error) {
+        receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_calendar_event", status: "ok", label: data.title, ref_id: data.id, ref_type: "event" };
+      return JSON.stringify({ ok: true, event: data });
+    }
+
+    if (name === "list_wishlist") {
+      const { data } = await supabase
+        .from("wishlist_items")
+        .select("id,name,category,estimated_cost,acquired,priority,url")
+        .eq("user_id", userId)
+        .order("acquired", { ascending: true })
+        .order("priority", { ascending: false, nullsFirst: false })
+        .limit(args?.limit ?? 30);
+      return JSON.stringify(data ?? []);
+    }
+
+    if (name === "add_wishlist_item") {
+      const nm = String(args?.name ?? "").slice(0, 200);
+      const { data, error } = await supabase
+        .from("wishlist_items")
+        .insert({
+          user_id: userId,
+          name: nm,
+          estimated_cost: args?.estimated_cost ?? null,
+          category: args?.category ?? null,
+          url: args?.url ?? null,
+        })
+        .select("id,name")
+        .single();
+      if (error) {
+        receipts.action = { tool: "add_wishlist_item", status: "error", label: nm, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "add_wishlist_item", status: "ok", label: data.name, ref_id: data.id, ref_type: "wishlist" };
+      return JSON.stringify({ ok: true, item: data });
+    }
+
+    if (name === "finance_summary") {
+      const mois = Math.min(12, Math.max(1, Number(args?.months ?? 3)));
+      const [{ data: bilans }, { data: charges }, { data: revenus }] = await Promise.all([
+        supabase
+          .from("finance")
+          .select("month,income,fixed_expenses,variable_expenses,savings,remaining_budget")
+          .eq("user_id", userId)
+          .order("month", { ascending: false })
+          .limit(mois),
+        supabase.from("recurring_expenses").select("name,amount,category,jour_echeance").eq("user_id", userId).eq("is_active", true),
+        supabase.from("recurring_income").select("name,amount,category,jour_echeance").eq("user_id", userId).eq("is_active", true),
+      ]);
+      return JSON.stringify({ bilans: bilans ?? [], charges_recurrentes: charges ?? [], revenus_recurrents: revenus ?? [] });
+    }
+
     return JSON.stringify({ error: "unknown_tool" });
   } catch (e) {
     return JSON.stringify({ error: String(e) });
@@ -830,7 +1218,17 @@ Deno.serve(async (req) => {
             for (const { appel, sortie, recu } of resultats) {
               if (recu.citations?.length) citations.push(...recu.citations);
               if (recu.action) actions.push(recu.action);
-              workMessages.push({ role: "tool", tool_call_id: appel.id, content: sortie });
+              /* Le NOM accompagne l'identifiant. La spécification OpenAI
+                 l'autorise sur un message d'outil, et la couche de
+                 compatibilité de Gemini bâtit son `functionResponse`
+                 dessus : sans lui, elle a rendu « Request contains an
+                 invalid argument » sans autre détail. */
+              workMessages.push({
+                role: "tool",
+                tool_call_id: appel.id,
+                name: appel.function?.name,
+                content: sortie,
+              });
             }
 
             /* Au dernier tour on rappelle SANS outils : le modèle n'a plus
@@ -838,10 +1236,34 @@ Deno.serve(async (req) => {
                se terminer sur un silence. */
             const dernier = tour >= TOURS_MAX - 1;
             const suite = await appeler(workMessages, !dernier);
-            if (!suite.ok || !suite.body) break;
+            if (!suite.ok || !suite.body) {
+              /* UN ÉCHEC EN COURS DE ROUTE N'EST PLUS UN SILENCE.
+                 Quand un tour d'outil échouait — quota atteint, requête
+                 refusée — la boucle sortait sans rien avoir écrit et
+                 l'utilisateur voyait une bulle vide. */
+              const raison =
+                suite.status === 429
+                  ? "j'ai atteint le quota du modèle. Réessaie dans une minute."
+                  : suite.status === 402
+                    ? "le crédit du modèle est épuisé."
+                    : `le modèle a refusé la suite (${suite.status}).`;
+              const aveu = texteTotal ? `\n\n_(interrompue : ${raison})_` : `Je n'ai pas pu terminer : ${raison}`;
+              texteTotal += aveu;
+              controller.enqueue(encoder.encode(trame(aveu)));
+              break;
+            }
             amont = suite;
           }
 
+          if (!texteTotal.trim()) {
+            /* Aucun texte du tout : plutôt qu'une bulle vide, on le dit.
+               C'était le symptôme visible de trois bugs successifs — la
+               signature de pensée perdue, le nom d'outil manquant, le
+               quota atteint. */
+            const aveu = "Je n'ai rien pu produire sur ce tour. Reformule ou réessaie.";
+            texteTotal = aveu;
+            controller.enqueue(encoder.encode(trame(aveu)));
+          }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
 
