@@ -467,7 +467,7 @@ async function etatDuJour(supabase: any, userId: string): Promise<string> {
   const jour = maintenant.toISOString().slice(0, 10);
 
   const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
-    supabase.from("profiles").select("active_pact_id").eq("id", userId).maybeSingle(),
+    supabase.from("profiles").select("active_pact_id, display_name, timezone").eq("id", userId).maybeSingle(),
     supabase.from("pacts").select("id,name,project_start_date,project_end_date").eq("user_id", userId),
     /* `goals` n'a pas de user_id : le lien passe par le pacte. Les
        politiques RLS font le filtrage, on récupère donc tout ce que
@@ -483,6 +483,11 @@ async function etatDuJour(supabase: any, userId: string): Promise<string> {
     `ÉTAT DU JOUR — ${maintenant.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.`,
     `Cette donnée est fraîche : n'appelle pas d'outil pour la retrouver.`,
   ];
+
+  /* Sans le nom, M.I.A repondait « ton nom est Inconnu car je n ai pas
+     cette donnee » a qui lui demandait comment il s appelait. */
+  const nom = profil?.data?.display_name;
+  if (nom) lignes.push(`Ton interlocuteur s appelle ${nom}.`);
 
   const actifId = profil?.data?.active_pact_id ?? null;
   const listePacts = pacts?.data ?? [];

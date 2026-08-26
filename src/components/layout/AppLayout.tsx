@@ -5,19 +5,23 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import type { ReviewType } from "@/hooks/useReviews";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Bot } from "lucide-react";
+import { ReseauMia, type EtatMia } from "@/components/mia/ReseauMia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { prefetchAllRoutes } from "@/lib/prefetchRoutes";
 import { prefetchCoreData } from "@/lib/prefetchData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 
-const CoachPanel = lazy(() =>
-  import("@/components/coach/CoachPanel").then((m) => ({ default: m.CoachPanel }))
+const MiaConsole = lazy(() =>
+  import("@/components/mia/MiaConsole").then((m) => ({ default: m.MiaConsole }))
 );
 
 export function AppLayout() {
-  const [coachOpen, setCoachOpen] = useState(false);
+  const [miaOuverte, setMiaOuverte] = useState(false);
+  /* La vignette montre ce que M.I.A fait : c est la console qui le
+     sait, elle le remonte. Fermee alors qu une reponse vient
+     d arriver, la vignette reste allumee. */
+  const [etatMia, setEtatMia] = useState<EtatMia>("repos");
   const [ritualType, setRitualType] = useState<ReviewType | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { user } = useAuth();
@@ -27,7 +31,7 @@ export function AppLayout() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        setCoachOpen((v) => !v);
+        setMiaOuverte((v) => !v);
         return;
       }
       // Avoid stealing keys while typing
@@ -104,20 +108,25 @@ export function AppLayout() {
 
       <MobileBottomNav />
 
-      {/* Floating Coach trigger */}
+      {/* LA VIGNETTE DE M.I.A.
+          C etait un rond bleu plein portant le petit robot a antennes
+          de lucide — celui de dix mille applications — et il ne disait
+          jamais rien. Le reseau porte le nom et porte l etat. */}
       <button
         type="button"
-        onClick={() => setCoachOpen(true)}
-        aria-label="Ouvrir le Coach IA (Cmd+J)"
+        onClick={() => setMiaOuverte(true)}
+        aria-label="Ouvrir M.I.A (Cmd+J)"
+        title="M.I.A — Mysterious Intelligence Array"
         data-chrome="coach"
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[80] h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center justify-center"
+        data-etat={etatMia === "repos" ? undefined : etatMia}
+        className="mia-vignette bottom-20 right-4 md:bottom-6 md:right-6"
       >
-        <Bot className="h-5 w-5" />
+        <ReseauMia etat={etatMia} taille={22} />
       </button>
 
-      {coachOpen && (
+      {miaOuverte && (
         <Suspense fallback={null}>
-          <CoachPanel open={coachOpen} onClose={() => setCoachOpen(false)} />
+          <MiaConsole open={miaOuverte} onClose={() => setMiaOuverte(false)} onEtat={setEtatMia} />
         </Suspense>
       )}
 
