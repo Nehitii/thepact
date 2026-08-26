@@ -1217,10 +1217,14 @@
   background: var(--cp-jaune);
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
+/* Reduit a son eclair : le mot AUTO ne tenait plus a cote de
+   « Constellation ». Le padding se resserre pour que licone ne flotte
+   pas dans une pastille vide. */
 .eclat-groupe-tag--dyn {
   color: var(--cp-jaune);
   background: transparent;
   border: 1px solid rgb(252 238 10 / 0.5);
+  padding: 0 4px;
 }
 .eclat-groupe-regle {
   margin-top: 5px;

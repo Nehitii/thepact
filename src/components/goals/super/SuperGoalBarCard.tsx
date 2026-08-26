@@ -101,14 +101,28 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
           <div className="eclat-tete">
             <span className="eclat-palier">{difficultyLabel}</span>
             <span className="eclat-sep" aria-hidden="true" />
+            {/* Le mot etait EN DUR, et cetait la seule echappee : partout
+               ailleurs — tri, fiche, reglages, refus de brigade — la
+               traduction dit deja « Constellation ». */}
             <span className="eclat-groupe-tag">
               <Crown size={9} style={{ fill: "currentColor" }} aria-hidden="true" />
-              GROUPE
+              {t("goals.detail.group", "Constellation")}
             </span>
+            {/* « CONSTELLATION » FAIT PLUS DU DOUBLE DE « GROUPE ».
+                Mesuré : 129 px contre 56, dans une ligne de 251 qui porte
+                déjà le palier. Avec le mot AUTO à côté, la somme montait à
+                238 px plus les écarts, et le marqueur débordait.
+
+                L'éclair seul tient en 20 px et dit la même chose — c'est
+                le signe de la règle vivante, repris tel quel de la fiche.
+                Le mot part, l'intitulé reste pour qui ne voit pas l'icône. */}
             {isDynamic && (
-              <span className="eclat-groupe-tag eclat-groupe-tag--dyn">
+              <span
+                className="eclat-groupe-tag eclat-groupe-tag--dyn"
+                title={t("goals.detail.dynamicGroup", "Constellation vivante")}
+                aria-label={t("goals.detail.dynamicGroup", "Constellation vivante")}
+              >
                 <Zap size={9} aria-hidden="true" />
-                AUTO
               </span>
             )}
           </div>

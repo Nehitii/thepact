@@ -109,15 +109,22 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             {getDifficultyLabel(difficulty, t, customDifficultyName).slice(0, 1)}
           </span>
 
+          {/* Deux chaînes en dur, ici comme sur la carte en barre : c'était
+              la seule échappée, partout ailleurs la traduction dit déjà
+              « Constellation ». Le mot AUTO se réduit à son éclair — le
+              mot long ne tient plus à côté. */}
           <div className="verre-groupe-tags">
             <span className="verre-groupe-tag">
               <Crown size={9} style={{ fill: "currentColor" }} aria-hidden="true" />
-              GROUPE
+              {t("goals.detail.group", "Constellation")}
             </span>
             {isDynamic && (
-              <span className="verre-groupe-tag verre-groupe-tag--dyn">
+              <span
+                className="verre-groupe-tag verre-groupe-tag--dyn"
+                title={t("goals.detail.dynamicGroup", "Constellation vivante")}
+                aria-label={t("goals.detail.dynamicGroup", "Constellation vivante")}
+              >
                 <Zap size={9} aria-hidden="true" />
-                AUTO
               </span>
             )}
           </div>
