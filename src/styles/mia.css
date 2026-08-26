@@ -48,6 +48,19 @@
 @keyframes mia-onde { 0%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
 @keyframes mia-scan { 0%, 100% { opacity: 0.18; } 12% { opacity: 1; } }
 
+/* ── LE VISAGE ──────────────────────────────────────────────────
+   Un PNG a fond transparent, jamais deforme, jamais attrapable a la
+   souris. Le rendu en qualite haute compte : reduit a 34 px depuis
+   256, un filtrage grossier mange les traits fins du dessin. */
+.mia-visage {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+
 /* ── LA VIGNETTE ────────────────────────────────────────────────
    C'était un rond bleu plein de 48 px portant le petit robot à
    antennes de lucide — le même que dans dix mille applications, et
@@ -379,6 +392,25 @@
   text-transform: uppercase;
   color: var(--nexus-text-dimmer);
 }
+/* D OU VIENT CETTE REPONSE.
+   Un liseré par couche : reflexe (gratuit, instantane), geste (gratuit,
+   il agit), et rien du tout pour le modele — c est le cas ordinaire, il
+   n a pas besoin d etiquette. Ce n est pas de la mise au point : c est
+   ce qui apprend, en deux jours d usage, quelles questions sont
+   gratuites, et donc lesquelles poser sans hesiter. */
+.mia-couche {
+  font-style: normal;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.mia-couche-reflexe { color: hsl(152 60% 40%); border-color: hsl(152 60% 40% / 0.45); }
+.mia-couche-geste   { color: hsl(var(--primary)); border-color: hsl(var(--primary) / 0.45); }
+
 .mia-texte { color: var(--nexus-text-label, hsl(var(--foreground))); }
 .mia-texte > :first-child { margin-top: 0; }
 .mia-texte > :last-child { margin-bottom: 0; }

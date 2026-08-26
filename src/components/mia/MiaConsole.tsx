@@ -17,6 +17,12 @@ import {
 import { PREF } from "@/lib/preferencesAffichage";
 import { supabase } from "@/integrations/supabase/client";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
+import { VisageMia, type ExpressionMia } from "./VisageMia";
+import { prechargerVisages } from "@/lib/visagesMia";
+import { useEtatDuJour } from "@/hooks/useEtatDuJour";
+import { chercherReflexe, reflexesConnus } from "@/lib/miaReflexes";
+import { chercherGeste, gestesConnus, type Geste } from "@/lib/miaGestes";
+import { useTodoList } from "@/hooks/useTodoList";
 
 /**
  * M.I.A — Mysterious Intelligence Array.
@@ -67,6 +73,14 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   const { send, streaming, streamText } = useFluxMia(filActif);
   const { data: apercus = {} } = useApercusMia(conversations.map((c) => c.id));
   const [brouillon, setBrouillon] = useState("");
+  const { data: etatDuJour } = useEtatDuJour();
+  /* Les réponses servies sans le modèle. Elles ne vont pas en base : ce
+     ne sont pas des messages du modèle, et les persister ferait grossir
+     l'historique qu'on lui renvoie ensuite. Elles vivent le temps de la
+     conversation ouverte. */
+  const [local, setLocal] = useState<
+    { id: string; question: string; texte: string; expression: ExpressionMia; couche: "reflexe" | "geste" }[]
+  >([]);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   const fluxRef = useRef<HTMLDivElement>(null);
   const champRef = useRef<HTMLTextAreaElement>(null);
@@ -124,7 +138,11 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
 
   useEffect(() => {
     fluxRef.current?.scrollTo({ top: fluxRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages.length, streamText]);
+  }, [messages.length, streamText, local.length]);
+
+  useEffect(() => {
+    if (open) prechargerVisages();
+  }, [open]);
 
   const etat: EtatMia = streaming ? "travail" : brouillon.trim() ? "ecoute" : "repos";
   useEffect(() => {
@@ -177,10 +195,66 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     [archive, filActif, conversations],
   );
 
+  const navigate = useNavigate();
+  const { completeTask, createTask, postponeTask } = useTodoList();
+
+  /* Le geste est déjà décidé : il ne reste qu'à le faire. On réutilise
+     les hooks de l'application — les mêmes que ceux des boutons — plutôt
+     que de réécrire les requêtes une deuxième fois. */
+  const executer = useCallback(
+    async (g: Geste) => {
+      const a = g.action;
+      if (!a) return;
+      try {
+        if (a.type === "naviguer") {
+          navigate(a.vers);
+          onClose();
+        } else if (a.type === "focus") {
+          navigate("/focus");
+          onClose();
+        } else if (a.type === "cocher") {
+          await completeTask.mutateAsync(a.id);
+        } else if (a.type === "ajouter") {
+          await createTask.mutateAsync({ name: a.nom, priority: "medium", is_urgent: false });
+        } else if (a.type === "reporter") {
+          await postponeTask.mutateAsync({ taskId: a.id, newDeadline: a.a });
+        }
+      } catch {
+        /* le message d'échec est porté par le hook ; on ne double pas */
+      }
+    },
+    [navigate, onClose, completeTask, createTask, postponeTask],
+  );
+
   const envoyer = useCallback(async () => {
     const texte = brouillon.trim();
     if (!texte || streaming) return;
     setBrouillon("");
+
+    /* ── LES TROIS COUCHES ──
+       Réflexe d'abord, geste ensuite, modèle en dernier. La question
+       n'atteint le modèle que si les deux premières ont renoncé — et
+       elles renoncent volontiers : au moindre doute, elles laissent
+       passer. */
+    const reflexe = chercherReflexe(texte, etatDuJour);
+    if (reflexe) {
+      setLocal((l) => [
+        ...l,
+        { id: `r-${Date.now()}`, question: texte, texte: reflexe.texte, expression: reflexe.expression, couche: "reflexe" },
+      ]);
+      return;
+    }
+
+    const geste = chercherGeste(texte, etatDuJour);
+    if (geste) {
+      setLocal((l) => [
+        ...l,
+        { id: `g-${Date.now()}`, question: texte, texte: geste.texte, expression: geste.expression, couche: "geste" },
+      ]);
+      void executer(geste);
+      return;
+    }
+
     if (!filActif) {
       /* SANS FIL, LE PREMIER MESSAGE PARTAIT DANS LE VIDE.
          L'ancien panneau créait la conversation ICI puis appelait `send`
@@ -194,7 +268,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
       return;
     }
     await send(texte);
-  }, [brouillon, streaming, filActif, create, send]);
+  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer]);
 
   const enAttente = useRef<string | null>(null);
   useEffect(() => {
@@ -307,7 +381,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             </button>
 
             <div ref={fluxRef} className="mia-flux">
-              {messages.length === 0 && !streaming ? (
+              {messages.length === 0 && local.length === 0 && !streaming ? (
                 <div className="mia-vide">
                   <ReseauMia etat="repos" taille={34} />
                   <p>
@@ -319,6 +393,20 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
                 <>
                   {messages.map((m) => (
                     <Bulle key={m.id} role={m.role} contenu={m.content} meta={m.metadata ?? null} />
+                  ))}
+                  {local.map((r) => (
+                    <div key={r.id}>
+                      <div className="mia-bulle" data-role="user">
+                        {r.question}
+                      </div>
+                      <Bulle
+                        role="assistant"
+                        contenu={r.texte}
+                        meta={null}
+                        expression={r.expression}
+                        couche={r.couche}
+                      />
+                    </div>
                   ))}
                   {streaming && <Bulle role="assistant" contenu={streamText} meta={null} enCours />}
                 </>
@@ -449,11 +537,15 @@ function Bulle({
   contenu,
   meta,
   enCours = false,
+  expression,
+  couche,
 }: {
   role: string;
   contenu: string;
   meta: MetaMessageMia | null;
   enCours?: boolean;
+  expression?: ExpressionMia;
+  couche?: "reflexe" | "geste";
 }) {
   if (role === "user") {
     return (
@@ -465,8 +557,16 @@ function Bulle({
   return (
     <div className="mia-bulle" data-role="assistant">
       <div className="mia-signature">
-        <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
+        {expression ? (
+          <VisageMia expression={expression} taille={22} />
+        ) : (
+          <ReseauMia etat={enCours ? "travail" : "reponse"} taille={12} />
+        )}
         <span>M.I.A</span>
+        {/* D'OÙ VIENT CETTE RÉPONSE. Ce n'est pas de la mise au point :
+            c'est ce qui apprend, en deux jours, quelles questions sont
+            gratuites — et donc lesquelles poser sans hésiter. */}
+        {couche && <em className={`mia-couche mia-couche-${couche}`}>{couche === "reflexe" ? "réflexe" : "geste"}</em>}
       </div>
       <div className="mia-texte">
         {contenu ? (
