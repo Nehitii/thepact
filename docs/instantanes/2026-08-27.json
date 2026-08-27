@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T21:53:15.812Z",
-  "fichiers": 875,
-  "lignes": 178856,
+  "genere": "2026-08-27T22:08:11.555Z",
+  "fichiers": 876,
+  "lignes": 179848,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -151,20 +151,20 @@
     {
       "dossier": "supabase",
       "fichiers": 1,
-      "lignes": 67,
-      "poids": 1834
+      "lignes": 63,
+      "poids": 1690
     },
     {
       "dossier": "supabase/functions",
-      "fichiers": 28,
-      "lignes": 5748,
-      "poids": 242638
+      "fichiers": 27,
+      "lignes": 5662,
+      "poids": 237429
     },
     {
       "dossier": "supabase/migrations",
-      "fichiers": 185,
-      "lignes": 12618,
-      "poids": 536130
+      "fichiers": 187,
+      "lignes": 13700,
+      "poids": 579956
     }
   ],
   "parLangage": [
@@ -236,9 +236,9 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 201,
-      "lignes": 29173,
-      "poids": 1123555
+      "fichiers": 200,
+      "lignes": 29087,
+      "poids": 1118346
     },
     {
       "langage": "TypeScript (JSX)",
@@ -261,14 +261,14 @@
     {
       "langage": "TOML",
       "fichiers": 1,
-      "lignes": 67,
-      "poids": 1834
+      "lignes": 63,
+      "poids": 1690
     },
     {
       "langage": "SQL",
-      "fichiers": 185,
-      "lignes": 12618,
-      "poids": 536130
+      "fichiers": 187,
+      "lignes": 13700,
+      "poids": 579956
     },
     {
       "langage": "JSONC",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3135,
+  "commits": 3139,
   "orphelins": 0,
   "marqueurs": 13
 }
