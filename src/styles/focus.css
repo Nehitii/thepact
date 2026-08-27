@@ -987,13 +987,22 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   padding: 16px;
 }
 
-/* Un panneau ne doit pas pousser la plaque hors de l ecran : au-dela de
-   quarante pour cent de la fenetre il defile dans son propre cadre. */
+/* LE PANNEAU S OUVRE EN ENTIER, ET C EST LA PAGE QUI DEFILE.
+
+   Il portait « max-height: 40vh » avec « overflow-y: auto », pour ne
+   pas pousser la plaque hors de l ecran. L intention etait juste, la
+   valeur non : mesure sur une fenetre de 900 px, le corps reclamait
+   605 px et n en recevait que 360. Il s ouvrait donc a moitie, avec
+   son propre ascenseur — et un ascenseur DANS une page qui defile
+   deja est la pire des deux solutions : on ne sait plus lequel des
+   deux on actionne.
+
+   La plaque de Focus vit dans un « main » en « overflow-y: auto » :
+   deplafonner ne pousse rien hors de l ecran, cela rend simplement la
+   main a l ascenseur de la page. Verifie : sans plafond, le document
+   passe de 979 a 1 224 px et defile. */
 .sc-panneau-corps {
   padding: 14px 16px 16px;
-  max-height: 40vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 /* Une seule colonne de libelles : c est elle qui fait l alignement, et
