@@ -1,0 +1,122 @@
+{
+  "_aide": [
+    "Ce fichier porte UNIQUEMENT ce que le dépôt ne peut pas savoir tout seul.",
+    "Tout ce qui se lit — versions, fichiers, lignes, commits, visuels, palette — est",
+    "extrait automatiquement par `npm run tableau`. Ne recopiez rien ici qui existe déjà",
+    "ailleurs : une donnée saisie à deux endroits finit toujours par diverger.",
+    "",
+    "Un champ laissé vide s'affiche « à compléter » dans la page. C'est voulu :",
+    "mieux vaut un trou visible qu'un contenu vraisemblable."
+  ],
+
+  "identite": {
+    "_aide": "Les quatre phrases que seul le porteur du projet peut écrire. Laissées vides à dessein : rien ici ne se devine depuis le code.",
+    "nom": "Vowpact",
+    "pitch": null,
+    "pourQui": null,
+    "intention": null,
+    "etat": null
+  },
+
+  "modules": [
+    {
+      "_aide": "Le dépôt LISTE les écrans, ce tableau les QUALIFIE. `page` doit correspondre à un fichier de src/pages. `statut` vaut idée | en cours | livré | en pause. `aussi` ajoute les dossiers qui appartiennent au module — ses lignes et sa dernière activité les incluent alors.",
+      "page": "src/pages/Home.tsx",
+      "nom": "Tableau de bord",
+      "statut": null,
+      "aussi": ["src/components/home"]
+    },
+    { "page": "src/pages/Goals.tsx", "nom": "Objectifs", "statut": null, "aussi": ["src/components/goals"] },
+    { "page": "src/pages/Finance.tsx", "nom": "Finances", "statut": null, "aussi": ["src/components/finance"] },
+    { "page": "src/pages/Journal.tsx", "nom": "Journal", "statut": null, "aussi": ["src/components/journal"] },
+    { "page": "src/pages/Health.tsx", "nom": "Santé", "statut": null, "aussi": ["src/components/health"] },
+    { "page": "src/pages/TodoList.tsx", "nom": "Tâches", "statut": null, "aussi": ["src/components/todo"] },
+    { "page": "src/pages/Focus.tsx", "nom": "Focus", "statut": null, "aussi": ["src/components/focus"] },
+    { "page": "src/pages/Calendar.tsx", "nom": "Calendrier", "statut": null, "aussi": ["src/components/calendar"] },
+    { "page": "src/pages/Analytics.tsx", "nom": "Analytique", "statut": null, "aussi": ["src/components/analytics"] },
+    { "page": "src/pages/Inbox.tsx", "nom": "Boîte de réception", "statut": null, "aussi": ["src/components/notifications"] },
+    { "page": "src/pages/InboxThread.tsx", "nom": "Conversation privée", "statut": null, "aussi": [] },
+    { "page": "src/pages/Community.tsx", "nom": "Communauté", "statut": null, "aussi": ["src/components/community"] },
+    { "page": "src/pages/Friends.tsx", "nom": "Alliés", "statut": null, "aussi": ["src/components/friends"] },
+    { "page": "src/pages/GuildPage.tsx", "nom": "Guildes", "statut": null, "aussi": [] },
+    { "page": "src/pages/Shop.tsx", "nom": "Boutique", "statut": null, "aussi": ["src/components/shop"] },
+    { "page": "src/pages/Wishlist.tsx", "nom": "Souhaits", "statut": null, "aussi": ["src/components/wishlist"] },
+    { "page": "src/pages/Achievements.tsx", "nom": "Succès", "statut": null, "aussi": [] },
+    { "page": "src/pages/Leaderboard.tsx", "nom": "Classement", "statut": null, "aussi": [] },
+    { "page": "src/pages/TheCall.tsx", "nom": "The Call", "statut": null, "aussi": [] },
+    { "page": "src/pages/Admin.tsx", "nom": "Administration", "statut": null, "aussi": ["src/components/admin"] }
+  ],
+
+  "da": {
+    "_aide": "Les règles ci-dessous ne sont pas des intentions : elles sont tenues par des outils du dépôt, et transcrites ici. Ajoutez les vôtres.",
+    "regles": [
+      "Toute couleur descend des jetons --ds-* de src/styles/design-tokens.css, qui possèdent déjà leur miroir clair. Une couleur écrite en dur ne suit pas le thème.",
+      "Une feuille de style construite sur les jetons n'a besoin d'AUCUNE surcharge .light. C'est le critère : si vous devez en ajouter une, c'est qu'une couleur est écrite en dur quelque part.",
+      "Trois familles de caractères, trois emplois : Orbitron pour les titres, Rajdhani pour le texte courant, JetBrains Mono pour les étiquettes, les chiffres et les données.",
+      "Le néon s'évapore sur papier : en thème clair, la teinte se garde et la luminosité tombe. Un lime qui reste lime sur blanc devient illisible."
+    ],
+    "interdits": [
+      "Ne pas composer un nom de classe Tailwind à l'exécution (border-${couleur}) : le compilateur ne voit jamais ces chaînes et ne produit aucune règle. La classe existe dans le DOM, le style n'existe pas.",
+      "Ne pas poser de halo ni de flou en position fixe derrière une page d'outil : l'administration et les réglages se lisent longtemps, ils ne se contemplent pas.",
+      "Ne pas écrire de texte destiné à la base de données sans passer par i18n. Une notification garde ses mots pour toujours : changer de langue ensuite ne les traduit pas.",
+      "Ne pas annoncer à l'écran ce qui n'est pas vrai — pas de pastille « en ligne » simulée, pas de « canal chiffré » sur des données en clair, pas de barre de progression décorative."
+    ]
+  },
+
+  "visuels": [
+    {
+      "_aide": "Une entrée par visuel dont vous connaissez l'origine. `chemin` doit correspondre exactement au fichier dans public/. Les visuels absents de cette liste apparaissent quand même dans la page, avec « à compléter » en face de l'outil et du prompt.",
+      "chemin": "public/logo-vowpact.webp",
+      "outil": null,
+      "prompt": null
+    }
+  ],
+
+  "ressources": [
+    {
+      "_aide": "Tout ce qui vient d'ailleurs. Une licence laissée vide est signalée en rouge dans la page : c'est le but, tant qu'on ne sait pas, on ne sait pas.",
+      "nom": "Orbitron",
+      "nature": "police",
+      "licence": null,
+      "cout": null,
+      "url": "https://fonts.google.com/specimen/Orbitron"
+    },
+    { "nom": "Rajdhani", "nature": "police", "licence": null, "cout": null, "url": "https://fonts.google.com/specimen/Rajdhani" },
+    { "nom": "JetBrains Mono", "nature": "police", "licence": null, "cout": null, "url": "https://www.jetbrains.com/lp/mono/" },
+    { "nom": "Switzer", "nature": "police", "licence": null, "cout": null, "url": "https://www.fontshare.com/fonts/switzer" },
+    { "nom": "Noto Sans JP", "nature": "police", "licence": null, "cout": null, "url": "https://fonts.google.com/noto/specimen/Noto+Sans+JP" },
+    { "nom": "Lucide", "nature": "icônes", "licence": null, "cout": null, "url": "https://lucide.dev" },
+    { "nom": "Supabase", "nature": "service — base de données, authentification, stockage, fonctions", "licence": null, "cout": null, "url": "https://supabase.com" },
+    { "nom": "Cloudflare Workers", "nature": "service — hébergement", "licence": null, "cout": null, "url": "https://workers.cloudflare.com" },
+    { "nom": "Sentry", "nature": "service — suivi des erreurs", "licence": null, "cout": null, "url": "https://sentry.io" }
+  ],
+
+  "architecture": "Application à page unique en React, rendue par Vite. Toutes les données passent par Supabase — PostgreSQL avec sécurité au niveau des lignes, authentification, stockage de fichiers et fonctions de bord en Deno. Il n'y a pas de serveur applicatif : le navigateur parle directement à la base, et ce sont les politiques RLS qui décident de ce que chacun voit. Ce qui doit échapper à ces politiques — diffusion, administration, projections publiques — passe par des fonctions SECURITY DEFINER qui vérifient elles-mêmes le droit d'agir.",
+
+  "conventions": [
+    "Le français partout : noms de fonctions et de variables du code métier, classes CSS, messages de commit, commentaires. Les bibliothèques gardent leurs noms.",
+    "Un commentaire dit POURQUOI, jamais QUOI. Il porte le relevé qui a motivé le choix, pour que le prochain lecteur puisse le contredire avec des chiffres.",
+    "Chaque migration porte un en-tête qui explique ce qui était faux, ce qui a été mesuré, et comment annuler.",
+    "On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur."
+  ],
+
+  "ouTrouverQuoi": [
+    { "quoi": "Les routes et les écrans", "ou": "src/App.tsx" },
+    { "quoi": "La barre latérale et la coque commune", "ou": "src/components/layout/" },
+    { "quoi": "Les jetons de couleur et le miroir clair", "ou": "src/styles/design-tokens.css, src/styles/theme-clair.css" },
+    { "quoi": "Les accès aux données, par domaine", "ou": "src/hooks/" },
+    { "quoi": "Le modèle de données et son histoire", "ou": "supabase/migrations/" },
+    { "quoi": "Les traitements serveur", "ou": "supabase/functions/" },
+    { "quoi": "Les traductions", "ou": "src/i18n/locales/" },
+    { "quoi": "Les décisions déjà prises et parquées", "ou": "mem/" },
+    { "quoi": "Ce tableau de bord", "ou": "scripts/tableau-de-bord.mjs" }
+  ],
+
+  "decisions": [
+    {
+      "_aide": "Ajoutez ici les décisions structurantes. Les notes de mem/ sont reprises automatiquement, inutile de les recopier. Format court : titre, date, une ligne de contexte, l'alternative écartée."
+    }
+  ],
+
+  "prochainesEtapes": []
+}

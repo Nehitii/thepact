@@ -59,6 +59,9 @@ Les Edge Functions lisent leurs propres secrets côté Supabase
 | `npm run build:dev` | Build en mode development |
 | `npm run preview` | Prévisualise le build de production |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | Vérification des types, sans émettre |
+| `npm run i18n:check` | Vérifie les clés de traduction |
+| `npm run tableau` | Régénère le tableau de bord du projet |
 
 Analyse de la taille du bundle :
 
@@ -67,6 +70,42 @@ npx vite build --mode analyze
 ```
 
 Le rapport est écrit dans `dist/stats.html`.
+
+## Tableau de bord du projet
+
+```sh
+npm run tableau
+```
+
+Écrit `docs/tableau-de-bord.html` — une page autonome qui s'ouvre au
+double-clic, sans serveur ni base de données. Elle rassemble l'identité du
+projet, ses modules, sa direction artistique, ses visuels, sa stack et l'état
+du code.
+
+**Deux sources, une seule vérité par donnée.** Le dépôt dit ce qui EST :
+versions, fichiers, lignes, historique git, visuels, palette, dépendances,
+marqueurs. Rien de tout cela ne se recopie à la main, donc rien ne peut
+diverger. `projet.manifeste.json` porte ce que le dépôt ne peut pas savoir :
+le pitch, le public, le statut de chaque module, les licences, l'outil et le
+prompt d'un visuel. Un champ vide s'affiche « à compléter » — jamais deviné.
+
+**Ce que l'analyse exclut**, et c'est écrit dans la page elle-même :
+
+| Exclu | Pourquoi |
+|---|---|
+| `node_modules`, `dist` | déjà ignorés par git |
+| `src/integrations/supabase/types.ts` | généré par Supabase — 5 700 lignes qui écraseraient tout classement |
+| `public/sw.js` | généré par Workbox |
+| `.claude` | compétences installées, pas le produit |
+| `docs/instantanes` | les instantanés de cette page |
+
+**Instantanés.** Chaque exécution dépose `docs/instantanes/<date>.json` et les
+vingt derniers sont conservés : la page affiche alors l'évolution entre deux
+régénérations plutôt qu'une simple photo.
+
+**Ouvrir la page.** Double-clic sur le fichier. Les vignettes et les
+échantillons de police pointent vers `../public/` : le chemin vaut depuis le
+disque, pas depuis le serveur de développement.
 
 ## Base de données
 
