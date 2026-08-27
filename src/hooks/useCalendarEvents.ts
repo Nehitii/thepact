@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useId, useMemo } from "react";
 import {
@@ -81,7 +82,15 @@ export interface CalendarEvent {
   _nature?: TodoTaskType;
 }
 
-export type CalendarEventInsert = Omit<CalendarEvent, "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId">;
+/* LES CHAMPS EN « _ » N'ONT PAS DE COLONNE : ce sont des marqueurs posés
+   par l'application pour se souvenir d'où vient une entrée et de ce
+   qu'elle est. « _nature » manquait à cette liste — il pouvait donc partir
+   dans un insert, où PostgREST l'aurait refusé (« column _nature does not
+   exist »). Le cast « as any » sur l'insert rendait ce départ muet. */
+export type CalendarEventInsert = Omit<
+  CalendarEvent,
+  "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId" | "_nature"
+>;
 
 // ─── Recurrence expansion ───────────────────────────────────
 const DAY_MAP: Record<string, number> = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
@@ -415,8 +424,8 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .lte("deadline", bornes.fin);
       if (error) throw error;
       return (data ?? [])
-        .filter((g: any) => g.pacts?.user_id === user.id)
-        .map((g: any): CalendarEvent => ({
+        .filter((g) => g.pacts?.user_id === user.id)
+        .map((g): CalendarEvent => ({
           id: `goal_${g.id}`,
           user_id: user.id,
           title: `🎯 ${g.name}`,
@@ -461,8 +470,8 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .lte("due_date", bornes.fin);
       if (error) throw error;
       return (data ?? [])
-        .filter((s: any) => s.goals?.pacts?.user_id === user.id)
-        .map((s: any): CalendarEvent => ({
+        .filter((s) => s.goals?.pacts?.user_id === user.id)
+        .map((s): CalendarEvent => ({
           id: `step_${s.id}`,
           user_id: user.id,
           title: `📋 ${s.title}`,
@@ -548,9 +557,26 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
   const createEvent = useMutation({
     mutationFn: async (ev: Partial<CalendarEventInsert>) => {
       if (!user) throw new Error("Not authenticated");
+      /* LA BASE EXIGE UN TITRE, UN DÉBUT ET UNE FIN ; le formulaire rend
+         un Partial qui ne les garantit pas. Sans ce contrôle, l'insertion
+         partait quand même et revenait en 400 : l'écran affichait « une
+         erreur est survenue » sans jamais dire laquelle. */
+      if (!ev.title || !ev.start_time || !ev.end_time) {
+        throw new Error("Un évènement demande un titre, un début et une fin.");
+      }
       const { data, error } = await supabase
         .from("calendar_events")
-        .insert({ ...ev, user_id: user.id } as any)
+        .insert({
+          ...ev,
+          title: ev.title,
+          start_time: ev.start_time,
+          end_time: ev.end_time,
+          user_id: user.id,
+          /* La règle de répétition est une colonne jsonb. Le type applicatif
+             est plus étroit que Json : la conversion est réelle, pas un
+             renoncement au typage. */
+          recurrence_rule: (ev.recurrence_rule ?? null) as unknown as Json,
+        })
         .select()
         .single();
       if (error) throw error;
@@ -565,11 +591,19 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
   });
 
   const updateEvent = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Partial<CalendarEventInsert>) => {
+    mutationFn: async ({ id, recurrence_rule, ...updates }: { id: string } & Partial<CalendarEventInsert>) => {
       if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("calendar_events")
-        .update({ ...updates, updated_at: new Date().toISOString() } as any)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+          /* Sortie du reste pour etre convertie a part : la colonne est
+             jsonb, le type applicatif est plus etroit. */
+          ...(recurrence_rule !== undefined
+            ? { recurrence_rule: recurrence_rule as unknown as Json }
+            : {}),
+        })
         .eq("id", id)
         .eq("user_id", user.id)
         .select()

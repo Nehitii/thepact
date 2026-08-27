@@ -8,10 +8,14 @@ export interface SharedPactMembership {
   owner_id: string;
   member_id: string;
   role: string;
-  joined_at: string;
+  /* Nullable en base : la colonne a une valeur par defaut, mais rien ne
+     l'impose. Le declarer « string » etait un mensonge que le cast
+     « as any » sur la lecture empechait de voir. */
+  joined_at: string | null;
   pact_name?: string;
   pact_mantra?: string;
-  pact_color?: string;
+  /* Meme raison : la couleur d'un pacte peut ne pas etre posee. */
+  pact_color?: string | null;
   member_count?: number;
 }
 
@@ -30,12 +34,12 @@ export function useSharedPacts() {
       if (error) throw error;
       if (!data?.length) return [];
 
-      const pactIds = [...new Set(data.map((s: any) => s.pact_id))];
+      const pactIds = [...new Set(data.map((s) => s.pact_id))];
       const { data: pacts } = await supabase
         .from("pacts")
         .select("id, name, mantra, color")
         .in("id", pactIds);
-      const pactMap = new Map(pacts?.map((p: any) => [p.id, p]) || []);
+      const pactMap = new Map(pacts?.map((p) => [p.id, p]) || []);
 
       // Get member counts
       const { data: allMembers } = await supabase
@@ -43,9 +47,9 @@ export function useSharedPacts() {
         .select("pact_id")
         .in("pact_id", pactIds);
       const counts = new Map<string, number>();
-      allMembers?.forEach((m: any) => counts.set(m.pact_id, (counts.get(m.pact_id) || 0) + 1));
+      allMembers?.forEach((m) => counts.set(m.pact_id, (counts.get(m.pact_id) || 0) + 1));
 
-      return data.map((s: any) => {
+      return data.map((s) => {
         const pact = pactMap.get(s.pact_id);
         return {
           ...s,

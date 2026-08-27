@@ -20,6 +20,7 @@ import { useShopTransaction } from "@/hooks/useShopTransaction";
 import { useTranslation } from "react-i18next";
 import { Store } from "lucide-react";
 import { DSPageShell } from "@/components/ds";
+import type { ArticleAchetable } from "@/components/shop/articleAchetable";
 
 export default function Shop() {
   const { t } = useTranslation();
@@ -37,7 +38,7 @@ export default function Shop() {
     setActiveTab(tab);
   };
 
-  const handleSpotlightPurchase = (item: any, type: string) => {
+  const handleSpotlightPurchase = (item: ArticleAchetable, type: string) => {
     setPurchaseItem({
       id: item.id,
       name: item.name,
@@ -47,7 +48,7 @@ export default function Shop() {
     });
   };
 
-  const handleWishlistPurchase = (item: any, itemType: string) => {
+  const handleWishlistPurchase = (item: ArticleAchetable, itemType: string) => {
     const type = itemType === "module" ? "module" : (item.type || "cosmetic");
     setPurchaseItem({
       id: item.id,

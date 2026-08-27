@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import type { CalendarEvent, CalendarEventInsert } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent, CalendarEventInsert, RecurrenceRule } from "@/hooks/useCalendarEvents";
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";
 import { composerInstant, debutDeJournee, finDeJournee } from "./temps";
@@ -67,7 +67,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
   const [color, setColor] = useState(COLORS[0].hex);
   const [category, setCategory] = useState("general");
   const [isBusy, setIsBusy] = useState(true);
-  const [recurrenceRule, setRecurrenceRule] = useState<any>(null);
+  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRule | null>(null);
   const [reminders, setReminders] = useState<{ type: string; minutes_before: number }[]>([]);
 
   /* Les erreurs ne s affichent qu apres une tentative : signaler un titre

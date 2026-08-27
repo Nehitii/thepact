@@ -65,7 +65,7 @@ export function usePushNotifications() {
         user_agent: navigator.userAgent,
         last_seen_at: new Date().toISOString(),
       },
-      { onConflict: "endpoint" } as any,
+      { onConflict: "endpoint" },
     );
     if (error) return { ok: false, reason: "db-error" as const, error };
     setSubscribed(true);

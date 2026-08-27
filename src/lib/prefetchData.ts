@@ -21,9 +21,11 @@ import { fetchFocusSessions } from "@/hooks/useFocusSessions";
 const STALE_TIME = 5 * 60 * 1000;
 
 function runIdle(cb: () => void) {
-  const ric = (globalThis as any).requestIdleCallback as
-    | ((cb: () => void, opts?: { timeout?: number }) => number)
-    | undefined;
+  /* Safari n'a requestIdleCallback que depuis la 18.4 : on teste sa
+     presence plutot que d'eteindre le typage de globalThis pour la lire. */
+  const ric = typeof globalThis.requestIdleCallback === "function"
+    ? globalThis.requestIdleCallback
+    : undefined;
   if (ric) ric(cb, { timeout: 2000 });
   else setTimeout(cb, 200);
 }

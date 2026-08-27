@@ -410,7 +410,38 @@ function RadarView({ axes, frise, critique, volumeTotal }: {
 }
 
 /* ── Vue diagnostic ────────────────────────────────────────────── */
-function DiagnosticView({ axes, frise, pctObjectifs, pctEtapes, pctHabitudes, ecart, critique, volumeTotal, data }: any) {
+
+/** Un palier de difficulté, tel que le panneau le calcule au-dessus. */
+interface AxeDifficulte {
+  cle: string;
+  nom: string;
+  couleur: string;
+  pct: number;
+  faites: number;
+  etapes: number;
+  objectifs: string;
+}
+
+/** La frise du projet : où l'on en est dans le temps imparti. */
+interface FriseProjet {
+  total: number;
+  ecoule: number;
+  pct: number;
+}
+
+interface DiagnosticViewProps {
+  axes: AxeDifficulte[];
+  frise: FriseProjet | null;
+  pctObjectifs: number;
+  pctEtapes: number;
+  pctHabitudes: number;
+  ecart: number | null;
+  critique: AxeDifficulte | null;
+  volumeTotal: number;
+  data: MonitoringData;
+}
+
+function DiagnosticView({ axes, frise, pctObjectifs, pctEtapes, pctHabitudes, ecart, critique, volumeTotal, data }: DiagnosticViewProps) {
   const rang = (p: number) => (p >= 70 ? "" : p >= 30 ? "warn" : "crit");
   const L = ({ t, v, c }: { t: string; v: string; c?: string }) => (
     <div className={`mon-dl ${c || ""}`}>
@@ -435,7 +466,7 @@ function DiagnosticView({ axes, frise, pctObjectifs, pctEtapes, pctHabitudes, ec
 
         <div className="mon-dsep" />
         <p className="mon-dhead">&gt; CHARGE PAR PALIER</p>
-        {axes.map((a: any) => (
+        {axes.map((a) => (
           <L key={a.cle} t={a.nom} v={`${a.faites}/${a.etapes} · ${a.pct} %`} c={rang(a.pct)} />
         ))}
 

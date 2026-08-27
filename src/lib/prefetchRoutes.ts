@@ -57,7 +57,7 @@ const prefetched = new Set<string>();
 
 function isSaveData(): boolean {
   if (typeof navigator === "undefined") return false;
-  const conn = (navigator as any).connection;
+  const conn = navigator.connection;
   if (!conn) return false;
   if (conn.saveData) return true;
   const et = conn.effectiveType as string | undefined;
@@ -68,9 +68,11 @@ function isSaveData(): boolean {
 export const shouldSkipPrefetch = isSaveData;
 
 function runIdle(cb: () => void) {
-  const ric = (globalThis as any).requestIdleCallback as
-    | ((cb: () => void, opts?: { timeout?: number }) => number)
-    | undefined;
+  /* Safari n'a requestIdleCallback que depuis la 18.4 : on teste sa
+     presence plutot que d'eteindre le typage de globalThis pour la lire. */
+  const ric = typeof globalThis.requestIdleCallback === "function"
+    ? globalThis.requestIdleCallback
+    : undefined;
   if (ric) ric(cb, { timeout: 2000 });
   else setTimeout(cb, 200);
 }

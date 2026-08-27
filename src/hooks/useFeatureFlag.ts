@@ -23,9 +23,9 @@ export function useFeatureFlag(key: string): { enabled: boolean; isLoading: bool
               .maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
-      const ov = (override as any)?.data?.enabled;
+      const ov = override?.data?.enabled;
       if (typeof ov === "boolean") return ov;
-      return !!(flag as any)?.enabled;
+      return !!flag?.enabled;
     },
     staleTime: 60_000,
   });

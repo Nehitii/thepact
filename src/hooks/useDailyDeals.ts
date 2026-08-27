@@ -99,7 +99,7 @@ export function useDailyDeals() {
         const item = itemMap.get(deal.item_id);
         if (item) {
           const discounted_price = Math.floor(item.price * (1 - deal.discount_percentage / 100));
-          enrichedDeals.push({ ...deal, item: item as any, discounted_price });
+          enrichedDeals.push({ ...deal, item: item as DailyDealWithItem["item"], discounted_price });
         }
       }
       

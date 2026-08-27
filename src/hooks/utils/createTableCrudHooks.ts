@@ -26,8 +26,16 @@ export function createTableCrudHooks<TRow extends { id: string }>(
   options: CrudFactoryOptions,
 ) {
   const requireUser = options.requireUser ?? true;
-  /* Le client typé n accepte pas un nom de table variable : le seul
-     elargissement du fichier est concentre ici. */
+  /* LE SEUL ELARGISSEMENT DU FICHIER, ET IL EST ICI.
+
+     Le client typé exige un nom de table littéral pour déduire la forme
+     des lignes ; cette fabrique en reçoit un à l'exécution. On élargit
+     donc une fois, à l'endroit exact où la contrainte se pose, et tout
+     ce qui en découle (`q`, `row`) hérite de ce seul point — au lieu
+     d'être ré-élargi à chaque usage, ce qui donnerait à croire qu'il y a
+     trois renoncements là où il n'y en a qu'un.
+
+     Les appelants, eux, restent entièrement typés par `TRow`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const table = () => (supabase as any).from(tableName);
   const key = options.queryKey;
@@ -38,7 +46,7 @@ export function createTableCrudHooks<TRow extends { id: string }>(
       queryKey: [key, requireUser ? user?.id : "all"],
       queryFn: async () => {
         if (requireUser && !user?.id) return [] as TRow[];
-        let q: any = table().select("*");
+        let q = table().select("*");
         if (requireUser) q = q.eq("user_id", user!.id);
         if (options.orderBy) {
           q = q.order(options.orderBy.column, {
@@ -59,7 +67,7 @@ export function createTableCrudHooks<TRow extends { id: string }>(
     return useMutation({
       mutationFn: async (payload: Partial<TRow>): Promise<TRow> => {
         if (requireUser && !user?.id) throw new Error("Not authenticated");
-        const row: any = requireUser
+        const row = requireUser
           ? { ...payload, user_id: user!.id }
           : payload;
         /* Une modification partielle n est pas un « upsert ».

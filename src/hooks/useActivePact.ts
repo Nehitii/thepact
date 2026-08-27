@@ -11,7 +11,7 @@ export function useActivePact() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("profiles")
-        .update({ active_pact_id: pactId } as any)
+        .update({ active_pact_id: pactId })
         .eq("id", user.id);
       if (error) throw error;
     },

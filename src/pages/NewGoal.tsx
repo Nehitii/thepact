@@ -26,6 +26,7 @@ import "@/styles/cyberpunk.css";
 import "@/styles/goal-dossier.css";
 import "@/styles/goal-editeur.css";
 import { messageDErreur } from "@/lib/erreurs";
+import type { Json } from "@/integrations/supabase/types";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({
@@ -35,7 +36,10 @@ const goalSchema = z.object({
     .min(1, { message: "Goal name is required" })
     .max(100, { message: "Goal name must be less than 100 characters" }),
   type: z.array(z.string()).min(1, { message: "At least one tag is required" }),
-  difficulty: z.string(),
+  /* L'enum de la base, moins « custom » qui se règle ailleurs. Le
+     déclarer « z.string() » laissait n'importe quelle valeur descendre
+     jusqu'au refus de Postgres. */
+  difficulty: z.enum(["easy", "medium", "hard", "extreme", "impossible", "custom"]),
   goalType: z.enum(["normal", "habit", "super"]),
   stepCount: z
     .number()
@@ -232,9 +236,36 @@ export default function NewGoal() {
       const habitChecks = goalType === "habit" ? Array(habitDurationDays).fill(false) : null;
       const totalEstimatedCost = costItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
-      const primaryType = selectedTags[0] || "personal";
+      /* ═══════════════════════════════════════════════════════════
+         UNE ÉTIQUETTE N'EST PAS UN TYPE, ET LA BASE LE SAIT.
 
-      let superGoalData: { child_goal_ids?: string[] | null; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } =
+         `goals.type` est un enum à neuf valeurs. GOAL_TAGS en propose
+         dix-huit, dont NEUF que l'enum refuse — arts, tech, travel,
+         work, community, nature, spiritual, lifestyle, buying_selling.
+         Vérifié en base : `select 'arts'::goal_type` échoue.
+
+         Choisir « Arts » en PREMIÈRE étiquette faisait donc échouer la
+         création de l'objectif, avec pour seul message « Failed to
+         create goal ». Le `as any` sur l'insert rendait ce chemin muet
+         à la compilation ; c'est l'utilisateur qui le découvrait.
+
+         Les étiquettes sont de toute façon enregistrées à part, par
+         `insertGoalTags` : rien n'est perdu à retomber sur « other ».
+         ═══════════════════════════════════════════════════════════ */
+      const TYPES_EN_BASE = [
+        "personal", "professional", "health", "creative",
+        "financial", "learning", "relationship", "diy", "other",
+      ] as const;
+      type TypeObjectif = (typeof TYPES_EN_BASE)[number];
+      const estTypeDeBase = (v: string): v is TypeObjectif =>
+        (TYPES_EN_BASE as readonly string[]).includes(v);
+
+      const premiere = selectedTags[0] || "personal";
+      const primaryType: TypeObjectif = estTypeDeBase(premiere) ? premiere : "other";
+
+      /* La regle d'un groupe est une colonne jsonb : le type applicatif
+         est plus etroit que Json, et la conversion a lieu ici, une fois. */
+      let superGoalData: { child_goal_ids?: string[] | null; super_goal_rule?: Json; is_dynamic_super?: boolean } =
         {};
       if (goalType === "super") {
         if (superBuildMode === "manual") {
@@ -246,7 +277,7 @@ export default function NewGoal() {
           const matchedIds = filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
           superGoalData = {
             child_goal_ids: isDynamicSuper ? null : matchedIds,
-            super_goal_rule: superGoalRule,
+            super_goal_rule: superGoalRule as unknown as Json,
             is_dynamic_super: isDynamicSuper,
           };
         }
@@ -257,8 +288,8 @@ export default function NewGoal() {
         .insert({
           pact_id: pactResult.id,
           name: validatedData.name,
-          type: primaryType as any,
-          difficulty: validatedData.difficulty as any,
+          type: primaryType,
+          difficulty: validatedData.difficulty,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
           /* L etape ultime est un bonus : elle n entre pas dans le
@@ -275,7 +306,7 @@ export default function NewGoal() {
           image_url: imageUrl || null,
           ...superGoalData,
           deadline: deadline || null,
-        } as any)
+        })
         .select()
         .single();
 

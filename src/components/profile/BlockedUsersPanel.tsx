@@ -28,7 +28,7 @@ export function BlockedUsersPanel() {
       if (error) throw error;
 
       if (!data || data.length === 0) return [];
-      const blockedIds = data.map((b: any) => b.blocked_user_id);
+      const blockedIds = data.map((b) => b.blocked_user_id);
       /* La table ne rend que sa propre ligne : tous les comptes bloques
          s affichaient « Agent inconnu ». La projection publique rend au
          moins ceux qui sont visibles. Ceux qui ne le sont pas restent
@@ -37,7 +37,7 @@ export function BlockedUsersPanel() {
          demanderait d elargir le contrat de la fonction. */
       const profils = await chargerProfilsPublics(blockedIds);
 
-      return data.map((b: any) => {
+      return data.map((b) => {
         const profile = profils.get(b.blocked_user_id);
         return {
           ...b,
@@ -64,7 +64,7 @@ export function BlockedUsersPanel() {
     },
   });
 
-  const filtered = (blockedUsers || []).filter((b: any) =>
+  const filtered = (blockedUsers || []).filter((b) =>
     b.display_name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -101,7 +101,7 @@ export function BlockedUsersPanel() {
               </div>
             )}
             <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-              {filtered.map((b: any) => (
+              {filtered.map((b) => (
                 <div
                   key={b.id}
                   className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md border border-primary/10 bg-primary/[0.02] hover:border-primary/25 transition-colors"

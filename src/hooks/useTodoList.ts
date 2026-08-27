@@ -147,7 +147,10 @@ export function useTodoList() {
       if (!data) {
         const { data: rpcResult, error: rpcError } = await supabase.rpc('init_todo_stats');
         if (rpcError) throw rpcError;
-        data = rpcResult as any;
+        /* La fonction rend la ligne qu'elle vient de créer, typée Json
+           côté client. Le `as TodoStats` juste dessous est le seul endroit
+           où l'on affirme sa forme, et il ne bouge pas. */
+        data = rpcResult as unknown as typeof existantes;
       }
 
       return data as TodoStats;

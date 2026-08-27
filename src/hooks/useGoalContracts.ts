@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { refuserSiEchec } from "@/lib/reponseRpc";
 
 export interface GoalContract {
   id: string;
@@ -52,7 +53,7 @@ export function useCreateGoalContract() {
           // pending until all witnesses sign; cascade trigger notifies witnesses
           status: input.witnesses && input.witnesses.length > 0 ? "pending" : "active",
           signed_at: input.witnesses && input.witnesses.length > 0 ? null : new Date().toISOString(),
-        } as any)
+        })
         .select()
         .single();
       if (error) throw error;
@@ -72,7 +73,7 @@ export function useUpdateContractStatus() {
     mutationFn: async ({ id, status }: { id: string; status: GoalContract["status"] }) => {
       const { error } = await supabase
         .from("goal_contracts")
-        .update({ status, settled_at: status === "succeeded" || status === "failed" ? new Date().toISOString() : null } as any)
+        .update({ status, settled_at: status === "succeeded" || status === "failed" ? new Date().toISOString() : null })
         .eq("id", id);
       if (error) throw error;
     },
@@ -89,7 +90,7 @@ export function useSignGoalContract() {
         _signature_name: args.signatureName,
       });
       if (error) throw error;
-      if (data && (data as any).success === false) throw new Error((data as any).error || "Erreur de signature");
+      refuserSiEchec(data, "Erreur de signature");
       return data as { success: true; signed: number; required: number; activated: boolean };
     },
     onSuccess: (res) => {

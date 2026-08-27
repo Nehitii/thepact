@@ -9,9 +9,10 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { Button } from "@/components/ui/button";
 import { SignalLostEmpty } from "./SignalLostEmpty";
 import { getRarity, useRarityLabel } from "./shopRarity";
+import type { ArticleAchetable } from "./articleAchetable";
 
 interface WishlistPanelProps {
-  onPurchaseItem: (item: any, itemType: string) => void;
+  onPurchaseItem: (item: ArticleAchetable, itemType: string) => void;
 }
 
 /**
@@ -52,7 +53,16 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
      n existait sur ce qui restait. */
   const enrichedWishlist = wishlist.map(w => {
     let item: ArticleSouhaite | null = null;
-    let itemData: any = null;
+    /* La ligne brute du rayon, avant d'etre ramenee a ArticleSouhaite.
+       Les cinq rayons n'ont pas les memes colonnes : c'est une union, et
+       la nommer vaut mieux que de renoncer a les distinguer. */
+    let itemData:
+      | (typeof frames)[number]
+      | (typeof banners)[number]
+      | (typeof titles)[number]
+      | (typeof modules)[number]
+      | (typeof bundles)[number]
+      | undefined;
     let isOwned = false;
 
     if (w.item_type === "cosmetic") {
@@ -188,7 +198,19 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
                     Owned
                   </div>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => onPurchaseItem(wishlistItem.item, wishlistItem.item_type)}
+                  <Button size="sm" variant="outline" onClick={() => {
+                      /* UN ARTICLE RETIRE DU RAYON RESTE DANS LA LISTE
+                         D'ENVIES. Sa ligne n'existe plus : ni nom, ni prix.
+                         L'ancien `any` laissait partir cet objet troue
+                         jusqu'a la boite de confirmation, qui affichait un
+                         prix vide et un bouton d'achat actif. */
+                      const a = wishlistItem.item;
+                      if (!a || typeof a.id !== "string" || !a.name || a.price == null) return;
+                      onPurchaseItem(
+                        { id: a.id, name: a.name, price: a.price, rarity: String(a.rarity ?? "common"), type: a.type },
+                        wishlistItem.item_type,
+                      );
+                    }}
                     disabled={!canAfford}
                     className="w-full h-8 ds-t-label font-orbitron tracking-wider rounded-lg"
                     style={{ borderColor: r.border, color: canAfford ? r.accent : undefined, background: canAfford ? r.glow : undefined }}>

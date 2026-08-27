@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
 import { messageDErreur } from "@/lib/erreurs";
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
@@ -169,7 +170,7 @@ export default function Onboarding() {
       // Create first goal
       if (firstGoal.id !== "custom") {
         const tpl = firstGoal as GoalTemplate;
-        const goalPayload: any = {
+        const goalPayload: TablesInsert<"goals"> = {
           pact_id: pact.id,
           name: tpl.placeholder,
           difficulty: tpl.difficulty,
@@ -188,7 +189,7 @@ export default function Onboarding() {
           difficulty: "medium",
           goal_type: "normal",
           total_steps: 5,
-        } as any);
+        });
       }
       // Let the sealing animation breathe before navigating
       await new Promise((r) => setTimeout(r, 1600));

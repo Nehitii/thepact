@@ -31,7 +31,7 @@ export async function fetchPact(userId: string | undefined): Promise<Pact | null
     .eq("id", userId)
     .single();
 
-  const activePactId = (profile as any)?.active_pact_id;
+  const activePactId = profile?.active_pact_id;
 
   if (activePactId) {
     const { data, error } = await supabase

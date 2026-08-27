@@ -1,4 +1,4 @@
-import { lazy, Suspense, memo } from "react";
+import { lazy, Suspense, memo, type ComponentType } from "react";
 import { Circle, type LucideProps } from "lucide-react";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
 
@@ -15,7 +15,13 @@ const cache = new Map<string, ReturnType<typeof lazy>>();
 
 function getLazyIcon(name: string) {
   if (cache.has(name)) return cache.get(name)!;
-  const importer = (dynamicIconImports as Record<string, () => Promise<any>>)[name];
+  /* Chaque entrée est un import différé qui rend un module d'icône :
+     c'est exactement ce que React.lazy attend. On le dit, plutôt que de
+     rendre `Promise<any>` — qui laissait passer n'importe quel module. */
+  const importer = (dynamicIconImports as Record<
+    string,
+    () => Promise<{ default: ComponentType<LucideProps> }>
+  >)[name];
   if (!importer) return null;
   const Comp = lazy(importer);
   cache.set(name, Comp);

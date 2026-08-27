@@ -69,7 +69,7 @@ export function useProfileSettings() {
 
       const { error } = await supabase
         .from("profiles")
-        .update({ ...updates, updated_at: new Date().toISOString() } as any)
+        .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", user.id);
 
       if (error) throw error;

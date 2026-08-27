@@ -8,6 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { SuperGoalRule } from "@/components/goals/super/types";
+import type { Tables } from "@/integrations/supabase/types";
 
 export interface Goal {
   id: string;
@@ -69,7 +70,13 @@ export async function fetchGoals(
         .from("goals")
         .select(selectParts.join(", "))
         .eq("pact_id", pactId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        /* LE SELECT SE COMPOSE A L'EXECUTION : supabase-js ne peut rien
+           deduire d'une chaine construite, et rend « GenericStringError ».
+           On declare donc la forme la plus large que cette composition
+           produit — les colonnes de la table, plus les etiquettes quand
+           on les a demandees. */
+        .returns<Array<Tables<"goals"> & { goal_tags?: { tag: string }[] }>>();
 
       if (goalsError) throw goalsError;
       if (!goalsData || goalsData.length === 0) return [];
@@ -78,7 +85,7 @@ export async function fetchGoals(
       let stepCountsByGoal: Map<string, { total: number; completed: number; zenith: boolean }> | null = null;
 
       if (includeStepCounts) {
-        const goalIds = goalsData.map((g: any) => g.id);
+        const goalIds = goalsData.map((g) => g.id);
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")
           .select("goal_id, status, is_ultimate")
@@ -108,7 +115,7 @@ export async function fetchGoals(
       }
 
       // Map results — tags come from the relational join, no manual merge
-      return goalsData.map((goal: any) => {
+      return goalsData.map((goal) => {
         const counts = stepCountsByGoal?.get(goal.id);
         const relationalTags: string[] | undefined =
           includeTags && Array.isArray(goal.goal_tags)

@@ -85,7 +85,21 @@ function etatDe(statut: string): Etat {
   return "verrouille";
 }
 
-function avancement(g: any): number {
+/* DEUX FORMES ARRIVENT ICI, et c'est voulu : l'objectif tel que la base
+   le rend (total_steps / validated_steps) et l'objectif tel que le graphe
+   l'a enrichi (totalStepsCount / completedStepsCount). Les déclarer
+   toutes deux vaut mieux que d'éteindre le contrôle pour les accepter. */
+interface ObjectifMesurable {
+  goal_type?: string | null;
+  habit_duration_days?: number | null;
+  habit_checks?: boolean[] | null;
+  total_steps?: number | null;
+  validated_steps?: number | null;
+  totalStepsCount?: number | null;
+  completedStepsCount?: number | null;
+}
+
+function avancement(g: ObjectifMesurable): number {
   const habit = g.goal_type === "habit";
   const total = habit ? g.habit_duration_days || 0 : g.totalStepsCount ?? g.total_steps ?? 0;
   const fait = habit

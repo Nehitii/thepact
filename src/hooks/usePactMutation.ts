@@ -49,8 +49,11 @@ export function usePactMutation(
       const previousPact = queryClient.getQueryData(["pact", userId]);
 
       // Optimistically update the cache
-      queryClient.setQueryData(["pact", userId], (old: any) => {
-        if (!old) return old;
+      /* La valeur en cache est celle que « usePact » y a mise. On ne la
+         connaît pas d'ici, mais on ne fait que la recopier en y posant
+         les champs modifiés : « unknown » dit exactement ça. */
+      queryClient.setQueryData(["pact", userId], (old: unknown) => {
+        if (!old || typeof old !== "object") return old;
         return { ...old, ...newData };
       });
 

@@ -156,7 +156,7 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
                 {friendList.length === 0 ? (
                   <p className="text-xs text-muted-foreground">Aucun ami pour le moment.</p>
                 ) : (
-                  friendList.map((f: any) => {
+                  friendList.map((f) => {
                     const fid = f.friend_id;
                     const name = f.display_name || "Ami";
                     const checked = selectedWitnesses.includes(fid);

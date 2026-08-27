@@ -57,7 +57,9 @@ export function useActiveMission() {
           deadline_type: data.deadline_type as DeadlineType,
           expires_at: data.expires_at,
           created_at: data.created_at,
-          goal_name: (data.goals as any)?.name || 'Unknown Goal',
+          /* Jointure : `goals` arrive imbriqué. Le nom est le seul champ
+             qu'on en lit — on dit lequel plutôt que d'éteindre le typage. */
+          goal_name: (data.goals as { name?: string } | null)?.name || 'Unknown Goal',
         });
       } else {
         setActiveMission(null);

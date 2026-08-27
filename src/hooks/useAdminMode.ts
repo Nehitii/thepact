@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { refuserSiEchec } from "@/lib/reponseRpc";
 export interface AdminModeState {
   isAdmin: boolean;
   isAdminModeActive: boolean;
@@ -46,7 +47,7 @@ export function useAdminForcePurchaseCosmetic() {
         p_cosmetic_type: cosmeticType,
       });
       if (error) throw error;
-      if (data && (data as any).success === false) throw new Error((data as any).error || "Grant failed");
+      refuserSiEchec(data, "Grant failed");
       return true;
     },
     onSuccess: () => {
@@ -75,7 +76,7 @@ export function useAdminResetCosmetic() {
         p_cosmetic_id: cosmeticId,
       });
       if (error) throw error;
-      if (data && (data as any).success === false) throw new Error((data as any).error || "Reset failed");
+      refuserSiEchec(data, "Reset failed");
       return true;
     },
     onSuccess: () => {

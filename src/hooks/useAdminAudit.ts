@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function logAdminAction(action: string, targetType: string, targetId?: string, metadata?: Record<string, unknown>) {
   const { data: { session } } = await supabase.auth.getSession();
@@ -9,6 +10,8 @@ export async function logAdminAction(action: string, targetType: string, targetI
     action,
     target_type: targetType,
     target_id: targetId || null,
-    metadata: metadata || {},
-  } as any);
+    /* La colonne est jsonb. Record<string, unknown> est plus large que
+       Json : la conversion est reelle, et elle a lieu ici, une fois. */
+    metadata: (metadata || {}) as Json,
+  });
 }

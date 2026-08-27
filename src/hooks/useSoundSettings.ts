@@ -6,7 +6,16 @@ import type { SoundSettings } from "@/contexts/SoundContext";
 
 const QUERY_KEY = (userId: string | undefined) => ["sound-settings", userId];
 
-function mapRowToSettings(row: any): SoundSettings {
+/** Les cinq colonnes de réglage sonore, telles qu'elles arrivent. */
+interface LigneSon {
+  sound_master_enabled?: boolean | null;
+  sound_volume?: number | null;
+  sound_ui_enabled?: boolean | null;
+  sound_success_enabled?: boolean | null;
+  sound_progress_enabled?: boolean | null;
+}
+
+function mapRowToSettings(row: LigneSon | null | undefined): SoundSettings {
   return {
     masterEnabled: row?.sound_master_enabled ?? true,
     volume: Number(row?.sound_volume ?? 0.35),

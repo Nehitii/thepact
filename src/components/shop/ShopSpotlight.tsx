@@ -12,10 +12,11 @@ import { getRarity, useRarityLabel } from "./shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
 import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
+import type { ArticleAchetable } from "./articleAchetable";
 
 interface ShopSpotlightProps {
-  onPreview?: (item: any, type: string) => void;
-  onPurchase?: (item: any, type: string) => void;
+  onPreview?: (item: ArticleAchetable, type: string) => void;
+  onPurchase?: (item: ArticleAchetable, type: string) => void;
 }
 
 export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
@@ -58,18 +59,18 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
 
   const renderPreview = () => {
     if (featured._type === "frame") {
-      const frame = featured as any;
+      const frame = featured;
       return <FramePreview size="lg" frameImage={frame.preview_url} borderColor={frame.border_color} glowColor={frame.glow_color} frameScale={frame.frame_scale} frameOffsetX={frame.frame_offset_x} frameOffsetY={frame.frame_offset_y} />;
     }
     if (featured._type === "banner") {
-      const banner = featured as any;
+      const banner = featured;
       return (
         <div className="w-full max-w-[260px] h-20 rounded-xl" style={{
           background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start || "#0a0a12"}, ${banner.gradient_end || "#1a1a2e"})`,
         }} />
       );
     }
-    const title = featured as any;
+    const title = featured;
     return (
       <TitreCosmetique
         texte={title.title_text || title.name}
