@@ -77,34 +77,64 @@
   padding: 18px 0 14px;
   flex-shrink: 0;
 }
+/* ── LE SIGNE ─────────────────────────────────────────────────
+   Le symbole est une marque de 1,95:1, pas un carré. Déployée, la
+   barre lui donne un emplacement à ses proportions — 132 × 68 — au
+   lieu de le coincer dans 44 × 44, où il se serait rendu à 44 × 22
+   et où les lignes de glitch se seraient écrasées.
+
+   Repliée, la barre fait 67 px : une marque aussi large n'y tient
+   plus. Elle cède la place à l'icône carrée, celle du favicon et de
+   l'écran d'accueil. Ce n'est pas un pis-aller : c'est la même
+   distinction que fait tout logotype entre sa forme longue et sa
+   forme brève.
+
+   Et la source change avec le thème. Le dégradé du symbole part du
+   blanc : sur le fond clair de la barre — rgb(249,248,246) — sa
+   moitié haute disparaîtrait purement et simplement. La variante
+   claire suit la rampe du pack, #A78BFA → #6D30FF. */
 .sb-marque {
   position: relative;
   display: block;
-  width: 44px;
-  height: 44px;
+  width: 132px;
+  height: 68px;
   border: 0;
   padding: 0;
   background: none;
   cursor: pointer;
-  transition: transform 320ms var(--sb-e);
+  transition: transform 320ms var(--sb-e), width 320ms var(--sb-e), height 320ms var(--sb-e);
 }
-.sb[data-replie="oui"] .sb-marque { width: 36px; height: 36px; }
-.sb-marque:hover { transform: scale(1.06); }
-.sb-marque:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: 5px; border-radius: 10px; }
-.sb-marque img {
+.sb[data-replie="oui"] .sb-marque { width: 38px; height: 38px; }
+
+.sb-signe {
   position: relative;
   z-index: 1;
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  display: block;
+  background: url("/marque/overwrite-symbole.svg") center / contain no-repeat;
 }
+html.light .sb-signe { background-image: url("/marque/overwrite-symbole-clair.svg"); }
+
+/* Repliée : l'icône carrée, dans les deux thèmes — elle porte son
+   propre fond, donc elle se lit sur l'un comme sur l'autre. */
+.sb[data-replie="oui"] .sb-signe,
+html.light .sb[data-replie="oui"] .sb-signe {
+  background-image: url("/marque/overwrite-violet.svg");
+}
+.sb-marque:hover { transform: scale(1.06); }
+.sb-marque:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: 5px; border-radius: 10px; }
+
 /* La lueur est un frere, pas un « box-shadow » : le logo est
-   detoure, une ombre portee epouserait son rectangle. */
+   detoure, une ombre portee epouserait son rectangle.
+
+   L emplacement n est plus carre : un « inset » en pourcentage
+   donnerait une ellipse tres large et tres plate. On l ancre donc en
+   pixels, et le halo reste rond sous une marque allongee. */
 .sb-marque::before {
   content: "";
   position: absolute;
-  inset: -42%;
+  inset: -18px -10px;
   z-index: 0;
   border-radius: 50%;
   background: radial-gradient(circle, var(--sb-lueur) 0%, var(--sb-lueur-2) 42%, transparent 68%);

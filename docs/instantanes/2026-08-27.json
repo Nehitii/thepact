@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T17:04:10.245Z",
-  "fichiers": 853,
-  "lignes": 161606,
+  "genere": "2026-08-27T17:11:59.367Z",
+  "fichiers": 856,
+  "lignes": 162757,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -13,8 +13,8 @@
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3517,
-      "poids": 207208
+      "lignes": 3504,
+      "poids": 206751
     },
     {
       "dossier": "mem/design",
@@ -54,9 +54,9 @@
     },
     {
       "dossier": "public/marque",
-      "fichiers": 12,
-      "lignes": 344,
-      "poids": 154870
+      "fichiers": 15,
+      "lignes": 1476,
+      "poids": 524082
     },
     {
       "dossier": "public/mia",
@@ -91,8 +91,8 @@
     {
       "dossier": "src/components",
       "fichiers": 304,
-      "lignes": 50142,
-      "poids": 2020182
+      "lignes": 50144,
+      "poids": 2020283
     },
     {
       "dossier": "src/content",
@@ -139,8 +139,8 @@
     {
       "dossier": "src/styles",
       "fichiers": 38,
-      "lignes": 29591,
-      "poids": 1120149
+      "lignes": 29621,
+      "poids": 1121816
     },
     {
       "dossier": "src/types",
@@ -195,8 +195,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3406,
-      "poids": 202946
+      "lignes": 3393,
+      "poids": 202489
     },
     {
       "langage": "JavaScript",
@@ -206,9 +206,9 @@
     },
     {
       "langage": "SVG",
-      "fichiers": 34,
-      "lignes": 475,
-      "poids": 160964
+      "fichiers": 35,
+      "lignes": 473,
+      "poids": 161479
     },
     {
       "langage": "ICO",
@@ -224,9 +224,9 @@
     },
     {
       "langage": "PNG",
-      "fichiers": 24,
-      "lignes": 6378,
-      "poids": 1653604
+      "fichiers": 26,
+      "lignes": 7512,
+      "poids": 2022301
     },
     {
       "langage": "TXT",
@@ -243,8 +243,8 @@
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67108,
-      "poids": 2769999
+      "lignes": 67110,
+      "poids": 2770100
     },
     {
       "langage": "WEBP",
@@ -255,8 +255,8 @@
     {
       "langage": "CSS",
       "fichiers": 39,
-      "lignes": 31562,
-      "poids": 1199748
+      "lignes": 31592,
+      "poids": 1201415
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3122,
+  "commits": 3123,
   "orphelins": 0,
   "marqueurs": 12
 }

@@ -402,9 +402,11 @@ export const AppSidebar = memo(function AppSidebar() {
             « SYS.ONLINE // v4.0.1 » tenaient 44 px sous le logo. Le
             logo dit deja le nom ; sa lueur est dans la feuille.
 
-            C'est la variante VIOLETTE, la meme que le favicon et que
-            l'icone installee : le signe de la barre laterale doit etre
-            celui qu'on voit sur son ecran d'accueil, pas un cousin. */}
+            LE SIGNE EST POSE PAR LA FEUILLE, PAS PAR UNE BALISE <img>.
+            Il change avec le theme — sa moitie blanche disparaitrait sur
+            le fond clair de la barre — et avec l etat replie, ou une
+            marque de 1,95:1 n a plus la place de se lire. Trois sources
+            pour un seul element : c est du ressort du CSS. */}
         <div className="sb-tete">
           <button
             type="button"
@@ -412,7 +414,7 @@ export const AppSidebar = memo(function AppSidebar() {
             onClick={() => { navigate("/"); fermerMobile(); }}
             aria-label="Overwrite"
           >
-            <img src="/marque/overwrite-violet.svg" alt="" width={44} height={44} decoding="async" />
+            <span className="sb-signe" aria-hidden="true" />
           </button>
         </div>
 
