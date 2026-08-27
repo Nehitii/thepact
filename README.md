@@ -1,9 +1,14 @@
-# Vowpact
+# Overwrite
 
 > Find The Light
 
 Application web progressive (PWA) de suivi d'habitudes, d'objectifs et de bien-être,
-avec coach IA conversationnel.
+avec M.I.A, son intelligence conversationnelle.
+
+> **L'application s'est appelée Vowpact jusqu'au 27 août 2026.** Le nom a été
+> abandonné après un dépôt de marque par un tiers. Le dossier du dépôt porte
+> encore l'ancien nom sur le disque ; le renommer casserait les chemins des
+> outils locaux, et il n'apparaît nulle part dans ce qui est livré.
 
 ## Stack
 

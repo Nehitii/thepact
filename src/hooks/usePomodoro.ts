@@ -41,7 +41,7 @@ export interface CycleAcheve {
  * que l absence ait dure trois secondes ou dix minutes.
  * ────────────────────────────────────────────────────────────── */
 
-const CLE_SESSION = "vowpact.focus.session";
+const CLE_SESSION = "overwrite.focus.session";
 
 /** Au-dela, on considere que l utilisateur a simplement quitte. */
 const AGE_MAX_MS = 12 * 60 * 60 * 1000;

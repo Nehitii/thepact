@@ -140,14 +140,14 @@ const NOM_DE_GROUPE: Record<string, [string, string]> = {
    par diverger. */
 
 /** L'évènement que la charpente écoute pour ouvrir la console. */
-export const OUVRIR_MIA = "vowpact-ouvrir-mia";
+export const OUVRIR_MIA = "overwrite-ouvrir-mia";
 
 /* LA PALETTE S OUVRE AUSSI DE L EXTERIEUR.
    Son etat vivait uniquement ici, donc seul ⌘K et son propre bouton
    pouvaient l ouvrir. La barre laterale porte desormais une entree de
    recherche : elle a besoin d une porte, et un evenement en est une —
    c est deja le procede retenu pour M.I.A juste au-dessus. */
-export const OUVRIR_PALETTE = "vowpact-ouvrir-palette";
+export const OUVRIR_PALETTE = "overwrite-ouvrir-palette";
 
 export function CommandPalette() {
   const [ouverte, setOuverte] = useState(false);

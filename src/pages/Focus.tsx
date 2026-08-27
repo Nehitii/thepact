@@ -301,7 +301,7 @@ export default function Focus() {
           icon: "/favicon.ico",
           // Une seule notification a l ecran : la suivante remplace la
           // precedente au lieu de s ajouter a la pile.
-          tag: "vowpact-focus",
+          tag: "overwrite-focus",
         });
       }
 

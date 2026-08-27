@@ -69,7 +69,7 @@ export const VERSION = "2026.08";
 export const MISE_A_JOUR = "25 août 2026";
 
 /** Le nom du produit, en un seul endroit. */
-export const PRODUIT = "Vowpact";
+export const PRODUIT = "Overwrite";
 
 export interface Article {
   /** Le numéro d'article, pour pouvoir s'y référer. */

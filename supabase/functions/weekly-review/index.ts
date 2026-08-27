@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
     const aiKey = getAiKey();
     if (aiKey) {
       try {
-        const prompt = `You are M.I.A, the intelligence built into Vowpact, a life-management app. Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
+        const prompt = `You are M.I.A, the intelligence built into Overwrite, a life-management app. Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
 
 This week's summary:
 - Goals progressed: ${goalsProgressed} goals, ${stepsCompleted} steps completed

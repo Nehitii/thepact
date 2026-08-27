@@ -105,7 +105,7 @@ async function generateInsight(curr: StatsSemaine, prev: StatsSemaine): Promise<
   if (!AI_API_KEY) {
     return `Cette semaine : ${curr.stepsCompleted} étape(s), ${curr.habitLogs} habitude(s), ${curr.journalCount} entrée(s) journal, ${curr.todoCount} tâche(s). Compare à la semaine passée : étapes ${deltaLabel(curr.stepsCompleted, prev.stepsCompleted)}, habitudes ${deltaLabel(curr.habitLogs, prev.habitLogs)}.`;
   }
-  const prompt = `Tu es M.I.A, l'intelligence intégrée à Vowpact. Rédige un digest hebdo (max 120 mots, ton direct, tutoie, markdown léger). Compare la semaine à la précédente, salue les progrès, pointe 1 levier concret.
+  const prompt = `Tu es M.I.A, l'intelligence intégrée à Overwrite. Rédige un digest hebdo (max 120 mots, ton direct, tutoie, markdown léger). Compare la semaine à la précédente, salue les progrès, pointe 1 levier concret.
 
 Semaine actuelle : étapes ${curr.stepsCompleted}, habitudes ${curr.habitLogs}, journal ${curr.journalCount}, tâches ${curr.todoCount}.
 Semaine précédente : étapes ${prev.stepsCompleted}, habitudes ${prev.habitLogs}, journal ${prev.journalCount}, tâches ${prev.todoCount}.`;

@@ -99,8 +99,8 @@ export function PorteAdmin({ children }: { children: React.ReactNode }) {
             Un second facteur a été créé sur ce compte mais n'a jamais été
             confirmé par un code à six chiffres — il ne protège donc rien.
             Reprenez depuis les réglages : un nouveau code y sera proposé, et
-            l'ancienne entrée « Vowpact » de votre application peut être
-            supprimée.
+            l'entrée précédente de votre application d'authentification
+            peut être supprimée.
           </p>
         ) : (
           <>

@@ -135,7 +135,7 @@ Deno.serve(async (req: Request) => {
         : `https://api.giphy.com/v1/gifs/trending?${p}`;
     } else {
       const p = new URLSearchParams({
-        key: cleTenor!, client_key: "vowpact", limit: "24",
+        key: cleTenor!, client_key: "overwrite", limit: "24",
         contentfilter: "high", media_filter: "gif,tinygif,nanogif", locale: "fr_FR",
       });
       if (q) p.set("q", q);

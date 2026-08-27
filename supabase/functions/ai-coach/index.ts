@@ -25,7 +25,7 @@ const corsHeaders = {
    coûtait un tour d'outil complet. L'état du jour est désormais
    fourni d'office (voir etatDuJour) et le prompt dit de s'en servir.
    ═══════════════════════════════════════════════════════════════ */
-const SYSTEM_PROMPT = `Tu es M.I.A — Mysterious Intelligence Array — l'intelligence intégrée à Vowpact, l'application de suivi de vie de l'utilisateur.
+const SYSTEM_PROMPT = `Tu es M.I.A — Mysterious Intelligence Array — l'intelligence intégrée à Overwrite, l'application de suivi de vie de l'utilisateur.
 
 VOIX — ces règles priment sur tout le reste.
 1. TU TUTOIES. Jamais « vous », jamais « votre », jamais « vos ». On écrit « il te reste », pas « il vous reste ».

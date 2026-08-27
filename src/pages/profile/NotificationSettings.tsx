@@ -273,7 +273,7 @@ export default function NotificationSettings() {
                         /* Une demande explicite n est pas une notification :
                            elle passe outre les preferences, sinon le bouton
                            ne prouverait rien quand le push est coupe. */
-                        body: { user_id: user.id, title: "Vowpact", body: "Notification de test ✨", url: "/", force: true },
+                        body: { user_id: user.id, title: "Overwrite", body: "Notification de test ✨", url: "/", force: true },
                       });
                       if (error) {
                         toast.error(t("common.error"), { description: error.message });

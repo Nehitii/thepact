@@ -205,7 +205,7 @@ export default function DataPortability() {
             const csv = [headers.join(","), ...rows.map((r: unknown[]) => r.join(","))].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `vowpact-sante-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
+            const a = document.createElement("a"); a.href = url; a.download = `overwrite-sante-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
             toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
             return;
           }
@@ -233,9 +233,9 @@ export default function DataPortability() {
         exportData = { ...exportData, profile: profileData, pact, achievements, stats };
       }
       const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "");
-      /* L application s appelle Vowpact ; « the-pact » est un nom qu elle
+      /* L application s appelle Overwrite ; « the-pact » est un nom qu elle
          ne porte plus nulle part ailleurs. */
-      const filename = `vowpact-${exportCategory === "all" ? "tout" : exportCategory}-${dateStr}.json`;
+      const filename = `overwrite-${exportCategory === "all" ? "tout" : exportCategory}-${dateStr}.json`;
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);

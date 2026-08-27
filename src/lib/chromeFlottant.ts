@@ -24,7 +24,7 @@ import { PREF } from "./preferencesAffichage";
  * ═══════════════════════════════════════════════════════════════
  */
 
-const AVIS = "vowpact-chrome-flottant";
+const AVIS = "overwrite-chrome-flottant";
 
 /* « barre » a disparu de cette liste avec la barre ⌘K flottante :
    la barre laterale porte maintenant sa propre recherche, et deux

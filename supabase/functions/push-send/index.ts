@@ -1,5 +1,5 @@
 // Push notification sender (Web Push, VAPID).
-// Requires secrets: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (e.g. "mailto:owner@vowpact.app").
+// Requires secrets: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT.
 // Optional: ADMIN_SHARED_SECRET to gate cron callers.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 // @ts-types="./web-push.d.ts"
@@ -54,8 +54,14 @@ Deno.serve(async (req) => {
 
   const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY");
   const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY");
-  const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:owner@vowpact.app";
-  if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+  /* PLUS DE REPLI SUR UNE ADRESSE INVENTÉE.
+     Le repli valait « mailto:owner@vowpact.app » — un domaine qui n est
+     plus le nôtre. Un sujet VAPID est le contact que le service de push
+     rappelle en cas de problème : y mettre une adresse qu on ne relève
+     pas est pire que de ne rien envoyer. Il devient obligatoire, comme
+     les deux clés. */
+  const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT");
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE || !VAPID_SUBJECT) {
     return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
       status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

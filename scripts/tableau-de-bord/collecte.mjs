@@ -185,7 +185,14 @@ export function resumeGit() {
    littéraux des `import` et des `import()`. Un chemin calculé à
    l'exécution échappe donc à ce comptage, et la page le dit. */
 
-const IMPORT = /(?:from\s+|import\s*\(\s*)["']([^"']+)["']/g;
+/* TROIS FORMES D'IMPORT, PAS DEUX.
+
+   « import "./x" » — sans « from » — est un import À EFFET DE BORD :
+   une feuille de style, ou un module dont on veut l'exécution et non
+   les exports. C'est une vraie arête du graphe, et elle manquait :
+   `renommageLocal.ts`, importé deux fois de cette façon et exécuté au
+   démarrage de l'application, ressortait comme orphelin. */
+const IMPORT = /(?:from\s+|import\s*\(\s*|import\s+)["']([^"']+)["']/g;
 
 export function grapheImports(fichiers) {
   const sources = fichiers.filter((f) => /\.(tsx?|jsx?|mts|mjs)$/.test(f));

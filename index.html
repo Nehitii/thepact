@@ -1,28 +1,47 @@
 <!doctype html>
-<html lang="en">
+<!-- La langue de l'interface est le français : elle était déclarée « en ».
+     Un lecteur d'écran prononçait donc « Objectifs » à l'anglaise. -->
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1018" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Overwrite" />
+
+    <!-- LA MARQUE, DANS L'ORDRE OÙ LES NAVIGATEURS LA LISENT.
+         Aucun de ces liens n'existait : le .ico n'était trouvé que par la
+         convention de la racine, et rien ne servait Safari ni l'écran
+         d'accueil iOS. Le `sizes="any"` évite que Chrome préfère le .ico
+         au SVG, qui est net à toutes les tailles. -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/marque/overwrite-symbole.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/marque/overwrite-violet-180.png" />
+    <link rel="mask-icon" href="/marque/overwrite-symbole.svg" color="#6D30FF" />
+
     <!-- Preload critical font for LCP (Orbitron 900 = HUD page titles above the fold) -->
     <link rel="preload" href="/fonts/orbitron-900.woff2" as="font" type="font/woff2" crossorigin />
-    <title>Vowpact</title>
-    <meta name="description" content="Find The Light">
-    <meta name="author" content="Pacte" />
 
+    <title>Overwrite</title>
+    <meta name="description" content="Find The Light" />
+    <meta name="author" content="Overwrite" />
+
+    <!-- L'image de partage pointait vers /og-image.png, qui n'a jamais
+         existé : tout lien partagé s'affichait sans vignette. On sert
+         l'icône, carrée et réelle, plutôt qu'une adresse morte. -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/og-image.png">
+    <meta property="og:title" content="Overwrite" />
+    <meta property="og:description" content="Find The Light" />
+    <meta property="og:image" content="/marque/overwrite-violet-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Pacte" />
-    <meta name="twitter:image" content="/og-image.png">
-  <meta property="og:title" content="Vowpact">
-  <meta name="twitter:title" content="Vowpact">
-  <meta property="og:description" content="Find The Light">
-  <meta name="twitter:description" content="Find The Light">
-</head>
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Overwrite" />
+    <meta name="twitter:description" content="Find The Light" />
+    <meta name="twitter:image" content="/marque/overwrite-violet-512.png" />
+  </head>
 
   <body>
     <div id="root"></div>

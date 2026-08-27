@@ -5,7 +5,7 @@ import { REPLI_REACTION, type TypeReaction } from "./vocabulaire";
 /* LES TROIS REACTIONS.
  *
  * Support, Respect, Inspire : le vocabulaire d engagement propre a
- * Vowpact, la ou les autres reseaux n ont qu un like. On le garde.
+ * Overwrite, la ou les autres reseaux n ont qu un like. On le garde.
  *
  * Ce qui change, c est ce qui le porte. Trois emoji — 💪 🫡 ⚡ —
  * tenaient lieu d icones : ils sont dessines differemment sur chaque

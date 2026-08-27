@@ -37,7 +37,12 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
   const start = async () => {
     setBusy(true);
     try {
-      setEnrollment(await mfa.enroll("Vowpact"));
+      /* LE NOM QUI S AFFICHE DANS L APPLICATION D AUTHENTIFICATION.
+         Il change avec celui du produit : les enrôlements à venir
+         diront « Overwrite ». Les facteurs déjà confirmés gardent leur
+         ancien nom — on ne peut pas renommer à distance une entrée
+         posée dans Google Authenticator. */
+      setEnrollment(await mfa.enroll("Overwrite"));
       setCode("");
     } catch (e) {
       toast.error("Enrôlement impossible", { description: e instanceof Error ? e.message : String(e) });
@@ -205,7 +210,7 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
   // ── Aucun facteur, ou un enrôlement resté en plan ──
   //
   // On distingue les deux. Un enrôlement inachevé laisse une entrée
-  // « Vowpact » dans l'application d'authentification qui ne servira
+  // « Overwrite » dans l'application d'authentification qui ne servira
   // jamais : recommencer produit un NOUVEAU secret, et l'ancienne
   // entrée devient un code qui ne marchera pas. Le dire évite de
   // chercher pendant dix minutes pourquoi le code est refusé.
@@ -215,7 +220,7 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
     <Reglage
       nom="Application d’authentification"
       note={enPlan
-        ? "Un enrôlement précédent n'a pas été confirmé. Recommencer donnera un nouveau code : supprime l'ancienne entrée « Vowpact » de ton application."
+        ? "Un enrôlement précédent n'a pas été confirmé. Recommencer donnera un nouveau code : supprime l'entrée précédente de ton application d'authentification."
         : "Aucun second facteur. Ton mot de passe protège seul ton compte."}
       icone={<ShieldOff aria-hidden="true" />}
     >

@@ -59,7 +59,7 @@ export function ShortcutHelpOverlay({ open, onClose }: Props) {
             Raccourcis clavier
           </DialogTitle>
           <DialogDescription className="font-rajdhani">
-            Toutes les combinaisons disponibles dans Vowpact.
+            Toutes les combinaisons disponibles dans Overwrite.
           </DialogDescription>
         </DialogHeader>
 
@@ -89,4 +89,4 @@ export function ShortcutHelpOverlay({ open, onClose }: Props) {
   );
 }
 
-export const SHORTCUT_HELP_EVENT = "vowpact:open-shortcut-help";
+export const SHORTCUT_HELP_EVENT = "overwrite:open-shortcut-help";

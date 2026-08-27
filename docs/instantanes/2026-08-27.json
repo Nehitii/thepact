@@ -1,20 +1,20 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T16:37:18.082Z",
-  "fichiers": 840,
-  "lignes": 161505,
+  "genere": "2026-08-27T17:04:10.245Z",
+  "fichiers": 853,
+  "lignes": 161606,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1438,
-      "poids": 49218
+      "lignes": 1477,
+      "poids": 51727
     },
     {
       "dossier": "docs",
-      "fichiers": 2,
-      "lignes": 3253,
-      "poids": 191038
+      "fichiers": 3,
+      "lignes": 3517,
+      "poids": 207208
     },
     {
       "dossier": "mem/design",
@@ -42,15 +42,21 @@
     },
     {
       "dossier": "public",
-      "fichiers": 4,
-      "lignes": 711,
-      "poids": 176211
+      "fichiers": 3,
+      "lignes": 22,
+      "poids": 4021
     },
     {
       "dossier": "public/fonts",
       "fichiers": 15,
       "lignes": 973,
       "poids": 240540
+    },
+    {
+      "dossier": "public/marque",
+      "fichiers": 12,
+      "lignes": 344,
+      "poids": 154870
     },
     {
       "dossier": "public/mia",
@@ -67,14 +73,14 @@
     {
       "dossier": "scripts/tableau-de-bord",
       "fichiers": 2,
-      "lignes": 1317,
-      "poids": 64535
+      "lignes": 1324,
+      "poids": 64938
     },
     {
       "dossier": "src",
       "fichiers": 4,
-      "lignes": 2286,
-      "poids": 93718
+      "lignes": 2296,
+      "poids": 94303
     },
     {
       "dossier": "src/assets",
@@ -85,14 +91,14 @@
     {
       "dossier": "src/components",
       "fichiers": 304,
-      "lignes": 50133,
-      "poids": 2019587
+      "lignes": 50142,
+      "poids": 2020182
     },
     {
       "dossier": "src/content",
       "fichiers": 1,
       "lignes": 492,
-      "poids": 19712
+      "poids": 19714
     },
     {
       "dossier": "src/contexts",
@@ -104,7 +110,7 @@
       "dossier": "src/hooks",
       "fichiers": 94,
       "lignes": 15134,
-      "poids": 548546
+      "poids": 548544
     },
     {
       "dossier": "src/i18n",
@@ -120,21 +126,21 @@
     },
     {
       "dossier": "src/lib",
-      "fichiers": 46,
-      "lignes": 5572,
-      "poids": 224340
+      "fichiers": 47,
+      "lignes": 5679,
+      "poids": 229094
     },
     {
       "dossier": "src/pages",
       "fichiers": 46,
       "lignes": 17229,
-      "poids": 760958
+      "poids": 760974
     },
     {
       "dossier": "src/styles",
       "fichiers": 38,
-      "lignes": 29587,
-      "poids": 1119875
+      "lignes": 29591,
+      "poids": 1120149
     },
     {
       "dossier": "src/types",
@@ -151,8 +157,8 @@
     {
       "dossier": "supabase/functions",
       "fichiers": 26,
-      "lignes": 5378,
-      "poids": 225606
+      "lignes": 5384,
+      "poids": 225945
     },
     {
       "dossier": "supabase/migrations",
@@ -178,37 +184,37 @@
       "langage": "JSON",
       "fichiers": 8,
       "lignes": 8260,
-      "poids": 305820
+      "poids": 305811
     },
     {
       "langage": "Markdown",
-      "fichiers": 5,
-      "lignes": 314,
-      "poids": 13374
+      "fichiers": 6,
+      "lignes": 354,
+      "poids": 15091
     },
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3158,
-      "poids": 186982
+      "lignes": 3406,
+      "poids": 202946
     },
     {
       "langage": "JavaScript",
       "fichiers": 7,
-      "lignes": 2049,
-      "poids": 95357
+      "lignes": 2056,
+      "poids": 95760
     },
     {
       "langage": "SVG",
-      "fichiers": 28,
-      "lignes": 451,
-      "poids": 90678
+      "fichiers": 34,
+      "lignes": 475,
+      "poids": 160964
     },
     {
       "langage": "ICO",
       "fichiers": 1,
-      "lignes": 629,
-      "poids": 154682
+      "lignes": 6,
+      "poids": 594
     },
     {
       "langage": "WOFF2",
@@ -217,10 +223,10 @@
       "poids": 240540
     },
     {
-      "langage": "WEBP",
-      "fichiers": 2,
-      "lignes": 202,
-      "poids": 50292
+      "langage": "PNG",
+      "fichiers": 24,
+      "lignes": 6378,
+      "poids": 1653604
     },
     {
       "langage": "TXT",
@@ -229,28 +235,28 @@
       "poids": 2480
     },
     {
-      "langage": "PNG",
-      "fichiers": 18,
-      "lignes": 6058,
-      "poids": 1569020
-    },
-    {
       "langage": "TypeScript",
-      "fichiers": 198,
-      "lignes": 28581,
-      "poids": 1095500
+      "fichiers": 199,
+      "lignes": 28709,
+      "poids": 1101600
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67089,
-      "poids": 2768803
+      "lignes": 67108,
+      "poids": 2769999
+    },
+    {
+      "langage": "WEBP",
+      "fichiers": 1,
+      "lignes": 136,
+      "poids": 32190
     },
     {
       "langage": "CSS",
       "fichiers": 39,
-      "lignes": 31558,
-      "poids": 1199474
+      "lignes": 31562,
+      "poids": 1199748
     },
     {
       "langage": "TOML",
@@ -271,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3121,
+  "commits": 3122,
   "orphelins": 0,
   "marqueurs": 12
 }

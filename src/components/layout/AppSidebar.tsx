@@ -106,7 +106,7 @@ const REGLAGES = [
   { to: "/profile/data", icone: Database, cle: "donnees" },
 ];
 
-const CLE_REPLI = "vowpact-barre-repliee";
+const CLE_REPLI = "overwrite-barre-repliee";
 
 /* ── Une entree ───────────────────────────────────────────────
    Memoisee, et elle ne recoit que des valeurs simples. L ancienne
@@ -398,17 +398,21 @@ export const AppSidebar = memo(function AppSidebar() {
         )}
 
         {/* ── La marque, seule ──────────────────────────────
-            « VOWPACT » en Orbitron, une diode verte clignotante et
+            « OVERWRITE » en Orbitron, une diode verte clignotante et
             « SYS.ONLINE // v4.0.1 » tenaient 44 px sous le logo. Le
-            logo dit deja le nom ; sa lueur est dans la feuille. */}
+            logo dit deja le nom ; sa lueur est dans la feuille.
+
+            C'est la variante VIOLETTE, la meme que le favicon et que
+            l'icone installee : le signe de la barre laterale doit etre
+            celui qu'on voit sur son ecran d'accueil, pas un cousin. */}
         <div className="sb-tete">
           <button
             type="button"
             className="sb-marque"
             onClick={() => { navigate("/"); fermerMobile(); }}
-            aria-label="Vowpact"
+            aria-label="Overwrite"
           >
-            <img src="/logo-vowpact.webp" alt="" width={44} height={44} decoding="async" />
+            <img src="/marque/overwrite-violet.svg" alt="" width={44} height={44} decoding="async" />
           </button>
         </div>
 

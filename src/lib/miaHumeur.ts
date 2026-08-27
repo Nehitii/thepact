@@ -21,7 +21,7 @@ import { PREF } from "./preferencesAffichage";
  * ET ELLE NE RÉAGIT PAS À CE QUE VOUS N'AVEZ PAS FAIT.
  * Un compagnon qui commente vos absences devient insupportable en trois
  * semaines. Par défaut elle se tait là-dessus. Le réglage
- * `vowpact.mia.absences` l'autorise, pour qui le veut — et c'est le seul
+ * `overwrite.mia.absences` l'autorise, pour qui le veut — et c'est le seul
  * endroit du code où une humeur dépend d'une inaction.
  * ═══════════════════════════════════════════════════════════════
  */

@@ -90,7 +90,7 @@ export function useMfa() {
        « existing.totp », que la bibliothèque garantit VÉRIFIÉ : la
        condition « status !== verified » n'était jamais vraie, pas un
        facteur n'était retiré, et le nouvel enrôlement se heurtait à
-       « A factor with the friendly name "Vowpact" already exists ».
+       « A factor with the friendly name "…" already exists ».
        Sans écran pour le voir ni bouton pour le défaire : un cul-de-sac.
        « all » porte les deux statuts. */
     const { data: existing } = await supabase.auth.mfa.listFactors();

@@ -1,3 +1,13 @@
+/* ═══ CE PREMIER IMPORT DOIT RESTER LE PREMIER ═══
+   Les modules ES sont évalués dans l ordre des imports, AVANT la
+   première ligne de ce fichier : un appel de fonction posé ici
+   s exécuterait après que tous les autres modules ont déjà lu leurs
+   réglages. C est donc l import lui-même qui déplace les clés de
+   « vowpact… » vers « overwrite… ». Le déplacement est aussi déclenché
+   par preferencesAffichage.ts, au cas où un outil réordonnerait cette
+   liste : la fonction ne fait rien la seconde fois. */
+import "./lib/renommageLocal";
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";

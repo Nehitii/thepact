@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: { enabled: false },
-      includeAssets: ["favicon.ico", "robots.txt", "placeholder.svg"],
+      includeAssets: ["favicon.ico", "robots.txt", "marque/overwrite-symbole.svg"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
         globIgnores: ["**/stats.html"],
@@ -73,18 +73,33 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "Vowpact",
-        short_name: "Vowpact",
+        name: "Overwrite",
+        short_name: "Overwrite",
         description: "Find The Light",
+        /* Le greffon posait « lang: en » par defaut, comme index.html le
+           faisait avant correction. L interface est en francais. */
+        lang: "fr",
         theme_color: "#0b1018",
         background_color: "#0b1018",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
         scope: "/",
+        /* CES DEUX LIGNES POINTAIENT VERS `placeholder.svg` — le carré
+           gris livré par l'échafaudage. L'application installée portait
+           donc un placeholder sur l'écran d'accueil, à la bonne taille et
+           sans rien dire.
+
+           `purpose: "any"`, et PAS "maskable" : le symbole occupe 88 %
+           de la largeur de l'icône, alors que la zone sûre d'un masque
+           Android est un cercle de 80 %. Déclarer « maskable » ferait
+           rogner les lignes de glitch sur la moitié des appareils. Une
+           variante masquable se fabrique avec le `build.py` du pack en
+           passant RATIO à 0.6 — il demande Python, cairosvg et Pillow. */
         icons: [
-          { src: "/placeholder.svg", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
-          { src: "/placeholder.svg", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" },
+          { src: "/marque/overwrite-violet-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/marque/overwrite-violet-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/marque/overwrite-symbole.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
         ],
       },
     }),

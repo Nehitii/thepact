@@ -5,7 +5,7 @@ import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
 /* LE SCELLÉ
  *
- * L application s appelle Vowpact. Une session n etait pourtant qu un
+ * L application s appelle Overwrite. Une session n etait pourtant qu un
  * minuteur anonyme : un anneau de progression, le meme que dans n importe
  * quelle application de pomodoro. Ici, une session est l EXECUTION D UNE
  * CLAUSE — l engagement est enonce, le sceau se grave pendant que le temps

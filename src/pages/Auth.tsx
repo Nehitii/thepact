@@ -9,7 +9,7 @@ import { DSPageShell } from "@/components/ds";
 import { messageDErreur } from "@/lib/erreurs";
 
 /* ═══════════════════════════════════════════════════════════
-   VOWPACT — Auth v7 (Deep Cyber Terminal)
+   OVERWRITE — Auth v7 (Deep Cyber Terminal)
    - Hexadecimal Data Rain
    - Clip-path Sci-Fi Borders
    - Glitch UI & Command Prompt Inputs
@@ -136,8 +136,8 @@ export default function Auth() {
           transition={{ duration: 0.8 }}
         >
           <div className="tech-badge">SEC. LEVEL 04 // OVERRIDE</div>
-          <h1 className="glitch-title" data-text="VOWPACT">
-            VOWPACT
+          <h1 className="glitch-title" data-text="OVERWRITE">
+            OVERWRITE
           </h1>
           <div className="barcode">||| | || ||| | ||| | || | |||</div>
           <p className="lore-text">
