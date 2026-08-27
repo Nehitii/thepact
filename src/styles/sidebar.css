@@ -46,12 +46,23 @@
   /* La lueur derriere le logo. En sombre elle rayonne ; en clair
      elle est ramenee a un souffle — le neon s evapore sur le papier,
      c est la regle que le reste de l application applique deja. */
-  /* LA LUEUR SUIT LE SIGNE. Elle partait du cyan, qui etait la couleur
-     de l ancien logo ; le nouveau est violet. Les deux teintes du
-     systeme sont les memes, dans l ordre inverse — le halo est la
-     lumiere du signe, pas une decoration posee derriere. */
-  --sb-lueur: hsl(var(--ds-accent-special, var(--ds-accent-primary)) / 0.30);
-  --sb-lueur-2: hsl(var(--ds-accent-primary) / 0.18);
+  /* LA LUEUR PREND L ACCENT DU PACTE.
+
+     Elle partait du cyan, puis du violet du systeme : deux teintes
+     ecrites en dur, qui ne bougeaient pas quand on changeait la
+     couleur de son pacte. Le reste de l application suit deja
+     `--ds-current-accent` — c est la variable que AccentColorSync pose
+     sur :root a partir de `profiles.accent_color`, apres avoir borne sa
+     luminosite selon le theme. Le halo la suit maintenant aussi.
+
+     Le repli sur `--ds-accent-primary` est celui du systeme : sans
+     accent choisi, la lueur reste cyan comme le reste.
+
+     Une seule teinte, deux opacites : le halo est la lumiere de
+     l accent, pas un degrade entre deux couleurs qui n ont plus de
+     raison d etre differentes. */
+  --sb-lueur: hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.30);
+  --sb-lueur-2: hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.18);
 
   position: relative;
   display: flex;
