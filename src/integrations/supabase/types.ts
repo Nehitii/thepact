@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.17"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       achievement_definitions: {
@@ -4927,6 +4902,7 @@ export type Database = {
           health_avg_score: number | null
           id: string
           journal_entries_count: number | null
+          next_intention: string | null
           reflection_note: string | null
           steps_completed: number | null
           todo_completed: number | null
@@ -4944,6 +4920,7 @@ export type Database = {
           health_avg_score?: number | null
           id?: string
           journal_entries_count?: number | null
+          next_intention?: string | null
           reflection_note?: string | null
           steps_completed?: number | null
           todo_completed?: number | null
@@ -4961,6 +4938,7 @@ export type Database = {
           health_avg_score?: number | null
           id?: string
           journal_entries_count?: number | null
+          next_intention?: string | null
           reflection_note?: string | null
           steps_completed?: number | null
           todo_completed?: number | null
@@ -5652,9 +5630,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["user", "admin"],

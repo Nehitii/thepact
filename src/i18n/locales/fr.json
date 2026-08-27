@@ -3589,5 +3589,62 @@
     "groupePages": "Pages",
     "groupeObjectifs": "Objectifs",
     "groupeTaches": "Tâches"
+  },
+  "weekly": {
+    "titre": {
+      "rituel": "Ta semaine en trois temps",
+      "bilan": "Ta semaine, relevée"
+    },
+    "enCours": "Semaine en cours",
+    "pasEncore": "Les chiffres de cette semaine n'ont pas encore été relevés.",
+    "relever": "Relever la semaine",
+    "releve": "Les chiffres de la semaine sont relevés.",
+    "echec": "Le relevé a échoué.",
+    "garde": "Ta semaine est gardée.",
+    "garder": "Garder",
+    "passer": "Passer",
+    "reprendre": "Reprendre",
+    "reprendreChiffres": "Refaire le relevé",
+    "deuxLignes": "Deux lignes suffisent.",
+    "uneChose": "Une seule. Celle qui compte.",
+    "aideNote": "Un mot suffit. Personne ne le lira à part toi et M.I.A.",
+    "aideIntention": "La revue de dimanche prochain te la rappellera.",
+    "rappel": "La semaine dernière, tu t'étais promis :",
+    "verdict": "Semaine",
+    "mia": "Ce que M.I.A en retient",
+    "q": {
+      "vide": "Qu'est-ce qui a pris la place ?",
+      "baisse": "Qu'est-ce qui a ralenti cette semaine ?",
+      "hausse": "Qu'est-ce que tu recommencerais la semaine prochaine ?",
+      "stable": "Qu'est-ce qui mérite d'être noté, cette semaine ?",
+      "note": "Cette semaine, tu dirais quoi ?",
+      "intention": "Une chose, pour la semaine qui vient."
+    },
+    "mot": {
+      "vide": "Vide",
+      "lente": "Lente",
+      "correcte": "Correcte",
+      "bonne": "Bonne",
+      "pleine": "Pleine"
+    },
+    "m": {
+      "etapes": "étapes validées",
+      "objectifs": "objectifs touchés",
+      "journal": "entrées de journal",
+      "taches": "tâches cochées"
+    },
+    "l": {
+      "rien": "Cette semaine, aucune étape validée, aucune entrée de journal, aucune tâche cochée.",
+      "debut": "Cette semaine :",
+      "etapes1": "{{n}} étape validée",
+      "etapesN": "{{n}} étapes validées sur {{o}} objectifs",
+      "avant": "La semaine d'avant en comptait {{n}}.",
+      "journal_one": "{{count}} entrée de journal",
+      "journal_other": "{{count}} entrées de journal",
+      "taches_one": "{{count}} tâche cochée",
+      "taches_other": "{{count}} tâches cochées",
+      "reste_one": "Il te reste 1 jour.",
+      "reste_other": "Il te reste {{count}} jours."
+    }
   }
 }

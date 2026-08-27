@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 
 export interface WeeklyReview {
   id: string;
@@ -16,6 +17,10 @@ export interface WeeklyReview {
   ai_insights: string | null;
   reflection_note: string | null;
   week_rating: number | null;
+  /* Ce que la personne se promet pour la semaine suivante. C'est la
+     seule chose qu'une revue lègue à la suivante — sans elle, chaque
+     semaine repart de zéro et le rituel ne s'enchaîne jamais. */
+  next_intention: string | null;
   created_at: string;
 }
 
@@ -102,11 +107,25 @@ export function useSaveWeeklyReflection() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ reviewId, reflection_note, week_rating }: { reviewId: string; reflection_note: string; week_rating: number }) => {
+    /* ON N'ÉCRIT QUE CE QU'ON A REÇU. Les trois temps du rituel
+       s'enregistrent séparément : passer les trois champs à chaque
+       fois écraserait de vraies réponses par des chaînes vides dès
+       qu'on n'en remplit qu'un. */
+    mutationFn: async ({ reviewId, reflection_note, week_rating, next_intention }: {
+      reviewId: string;
+      reflection_note?: string | null;
+      week_rating?: number | null;
+      next_intention?: string | null;
+    }) => {
       if (!user?.id) throw new Error("Not authenticated");
+      const patch: TablesUpdate<"weekly_reviews"> = { updated_at: new Date().toISOString() };
+      if (reflection_note !== undefined) patch.reflection_note = reflection_note;
+      if (week_rating !== undefined) patch.week_rating = week_rating;
+      if (next_intention !== undefined) patch.next_intention = next_intention;
+
       const { error } = await supabase
         .from("weekly_reviews")
-        .update({ reflection_note, week_rating, updated_at: new Date().toISOString() })
+        .update(patch)
         .eq("id", reviewId)
         .eq("user_id", user.id);
       if (error) throw error;

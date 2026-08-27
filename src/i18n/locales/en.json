@@ -3589,5 +3589,62 @@
     "groupePages": "Pages",
     "groupeObjectifs": "Goals",
     "groupeTaches": "Tasks"
+  },
+  "weekly": {
+    "titre": {
+      "rituel": "Your week, in three moves",
+      "bilan": "Your week, measured"
+    },
+    "enCours": "Current week",
+    "pasEncore": "This week's numbers haven't been gathered yet.",
+    "relever": "Gather the week",
+    "releve": "This week's numbers are in.",
+    "echec": "Gathering failed.",
+    "garde": "Your week is kept.",
+    "garder": "Keep",
+    "passer": "Skip",
+    "reprendre": "Go back",
+    "reprendreChiffres": "Gather again",
+    "deuxLignes": "Two lines is enough.",
+    "uneChose": "Just one. The one that counts.",
+    "aideNote": "One word is enough. Only you and M.I.A will read it.",
+    "aideIntention": "Next Sunday's review will remind you.",
+    "rappel": "Last week you promised yourself:",
+    "verdict": "A",
+    "mia": "What M.I.A takes from it",
+    "q": {
+      "vide": "What took its place?",
+      "baisse": "What slowed down this week?",
+      "hausse": "What would you do again next week?",
+      "stable": "What's worth noting this week?",
+      "note": "This week — what would you call it?",
+      "intention": "One thing, for the week ahead."
+    },
+    "mot": {
+      "vide": "Empty",
+      "lente": "Slow",
+      "correcte": "Fair",
+      "bonne": "Good",
+      "pleine": "Full"
+    },
+    "m": {
+      "etapes": "steps validated",
+      "objectifs": "goals touched",
+      "journal": "journal entries",
+      "taches": "tasks ticked"
+    },
+    "l": {
+      "rien": "This week: no step validated, no journal entry, no task ticked.",
+      "debut": "This week:",
+      "etapes1": "{{n}} step validated",
+      "etapesN": "{{n}} steps validated across {{o}} goals",
+      "avant": "The week before counted {{n}}.",
+      "journal_one": "{{count}} journal entry",
+      "journal_other": "{{count}} journal entries",
+      "taches_one": "{{count}} task ticked",
+      "taches_other": "{{count}} tasks ticked",
+      "reste_one": "1 day left.",
+      "reste_other": "{{count}} days left."
+    }
   }
 }
