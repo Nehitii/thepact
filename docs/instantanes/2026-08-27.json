@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T22:08:11.555Z",
+  "genere": "2026-08-27T22:22:28.064Z",
   "fichiers": 876,
-  "lignes": 179848,
+  "lignes": 179936,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -14,7 +14,7 @@
       "dossier": "docs",
       "fichiers": 3,
       "lignes": 3612,
-      "poids": 213841
+      "poids": 213836
     },
     {
       "dossier": "mem/design",
@@ -110,13 +110,13 @@
       "dossier": "src/hooks",
       "fichiers": 94,
       "lignes": 15150,
-      "poids": 549424
+      "poids": 549420
     },
     {
       "dossier": "src/i18n",
       "fichiers": 4,
       "lignes": 7631,
-      "poids": 284021
+      "poids": 284154
     },
     {
       "dossier": "src/integrations",
@@ -133,14 +133,14 @@
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17191,
-      "poids": 762359
+      "lignes": 17194,
+      "poids": 762612
     },
     {
       "dossier": "src/styles",
       "fichiers": 40,
-      "lignes": 30633,
-      "poids": 1157766
+      "lignes": 30718,
+      "poids": 1160913
     },
     {
       "dossier": "src/types",
@@ -158,7 +158,7 @@
       "dossier": "supabase/functions",
       "fichiers": 27,
       "lignes": 5662,
-      "poids": 237429
+      "poids": 237421
     },
     {
       "dossier": "supabase/migrations",
@@ -184,7 +184,7 @@
       "langage": "JSON",
       "fichiers": 8,
       "lignes": 8316,
-      "poids": 308524
+      "poids": 308657
     },
     {
       "langage": "Markdown",
@@ -196,7 +196,7 @@
       "langage": "HTML",
       "fichiers": 2,
       "lignes": 3501,
-      "poids": 209611
+      "poids": 209606
     },
     {
       "langage": "JavaScript",
@@ -238,13 +238,13 @@
       "langage": "TypeScript",
       "fichiers": 200,
       "lignes": 29087,
-      "poids": 1118346
+      "poids": 1118334
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67098,
-      "poids": 2772764
+      "lignes": 67101,
+      "poids": 2773017
     },
     {
       "langage": "WEBP",
@@ -255,8 +255,8 @@
     {
       "langage": "CSS",
       "fichiers": 41,
-      "lignes": 32610,
-      "poids": 1237805
+      "lignes": 32695,
+      "poids": 1240952
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3139,
+  "commits": 3140,
   "orphelins": 0,
   "marqueurs": 13
 }

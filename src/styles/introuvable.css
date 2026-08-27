@@ -353,3 +353,88 @@
 :root.light .introuvable__ombre.introuvable__ombre {
   background: radial-gradient(ellipse, hsl(220 30% 25% / 0.3) 0%, hsl(220 30% 25% / 0.1) 45%, transparent 74%);
 }
+
+/* ── LES DEUX ISSUES ──────────────────────────────────────────────
+   Elles portaient le `Button` générique de l'application : police
+   Rajdhani, coins arrondis, remplissage plein. Rien qui appartienne à
+   cette page-ci, dont tout le reste — l'étiquette « SIGNAL PERDU », le
+   chemin en <code>, la voix de M.I.A — parle en monospace et en
+   capitales espacées.
+
+   ELLES REPRENNENT DONC L'IDIOME DE L'ÉTIQUETTE HUD juste au-dessus :
+   même famille, même interlettrage, même bordure d'accent. Une page
+   qui se parle à elle-même.
+
+   POURQUOI PAS UN REMPLISSAGE PLEIN EN ACCENT, comme le bouton de
+   l'écran de connexion : celui-là peut se permettre du violet en dur
+   avec du texte blanc. Ici l'accent suit le pacte — il va du cyan au
+   violet selon le profil, et sa clarté est bornée différemment en
+   thème clair et sombre. Un texte blanc dessus serait illisible sur
+   un accent pâle, un texte noir sur un accent foncé. Un fond TEINTÉ
+   avec le texte EN accent tient dans les deux cas, quel que soit le
+   pacte. */
+
+.introuvable__bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* 44 px EN PIXELS, PAS EN REM. Écrit `2.75rem`, ce plafond valait
+     41 px — mesuré dans le navigateur : la racine de l'application
+     est à 15 px, pas 16. Une cible tactile est une contrainte
+     physique, celle du doigt ; elle n'a aucune raison de suivre la
+     taille du texte. C'est d'ailleurs ce que fait `.touch-target`
+     dans index.css, en dur lui aussi. */
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-base, 200ms) var(--ds-ease-out, ease),
+    border-color var(--ds-motion-base, 200ms) var(--ds-ease-out, ease),
+    color var(--ds-motion-base, 200ms) var(--ds-ease-out, ease);
+}
+
+.introuvable__bouton svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke-width: 1.75;
+}
+
+.introuvable__bouton:focus-visible {
+  outline: 2px solid hsl(var(--accent));
+  outline-offset: 3px;
+}
+
+/* Celle qu'on veut prendre. */
+.introuvable__bouton--issue {
+  border-color: hsl(var(--accent) / 0.55);
+  background: hsl(var(--accent) / 0.14);
+  color: hsl(var(--accent));
+  box-shadow: 0 6px 22px hsl(var(--accent) / 0.16);
+}
+.introuvable__bouton--issue:hover {
+  border-color: hsl(var(--accent) / 0.85);
+  background: hsl(var(--accent) / 0.22);
+}
+
+/* Celle qu'on peut prendre. Elle ne réclame rien tant qu'on ne la
+   survole pas — c'est à ce moment-là qu'elle prend l'accent. */
+.introuvable__bouton--retour {
+  border-color: hsl(var(--ds-text-muted) / 0.3);
+  color: hsl(var(--ds-text-secondary));
+}
+.introuvable__bouton--retour:hover {
+  border-color: hsl(var(--accent) / 0.5);
+  color: hsl(var(--accent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .introuvable__bouton { transition: none; }
+}

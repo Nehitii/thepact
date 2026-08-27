@@ -55,10 +55,10 @@ async function processUser(supabase: ClientSupabase, userId: string, aiKey: stri
   // Respect user opt-out
   const { data: prefs } = await supabase
     .from("notification_settings")
-    .select("coach_proactive_enabled")
+    .select("mia_proactive_enabled")
     .eq("user_id", userId)
     .maybeSingle();
-  if (prefs && prefs.coach_proactive_enabled === false) return { skipped: true, reason: "opted_out" };
+  if (prefs && prefs.mia_proactive_enabled === false) return { skipped: true, reason: "opted_out" };
 
   const snap = await snapshot(supabase, userId);
   if (

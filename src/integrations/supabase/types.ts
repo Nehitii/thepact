@@ -2994,11 +2994,11 @@ export type Database = {
       }
       notification_settings: {
         Row: {
-          coach_proactive_enabled: boolean
           created_at: string
           focus_mode: boolean
           id: string
           marketing_enabled: boolean
+          mia_proactive_enabled: boolean
           progress_enabled: boolean
           push_enabled: boolean
           quiet_hours_end: string | null
@@ -3009,11 +3009,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          coach_proactive_enabled?: boolean
           created_at?: string
           focus_mode?: boolean
           id?: string
           marketing_enabled?: boolean
+          mia_proactive_enabled?: boolean
           progress_enabled?: boolean
           push_enabled?: boolean
           quiet_hours_end?: string | null
@@ -3024,11 +3024,11 @@ export type Database = {
           user_id: string
         }
         Update: {
-          coach_proactive_enabled?: boolean
           created_at?: string
           focus_mode?: boolean
           id?: string
           marketing_enabled?: boolean
+          mia_proactive_enabled?: boolean
           progress_enabled?: boolean
           push_enabled?: boolean
           quiet_hours_end?: string | null

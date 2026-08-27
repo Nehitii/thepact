@@ -158,9 +158,9 @@ export default function NotificationSettings() {
           icone={<Brain />}
         >
           <Switch
-            checked={(settings as { coach_proactive_enabled?: boolean })?.coach_proactive_enabled ?? true}
+            checked={(settings as { mia_proactive_enabled?: boolean })?.mia_proactive_enabled ?? true}
             disabled={enCours}
-            onCheckedChange={(v) => basculer("coach_proactive_enabled", v, "systeme", t("settings.notifications.mia", "M.I.A proactive"))}
+            onCheckedChange={(v) => basculer("mia_proactive_enabled", v, "systeme", t("settings.notifications.mia", "M.I.A proactive"))}
           />
         </Reglage>
       </Panneau>

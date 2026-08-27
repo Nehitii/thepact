@@ -38,7 +38,7 @@ export interface NotificationSettings {
   marketing_enabled: boolean;
   push_enabled: boolean;
   focus_mode: boolean;
-  coach_proactive_enabled: boolean;
+  mia_proactive_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -54,7 +54,7 @@ const DEFAUTS_NOTIFICATIONS = {
   marketing_enabled: true,
   push_enabled: false,
   focus_mode: false,
-  coach_proactive_enabled: true,
+  mia_proactive_enabled: true,
   created_at: "",
   updated_at: "",
 };

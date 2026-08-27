@@ -1,5 +1,5 @@
 // M.I.A Weekly Digest — cron-driven Sunday recap.
-// For each user with coach_proactive_enabled=true:
+// For each user with mia_proactive_enabled=true:
 //   - compute current + previous week stats
 //   - upsert weekly_reviews
 //   - insert mia_insights (type='digest')
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
     const { data } = await admin
       .from("notification_settings")
       .select("user_id")
-      .eq("coach_proactive_enabled", true)
+      .eq("mia_proactive_enabled", true)
       .returns<LigneUtilisateur[]>();
     targetUsers = (data ?? []).map((r) => r.user_id);
   } else {

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
    l'ordre change d'une langue à l'autre. C'est le seul endroit du dépôt
    qui en a besoin. */
 import { Trans, useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+
 import { Home, ArrowLeft } from "lucide-react";
 import "@/styles/introuvable.css";
 
@@ -117,26 +117,29 @@ const NotFound = () => {
 
         <p className="introuvable__voix">
           <b>M.I.A</b>
-          {t("notFound.voixMia", "Il n’y a rien ici. Aucun signal à suivre, alors j’ai fini par m’endormir. Ramène-moi quelque part où il se passe quelque chose.")}
+          {t("notFound.voixMia", "Il n’y a rien ici. Enfin, rien qui ne puisse t’intéresser, nous sommes quelque part dans la mère du code de cette application maudite… Quelque chose ne me plaît pas ici…")}
         </p>
 
+        {/* Le `Button` générique de l'application est écarté ici :
+            Rajdhani, coins arrondis, remplissage plein — rien qui
+            appartienne à cette page, dont tout le reste parle en
+            monospace et en capitales espacées. Les deux issues
+            reprennent l'idiome de l'étiquette HUD ci-dessus. */}
         <div className="introuvable__actions">
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
+            className="introuvable__bouton introuvable__bouton--retour"
             onClick={() => navigate(-1)}
-            className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> {t("notFound.retour", "Retour")}
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
+            <ArrowLeft aria-hidden="true" /> {t("notFound.retour", "Retour")}
+          </button>
+          <button
+            type="button"
+            className="introuvable__bouton introuvable__bouton--issue"
             onClick={() => navigate("/")}
-            className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs"
           >
-            <Home className="h-3.5 w-3.5" /> {t("notFound.tableauDeBord", "Tableau de bord")}
-          </Button>
+            <Home aria-hidden="true" /> {t("notFound.tableauDeBord", "Tableau de bord")}
+          </button>
         </div>
       </div>
     </div>
