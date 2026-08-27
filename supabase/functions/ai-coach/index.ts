@@ -1344,15 +1344,24 @@ Deno.serve(async (req) => {
        le ReadableStream ouvert, l'en-tête est parti. */
     const premier = await appeler(workMessages, true);
     if (!premier.ok || !premier.body) {
+      /* LE CORPS DU FOURNISSEUR RESTE AU SERVEUR, ET LE STATUT PASSE.
+
+         Hors 429 et 402, on renvoyait le corps brut de l'amont et on
+         écrasait le vrai code par un 500. Deux conséquences :
+
+         — un 403 (clé révoquée) arrivait au client déguisé en 500,
+           donc au même endroit qu'un 503 (modèles saturés), alors que
+           l'un se règle en changeant la clé et l'autre en attendant ;
+         — la phrase montrée venait du fournisseur, en anglais, et ne
+           passait pas par la voix de M.I.A.
+
+         `causeDeLEchec` côté client choisit d'après le statut. Lui
+         mentir sur le statut, c'est lui faire dire n'importe quoi. */
       const errText = await premier.text();
-      if (premier.status === 429 || premier.status === 402) {
-        return new Response(JSON.stringify({ error: upstreamErrorMessage(premier.status) }), {
-          status: premier.status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: errText || "AI error" }), {
-        status: 500,
+      console.error(`[ai-coach] premier appel ${premier.status}: ${errText.slice(0, 500)}`);
+      return new Response(JSON.stringify({ error: upstreamErrorMessage(premier.status) }), {
+        /* `premier.ok` sans corps : 200 sans flux, anomalie d'amont. */
+        status: premier.ok ? 502 : premier.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -1416,12 +1425,20 @@ Deno.serve(async (req) => {
                  Quand un tour d'outil échouait — quota atteint, requête
                  refusée — la boucle sortait sans rien avoir écrit et
                  l'utilisateur voyait une bulle vide. */
+              /* UN 5xx NE DIT PLUS « le modèle a refusé ».
+                 Il ne refuse rien : il est saturé. Et depuis que
+                 `chatCompletion` réessaie et relaie (voir
+                 _shared/relais.ts), un 5xx qui arrive jusqu'ici veut
+                 dire que TOUS les modèles de la chaîne ont échoué —
+                 ce qui n'appelle pas la même phrase qu'un refus. */
               const raison =
                 suite.status === 429
                   ? "j'ai atteint le quota du modèle. Réessaie dans une minute."
                   : suite.status === 402
                     ? "le crédit du modèle est épuisé."
-                    : `le modèle a refusé la suite (${suite.status}).`;
+                    : suite.status >= 500
+                      ? "les modèles sont saturés — j'ai réessayé sans succès. Retente dans un instant."
+                      : `le modèle a refusé la suite (${suite.status}).`;
               const aveu = texteTotal ? `\n\n_(interrompue : ${raison})_` : `Je n'ai pas pu terminer : ${raison}`;
               texteTotal += aveu;
               controller.enqueue(encoder.encode(trame(aveu)));

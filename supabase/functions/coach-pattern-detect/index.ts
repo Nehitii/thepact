@@ -23,9 +23,12 @@ const corsHeaders = {
 };
 
 async function llm(messages: MessageIA[], aiKey: string) {
+  /* Travail de fond : personne n'attend devant un écran, donc on peut
+     viser une autre chaîne de modèles et insister plus longtemps. */
   const res = await chatCompletion(
     { model: DEFAULT_CHAT_MODEL, messages, response_format: { type: "json_object" } },
     aiKey,
+    { usage: "traitement", essaisMax: 6 },
   );
   if (!res.ok) throw new Error(`llm ${res.status}: ${await res.text()}`);
   const j = await res.json();

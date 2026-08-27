@@ -24,7 +24,7 @@ import type { ExpressionMia } from "@/components/mia/VisageMia";
  * ═══════════════════════════════════════════════════════════════
  */
 
-export type CauseExcuse = "cadence" | "quotidien" | "panne";
+export type CauseExcuse = "cadence" | "quotidien" | "saturation" | "panne";
 
 export interface Excuse {
   texte: string;
@@ -103,6 +103,39 @@ const PALIERS: Record<CauseExcuse, { texte: string[]; expression: ExpressionMia 
     },
   ],
 
+  /* LES MODÈLES SONT PRIS, PAS CASSÉS.
+     Un 5xx tombait dans « panne », qui dit « quelque chose a échoué
+     de mon côté » — donc quelque chose à réparer. C'est faux : rien
+     n'est cassé, le fournisseur est saturé, et ça repart tout seul.
+     Depuis que le serveur réessaie et relaie entre plusieurs modèles
+     (supabase/functions/_shared/relais.ts), un 5xx qui arrive
+     jusqu'ici veut dire que TOUTE la chaîne a échoué — rare, et
+     encore moins réparable par l'utilisateur. Elle le dit tel quel. */
+  saturation: [
+    {
+      expression: "genee",
+      texte: [
+        "Les modèles sont pris d'assaut là, j'ai réessayé et je n'ai rien eu. Ça repart tout seul — laisse-moi une minute.",
+        "Saturé en amont. J'ai insisté, sans succès. Ce n'est pas cassé, c'est bondé.",
+        "Rien ne me répond en ce moment. Ce n'est ni toi ni ta question — c'est l'affluence.",
+      ],
+    },
+    {
+      expression: "soupir",
+      texte: [
+        "Toujours saturé. J'ai réessayé, encore.",
+        "Même chose : personne ne décroche en face.",
+      ],
+    },
+    {
+      expression: "severe",
+      texte: [
+        "Ça dure. Reviens dans dix minutes, ce sera passé.",
+        "Insister n'ouvre pas une file d'attente pleine.",
+      ],
+    },
+  ],
+
   /* Autre chose a cassé. Elle ne prétend pas savoir quoi. */
   panne: [
     {
@@ -133,6 +166,11 @@ let dernierTexte = "";
 export function causeDeLEchec(statut: number, corps: string): CauseExcuse {
   if (statut === 429) return /quotidien|demain/i.test(corps) ? "quotidien" : "cadence";
   if (statut === 402 || statut === 403) return "quotidien";
+  /* 5xx SEULEMENT, PAS LE 0. `useMia` rend `statut: 0` quand le fetch
+     lui-même a échoué — le réseau de L'UTILISATEUR. Lui répondre
+     « saturé en amont » serait une explication inventée ; « panne »,
+     qui ne prétend pas savoir, reste la bonne réponse pour ce cas. */
+  if (statut >= 500) return "saturation";
   return "panne";
 }
 

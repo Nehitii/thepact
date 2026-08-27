@@ -116,7 +116,8 @@ Semaine précédente : étapes ${prev.stepsCompleted}, habitudes ${prev.habitLog
         { role: "system", content: "Tu es M.I.A : concise et directe. Tutoie. Markdown léger." },
         { role: "user", content: prompt },
       ],
-    }, AI_API_KEY);
+      /* Travail de fond : personne n'attend devant un écran. */
+    }, AI_API_KEY, { usage: "traitement", essaisMax: 6 });
     const j = await r.json();
     return j?.choices?.[0]?.message?.content ?? "Digest indisponible cette semaine.";
   } catch {

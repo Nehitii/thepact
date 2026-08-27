@@ -168,7 +168,8 @@ Give practical advice based on patterns you notice. Use short bullet points.`;
             { role: "system", content: "You are M.I.A, concise and direct. Keep responses under 150 words." },
             { role: "user", content: prompt },
           ],
-        }, aiKey);
+          /* Travail de fond : personne n'attend devant un écran. */
+        }, aiKey, { usage: "traitement", essaisMax: 6 });
 
         if (aiResp.ok) {
           const aiData = await aiResp.json();

@@ -14,7 +14,9 @@
     "i18n:check": "node scripts/verifier-i18n.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
-    "tableau": "node scripts/tableau-de-bord.mjs"
+    "tableau": "node scripts/tableau-de-bord.mjs",
+    "edge:check": "node scripts/verifier-edge.mjs",
+    "edge:test": "deno test --allow-env supabase/functions/_shared/"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

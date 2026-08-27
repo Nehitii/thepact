@@ -1,3 +1,5 @@
+import { chaineDeModeles, ordreDEssai, pause, verdictDe } from "./relais.ts";
+
 // Central AI provider configuration for every Edge Function.
 //
 // Chat goes through an OpenAI-compatible endpoint, so swapping providers is a
@@ -9,6 +11,8 @@
 //   AI_API_KEY        required
 //   AI_GATEWAY_URL    optional, defaults to the Gemini OpenAI-compatible layer
 //   AI_CHAT_MODEL     optional, defaults to gemini-3.5-flash
+//   AI_CHAT_MODELS    optional, comma-separated relay chain (see relais.ts)
+//   AI_CHAT_MODELS_TRAITEMENT  optional, chain for batch work
 //   AI_EMBEDDING_URL  optional, defaults to the Gemini native embed endpoint
 
 const GATEWAY_URL =
@@ -39,19 +43,110 @@ export function normalizeModel(model?: string | null): string {
   return slash === -1 ? raw : raw.slice(slash + 1);
 }
 
-/**
- * POST to the chat-completions endpoint. Returns the raw Response so callers
- * keep control over streaming vs. buffered reads.
- */
-export function chatCompletion(
-  body: Record<string, unknown>,
-  apiKey: string,
-): Promise<Response> {
-  const payload = { ...body, model: normalizeModel(body.model as string | undefined) };
+/** Un seul aller-retour, sans jugement sur ce qu'il rend. */
+function unAppel(body: Record<string, unknown>, apiKey: string, modele: string): Promise<Response> {
   return fetch(`${GATEWAY_URL}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...body, model: modele }),
+  });
+}
+
+export interface OptionsAppel {
+  /** « traitement » pour le travail de fond, qui peut viser une autre chaîne. */
+  usage?: "conversation" | "traitement";
+  /** Plafond d'aller-retours, tous modèles confondus. */
+  essaisMax?: number;
+}
+
+/**
+ * POST to the chat-completions endpoint. Returns the raw Response so callers
+ * keep control over streaming vs. buffered reads.
+ *
+ * ═══ CE QUI A CHANGÉ, ET POURQUOI ═══
+ *
+ * Cette fonction faisait UN appel et rendait ce qui venait. Un 503 —
+ * « modèle surchargé, reviens dans un instant » — remontait donc
+ * jusqu'à l'écran sous la forme « Je n'ai pas pu terminer ». Une
+ * seconde d'indisponibilité chez le fournisseur devenait un échec
+ * définitif pour l'utilisateur.
+ *
+ * Elle réessaie maintenant, et sait passer à un autre modèle. La
+ * conduite à tenir par code HTTP est dans `relais.ts` : elle y est
+ * séparée du transport, parce que c'est la seule partie qui demande
+ * un jugement.
+ *
+ * TROIS PRÉCAUTIONS :
+ *
+ * — LE CORPS D'UNE RÉPONSE ÉCARTÉE EST ANNULÉ. Sans quoi chaque essai
+ *   raté laisserait un flux ouvert derrière lui.
+ * — UNE PANNE RÉSEAU COMPTE COMME UN 503. `fetch` lève au lieu de
+ *   rendre un statut ; ne pas la traiter reviendrait à ne pas
+ *   réessayer précisément quand le réseau vacille.
+ * — LA DERNIÈRE RÉPONSE EST RENDUE TELLE QUELLE, même en échec :
+ *   l'appelant garde son code d'erreur et son message. On ne masque
+ *   pas un échec réel derrière un échec inventé.
+ */
+export async function chatCompletion(
+  body: Record<string, unknown>,
+  apiKey: string,
+  options: OptionsAppel = {},
+): Promise<Response> {
+  const demande = (body.model as string | undefined) ? normalizeModel(body.model as string) : null;
+  const modeles = ordreDEssai(demande, chaineDeModeles(DEFAULT_CHAT_MODEL, options.usage));
+  const essaisMax = options.essaisMax ?? 4;
+
+  let derniere: Response | null = null;
+  let derniereErreur: unknown = null;
+  let essais = 0;
+
+  for (let i = 0; i < modeles.length && essais < essaisMax; i++) {
+    const modele = modeles[i];
+    /* Deux passages au plus sur un même modèle : au-delà, c'est le
+       modèle suivant qui a le plus de chances de répondre. */
+    for (let coup = 0; coup < 2 && essais < essaisMax; coup++) {
+      essais++;
+      let res: Response;
+      try {
+        res = await unAppel(body, apiKey, modele);
+      } catch (e) {
+        derniereErreur = e;
+        if (coup === 0 && essais < essaisMax) { await pause(coup); continue; }
+        break;
+      }
+
+      if (res.ok) {
+        /* L'échec qui précédait ce succès a laissé un flux ouvert.
+           Le refermer ici et pas seulement dans la boucle : c'est
+           précisément le cas « 503 puis 200 », le plus fréquent. */
+        if (derniere) await derniere.body?.cancel().catch(() => {});
+        if (i > 0 || coup > 0) {
+          console.log(`[ai] relayé sur « ${modele} » après ${essais} essai(s)`);
+        }
+        return res;
+      }
+
+      const verdict = verdictDe(res.status);
+      console.warn(`[ai] ${modele} → ${res.status} (${verdict})`);
+
+      /* On garde la réponse pour l'appelant, mais on referme celle
+         qu'on abandonne — sauf la toute dernière, qu'il lira. */
+      if (derniere) await derniere.body?.cancel().catch(() => {});
+      derniere = res;
+
+      if (verdict === "abandonner") return res;
+      if (verdict === "changer") break;
+      if (essais < essaisMax) await pause(coup);
+    }
+  }
+
+  if (derniere) return derniere;
+  /* Aucune réponse du tout : le réseau n'a jamais répondu. On fabrique
+     un 503, qui est exactement ce que ça veut dire. */
+  console.error("[ai] aucun modèle n'a répondu", derniereErreur);
+  return new Response(JSON.stringify({ error: "upstream_injoignable" }), {
+    status: 503,
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -126,9 +221,20 @@ export async function embed(
   }
 }
 
-/** Maps an upstream failure to a user-facing message, in French like the rest of the app. */
+/**
+ * Traduit un échec du fournisseur en phrase lisible.
+ *
+ * Le message dit ce que la personne peut FAIRE. « Erreur du service
+ * IA » ne disait rien : ni si ça revient, ni s'il faut attendre, ni
+ * s'il faut prévenir quelqu'un. Ces trois cas-là n'appellent pas la
+ * même conduite.
+ */
 export function upstreamErrorMessage(status: number): string {
   if (status === 429) return "Limite atteinte, réessaie dans un instant.";
   if (status === 402 || status === 403) return "Quota IA épuisé. Vérifie la clé API du serveur.";
+  if (status === 401) return "La clé du service IA est refusée. Elle a dû être révoquée.";
+  if (status >= 500) {
+    return "Les modèles sont saturés — j'ai réessayé sans succès. Retente dans un instant.";
+  }
   return "Erreur du service IA.";
 }
