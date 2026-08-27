@@ -59,8 +59,22 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
         description: "Ta session porte désormais le niveau aal2.",
       });
     } catch (e) {
-      toast.error("Code refusé", { description: e instanceof Error ? e.message : String(e) });
-      setCode("");
+      const m = e instanceof Error ? e.message : String(e);
+      /* « Factor not found » NE VEUT PAS DIRE « MAUVAIS CODE ».
+         Le facteur visé n'existe plus : un autre onglet, ou un nouvel
+         enrôlement lancé entre-temps, l'a remplacé. Répéter « code
+         refusé » envoie chercher une erreur de saisie qui n'existe pas.
+         On rend la main au début du parcours, où un code neuf attend. */
+      if (/not found|introuvable/i.test(m)) {
+        setEnrollment(null);
+        setCode("");
+        toast.error("Cet enrôlement a expiré", {
+          description: "Il a été remplacé entre-temps. Relance l'activation : un nouveau code sera affiché.",
+        });
+      } else {
+        toast.error("Code refusé", { description: m });
+        setCode("");
+      }
     } finally {
       setBusy(false);
     }
@@ -141,13 +155,27 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
           {enrollment.secret}
         </button>
 
-        <p className="mfa-etape">2 — Saisis le code affiché</p>
-        <div className="mfa-code">
-          <InputOTP maxLength={6} value={code} onChange={setCode} disabled={busy}>
-            <InputOTPGroup>
-              {[0, 1, 2, 3, 4, 5].map((i) => <InputOTPSlot key={i} index={i} />)}
-            </InputOTPGroup>
-          </InputOTP>
+        {/* L'ÉTAPE 2 EST LA DESTINATION DU PARCOURS, PAS UNE NOTE.
+            Elle se lisait en dix pixels gris clair, sous un QR blanc de
+            176 px qui prend tout le regard — on la ratait. Ici elle a son
+            cadre, son titre lisible, des cases nettement plus grandes, et
+            le curseur y est déjà. */}
+        <div className="mfa-final">
+          <p className="mfa-final-titre">2 — Saisis le code affiché par ton application</p>
+          <div className="mfa-code">
+            <InputOTP maxLength={6} value={code} onChange={setCode} disabled={busy} autoFocus>
+              <InputOTPGroup>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <InputOTPSlot
+                    key={i}
+                    index={i}
+                    className="h-14 w-11 text-xl font-mono border-primary/45"
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <p className="mfa-final-note">Six chiffres, valables trente secondes.</p>
         </div>
 
         <div className="mfa-gestes">

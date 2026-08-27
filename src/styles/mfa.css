@@ -114,3 +114,57 @@
 @media (max-width: 420px) {
   .mfa-serie { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   L'ÉTAPE 2 : LÀ OÙ L'ON TAPE
+
+   RAPPORTÉ DEPUIS L'USAGE : « l'endroit où taper les numéros n'est pas
+   assez visible, je l'ai raté ». C'était vrai et mesurable — le titre
+   de l'étape se lisait en 10 px gris clair, en capitales espacées, et
+   les six cases faisaient 40 px de côté avec le liseré le plus discret
+   du système. Le tout sous un QR de 176 px, blanc, la seule surface
+   lumineuse de la console : le regard n'allait nulle part ailleurs.
+
+   Un parcours en deux étapes n'a qu'une destination. Elle prend donc
+   son cadre, son fond, et une taille qui la fait exister à côté du QR
+   plutôt que dans son ombre.
+   ═══════════════════════════════════════════════════════════════ */
+
+.mfa-final {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 16px 14px 14px;
+  border: 1px solid hsl(var(--primary) / 0.4);
+  border-radius: 8px;
+  background: hsl(var(--primary) / 0.06);
+}
+
+.mfa-final-titre {
+  align-self: stretch;
+  margin: 0;
+  text-align: center;
+  /* Lisible, et non chuchotée : c'est la consigne du moment. */
+  font-size: max(14px, 0.875rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: hsl(var(--foreground));
+}
+
+.mfa-final-note {
+  margin: 0;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Les cases héritent de leurs tailles par les classes passées au
+   composant — tailwind-merge garde les dernières. Ici on ne fait que
+   les rendre atteignables au doigt et lisibles en plein soleil. */
+.mfa-final .mfa-code { padding: 0; }
+.mfa-final .mfa-code input { caret-color: hsl(var(--primary)); }
