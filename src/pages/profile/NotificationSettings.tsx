@@ -153,8 +153,8 @@ export default function NotificationSettings() {
         </Reglage>
 
         <Reglage
-          nom={t("settings.notifications.coach", "Coach proactif")}
-          note={t("settings.notifications.coachDesc", "Le coach analyse tes données toutes les quatre heures pour en tirer des constats.")}
+          nom={t("settings.notifications.coach", "M.I.A proactive")}
+          note={t("settings.notifications.coachDesc", "M.I.A analyse tes données toutes les quatre heures pour en tirer des constats.")}
           icone={<Brain />}
         >
           <Switch

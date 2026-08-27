@@ -65,7 +65,7 @@ async function processUser(supabase: ClientSupabase, userId: string, aiKey: stri
     snap.transactions.length === 0
   ) return { skipped: true };
 
-  const prompt = `Tu es un coach de vie analytique. Examine les données récentes (14 derniers jours) d'un utilisateur et identifie 1 à 3 patterns actionnables et bienveillants. Réponds en JSON: { "insights": [ { "title": string (max 60 chars), "body": string (max 200 chars, ton tutoyé), "category": "habit"|"mood"|"finance"|"goal" } ] }. Si rien de notable, renvoie une liste vide.`;
+  const prompt = `Tu es M.I.A, l'intelligence intégrée à Vowpact. Examine les données récentes (14 derniers jours) d'un utilisateur et identifie 1 à 3 patterns actionnables et bienveillants. Réponds en JSON: { "insights": [ { "title": string (max 60 chars), "body": string (max 200 chars, ton tutoyé), "category": "habit"|"mood"|"finance"|"goal" } ] }. Si rien de notable, renvoie une liste vide.`;
   const raw = await llm([
     { role: "system", content: prompt },
     { role: "user", content: JSON.stringify(snap) },

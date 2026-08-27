@@ -3,6 +3,7 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
+import { drapeauOuvert } from "../_shared/drapeau.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -404,6 +405,46 @@ const TOOLS = [
   },
 ];
 
+/* ═══ CE QUI ÉCRIT, ET CE QUI SE CONTENTE DE LIRE ═══
+
+   Le drapeau `coach_write_tools` existe depuis mai et disait « Permet au
+   coach IA de créer todos/journal/decisions ». Personne ne le lisait :
+   M.I.A écrivait quoi qu'il arrive, y compris quand le réglage disait non.
+   Un interrupteur qui ne coupe rien est pire que pas d'interrupteur — on
+   croit la porte fermée.
+
+   Les outils qui écrivent sont NOMMÉS UN PAR UN. Une règle par préfixe
+   serait plus courte et moins sûre : le jour où quelqu'un ajoute
+   `set_…` ou `archive_…`, elle le rangerait en lecture sans un mot. Le
+   contrôle juste en dessous refuse de démarrer si un outil échappe aux
+   deux colonnes — c'est la seule façon qu'un ajout ne passe pas en
+   silence du mauvais côté. */
+const OUTILS_QUI_ECRIVENT = new Set([
+  "create_todo", "create_journal_entry", "create_goal", "create_habit_goal",
+  "create_calendar_event", "add_step", "add_wishlist_item",
+  "complete_step", "complete_todo", "reschedule_step", "reschedule_todo",
+]);
+
+const OUTILS_QUI_LISENT = new Set([
+  "list_active_goals", "list_recent_journal", "list_user_values", "search_memory",
+  "list_pacts", "list_steps", "list_todos", "list_calendar_events", "list_wishlist",
+  "focus_summary", "health_summary", "finance_summary",
+]);
+
+{
+  const inconnus = TOOLS
+    .map((o) => o.function.name)
+    .filter((n) => !OUTILS_QUI_ECRIVENT.has(n) && !OUTILS_QUI_LISENT.has(n));
+  if (inconnus.length) {
+    throw new Error(
+      `Outils non classés (lecture ou écriture ?) : ${inconnus.join(", ")}. ` +
+      "Ajoute-les à OUTILS_QUI_ECRIVENT ou OUTILS_QUI_LISENT.",
+    );
+  }
+}
+
+const OUTILS_LECTURE_SEULE = TOOLS.filter((o) => !OUTILS_QUI_ECRIVENT.has(o.function.name));
+
 /* ═══ LES FORMES QUI TRAVERSENT CE FICHIER ═══
 
    Elles etaient toutes en `any`. Ce n'est pas la meme chose que « on ne
@@ -477,7 +518,13 @@ async function runTool(
   userId: string,
   aiKey: string,
   receipts: ToolReceipt,
+  peutEcrire = true,
 ): Promise<string> {
+  /* Deuxième verrou. Le premier est de ne pas proposer l'outil ; celui-ci
+     tient si un échange plus ancien rejoue un appel d'écriture. */
+  if (!peutEcrire && OUTILS_QUI_ECRIVENT.has(name)) {
+    return JSON.stringify({ error: "ecriture_desactivee" });
+  }
   try {
     if (name === "list_active_goals") {
       const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId).returns<LigneIdent[]>();
@@ -1265,6 +1312,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    /* LA PLUME, OU SON ABSENCE. En cas de doute — table injoignable,
+       ligne absente — `drapeauOuvert` rend faux : M.I.A lit, elle
+       n'écrit pas. Un drapeau qu'on n'arrive pas à lire ne doit pas
+       ouvrir ce qu'il est censé garder. */
+    const peutEcrire = await drapeauOuvert(supabase, "coach_write_tools", userId);
+    const outilsOfferts = peutEcrire ? TOOLS : OUTILS_LECTURE_SEULE;
+
     const etat = await etatDuJour(supabase, userId, body.fuseau);
 
     /* UN SEUL MESSAGE SYSTÈME, PAS DEUX.
@@ -1280,7 +1334,7 @@ Deno.serve(async (req) => {
     const appeler = (messages: MessageIA[], avecOutils: boolean) =>
       chatCompletion(
         avecOutils
-          ? { model, messages, tools: TOOLS, tool_choice: "auto", stream: true }
+          ? { model, messages, tools: outilsOfferts, tool_choice: "auto", stream: true }
           : { model, messages, stream: true },
         aiKey,
       );
@@ -1331,7 +1385,7 @@ Deno.serve(async (req) => {
                   args = JSON.parse(appel.function?.arguments ?? "{}");
                 } catch (_) { /* arguments illisibles : on appelle à vide */ }
                 const recu: ToolReceipt = {};
-                const sortie = await runTool(appel.function?.name ?? "", args, supabase, userId, aiKey, recu);
+                const sortie = await runTool(appel.function?.name ?? "", args, supabase, userId, aiKey, recu, peutEcrire);
                 return { appel, sortie, recu };
               }),
             );

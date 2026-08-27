@@ -222,7 +222,7 @@ export const SECTIONS: SectionLegale[] = [
         corps: [
           "L'application ne fournit ni conseil juridique, ni conseil financier, ni conseil médical, ni accompagnement psychologique.",
           "Le module de suivi du bien-être propose des observations à titre informatif. Ce n'est pas un dispositif médical, il ne pose aucun diagnostic et ne remplace l'avis d'aucun professionnel de santé.",
-          "Les statistiques, projections et suggestions — y compris celles produites par le Coach — sont indicatives. Tes décisions restent les tiennes.",
+          "Les statistiques, projections et suggestions — y compris celles produites par M.I.A — sont indicatives. Tes décisions restent les tiennes.",
         ],
       },
     ],
@@ -261,7 +261,7 @@ export const SECTIONS: SectionLegale[] = [
           "Fournir le service que tu demandes : sans les données que tu saisis, l'application n'a rien à afficher ni à calculer.",
           "Assurer la sécurité du compte : le journal de sécurité et le second facteur servent à détecter et à empêcher les accès non autorisés.",
           "Améliorer le service : les erreurs applicatives sont collectées pour être corrigées.",
-          "Certains traitements reposent sur ton consentement et se désactivent depuis les réglages : le Coach, les notifications, l'affichage du statut d'activité, la visibilité du profil.",
+          "Certains traitements reposent sur ton consentement et se désactivent depuis les réglages : M.I.A, les notifications, l'affichage du statut d'activité, la visibilité du profil.",
         ],
       },
       {
@@ -301,18 +301,18 @@ export const SECTIONS: SectionLegale[] = [
         n: 17,
         titre: "Modèle d'intelligence artificielle",
         corps: [
-          "Le Coach et les observations de bien-être s'appuient sur un modèle de langage fourni par Google (Gemini), hébergé aux États-Unis.",
+          "M.I.A et les observations de bien-être s'appuient sur un modèle de langage fourni par Google (Gemini), hébergé aux États-Unis.",
           "Lui sont transmis, au moment où tu utilises ces fonctions :",
           [
-            "tes entrées de journal récentes, pour que le Coach s'en souvienne",
+            "tes entrées de journal récentes, pour que M.I.A s'en souvienne",
             "tes objectifs et étapes en cours",
             "tes relevés de bien-être, lorsque tu demandes des observations",
-            "les messages que tu échanges avec le Coach",
+            "les messages que tu échanges avec M.I.A",
           ],
-          "Des représentations vectorielles de tes entrées de journal sont calculées puis conservées dans la base pour permettre au Coach de retrouver un souvenir pertinent.",
+          "Des représentations vectorielles de tes entrées de journal sont calculées puis conservées dans la base pour permettre à M.I.A de retrouver un souvenir pertinent.",
         ],
         alerte:
-          "Si tu ne veux pas que ces contenus quittent l'application, n'utilise pas le Coach ni les observations de bien-être. Aucune autre fonction ne les transmet.",
+          "Si tu ne veux pas que ces contenus quittent l'application, n'utilise pas M.I.A ni les observations de bien-être. Aucune autre fonction ne les transmet.",
       },
       {
         n: 18,

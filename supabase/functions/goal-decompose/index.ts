@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const sys = `Tu es un coach de productivité. Décompose les objectifs en étapes claires (5-10) et 1-3 habitudes de soutien réalistes. Tutoie. Réponds en français.`;
+    const sys = `Tu es M.I.A, l'intelligence intégrée à Vowpact. Décompose les objectifs en étapes claires (5-10) et 1-3 habitudes de soutien réalistes. Tutoie. Réponds en français.`;
     const userMsg = `Objectif: ${name}\nDescription: ${description ?? "—"}\nDeadline: ${deadline ?? "—"}\nDifficulté: ${difficulty ?? "—"}\nDécompose-le.`;
 
     const res = await chatCompletion({

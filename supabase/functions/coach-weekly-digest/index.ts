@@ -105,7 +105,7 @@ async function generateInsight(curr: StatsSemaine, prev: StatsSemaine): Promise<
   if (!AI_API_KEY) {
     return `Cette semaine : ${curr.stepsCompleted} étape(s), ${curr.habitLogs} habitude(s), ${curr.journalCount} entrée(s) journal, ${curr.todoCount} tâche(s). Compare à la semaine passée : étapes ${deltaLabel(curr.stepsCompleted, prev.stepsCompleted)}, habitudes ${deltaLabel(curr.habitLogs, prev.habitLogs)}.`;
   }
-  const prompt = `Tu es Pacte Coach. Rédige un digest hebdo (max 120 mots, ton direct, tutoie, markdown léger). Compare la semaine à la précédente, salue les progrès, pointe 1 levier concret.
+  const prompt = `Tu es M.I.A, l'intelligence intégrée à Vowpact. Rédige un digest hebdo (max 120 mots, ton direct, tutoie, markdown léger). Compare la semaine à la précédente, salue les progrès, pointe 1 levier concret.
 
 Semaine actuelle : étapes ${curr.stepsCompleted}, habitudes ${curr.habitLogs}, journal ${curr.journalCount}, tâches ${curr.todoCount}.
 Semaine précédente : étapes ${prev.stepsCompleted}, habitudes ${prev.habitLogs}, journal ${prev.journalCount}, tâches ${prev.todoCount}.`;
@@ -113,7 +113,7 @@ Semaine précédente : étapes ${prev.stepsCompleted}, habitudes ${prev.habitLog
     const r = await chatCompletion({
       model: DEFAULT_CHAT_MODEL,
       messages: [
-        { role: "system", content: "Tu es un coach personnel concis et direct. Tutoie. Markdown léger." },
+        { role: "system", content: "Tu es M.I.A : concise et directe. Tutoie. Markdown léger." },
         { role: "user", content: prompt },
       ],
     }, AI_API_KEY);

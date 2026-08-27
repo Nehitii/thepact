@@ -17,7 +17,7 @@ const GROUPS: ShortcutGroup[] = [
     title: "Navigation globale",
     items: [
       { keys: ["Ctrl/Cmd", "K"], label: "Ouvrir la palette de commandes" },
-      { keys: ["Ctrl/Cmd", "J"], label: "Ouvrir le Coach IA" },
+      { keys: ["Ctrl/Cmd", "J"], label: "Ouvrir M.I.A" },
       { keys: ["?"], label: "Afficher cette aide" },
       { keys: ["Ctrl", "/"], label: "Afficher cette aide (alt)" },
     ],

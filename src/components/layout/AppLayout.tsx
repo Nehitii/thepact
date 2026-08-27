@@ -132,7 +132,7 @@ export function AppLayout() {
         onClick={() => setMiaOuverte(true)}
         aria-label="Ouvrir M.I.A (Cmd+J)"
         title="M.I.A — Mysterious Intelligence Array"
-        data-chrome="coach"
+        data-chrome="mia"
         data-etat={etatMia === "repos" ? undefined : etatMia}
         className="mia-vignette bottom-20 right-4 md:bottom-6 md:right-6"
       >

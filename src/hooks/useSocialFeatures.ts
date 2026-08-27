@@ -12,7 +12,9 @@ export function useSocialFeatures() {
   const hallOfFame = useFeatureFlag("social.hall_of_fame");
   const inbox = useFeatureFlag("social.inbox");
   const sharing = useFeatureFlag("social.sharing");
-  const victoryReels = useFeatureFlag("social.victory_reels");
+  /* `social.victory_reels` a été retiré de `feature_flags` : il était
+     résolu ici et lu par personne. Le garder faisait une lecture de plus
+     à chaque montage, pour une réponse dont rien ne dépendait. */
 
   return {
     friends: friends.enabled,
@@ -22,7 +24,6 @@ export function useSocialFeatures() {
     hallOfFame: hallOfFame.enabled,
     inbox: inbox.enabled,
     sharing: sharing.enabled,
-    victoryReels: victoryReels.enabled,
     anySocial:
       friends.enabled ||
       guilds.enabled ||
@@ -37,8 +38,7 @@ export function useSocialFeatures() {
       leaderboard.isLoading ||
       hallOfFame.isLoading ||
       inbox.isLoading ||
-      sharing.isLoading ||
-      victoryReels.isLoading,
+      sharing.isLoading,
     loadingMap: {
       friends: friends.isLoading,
       guilds: guilds.isLoading,
@@ -47,7 +47,6 @@ export function useSocialFeatures() {
       hallOfFame: hallOfFame.isLoading,
       inbox: inbox.isLoading,
       sharing: sharing.isLoading,
-      victoryReels: victoryReels.isLoading,
     },
   };
 }

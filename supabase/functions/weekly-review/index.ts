@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
     const aiKey = getAiKey();
     if (aiKey) {
       try {
-        const prompt = `You are a concise personal coach for a productivity/life-management app called "The Pact". Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
+        const prompt = `You are M.I.A, the intelligence built into Vowpact, a life-management app. Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
 
 This week's summary:
 - Goals progressed: ${goalsProgressed} goals, ${stepsCompleted} steps completed
@@ -165,7 +165,7 @@ Give practical advice based on patterns you notice. Use short bullet points.`;
         const aiResp = await chatCompletion({
           model: DEFAULT_CHAT_MODEL,
           messages: [
-            { role: "system", content: "You are a concise personal development coach. Keep responses under 150 words." },
+            { role: "system", content: "You are M.I.A, concise and direct. Keep responses under 150 words." },
             { role: "user", content: prompt },
           ],
         }, aiKey);
