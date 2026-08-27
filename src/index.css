@@ -137,10 +137,16 @@ html[data-idle] *::after {
 
 /* ────── Pacte OS — Global focus-visible (a11y AA) ────── */
 @layer base {
+  /* L ANNEAU DE FOCUS SUIT L ACCENT DU PACTE.
+     Il etait code en dur sur --ds-accent-primary, donc cyan, quelle que
+     soit la couleur choisie : un anneau cyan autour d un champ violet.
+     Meme correction que pour le halo du signe — la variable posee par
+     AccentColorSync depuis profiles.accent_color, avec le repli du
+     systeme quand aucun accent n est choisi. */
   *:focus-visible {
-    outline: 1px solid hsl(var(--ds-accent-primary));
+    outline: 1px solid hsl(var(--ds-current-accent, var(--ds-accent-primary)));
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px hsl(var(--ds-accent-primary) / 0.18);
+    box-shadow: 0 0 0 3px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.18);
     border-radius: 2px;
   }
 }

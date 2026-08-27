@@ -57,11 +57,15 @@ watchIdleAnimations();
     }).catch(() => {});
     return;
   }
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    });
-  }
+  /* PLUS D'INSCRIPTION À LA MAIN.
+     vite-plugin-pwa injecte déjà un script registerSW.js dans
+     index.html, qui inscrit /sw.js. Celle-ci inscrivait le MÊME
+     chemin une seconde fois — et, en développement où le greffon
+     s'abstient, elle inscrivait le fichier de push brut, qui prenait
+     alors le contrôle de la page sans rien mettre en cache.
+
+     La désinscription en iframe, elle, reste : elle protège les
+     aperçus intégrés, et le greffon ne la fait pas. */
 })();
 
 createRoot(document.getElementById("root")!).render(<App />);

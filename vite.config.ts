@@ -48,6 +48,13 @@ export default defineConfig(({ mode }) => ({
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "robots.txt", "marque/overwrite-symbole.svg"],
       workbox: {
+        /* LE GESTIONNAIRE DE PUSH EST IMPORTÉ, PAS ÉCRASÉ.
+           Il vivait dans public/sw.js, c'est-à-dire au nom même que
+           ce greffon donne à SON service worker. Vite recopie
+           public/ puis le greffon écrit par-dessus : le fichier
+           disparaissait à chaque construction, et les notifications
+           poussées ne pouvaient pas fonctionner en production. */
+        importScripts: ["/push-sw.js"],
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
         /* LA VILLE NE SE PRÉCHARGE PAS.
            2,27 Mo, décorative, et affichée seulement au-dessus de
@@ -56,7 +63,7 @@ export default defineConfig(({ mode }) => ({
            jamais. Workbox refuse d'ailleurs au-delà de 2 Mio, et il a
            raison : lever la limite aurait été répondre à côté. Elle est
            prise au vol et gardée trente jours, règle ci-dessous. */
-        globIgnores: ["**/stats.html", "**/marque/auth-cite.png"],
+        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/push-sw.js"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {

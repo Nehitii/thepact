@@ -405,9 +405,23 @@
   background: rgba(255,255,255,.028);
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
+/* LE CHAMP ENTIER MONTRE LE FOCUS, PAS L INPUT.
+   Il y avait DEUX marques : celle-ci sur l encadre, et l anneau global
+   « *:focus-visible » de index.css sur l input lui-meme — un rectangle
+   dur, a l interieur du champ, qui donnait l impression d un cerclage
+   du navigateur. C est bien l application qui le posait.
+
+   Un seul indicateur, celui qui epouse la forme du champ. On ne le
+   supprime pas : au clavier comme a la souris il faut voir ou l on est,
+   et celui-ci se voit mieux que l autre. */
 .auth-champ:focus-within {
-  border-color: rgba(139,92,246,.75);
-  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+  border-color: rgba(139,92,246,.85);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.22);
+}
+.auth-champ input:focus,
+.auth-champ input:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 .auth-champ svg { flex: none; }
 /* L'INPUT REMPLIT SON CHAMP. Mesuré : il faisait 29 px de haut dans une

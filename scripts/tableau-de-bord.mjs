@@ -142,6 +142,13 @@ const ENTREES = [
   /^src\/main\.tsx$/, /^src\/App\.tsx$/, /^src\/vite-env\.d\.ts$/,
   /^scripts\//, /^supabase\/functions\//, /\.config\.(ts|js)$/,
   /^src\/pages\//,          // montées par le routeur, pas importées
+  /* `public/` N'EST PAS DU CODE IMPORTÉ, C'EST DU CONTENU SERVI.
+     Un fichier .js posé là part tel quel à la racine du site : rien ne
+     l'importe, par construction. `push-sw.js` ressortait donc comme
+     orphelin alors qu'il est chargé par le service worker généré — via
+     une CHAÎNE dans vite.config.ts, que le graphe d'imports ne peut pas
+     voir et n'a pas à voir. */
+  /^public\//,
 ];
 const orphelins = sources
   .filter((f) => (importePar.get(f)?.size ?? 0) === 0)
