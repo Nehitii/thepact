@@ -18,6 +18,7 @@ import { GoalContrats } from "@/components/analytics/GoalContrats";
 import { Telemetrie } from "@/components/ds/Telemetrie";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { glisse, useBarreCollee, useSommaire } from "@/hooks/useBarreAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
 import { useHealthHistory } from "@/hooks/useHealth";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,8 +95,17 @@ const VUES: { id: PrismSection; nom: string; sous: string }[] = [
   { id: "rythme", nom: "Rythme", sous: "À quelle cadence je tiens" },
 ];
 
+/* L'ancre d'un panneau se déduit de son titre : rien à tenir à jour, et
+   deux panneaux ne peuvent pas se disputer la même. */
+const ancre = (titre: string) =>
+  "ana-" + titre.normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
 /** Panneau, dans le langage exact du tableau de bord : fond opaque,
- *  bord cyan, coins a 4px, aucun backdrop-filter. */
+ *  bord cyan, coins a 4px, aucun backdrop-filter.
+ *
+ *  « data-panneau » n'est pas décoratif : c'est lui que lit le sommaire
+ *  de la barre. Un panneau ajouté y apparaît sans qu'on touche à rien. */
 function Panneau({
   titre, droite, children, vide, messageVide,
 }: {
@@ -107,7 +117,7 @@ function Panneau({
 }) {
   return (
     <div className="cp-cadre">
-      <section className="cp-fond ana-panneau">
+      <section className="cp-fond ana-panneau" id={ancre(titre)} data-panneau={titre}>
         <span className="cp-equerre cp-equerre-hg" />
         <span className="cp-equerre cp-equerre-bd" />
         <header className="ana-panneau-tete">
@@ -208,7 +218,17 @@ export default function Analytics() {
   const { currency } = useCurrency();
   const locale = useDateFnsLocale();
 
-  const changerVue = useCallback((s: PrismSection) => setSection(s), [setSection]);
+  /* LA BARRE SUIT LA LECTURE. Voir useBarreAnalytics : « sticky » est
+     inopérant ici, trois ancêtres déclarent un débordement. */
+  const { sentinelle, colonne, barre, collee, geo, hauteur: hauteurBarre } = useBarreCollee();
+  const { entrees, actif, aller } = useSommaire(section, !isLoading && !!data);
+
+  const changerVue = useCallback((s: PrismSection) => {
+    setSection(s);
+    /* Changer de vue depuis la barre collée sans remonter laisserait le
+       lecteur au milieu d'un contenu qu'il n'a pas demandé. */
+    window.scrollTo({ top: 0, behavior: glisse() });
+  }, [setSection]);
 
   const moisCourt = useCallback((m: string) => {
     try { return format(parseISO(`${m}-01`), "MMM yy", { locale }); } catch { return m; }
@@ -295,7 +315,7 @@ export default function Analytics() {
 
   return (
     <DSPageShell width="xl" background={<SpaceBackdrop />}>
-      <div className="ana-page">
+      <div className="ana-page" ref={colonne}>
 
         {/* ── Bandeau : trois compteurs, fixes d'une vue a l'autre ── */}
         <div className="cp-cadre">
@@ -307,7 +327,6 @@ export default function Analytics() {
             <h1 className="ana-panneau-titre ds-t-label">Statistiques</h1>
             <span className="cp-tag">REL. {period.toUpperCase()}</span>
             <span className="ana-panneau-fil" />
-            <CleanPeriodSelector value={period} onChange={setPeriod} />
           </header>
           <div className="cp-danger ana-bandeau-rayure" />
           <div className="ana-bandeau">
@@ -340,27 +359,66 @@ export default function Analytics() {
         </section>
         </div>
 
-        {/* ── Bascule de vue ── */}
-        <nav className="ana-vues" aria-label="Vues des statistiques">
-          {VUES.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => changerVue(v.id)}
-              aria-pressed={section === v.id}
-              className="ana-vue"
-              data-actif={section === v.id}
-            >
-              {/* Un seul conteneur interieur, et non deux enfants directs :
-                  c'est lui qui porte le fond opaque et le chanfrein. Sans
-                  lui, le liseré du cadre transparait entre les deux lignes. */}
-              <span className="ana-vue-in">
-                <span className="ana-vue-nom">{v.nom}</span>
-                <span className="ana-vue-sous">{v.sous}</span>
-              </span>
-            </button>
-          ))}
-        </nav>
+        {/* ── La barre : vues, période, sommaire ──
+            Elle reste sous la main quand on descend. Sans elle, changer de
+            vue ou de période depuis le bas de la page — jusqu'à 2,6 écrans
+            — obligeait à tout remonter. */}
+        <div ref={sentinelle} className="ana-sentinelle" aria-hidden="true" />
+        <div className="ana-nav-place" data-collee={collee} style={{ height: collee ? hauteurBarre : undefined }}>
+          <nav
+            ref={barre}
+            className="ana-nav"
+            data-collee={collee}
+            style={collee ? { left: geo.gauche, width: geo.largeur } : undefined}
+            aria-label="Navigation des statistiques"
+          >
+            <div className="ana-nav-haut">
+              <div className="ana-vues" role="tablist" aria-label="Vues des statistiques">
+                {VUES.map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    role="tab"
+                    onClick={() => changerVue(v.id)}
+                    aria-selected={section === v.id}
+                    className="ana-vue"
+                    data-actif={section === v.id}
+                  >
+                    {/* Un seul conteneur interieur, et non deux enfants directs :
+                        c'est lui qui porte le fond opaque et le chanfrein. Sans
+                        lui, le liseré du cadre transparait entre les deux lignes. */}
+                    <span className="ana-vue-in">
+                      <span className="ana-vue-nom">{v.nom}</span>
+                      <span className="ana-vue-sous">{v.sous}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <CleanPeriodSelector value={period} onChange={setPeriod} />
+            </div>
+
+            {/* LE SOMMAIRE NE S'AFFICHE QU'UNE FOIS ENGAGÉ DANS LA PAGE.
+                En haut, les panneaux sont sous les yeux ; c'est en
+                descendant qu'on perd le fil. Il se lit dans le rendu —
+                chaque panneau porte son nom — donc il ne peut pas dériver. */}
+            {collee && entrees.length > 1 && (
+              <div className="ana-sommaire" role="list">
+                {entrees.map((e) => (
+                  <button
+                    key={e.id}
+                    type="button"
+                    role="listitem"
+                    className="ana-sommaire-lien"
+                    data-actif={e.id === actif}
+                    onClick={() => aller(e.id)}
+                  >
+                    {e.nom}
+                  </button>
+                ))}
+              </div>
+            )}
+          </nav>
+        </div>
 
         {/* ══ TRAJECTOIRE ══ */}
         {section === "trajectoire" && (

@@ -329,3 +329,158 @@
   .cp-contrat:hover .cp-contrat-img { transform: none; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   LA BARRE DE NAVIGATION
+
+   Elle reste sous la main quand on descend. Mesuré avant : la vue
+   Trajectoire fait 2,6 écrans, Rythme 2,4, Répartition 1,9 — et la
+   bascule de vue comme le sélecteur de période vivaient tout en haut,
+   en flux normal. À sept cents pixels du haut, plus rien à l'écran ne
+   disait où l'on était ni ne permettait d'en changer.
+
+   ELLE EST « FIXED » ET NON « STICKY », ET CE N'EST PAS UN CAPRICE.
+   Mesuré : posée en « position: sticky; top: 0 », la barre descendait
+   à -682 px au lieu de tenir à 0. Un élément collant se cale sur son
+   plus proche ancêtre DÉFILANT ; il y en a trois qui déclarent un
+   débordement entre elle et le document — DSPageShell, le conteneur
+   d'AppLayout, et son « main ». Le détail est dans useBarreAnalytics.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Un pixel de hauteur, juste avant la barre : quand il sort du haut,
+   la barre se pose. Le guetter LUI plutôt que la barre évite de
+   surveiller un élément dont on change la position. */
+.ana-sentinelle { height: 1px; margin-bottom: -1px; }
+
+/* La place réservée : sans elle, la page remonterait de la hauteur de
+   la barre à l'instant où celle-ci quitte le flux — et ce saut
+   ferait rentrer la sentinelle, qui la remettrait en flux, en
+   boucle. */
+.ana-nav-place[data-collee="true"] { min-height: 3.5rem; }
+
+.ana-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 180ms ease, padding 180ms ease;
+}
+.ana-nav[data-collee="true"] {
+  position: fixed;
+  top: 0;
+  z-index: 40;
+  /* OPAQUE POUR DE BON. Le contenu passe DESSOUS : il ne doit pas se
+     lire à travers. « --nexus-bg » vaut 96 % d'opacité — assez pour
+     laisser deviner un graphique qui glisse dessous. On le compose
+     donc sur le fond de page, qui lui est plein. */
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(var(--nexus-bg), var(--nexus-bg));
+  border-bottom: 1px solid var(--nexus-border);
+  box-shadow: 0 6px 18px hsl(220 40% 4% / 0.28);
+  /* « left » et « width » reprennent la boîte de .ana-page, PADDING
+     COMPRIS. La barre reprend donc ce padding pour que ses éléments
+     s'alignent sur les panneaux — une marge négative en plus l'aurait
+     décalée deux fois. */
+  padding: 0.5rem 1rem 0.45rem;
+}
+
+.ana-nav-haut { display: flex; align-items: stretch; gap: 0.6rem; flex-wrap: wrap; }
+.ana-nav-haut .cp-periode { align-self: center; }
+
+/* DÉPLIÉE, LE SÉLECTEUR PREND SA PROPRE LIGNE, calé à droite. Partager
+   la ligne avec la bascule ne lui laissait que 380 px : les trois
+   cartes, larges de 13 rem au minimum, passaient à la ligne et le
+   sélecteur se retrouvait suspendu à côté de la deuxième. */
+.ana-nav:not([data-collee="true"]) .cp-periode { order: 1; margin-left: auto; }
+.ana-nav:not([data-collee="true"]) .ana-vues { order: 2; flex: 1 1 100%; }
+
+/* Collée, la bascule se resserre : les sous-titres ont fait leur
+   travail en haut de page, ils n'ont plus à coûter deux lignes. */
+/* Collée, la rangée du haut tient sur UNE ligne : la bascule se serre,
+   le sélecteur de période garde sa taille. « flex: 1 1 auto » laissait
+   la bascule réclamer la largeur de son contenu, ce qui renvoyait le
+   sélecteur à la ligne — 72 px au lieu de 37 pour cette rangée. */
+.ana-nav[data-collee="true"] .ana-nav-haut { flex-wrap: nowrap; align-items: center; }
+.ana-nav[data-collee="true"] .ana-vues { flex: 1 1 0; min-width: 0; flex-wrap: nowrap; }
+.ana-nav[data-collee="true"] .cp-periode { flex: 0 0 auto; }
+.ana-nav[data-collee="true"] .ana-vue {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.32rem 0.5rem;
+  border-left-width: 2px;
+}
+/* Un nom qui ne tient pas se coupe proprement plutôt que de pousser la
+   barre sur deux lignes. */
+.ana-nav[data-collee="true"] .ana-vue-in { min-width: 0; }
+.ana-nav[data-collee="true"] .ana-vue-nom {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* Le rembourrage de l'état déplié mangeait 26 px sur les 85 restants :
+     « TRAJECTOIRE » sortait en « TRAJECT… ». Collée, le nom se cale sur
+     le rembourrage du bouton et rien d'autre. */
+  padding: 0;
+  letter-spacing: 0.5px;
+}
+.ana-nav[data-collee="true"] .ana-vue-sous { display: none; }
+.ana-nav[data-collee="true"] .ana-vue-nom { font-size: 0.8rem; }
+
+/* ── Le sommaire de la vue ───────────────────────────────────────
+   Sept à dix panneaux par vue, aux titres parlants mais imprévisibles
+   — « Les jours qui portent », « Ce qui tombe à date ». Arrivé sur la
+   vue on ne savait pas ce qu'il y avait plus bas ; on faisait défiler
+   pour voir. La liste se lit dans le rendu, elle ne peut pas dériver. */
+.ana-sommaire {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 1px;
+}
+.ana-sommaire::-webkit-scrollbar { height: 0; display: none; }
+.ana-sommaire-lien {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.62rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: var(--nexus-text-dimmer);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+.ana-sommaire-lien:hover { color: var(--nexus-text-label); border-color: var(--nexus-border); }
+.ana-sommaire-lien:focus-visible { outline: 2px solid hsl(var(--primary) / 0.85); outline-offset: 1px; }
+.ana-sommaire-lien[data-actif="true"] {
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary) / 0.55);
+  background: hsl(var(--primary) / 0.08);
+}
+
+/* Un panneau visé depuis le sommaire ne doit pas se glisser sous la
+   barre : le décalage est appliqué au défilement, et ceci couvre les
+   ancres suivies au clavier ou par l'URL. */
+.ana-panneau { scroll-margin-top: 6.5rem; }
+
+@media (max-width: 640px) {
+  .ana-nav[data-collee="true"] { padding: 0.45rem 0.6rem; }
+  /* 356 px pour trois boutons : chaque nom dispose de 99 px une fois
+     le rembourrage et le chanfrein retirés. « TRAJECTOIRE » en demande
+     97 à cette taille — il tient, de justesse, et c'est le seul qui
+     posait problème. */
+  .ana-nav[data-collee="true"] .ana-vue-nom { font-size: 0.68rem; letter-spacing: 0.2px; }
+  .ana-nav[data-collee="true"] .ana-vue { padding: 0.3rem 0.3rem; }
+  /* SOUS 640 PX, LA BASCULE PREND TOUTE LA LARGEUR ET LE SÉLECTEUR
+     PASSE DESSOUS. Les laisser partager la ligne ne donnait que 145 px
+     aux trois boutons : mesuré sur un écran de 375, les trois noms
+     étaient coupés à zéro — trois onglets sans étiquette. */
+  .ana-nav[data-collee="true"] .ana-nav-haut { flex-wrap: wrap; }
+  .ana-nav[data-collee="true"] .ana-vues { flex: 1 1 100%; }
+  .ana-nav[data-collee="true"] .cp-periode { flex: 1 1 100%; }
+  .ana-nav-haut .cp-periode { align-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ana-nav, .ana-sommaire-lien { transition: none; }
+}

@@ -104,9 +104,12 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--nexus-text-dimmer);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* IL VAUT MIEUX DEUX LIGNES QU UN MOT COUPE. Sous 1000 px de fenetre,
+     « Objectifs franchis » demandait 155 px pour 114 disponibles et
+     sortait en « OBJECTIFS FR… » — juste sous le chiffre qu il nomme.
+     Il passe a la ligne au lieu de se faire couper. */
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 /* Jauge annulaire. closest-side est obligatoire : par defaut un masque
