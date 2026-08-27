@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
       });
     }
     const { checkAiQuota } = await import("../_shared/quota.ts");
-    const quotaResp = await checkAiQuota(anon, "coach-weekly-digest", 5, corsHeaders);
+    const quotaResp = await checkAiQuota(anon, "mia-weekly-digest", 5, corsHeaders);
     if (quotaResp) return quotaResp;
     targetUsers = [uid];
   }

@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
  *   sort quand même. C'est le défaut qui se voyait le moins et qui
  *   dérangeait le plus.
  *
- *   « ai-coach » la lisait dans son select sans jamais s'en servir. Elle
+ *   la fonction de M.I.A la lisait dans son select sans jamais s'en servir. Elle
  *   lui sert maintenant de second recours, derrière le fuseau que le
  *   navigateur envoie avec chaque question.
  *

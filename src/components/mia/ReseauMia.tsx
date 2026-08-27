@@ -8,7 +8,7 @@ import "@/styles/mia.css";
  * Le sigle de M.I.A : neuf cellules, un réseau.
  *
  * L'icône « Bot » de lucide — le petit robot à antennes — servait de
- * marque au coach. On la trouve dans dix mille applications, et surtout
+ * marque à M.I.A. On la trouve dans dix mille applications, et surtout
  * elle ne disait jamais rien : ni que la machine travaillait, ni qu'une
  * réponse attendait.
  *

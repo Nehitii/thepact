@@ -1,20 +1,20 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T18:30:05.953Z",
-  "fichiers": 860,
-  "lignes": 175953,
+  "genere": "2026-08-27T19:27:27.135Z",
+  "fichiers": 865,
+  "lignes": 178133,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1501,
-      "poids": 53138
+      "lignes": 1511,
+      "poids": 53792
     },
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3602,
-      "poids": 212407
+      "lignes": 3589,
+      "poids": 211946
     },
     {
       "dossier": "mem/design",
@@ -54,9 +54,9 @@
     },
     {
       "dossier": "public/marque",
-      "fichiers": 17,
-      "lignes": 13853,
-      "poids": 2809413
+      "fichiers": 18,
+      "lignes": 15162,
+      "poids": 3139445
     },
     {
       "dossier": "public/mia",
@@ -66,9 +66,9 @@
     },
     {
       "dossier": "scripts",
-      "fichiers": 4,
-      "lignes": 854,
-      "poids": 39368
+      "fichiers": 5,
+      "lignes": 908,
+      "poids": 41514
     },
     {
       "dossier": "scripts/tableau-de-bord",
@@ -92,13 +92,13 @@
       "dossier": "src/components",
       "fichiers": 304,
       "lignes": 50144,
-      "poids": 2020283
+      "poids": 2020305
     },
     {
       "dossier": "src/content",
       "fichiers": 1,
       "lignes": 492,
-      "poids": 19714
+      "poids": 19711
     },
     {
       "dossier": "src/contexts",
@@ -110,13 +110,13 @@
       "dossier": "src/hooks",
       "fichiers": 94,
       "lignes": 15134,
-      "poids": 548544
+      "poids": 548558
     },
     {
       "dossier": "src/i18n",
       "fichiers": 4,
-      "lignes": 7627,
-      "poids": 283642
+      "lignes": 7631,
+      "poids": 284021
     },
     {
       "dossier": "src/integrations",
@@ -127,20 +127,20 @@
     {
       "dossier": "src/lib",
       "fichiers": 47,
-      "lignes": 5679,
-      "poids": 229094
+      "lignes": 5717,
+      "poids": 230757
     },
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17125,
-      "poids": 759995
+      "lignes": 17191,
+      "poids": 762359
     },
     {
       "dossier": "src/styles",
-      "fichiers": 39,
-      "lignes": 30277,
-      "poids": 1146021
+      "fichiers": 40,
+      "lignes": 30633,
+      "poids": 1157768
     },
     {
       "dossier": "src/types",
@@ -152,13 +152,13 @@
       "dossier": "supabase",
       "fichiers": 1,
       "lignes": 67,
-      "poids": 1844
+      "poids": 1834
     },
     {
       "dossier": "supabase/functions",
-      "fichiers": 26,
-      "lignes": 5384,
-      "poids": 225945
+      "fichiers": 28,
+      "lignes": 5740,
+      "poids": 242210
     },
     {
       "dossier": "supabase/migrations",
@@ -183,26 +183,26 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8310,
-      "poids": 308023
+      "lignes": 8316,
+      "poids": 308524
     },
     {
       "langage": "Markdown",
       "fichiers": 6,
       "lignes": 354,
-      "poids": 15091
+      "poids": 15070
     },
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3491,
-      "poids": 208145
+      "lignes": 3478,
+      "poids": 207705
     },
     {
       "langage": "JavaScript",
-      "fichiers": 8,
-      "lignes": 2127,
-      "poids": 98915
+      "fichiers": 9,
+      "lignes": 2181,
+      "poids": 101061
     },
     {
       "langage": "SVG",
@@ -224,9 +224,9 @@
     },
     {
       "langage": "PNG",
-      "fichiers": 27,
-      "lignes": 19886,
-      "poids": 4296387
+      "fichiers": 28,
+      "lignes": 21195,
+      "poids": 4626419
     },
     {
       "langage": "TXT",
@@ -236,15 +236,15 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 199,
-      "lignes": 28747,
-      "poids": 1103790
+      "fichiers": 201,
+      "lignes": 29149,
+      "poids": 1122261
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67010,
-      "poids": 2769457
+      "lignes": 67076,
+      "poids": 2771843
     },
     {
       "langage": "WEBP",
@@ -254,15 +254,15 @@
     },
     {
       "langage": "CSS",
-      "fichiers": 40,
-      "lignes": 32254,
-      "poids": 1226060
+      "fichiers": 41,
+      "lignes": 32610,
+      "poids": 1237807
     },
     {
       "langage": "TOML",
       "fichiers": 1,
       "lignes": 67,
-      "poids": 1844
+      "poids": 1834
     },
     {
       "langage": "SQL",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3128,
+  "commits": 3132,
   "orphelins": 0,
-  "marqueurs": 12
+  "marqueurs": 13
 }

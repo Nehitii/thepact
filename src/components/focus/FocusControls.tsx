@@ -51,7 +51,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
 
         {/* Noter ce qui vous detourne fait partie du pilotage d une
             seance : le carnet appartient a cette barre, pas a un coin
-            de l ecran deja occupe par le declencheur du Coach. */}
+            de l ecran deja occupe par le declencheur de M.I.A. */}
         <FocusDistractionButton />
       </div>
 

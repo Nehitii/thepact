@@ -1269,7 +1269,7 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     // Daily AI quota per user — fail-open on infra errors.
-    const quotaResp = await checkAiQuota(supabase, "ai-coach", 100, corsHeaders);
+    const quotaResp = await checkAiQuota(supabase, "ai-mia", 100, corsHeaders);
     if (quotaResp) return quotaResp;
 
     const body = (await req.json()) as ChatBody;
@@ -1358,7 +1358,7 @@ Deno.serve(async (req) => {
          `causeDeLEchec` côté client choisit d'après le statut. Lui
          mentir sur le statut, c'est lui faire dire n'importe quoi. */
       const errText = await premier.text();
-      console.error(`[ai-coach] premier appel ${premier.status}: ${errText.slice(0, 500)}`);
+      console.error(`[ai-mia] premier appel ${premier.status}: ${errText.slice(0, 500)}`);
       return new Response(JSON.stringify({ error: upstreamErrorMessage(premier.status) }), {
         /* `premier.ok` sans corps : 200 sans flux, anomalie d'amont. */
         status: premier.ok ? 502 : premier.status,

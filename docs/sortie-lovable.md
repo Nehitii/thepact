@@ -21,7 +21,7 @@ et dans quel ordre.
 Sept Edge Functions appelaient `https://ai.gateway.lovable.dev` avec le secret
 `LOVABLE_API_KEY` :
 
-`ai-coach` · `coach-index-memory` · `coach-pattern-detect` · `coach-weekly-digest`
+`ai-mia` · `mia-index-memory` · `mia-pattern-detect` · `mia-weekly-digest`
 · `goal-decompose` · `health-insights` · `weekly-review`
 
 Toutes passent désormais par `supabase/functions/_shared/ai.ts`, qui cible par
@@ -64,12 +64,12 @@ fonctions et configuré `AI_API_KEY` :
 TRUNCATE public.coach_embeddings;
 ```
 
-Puis relancer l'indexation (`coach-index-memory` ré-indexe tout ce qui n'est pas
+Puis relancer l'indexation (`mia-index-memory` ré-indexe tout ce qui n'est pas
 déjà présent) :
 
 ```sh
-supabase functions deploy coach-index-memory
-curl -X POST "https://<project-ref>.functions.supabase.co/coach-index-memory" \
+supabase functions deploy mia-index-memory
+curl -X POST "https://<project-ref>.functions.supabase.co/mia-index-memory" \
   -H "Authorization: Bearer <jwt-utilisateur>"
 ```
 
@@ -109,8 +109,8 @@ VITE_SENTRY_DSN
 ## 4. Ordre de bascule
 
 1. Déployer les 7 Edge Functions et configurer `AI_API_KEY`
-2. Vérifier que le coach répond (`ai-coach`) avant de toucher à l'index
-3. `TRUNCATE coach_embeddings` puis relancer `coach-index-memory`
+2. Vérifier que M.I.A répond (`ai-mia`) avant de toucher à l'index
+3. `TRUNCATE coach_embeddings` puis relancer `mia-index-memory`
 4. Déployer le front sur Cloudflare Pages, valider sur l'URL `*.pages.dev`
 5. Basculer le domaine custom
 6. Seulement ensuite : déconnecter puis supprimer le projet Lovable

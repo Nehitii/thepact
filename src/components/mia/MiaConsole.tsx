@@ -33,7 +33,7 @@ import { useThemeSombre } from "@/hooks/useThemeSombre";
  * M.I.A — Mysterious Intelligence Array.
  *
  * ═══════════════════════════════════════════════════════════════
- * CE QUI REMPLACE LE TIROIR DU COACH.
+ * CE QUI REMPLACE LE TIROIR DU COACH (l'ancien nom de M.I.A).
  *
  * L'ancien faisait 440 px, empilait trois boutons sans libellé dans son
  * en-tête — dont un « cerveau » qui indexait la mémoire à la main —,
@@ -144,7 +144,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   useEffect(() => {
     if (!open || memoireVue.current) return;
     memoireVue.current = true;
-    void supabase.functions.invoke("coach-index-memory", { body: {} }).catch(() => {
+    void supabase.functions.invoke("mia-index-memory", { body: {} }).catch(() => {
       /* silencieux : ce n'est pas une action de l'utilisateur */
     });
   }, [open]);

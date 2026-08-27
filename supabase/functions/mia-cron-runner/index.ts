@@ -42,15 +42,15 @@ Deno.serve(async (req) => {
 
   const { data: runRow } = await admin
     .from("coach_cron_runs")
-    .insert({ job: "coach-cron-runner" })
+    .insert({ job: "mia-cron-runner" })
     .select("id")
     .single();
 
   try {
     // Fan out — sub-functions handle their own user iteration (already do).
     const [indexRes, patternRes] = await Promise.allSettled([
-      callFn("coach-index-memory", cronSecret, "x-cron"),
-      callFn("coach-pattern-detect", cronSecret, "auth"),
+      callFn("mia-index-memory", cronSecret, "x-cron"),
+      callFn("mia-pattern-detect", cronSecret, "auth"),
     ]);
 
     if (indexRes.status === "rejected") errors.push({ fn: "index-memory", err: String(indexRes.reason) });

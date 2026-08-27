@@ -26,7 +26,7 @@ import {
      pourtant.
 
      Ses « tiers de confiance » n'étaient nommés nulle part, alors que
-     le Coach transmet les entrées de journal et les relevés de santé
+     M.I.A transmet les entrées de journal et les relevés de santé
      à un modèle de Google.
 
      Il était intégralement en anglais.

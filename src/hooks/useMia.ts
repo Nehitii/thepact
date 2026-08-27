@@ -305,7 +305,7 @@ export function useFluxMia(conversationId: string | null) {
         const token = sessionData.session?.access_token;
         if (!token) throw new Error("Session expirée");
 
-        const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ai-coach`;
+        const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ai-mia`;
         const res = await fetch(url, {
           method: "POST",
           headers: {

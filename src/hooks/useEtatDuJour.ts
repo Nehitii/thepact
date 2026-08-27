@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
  * ═══════════════════════════════════════════════════════════════
  * LE MÊME RELEVÉ QUE CELUI DU SERVEUR, LU PAR L'INTERFACE.
  *
- * La passe 2 a posé un préambule dans `ai-coach` : pacte, jour N/M,
+ * La passe 2 a posé un préambule dans la fonction de M.I.A : pacte, jour N/M,
  * objectifs, étapes restantes, ordres du jour, focus, tâches, solde. Il
  * répond à la moitié des questions sans appeler un outil.
  *

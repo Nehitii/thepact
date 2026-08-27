@@ -17,7 +17,7 @@ import "@/styles/legal.css";
    écrit en clair, qui ne passait pas par la fonction durcie.
 
    Il vidait quinze tables nommées à la main. La base en compte
-   SOIXANTE-DIX qui portent un `user_id` — santé, messages du coach,
+   SOIXANTE-DIX qui portent un `user_id` — santé, messages de M.I.A,
    souvenirs vectorisés, abonnements aux notifications, réglages du
    second facteur, publications, guildes : rien de tout cela n'était
    touché. Et il ne supprimait jamais l'utilisateur lui-même, faute

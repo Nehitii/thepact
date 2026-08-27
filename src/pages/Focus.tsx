@@ -210,7 +210,7 @@ export default function Focus() {
   /* Mode immersion : le chrome de l application disparait.
      L attribut est pose sur la racine du document plutot que passe en
      propriete, parce que ce qu il faut cacher — barre laterale, palette,
-     coach — vit hors de cette page. Il est retire au demontage : quitter
+     M.I.A — vit hors de cette page. Il est retire au demontage : quitter
      Focus en immersion laisserait sinon l application sans navigation. */
   const [immersion, setImmersion] = useState(false);
   useEffect(() => {

@@ -153,14 +153,14 @@ export default function NotificationSettings() {
         </Reglage>
 
         <Reglage
-          nom={t("settings.notifications.coach", "M.I.A proactive")}
-          note={t("settings.notifications.coachDesc", "M.I.A analyse tes données toutes les quatre heures pour en tirer des constats.")}
+          nom={t("settings.notifications.mia", "M.I.A proactive")}
+          note={t("settings.notifications.miaDesc", "M.I.A analyse tes données toutes les quatre heures pour en tirer des constats.")}
           icone={<Brain />}
         >
           <Switch
             checked={(settings as { coach_proactive_enabled?: boolean })?.coach_proactive_enabled ?? true}
             disabled={enCours}
-            onCheckedChange={(v) => basculer("coach_proactive_enabled", v, "systeme", t("settings.notifications.coach", "Coach proactif"))}
+            onCheckedChange={(v) => basculer("coach_proactive_enabled", v, "systeme", t("settings.notifications.mia", "M.I.A proactive"))}
           />
         </Reglage>
       </Panneau>
