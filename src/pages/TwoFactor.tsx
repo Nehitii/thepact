@@ -68,7 +68,7 @@ export default function TwoFactor() {
     } finally {
       setBusy(false);
     }
-  }, [code, from, mfa, navigate]);
+  }, [code, from, mfa, navigate, t]);
 
   const soumettreSecours = useCallback(async () => {
     if (!codeSecours.trim()) return;
@@ -90,7 +90,7 @@ export default function TwoFactor() {
     } finally {
       setBusy(false);
     }
-  }, [codeSecours, from, mfa, navigate, utiliser]);
+  }, [codeSecours, from, mfa, navigate, utiliser, t]);
 
   // Validation automatique des que les six chiffres sont saisis.
   useEffect(() => {

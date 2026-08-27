@@ -26,4 +26,7 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
-export { Badge, badgeVariants };
+/* `badgeVariants` n'est importé nulle part : il reste dans ce fichier.
+   Un fichier de composant qui exporte AUSSI autre chose fait retomber
+   Fast Refresh sur un rechargement complet. */
+export { Badge };

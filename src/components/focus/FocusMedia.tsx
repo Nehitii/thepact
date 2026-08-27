@@ -23,7 +23,8 @@ export interface LienMedia {
 }
 
 /** Reconnait Spotify et YouTube sous toutes leurs formes d adresse. */
-export function analyserLien(url: string): LienMedia | null {
+/* Local : aucun autre fichier ne l'appelle. */
+function analyserLien(url: string): LienMedia | null {
   const brut = url.trim();
   if (!brut) return null;
 

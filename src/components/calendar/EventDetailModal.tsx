@@ -53,8 +53,15 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
   const uid = useId();
   const id = (nom: string) => `${uid}-${nom}`;
 
-  const defaultStart = defaultDate ?? new Date();
-  const defaultEnd = new Date(defaultStart.getTime() + DUREE_DEFAUT);
+  /* CES DEUX-LÀ ÉTAIENT DES OBJETS NEUFS À CHAQUE RENDU.
+     `new Date()` sans mémorisation rend une valeur différente à chaque
+     passage : inscrites dans les dépendances de l'effet qui remplit le
+     formulaire, elles l'auraient relancé en boucle — et remis les champs
+     à zéro pendant la frappe. C'est pour ça qu'elles en étaient absentes,
+     et c'est pour ça que l'absence était un pansement. Mémorisées, elles
+     peuvent y figurer, et l'effet ne repart que quand la date change. */
+  const defaultStart = useMemo(() => defaultDate ?? new Date(), [defaultDate]);
+  const defaultEnd = useMemo(() => new Date(defaultStart.getTime() + DUREE_DEFAUT), [defaultStart]);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -162,7 +169,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
       dureeRef.current = DUREE_DEFAUT;
     }
     setSoumis(false);
-  }, [event, open]);
+  }, [event, open, defaultStart, defaultEnd]);
 
   /* Les bornes reelles, en dates locales. Elles ne redeviennent des
      chaines qu au dernier moment — et avec leur fuseau. */

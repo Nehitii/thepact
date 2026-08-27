@@ -16,6 +16,10 @@ export function DevilNoteModal({ open, onOpenChange, showSecretSymbol = false }:
   const [glitch, setGlitch] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
+  /* Le reglage du son, LU sans etre suivi : voir l effet d ouverture. */
+  const museRef = useRef(isMuted);
+  museRef.current = isMuted;
+
   const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   const whisperSoundRef = useRef<HTMLAudioElement | null>(null);
 
@@ -25,7 +29,10 @@ export function DevilNoteModal({ open, onOpenChange, showSecretSymbol = false }:
       setRevealed(false);
       const timer = setTimeout(() => setRevealed(true), 300);
 
-      if (!isMuted) {
+      /* Lu, pas suivi : la décision se prend À L'OUVERTURE. Inscrire
+         `isMuted` dans les dépendances relancerait toute la séquence —
+         révélation comprise — si l'on coupait le son en cours de route. */
+      if (!museRef.current) {
         playInfernalSounds();
       }
 

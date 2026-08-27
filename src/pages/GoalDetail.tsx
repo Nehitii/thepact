@@ -14,7 +14,7 @@ import { useGoalContracts } from "@/hooks/useGoalContracts";
 import { useGoalDetail , type StepData, type Difficulte } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { useParticleEffect } from "@/components/ParticleEffect";
+import { useParticleEffect } from "@/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";

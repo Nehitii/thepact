@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import { DSPageShell } from "@/components/ds";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
-import { useParticleEffect } from "@/components/ParticleEffect";
+import { useParticleEffect } from "@/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, type Goal } from "@/hooks/useGoals";

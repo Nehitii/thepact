@@ -1,0 +1,48 @@
+import { cva } from "class-variance-authority";
+
+/**
+ * LES CLASSES DU BOUTON, SORTIES DU FICHIER DU COMPOSANT.
+ *
+ * Un fichier qui exporte un composant ET autre chose fait retomber Fast
+ * Refresh sur un rechargement complet de la page : l'état est perdu à
+ * chaque frappe dans `button.tsx`. Deux fichiers le rendent à sa place.
+ *
+ * Deux lecteurs : `alert-dialog` et `calendar`, qui habillent leurs
+ * propres éléments comme des boutons sans en être.
+ */
+export const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium font-orbitron uppercase tracking-widest transition-all duration-200 [transition-timing-function:var(--ds-ease-out)] focus-visible:outline-none focus-visible:shadow-[var(--ds-glow-focus)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden group",
+  {
+    variants: {
+      variant: {
+        default:
+          "rounded-sm bg-primary text-primary-foreground border-2 border-primary-glow shadow-[var(--ds-glow-md)] hover:shadow-[var(--ds-glow-lg)] hover:bg-primary-glow before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700",
+        destructive:
+          "rounded-sm bg-destructive text-destructive-foreground border-2 border-destructive [--ds-current-accent:var(--ds-accent-critical)] shadow-[var(--ds-glow-md)] hover:shadow-[var(--ds-glow-lg)] hover:bg-destructive/90",
+        outline:
+          "rounded-sm border-2 border-primary/50 bg-background/50 backdrop-blur-sm hover:bg-primary/10 hover:border-primary hover:shadow-[var(--ds-glow-md)] text-foreground",
+        secondary:
+          "rounded-sm bg-secondary/80 text-secondary-foreground hover:bg-secondary backdrop-blur-sm border-2 border-primary/20 hover:border-primary/40 hover:shadow-[var(--ds-glow-sm)]",
+        ghost: "hover:bg-accent/50 hover:text-accent-foreground backdrop-blur-sm rounded-sm",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary-glow hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.6)]",
+        hud: "rounded-sm bg-transparent border border-primary/40 text-primary backdrop-blur-md shadow-[var(--ds-glow-sm),inset_0_1px_0_rgba(91,180,255,0.1)] hover:border-primary/70 hover:shadow-[var(--ds-glow-md),inset_0_1px_0_rgba(91,180,255,0.2)] hover:text-primary-glow active:scale-[0.98] before:absolute before:inset-0 before:rounded-sm before:bg-gradient-to-b before:from-primary/5 before:to-transparent before:pointer-events-none",
+        "hud-primary":
+          "rounded-sm bg-[hsl(var(--ds-accent-primary)/0.08)] border border-[hsl(var(--ds-accent-primary)/0.5)] text-[hsl(var(--ds-accent-primary))] hover:bg-[hsl(var(--ds-accent-primary)/0.15)] hover:border-[hsl(var(--ds-accent-primary)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
+        "hud-success":
+          "rounded-sm bg-[hsl(var(--ds-accent-success)/0.08)] border border-[hsl(var(--ds-accent-success)/0.5)] text-[hsl(var(--ds-accent-success))] [--ds-current-accent:var(--ds-accent-success)] hover:bg-[hsl(var(--ds-accent-success)/0.15)] hover:border-[hsl(var(--ds-accent-success)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
+        "hud-critical":
+          "rounded-sm bg-[hsl(var(--ds-accent-critical)/0.08)] border border-[hsl(var(--ds-accent-critical)/0.5)] text-[hsl(var(--ds-accent-critical))] [--ds-current-accent:var(--ds-accent-critical)] hover:bg-[hsl(var(--ds-accent-critical)/0.15)] hover:border-[hsl(var(--ds-accent-critical)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
+      },
+      size: {
+        default: "h-10 px-6 py-2",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-12 px-8 text-base",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);

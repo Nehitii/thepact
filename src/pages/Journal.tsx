@@ -9,7 +9,8 @@ import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { DailyPromptBanner, useQuestionCongediee } from "@/components/journal/DailyPromptBanner";
+import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
+import { useQuestionCongediee } from "@/hooks/useQuestionCongediee";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
 import {

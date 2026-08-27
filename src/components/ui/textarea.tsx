@@ -45,4 +45,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 );
 Textarea.displayName = "Textarea";
 
-export { Textarea, textareaVariants };
+/* `textareaVariants` n'est importé nulle part : il reste dans ce fichier.
+   Un fichier de composant qui exporte AUSSI autre chose fait retomber
+   Fast Refresh sur un rechargement complet. */
+export { Textarea };

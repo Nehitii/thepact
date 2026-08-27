@@ -13,9 +13,10 @@ import { useReducedMotion } from "framer-motion";
  * pas du tout : la boucle n est meme pas lancee.
  */
 
-export type VarianteFond = "mycelium" | "aurores" | "maillage" | "maree" | "aucun";
+import type { VarianteFond } from "./variantesFond";
+export type { VarianteFond };
 
-export const VARIANTES_FOND: VarianteFond[] = ["mycelium", "aurores", "maillage", "maree", "aucun"];
+
 
 interface FocusFondProps {
   variante: VarianteFond;

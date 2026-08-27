@@ -51,7 +51,8 @@ export function computeFrameTransform(params: FrameTransformParams): ComputedFra
  * Container sizes used in different contexts.
  * These are the actual rendered sizes for reference.
  */
-export const FRAME_CONTAINER_SIZES = {
+/* Local : aucun autre fichier ne le lit. */
+const FRAME_CONTAINER_SIZES = {
   admin: 96,    // Admin alignment tool
   shopSm: 48,   // Shop small preview
   shopMd: 64,   // Shop medium preview

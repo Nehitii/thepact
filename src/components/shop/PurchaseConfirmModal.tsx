@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRarityLabel, getRarity } from "./shopRarity";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -36,8 +36,14 @@ interface PurchaseConfirmModalProps {
 
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const [display, setDisplay] = useState(value);
+  /* LA VALEUR DE DÉPART SE LIT, ELLE NE SE SUIT PAS.
+     L'animation part de ce qui est affiché à l'instant où la cible
+     change. Mettre `display` dans les dépendances relancerait l'effet à
+     chaque image — une boucle. Un ref le donne sans l'observer. */
+  const afficheRef = useRef(display);
+  afficheRef.current = display;
   useEffect(() => {
-    const start = display;
+    const start = afficheRef.current;
     const diff = value - start;
     if (diff === 0) return;
     const duration = 400;

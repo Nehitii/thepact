@@ -48,4 +48,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
-export { Input, inputVariants };
+/* `inputVariants` n'est importé nulle part : il reste dans ce fichier.
+   Un fichier de composant qui exporte AUSSI autre chose fait retomber
+   Fast Refresh sur un rechargement complet. */
+export { Input };

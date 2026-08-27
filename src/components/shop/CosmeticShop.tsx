@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, Frame, Crown, Shuffle } from "lucide-react";
@@ -9,7 +9,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useCarteProfil } from "@/hooks/useCarteProfil";
 import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
 import { ApercuFondCarte } from "./ApercuFondCarte";
-import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
+import { ShopFilters, ShopFilterState } from "./ShopFilters";
+import { applyShopFilters } from "./appliquerFiltres";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
 import { UnlockAnimation } from "./UnlockAnimation";
@@ -88,16 +89,23 @@ export function CosmeticShop() {
     if (success) { setFittingItem(null); setShowUnlock(true); }
   };
 
-  const isOwned = (id: string, type: "frame" | "banner" | "title") => {
+  /* Meme raison que `remanier` : recreee a chaque rendu, elle ne
+     pouvait pas etre declaree la ou on s en sert. */
+  const isOwned = useCallback((id: string, type: "frame" | "banner" | "title") => {
     if (!ownedCosmetics) return false;
     if (type === "frame") return ownedCosmetics.frames.includes(id);
     if (type === "banner") return ownedCosmetics.banners.includes(id);
     return ownedCosmetics.titles.includes(id);
-  };
+  }, [ownedCosmetics]);
 
   /* L ordre melange est deduit de la graine et de l identifiant : pas
      de tirage au sort, donc pas de reordonnancement a chaque rendu. */
-  const remanier = <T extends { id: string }>(liste: T[]) => {
+  /* MÉMORISÉE POUR POUVOIR ÊTRE DÉCLARÉE.
+     Recréée à chaque rendu, cette fonction ne pouvait pas figurer dans
+     les dépendances des trois `useMemo` ci-dessous sans les annuler.
+     On y listait donc `graine` à sa place — ce qui était juste, mais
+     invisible pour qui relit. Mémorisée sur `graine`, elle se déclare. */
+  const remanier = useCallback(<T extends { id: string }>(liste: T[]) => {
     if (!graine) return liste;
     /* FNV-1a puis avalanche. Un simple `h * 31 + code` partant de la
        graine ne brassait rien : deux graines consecutives donnaient le
@@ -113,11 +121,11 @@ export function CosmeticShop() {
       return h >>> 0;
     };
     return [...liste].sort((a, b) => rang(a.id) - rang(b.id));
-  };
+  }, [graine]);
 
-  const filteredFrames = useMemo(() => remanier(applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame"))), [frames, filters, ownedCosmetics, graine]);
-  const filteredBanners = useMemo(() => remanier(applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner"))), [banners, filters, ownedCosmetics, graine]);
-  const filteredTitles = useMemo(() => remanier(applyShopFilters(titles.map(t => ({ ...t, name: t.title_text })), filters, (t) => isOwned(t.id, "title"))), [titles, filters, ownedCosmetics, graine]);
+  const filteredFrames = useMemo(() => remanier(applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame"))), [frames, filters, isOwned, remanier]);
+  const filteredBanners = useMemo(() => remanier(applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner"))), [banners, filters, isOwned, remanier]);
+  const filteredTitles = useMemo(() => remanier(applyShopFilters(titles.map(t => ({ ...t, name: t.title_text })), filters, (t) => isOwned(t.id, "title"))), [titles, filters, isOwned, remanier]);
 
   const totalItems = activeCategory === "frames" ? frames.length : activeCategory === "banners" ? banners.length : titles.length;
   const visibleItems = activeCategory === "frames" ? filteredFrames.length : activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;

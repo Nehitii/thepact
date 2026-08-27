@@ -47,7 +47,9 @@ export const DynamicLucideIcon = memo(function DynamicLucideIcon({
 });
 
 /** Convert PascalCase/camelCase to kebab-case (helper for legacy code paths). */
-export function toKebabIconName(name: string): string {
+/* Local : aucun autre fichier ne l'appelle. L'exporter empêchait
+   Fast Refresh de préserver l'état de l'icône voisine. */
+function toKebabIconName(name: string): string {
   return name
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
     .replace(/([A-Z])([A-Z][a-z])/g, "$1-$2")

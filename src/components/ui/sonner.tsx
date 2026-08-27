@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { Toaster as Sonner, toast } from "sonner";
+import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
@@ -24,4 +24,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export { Toaster, toast };
+/* `toast` etait re-exporte ici sans qu'aucun fichier ne le lise :
+   tout le depot l'importe directement depuis « sonner ». Ce re-export
+   faisait retomber Fast Refresh sur un rechargement complet. */
+export { Toaster };

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDialogueConsole } from "@/hooks/useDialogueConsole";
-import { useParticleEffect } from "@/components/ParticleEffect";
+import { useParticleEffect } from "@/hooks/useParticleEffect";
 import type { TodoTask } from "@/hooks/useTodoList";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
