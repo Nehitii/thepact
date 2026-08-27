@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T19:48:42.439Z",
-  "fichiers": 867,
-  "lignes": 178497,
+  "genere": "2026-08-27T21:53:15.812Z",
+  "fichiers": 875,
+  "lignes": 178856,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -14,7 +14,7 @@
       "dossier": "docs",
       "fichiers": 3,
       "lignes": 3612,
-      "poids": 213852
+      "poids": 213841
     },
     {
       "dossier": "mem/design",
@@ -162,9 +162,9 @@
     },
     {
       "dossier": "supabase/migrations",
-      "fichiers": 177,
-      "lignes": 12259,
-      "poids": 519339
+      "fichiers": 185,
+      "lignes": 12618,
+      "poids": 536130
     }
   ],
   "parLangage": [
@@ -190,7 +190,7 @@
       "langage": "Markdown",
       "fichiers": 6,
       "lignes": 354,
-      "poids": 15070
+      "poids": 15059
     },
     {
       "langage": "HTML",
@@ -266,9 +266,9 @@
     },
     {
       "langage": "SQL",
-      "fichiers": 177,
-      "lignes": 12259,
-      "poids": 519339
+      "fichiers": 185,
+      "lignes": 12618,
+      "poids": 536130
     },
     {
       "langage": "JSONC",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3133,
+  "commits": 3135,
   "orphelins": 0,
   "marqueurs": 13
 }
