@@ -541,7 +541,35 @@
 }
 .gd-membre-jauge { display: flex; gap: 2px; }
 .gd-membre-jauge u { flex: 1; height: 8px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
-:root:not(.dark) .gd-membre-jauge u { background: rgb(0 0 0 / 0.12); }
+/* LE « :not(.on) » N EST PAS UN DETAIL, IL EST LE CORRECTIF.
+
+   Cette regle repeignait TOUS les segments, y compris les remplis :
+   « :root:not(.dark) .gd-membre-jauge u » pese (0,3,1) et bat
+   « .gd-membre-jauge u.on » a (0,2,1). En clair, la couleur du vide
+   ecrasait donc celle du plein, et l avancement d une constellation
+   devenait invisible — mesure : un segment marque « on » calculait
+   rgba(0 0 0 / 0.12), soit exactement la teinte des vides. En sombre
+   le probleme n existait pas, la regle ne s appliquant pas.
+
+   Elle ne parle plus qu aux segments eteints. */
+:root:not(.dark) .gd-membre-jauge u:not(.on) { background: rgb(0 0 0 / 0.12); }
+
+/* ET LA TEINTE DESCEND SUR LE PAPIER.
+
+   « --t » est pose en style inline, une couleur par constellation,
+   taillee pour un fond noir. Une fois le remplissage rendu visible,
+   la mesure sur plaque claire donnait 1,88:1 pour l orange et 1,29
+   pour le jaune — sous le seuil de 3:1 des composants non textuels.
+   Le violet, lui, passait a 5,21 : c est bien la clarte qui est en
+   cause, pas la couleur.
+
+   On garde la teinte et on baisse sa luminosite en la melangeant au
+   noir, plutot que d appliquer un filtre : un filtre creerait une
+   couche de composition et s appliquerait aussi aux bords. Le neon
+   s evapore sur le papier, la teinte reste. */
+:root:not(.dark) .gd-membre-jauge u.on {
+  background: color-mix(in srgb, var(--t, var(--cp-cyan)) 55%, #000);
+}
 .gd-membre-jauge u.on { background: var(--t, var(--cp-cyan)); }
 .gd-membre-pct {
   text-align: right;
