@@ -50,6 +50,14 @@
 --   109 tables lisibles par anon : la seule lecture en échec
 --   (`wishlist_lists`) l'était DÉJÀ avant, pour une autre raison.
 --
+-- CORRIGÉE PARTIELLEMENT PAR LA MIGRATION SUIVANTE
+--   `une_politique_doit_pouvoir_evaluer_sa_propre_aide` (20260827155455)
+--   rend EXECUTE à `anon` sur les CINQ fonctions appelées dans une
+--   politique RLS. Les retirer faisait lever « permission denied » là où
+--   la lecture rendait auparavant un ensemble vide. La vérification
+--   ci-dessus était insuffisante : elle jouait `limit 1`, qui
+--   court-circuite le OU des politiques permissives.
+--
 -- POUR REVENIR EN ARRIÈRE
 --
 --   grant execute on all functions in schema public to anon;
