@@ -75,7 +75,14 @@ import { PREF } from "@/lib/preferencesAffichage";
      vue du pacte, nomme pour ce qu il est.
    ═══════════════════════════════════════════════════════════════ */
 
-type Vue = "tout" | "pacte" | "libre";
+/* « libre » a disparu, et avec lui la notion de HORS PACTE.
+   C etait une categorie negative : tout ce qui ne rentrait nulle
+   part ailleurs. Depuis qu on peut nommer ses listes, mieux vaut une
+   liste qu on baptise qu un orphelinat — les articles qui y
+   trainaient ont ete rattaches par migration, sans qu aucun ne
+   bouge. Une vue vaut donc « tout », « pacte », ou l identifiant
+   d une liste. */
+type Vue = "tout" | "pacte" | (string & {});
 type Tri = "visuel" | "recent" | "cher" | "abordable";
 
 
@@ -145,7 +152,9 @@ export default function Wishlist() {
   /* La vue retenue survit a la visite, comme le mois de Finance. */
   const [vue, setVue] = useState<Vue>(() => {
     const garde = typeof window !== "undefined" ? window.localStorage.getItem(PREF.WISHLIST_VUE) : null;
-    return garde === "pacte" || garde === "libre" ? garde : "tout";
+    /* Une liste supprimee laisse sa cle dans le stockage : la vue est
+       verifiee plus bas, une fois les listes connues. */
+    return garde || "tout";
   });
   useEffect(() => {
     window.localStorage.setItem(PREF.WISHLIST_VUE, vue);
@@ -228,11 +237,21 @@ export default function Wishlist() {
   const comptes = useMemo(() => {
     const duPacte = items.filter((i) => i.source_goal_cost_id);
     const libres = items.filter((i) => !i.source_goal_cost_id);
+    /* Un article sans objectif ET sans liste ne s affiche que dans
+       « Global ». La migration n en a laisse aucun, mais rien
+       n empeche d en creer un : il ne doit pas devenir invisible. */
+    const parListe = new Map<string, PactWishlistItem[]>();
+    for (const i of libres) {
+      const cle = i.list_id ?? "";
+      if (!cle) continue;
+      const p = parListe.get(cle);
+      if (p) p.push(i); else parListe.set(cle, [i]);
+    }
     const somme = (liste: PactWishlistItem[]) =>
       liste.reduce((s, i) => s + Number(i.estimated_cost || 0), 0);
 
     return {
-      duPacte, libres,
+      duPacte, libres, parListe,
       total: somme(items),
       totalPacte: somme(duPacte),
       totalLibre: somme(libres),
@@ -251,7 +270,11 @@ export default function Wishlist() {
      La recherche s applique a la vue courante ; elle ne cherche pas
      ailleurs que ce qu on regarde. */
   const vus = useMemo(() => {
-    const base = vue === "pacte" ? comptes.duPacte : vue === "libre" ? comptes.libres : items;
+    const base = vue === "pacte"
+      ? comptes.duPacte
+      : vue === "tout"
+        ? items
+        : (comptes.parListe.get(vue) ?? []);
     const mot = recherche.trim().toLowerCase();
     const filtres = mot
       ? base.filter((i) =>
@@ -282,7 +305,7 @@ export default function Wishlist() {
       actifs: ordonnes.filter((i) => !i.acquired),
       acquis: ordonnes.filter((i) => i.acquired),
     };
-  }, [vue, items, comptes.duPacte, comptes.libres, recherche, tri]);
+  }, [vue, items, comptes.duPacte, comptes.parListe, recherche, tri]);
 
   // ═══ GESTES ═══
 
@@ -547,8 +570,22 @@ export default function Wishlist() {
   const onglets: Array<{ cle: Vue; mot: string; compte: number }> = [
     { cle: "tout", mot: t("wishlist.vue.tout", "Global"), compte: items.length },
     { cle: "pacte", mot: t("wishlist.vue.pacte", "Le pacte"), compte: comptes.duPacte.length },
-    { cle: "libre", mot: t("wishlist.vue.libre", "Hors pacte"), compte: comptes.libres.length },
+    ...listesWishlist.map((l) => ({
+      cle: l.id as Vue,
+      mot: l.name,
+      compte: comptes.parListe.get(l.id)?.length ?? 0,
+    })),
   ];
+
+  /* UNE VUE QUI NE DESIGNE PLUS RIEN RETOMBE SUR « GLOBAL ». La liste
+     retenue au dernier passage peut avoir ete supprimee depuis, et un
+     onglet actif sans onglet correspondant laisse la page vide sans
+     rien dire. On attend d avoir les listes pour juger. */
+  useEffect(() => {
+    if (vue === "tout" || vue === "pacte") return;
+    if (!listesWishlist.length) return;
+    if (!listesWishlist.some((l) => l.id === vue)) setVue("tout");
+  }, [vue, listesWishlist]);
 
   const partPayee = comptes.total > 0 ? comptes.paye / comptes.total : 0;
   const partPayeePacte = comptes.totalPacte > 0 ? comptes.payePacte / comptes.totalPacte : 0;
@@ -807,7 +844,12 @@ export default function Wishlist() {
               ne peut pas rejoindre une liste — la table le refuse. Le
               panneau ne se montre donc pas dans la vue du pacte, où il
               n'aurait rien à ranger. */}
-          {vue !== "pacte" && <GestionDesListes userId={user?.id} />}
+          {vue !== "pacte" && (
+            <GestionDesListes
+              userId={user?.id}
+              listeActive={vue === "tout" ? null : vue}
+            />
+          )}
 
           {/* Cent trente tabulations separaient l en-tete de
               l archive : ce lien les enjambe, et ne se montre qu au

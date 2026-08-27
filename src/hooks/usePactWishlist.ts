@@ -17,6 +17,10 @@ export interface PactWishlistItem {
   id: string;
   user_id: string;
   goal_id: string | null;
+  /* La liste nommee a laquelle appartient l article. Nulle pour les
+     articles rattaches a un objectif du pacte. La requete la
+     ramenait deja par « select("*") » ; seul le type l ignorait. */
+  list_id: string | null;
   name: string;
   category: string | null;
   estimated_cost: number;
