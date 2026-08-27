@@ -140,6 +140,10 @@ export default function Auth() {
 
   return (
     <div className="auth">
+      {/* LE PLATEAU. La composition est bornée et centrée : elle ne
+          s étale pas jusqu aux bords de la fenêtre, on la voit
+          entière, avec de l air autour. */}
+      <div className="auth-plateau">
       {/* ── Le panneau visuel ─────────────────────────────────
           Entièrement décoratif : `aria-hidden`, et rien à
           l'intérieur n'est atteignable au clavier. Le lockup porte
@@ -346,6 +350,7 @@ export default function Auth() {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

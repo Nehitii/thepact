@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T17:54:51.408Z",
+  "genere": "2026-08-27T18:11:22.936Z",
   "fichiers": 859,
-  "lignes": 175680,
+  "lignes": 175838,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -13,8 +13,8 @@
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3555,
-      "poids": 209870
+      "lignes": 3589,
+      "poids": 211928
     },
     {
       "dossier": "mem/design",
@@ -133,14 +133,14 @@
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17120,
-      "poids": 759762
+      "lignes": 17125,
+      "poids": 759995
     },
     {
       "dossier": "src/styles",
       "fichiers": 39,
-      "lignes": 30144,
-      "poids": 1140115
+      "lignes": 30263,
+      "poids": 1145410
     },
     {
       "dossier": "src/types",
@@ -195,8 +195,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3444,
-      "poids": 205608
+      "lignes": 3478,
+      "poids": 207666
     },
     {
       "langage": "JavaScript",
@@ -243,8 +243,8 @@
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67001,
-      "poids": 2768888
+      "lignes": 67006,
+      "poids": 2769121
     },
     {
       "langage": "WEBP",
@@ -255,8 +255,8 @@
     {
       "langage": "CSS",
       "fichiers": 40,
-      "lignes": 32115,
-      "poids": 1219714
+      "lignes": 32234,
+      "poids": 1225009
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3126,
+  "commits": 3127,
   "orphelins": 0,
   "marqueurs": 12
 }

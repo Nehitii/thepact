@@ -47,11 +47,28 @@
   min-height: 100dvh;
   background: var(--au-fond);
   font-family: var(--au-texte);
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding: 28px 30px;
+  /* La page NE COMPOSE PLUS : elle centre un plateau. C'est lui qui
+     porte la rangée, et il est borné — la composition ne s'étale pas
+     jusqu'aux bords, on la voit entière, posée sur du noir. */
+  display: grid;
+  place-items: center;
+  place-items: safe center;
+  padding: 32px;
   box-sizing: border-box;
+}
+
+.auth-plateau {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  max-width: 640px;
+  /* SANS CECI, LA GRILLE DIMENSIONNE SUR LE CONTENU.
+     « place-items: center » retire l etirement : la piste prend la
+     largeur MINIMALE du contenu, et les trois tuiles de fournisseurs
+     imposent un plancher de 413 px. Sur un telephone de 375, la carte
+     debordait de 54 px. Le plancher est leve ici et sur la carte ; les
+     tuiles savent retrecir, elles ont leur propre max-width. */
+  min-width: 0;
 }
 
 /* ══ LE PANNEAU VISUEL ══════════════════════════════════════════
@@ -60,11 +77,23 @@
 .auth-visuel { display: none; }
 
 @media (min-width: 1100px) {
+  /* LA HAUTEUR MÈNE, LA LARGEUR SUIT.
+     Le panneau visuel garde le rapport du dessin — 770 / 958, un
+     portrait — au lieu d'être étiré à la largeur disponible. Sur une
+     fenêtre large et basse, les deux panneaux rétrécissent ensemble et
+     restent verticaux ; ils ne s'aplatissent pas. */
+  .auth-plateau {
+    width: auto;
+    max-width: calc(100vw - 64px);
+    height: min(958px, calc(100dvh - 64px));
+  }
+
   .auth-visuel {
     display: block;
     position: relative;
-    width: min(770px, 52vw);
-    height: min(958px, calc(100dvh - 56px));
+    height: 100%;
+    aspect-ratio: 770 / 958;
+    width: auto;
     flex: none;
   }
 }
@@ -287,7 +316,41 @@
   flex-direction: column;
 }
 @media (min-width: 1100px) {
-  .auth-carte { height: min(940px, calc(100dvh - 84px)); max-width: none; margin-inline: 0; }
+  /* MIN-HEIGHT, PAS HEIGHT.
+     La maquette est dessinée pour 1536 × 1024 et fixe la carte à
+     940 px. Sur un portable de 791 px de haut, la carte se retrouvait
+     bornée à 707 px pour un contenu qui en demande 787 : les tuiles
+     étaient coupées et le pied — « Pas encore de compte ? En créer
+     un » — tombait à 820 px, hors de l'écran, SANS défilement pour
+     aller le chercher. Personne ne pouvait s'inscrire depuis un
+     portable.
+
+     Avec « min-height », la carte prend la hauteur du dessin quand la
+     place existe, et grandit quand elle manque. La page défile. */
+  /* La carte prend la hauteur du plateau et une largeur bornée : c'est
+     ce qui l'empêche de s'étirer sur tout ce qui reste à droite. Son
+     contenu ne rétrécit pas, lui — d'où le défilement interne, qui
+     n'intervient que si les deux paliers plus bas n'ont pas suffi. */
+  /* LA CARTE AUSSI EST PILOTÉE PAR LA HAUTEUR. Sinon elle prend tout
+     ce qui reste à droite et la composition s aplatit : un panneau
+     portrait à gauche, un bandeau à droite. Le dessin les veut de
+     largeurs voisines — 770 et 730 — donc elle porte son propre
+     rapport et rétrécit avec son voisin.
+
+     Son contenu, lui, ne rétrécit pas : le défilement interne est la
+     soupape, et il ne sert que si les deux paliers de hauteur plus bas
+     n ont pas suffi. */
+  .auth-carte {
+    flex: none;
+    height: 100%;
+    aspect-ratio: 730 / 958;
+    width: auto;
+    min-width: 420px;
+    max-width: calc(100vw - 64px - 30px - (100dvh - 64px) * 0.8038);
+    margin-inline: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 @media (max-width: 560px) {
   .auth { padding: 16px; }
@@ -450,7 +513,13 @@
   margin-top: 34px;
 }
 .auth-fournisseur {
-  width: 106px; max-width: 30%; height: 72px;
+  /* Elles PEUVENT retrecir : sans min-width: 0, chacune impose ses
+     106 px et les trois posent un plancher que la carte ne peut pas
+     franchir. */
+  flex: 0 1 106px;
+  min-width: 0;
+  max-width: 30%;
+  height: 72px;
   border: 1px solid rgba(139,92,246,.24);
   border-radius: 10px;
   background: rgba(255,255,255,.02);
@@ -494,3 +563,53 @@
 }
 .auth-legal a { color: var(--au-violet-clair); text-decoration: underline; text-underline-offset: 3px; }
 .auth-legal a:hover { color: var(--au-violet-vif); }
+
+/* ÉCRAN COURT : ON RESSERRE AVANT DE FAIRE DÉFILER.
+   Les respirations de la maquette — 62 px sous l'en-tête, 46 px avant
+   un libellé, 42 px avant le séparateur — sont calculées pour 1024 px
+   de haut. Sur les portables courants (768 à 900), les garder oblige à
+   défiler pour atteindre le bouton d'inscription. Elles se resserrent,
+   et tout retombe dans l'écran. Rien n'est masqué : c'est le rythme
+   qui cède, pas le contenu. */
+@media (min-width: 1100px) and (max-height: 900px) {
+  .auth-carte { padding: 34px 48px 30px; }
+  .auth-titre { margin-top: 30px; font-size: clamp(28px, 3.2vw, 38px); }
+  .auth-sous { margin-top: 12px; font-size: 18px; }
+  .auth-etiquette { margin: 26px 0 10px; }
+  .auth-etiquette[data-second] { margin-top: 18px; }
+  .auth-champ { height: 54px; }
+  .auth-valider { height: 58px; margin-top: 20px; }
+  .auth-ou { margin-top: 26px; }
+  .auth-fournisseurs { margin-top: 20px; }
+  .auth-fournisseur { height: 60px; }
+  .auth-pied { padding-top: 22px; font-size: 17px; }
+  .auth-legal { margin-top: 14px; }
+}
+
+/* ÉCRAN TRÈS COURT — le palier d'en dessous.
+   Mesuré : à 900 px de haut la carte tombe à 714 px, donc il faut une
+   fenêtre de 770 pour ne pas défiler. Un portable 1366 × 768 n'en offre
+   qu'environ 660 une fois le chrome du navigateur déduit. Second
+   resserrement, plus franc, pour cette famille d'écrans — au-delà, on
+   laisse défiler : rendre les champs plus petits que ça les rendrait
+   pénibles à viser. */
+@media (min-width: 1100px) and (max-height: 780px) {
+  .auth { padding: 18px 24px; }
+  .auth-carte { padding: 26px 44px 24px; }
+  .auth-titre { margin-top: 20px; font-size: clamp(26px, 2.6vw, 32px); }
+  .auth-sous { margin-top: 8px; font-size: 16px; }
+  .auth-entete b { font-size: 13px; }
+  .auth-etiquette { margin: 18px 0 8px; font-size: 13px; }
+  .auth-etiquette[data-second] { margin-top: 14px; }
+  .auth-champ { height: 48px; }
+  .auth-champ input { font-size: 17px; }
+  .auth-oubli { margin-top: 4px; font-size: 16px; }
+  .auth-valider { height: 52px; margin-top: 14px; }
+  .auth-valider span { font-size: 18px; }
+  .auth-ou { margin-top: 18px; }
+  .auth-fournisseurs { margin-top: 14px; }
+  .auth-fournisseur { height: 52px; }
+  .auth-fournisseur svg { width: 28px; height: 28px; }
+  .auth-pied { padding-top: 16px; font-size: 16px; }
+  .auth-legal { margin-top: 10px; font-size: 14px; }
+}
