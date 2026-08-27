@@ -42,10 +42,6 @@ verify_jwt = false
 [functions.mia-pattern-detect]
 verify_jwt = false
 
-# Dual mode: per-user JWT OR cron with CRON_SECRET. JWT verification handled in code.
-[functions.generate-daily-quests]
-verify_jwt = false
-
 # Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
 [functions.push-send]
 verify_jwt = false
