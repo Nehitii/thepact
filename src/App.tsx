@@ -49,6 +49,7 @@ const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminAcces = lazy(() => import("./pages/AdminAcces"));
 const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
 const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
 const AdminMoneyManager = lazy(() => import("./pages/AdminMoneyManager"));
@@ -137,6 +138,7 @@ function AppRoutes() {
 
       {/* Admin */}
       <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+      <Route path="/admin/acces" element={<AdminRoute><AdminAcces /></AdminRoute>} />
       <Route path="/admin/cosmetics" element={<AdminRoute><AdminCosmeticsManager /></AdminRoute>} />
       <Route path="/admin/modules" element={<AdminRoute><AdminModuleManager /></AdminRoute>} />
       <Route path="/admin/money" element={<AdminRoute><AdminMoneyManager /></AdminRoute>} />

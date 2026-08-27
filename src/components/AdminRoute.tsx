@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
+import { PorteAdmin } from "@/components/admin/PorteAdmin";
 import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
@@ -27,7 +28,11 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : data?.isAdmin ? (
-              children
+              /* LE RÔLE OUVRE LA ROUTE, LE SECOND FACTEUR OUVRE LA PORTE.
+                 Le contrôle serveur dit que ce compte EST administrateur ;
+                 il ne dit pas que c'est bien lui qui tient le clavier. Un
+                 jeton volé porte le rôle. Voir PorteAdmin. */
+              <PorteAdmin>{children}</PorteAdmin>
             ) : (
               <Navigate to="/" replace />
             )}

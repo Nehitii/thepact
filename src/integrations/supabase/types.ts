@@ -5085,6 +5085,16 @@ export type Database = {
         Args: { p_cosmetic_id: string; p_user_id: string }
         Returns: Json
       }
+      annuaire_utilisateurs: {
+        Args: { p_recherche?: string | null }
+        Returns: {
+          derniere_connexion: string
+          est_admin: boolean
+          inscrit_le: string
+          nom: string
+          user_id: string
+        }[]
+      }
       assurer_offres_du_jour: { Args: never; Returns: number }
       assurer_ordres_du_jour: {
         Args: never
@@ -5113,6 +5123,10 @@ export type Database = {
       }
       carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
       categories_cosmetiques: { Args: never; Returns: number }
+      changer_le_role: {
+        Args: { p_admin: boolean; p_user_id: string }
+        Returns: Json
+      }
       chercher_profils: {
         Args: { p_requete: string }
         Returns: {
@@ -5205,6 +5219,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      diffuser_notification: {
+        Args: {
+          p_categorie?: Database["public"]["Enums"]["notification_category"]
+          p_cta_label?: string | null
+          p_cta_url?: string | null
+          p_description?: string | null
+          p_destinataire?: string | null
+          p_icone?: string
+          p_priorite?: Database["public"]["Enums"]["notification_priority"]
+          p_recompense_cosmetique?: string | null
+          p_recompense_montant?: number | null
+          p_recompense_type?: string | null
+          p_titre: string
+        }
+        Returns: Json
+      }
+      est_admin_eleve: { Args: never; Returns: boolean }
       enregistrer_appel: {
         Args: { p_jour: string; p_pact_id: string }
         Returns: {
@@ -5318,6 +5349,18 @@ export type Database = {
         Args: { _guild_id: string; _user_id: string }
         Returns: boolean
       }
+      journal_admin: {
+        Args: { p_limite?: number }
+        Returns: {
+          action: string
+          cible_id: string
+          cible_type: string
+          details: Json
+          id: string
+          quand: string
+          qui: string
+        }[]
+      }
       join_guild_via_code: { Args: { p_code: string }; Returns: Json }
       log_guild_activity: {
         Args: {
@@ -5409,6 +5452,18 @@ export type Database = {
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
       resynchroniser_compteurs_succes: { Args: never; Returns: undefined }
+      roster_admin: {
+        Args: never
+        Returns: {
+          a_un_second_facteur: boolean
+          c_est_moi: boolean
+          derniere_connexion: string
+          depuis: string
+          nom: string
+          role: string
+          user_id: string
+        }[]
+      }
       settle_contract: {
         Args: { _contract_id: string; _outcome: string }
         Returns: Json

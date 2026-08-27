@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Palette, Coins, Puzzle, Sparkles, Bell } from "lucide-react";
+import { ArrowLeft, Shield, Palette, Coins, Puzzle, Sparkles, Bell, ShieldCheck } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 interface AdminPageShellProps {
   title: string;
@@ -13,6 +14,7 @@ interface AdminPageShellProps {
 
 const adminSections = [
   { label: "Hub", href: "/admin", icon: Shield },
+  { label: "Accès", href: "/admin/acces", icon: ShieldCheck },
   { label: "Mode", href: "/admin/mode", icon: Shield },
   { label: "Cosmetics", href: "/admin/cosmetics", icon: Palette },
   { label: "Money", href: "/admin/money", icon: Coins },
@@ -23,7 +25,10 @@ const adminSections = [
 
 export function AdminPageShell({ title, subtitle, icon, children, maxWidth = "max-w-4xl" }: AdminPageShellProps) {
   const navigate = useNavigate();
-  const currentPath = window.location.pathname;
+  /* « window.location.pathname » est lu au rendu et ne change pas quand
+     react-router navigue sans rechargement : l'onglet actif restait sur
+     la page d'arrivée. useLocation, lui, provoque le rendu. */
+  const currentPath = useLocation().pathname;
 
   return (
     <div className="min-h-screen bg-background relative">

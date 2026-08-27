@@ -14,7 +14,13 @@ import { Bell, Send, Users, Gift, Loader2, MessageSquare, Star, Trophy, Zap, Hea
 import { toast } from "sonner";
 import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
-import { logAdminAction } from "@/hooks/useAdminAudit";
+import {
+  useAnnuaire, useDiffuser, useJournalAdmin, motDeLErreur,
+} from "@/hooks/useAdminServeur";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 type NotificationCategory = "system" | "progress" | "social" | "marketing";
@@ -48,11 +54,12 @@ export default function AdminNotifications() {
   const { data: adminCheck } = useServerAdminCheck(!!user);
   const isAdminVerified = adminCheck?.isAdmin === true;
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ["admin-users"],
-    queryFn: async () => { const { data } = await supabase.from("profiles").select("id, display_name").order("display_name"); return data || []; },
-    enabled: isAdminVerified,
-  });
+  /* LA LISTE VENAIT DE `profiles`, QUI NE REND QUE SA PROPRE LIGNE.
+     Elle contenait donc UN nom — celui de l'administrateur — et viser
+     quelqu'un d'autre était impossible depuis cet écran. */
+  const { data: annuaire = [] } = useAnnuaire();
+  const allUsers = annuaire.map((u) => ({ id: u.user_id, display_name: u.nom }));
+  const [confirmation, setConfirmation] = useState(false);
 
   const { data: frames = [] } = useQuery({
     queryKey: ["admin-frames"],
@@ -72,58 +79,66 @@ export default function AdminNotifications() {
     enabled: isAdminVerified && rewardType === "title",
   });
 
-  // Notification history - last 50 sent by admin
-  const { data: notifHistory = [] } = useQuery({
-    queryKey: ["admin-notification-history"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("notifications")
-        .select("id, title, description, category, priority, created_at")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      return data || [];
-    },
-    enabled: isAdminVerified && activeTab === "history",
-  });
+  /* L'HISTORIQUE MONTRAIT CE QUE L'ADMINISTRATEUR AVAIT REÇU.
+     Il lisait `notifications` sans filtre ; RLS ne rendant que les
+     siennes, l'onglet présentait sa propre boîte comme la liste de ses
+     envois. L'historique des actes d'administration est dans le
+     journal d'audit — c'est sa raison d'être. */
+  const { data: journal = [] } = useJournalAdmin(50);
+  const notifHistory = journal
+    .filter((l) => l.action === "diffusion")
+    .map((l) => ({
+      id: l.id,
+      title: String(l.details?.titre ?? "—"),
+      description: `${l.details?.envoyes ?? 0} envoyé(s)`
+        + (Number(l.details?.ecartes ?? 0) > 0
+            ? ` · ${l.details?.ecartes} écarté(s) par leurs réglages`
+            : "")
+        + (l.details?.cible === "tous" ? " · à tous" : " · à une personne"),
+      category: String(l.details?.categorie ?? "system"),
+      priority: String(l.details?.priorite ?? "informational"),
+      created_at: l.quand,
+    }));
 
-  const sendNotification = useMutation({
-    mutationFn: async () => {
-      if (targetAll) {
-        const { data: users } = await supabase.from("profiles").select("id");
-        if (!users || users.length === 0) throw new Error("No users found");
-        const notifications = users.map((u) => ({
-          user_id: u.id, title, description: description || null, category, priority, icon_key: iconKey,
-          cta_label: ctaLabel || null, cta_url: ctaUrl || null,
-          reward_type: attachReward ? rewardType : null,
-          reward_amount: attachReward && rewardType === "bonds" ? rewardAmount : null,
-          reward_cosmetic_id: attachReward && rewardType !== "bonds" ? rewardCosmeticId : null,
-          reward_cosmetic_type: attachReward && rewardType !== "bonds" ? rewardType : null,
-        }));
-        const { error } = await supabase.from("notifications").insert(notifications);
-        if (error) throw error;
-        return users.length;
-      } else {
-        const { error } = await supabase.from("notifications").insert({
-          user_id: targetUserId, title, description: description || null, category, priority, icon_key: iconKey,
-          cta_label: ctaLabel || null, cta_url: ctaUrl || null,
-          reward_type: attachReward ? rewardType : null,
-          reward_amount: attachReward && rewardType === "bonds" ? rewardAmount : null,
-          reward_cosmetic_id: attachReward && rewardType !== "bonds" ? rewardCosmeticId : null,
-          reward_cosmetic_type: attachReward && rewardType !== "bonds" ? rewardType : null,
-        });
-        if (error) throw error;
-        return 1;
-      }
-    },
-    onSuccess: (count) => {
-      toast.success("Sent!", { description: `Sent to ${count} user${count > 1 ? "s" : ""}` });
-      logAdminAction("send_notification", "notification", undefined, { title, targetAll, count });
-      setTitle(""); setDescription(""); setCtaLabel(""); setCtaUrl(""); setAttachReward(false); setRewardAmount(0); setRewardCosmeticId("");
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-notification-history"] });
-    },
-    onError: (error: Error) => { toast.error("Error", { description: error.message }); },
-  });
+  /* L'ENVOI SE FAIT CÔTÉ SERVEUR, POUR TROIS RAISONS.
+     Il énumère les destinataires là où ils sont visibles ; il respecte
+     les préférences de catégorie, donc il ne fabrique plus d'avis que
+     personne ne verra ; et il écrit sa trace d'audit dans la MÊME
+     transaction — elle ne peut plus être oubliée ni refusée à part. */
+  const diffuser = useDiffuser();
+
+  const envoyer = () => {
+    diffuser.mutate(
+      {
+        titre: title,
+        description: description || undefined,
+        categorie: category,
+        priorite: priority,
+        icone: iconKey,
+        ctaLabel: ctaLabel || undefined,
+        ctaUrl: ctaUrl || undefined,
+        recompenseType: attachReward ? rewardType : null,
+        recompenseMontant: attachReward && rewardType === "bonds" ? rewardAmount : null,
+        recompenseCosmetique: attachReward && rewardType !== "bonds" ? rewardCosmeticId : null,
+        destinataire: targetAll ? null : targetUserId,
+      },
+      {
+        onSuccess: (r) => {
+          toast.success(`Envoyé à ${r.envoyes} personne${r.envoyes > 1 ? "s" : ""}`, {
+            description: r.ecartes > 0
+              ? `${r.ecartes} écarté${r.ecartes > 1 ? "s" : ""} : cette catégorie est coupée dans leurs réglages.`
+              : undefined,
+          });
+          setTitle(""); setDescription(""); setCtaLabel(""); setCtaUrl("");
+          setAttachReward(false); setRewardAmount(0); setRewardCosmeticId("");
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+        onError: (e) => toast.error("Envoi refusé", { description: motDeLErreur(e) }),
+      },
+    );
+  };
+
+  const sendNotification = { isPending: diffuser.isPending, mutate: () => setConfirmation(true) };
 
   const canSend = title.trim() && (targetAll || targetUserId);
   const PreviewIcon = iconComponents[iconKey] || Bell;
@@ -156,10 +171,10 @@ export default function AdminNotifications() {
           {notifHistory.length === 0 ? (
             <div className="text-center py-12 text-primary/40">
               <History className="h-10 w-10 mx-auto mb-3" />
-              <p>No notifications sent yet</p>
+              <p>Aucune diffusion pour le moment</p>
             </div>
           ) : (
-            notifHistory.map((n: any) => (
+            notifHistory.map((n) => (
               <div key={n.id} className="p-4 rounded-xl bg-card/50 border border-primary/20">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-primary">{n.title}</span>
@@ -317,11 +332,38 @@ export default function AdminNotifications() {
             <Button onClick={() => sendNotification.mutate()} disabled={!canSend || sendNotification.isPending}
               className={`w-full border ${mode === "notification" ? "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30" : "bg-violet-500/20 text-violet-400 border-violet-500/50 hover:bg-violet-500/30"}`}>
               {sendNotification.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              {targetAll ? `Send to All Users` : `Send to User`}
+              {targetAll ? "Envoyer à tout le monde" : "Envoyer à cette personne"}
             </Button>
           </Card>
         </>
       )}
+
+      {/* ÉCRIRE À TOUT LE MONDE NE SE FAIT PAS EN UN CLIC.
+          Un envoi ne se rattrape pas : il atterrit chez chacun, et le
+          retirer ne le fait pas oublier. La confirmation dit combien de
+          personnes existent, pour qu'on sache ce qu'on déclenche. */}
+      <AlertDialog open={confirmation} onOpenChange={setConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {targetAll
+                ? `Envoyer à ${annuaire.length} personne${annuaire.length > 1 ? "s" : ""} ?`
+                : "Envoyer cet avis ?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              « {title || "sans titre"} » — catégorie {category}, priorité {priority}.
+              {targetAll
+                ? " Ceux qui ont coupé cette catégorie dans leurs réglages seront écartés, et le compte rendu le dira."
+                : ""}
+              {" "}Un avis envoyé ne se reprend pas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={envoyer}>Envoyer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminPageShell>
   );
 }
