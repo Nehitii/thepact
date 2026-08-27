@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T17:11:59.367Z",
+  "genere": "2026-08-27T17:27:03.494Z",
   "fichiers": 856,
-  "lignes": 162757,
+  "lignes": 162823,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -13,8 +13,8 @@
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3504,
-      "poids": 206751
+      "lignes": 3555,
+      "poids": 209848
     },
     {
       "dossier": "mem/design",
@@ -139,8 +139,8 @@
     {
       "dossier": "src/styles",
       "fichiers": 38,
-      "lignes": 29621,
-      "poids": 1121816
+      "lignes": 29636,
+      "poids": 1122581
     },
     {
       "dossier": "src/types",
@@ -195,8 +195,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3393,
-      "poids": 202489
+      "lignes": 3444,
+      "poids": 205586
     },
     {
       "langage": "JavaScript",
@@ -255,8 +255,8 @@
     {
       "langage": "CSS",
       "fichiers": 39,
-      "lignes": 31592,
-      "poids": 1201415
+      "lignes": 31607,
+      "poids": 1202180
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3123,
+  "commits": 3124,
   "orphelins": 0,
   "marqueurs": 12
 }

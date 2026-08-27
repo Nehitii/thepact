@@ -78,16 +78,28 @@
   flex-shrink: 0;
 }
 /* ── LE SIGNE ─────────────────────────────────────────────────
-   Le symbole est une marque de 1,95:1, pas un carré. Déployée, la
-   barre lui donne un emplacement à ses proportions — 132 × 68 — au
-   lieu de le coincer dans 44 × 44, où il se serait rendu à 44 × 22
-   et où les lignes de glitch se seraient écrasées.
+   Le symbole est une marque de 1,95:1, pas un carré.
+
+   LA HAUTEUR N'EST PAS CHOISIE, ELLE EST RENDUE. L'ancien logo faisait
+   44 px dans une tête de 76 (18 + 44 + 14), et toute la barre a été
+   dessinée sur ce rythme : la recherche, les sections, les libellés.
+   Le signe reprend donc 45 px de haut — la tête revient à 77 px, et
+   tout ce qui suit retrouve sa place au pixel près.
+
+   LA LARGEUR SUIT, ELLE NE SE DÉCIDE PAS : 45 × 1,955 = 88. Sur une
+   barre de 251 px, la marque en occupe 35 % — assez pour se lire,
+   pas assez pour prendre la parole.
+
+   ET 88 px RESTE AU-DESSUS DU PLANCHER. Le pack le documente : sous
+   48 px d'icône — soit 42 px de symbole — les lignes de glitch
+   disparaissent au rendu, et il faut passer à la version compacte. On
+   garde le double de cette marge.
 
    Repliée, la barre fait 67 px : une marque aussi large n'y tient
    plus. Elle cède la place à l'icône carrée, celle du favicon et de
-   l'écran d'accueil. Ce n'est pas un pis-aller : c'est la même
-   distinction que fait tout logotype entre sa forme longue et sa
-   forme brève.
+   l'écran d'accueil, à ses 36 px d'origine. Ce n'est pas un
+   pis-aller : c'est la même distinction que fait tout logotype entre
+   sa forme longue et sa forme brève.
 
    Et la source change avec le thème. Le dégradé du symbole part du
    blanc : sur le fond clair de la barre — rgb(249,248,246) — sa
@@ -96,15 +108,15 @@
 .sb-marque {
   position: relative;
   display: block;
-  width: 132px;
-  height: 68px;
+  width: 88px;
+  height: 45px;
   border: 0;
   padding: 0;
   background: none;
   cursor: pointer;
   transition: transform 320ms var(--sb-e), width 320ms var(--sb-e), height 320ms var(--sb-e);
 }
-.sb[data-replie="oui"] .sb-marque { width: 38px; height: 38px; }
+.sb[data-replie="oui"] .sb-marque { width: 36px; height: 36px; }
 
 .sb-signe {
   position: relative;
@@ -130,11 +142,14 @@ html.light .sb[data-replie="oui"] .sb-signe {
 
    L emplacement n est plus carre : un « inset » en pourcentage
    donnerait une ellipse tres large et tres plate. On l ancre donc en
-   pixels, et le halo reste rond sous une marque allongee. */
+   pixels, calcules pour que le halo soit ROND — 88 + 22 de large,
+   45 + 65 de haut — et aussi genereux qu avant : 110 px de diametre
+   pour une marque de 88, soit le meme rapport que les 81 px de halo
+   qui entouraient l ancien logo de 44. */
 .sb-marque::before {
   content: "";
   position: absolute;
-  inset: -18px -10px;
+  inset: -32px -11px;
   z-index: 0;
   border-radius: 50%;
   background: radial-gradient(circle, var(--sb-lueur) 0%, var(--sb-lueur-2) 42%, transparent 68%);
