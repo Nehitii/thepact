@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.17"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       achievement_definitions: {
@@ -522,197 +547,6 @@ export type Database = {
             columns: ["recurrence_parent_id"]
             isOneToOne: false
             referencedRelation: "calendar_events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      coach_conversations: {
-        Row: {
-          archived: boolean
-          created_at: string
-          id: string
-          last_message_at: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          archived?: boolean
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          title?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          archived?: boolean
-          created_at?: string
-          id?: string
-          last_message_at?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      coach_cron_runs: {
-        Row: {
-          duration_ms: number | null
-          errors: Json
-          finished_at: string | null
-          id: string
-          insights_created: number
-          job: string
-          started_at: string
-          users_processed: number
-        }
-        Insert: {
-          duration_ms?: number | null
-          errors?: Json
-          finished_at?: string | null
-          id?: string
-          insights_created?: number
-          job: string
-          started_at?: string
-          users_processed?: number
-        }
-        Update: {
-          duration_ms?: number | null
-          errors?: Json
-          finished_at?: string | null
-          id?: string
-          insights_created?: number
-          job?: string
-          started_at?: string
-          users_processed?: number
-        }
-        Relationships: []
-      }
-      coach_embeddings: {
-        Row: {
-          content: string
-          created_at: string
-          embedding: string | null
-          id: string
-          metadata: Json
-          source_id: string | null
-          source_type: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          metadata?: Json
-          source_id?: string | null
-          source_type: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          embedding?: string | null
-          id?: string
-          metadata?: Json
-          source_id?: string | null
-          source_type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      coach_insights: {
-        Row: {
-          body: string
-          category: string | null
-          created_at: string
-          dismissed_at: string | null
-          expires_at: string | null
-          id: string
-          severity: string
-          source: Json
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          body: string
-          category?: string | null
-          created_at?: string
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          severity?: string
-          source?: Json
-          title: string
-          type?: string
-          user_id: string
-        }
-        Update: {
-          body?: string
-          category?: string | null
-          created_at?: string
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          severity?: string
-          source?: Json
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      coach_messages: {
-        Row: {
-          content: string
-          conversation_id: string
-          created_at: string
-          id: string
-          metadata: Json | null
-          model: string | null
-          role: string
-          tokens_in: number | null
-          tokens_out: number | null
-          tool_call_id: string | null
-          tool_calls: Json | null
-          user_id: string
-        }
-        Insert: {
-          content?: string
-          conversation_id: string
-          created_at?: string
-          id?: string
-          metadata?: Json | null
-          model?: string | null
-          role: string
-          tokens_in?: number | null
-          tokens_out?: number | null
-          tool_call_id?: string | null
-          tool_calls?: Json | null
-          user_id: string
-        }
-        Update: {
-          content?: string
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          metadata?: Json | null
-          model?: string | null
-          role?: string
-          tokens_in?: number | null
-          tokens_out?: number | null
-          tool_call_id?: string | null
-          tool_calls?: Json | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "coach_messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "coach_conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -2886,6 +2720,204 @@ export type Database = {
         }
         Relationships: []
       }
+      mia_conversations: {
+        Row: {
+          archived: boolean
+          created_at: string
+          id: string
+          last_message_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mia_cron_runs: {
+        Row: {
+          duration_ms: number | null
+          errors: Json
+          finished_at: string | null
+          id: string
+          insights_created: number
+          job: string
+          started_at: string
+          users_processed: number
+        }
+        Insert: {
+          duration_ms?: number | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          insights_created?: number
+          job: string
+          started_at?: string
+          users_processed?: number
+        }
+        Update: {
+          duration_ms?: number | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          insights_created?: number
+          job?: string
+          started_at?: string
+          users_processed?: number
+        }
+        Relationships: []
+      }
+      mia_embeddings: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          metadata: Json
+          source_id: string | null
+          source_type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          source_id?: string | null
+          source_type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          metadata?: Json
+          source_id?: string | null
+          source_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mia_insights: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string
+          severity: string
+          source: Json
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          severity?: string
+          source?: Json
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          severity?: string
+          source?: Json
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mia_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          model: string | null
+          role: string
+          tokens_in: number | null
+          tokens_out: number | null
+          tool_call_id: string | null
+          tool_calls: Json | null
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          role: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_call_id?: string | null
+          tool_calls?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          role?: string
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_call_id?: string | null
+          tool_calls?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mia_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "coach_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mia_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_finance_validations: {
         Row: {
           actual_total_expenses: number | null
@@ -5039,7 +5071,204 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      coach_conversations: {
+        Row: {
+          archived: boolean | null
+          created_at: string | null
+          id: string | null
+          last_message_at: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          archived?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          last_message_at?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          archived?: boolean | null
+          created_at?: string | null
+          id?: string | null
+          last_message_at?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      coach_cron_runs: {
+        Row: {
+          duration_ms: number | null
+          errors: Json | null
+          finished_at: string | null
+          id: string | null
+          insights_created: number | null
+          job: string | null
+          started_at: string | null
+          users_processed: number | null
+        }
+        Insert: {
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string | null
+          insights_created?: number | null
+          job?: string | null
+          started_at?: string | null
+          users_processed?: number | null
+        }
+        Update: {
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string | null
+          insights_created?: number | null
+          job?: string | null
+          started_at?: string | null
+          users_processed?: number | null
+        }
+        Relationships: []
+      }
+      coach_embeddings: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          embedding: string | null
+          id: string | null
+          metadata: Json | null
+          source_id: string | null
+          source_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          embedding?: string | null
+          id?: string | null
+          metadata?: Json | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          embedding?: string | null
+          id?: string | null
+          metadata?: Json | null
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      coach_insights: {
+        Row: {
+          body: string | null
+          category: string | null
+          created_at: string | null
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string | null
+          severity: string | null
+          source: Json | null
+          title: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          category?: string | null
+          created_at?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          severity?: string | null
+          source?: Json | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          category?: string | null
+          created_at?: string | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string | null
+          severity?: string | null
+          source?: Json | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      coach_messages: {
+        Row: {
+          content: string | null
+          conversation_id: string | null
+          created_at: string | null
+          id: string | null
+          metadata: Json | null
+          model: string | null
+          role: string | null
+          tokens_in: number | null
+          tokens_out: number | null
+          tool_call_id: string | null
+          tool_calls: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          model?: string | null
+          role?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_call_id?: string | null
+          tool_calls?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          model?: string | null
+          role?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          tool_call_id?: string | null
+          tool_calls?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mia_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "coach_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mia_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _bump_quest_progress: {
@@ -5065,7 +5294,7 @@ export type Database = {
         Returns: Json
       }
       annuaire_utilisateurs: {
-        Args: { p_recherche?: string | null }
+        Args: { p_recherche?: string }
         Returns: {
           derniere_connexion: string
           est_admin: boolean
@@ -5106,6 +5335,10 @@ export type Database = {
         Args: { p_admin: boolean; p_user_id: string }
         Returns: Json
       }
+      check_and_increment_ai_quota: {
+        Args: { _daily_limit?: number; _function_name: string }
+        Returns: Json
+      }
       chercher_profils: {
         Args: { p_requete: string }
         Returns: {
@@ -5113,10 +5346,6 @@ export type Database = {
           id: string
           nom: string
         }[]
-      }
-      check_and_increment_ai_quota: {
-        Args: { _daily_limit?: number; _function_name: string }
-        Returns: Json
       }
       claim_notification_reward: {
         Args: { p_notification_id: string }
@@ -5201,20 +5430,19 @@ export type Database = {
       diffuser_notification: {
         Args: {
           p_categorie?: Database["public"]["Enums"]["notification_category"]
-          p_cta_label?: string | null
-          p_cta_url?: string | null
-          p_description?: string | null
-          p_destinataire?: string | null
+          p_cta_label?: string
+          p_cta_url?: string
+          p_description?: string
+          p_destinataire?: string
           p_icone?: string
           p_priorite?: Database["public"]["Enums"]["notification_priority"]
-          p_recompense_cosmetique?: string | null
-          p_recompense_montant?: number | null
-          p_recompense_type?: string | null
+          p_recompense_cosmetique?: string
+          p_recompense_montant?: number
+          p_recompense_type?: string
           p_titre: string
         }
         Returns: Json
       }
-      est_admin_eleve: { Args: never; Returns: boolean }
       enregistrer_appel: {
         Args: { p_jour: string; p_pact_id: string }
         Returns: {
@@ -5224,6 +5452,7 @@ export type Database = {
           total: number
         }[]
       }
+      est_admin_eleve: { Args: never; Returns: boolean }
       get_accepted_friends: {
         Args: { p_user_id: string }
         Returns: {
@@ -5328,6 +5557,7 @@ export type Database = {
         Args: { _guild_id: string; _user_id: string }
         Returns: boolean
       }
+      join_guild_via_code: { Args: { p_code: string }; Returns: Json }
       journal_admin: {
         Args: { p_limite?: number }
         Returns: {
@@ -5340,7 +5570,6 @@ export type Database = {
           qui: string
         }[]
       }
-      join_guild_via_code: { Args: { p_code: string }; Returns: Json }
       log_guild_activity: {
         Args: {
           p_action: string
@@ -5370,7 +5599,23 @@ export type Database = {
           source_type: string
         }[]
       }
+      match_mia_memory: {
+        Args: {
+          _match_count?: number
+          _min_similarity?: number
+          _query: string
+        }
+        Returns: {
+          content: string
+          id: string
+          metadata: Json
+          similarity: number
+          source_id: string
+          source_type: string
+        }[]
+      }
       mesures_du_membre: { Args: { p_user_id: string }; Returns: Json }
+      peut_ecrire_a: { Args: { p_destinataire: string }; Returns: boolean }
       pouls_du_jour: {
         Args: { p_debut: string; p_fin: string; p_jour: string }
         Returns: {
@@ -5436,8 +5681,8 @@ export type Database = {
         Returns: {
           a_un_second_facteur: boolean
           c_est_moi: boolean
-          derniere_connexion: string
           depuis: string
+          derniere_connexion: string
           nom: string
           role: string
           user_id: string
@@ -5672,6 +5917,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["user", "admin"],

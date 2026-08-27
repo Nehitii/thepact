@@ -1,4 +1,4 @@
-// Coach cron runner — orchestrates periodic invocations of coach sub-functions
+// M.I.A cron runner — orchestrates periodic invocations of her sub-functions
 // (index-memory, pattern-detect) for active users. Called by pg_cron with a
 // shared secret header.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
   let insightsCreated = 0;
 
   const { data: runRow } = await admin
-    .from("coach_cron_runs")
+    .from("mia_cron_runs")
     .insert({ job: "mia-cron-runner" })
     .select("id")
     .single();
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     // Count fresh insights from this window
     const since = new Date(started - 60_000).toISOString();
     const { count } = await admin
-      .from("coach_insights")
+      .from("mia_insights")
       .select("*", { count: "exact", head: true })
       .gte("created_at", since);
     insightsCreated = count ?? 0;
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
 
   const duration = Date.now() - started;
   if (runRow?.id) {
-    await admin.from("coach_cron_runs").update({
+    await admin.from("mia_cron_runs").update({
       finished_at: new Date().toISOString(),
       users_processed: usersProcessed,
       insights_created: insightsCreated,

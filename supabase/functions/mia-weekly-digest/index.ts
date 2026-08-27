@@ -1,8 +1,8 @@
-// Coach Weekly Digest — cron-driven Sunday recap.
+// M.I.A Weekly Digest — cron-driven Sunday recap.
 // For each user with coach_proactive_enabled=true:
 //   - compute current + previous week stats
 //   - upsert weekly_reviews
-//   - insert coach_insight (type='digest')
+//   - insert mia_insights (type='digest')
 //   - insert notification (category=system)
 //   - fire push if subscription exists
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id,week_start" });
 
-      await admin.from("coach_insights").insert({
+      await admin.from("mia_insights").insert({
         user_id: userId,
         type: "digest",
         severity: "info",
@@ -207,9 +207,13 @@ Deno.serve(async (req) => {
         title: "Ton digest hebdo est prêt",
         description: `${c.stepsCompleted} étape(s) · ${c.habitLogs} habitude(s) · ${c.journalCount} entrée(s) journal cette semaine.`,
         icon_key: "sparkles",
-        cta_label: "Ouvrir le coach",
-        cta_url: "/coach",
-        module_key: "coach",
+        /* « /coach » n'a jamais existé : cette notification menait à
+           la page 404 chaque dimanche. M.I.A n'est pas une page mais
+           un panneau ; « ?mia=1 » est la porte ajoutée pour elle
+           dans AppLayout. */
+        cta_label: "Ouvrir M.I.A",
+        cta_url: "/?mia=1",
+        module_key: "mia",
       });
 
       // Fire push (best-effort)
@@ -219,9 +223,9 @@ Deno.serve(async (req) => {
           headers: { "Content-Type": "application/json", "x-cron-secret": CRON_SECRET ?? "" },
           body: JSON.stringify({
             user_id: userId,
-            title: "Digest hebdo Pacte",
-            body: "Ouvre ton Coach pour voir tes insights de la semaine.",
-            url: "/coach",
+            title: "Digest hebdo Overwrite",
+            body: "Ouvre M.I.A pour voir tes constats de la semaine.",
+            url: "/?mia=1",
           }),
         });
         if (r.ok) pushed++;

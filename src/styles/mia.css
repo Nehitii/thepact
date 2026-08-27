@@ -395,7 +395,7 @@
 }
 
 /* ── LE TIROIR DES FILS ────────────────────────────────────────
-   `coach_conversations.archived` existait déjà et n'avait jamais
+   `mia_conversations.archived` existait déjà et n'avait jamais
    servi : zéro conversation archivée sur six. Fermer archive. */
 .mia-tiroir {
   position: absolute;

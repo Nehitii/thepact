@@ -32,7 +32,7 @@ ce qui préserve le streaming et le tool-calling sans changer la forme des appel
 
 Les embeddings utilisent l'endpoint **natif** (`:embedContent` / `:batchEmbedContents`) :
 la couche compatible OpenAI n'expose aucun contrôle de dimension, or il faut
-exactement 1536 pour correspondre aux colonnes `vector(1536)` de `coach_embeddings`.
+exactement 1536 pour correspondre aux colonnes `vector(1536)` de `mia_embeddings`.
 `gemini-embedding-001` ne normalise pas ses dimensions tronquées, donc `ai.ts`
 applique une normalisation L2 explicite.
 
@@ -49,11 +49,11 @@ Variables optionnelles, avec valeurs par défaut dans `_shared/ai.ts` :
 Changer de fournisseur revient à surcharger `AI_GATEWAY_URL` et `AI_API_KEY`,
 sans toucher au code — tant que le fournisseur est compatible OpenAI.
 
-### Ré-indexation obligatoire de la mémoire du coach
+### Ré-indexation obligatoire de la mémoire de M.I.A
 
 Les vecteurs existants viennent de `text-embedding-3-small`. Deux modèles
 d'embedding différents ne vivent pas dans le même espace vectoriel : les
-mélanger rendrait `match_coach_memory` incohérent — le coach citerait des
+mélanger rendrait `match_mia_memory` incohérent — M.I.A citerait des
 souvenirs sans rapport avec la question.
 
 Il faut donc **purger et reconstruire** l'index, après avoir déployé les
@@ -61,7 +61,7 @@ fonctions et configuré `AI_API_KEY` :
 
 ```sql
 -- A executer une seule fois, apres deploiement.
-TRUNCATE public.coach_embeddings;
+TRUNCATE public.mia_embeddings;
 ```
 
 Puis relancer l'indexation (`mia-index-memory` ré-indexe tout ce qui n'est pas
@@ -110,7 +110,7 @@ VITE_SENTRY_DSN
 
 1. Déployer les 7 Edge Functions et configurer `AI_API_KEY`
 2. Vérifier que M.I.A répond (`ai-mia`) avant de toucher à l'index
-3. `TRUNCATE coach_embeddings` puis relancer `mia-index-memory`
+3. `TRUNCATE mia_embeddings` puis relancer `mia-index-memory`
 4. Déployer le front sur Cloudflare Pages, valider sur l'URL `*.pages.dev`
 5. Basculer le domaine custom
 6. Seulement ensuite : déconnecter puis supprimer le projet Lovable

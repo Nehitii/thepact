@@ -81,7 +81,7 @@ async function processUser(supabase: ClientSupabase, userId: string, aiKey: stri
     if (!ins?.title) continue;
     const category = String(ins.category ?? "pattern");
     const severity = ["habit", "mood"].includes(category) ? "warning" : "info";
-    await supabase.from("coach_insights").insert({
+    await supabase.from("mia_insights").insert({
       user_id: userId,
       type: "pattern",
       severity,

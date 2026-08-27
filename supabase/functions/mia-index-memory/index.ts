@@ -1,5 +1,5 @@
-// Coach memory indexer.
-// Embeds recent journal entries, reviews, and decisions into coach_embeddings.
+// M.I.A memory indexer.
+// Embeds recent journal entries, reviews, and decisions into mia_embeddings.
 // Can be invoked manually (per-user via JWT) or by cron (with service role).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
@@ -23,7 +23,7 @@ interface Item { source_type: string; source_id: string; content: string; metada
 async function indexUser(supabase: ClientSupabase, userId: string, aiKey: string) {
   // Find latest indexed timestamps per source type
   const { data: latest } = await supabase
-    .from("coach_embeddings")
+    .from("mia_embeddings")
     .select("source_type, source_id")
     .eq("user_id", userId)
     .returns<LigneSource[]>();
@@ -103,7 +103,7 @@ async function indexUser(supabase: ClientSupabase, userId: string, aiKey: string
       embedding: vectors[idx] as unknown as string,
       metadata: b.metadata,
     }));
-    const { error } = await supabase.from("coach_embeddings").insert(rows);
+    const { error } = await supabase.from("mia_embeddings").insert(rows);
     if (error) throw error;
     inserted += rows.length;
   }

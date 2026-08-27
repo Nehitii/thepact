@@ -1,5 +1,5 @@
-// AI Coach — streaming chat via the configured AI provider (see _shared/ai.ts).
-// Persists user + assistant messages in coach_messages, supports tool calls.
+// M.I.A — streaming chat via the configured AI provider (see _shared/ai.ts).
+// Persists user + assistant messages in mia_messages, supports tool calls.
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
@@ -407,8 +407,9 @@ const TOOLS = [
 
 /* ═══ CE QUI ÉCRIT, ET CE QUI SE CONTENTE DE LIRE ═══
 
-   Le drapeau `coach_write_tools` existe depuis mai et disait « Permet au
-   coach IA de créer todos/journal/decisions ». Personne ne le lisait :
+   Le drapeau `mia_write_tools` (`coach_write_tools` jusqu'au 27/08)
+   existe depuis mai et disait « Permet au coach IA de créer
+   todos/journal/decisions ». Personne ne le lisait :
    M.I.A écrivait quoi qu'il arrive, y compris quand le réglage disait non.
    Un interrupteur qui ne coupe rien est pire que pas d'interrupteur — on
    croit la porte fermée.
@@ -581,7 +582,7 @@ async function runTool(
       // Embed the query
       const vector = await embed(query, aiKey, "RETRIEVAL_QUERY");
       if (!vector) return JSON.stringify({ error: "embed_failed" });
-      const { data } = await supabase.rpc("match_coach_memory", {
+      const { data } = await supabase.rpc("match_mia_memory", {
         _query: vector,
         _match_count: 6,
       });
@@ -1283,7 +1284,7 @@ Deno.serve(async (req) => {
 
     // Le message de l'utilisateur est persisté d'abord : si la suite
     // échoue, on ne perd pas ce qu'il a écrit.
-    await supabase.from("coach_messages").insert({
+    await supabase.from("mia_messages").insert({
       conversation_id: body.conversation_id,
       user_id: userId,
       role: "user",
@@ -1297,7 +1298,7 @@ Deno.serve(async (req) => {
        longue, M.I.A aurait lu le début et jamais la suite. On prend les
        derniers, puis on les remet dans l'ordre. */
     const { data: recents } = await supabase
-      .from("coach_messages")
+      .from("mia_messages")
       .select("role, content, created_at")
       .eq("conversation_id", body.conversation_id)
       .order("created_at", { ascending: false })
@@ -1316,7 +1317,7 @@ Deno.serve(async (req) => {
        ligne absente — `drapeauOuvert` rend faux : M.I.A lit, elle
        n'écrit pas. Un drapeau qu'on n'arrive pas à lire ne doit pas
        ouvrir ce qu'il est censé garder. */
-    const peutEcrire = await drapeauOuvert(supabase, "coach_write_tools", userId);
+    const peutEcrire = await drapeauOuvert(supabase, "mia_write_tools", userId);
     const outilsOfferts = peutEcrire ? TOOLS : OUTILS_LECTURE_SEULE;
 
     const etat = await etatDuJour(supabase, userId, body.fuseau);
@@ -1471,7 +1472,7 @@ Deno.serve(async (req) => {
               ? { citations: citationsUniques, actions }
               : null;
 
-          await supabase.from("coach_messages").insert({
+          await supabase.from("mia_messages").insert({
             conversation_id: body.conversation_id,
             user_id: userId,
             role: "assistant",
@@ -1480,7 +1481,7 @@ Deno.serve(async (req) => {
             metadata,
           });
           await supabase
-            .from("coach_conversations")
+            .from("mia_conversations")
             .update({ last_message_at: new Date().toISOString() })
             .eq("id", body.conversation_id);
         } catch (e) {

@@ -292,9 +292,9 @@ main{padding:24px 0 96px;min-width:0}
   </div>
 
   <div class="mesures">
-    <div class="mesure"><b>865</b><span>fichiers analysés</span></div>
-    <div class="mesure"><b>178 133</b><span>lignes</span></div>
-    <div class="mesure"><b>3 132</b><span>commits</span></div>
+    <div class="mesure"><b>867</b><span>fichiers analysés</span></div>
+    <div class="mesure"><b>178 497</b><span>lignes</span></div>
+    <div class="mesure"><b>3 133</b><span>commits</span></div>
     <div class="mesure"><b>aujourd'hui</b><span>dernier commit</span></div>
   </div>
 </section>
@@ -306,6 +306,42 @@ main{padding:24px 0 96px;min-width:0}
   <details class="methode"><summary>Comment c'est calculé</summary><p>Chaque fichier de <code>src/pages</code> est un module. Ses lignes additionnent la page et les dossiers déclarés en <code>aussi</code> dans le manifeste. La dernière activité est la date du commit le plus récent ayant touché l'un de ces fichiers. Un module absent du manifeste apparaît quand même, en « à compléter » : il ne peut pas se cacher.</p></details>
 
   <div class="liste">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Focus src/pages/Focus.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Focus <span class="etat" data-s="livré">livré</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/Focus.tsx</code>
+          <span>3 090 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>23 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages de notification src/pages/profile/NotificationSettings.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Réglages de notification <span class="etat" data-s="livré">livré</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/profile/NotificationSettings.tsx</code>
+          <span>310 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>9 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Mentions légales src/pages/Legal.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Mentions légales <span class="etat" data-s="livré">livré</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/Legal.tsx</code>
+          <span>196 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>5 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Page introuvable src/pages/NotFound.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Page introuvable <span class="etat" data-s="livré">livré</span></p>
@@ -330,18 +366,6 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Focus src/pages/Focus.tsx">
-      <div class="ligne-corps">
-        <p class="ligne-nom">Focus <span class="etat" data-s="livré">livré</span></p>
-        <p class="ligne-meta">
-          <code>src/pages/Focus.tsx</code>
-          <span>3 090 lignes</span>
-          <span>activité aujourd'hui</span>
-          <span>22 reprises récentes</span>
-        </p>
-        
-      </div>
-    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Mes données src/pages/profile/DataPortability.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Mes données <span class="etat" data-s="livré">livré</span></p>
@@ -350,18 +374,6 @@ main{padding:24px 0 96px;min-width:0}
           <span>671 lignes</span>
           <span>activité aujourd'hui</span>
           <span>11 reprises récentes</span>
-        </p>
-        
-      </div>
-    </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages de notification src/pages/profile/NotificationSettings.tsx">
-      <div class="ligne-corps">
-        <p class="ligne-nom">Réglages de notification <span class="etat" data-s="livré">livré</span></p>
-        <p class="ligne-meta">
-          <code>src/pages/profile/NotificationSettings.tsx</code>
-          <span>310 lignes</span>
-          <span>activité aujourd'hui</span>
-          <span>8 reprises récentes</span>
         </p>
         
       </div>
@@ -437,7 +449,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div>
+    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Objectifs src/pages/Goals.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Objectifs <span class="etat" data-s="livré">livré</span></p>
@@ -449,7 +461,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Boutique src/pages/Shop.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Boutique <span class="etat" data-s="livré">livré</span></p>
@@ -496,18 +508,6 @@ main{padding:24px 0 96px;min-width:0}
           <span>2 reprises récentes</span>
         </p>
         <p class="ligne-note">Le drapeau goal_contracts est à false en base. L'écran lui-même ne porte aucune garde : le drapeau ferme ses entrées (le panneau des contrats et la section de GoalDetail), pas l'URL — qui reste atteignable si on la connaît.</p>
-      </div>
-    </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Mentions légales src/pages/Legal.tsx">
-      <div class="ligne-corps">
-        <p class="ligne-nom">Mentions légales <span class="etat" data-s="livré">livré</span></p>
-        <p class="ligne-meta">
-          <code>src/pages/Legal.tsx</code>
-          <span>196 lignes</span>
-          <span>activité aujourd'hui</span>
-          <span>4 reprises récentes</span>
-        </p>
-        
       </div>
     </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Panthéon src/pages/HallOfFame.tsx">
@@ -2335,8 +2335,8 @@ main{padding:24px 0 96px;min-width:0}
   </details>
 
   <div class="mesures">
-    <div class="mesure"><b>865</b><span>fichiers</span></div>
-    <div class="mesure"><b>178 133</b><span>lignes</span></div>
+    <div class="mesure"><b>867</b><span>fichiers</span></div>
+    <div class="mesure"><b>178 497</b><span>lignes</span></div>
     <div class="mesure"><b>0</b><span>fichiers orphelins</span></div>
     <div class="mesure"><b>13</b><span>marqueurs</span></div>
   </div>
@@ -2348,7 +2348,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="src/components">
       <span class="barre-nom"><code>src/components</code></span>
       <span class="barre-piste"><i style="width:100%"></i></span>
-      <span class="barre-val">50 144<small> lignes · 304 fich.</small></span>
+      <span class="barre-val">50 166<small> lignes · 304 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/styles">
       <span class="barre-nom"><code>src/styles</code></span>
@@ -2368,12 +2368,12 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="src/hooks">
       <span class="barre-nom"><code>src/hooks</code></span>
       <span class="barre-piste"><i style="width:30%"></i></span>
-      <span class="barre-val">15 134<small> lignes · 94 fich.</small></span>
+      <span class="barre-val">15 150<small> lignes · 94 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="supabase/migrations">
       <span class="barre-nom"><code>supabase/migrations</code></span>
       <span class="barre-piste"><i style="width:24%"></i></span>
-      <span class="barre-val">11 968<small> lignes · 175 fich.</small></span>
+      <span class="barre-val">12 259<small> lignes · 177 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/i18n">
       <span class="barre-nom"><code>src/i18n</code></span>
@@ -2388,7 +2388,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="supabase/functions">
       <span class="barre-nom"><code>supabase/functions</code></span>
       <span class="barre-piste"><i style="width:11%"></i></span>
-      <span class="barre-val">5 740<small> lignes · 28 fich.</small></span>
+      <span class="barre-val">5 748<small> lignes · 28 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/lib">
       <span class="barre-nom"><code>src/lib</code></span>
@@ -2398,7 +2398,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="docs">
       <span class="barre-nom"><code>docs</code></span>
       <span class="barre-piste"><i style="width:7%"></i></span>
-      <span class="barre-val">3 589<small> lignes · 3 fich.</small></span>
+      <span class="barre-val">3 612<small> lignes · 3 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src">
       <span class="barre-nom"><code>src</code></span>
@@ -2408,7 +2408,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="(racine)">
       <span class="barre-nom"><code>(racine)</code></span>
       <span class="barre-piste"><i style="width:3%"></i></span>
-      <span class="barre-val">1 511<small> lignes · 16 fich.</small></span>
+      <span class="barre-val">1 515<small> lignes · 16 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
       <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
@@ -2486,7 +2486,7 @@ main{padding:24px 0 96px;min-width:0}
   <details class="repli"><summary>Le détail des 18 langages</summary>
   <table class="tableau">
     <thead><tr><th>Langage</th><th>Fichiers</th><th>Lignes</th><th>Poids</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">335</td><td class="n">67 076</td><td class="n">2.64 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">41</td><td class="n">32 610</td><td class="n">1.18 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">201</td><td class="n">29 149</td><td class="n">1.07 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">28</td><td class="n">21 195</td><td class="n">4.41 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">175</td><td class="n">11 968</td><td class="n">491.9 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 316</td><td class="n">301.3 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 478</td><td class="n">202.8 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 181</td><td class="n">98.7 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">67</td><td class="n">1.8 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">335</td><td class="n">67 098</td><td class="n">2.64 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">41</td><td class="n">32 610</td><td class="n">1.18 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">201</td><td class="n">29 173</td><td class="n">1.07 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">28</td><td class="n">21 195</td><td class="n">4.41 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">177</td><td class="n">12 259</td><td class="n">507.2 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 316</td><td class="n">301.3 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 501</td><td class="n">204.7 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 185</td><td class="n">99.0 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">67</td><td class="n">1.8 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
   </table></details>
 
   <h3 class="sous">Gros et souvent repris</h3>
@@ -2502,14 +2502,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 786</td>
         <td class="n">132.5 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">212<small> / 154 récents</small></td>
+        <td class="n">213<small> / 155 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 786</td>
         <td class="n">143.0 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">209<small> / 155 récents</small></td>
+        <td class="n">210<small> / 156 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/index.css">
         <td><code>src/index.css</code></td>
@@ -2539,19 +2539,19 @@ main{padding:24px 0 96px;min-width:0}
         <td>hier</td>
         <td class="n">29<small> / 25 récents</small></td>
       </tr>
+      <tr class="cherchable" data-texte="src/styles/focus.css">
+        <td><code>src/styles/focus.css</code></td>
+        <td class="n">1 464</td>
+        <td class="n">52.2 ko</td>
+        <td>aujourd'hui</td>
+        <td class="n">16<small> / 16 récents</small></td>
+      </tr>
       <tr class="cherchable" data-texte="src/styles/wishlist.css">
         <td><code>src/styles/wishlist.css</code></td>
         <td class="n">1 616</td>
         <td class="n">58.8 ko</td>
         <td>hier</td>
         <td class="n">14<small> / 14 récents</small></td>
-      </tr>
-      <tr class="cherchable" data-texte="src/styles/focus.css">
-        <td><code>src/styles/focus.css</code></td>
-        <td class="n">1 464</td>
-        <td class="n">52.2 ko</td>
-        <td>aujourd'hui</td>
-        <td class="n">15<small> / 15 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/pages/Wishlist.tsx">
         <td><code>src/pages/Wishlist.tsx</code></td>
@@ -2582,14 +2582,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 786</td>
         <td class="n">132.5 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">212<small> / 154 récents</small></td>
+        <td class="n">213<small> / 155 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 786</td>
         <td class="n">143.0 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">209<small> / 155 récents</small></td>
+        <td class="n">210<small> / 156 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/finance-cyber.css">
         <td><code>src/styles/finance-cyber.css</code></td>
@@ -2642,17 +2642,17 @@ main{padding:24px 0 96px;min-width:0}
       </tr>
       <tr class="cherchable" data-texte="supabase/functions/ai-mia/index.ts">
         <td><code>supabase/functions/ai-mia/index.ts</code></td>
-        <td class="n">1 505</td>
-        <td class="n">66.3 ko</td>
-        <td>—</td>
-        <td class="n">0<small> / 0 récents</small></td>
+        <td class="n">1 506</td>
+        <td class="n">66.4 ko</td>
+        <td>aujourd'hui</td>
+        <td class="n">1<small> / 1 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/focus.css">
         <td><code>src/styles/focus.css</code></td>
         <td class="n">1 464</td>
         <td class="n">52.2 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">15<small> / 15 récents</small></td>
+        <td class="n">16<small> / 16 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/journal.css">
         <td><code>src/styles/journal.css</code></td>
@@ -2736,7 +2736,7 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">681</td>
         <td class="n">26.4 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">52<small> / 22 récents</small></td>
+        <td class="n">53<small> / 23 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/pages/profile/DataPortability.tsx">
         <td><code>src/pages/profile/DataPortability.tsx</code></td>
@@ -2806,14 +2806,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 786</td>
         <td class="n">132.5 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">212<small> / 154 récents</small></td>
+        <td class="n">213<small> / 155 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 786</td>
         <td class="n">143.0 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">209<small> / 155 récents</small></td>
+        <td class="n">210<small> / 156 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/finance-cyber.css">
         <td><code>src/styles/finance-cyber.css</code></td>
@@ -2866,17 +2866,17 @@ main{padding:24px 0 96px;min-width:0}
       </tr>
       <tr class="cherchable" data-texte="supabase/functions/ai-mia/index.ts">
         <td><code>supabase/functions/ai-mia/index.ts</code></td>
-        <td class="n">1 505</td>
-        <td class="n">66.3 ko</td>
-        <td>—</td>
-        <td class="n">0<small> / 0 récents</small></td>
+        <td class="n">1 506</td>
+        <td class="n">66.4 ko</td>
+        <td>aujourd'hui</td>
+        <td class="n">1<small> / 1 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/focus.css">
         <td><code>src/styles/focus.css</code></td>
         <td class="n">1 464</td>
         <td class="n">52.2 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">15<small> / 15 récents</small></td>
+        <td class="n">16<small> / 16 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/journal.css">
         <td><code>src/styles/journal.css</code></td>
@@ -2918,14 +2918,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 786</td>
         
         <td>aujourd'hui</td>
-        <td class="n">209<small> / 155 récents</small></td>
+        <td class="n">210<small> / 156 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/en.json">
         <td><code>src/i18n/locales/en.json</code></td>
         <td class="n">3 786</td>
         
         <td>aujourd'hui</td>
-        <td class="n">212<small> / 154 récents</small></td>
+        <td class="n">213<small> / 155 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/index.css">
         <td><code>src/index.css</code></td>
@@ -2967,7 +2967,7 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">681</td>
         
         <td>aujourd'hui</td>
-        <td class="n">52<small> / 22 récents</small></td>
+        <td class="n">53<small> / 23 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/pages/GoalDetail.tsx">
         <td><code>src/pages/GoalDetail.tsx</code></td>
@@ -2983,6 +2983,13 @@ main{padding:24px 0 96px;min-width:0}
         <td>il y a 5 j</td>
         <td class="n">40<small> / 17 récents</small></td>
       </tr>
+      <tr class="cherchable" data-texte="src/styles/focus.css">
+        <td><code>src/styles/focus.css</code></td>
+        <td class="n">1 464</td>
+        
+        <td>aujourd'hui</td>
+        <td class="n">16<small> / 16 récents</small></td>
+      </tr>
       <tr class="cherchable" data-texte="src/App.tsx">
         <td><code>src/App.tsx</code></td>
         <td class="n">174</td>
@@ -2997,13 +3004,6 @@ main{padding:24px 0 96px;min-width:0}
         <td>aujourd'hui</td>
         <td class="n">37<small> / 15 récents</small></td>
       </tr>
-      <tr class="cherchable" data-texte="src/styles/focus.css">
-        <td><code>src/styles/focus.css</code></td>
-        <td class="n">1 464</td>
-        
-        <td>aujourd'hui</td>
-        <td class="n">15<small> / 15 récents</small></td>
-      </tr>
       <tr class="cherchable" data-texte="src/components/layout/AppSidebar.tsx">
         <td><code>src/components/layout/AppSidebar.tsx</code></td>
         <td class="n">604</td>
@@ -3011,11 +3011,11 @@ main{padding:24px 0 96px;min-width:0}
         <td>aujourd'hui</td>
         <td class="n">97<small> / 14 récents</small></td>
       </tr>
-      <tr class="cherchable" data-texte="src/styles/singularity.css">
-        <td><code>src/styles/singularity.css</code></td>
-        <td class="n">615</td>
+      <tr class="cherchable" data-texte="src/components/mia/MiaConsole.tsx">
+        <td><code>src/components/mia/MiaConsole.tsx</code></td>
+        <td class="n">979</td>
         
-        <td>hier</td>
+        <td>aujourd'hui</td>
         <td class="n">14<small> / 14 récents</small></td>
       </tr>
     </tbody>

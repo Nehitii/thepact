@@ -89,18 +89,34 @@ export function useDiffuser() {
   const qc = useQueryClient();
   return useMutation<CompteRenduDiffusion, Error, Diffusion>({
     mutationFn: async (d) => {
+      /* `undefined` PLUTÔT QUE `null`, ET C'EST LA MÊME CHOSE ICI.
+
+         Les types de la base sont régénérés depuis le schéma ; la
+         version courante du générateur ne met plus « | null » sur
+         les arguments optionnels d'une fonction. Passer `null`
+         explicitement ne compile donc plus.
+
+         Le remplacement est sûr parce qu'on l'a vérifié côté base :
+         les huit arguments concernés sont déclarés DEFAULT NULL.
+         supabase-js sérialise en JSON, où une clé `undefined`
+         disparaît — l'argument est omis, la valeur par défaut
+         s'applique, et elle vaut NULL. Même appel, à l'octet près.
+
+         Ce raisonnement NE TIENDRAIT PAS pour un argument dont le
+         défaut n'est pas NULL : omettre `p_categorie` prendrait
+         « system », pas NULL. Ceux-là restent passés en clair. */
       const { data, error } = await supabase.rpc("diffuser_notification", {
         p_titre: d.titre,
-        p_description: d.description ?? null,
+        p_description: d.description ?? undefined,
         p_categorie: d.categorie,
         p_priorite: d.priorite,
         p_icone: d.icone,
-        p_cta_label: d.ctaLabel ?? null,
-        p_cta_url: d.ctaUrl ?? null,
-        p_recompense_type: d.recompenseType ?? null,
-        p_recompense_montant: d.recompenseMontant ?? null,
-        p_recompense_cosmetique: d.recompenseCosmetique ?? null,
-        p_destinataire: d.destinataire ?? null,
+        p_cta_label: d.ctaLabel ?? undefined,
+        p_cta_url: d.ctaUrl ?? undefined,
+        p_recompense_type: d.recompenseType ?? undefined,
+        p_recompense_montant: d.recompenseMontant ?? undefined,
+        p_recompense_cosmetique: d.recompenseCosmetique ?? undefined,
+        p_destinataire: d.destinataire ?? undefined,
       });
       if (error) throw error;
       return data as unknown as CompteRenduDiffusion;
@@ -150,7 +166,7 @@ export function useAnnuaire(recherche = "") {
     queryKey: ["annuaire-admin", recherche],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("annuaire_utilisateurs", {
-        p_recherche: recherche || null,
+        p_recherche: recherche || undefined,
       });
       if (error) throw error;
       return (data ?? []) as unknown as LigneAnnuaire[];

@@ -48,7 +48,7 @@ import { useThemeSombre } from "@/hooks/useThemeSombre";
  *
  *   LES FILS SE FERMENT. La bande de puces devient un tiroir : on tape
  *   le titre du fil en cours, la liste descend avec le dernier message
- *   de chacun, sa date et sa croix. `coach_conversations.archived`
+ *   de chacun, sa date et sa croix. `mia_conversations.archived`
  *   existait depuis le début et n'avait jamais servi — zéro fil archivé
  *   sur six.
  *

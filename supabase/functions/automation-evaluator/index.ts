@@ -10,7 +10,7 @@
 //
 // Supported actions:
 //   - send_notification  { title, description, cta_url?, priority? }
-//   - coach_insight      { title, body, severity?: 'info'|'warn'|'critical' }
+//   - mia_insight        { title, body, severity?: 'info'|'warn'|'critical' }
 //   - grant_bonds        { amount }
 //
 // Cooldown: a rule never fires twice in the same UTC day.
@@ -125,8 +125,11 @@ async function runAction(sb: ClientSupabase, userId: string, rule: RegleAutomati
       });
       return "notification_sent";
     }
-    case "coach_insight": {
-      await sb.from("coach_insights").insert({
+    /* Renommé le 27/08 avec le reste du vocabulaire. Aucune règle
+       n'utilisait cette action — la table en comptait zéro — donc
+       aucune compatibilité à garder. */
+    case "mia_insight": {
+      await sb.from("mia_insights").insert({
         user_id: userId,
         type: "automation",
         severity: cfg.severity ?? "info",

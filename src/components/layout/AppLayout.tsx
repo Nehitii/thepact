@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useSearchParams } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
@@ -31,6 +31,28 @@ export function AppLayout() {
     window.addEventListener(OUVRIR_MIA, ouvrir);
     return () => window.removeEventListener(OUVRIR_MIA, ouvrir);
   }, []);
+
+  /* UNE NOTIFICATION DOIT POUVOIR OUVRIR M.I.A.
+
+     Le digest hebdomadaire envoyait vers « /coach » — une route qui
+     n'a jamais existé dans App.tsx. La notification et la push
+     menaient donc à la page 404, en silence, chaque dimanche.
+
+     La cause n'est pas une faute de frappe : M.I.A n'est pas une
+     page, c'est un panneau, et rien ne permettait de l'ouvrir depuis
+     l'extérieur. « ?mia=1 » est cette porte.
+
+     Le paramètre est retiré aussitôt, en `replace` : sans ça, un
+     rechargement rouvrirait la console, et le bouton « retour »
+     aussi. */
+  const [parametres, setParametres] = useSearchParams();
+  useEffect(() => {
+    if (parametres.get("mia") !== "1") return;
+    setMiaOuverte(true);
+    const restants = new URLSearchParams(parametres);
+    restants.delete("mia");
+    setParametres(restants, { replace: true });
+  }, [parametres, setParametres]);
   /* La vignette montre ce que M.I.A fait : c est la console qui le
      sait, elle le remonte. Fermee alors qu une reponse vient
      d arriver, la vignette reste allumee. */

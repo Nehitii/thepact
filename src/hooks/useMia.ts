@@ -1,8 +1,8 @@
 /**
  * M.I.A — fils, messages, flux.
  *
- * Les NOMS DE TABLE ne bougent pas. `coach_conversations` et
- * `coach_messages` gardent les leurs : les renommer ne servirait qu à
+ * Les NOMS DE TABLE ne bougent pas. `mia_conversations` et
+ * `mia_messages` gardent les leurs : les renommer ne servirait qu à
  * casser cent cinquante migrations pour une question de vocabulaire.
  * Seul le code qui les lit change de nom.
  */
@@ -62,11 +62,11 @@ export function useFilsMia() {
   const qc = useQueryClient();
 
   const list = useQuery({
-    queryKey: ["coach_conversations", user?.id],
+    queryKey: ["mia_conversations", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as FilMia[];
       const { data, error } = await supabase
-        .from("coach_conversations")
+        .from("mia_conversations")
         .select("*")
         .eq("user_id", user.id)
         .eq("archived", false)
@@ -81,14 +81,14 @@ export function useFilsMia() {
     mutationFn: async (title?: string | undefined) => {
       if (!user?.id) throw new Error("Non authentifié");
       const { data, error } = await supabase
-        .from("coach_conversations")
+        .from("mia_conversations")
         .insert({ user_id: user.id, title: title ?? "Nouvelle conversation" })
         .select()
         .single();
       if (error) throw error;
       return data as FilMia;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["coach_conversations", user?.id] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["mia_conversations", user?.id] }),
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur"),
   });
 
@@ -97,25 +97,25 @@ export function useFilsMia() {
       const propre = titre.trim().slice(0, 120);
       if (!propre) throw new Error("Un fil a besoin d'un nom");
       const { error } = await supabase
-        .from("coach_conversations")
+        .from("mia_conversations")
         .update({ title: propre })
         .eq("id", id);
       if (error) throw error;
       return propre;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["coach_conversations", user?.id] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["mia_conversations", user?.id] }),
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur"),
   });
 
   const archive = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("coach_conversations")
+        .from("mia_conversations")
         .update({ archived: true })
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["coach_conversations", user?.id] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["mia_conversations", user?.id] }),
   });
 
   return {
@@ -194,7 +194,7 @@ export function useEcrireEchange() {
       let questionDejaEcrite = false;
       if (echange.apresUnRefus) {
         const { data } = await supabase
-          .from("coach_messages")
+          .from("mia_messages")
           .select("id")
           .eq("conversation_id", conversationId)
           .eq("role", "user")
@@ -215,7 +215,7 @@ export function useEcrireEchange() {
          un aller-retour de base lui retirerait sa seule qualité. On pose
          donc les deux lignes dans le cache d'abord, et l'invalidation qui
          suit remplace les identifiants provisoires par les vrais. */
-      qc.setQueryData<MessageMia[]>(["coach_messages", conversationId], (vieux) => [
+      qc.setQueryData<MessageMia[]>(["mia_messages", conversationId], (vieux) => [
         ...(vieux ?? []),
         ...(questionDejaEcrite
           ? []
@@ -238,29 +238,29 @@ export function useEcrireEchange() {
 
       if (!questionDejaEcrite) {
         const { error: erreurQuestion } = await supabase
-          .from("coach_messages")
+          .from("mia_messages")
           .insert({ ...commun, role: "user", content: echange.question });
         if (erreurQuestion) {
           toast.error("Je n'ai pas pu garder cette question.");
-          void qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+          void qc.invalidateQueries({ queryKey: ["mia_messages", conversationId] });
           return;
         }
       }
-      const { error } = await supabase.from("coach_messages").insert(reponse);
+      const { error } = await supabase.from("mia_messages").insert(reponse);
       if (error) {
         toast.error("Je n'ai pas pu garder cette réponse.");
-        void qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+        void qc.invalidateQueries({ queryKey: ["mia_messages", conversationId] });
         return;
       }
       /* Le fil remonte dans la liste : sinon une conversation nourrie
          sans modèle resterait datée de son dernier appel payant. */
       await supabase
-        .from("coach_conversations")
+        .from("mia_conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversationId);
 
-      await qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
-      void qc.invalidateQueries({ queryKey: ["coach_conversations", user.id] });
+      await qc.invalidateQueries({ queryKey: ["mia_messages", conversationId] });
+      void qc.invalidateQueries({ queryKey: ["mia_conversations", user.id] });
     },
     [user?.id, qc],
   );
@@ -269,11 +269,11 @@ export function useEcrireEchange() {
 export function useMessagesMia(conversationId: string | null) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["coach_messages", conversationId],
+    queryKey: ["mia_messages", conversationId],
     queryFn: async () => {
       if (!conversationId) return [] as MessageMia[];
       const { data, error } = await supabase
-        .from("coach_messages")
+        .from("mia_messages")
         .select("*")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
@@ -337,7 +337,7 @@ export function useFluxMia(conversationId: string | null) {
         }
 
         // Refresh user message immediately
-        qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
+        qc.invalidateQueries({ queryKey: ["mia_messages", conversationId] });
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -364,8 +364,8 @@ export function useFluxMia(conversationId: string | null) {
           }
         }
         // Final refresh to load persisted assistant message
-        await qc.invalidateQueries({ queryKey: ["coach_messages", conversationId] });
-        await qc.invalidateQueries({ queryKey: ["coach_conversations"] });
+        await qc.invalidateQueries({ queryKey: ["mia_messages", conversationId] });
+        await qc.invalidateQueries({ queryKey: ["mia_conversations"] });
         return { ok: true as const };
       } catch (e: unknown) {
         return {
@@ -398,7 +398,7 @@ export function useApercusMia(ids: string[]) {
     queryFn: async () => {
       if (!ids.length) return {} as Record<string, string>;
       const { data, error } = await supabase
-        .from("coach_messages")
+        .from("mia_messages")
         .select("conversation_id, content, created_at")
         .in("conversation_id", ids)
         .order("created_at", { ascending: false })

@@ -27,7 +27,7 @@ const EMBEDDING_BASE =
 export const DEFAULT_CHAT_MODEL = Deno.env.get("AI_CHAT_MODEL") ?? "gemini-3.5-flash";
 export const EMBEDDING_MODEL = Deno.env.get("AI_EMBEDDING_MODEL") ?? "gemini-embedding-001";
 
-// Must stay in sync with the vector(1536) columns in coach_embeddings.
+// Must stay in sync with the vector(1536) columns in mia_embeddings.
 export const EMBEDDING_DIMENSIONS = 1536;
 
 export function getAiKey(): string | null {
