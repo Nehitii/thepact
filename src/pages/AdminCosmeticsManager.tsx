@@ -131,7 +131,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_frames").insert(frameData);
       await logAdminAction("create", "frame", undefined, { name: editingFrame.name });
     }
-    toast.success("Frame saved!");
+    toast.success("Cadre enregistré");
     setEditingFrame(null);
     loadAllCosmetics();
   };
@@ -139,7 +139,7 @@ export default function AdminCosmeticsManager() {
   const deleteFrame = async (id: string, name: string) => {
     await supabase.from("cosmetic_frames").delete().eq("id", id);
     await logAdminAction("delete", "frame", id, { name });
-    toast.success("Frame deleted");
+    toast.success("Cadre supprimé");
     loadAllCosmetics();
   };
 
@@ -147,7 +147,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = frame;
     await supabase.from("cosmetic_frames").insert({ ...rest, name: `${rest.name} (copy)` });
     await logAdminAction("duplicate", "frame", id, { name: frame.name });
-    toast.success("Frame duplicated!");
+    toast.success("Cadre dupliqué");
     loadAllCosmetics();
   };
 
@@ -172,7 +172,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_banners").insert(bannerData);
       await logAdminAction("create", "banner", undefined, { name: editingBanner.name });
     }
-    toast.success("Banner saved!");
+    toast.success("Bannière enregistrée");
     setEditingBanner(null);
     loadAllCosmetics();
   };
@@ -180,7 +180,7 @@ export default function AdminCosmeticsManager() {
   const deleteBanner = async (id: string, name: string) => {
     await supabase.from("cosmetic_banners").delete().eq("id", id);
     await logAdminAction("delete", "banner", id, { name });
-    toast.success("Banner deleted");
+    toast.success("Bannière supprimée");
     loadAllCosmetics();
   };
 
@@ -188,7 +188,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = banner;
     await supabase.from("cosmetic_banners").insert({ ...rest, name: `${rest.name} (copy)` });
     await logAdminAction("duplicate", "banner", id, { name: banner.name });
-    toast.success("Banner duplicated!");
+    toast.success("Bannière dupliquée");
     loadAllCosmetics();
   };
 
@@ -211,7 +211,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_titles").insert(titleData);
       await logAdminAction("create", "title", undefined, { name: editingTitle.title_text });
     }
-    toast.success("Title saved!");
+    toast.success("Titre enregistré");
     setEditingTitle(null);
     loadAllCosmetics();
   };
@@ -219,7 +219,7 @@ export default function AdminCosmeticsManager() {
   const deleteTitle = async (id: string, name: string) => {
     await supabase.from("cosmetic_titles").delete().eq("id", id);
     await logAdminAction("delete", "title", id, { name });
-    toast.success("Title deleted");
+    toast.success("Titre supprimé");
     loadAllCosmetics();
   };
 
@@ -227,7 +227,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = title;
     await supabase.from("cosmetic_titles").insert({ ...rest, title_text: `${rest.title_text} (copy)` });
     await logAdminAction("duplicate", "title", id, { name: title.title_text });
-    toast.success("Title duplicated!");
+    toast.success("Titre dupliqué");
     loadAllCosmetics();
   };
 
@@ -242,30 +242,30 @@ export default function AdminCosmeticsManager() {
 
   return (
     <AdminPageShell titre="Cosmétiques" sous="Cadres, bannières et titres portés par les profils" icone={<Palette aria-hidden="true" />}>
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-        <Input
-          placeholder="Search cosmetics..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-card/50 border-primary/30 text-primary"
-        />
+      <div className="ad-champ">
+        <div style={{ position: "relative" }}>
+          <Search aria-hidden="true"
+            style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, opacity: 0.5 }} />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Chercher un cadre, une bannière, un titre…"
+            aria-label="Chercher un cosmétique"
+            style={{ paddingLeft: 34 }}
+          />
+        </div>
       </div>
 
       <Tabs defaultValue="frames" className="space-y-6">
-        <TabsList className="bg-card/50 border border-primary/30">
-          <TabsTrigger value="frames" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-            <Frame className="h-4 w-4 mr-2" />
-            Frames ({frames.length})
+        <TabsList className="ad-rail">
+          <TabsTrigger value="frames" className="ad-onglet">
+            <Frame aria-hidden="true" /> Cadres <i>{frames.length}</i>
           </TabsTrigger>
-          <TabsTrigger value="banners" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-            <Image className="h-4 w-4 mr-2" />
-            Banners ({banners.length})
+          <TabsTrigger value="banners" className="ad-onglet">
+            <Image aria-hidden="true" /> Bannières <i>{banners.length}</i>
           </TabsTrigger>
-          <TabsTrigger value="titles" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-            <Crown className="h-4 w-4 mr-2" />
-            Titles ({titles.length})
+          <TabsTrigger value="titles" className="ad-onglet">
+            <Crown aria-hidden="true" /> Titres <i>{titles.length}</i>
           </TabsTrigger>
         </TabsList>
 
@@ -273,18 +273,17 @@ export default function AdminCosmeticsManager() {
         <TabsContent value="frames" className="space-y-4">
           <Dialog open={!!editingFrame} onOpenChange={(open) => !open && setEditingFrame(null)}>
             <DialogTrigger asChild>
-              <Button 
+              <button
+                type="button" className="ad-geste" data-ton="primaire"
                 onClick={() => { setEditingFrame({}); setFrameCreationMode("classic"); }}
-                className="bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Frame
-              </Button>
+                <Plus aria-hidden="true" /> Nouveau cadre
+              </button>
             </DialogTrigger>
             <DialogContent className="bg-card border-primary/30 max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-primary font-orbitron">
-                  {editingFrame?.id ? "Edit Frame" : "Add Frame"}
+                  {editingFrame?.id ? "Modifier le cadre" : "Nouveau cadre"}
                 </DialogTitle>
               </DialogHeader>
               
@@ -310,7 +309,7 @@ export default function AdminCosmeticsManager() {
                       }`}
                     >
                       <Sparkles className="h-4 w-4 inline mr-2" />
-                      Classic
+                      Dessiné
                     </button>
                     <button
                       onClick={() => setFrameCreationMode("image")}
@@ -321,7 +320,7 @@ export default function AdminCosmeticsManager() {
                       }`}
                     >
                       <LinkIcon className="h-4 w-4 inline mr-2" />
-                      Pre-made Image
+                      Image
                     </button>
                   </div>
                 );
@@ -329,7 +328,7 @@ export default function AdminCosmeticsManager() {
 
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div>
-                  <Label className="text-primary/80">Name</Label>
+                  <Label className="text-primary/80">Nom</Label>
                   <Input
                     value={editingFrame?.name || ""}
                     onChange={(e) => setEditingFrame({ ...editingFrame, name: e.target.value })}
@@ -338,7 +337,7 @@ export default function AdminCosmeticsManager() {
                 </div>
                 
                 <div>
-                  <Label className="text-primary/80">Rarity</Label>
+                  <Label className="text-primary/80">Rareté</Label>
                   <Select
                     value={editingFrame?.rarity || "common"}
                     onValueChange={(v) => setEditingFrame({ ...editingFrame, rarity: v })}
@@ -347,17 +346,17 @@ export default function AdminCosmeticsManager() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="common">Common</SelectItem>
+                      <SelectItem value="common">Commun</SelectItem>
                       <SelectItem value="rare">Rare</SelectItem>
-                      <SelectItem value="epic">Epic</SelectItem>
-                      <SelectItem value="legendary">Legendary</SelectItem>
+                      <SelectItem value="epic">Épique</SelectItem>
+                      <SelectItem value="legendary">Légendaire</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Show Border Toggle */}
                 <div className="flex items-center justify-between">
-                  <Label className="text-primary/80">Show Avatar Border</Label>
+                  <Label className="text-primary/80">Cercle autour de l’avatar</Label>
                   <Switch
                     checked={editingFrame?.show_border ?? true}
                     onCheckedChange={(c) => setEditingFrame({ ...editingFrame, show_border: c })}
@@ -366,7 +365,7 @@ export default function AdminCosmeticsManager() {
                 
                 {(editingFrame?.show_border ?? true) && (
                   <div>
-                    <Label className="text-primary/80">Avatar Border Color</Label>
+                    <Label className="text-primary/80">Couleur du cercle</Label>
                     <div className="flex items-center gap-2">
                       <div
                         className="w-8 h-8 rounded border border-primary/30 shrink-0"
@@ -384,7 +383,7 @@ export default function AdminCosmeticsManager() {
                 {(frameCreationMode === "image" || (editingFrame?.id && editingFrame?.preview_url)) ? (
                   <>
                     <div>
-                      <Label className="text-primary/80">Frame Image URL</Label>
+                      <Label className="text-primary/80">Adresse de l’image du cadre</Label>
                       <div className="flex gap-2">
                         <Input
                           placeholder="https://example.com/frame.png"
@@ -398,7 +397,7 @@ export default function AdminCosmeticsManager() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center px-3 rounded-md bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
-                            title="Preview image in new tab"
+                            title="Ouvrir l’image dans un onglet"
                           >
                             <Eye className="h-4 w-4" />
                           </a>
@@ -412,7 +411,7 @@ export default function AdminCosmeticsManager() {
                         <div className="flex items-center justify-between">
                           <Label className="text-primary font-orbitron text-xs uppercase tracking-wider flex items-center gap-2">
                             <Move className="h-4 w-4" />
-                            Frame Alignment Tool
+                            Caler le cadre sur l’avatar
                           </Label>
                           <Button
                             type="button"
@@ -427,7 +426,7 @@ export default function AdminCosmeticsManager() {
                             className="text-xs text-primary/60 hover:text-primary"
                           >
                             <RotateCcw className="h-3 w-3 mr-1" />
-                            Reset
+                            Remettre à zéro
                           </Button>
                         </div>
                         
@@ -435,7 +434,7 @@ export default function AdminCosmeticsManager() {
                         <div className="space-y-3">
                           <div className="flex items-center gap-1 ds-t-label text-primary/50 uppercase tracking-wider">
                             <Eye className="h-3 w-3" />
-                            In-Context Previews (WYSIWYG)
+                            Aux trois tailles où il sera porté
                           </div>
                           <div className="flex items-end justify-center gap-4 p-3 rounded-lg bg-card/30 border border-primary/10">
                             <InlineFramePreview
@@ -468,7 +467,7 @@ export default function AdminCosmeticsManager() {
                         {/* Scale */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs text-primary/60">
-                            <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /> Scale</span>
+                            <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /> Échelle</span>
                             <span>{((editingFrame.frame_scale ?? 1) * 100).toFixed(0)}%</span>
                           </div>
                           <input
@@ -482,7 +481,7 @@ export default function AdminCosmeticsManager() {
                         {/* Offsets */}
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-2">
-                            <Label className="text-xs text-primary/60">X Offset (%)</Label>
+                            <Label className="text-xs text-primary/60">Décalage horizontal (%)</Label>
                             <div className="flex items-center gap-2">
                               <Button type="button" size="icon" variant="ghost"
                                 onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: Math.round(((editingFrame.frame_offset_x ?? 0) - 1) * 10) / 10 })}
@@ -496,7 +495,7 @@ export default function AdminCosmeticsManager() {
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs text-primary/60">Y Offset (%)</Label>
+                            <Label className="text-xs text-primary/60">Décalage vertical (%)</Label>
                             <div className="flex items-center gap-2">
                               <Button type="button" size="icon" variant="ghost"
                                 onClick={() => setEditingFrame({ ...editingFrame, frame_offset_y: Math.round(((editingFrame.frame_offset_y ?? 0) - 1) * 10) / 10 })}
@@ -515,7 +514,7 @@ export default function AdminCosmeticsManager() {
                           onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: 0, frame_offset_y: 0 })}
                           className="w-full text-xs text-primary/60 hover:text-primary border border-primary/20 hover:border-primary/40">
                           <Crosshair className="h-3 w-3 mr-2" />
-                          Snap to Center
+                          Recentrer
                         </Button>
                       </div>
                     )}
@@ -523,14 +522,14 @@ export default function AdminCosmeticsManager() {
                 ) : (
                   <>
                     <div>
-                      <Label className="text-primary/80">Border Color (hex)</Label>
+                      <Label className="text-primary/80">Couleur du liseré (hex)</Label>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingFrame?.border_color || "#5bb4ff" }} />
                         <Input value={editingFrame?.border_color || "#5bb4ff"} onChange={(e) => setEditingFrame({ ...editingFrame, border_color: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <Label className="text-primary/80">Glow Color (rgba)</Label>
+                      <Label className="text-primary/80">Couleur de la lueur (rgba)</Label>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingFrame?.glow_color || "rgba(91,180,255,0.5)" }} />
                         <Input value={editingFrame?.glow_color || "rgba(91,180,255,0.5)"} onChange={(e) => setEditingFrame({ ...editingFrame, glow_color: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
@@ -540,54 +539,59 @@ export default function AdminCosmeticsManager() {
                 )}
 
                 <div>
-                  <Label className="text-primary/80">Price (Bonds)</Label>
+                  <Label className="text-primary/80">Prix en Bonds</Label>
                   <Input type="number" value={editingFrame?.price || 450} onChange={(e) => setEditingFrame({ ...editingFrame, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <Label className="text-primary/80">Active (visible in Shop)</Label>
+                  <Label className="text-primary/80">En boutique</Label>
                   <Switch checked={editingFrame?.is_active ?? true} onCheckedChange={(c) => setEditingFrame({ ...editingFrame, is_active: c })} />
                 </div>
                 
-                <Button onClick={saveFrame} className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">
-                  Save Frame
-                </Button>
+                <button type="button" className="ad-geste" data-ton="primaire" style={{ width: "100%", justifyContent: "center" }} onClick={saveFrame}>
+                  Enregistrer le cadre
+                </button>
               </div>
             </DialogContent>
           </Dialog>
 
-          <div className="grid gap-3">
+          <div className="ad-liste">
             {filterItems(frames).map((frame) => (
-              <div key={frame.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="relative w-14 h-14 flex items-center justify-center">
-                    {frame.preview_url ? (
-                      <div className="relative w-full h-full">
-                        <div className="absolute inset-[15%] rounded-full bg-card/50" />
-                        <img src={frame.preview_url} alt={frame.name} className="absolute inset-0 w-full h-full object-contain" loading="lazy" decoding="async"
-                          style={{ transform: `scale(${frame.frame_scale || 1}) translate(${frame.frame_offset_x || 0}px, ${frame.frame_offset_y || 0}px)` }} />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-full" style={{ border: `3px solid ${frame.border_color}`, boxShadow: `0 0 10px ${frame.glow_color}` }} />
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-primary font-rajdhani">{frame.name}</div>
-                    <div className="text-xs text-primary/50">{frame.rarity} · {frame.price} Bonds</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${frame.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                    {frame.is_active ? "Active" : "Inactive"}
+              <div key={frame.id} className="ad-ligne" data-inactif={!frame.is_active}>
+                <span className="ad-apercu">
+                  {frame.preview_url ? (
+                    <img
+                      src={frame.preview_url} alt="" loading="lazy" decoding="async"
+                      style={{ transform: `scale(${frame.frame_scale || 1}) translate(${frame.frame_offset_x || 0}px, ${frame.frame_offset_y || 0}px)` }}
+                    />
+                  ) : (
+                    <span style={{
+                      width: 26, height: 26, borderRadius: "50%",
+                      border: `3px solid ${frame.border_color}`,
+                      boxShadow: `0 0 8px ${frame.glow_color}`,
+                    }} />
+                  )}
+                </span>
+                <span className="ad-ligne-corps">
+                  <span className="ad-ligne-nom">{frame.name}</span>
+                  <span className="ad-ligne-meta">
+                    <span className="ad-etat" data-ton={frame.is_active ? "actif" : "dormant"}>
+                      {frame.is_active ? "en boutique" : "retiré"}
+                    </span>
+                    <span>{frame.rarity}</span>
+                    <span>{frame.price} Bonds</span>
+                    {frame.is_default && <span className="ad-etat" data-ton="veille">par défaut</span>}
                   </span>
-                  <Button size="icon" variant="ghost" onClick={() => duplicateFrame(frame)} className="text-primary/40 hover:text-primary" title="Duplicate">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => setEditingFrame(frame)} className="text-primary/60 hover:text-primary">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AdminDeleteConfirm onConfirm={() => deleteFrame(frame.id, frame.name)} itemName={frame.name} itemType="frame" />
-                </div>
+                </span>
+                <span className="ad-ligne-gestes">
+                  <button type="button" className="ad-icone" aria-label={`Dupliquer ${frame.name}`} onClick={() => duplicateFrame(frame)}>
+                    <Copy aria-hidden="true" />
+                  </button>
+                  <button type="button" className="ad-icone" aria-label={`Modifier ${frame.name}`} onClick={() => setEditingFrame(frame)}>
+                    <Pencil aria-hidden="true" />
+                  </button>
+                  <AdminDeleteConfirm onConfirm={() => deleteFrame(frame.id, frame.name)} itemName={frame.name} itemType="cadre" />
+                </span>
               </div>
             ))}
           </div>
@@ -597,13 +601,13 @@ export default function AdminCosmeticsManager() {
         <TabsContent value="banners" className="space-y-4">
           <Dialog open={!!editingBanner} onOpenChange={(open) => !open && setEditingBanner(null)}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingBanner({}); setBannerCreationMode("classic"); }} className="bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">
-                <Plus className="h-4 w-4 mr-2" /> Add Banner
-              </Button>
+              <button type="button" className="ad-geste" data-ton="primaire" onClick={() => { setEditingBanner({}); setBannerCreationMode("classic"); }}>
+                <Plus aria-hidden="true" /> Nouvelle bannière
+              </button>
             </DialogTrigger>
             <DialogContent className="bg-card border-primary/30 max-w-lg">
               <DialogHeader>
-                <DialogTitle className="text-primary font-orbitron">{editingBanner?.id ? "Edit Banner" : "Add Banner"}</DialogTitle>
+                <DialogTitle className="text-primary font-orbitron">{editingBanner?.id ? "Modifier la bannière" : "Nouvelle bannière"}</DialogTitle>
               </DialogHeader>
               
               {!editingBanner?.id && (
@@ -621,38 +625,38 @@ export default function AdminCosmeticsManager() {
 
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div>
-                  <Label className="text-primary/80">Name</Label>
+                  <Label className="text-primary/80">Nom</Label>
                   <Input value={editingBanner?.name || ""} onChange={(e) => setEditingBanner({ ...editingBanner, name: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div>
-                  <Label className="text-primary/80">Rarity</Label>
+                  <Label className="text-primary/80">Rareté</Label>
                   <Select value={editingBanner?.rarity || "common"} onValueChange={(v) => setEditingBanner({ ...editingBanner, rarity: v })}>
                     <SelectTrigger className="bg-card/50 border-primary/30 text-primary"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="common">Common</SelectItem>
+                      <SelectItem value="common">Commun</SelectItem>
                       <SelectItem value="rare">Rare</SelectItem>
-                      <SelectItem value="epic">Epic</SelectItem>
-                      <SelectItem value="legendary">Legendary</SelectItem>
+                      <SelectItem value="epic">Épique</SelectItem>
+                      <SelectItem value="legendary">Légendaire</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {bannerCreationMode === "image" ? (
                   <div>
-                    <Label className="text-primary/80">Banner Image URL</Label>
+                    <Label className="text-primary/80">Adresse de l’image de la bannière</Label>
                     <Input placeholder="https://example.com/banner.png" value={editingBanner?.banner_url || ""} onChange={(e) => setEditingBanner({ ...editingBanner, banner_url: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                   </div>
                 ) : (
                   <>
                     <div>
-                      <Label className="text-primary/80">Gradient Start Color</Label>
+                      <Label className="text-primary/80">Dégradé — départ</Label>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingBanner?.gradient_start || "#0a0a12" }} />
                         <Input value={editingBanner?.gradient_start || "#0a0a12"} onChange={(e) => setEditingBanner({ ...editingBanner, gradient_start: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                       </div>
                     </div>
                     <div>
-                      <Label className="text-primary/80">Gradient End Color</Label>
+                      <Label className="text-primary/80">Dégradé — arrivée</Label>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingBanner?.gradient_end || "#1a1a2e" }} />
                         <Input value={editingBanner?.gradient_end || "#1a1a2e"} onChange={(e) => setEditingBanner({ ...editingBanner, gradient_end: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
@@ -662,42 +666,46 @@ export default function AdminCosmeticsManager() {
                 )}
 
                 <div>
-                  <Label className="text-primary/80">Price (Bonds)</Label>
+                  <Label className="text-primary/80">Prix en Bonds</Label>
                   <Input type="number" value={editingBanner?.price || 650} onChange={(e) => setEditingBanner({ ...editingBanner, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-primary/80">Active (visible in Shop)</Label>
+                  <Label className="text-primary/80">En boutique</Label>
                   <Switch checked={editingBanner?.is_active ?? true} onCheckedChange={(c) => setEditingBanner({ ...editingBanner, is_active: c })} />
                 </div>
-                <Button onClick={saveBanner} className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">Save Banner</Button>
+                <button type="button" className="ad-geste" data-ton="primaire" style={{ width: "100%", justifyContent: "center" }} onClick={saveBanner}>Enregistrer la bannière</button>
               </div>
             </DialogContent>
           </Dialog>
 
-          <div className="grid gap-3">
+          <div className="ad-liste">
             {filterItems(banners).map((banner) => (
-              <div key={banner.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-8 rounded-md" style={{
-                    background: banner.banner_url ? `url(${banner.banner_url}) center/cover` : `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`,
-                  }} />
-                  <div>
-                    <div className="text-primary font-rajdhani">{banner.name}</div>
-                    <div className="text-xs text-primary/50">{banner.rarity} · {banner.price} Bonds</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${banner.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                    {banner.is_active ? "Active" : "Inactive"}
+              <div key={banner.id} className="ad-ligne" data-inactif={!banner.is_active}>
+                <span className="ad-apercu" style={{
+                  background: banner.banner_url
+                    ? `url(${banner.banner_url}) center/cover`
+                    : `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`,
+                }} />
+                <span className="ad-ligne-corps">
+                  <span className="ad-ligne-nom">{banner.name}</span>
+                  <span className="ad-ligne-meta">
+                    <span className="ad-etat" data-ton={banner.is_active ? "actif" : "dormant"}>
+                      {banner.is_active ? "en boutique" : "retirée"}
+                    </span>
+                    <span>{banner.rarity}</span>
+                    <span>{banner.price} Bonds</span>
+                    {banner.is_default && <span className="ad-etat" data-ton="veille">par défaut</span>}
                   </span>
-                  <Button size="icon" variant="ghost" onClick={() => duplicateBanner(banner)} className="text-primary/40 hover:text-primary" title="Duplicate">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => setEditingBanner(banner)} className="text-primary/60 hover:text-primary">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AdminDeleteConfirm onConfirm={() => deleteBanner(banner.id, banner.name)} itemName={banner.name} itemType="banner" />
-                </div>
+                </span>
+                <span className="ad-ligne-gestes">
+                  <button type="button" className="ad-icone" aria-label={`Dupliquer ${banner.name}`} onClick={() => duplicateBanner(banner)}>
+                    <Copy aria-hidden="true" />
+                  </button>
+                  <button type="button" className="ad-icone" aria-label={`Modifier ${banner.name}`} onClick={() => setEditingBanner(banner)}>
+                    <Pencil aria-hidden="true" />
+                  </button>
+                  <AdminDeleteConfirm onConfirm={() => deleteBanner(banner.id, banner.name)} itemName={banner.name} itemType="bannière" />
+                </span>
               </div>
             ))}
           </div>
@@ -707,79 +715,92 @@ export default function AdminCosmeticsManager() {
         <TabsContent value="titles" className="space-y-4">
           <Dialog open={!!editingTitle} onOpenChange={(open) => !open && setEditingTitle(null)}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditingTitle({})} className="bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">
-                <Plus className="h-4 w-4 mr-2" /> Add Title
-              </Button>
+              <button type="button" className="ad-geste" data-ton="primaire" onClick={() => setEditingTitle({})}>
+                <Plus aria-hidden="true" /> Nouveau titre
+              </button>
             </DialogTrigger>
             <DialogContent className="bg-card border-primary/30">
               <DialogHeader>
-                <DialogTitle className="text-primary font-orbitron">{editingTitle?.id ? "Edit Title" : "Add Title"}</DialogTitle>
+                <DialogTitle className="text-primary font-orbitron">{editingTitle?.id ? "Modifier le titre" : "Nouveau titre"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label className="text-primary/80">Title Text</Label>
+                  <Label className="text-primary/80">Texte du titre</Label>
                   <Input value={editingTitle?.title_text || ""} onChange={(e) => setEditingTitle({ ...editingTitle, title_text: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div>
-                  <Label className="text-primary/80">Rarity</Label>
+                  <Label className="text-primary/80">Rareté</Label>
                   <Select value={editingTitle?.rarity || "common"} onValueChange={(v) => setEditingTitle({ ...editingTitle, rarity: v })}>
                     <SelectTrigger className="bg-card/50 border-primary/30 text-primary"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="common">Common</SelectItem>
+                      <SelectItem value="common">Commun</SelectItem>
                       <SelectItem value="rare">Rare</SelectItem>
-                      <SelectItem value="epic">Epic</SelectItem>
-                      <SelectItem value="legendary">Legendary</SelectItem>
+                      <SelectItem value="epic">Épique</SelectItem>
+                      <SelectItem value="legendary">Légendaire</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-primary/80">Text Color (hex)</Label>
+                  <Label className="text-primary/80">Couleur du texte (hex)</Label>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingTitle?.text_color || "#5bb4ff" }} />
                     <Input value={editingTitle?.text_color || "#5bb4ff"} onChange={(e) => setEditingTitle({ ...editingTitle, text_color: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-primary/80">Glow Color (rgba)</Label>
+                  <Label className="text-primary/80">Couleur de la lueur (rgba)</Label>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded border border-primary/30 shrink-0" style={{ backgroundColor: editingTitle?.glow_color || "rgba(91,180,255,0.5)" }} />
                     <Input value={editingTitle?.glow_color || "rgba(91,180,255,0.5)"} onChange={(e) => setEditingTitle({ ...editingTitle, glow_color: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-primary/80">Price (Bonds)</Label>
+                  <Label className="text-primary/80">Prix en Bonds</Label>
                   <Input type="number" value={editingTitle?.price || 450} onChange={(e) => setEditingTitle({ ...editingTitle, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-primary/80">Active</Label>
+                  <Label className="text-primary/80">En boutique</Label>
                   <Switch checked={editingTitle?.is_active ?? true} onCheckedChange={(c) => setEditingTitle({ ...editingTitle, is_active: c })} />
                 </div>
-                <Button onClick={saveTitle} className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">Save Title</Button>
+                <button type="button" className="ad-geste" data-ton="primaire" style={{ width: "100%", justifyContent: "center" }} onClick={saveTitle}>Enregistrer le titre</button>
               </div>
             </DialogContent>
           </Dialog>
 
-          <div className="grid gap-3">
+          <div className="ad-liste">
             {filterItems(titles).map((title) => (
-              <div key={title.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="px-3 py-1 rounded-md text-sm" style={{ color: title.text_color ?? undefined, textShadow: `0 0 10px ${title.glow_color ?? "transparent"}`, border: `1px solid ${title.text_color ?? "currentColor"}30` }}>
+              <div key={title.id} className="ad-ligne" data-inactif={!title.is_active}>
+                {/* L'aperçu EST le titre, avec sa couleur et sa lueur : c'est
+                    tout ce qui le distingue d'un autre. */}
+                <span className="ad-apercu" style={{ width: "auto", minWidth: 40, padding: "0 9px" }}>
+                  <span style={{
+                    color: title.text_color ?? undefined,
+                    textShadow: `0 0 10px ${title.glow_color ?? "transparent"}`,
+                    fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+                  }}>
                     {title.title_text}
-                  </div>
-                  <div className="text-xs text-primary/50">{title.rarity} · {title.price} Bonds</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded ${title.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                    {title.is_active ? "Active" : "Inactive"}
                   </span>
-                  <Button size="icon" variant="ghost" onClick={() => duplicateTitle(title)} className="text-primary/40 hover:text-primary" title="Duplicate">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => setEditingTitle(title)} className="text-primary/60 hover:text-primary">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AdminDeleteConfirm onConfirm={() => deleteTitle(title.id, title.title_text)} itemName={title.title_text} itemType="title" />
-                </div>
+                </span>
+                <span className="ad-ligne-corps">
+                  <span className="ad-ligne-nom">{title.title_text}</span>
+                  <span className="ad-ligne-meta">
+                    <span className="ad-etat" data-ton={title.is_active ? "actif" : "dormant"}>
+                      {title.is_active ? "en boutique" : "retiré"}
+                    </span>
+                    <span>{title.rarity}</span>
+                    <span>{title.price} Bonds</span>
+                    {title.is_default && <span className="ad-etat" data-ton="veille">par défaut</span>}
+                  </span>
+                </span>
+                <span className="ad-ligne-gestes">
+                  <button type="button" className="ad-icone" aria-label={`Dupliquer ${title.title_text}`} onClick={() => duplicateTitle(title)}>
+                    <Copy aria-hidden="true" />
+                  </button>
+                  <button type="button" className="ad-icone" aria-label={`Modifier ${title.title_text}`} onClick={() => setEditingTitle(title)}>
+                    <Pencil aria-hidden="true" />
+                  </button>
+                  <AdminDeleteConfirm onConfirm={() => deleteTitle(title.id, title.title_text)} itemName={title.title_text} itemType="titre" />
+                </span>
               </div>
             ))}
           </div>

@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Send, Users, Gift, Loader2, MessageSquare, Star, Trophy, Zap, Heart, Info, AlertTriangle, History } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import {
+  Bell, Send, Gift, Loader2, Star, Trophy, Zap, Heart, Info,
+  AlertTriangle, History, Megaphone, MessageSquare, ArrowRight,
+} from "lucide-react";
 import { toast } from "sonner";
-import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
+/* L'APERÇU EMPRUNTE LES CLASSES DE LA BOÎTE DE RÉCEPTION.
+   C'est le seul moyen qu'il ressemble vraiment à ce qui sera reçu :
+   recopier son dessin ici le ferait diverger au premier changement. */
+import "@/styles/inbox.css";
 import {
   useAnnuaire, useDiffuser, useJournalAdmin, motDeLErreur,
 } from "@/hooks/useAdminServeur";
@@ -21,106 +20,127 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
 
-type NotificationCategory = "system" | "progress" | "social" | "marketing";
-type NotificationPriority = "critical" | "important" | "informational" | "social" | "silent";
-type RewardType = "bonds" | "frame" | "banner" | "title";
+/**
+ * LA DIFFUSION.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE QUI ÉTAIT FAUX, ET QUI L'EST RESTÉ LONGTEMPS
+ *
+ * — « ENVOYER À TOUS » ATTEIGNAIT UNE PERSONNE. L'écran énumérait ses
+ *   destinataires depuis le navigateur, et `profiles` ne rend qu'une
+ *   ligne. Mesuré : 1 sur 4. Corrigé par `diffuser_notification`, qui
+ *   énumère côté serveur — voir la migration.
+ *
+ * — L'ONGLET « MESSAGE » ENVOYAIT UNE NOTIFICATION. Il masquait trois
+ *   champs et changeait la couleur du bouton ; la ligne écrite en base
+ *   était la même. Promettre un message privé et livrer un avis
+ *   système est un mensonge d'interface — et il n'y a pas de
+ *   messagerie de masse : on n'écrit qu'à ses alliés. L'onglet part.
+ *
+ * — L'HISTORIQUE MONTRAIT CE QU'ON AVAIT REÇU. Il lisait
+ *   `notifications` sans filtre ; RLS ne rend que les siennes. Il lit
+ *   le journal d'administration, qui est l'endroit où cette
+ *   information a toujours dû vivre.
+ *
+ * — L'APERÇU NE RESSEMBLAIT PAS À L'AVIS REÇU. Rond gris, icône au
+ *   centre, deux lignes de texte — la boîte de réception dessine tout
+ *   autre chose. Il reprend maintenant ses classes.
+ * ═══════════════════════════════════════════════════════════════
+ */
 
-const iconComponents: Record<string, React.ComponentType<{ className?: string }>> = {
-  bell: Bell, gift: Gift, star: Star, trophy: Trophy, zap: Zap, heart: Heart, info: Info, warning: AlertTriangle,
+type Categorie = "system" | "progress" | "social" | "marketing";
+type Priorite = "critical" | "important" | "informational" | "social" | "silent";
+type Recompense = "bonds" | "frame" | "banner" | "title";
+
+const ICONES: Record<string, React.ComponentType<{ className?: string }>> = {
+  bell: Bell, gift: Gift, star: Star, trophy: Trophy, zap: Zap,
+  heart: Heart, info: Info, warning: AlertTriangle, announcement: Megaphone,
+  message: MessageSquare,
+};
+
+const CATEGORIES: { v: Categorie; mot: string; quoi: string }[] = [
+  { v: "system", mot: "Système", quoi: "Ce que l'application doit dire, toujours reçu" },
+  { v: "progress", mot: "Progression", quoi: "Rappels et jalons" },
+  { v: "social", mot: "Social", quoi: "Ce qui vient d'autres personnes" },
+  { v: "marketing", mot: "Annonce", quoi: "Offres et nouveautés" },
+];
+
+const PRIORITES: { v: Priorite; mot: string }[] = [
+  { v: "critical", mot: "Critique" },
+  { v: "important", mot: "Important" },
+  { v: "informational", mot: "Information" },
+  { v: "social", mot: "Social" },
+  { v: "silent", mot: "Discret" },
+];
+
+const TEINTES: Record<string, string> = {
+  critical: "var(--ad-alerte)",
+  important: "var(--ad-veille)",
+  social: "hsl(var(--ds-accent-special))",
+  informational: "var(--ad-signal)",
+  silent: "var(--ad-encre-3)",
 };
 
 export default function AdminNotifications() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [vue, setVue] = useState<"ecrire" | "journal">("ecrire");
 
-  const [mode, setMode] = useState<"notification" | "message">("notification");
-  const [activeTab, setActiveTab] = useState<"compose" | "history">("compose");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<NotificationCategory>("system");
-  const [priority, setPriority] = useState<NotificationPriority>("informational");
-  const [iconKey, setIconKey] = useState("bell");
+  const [titre, setTitre] = useState("");
+  const [texte, setTexte] = useState("");
+  const [categorie, setCategorie] = useState<Categorie>("system");
+  const [priorite, setPriorite] = useState<Priorite>("informational");
+  const [icone, setIcone] = useState("bell");
   const [ctaLabel, setCtaLabel] = useState("");
   const [ctaUrl, setCtaUrl] = useState("");
-  const [attachReward, setAttachReward] = useState(false);
-  const [rewardType, setRewardType] = useState<RewardType>("bonds");
-  const [rewardAmount, setRewardAmount] = useState(0);
-  const [rewardCosmeticId, setRewardCosmeticId] = useState("");
-  const [targetAll, setTargetAll] = useState(true);
-  const [targetUserId, setTargetUserId] = useState("");
 
-  const { data: adminCheck } = useServerAdminCheck(!!user);
-  const isAdminVerified = adminCheck?.isAdmin === true;
+  const [avecDon, setAvecDon] = useState(false);
+  const [typeDon, setTypeDon] = useState<Recompense>("bonds");
+  const [montantDon, setMontantDon] = useState(0);
+  const [cosmetiqueDon, setCosmetiqueDon] = useState("");
 
-  /* LA LISTE VENAIT DE `profiles`, QUI NE REND QUE SA PROPRE LIGNE.
-     Elle contenait donc UN nom — celui de l'administrateur — et viser
-     quelqu'un d'autre était impossible depuis cet écran. */
-  const { data: annuaire = [] } = useAnnuaire();
-  const allUsers = annuaire.map((u) => ({ id: u.user_id, display_name: u.nom }));
+  const [aTous, setATous] = useState(true);
+  const [destinataire, setDestinataire] = useState("");
   const [confirmation, setConfirmation] = useState(false);
 
-  const { data: frames = [] } = useQuery({
-    queryKey: ["admin-frames"],
-    queryFn: async () => { const { data } = await supabase.from("cosmetic_frames").select("id, name").eq("is_active", true); return data || []; },
-    enabled: isAdminVerified && rewardType === "frame",
-  });
-
-  const { data: banners = [] } = useQuery({
-    queryKey: ["admin-banners"],
-    queryFn: async () => { const { data } = await supabase.from("cosmetic_banners").select("id, name").eq("is_active", true); return data || []; },
-    enabled: isAdminVerified && rewardType === "banner",
-  });
-
-  const { data: titles = [] } = useQuery({
-    queryKey: ["admin-titles"],
-    queryFn: async () => { const { data } = await supabase.from("cosmetic_titles").select("id, title_text").eq("is_active", true); return data || []; },
-    enabled: isAdminVerified && rewardType === "title",
-  });
-
-  /* L'HISTORIQUE MONTRAIT CE QUE L'ADMINISTRATEUR AVAIT REÇU.
-     Il lisait `notifications` sans filtre ; RLS ne rendant que les
-     siennes, l'onglet présentait sa propre boîte comme la liste de ses
-     envois. L'historique des actes d'administration est dans le
-     journal d'audit — c'est sa raison d'être. */
+  /* La liste venait de `profiles`, qui ne rend que sa propre ligne :
+     elle contenait UN nom, et viser quelqu'un d'autre était impossible. */
+  const { data: annuaire = [] } = useAnnuaire();
   const { data: journal = [] } = useJournalAdmin(50);
-  const notifHistory = journal
-    .filter((l) => l.action === "diffusion")
-    .map((l) => ({
-      id: l.id,
-      title: String(l.details?.titre ?? "—"),
-      description: `${l.details?.envoyes ?? 0} envoyé(s)`
-        + (Number(l.details?.ecartes ?? 0) > 0
-            ? ` · ${l.details?.ecartes} écarté(s) par leurs réglages`
-            : "")
-        + (l.details?.cible === "tous" ? " · à tous" : " · à une personne"),
-      category: String(l.details?.categorie ?? "system"),
-      priority: String(l.details?.priorite ?? "informational"),
-      created_at: l.quand,
-    }));
-
-  /* L'ENVOI SE FAIT CÔTÉ SERVEUR, POUR TROIS RAISONS.
-     Il énumère les destinataires là où ils sont visibles ; il respecte
-     les préférences de catégorie, donc il ne fabrique plus d'avis que
-     personne ne verra ; et il écrit sa trace d'audit dans la MÊME
-     transaction — elle ne peut plus être oubliée ni refusée à part. */
   const diffuser = useDiffuser();
+
+  const { data: cosmetiques = [] } = useQuery({
+    queryKey: ["admin-cosmetiques", typeDon],
+    queryFn: async () => {
+      if (typeDon === "bonds") return [];
+      const table = typeDon === "frame" ? "cosmetic_frames"
+        : typeDon === "banner" ? "cosmetic_banners" : "cosmetic_titles";
+      const champ = typeDon === "title" ? "id, title_text" : "id, name";
+      const { data } = await supabase.from(table).select(champ).eq("is_active", true);
+      return ((data ?? []) as unknown as Record<string, string>[])
+        .map((c) => ({ id: c.id, nom: c.name ?? c.title_text }));
+    },
+    enabled: avecDon && typeDon !== "bonds",
+  });
+
+  const diffusions = journal.filter((l) => l.action === "diffusion");
+  const peutEnvoyer = titre.trim().length > 0 && (aTous || !!destinataire);
+  const IconeApercu = ICONES[icone] ?? Bell;
 
   const envoyer = () => {
     diffuser.mutate(
       {
-        titre: title,
-        description: description || undefined,
-        categorie: category,
-        priorite: priority,
-        icone: iconKey,
+        titre,
+        description: texte || undefined,
+        categorie,
+        priorite,
+        icone,
         ctaLabel: ctaLabel || undefined,
         ctaUrl: ctaUrl || undefined,
-        recompenseType: attachReward ? rewardType : null,
-        recompenseMontant: attachReward && rewardType === "bonds" ? rewardAmount : null,
-        recompenseCosmetique: attachReward && rewardType !== "bonds" ? rewardCosmeticId : null,
-        destinataire: targetAll ? null : targetUserId,
+        recompenseType: avecDon ? typeDon : null,
+        recompenseMontant: avecDon && typeDon === "bonds" ? montantDon : null,
+        recompenseCosmetique: avecDon && typeDon !== "bonds" ? cosmetiqueDon : null,
+        destinataire: aTous ? null : destinataire,
       },
       {
         onSuccess: (r) => {
@@ -129,8 +149,8 @@ export default function AdminNotifications() {
               ? `${r.ecartes} écarté${r.ecartes > 1 ? "s" : ""} : cette catégorie est coupée dans leurs réglages.`
               : undefined,
           });
-          setTitle(""); setDescription(""); setCtaLabel(""); setCtaUrl("");
-          setAttachReward(false); setRewardAmount(0); setRewardCosmeticId("");
+          setTitre(""); setTexte(""); setCtaLabel(""); setCtaUrl("");
+          setAvecDon(false); setMontantDon(0); setCosmetiqueDon("");
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
         },
         onError: (e) => toast.error("Envoi refusé", { description: motDeLErreur(e) }),
@@ -138,223 +158,252 @@ export default function AdminNotifications() {
     );
   };
 
-  const sendNotification = { isPending: diffuser.isPending, mutate: () => setConfirmation(true) };
-
-  const canSend = title.trim() && (targetAll || targetUserId);
-  const PreviewIcon = iconComponents[iconKey] || Bell;
-
-  const getCosmeticsList = () => {
-    switch (rewardType) {
-      case "frame": return frames.map(f => ({ id: f.id, name: f.name }));
-      case "banner": return banners.map(b => ({ id: b.id, name: b.name }));
-      case "title": return titles.map(t => ({ id: t.id, name: t.title_text }));
-      default: return [];
-    }
-  };
-
   return (
-    <AdminPageShell titre="Diffusion" sous="Écrire à tout le monde, ou à une personne" icone={<Bell aria-hidden="true" />}>
-      {/* Main Tabs: Compose / History */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "compose" | "history")} className="mb-6">
-        <TabsList className="w-full bg-card/50 border border-primary/20 p-1">
-          <TabsTrigger value="compose" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-            <Send className="h-4 w-4 mr-2" /> Compose
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-            <History className="h-4 w-4 mr-2" /> History ({notifHistory.length})
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+    <AdminPageShell
+      titre="Diffusion"
+      sous="Écrire à tout le monde, ou à une personne"
+      icone={<Bell aria-hidden="true" />}
+      action={
+        vue === "ecrire" ? (
+          <button
+            type="button" className="ad-geste" data-ton="primaire"
+            disabled={!peutEnvoyer || diffuser.isPending}
+            onClick={() => setConfirmation(true)}
+          >
+            {diffuser.isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Send aria-hidden="true" />}
+            {aTous ? "Envoyer à tout le monde" : "Envoyer à cette personne"}
+          </button>
+        ) : undefined
+      }
+    >
+      <div className="ad-rail" role="tablist" aria-label="Diffusion">
+        <button type="button" role="tab" className="ad-onglet"
+          aria-selected={vue === "ecrire"} data-actif={vue === "ecrire"} onClick={() => setVue("ecrire")}>
+          <Send aria-hidden="true" /> Écrire
+        </button>
+        <button type="button" role="tab" className="ad-onglet"
+          aria-selected={vue === "journal"} data-actif={vue === "journal"} onClick={() => setVue("journal")}>
+          <History aria-hidden="true" /> Envois passés <i>{diffusions.length}</i>
+        </button>
+      </div>
 
-      {activeTab === "history" ? (
-        <div className="space-y-2">
-          {notifHistory.length === 0 ? (
-            <div className="text-center py-12 text-primary/40">
-              <History className="h-10 w-10 mx-auto mb-3" />
-              <p>Aucune diffusion pour le moment</p>
-            </div>
-          ) : (
-            notifHistory.map((n) => (
-              <div key={n.id} className="p-4 rounded-xl bg-card/50 border border-primary/20">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-primary">{n.title}</span>
-                  <span className="text-xs text-primary/40">{format(new Date(n.created_at), "MMM d, HH:mm")}</span>
-                </div>
-                {n.description && <p className="text-sm text-primary/60">{n.description}</p>}
-                <div className="flex gap-2 mt-2">
-                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary/60">{n.category}</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary/60">{n.priority}</span>
-                </div>
+      {vue === "journal" ? (
+        diffusions.length === 0 ? (
+          <div className="ad-vide">
+            <History aria-hidden="true" />
+            <h3>Aucune diffusion</h3>
+            <p>
+              Ce qui part d'ici est journalisé dans la même transaction que
+              l'envoi : la liste ne peut pas être incomplète.
+            </p>
+          </div>
+        ) : (
+          <div className="ad-liste">
+            {diffusions.map((l) => (
+              <div key={l.id} className="ad-ligne">
+                <span className="ad-apercu"><Send aria-hidden="true" /></span>
+                <span className="ad-ligne-corps">
+                  <span className="ad-ligne-nom">{String(l.details?.titre ?? "—")}</span>
+                  <span className="ad-ligne-meta">
+                    <span className="ad-etat" data-ton="actif">
+                      {String(l.details?.envoyes ?? 0)} envoyé(s)
+                    </span>
+                    {Number(l.details?.ecartes ?? 0) > 0 && (
+                      <span className="ad-etat" data-ton="dormant">
+                        {String(l.details?.ecartes)} écarté(s)
+                      </span>
+                    )}
+                    <span>{l.details?.cible === "tous" ? "à tous" : "à une personne"}</span>
+                    <span>{String(l.details?.categorie ?? "")}</span>
+                    <span>{format(new Date(l.quand), "d MMM yyyy, HH:mm", { locale: fr })}</span>
+                    <span>{l.qui}</span>
+                  </span>
+                </span>
+                <span />
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )
       ) : (
         <>
-          {/* Mode Selector */}
-          <Tabs value={mode} onValueChange={(v) => setMode(v as "notification" | "message")} className="mb-6">
-            <TabsList className="w-full bg-card/50 border border-primary/20 p-1">
-              <TabsTrigger value="notification" className="flex-1 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                <Bell className="h-4 w-4 mr-2" /> Notification
-              </TabsTrigger>
-              <TabsTrigger value="message" className="flex-1 data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-400">
-                <MessageSquare className="h-4 w-4 mr-2" /> Message
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <section className="ad-panneau">
+            <header className="ad-panneau-tete">
+              <h2 className="ad-panneau-titre">Le message</h2>
+            </header>
 
-          <Card variant="clean" className="p-6 bg-card/50 space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-primary">Title *</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={mode === "notification" ? "Notification title..." : "Message subject..."} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-primary">{mode === "notification" ? "Description" : "Message Content"}</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={mode === "notification" ? "Optional description..." : "Write your message..."} className="min-h-[80px]" />
+            <div className="ad-champs">
+              <label className="ad-champ ad-champ--large">
+                <span>Titre — obligatoire</span>
+                <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="La saison 3 est ouverte" maxLength={120} />
+              </label>
+
+              <label className="ad-champ ad-champ--large">
+                <span>Corps</span>
+                <textarea value={texte} onChange={(e) => setTexte(e.target.value)} placeholder="Deux phrases suffisent. Ce qui est long ne se lit pas dans une boîte de réception." />
+              </label>
+
+              <label className="ad-champ">
+                <span>Catégorie</span>
+                <select value={categorie} onChange={(e) => setCategorie(e.target.value as Categorie)}>
+                  {CATEGORIES.map((c) => <option key={c.v} value={c.v}>{c.mot}</option>)}
+                </select>
+              </label>
+
+              <label className="ad-champ">
+                <span>Priorité</span>
+                <select value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
+                  {PRIORITES.map((p) => <option key={p.v} value={p.v}>{p.mot}</option>)}
+                </select>
+              </label>
+
+              <label className="ad-champ">
+                <span>Icône</span>
+                <select value={icone} onChange={(e) => setIcone(e.target.value)}>
+                  {Object.keys(ICONES).map((k) => <option key={k} value={k}>{k}</option>)}
+                </select>
+              </label>
+
+              <label className="ad-champ">
+                <span>Libellé de l'action</span>
+                <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Voir la boutique" />
+              </label>
+
+              <label className="ad-champ">
+                <span>Où elle mène — chemin interne</span>
+                <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="/shop" />
+              </label>
             </div>
 
-            {mode === "notification" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-primary">Category</Label>
-                    <Select value={category} onValueChange={(v) => setCategory(v as NotificationCategory)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="system">System</SelectItem>
-                        <SelectItem value="progress">Progress</SelectItem>
-                        <SelectItem value="social">Social</SelectItem>
-                        <SelectItem value="marketing">Marketing</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-primary">Priority</Label>
-                    <Select value={priority} onValueChange={(v) => setPriority(v as NotificationPriority)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="critical">Critical</SelectItem>
-                        <SelectItem value="important">Important</SelectItem>
-                        <SelectItem value="informational">Informational</SelectItem>
-                        <SelectItem value="social">Social</SelectItem>
-                        <SelectItem value="silent">Silent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-primary">Icon Key</Label>
-                  <Select value={iconKey} onValueChange={setIconKey}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(iconComponents).map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-primary">CTA Label (optional)</Label><Input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="e.g., View Details" /></div>
-                  <div className="space-y-2"><Label className="text-primary">CTA URL (optional)</Label><Input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="e.g., /shop" /></div>
-                </div>
-              </>
+            <p className="ad-aide">
+              {CATEGORIES.find((c) => c.v === categorie)?.quoi}. Le serveur écarte
+              les personnes qui ont coupé cette catégorie, et le compte rendu le
+              dira. Le lien doit commencer par « / » : une adresse externe est
+              refusée côté base, pas seulement ici.
+            </p>
+          </section>
+
+          {/* ── La récompense ─────────────────────────────────── */}
+          <section className="ad-panneau">
+            <header className="ad-panneau-tete">
+              <h2 className="ad-panneau-titre">Récompense</h2>
+              <button type="button" className="ad-bascule" aria-pressed={avecDon} onClick={() => setAvecDon((v) => !v)}>
+                <u aria-hidden="true" />
+                {avecDon ? "Attachée" : "Aucune"}
+              </button>
+            </header>
+
+            {avecDon && (
+              <div className="ad-champs">
+                <label className="ad-champ">
+                  <span>Nature</span>
+                  <select
+                    value={typeDon}
+                    onChange={(e) => { setTypeDon(e.target.value as Recompense); setCosmetiqueDon(""); setMontantDon(0); }}
+                  >
+                    <option value="bonds">Bonds</option>
+                    <option value="frame">Cadre d'avatar</option>
+                    <option value="banner">Bannière</option>
+                    <option value="title">Titre</option>
+                  </select>
+                </label>
+
+                {typeDon === "bonds" ? (
+                  <label className="ad-champ">
+                    <span>Montant</span>
+                    <input type="number" min={0} value={montantDon} onChange={(e) => setMontantDon(Number(e.target.value))} />
+                  </label>
+                ) : (
+                  <label className="ad-champ">
+                    <span>Lequel</span>
+                    <select value={cosmetiqueDon} onChange={(e) => setCosmetiqueDon(e.target.value)}>
+                      <option value="">Choisir…</option>
+                      {cosmetiques.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                    </select>
+                  </label>
+                )}
+              </div>
             )}
+          </section>
 
-            {/* Reward */}
-            <div className="border border-amber-500/30 rounded-lg p-4 bg-amber-500/5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2"><Gift className="h-5 w-5 text-amber-400" /><Label className="text-amber-400">Attach Reward</Label></div>
-                <Switch checked={attachReward} onCheckedChange={setAttachReward} />
-              </div>
-              {attachReward && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-primary/70">Reward Type</Label>
-                    <Select value={rewardType} onValueChange={(v) => { setRewardType(v as RewardType); setRewardCosmeticId(""); setRewardAmount(0); }}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bonds">Bonds</SelectItem>
-                        <SelectItem value="frame">Avatar Frame</SelectItem>
-                        <SelectItem value="banner">Banner</SelectItem>
-                        <SelectItem value="title">Title</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {rewardType === "bonds" ? (
-                    <div className="space-y-2"><Label className="text-primary/70">Amount</Label><Input type="number" value={rewardAmount} onChange={(e) => setRewardAmount(Number(e.target.value))} min={0} /></div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label className="text-primary/70">Select {rewardType}</Label>
-                      <Select value={rewardCosmeticId} onValueChange={setRewardCosmeticId}>
-                        <SelectTrigger><SelectValue placeholder={`Select a ${rewardType}...`} /></SelectTrigger>
-                        <SelectContent>{getCosmeticsList().map(item => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+          {/* ── Le destinataire ───────────────────────────────── */}
+          <section className="ad-panneau">
+            <header className="ad-panneau-tete">
+              <h2 className="ad-panneau-titre">Destinataire</h2>
+              <button type="button" className="ad-bascule" aria-pressed={aTous} onClick={() => setATous((v) => !v)}>
+                <u aria-hidden="true" />
+                {aTous ? `Tout le monde · ${annuaire.length}` : "Une personne"}
+              </button>
+            </header>
 
-            {/* Target */}
-            <div className="border border-primary/20 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" /><Label className="text-primary">Target All Users</Label></div>
-                <Switch checked={targetAll} onCheckedChange={setTargetAll} />
-              </div>
-              {!targetAll && (
-                <div className="space-y-2">
-                  <Label className="text-primary/70">Select User</Label>
-                  <Select value={targetUserId} onValueChange={setTargetUserId}>
-                    <SelectTrigger><SelectValue placeholder="Select a user..." /></SelectTrigger>
-                    <SelectContent>{allUsers.map((u) => <SelectItem key={u.id} value={u.id}>{u.display_name || u.id.slice(0, 8)}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
+            {!aTous && (
+              <label className="ad-champ">
+                <span>Qui</span>
+                <select value={destinataire} onChange={(e) => setDestinataire(e.target.value)}>
+                  <option value="">Choisir une personne…</option>
+                  {annuaire.map((u) => (
+                    <option key={u.user_id} value={u.user_id}>
+                      {u.nom}{u.est_admin ? " · admin" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </section>
 
-            {/* Preview */}
-            <div className="border border-primary/20 rounded-lg p-4 bg-background/30">
-              <Label className="text-primary/70 mb-2 block">Preview</Label>
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><PreviewIcon className="h-5 w-5 text-primary" /></div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-primary">{title || "Notification Title"}</p>
-                    <p className="text-sm text-muted-foreground">{description || "Description..."}</p>
-                    {attachReward && (rewardAmount > 0 || rewardCosmeticId) && (
-                      <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-xs">
-                        <Gift className="h-3 w-3" />{rewardType === "bonds" ? `+${rewardAmount} Bonds` : `Free ${rewardType}`}
-                      </div>
+          {/* ── L'aperçu, dans la langue de la boîte de réception ──
+              Il dessinait un rond gris et deux lignes ; la boîte dessine
+              tout autre chose. Un aperçu qui ne ressemble pas au résultat
+              ne sert qu'à rassurer. */}
+          <section className="ad-panneau">
+            <header className="ad-panneau-tete">
+              <h2 className="ad-panneau-titre">Ce que la personne verra</h2>
+            </header>
+
+            <div className="bx" style={{ padding: 0, width: "100%", gap: 0 }}>
+              <article className="bx-avis" data-lu="non" data-agir={ctaLabel ? "oui" : "non"}
+                style={{ ["--bx-teinte" as string]: TEINTES[priorite] ?? "var(--ad-signal)" }}>
+                <span className="bx-avis-icone"><IconeApercu aria-hidden="true" /></span>
+                <div className="bx-avis-corps">
+                  <h3 className="bx-avis-titre">{titre || "Titre de l'avis"}</h3>
+                  {texte && <p className="bx-avis-texte">{texte}</p>}
+                  <div className="bx-avis-pied">
+                    <span className="bx-avis-quand">à l'instant</span>
+                    {avecDon && (montantDon > 0 || cosmetiqueDon) && (
+                      <span className="bx-don">
+                        <Gift aria-hidden="true" />
+                        {typeDon === "bonds" ? `Récupérer +${montantDon}` : "Récupérer"}
+                      </span>
+                    )}
+                    {ctaLabel && (
+                      <span className="bx-avis-aller">
+                        {ctaLabel}
+                        <ArrowRight aria-hidden="true" />
+                      </span>
                     )}
                   </div>
                 </div>
-              </div>
+                <span />
+              </article>
             </div>
-
-            <Button onClick={() => sendNotification.mutate()} disabled={!canSend || sendNotification.isPending}
-              className={`w-full border ${mode === "notification" ? "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30" : "bg-violet-500/20 text-violet-400 border-violet-500/50 hover:bg-violet-500/30"}`}>
-              {sendNotification.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              {targetAll ? "Envoyer à tout le monde" : "Envoyer à cette personne"}
-            </Button>
-          </Card>
+          </section>
         </>
       )}
 
       {/* ÉCRIRE À TOUT LE MONDE NE SE FAIT PAS EN UN CLIC.
           Un envoi ne se rattrape pas : il atterrit chez chacun, et le
-          retirer ne le fait pas oublier. La confirmation dit combien de
-          personnes existent, pour qu'on sache ce qu'on déclenche. */}
+          retirer ne le fait pas oublier. */}
       <AlertDialog open={confirmation} onOpenChange={setConfirmation}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {targetAll
+              {aTous
                 ? `Envoyer à ${annuaire.length} personne${annuaire.length > 1 ? "s" : ""} ?`
                 : "Envoyer cet avis ?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              « {title || "sans titre"} » — catégorie {category}, priorité {priority}.
-              {targetAll
-                ? " Ceux qui ont coupé cette catégorie dans leurs réglages seront écartés, et le compte rendu le dira."
-                : ""}
+              « {titre || "sans titre"} » — catégorie {CATEGORIES.find((c) => c.v === categorie)?.mot},
+              priorité {PRIORITES.find((p) => p.v === priorite)?.mot}.
+              {aTous && " Ceux qui ont coupé cette catégorie seront écartés, et le compte rendu le dira."}
               {" "}Un avis envoyé ne se reprend pas.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -367,3 +416,4 @@ export default function AdminNotifications() {
     </AdminPageShell>
   );
 }
+
