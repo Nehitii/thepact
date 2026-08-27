@@ -489,6 +489,11 @@
       "resume": "Reprendre",
       "complete": "Terminer",
       "exit": "Quitter le focus"
+    },
+    "reminder": {
+      "title": "Une tâche attend toujours",
+      "body": "« {{nom}} » est en attente depuis un moment. Relancez, ou marquez-la faite.",
+      "cta": "Voir la tâche"
     }
   },
   "goals": {

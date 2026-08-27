@@ -1,7 +1,17 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
+/* CE RAPPEL ÉCRIVAIT L'ANGLAIS EN BASE.
+   « Waiting Task Reminder », « Your task "…" is still waiting » : trois
+   textes en dur, insérés dans `notifications`. Une notification garde
+   ses mots pour toujours — changer de langue ensuite ne les traduit
+   pas, ils sont figés dans la ligne. Le rappel de santé avait déjà
+   corrigé ce défaut chez lui ; celui-ci était resté.
+
+   Les textes passent donc par i18n AVANT l'insertion, comme là-bas. */
 
 // Frequency mapping in days
 const FREQUENCY_DAYS: Record<string, number> = {
@@ -13,6 +23,7 @@ const FREQUENCY_DAYS: Record<string, number> = {
 };
 
 export function useTodoReminders() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const userId = user?.id;
@@ -72,13 +83,17 @@ export function useTodoReminders() {
             .from('notifications')
             .insert({
               user_id: userId,
-              title: 'Waiting Task Reminder',
-              description: `Your task "${task.name}" is still waiting. Follow up or mark it complete.`,
+              title: t('todo.reminder.title', 'Une tâche attend toujours'),
+              description: t(
+                'todo.reminder.body',
+                '« {{nom}} » est en attente depuis un moment. Relancez, ou marquez-la faite.',
+                { nom: task.name },
+              ),
               category: 'progress',
               priority: 'informational',
               icon_key: 'clock',
               module_key: 'todo',
-              cta_label: 'View Task',
+              cta_label: t('todo.reminder.cta', 'Voir la tâche'),
               cta_url: '/todo',
             });
 

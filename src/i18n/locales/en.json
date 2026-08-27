@@ -489,6 +489,11 @@
       "resume": "Resume",
       "complete": "Complete",
       "exit": "Exit focus"
+    },
+    "reminder": {
+      "title": "A task is still waiting",
+      "body": "“{{nom}}” has been waiting a while. Follow up, or mark it done.",
+      "cta": "View the task"
     }
   },
   "goals": {
