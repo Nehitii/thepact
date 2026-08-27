@@ -1,20 +1,20 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T14:54:59.910Z",
-  "fichiers": 823,
-  "lignes": 160572,
+  "genere": "2026-08-27T15:51:35.293Z",
+  "fichiers": 830,
+  "lignes": 160757,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1425,
-      "poids": 47776
+      "lignes": 1426,
+      "poids": 47797
     },
     {
       "dossier": "docs",
       "fichiers": 2,
-      "lignes": 3786,
-      "poids": 214277
+      "lignes": 3265,
+      "poids": 191507
     },
     {
       "dossier": "mem/design",
@@ -73,8 +73,8 @@
     {
       "dossier": "src",
       "fichiers": 4,
-      "lignes": 2253,
-      "poids": 92641
+      "lignes": 2286,
+      "poids": 93718
     },
     {
       "dossier": "src/assets",
@@ -84,9 +84,9 @@
     },
     {
       "dossier": "src/components",
-      "fichiers": 300,
-      "lignes": 50036,
-      "poids": 2014945
+      "fichiers": 301,
+      "lignes": 50124,
+      "poids": 2018296
     },
     {
       "dossier": "src/content",
@@ -97,20 +97,20 @@
     {
       "dossier": "src/contexts",
       "fichiers": 4,
-      "lignes": 435,
-      "poids": 13664
+      "lignes": 434,
+      "poids": 13607
     },
     {
       "dossier": "src/hooks",
       "fichiers": 92,
-      "lignes": 14890,
-      "poids": 539091
+      "lignes": 15034,
+      "poids": 544729
     },
     {
       "dossier": "src/i18n",
       "fichiers": 4,
-      "lignes": 7434,
-      "poids": 274632
+      "lignes": 7433,
+      "poids": 274584
     },
     {
       "dossier": "src/integrations",
@@ -120,15 +120,15 @@
     },
     {
       "dossier": "src/lib",
-      "fichiers": 43,
-      "lignes": 5452,
-      "poids": 219495
+      "fichiers": 46,
+      "lignes": 5572,
+      "poids": 224340
     },
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17154,
-      "poids": 754989
+      "lignes": 17204,
+      "poids": 757994
     },
     {
       "dossier": "src/styles",
@@ -150,9 +150,9 @@
     },
     {
       "dossier": "supabase/functions",
-      "fichiers": 22,
-      "lignes": 5018,
-      "poids": 209085
+      "fichiers": 25,
+      "lignes": 5290,
+      "poids": 221608
     },
     {
       "dossier": "supabase/migrations",
@@ -189,8 +189,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3691,
-      "poids": 210221
+      "lignes": 3170,
+      "poids": 187451
     },
     {
       "langage": "JavaScript",
@@ -236,15 +236,15 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 186,
-      "lignes": 27740,
-      "poids": 1058482
+      "fichiers": 193,
+      "lignes": 28328,
+      "poids": 1083237
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 334,
-      "lignes": 67002,
-      "poids": 2763414
+      "lignes": 67120,
+      "poids": 2769014
     },
     {
       "langage": "CSS",
@@ -271,7 +271,7 @@
       "poids": 500
     }
   ],
-  "commits": 3111,
+  "commits": 3115,
   "orphelins": 0,
-  "marqueurs": 14
+  "marqueurs": 12
 }
