@@ -1,0 +1,496 @@
+/* ═══════════════════════════════════════════════════════════════
+   L'ÉCRAN D'AUTHENTIFICATION
+
+   Reprise du handoff « Overwrite — Sign in ». Les nombres viennent de
+   la spécification : 770 px de panneau visuel, 62 px de champ, 68 px de
+   bouton, rayons 22 / 10 / 8, et les biseaux à 34 / 26 px.
+
+   ═══ TROIS ÉCARTS ASSUMÉS, ET POURQUOI ═══
+
+   1. LES POLICES. Le handoff demande Chakra Petch et Barlow, deux
+      familles Google. L'application héberge les siennes et n'appelle
+      aucun tiers. Orbitron tient le rôle de Chakra Petch — même
+      registre techno, et c'est déjà la police des titres HUD ici — et
+      Switzer celui de Barlow. Zéro requête sortante avant la connexion.
+
+      (L'ancienne page importait pourtant Orbitron et JetBrains Mono
+      depuis fonts.googleapis.com alors qu'elles sont dans
+      `public/fonts` : une dépendance réseau sur l'écran de connexion,
+      pour des fichiers déjà présents. Elle part avec le reste.)
+
+   2. LE LOCKUP EST VECTORIEL. Le handoff livre un PNG de 1,15 Mo avec
+      sa lueur cuite dedans. Le symbole et le mot-repère existent en SVG
+      — 18 ko à eux deux — et la lueur se refait en `drop-shadow`.
+      Soixante fois plus léger, net à toute taille.
+
+   3. LA VILLE NE SE CHARGE PAS SUR TÉLÉPHONE. 2,27 Mo de PNG, sur le
+      premier écran, souvent en 4G. Elle est posée en `background-image`
+      DANS la requête média : sous 1100 px le panneau n'existe pas, et
+      le navigateur ne va jamais la chercher. C'est aussi ce que le
+      handoff demande — « en dessous de ~1100px, empiler, panneau
+      visuel masqué ».
+   ═══════════════════════════════════════════════════════════════ */
+
+.auth {
+  --au-fond:        #08040c;
+  --au-violet:      #8b5cf6;
+  --au-violet-clair:#a78bfa;
+  --au-violet-vif:  #c4b5fd;
+  --au-violet-fonce:#7c3aed;
+  --au-encre:       #f2eefb;
+  --au-encre-2:     #cfc8dd;
+  --au-encre-3:     #b7aecb;
+
+  --au-hud: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+  --au-texte: "Switzer", ui-sans-serif, system-ui, sans-serif;
+
+  min-height: 100dvh;
+  background: var(--au-fond);
+  font-family: var(--au-texte);
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 28px 30px;
+  box-sizing: border-box;
+}
+
+/* ══ LE PANNEAU VISUEL ══════════════════════════════════════════
+   Absent sous 1100 px : c'est là que la ville cesse d'être
+   téléchargée. */
+.auth-visuel { display: none; }
+
+@media (min-width: 1100px) {
+  .auth-visuel {
+    display: block;
+    position: relative;
+    width: min(770px, 52vw);
+    height: min(958px, calc(100dvh - 56px));
+    flex: none;
+  }
+}
+
+/* Le filet biseauté : un dégradé découpé, doublé d'un calque de fond
+   1 px plus petit. Deux clip-path, pas une bordure — une bordure ne
+   sait pas suivre un biseau. */
+.auth-cadre {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(155deg, rgba(167,139,250,.65) 0%, rgba(139,92,246,.3) 45%, rgba(139,92,246,.5) 100%);
+  clip-path: polygon(34px 0, 100% 0, 100% 100%, 34px 100%, 0 calc(100% - 34px), 0 34px);
+}
+.auth-cadre::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: var(--au-fond);
+  clip-path: polygon(33px 0, 100% 0, 100% 100%, 33px 100%, 0 calc(100% - 33px), 0 33px);
+}
+
+.auth-coin {
+  position: absolute;
+  width: 148px;
+  height: 148px;
+  background: var(--au-violet);
+  pointer-events: none;
+}
+.auth-coin[data-ou="haut"] {
+  left: 0; top: 0;
+  clip-path: polygon(34px 0, 148px 0, 148px 3px, 36px 3px, 3px 36px, 3px 148px, 0 148px, 0 34px);
+}
+.auth-coin[data-ou="bas"] {
+  left: 0; bottom: 0;
+  clip-path: polygon(0 0, 3px 0, 3px 112px, 36px 145px, 148px 145px, 148px 148px, 34px 148px, 0 114px);
+}
+
+.auth-equerre {
+  position: absolute;
+  right: 0;
+  width: 90px;
+  height: 90px;
+  pointer-events: none;
+  border-right: 2px solid rgba(167,139,250,.55);
+}
+.auth-equerre[data-ou="haut"] { top: 0; border-top: 2px solid rgba(167,139,250,.55); }
+.auth-equerre[data-ou="bas"] { bottom: 0; border-bottom: 2px solid rgba(167,139,250,.55); }
+
+.auth-ticks { position: absolute; display: flex; gap: 5px; pointer-events: none; }
+.auth-ticks[data-ou="haut"] { left: 196px; top: -1px; align-items: flex-start; }
+.auth-ticks[data-ou="bas"] { right: 148px; bottom: -1px; align-items: flex-end; }
+.auth-ticks i { display: block; height: 4px; background: var(--au-violet); }
+
+.auth-tirets {
+  position: absolute;
+  left: 22px; top: 20px;
+  display: flex; flex-direction: column; gap: 7px;
+  pointer-events: none;
+}
+.auth-tirets i { display: block; height: 2px; background: rgba(139,92,246,.4); }
+.auth-tirets .auth-tete-tirets { display: flex; gap: 6px; align-items: center; height: auto; background: none; }
+.auth-tirets .auth-tete-tirets b { display: block; width: 6px; height: 6px; background: var(--au-violet); }
+
+.auth-onglet {
+  position: absolute;
+  left: -12px; top: 282px;
+  width: 12px; height: 62px;
+  background: linear-gradient(180deg, #7c3aed, #4c1d95);
+  clip-path: polygon(0 8px, 100% 0, 100% 100%, 0 calc(100% - 8px));
+  pointer-events: none;
+}
+.auth-arete {
+  position: absolute;
+  left: -5px; top: 400px;
+  width: 5px; height: 170px;
+  background: rgba(139,92,246,.55);
+  pointer-events: none;
+}
+
+.auth-noeud {
+  position: absolute;
+  right: 24px; top: 30px;
+  font-family: var(--au-hud);
+  font-size: 11px;
+  letter-spacing: .32em;
+  color: rgba(167,139,250,.55);
+  pointer-events: none;
+}
+
+/* ── La scène ── */
+.auth-scene {
+  position: absolute;
+  left: 16px; top: 12px; right: 14px; bottom: 12px;
+  overflow: hidden;
+  clip-path: polygon(26px 0, 100% 0, 100% 100%, 26px 100%, 0 calc(100% - 26px), 0 26px);
+  background: radial-gradient(90% 70% at 50% 34%, #1a0d33 0%, #0e0620 45%, #08040f 100%);
+}
+
+/* LA VILLE EST ICI, ET NULLE PART AILLEURS. Déclarée dans la requête
+   média du panneau, elle n'est demandée que par les écrans qui
+   l'affichent. */
+@media (min-width: 1100px) {
+  .auth-ville {
+    position: absolute;
+    inset: 0;
+    background: url("/marque/auth-cite.png") 50% 72% / cover no-repeat;
+  }
+}
+
+.auth-scene > * { pointer-events: none; }
+
+.auth-voile {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,4,15,.86) 0%, rgba(9,4,18,.62) 38%, rgba(8,4,15,.5) 70%, rgba(8,4,15,.72) 100%);
+}
+
+.auth-grille {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(139,92,246,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,.07) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+}
+
+/* Le réticule : tout est ancré sur 50 % / 38 %, comme la spécification. */
+.auth-reticule > * { position: absolute; left: 50%; top: 38%; }
+.auth-reticule .r-grand {
+  width: 470px; height: 470px; margin: -235px 0 0 -235px;
+  border-radius: 50%; border: 1px solid rgba(167,139,250,.16);
+}
+.auth-reticule .r-petit {
+  width: 388px; height: 388px; margin: -194px 0 0 -194px;
+  border-radius: 50%; border: 1px dashed rgba(167,139,250,.13);
+}
+.auth-reticule .r-h {
+  width: 560px; height: 1px; margin: -1px 0 0 -280px;
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,.22), transparent);
+}
+.auth-reticule .r-v {
+  width: 1px; height: 560px; margin: -280px 0 0 0;
+  background: linear-gradient(180deg, transparent, rgba(167,139,250,.14), transparent);
+}
+.auth-reticule .r-m1 { width: 7px; height: 7px; margin: -157px 0 0 -111px; background: var(--au-violet-clair); opacity: .8; }
+.auth-reticule .r-m2 { width: 5px; height: 5px; margin: 96px 0 0 179px; background: var(--au-violet-clair); opacity: .55; }
+
+/* L'assombrissement sous le lockup — la spécification le dit
+   nécessaire à la lisibilité de la baseline, et il l'est. */
+.auth-assombri {
+  position: absolute; inset: 0;
+  background: radial-gradient(58% 34% at 50% 62%, rgba(6,3,12,.88) 0%, rgba(6,3,12,.62) 55%, transparent 100%);
+}
+
+.auth-marque {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 26px;
+}
+/* La lueur du PNG d'origine, refaite en filtre : deux ombres portées
+   qui suivent la forme au lieu d'un halo rectangulaire. */
+.auth-marque img {
+  display: block;
+  filter:
+    drop-shadow(0 0 28px rgba(167,139,250,.55))
+    drop-shadow(0 0 70px rgba(124,58,237,.35));
+}
+.auth-marque .m-symbole { width: min(300px, 42%); }
+.auth-marque .m-lockup { width: min(560px, 78%); }
+
+.auth-fondu {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(8,4,15,.55) 100%);
+}
+
+.auth-pastille {
+  position: absolute;
+  left: 30px; bottom: 26px;
+  display: flex; align-items: center; gap: 18px;
+  padding: 14px 20px;
+  border: 1px solid rgba(139,92,246,.55);
+  border-radius: 8px;
+  background: rgba(12,6,22,.6);
+  backdrop-filter: blur(4px);
+}
+.auth-pastille span {
+  font-family: var(--au-hud);
+  font-size: 15px; font-weight: 600;
+  letter-spacing: .14em;
+  color: #efeaf8;
+}
+.auth-pastille i {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--au-violet-clair);
+  animation: auth-pouls 2.4s ease-in-out infinite;
+}
+@keyframes auth-pouls {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 10px 2px rgba(167,139,250,.85); }
+  50%      { opacity: .55; box-shadow: 0 0 4px 1px rgba(167,139,250,.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-pastille i { animation: none; }
+}
+
+/* ══ LA CARTE ═══════════════════════════════════════════════════ */
+.auth-carte {
+  flex: 1;
+  min-width: 0;
+  max-width: 640px;
+  margin-inline: auto;
+  box-sizing: border-box;
+  border: 1px solid rgba(139,92,246,.16);
+  border-radius: 22px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(76,29,149,.22), transparent 60%),
+    linear-gradient(160deg, #130c1c 0%, #0d0813 100%);
+  padding: 46px 62px 40px;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 1100px) {
+  .auth-carte { height: min(940px, calc(100dvh - 84px)); max-width: none; margin-inline: 0; }
+}
+@media (max-width: 560px) {
+  .auth { padding: 16px; }
+  .auth-carte { padding: 32px 24px 28px; border-radius: 16px; }
+}
+
+.auth-entete { display: flex; align-items: center; gap: 14px; }
+.auth-entete svg { flex: none; }
+.auth-entete b {
+  font-family: var(--au-hud);
+  font-size: 15px; font-weight: 600;
+  letter-spacing: .18em;
+  color: var(--au-violet);
+}
+.auth-entete .filet { flex: 1; height: 1px; background: rgba(139,92,246,.18); }
+.auth-entete .barre { width: 40px; height: 3px; border-radius: 2px; background: var(--au-violet-fonce); }
+
+.auth-titre {
+  margin: 62px 0 0;
+  font-family: var(--au-hud);
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #fff;
+}
+.auth-sous {
+  margin: 18px 0 0;
+  font-size: clamp(17px, 2vw, 21px);
+  color: var(--au-encre-2);
+  letter-spacing: .01em;
+}
+@media (max-width: 560px) { .auth-titre { margin-top: 34px; } }
+
+.auth-etiquette {
+  display: block;
+  margin: 46px 0 12px;
+  font-family: var(--au-hud);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: .16em;
+  color: var(--au-violet);
+}
+.auth-etiquette + .auth-champ { margin-top: 0; }
+.auth-etiquette[data-second] { margin-top: 26px; }
+
+.auth-champ {
+  display: flex; align-items: center; gap: 14px;
+  height: 62px; padding: 0 22px;
+  box-sizing: border-box;
+  border: 1px solid rgba(139,92,246,.3);
+  border-radius: 10px;
+  background: rgba(255,255,255,.028);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.auth-champ:focus-within {
+  border-color: rgba(139,92,246,.75);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.18);
+}
+.auth-champ svg { flex: none; }
+/* L'INPUT REMPLIT SON CHAMP. Mesuré : il faisait 29 px de haut dans une
+   boîte de 62 — taper dans les seize pixels du dessus ou du dessous ne
+   donnait pas le focus. Le champ entier devient la cible. */
+.auth-champ input {
+  flex: 1; min-width: 0;
+  height: 100%;
+  background: transparent; border: none; outline: none;
+  font-family: var(--au-texte);
+  font-size: 19px;
+  color: var(--au-encre);
+}
+.auth-champ input::placeholder { color: rgba(226,222,235,.45); }
+.auth-champ[data-secret] input { letter-spacing: .18em; }
+/* 32 × 32 mesurés : sous la cible confortable. On agrandit la zone
+   sans bouger l'icône, en tirant sur la marge du champ. */
+.auth-oeil {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  margin-right: -11px;
+  background: none; border: none; padding: 0;
+  cursor: pointer; color: var(--au-violet-clair);
+  border-radius: 8px;
+}
+.auth-oeil:focus-visible { outline: 2px solid var(--au-violet); outline-offset: 2px; }
+
+/* Le champ en faute se voit, et son motif se lit sous lui. */
+.auth-champ[data-faute] { border-color: rgba(248,113,113,.75); }
+.auth-faute {
+  margin: 10px 0 0;
+  font-size: 16px;
+  color: #f87171;
+}
+
+.auth-oubli {
+  align-self: flex-end;
+  /* 8 px en haut et en bas : le lien passe de 29 à 45 px de haut sans
+     bouger d'un pixel à l'écran, la marge absorbant le supplément. */
+  margin-top: 8px;
+  padding: 8px 2px;
+  font-size: 19px;
+  color: var(--au-violet-clair);
+  background: none; border: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 6px;
+}
+.auth-oubli:hover { color: var(--au-violet-vif); }
+.auth-oubli:disabled { opacity: .5; cursor: default; }
+.auth-oubli:focus-visible { outline: 2px solid var(--au-violet); outline-offset: 3px; }
+
+.auth-valider {
+  position: relative;
+  margin-top: 26px;
+  height: 68px;
+  border: none; border-radius: 10px;
+  background: linear-gradient(96deg, #7f34f0 0%, #8b5cf6 100%);
+  box-shadow: 0 10px 34px rgba(124,58,237,.32);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter 160ms ease, opacity 160ms ease;
+}
+.auth-valider span {
+  font-family: var(--au-hud);
+  font-size: clamp(17px, 2.2vw, 22px);
+  font-weight: 700;
+  letter-spacing: .2em;
+  color: #fff;
+}
+.auth-valider svg { position: absolute; right: 26px; }
+.auth-valider:hover:not(:disabled) { filter: brightness(1.08); }
+.auth-valider:disabled { opacity: .7; cursor: default; }
+.auth-valider:focus-visible { outline: 2px solid var(--au-violet-clair); outline-offset: 3px; }
+
+.auth-tourne {
+  width: 22px; height: 22px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: auth-tourner .7s linear infinite;
+}
+@keyframes auth-tourner { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .auth-tourne { animation-duration: 2.4s; }
+}
+
+.auth-ou {
+  display: flex; align-items: center; gap: 22px;
+  margin-top: 42px;
+}
+.auth-ou i { flex: 1; height: 1px; background: rgba(139,92,246,.16); }
+.auth-ou span {
+  font-family: var(--au-hud);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: .17em;
+  color: var(--au-encre-3);
+}
+
+.auth-fournisseurs {
+  display: flex; justify-content: center;
+  gap: clamp(18px, 6vw, 55px);
+  margin-top: 34px;
+}
+.auth-fournisseur {
+  width: 106px; max-width: 30%; height: 72px;
+  border: 1px solid rgba(139,92,246,.24);
+  border-radius: 10px;
+  background: rgba(255,255,255,.02);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color 160ms ease;
+}
+.auth-fournisseur:hover:not(:disabled) { border-color: rgba(139,92,246,.6); }
+.auth-fournisseur:disabled { opacity: .5; cursor: default; }
+.auth-fournisseur:focus-visible { outline: 2px solid var(--au-violet); outline-offset: 3px; }
+.auth-fournisseur svg { width: 34px; height: 34px; }
+
+.auth-pied {
+  margin-top: auto;
+  padding-top: 34px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; flex-wrap: wrap;
+  font-size: clamp(16px, 2vw, 19px);
+  color: var(--au-encre-2);
+}
+.auth-pied button {
+  background: none; border: none;
+  padding: 10px 4px;
+  margin: -10px -4px;
+  font: inherit; cursor: pointer;
+  color: var(--au-violet-clair);
+  border-radius: 6px;
+}
+.auth-pied button:hover { color: var(--au-violet-vif); }
+.auth-pied button:focus-visible { outline: 2px solid var(--au-violet); outline-offset: 3px; }
+
+/* LES CONDITIONS, LÀ OÙ ON LES ACCEPTE. Leur article 5 pose
+   l'acceptation à la création du compte : le lien reste sur l'écran
+   qui la déclenche. */
+.auth-legal {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+  color: rgba(207,200,221,.7);
+}
+.auth-legal a { color: var(--au-violet-clair); text-decoration: underline; text-underline-offset: 3px; }
+.auth-legal a:hover { color: var(--au-violet-vif); }

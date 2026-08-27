@@ -49,7 +49,14 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.ico", "robots.txt", "marque/overwrite-symbole.svg"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
-        globIgnores: ["**/stats.html"],
+        /* LA VILLE NE SE PRÉCHARGE PAS.
+           2,27 Mo, décorative, et affichée seulement au-dessus de
+           1100 px — la mettre dans le préchargement d'installation la
+           ferait descendre sur tous les téléphones qui ne la verront
+           jamais. Workbox refuse d'ailleurs au-delà de 2 Mio, et il a
+           raison : lever la limite aurait été répondre à côté. Elle est
+           prise au vol et gardée trente jours, règle ci-dessous. */
+        globIgnores: ["**/stats.html", "**/marque/auth-cite.png"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {
@@ -61,6 +68,16 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ url }) => url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com",
             handler: "CacheFirst",
             options: { cacheName: "google-fonts", expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
+          },
+          {
+            /* La ville de l'écran de connexion : jamais préchargée,
+               prise au premier affichage puis gardée. */
+            urlPattern: ({ url }) => url.pathname === "/marque/auth-cite.png",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "marque",
+              expiration: { maxEntries: 4, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
           },
           {
             urlPattern: /^https:\/\/[a-z0-9]+\.supabase\.co\/storage\/.*\.(webp|png|jpg|jpeg|svg|gif)$/i,

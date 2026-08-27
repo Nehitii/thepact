@@ -5,7 +5,21 @@ import { initReactI18next } from "react-i18next";
 import en from "@/i18n/locales/en.json";
 import fr from "@/i18n/locales/fr.json";
 
-export const DEFAULT_LANGUAGE = "en" as const;
+/* LA LANGUE PAR DÉFAUT EST CELLE DE L'APPLICATION.
+   Elle valait « en » — l'héritage de l'échafaudage. Conséquence : tout
+   visiteur NON CONNECTÉ voyait l'anglais. L'écran d'authentification,
+   les mentions légales, la page 404 : les trois seules pages publiques,
+   toutes en anglais, dans une application dont le document légal, les
+   consignes de M.I.A, les notifications et la majorité des chaînes
+   sources sont en français.
+
+   Ça contredisait aussi `<html lang="fr">`, posé le 27/08 au motif que
+   l'interface est française — un lecteur d'écran annonçait du français
+   et lisait de l'anglais.
+
+   Un compte garde sa propre langue : `I18nProvider` lit
+   `profiles.language` dès qu'une session existe. Seul le AVANT change. */
+export const DEFAULT_LANGUAGE = "fr" as const;
 export type SupportedLanguage = "en" | "fr";
 
 if (!i18n.isInitialized) {

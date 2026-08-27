@@ -1,14 +1,14 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T17:33:18.701Z",
-  "fichiers": 856,
-  "lignes": 162834,
+  "genere": "2026-08-27T17:54:51.408Z",
+  "fichiers": 859,
+  "lignes": 175680,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1477,
-      "poids": 51727
+      "lignes": 1494,
+      "poids": 52672
     },
     {
       "dossier": "docs",
@@ -54,9 +54,9 @@
     },
     {
       "dossier": "public/marque",
-      "fichiers": 15,
-      "lignes": 1476,
-      "poids": 524082
+      "fichiers": 17,
+      "lignes": 13853,
+      "poids": 2809413
     },
     {
       "dossier": "public/mia",
@@ -115,8 +115,8 @@
     {
       "dossier": "src/i18n",
       "fichiers": 4,
-      "lignes": 7563,
-      "poids": 280651
+      "lignes": 7627,
+      "poids": 283642
     },
     {
       "dossier": "src/integrations",
@@ -133,14 +133,14 @@
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17229,
-      "poids": 760974
+      "lignes": 17120,
+      "poids": 759762
     },
     {
       "dossier": "src/styles",
-      "fichiers": 38,
-      "lignes": 29647,
-      "poids": 1123081
+      "fichiers": 39,
+      "lignes": 30144,
+      "poids": 1140115
     },
     {
       "dossier": "src/types",
@@ -183,8 +183,8 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8260,
-      "poids": 305811
+      "lignes": 8310,
+      "poids": 308023
     },
     {
       "langage": "Markdown",
@@ -206,9 +206,9 @@
     },
     {
       "langage": "SVG",
-      "fichiers": 35,
-      "lignes": 473,
-      "poids": 161479
+      "fichiers": 36,
+      "lignes": 476,
+      "poids": 172724
     },
     {
       "langage": "ICO",
@@ -224,9 +224,9 @@
     },
     {
       "langage": "PNG",
-      "fichiers": 26,
-      "lignes": 7512,
-      "poids": 2022301
+      "fichiers": 27,
+      "lignes": 19886,
+      "poids": 4296387
     },
     {
       "langage": "TXT",
@@ -237,14 +237,14 @@
     {
       "langage": "TypeScript",
       "fichiers": 199,
-      "lignes": 28709,
-      "poids": 1101600
+      "lignes": 28740,
+      "poids": 1103324
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67110,
-      "poids": 2770100
+      "lignes": 67001,
+      "poids": 2768888
     },
     {
       "langage": "WEBP",
@@ -254,9 +254,9 @@
     },
     {
       "langage": "CSS",
-      "fichiers": 39,
-      "lignes": 31618,
-      "poids": 1202680
+      "fichiers": 40,
+      "lignes": 32115,
+      "poids": 1219714
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3125,
+  "commits": 3126,
   "orphelins": 0,
   "marqueurs": 12
 }
