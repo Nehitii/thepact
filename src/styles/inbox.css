@@ -1,0 +1,621 @@
+/* ═══════════════════════════════════════════════════════════════
+   LA BOÎTE DE RÉCEPTION — « .bx- »
+
+   TOUT DESCEND DE « --ds-* », QUI POSSÈDE DÉJÀ SON MIROIR CLAIR :
+   aucune surcharge « .light » n'est nécessaire, et il n'y en a
+   aucune. C'est la leçon de la barre latérale et de la revue.
+
+   L'ancienne page ne suivait pas cette règle : elle écrivait
+   « bg-slate-900 », « text-slate-500 », « bg-violet-950 »,
+   « border-black » en dur. En clair, les conversations se seraient
+   affichées en ardoise sombre sur du blanc. Le seul motif qui a
+   sauvé la page, c'est qu'aucune conversation n'a jamais existé.
+
+   DEUX ACCENTS, ET ILS VEULENT DIRE QUELQUE CHOSE. Le cyan est celui
+   de l'application ; le violet marque tout ce qui vient d'un autre
+   être humain. Ce n'est pas une décoration : dans une boîte qui
+   mélange des rappels automatiques et des messages, savoir d'un coup
+   d'œil ce qui vient de quelqu'un est l'information principale.
+   ═══════════════════════════════════════════════════════════════ */
+
+.bx {
+  --bx-plaque:  hsl(var(--ds-surface-1));
+  --bx-creux:   hsl(var(--ds-surface-2));
+  --bx-releve:  hsl(var(--ds-surface-3));
+  --bx-trait:   hsl(var(--ds-border-default) / 0.18);
+  --bx-bord:    hsl(var(--ds-text-muted) / 0.55);
+  --bx-encre:   hsl(var(--ds-text-primary));
+  --bx-encre-2: hsl(var(--ds-text-secondary));
+  --bx-encre-3: hsl(var(--ds-text-muted));
+
+  --bx-signal:  hsl(var(--ds-accent-primary));
+  --bx-humain:  hsl(var(--ds-accent-special));
+  --bx-alerte:  hsl(var(--ds-accent-critical));
+  --bx-veille:  hsl(var(--ds-accent-warning));
+  --bx-vif:     hsl(var(--ds-accent-success));
+
+  --bx-e: var(--ds-ease-out, cubic-bezier(.16, 1, .3, 1));
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 22px 0 96px;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  color: var(--bx-encre);
+}
+
+/* ── L'en-tête ───────────────────────────────────────────────── */
+.bx-tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.bx-titre {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  /* Pas de « truncate » : l'ancien titre s'affichait « BOÎTE DE
+     RÉCEPT… ». Une page dont le nom ne tient pas dans son propre
+     en-tête réduit la taille du nom, pas le nom. */
+  font-size: clamp(19px, 2.6vw, 27px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: var(--bx-encre);
+}
+.bx-sous {
+  margin: 3px 0 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  color: var(--bx-encre-3);
+}
+
+.bx-reglages {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid var(--bx-bord);
+  border-radius: 8px;
+  background: none;
+  color: var(--bx-encre-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 150ms var(--bx-e), border-color 150ms var(--bx-e);
+}
+.bx-reglages:hover { color: var(--bx-encre); border-color: var(--bx-signal); }
+.bx-reglages:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 2px; }
+.bx-reglages svg { width: 13px; height: 13px; }
+
+/* ── Les deux onglets ────────────────────────────────────────────
+   L'ancienne version composait ses classes : « border-${color} »,
+   « bg-${color} ». Tailwind ne voit jamais ces chaînes — elles
+   n'existent qu'à l'exécution — donc aucune règle n'était générée.
+   Mesuré : l'onglet Messages actif portait « border-violet
+   text-violet » et rendait un bord gris et un texte de premier plan.
+   Ici les couleurs sont des attributs, pas des morceaux de nom. */
+
+.bx-onglets {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--bx-trait);
+  border-radius: 11px;
+  background: var(--bx-creux);
+}
+.bx-onglet {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--bx-encre-3);
+  font-family: 'Orbitron', sans-serif;
+  font-size: max(12px, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 200ms var(--bx-e), color 200ms var(--bx-e);
+}
+.bx-onglet svg { width: 15px; height: 15px; }
+.bx-onglet:hover { color: var(--bx-encre-2); }
+.bx-onglet[aria-selected="true"] { background: var(--bx-plaque); color: var(--bx-encre); }
+.bx-onglet[aria-selected="true"][data-ton="humain"] { color: var(--bx-humain); }
+.bx-onglet[aria-selected="true"][data-ton="signal"] { color: var(--bx-signal); }
+.bx-onglet:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 2px; }
+
+.bx-compte {
+  min-width: 19px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--bx-releve);
+  color: var(--bx-encre-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.bx-onglet[aria-selected="true"][data-ton="signal"] .bx-compte { background: var(--bx-signal); color: hsl(var(--ds-bg-base)); }
+.bx-onglet[aria-selected="true"][data-ton="humain"] .bx-compte { background: var(--bx-humain); color: hsl(var(--ds-bg-base)); }
+
+/* ── La barre d'actions ──────────────────────────────────────── */
+.bx-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 30px; }
+.bx-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--bx-encre-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 150ms var(--bx-e), border-color 150ms var(--bx-e), background 150ms var(--bx-e);
+}
+.bx-action svg { width: 13px; height: 13px; }
+.bx-action:hover { color: var(--bx-encre); border-color: var(--bx-trait); background: var(--bx-creux); }
+.bx-action:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 2px; }
+.bx-action[data-ton="danger"] { color: var(--bx-alerte); }
+.bx-action[data-ton="danger"]:hover { border-color: var(--bx-alerte); background: hsl(var(--ds-accent-critical) / 0.09); }
+.bx-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Le groupe de jour ───────────────────────────────────────────
+   Cinq mois d'accumulation ne se lisent pas en liste plate. La date
+   est un repère : elle dit « à partir d'ici, c'est vieux ». */
+.bx-jour {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 12px 0 -2px;
+  padding: 7px 2px 6px;
+  background: linear-gradient(hsl(var(--ds-bg-canvas)) 62%, transparent);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--bx-encre-3);
+}
+.bx-jour:first-of-type { margin-top: 0; }
+
+.bx-liste { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Un avis ─────────────────────────────────────────────────── */
+.bx-avis {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 13px 14px 13px 16px;
+  border: 1px solid var(--bx-trait);
+  border-radius: 12px;
+  background: var(--bx-plaque);
+  transition: border-color 180ms var(--bx-e), background 180ms var(--bx-e);
+}
+/* Le rail marque le non-lu. Il remplace l'anneau « ring-1 » posé sur
+   toute la carte, qui rendait la carte plus lourde sans dire où
+   regarder. */
+.bx-avis[data-lu="non"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 11px; bottom: 11px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis[data-lu="non"] { background: var(--bx-creux); }
+.bx-avis[data-agir="oui"] { cursor: pointer; }
+.bx-avis[data-agir="oui"]:hover { border-color: var(--bx-teinte, var(--bx-signal)); }
+.bx-avis:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 2px; }
+
+.bx-avis-icone {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bx-teinte, var(--bx-signal)) 15%, transparent);
+  color: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis-icone svg { width: 16px; height: 16px; }
+
+.bx-avis-corps { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bx-avis-titre {
+  margin: 0;
+  font-size: max(15px, 0.9375rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bx-encre);
+}
+.bx-avis[data-lu="oui"] .bx-avis-titre { font-weight: 500; color: var(--bx-encre-2); }
+.bx-avis-texte {
+  margin: 0;
+  font-size: max(13.5px, 0.84375rem);
+  line-height: 1.45;
+  color: var(--bx-encre-3);
+}
+.bx-avis-pied { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.bx-avis-quand {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  color: var(--bx-encre-3);
+}
+.bx-avis-aller {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: max(12.5px, 0.78125rem);
+  font-weight: 700;
+  color: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis-aller svg { width: 13px; height: 13px; }
+
+.bx-avis-image { width: 44px; height: 44px; border-radius: 9px; object-fit: cover; }
+
+/* Le récompense se réclame ici. */
+.bx-don {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--bx-veille);
+  border-radius: 7px;
+  background: hsl(var(--ds-accent-warning) / 0.12);
+  color: var(--bx-veille);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.bx-don:hover:not(:disabled) { background: hsl(var(--ds-accent-warning) / 0.2); }
+.bx-don:disabled { opacity: 0.6; cursor: not-allowed; }
+.bx-don svg { width: 12px; height: 12px; }
+.bx-pris {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  color: var(--bx-vif);
+}
+.bx-pris svg { width: 12px; height: 12px; }
+
+/* L'ÉCARTER RESTE ATTEIGNABLE AU DOIGT. L'ancien bouton était en
+   « opacity-0 group-hover:opacity-100 » : sur un écran tactile,
+   aucun survol n'existe — il était donc invisible et introuvable.
+   Ici il est simplement discret, et se révèle au survol comme au
+   focus clavier. */
+.bx-ecarter {
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--bx-encre-3);
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 150ms var(--bx-e), color 150ms var(--bx-e), background 150ms var(--bx-e);
+}
+.bx-avis:hover .bx-ecarter, .bx-ecarter:focus-visible { opacity: 1; }
+.bx-ecarter:hover { color: var(--bx-alerte); background: hsl(var(--ds-accent-critical) / 0.1); }
+.bx-ecarter:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 1px; }
+.bx-ecarter svg { width: 14px; height: 14px; }
+
+@media (hover: none) {
+  /* Sans survol possible, le bouton reste lisible en permanence. */
+  .bx-ecarter { opacity: 0.75; }
+}
+
+/* ── Une conversation ────────────────────────────────────────── */
+.bx-fil {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--bx-trait);
+  border-radius: 12px;
+  background: var(--bx-plaque);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms var(--bx-e), background 180ms var(--bx-e), transform 180ms var(--bx-e);
+}
+.bx-fil:hover { border-color: var(--bx-humain); transform: translateX(2px); }
+.bx-fil:focus-visible { outline: 2px solid var(--bx-humain); outline-offset: 2px; }
+.bx-fil[data-lu="non"] { background: var(--bx-creux); border-color: hsl(var(--ds-accent-special) / 0.35); }
+
+.bx-fil-corps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bx-fil-haut { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.bx-fil-nom {
+  margin: 0;
+  font-size: max(14.5px, 0.90625rem);
+  font-weight: 700;
+  color: var(--bx-encre);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bx-fil-quand {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  color: var(--bx-encre-3);
+}
+.bx-fil-extrait {
+  margin: 0;
+  font-size: max(13.5px, 0.84375rem);
+  color: var(--bx-encre-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bx-fil[data-lu="non"] .bx-fil-extrait { color: var(--bx-encre-2); font-weight: 600; }
+.bx-fil-extrait i { font-style: normal; color: var(--bx-encre-3); opacity: 0.75; }
+
+.bx-fil-pastille {
+  display: grid;
+  place-items: center;
+  min-width: 21px; height: 21px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bx-humain);
+  color: hsl(var(--ds-bg-base));
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── La porte : écrire à un allié ────────────────────────────────
+   La messagerie n'avait aucune entrée — zéro message envoyé en base,
+   par personne, depuis toujours. On n'atteignait un fil que depuis la
+   liste des fils, laquelle se construit à partir des messages. Voici
+   l'entrée qui manquait. */
+.bx-porte { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
+.bx-porte-titre {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--bx-encre-3);
+}
+.bx-allie {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px dashed var(--bx-bord);
+  border-radius: 11px;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms var(--bx-e), background 160ms var(--bx-e);
+}
+.bx-allie:hover { border-style: solid; border-color: var(--bx-humain); background: var(--bx-creux); }
+.bx-allie:focus-visible { outline: 2px solid var(--bx-humain); outline-offset: 2px; }
+.bx-allie b { font-size: max(14px, 0.875rem); font-weight: 700; color: var(--bx-encre); }
+.bx-allie span {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--bx-humain);
+}
+.bx-allie span svg { width: 12px; height: 12px; }
+
+/* ── Le vide ─────────────────────────────────────────────────── */
+.bx-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 54px 24px;
+  border: 1px dashed var(--bx-trait);
+  border-radius: 14px;
+  text-align: center;
+}
+.bx-vide > svg { width: 30px; height: 30px; color: var(--bx-encre-3); opacity: 0.7; }
+.bx-vide h3 { margin: 0; font-size: max(16px, 1rem); font-weight: 700; color: var(--bx-encre-2); }
+.bx-vide p { margin: 0; max-width: 40ch; font-size: max(13.5px, 0.84375rem); line-height: 1.5; color: var(--bx-encre-3); }
+.bx-vide a, .bx-vide button {
+  margin-top: 4px;
+  border: 0; background: none;
+  color: var(--bx-signal);
+  font-family: inherit; font-size: max(13.5px, 0.84375rem); font-weight: 700;
+  text-decoration: underline; text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ── Les fantômes de chargement ──────────────────────────────── */
+.bx-os {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--bx-creux) 25%, var(--bx-releve) 50%, var(--bx-creux) 75%);
+  background-size: 200% 100%;
+  animation: bx-onde 1.3s linear infinite;
+}
+@keyframes bx-onde { to { background-position: -200% 0; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE FIL — « .bxf- »
+
+   Il occupe la hauteur disponible et ne défile qu'au milieu :
+   l'en-tête et le champ restent en place. L'ancienne page posait
+   « h-screen » à l'intérieur d'une mise en page qui a déjà sa propre
+   hauteur — la page débordait de la fenêtre d'exactement la hauteur
+   de ce qui la précède.
+   ═══════════════════════════════════════════════════════════════ */
+
+.bxf {
+  --bxf-e: var(--ds-ease-out, cubic-bezier(.16, 1, .3, 1));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  color: hsl(var(--ds-text-primary));
+}
+
+.bxf-tete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px 13px;
+  border-bottom: 1px solid hsl(var(--ds-border-default) / 0.18);
+  flex-shrink: 0;
+}
+.bxf-retour {
+  display: grid; place-items: center;
+  width: 34px; height: 34px;
+  border: 1px solid hsl(var(--ds-text-muted) / 0.5);
+  border-radius: 9px;
+  background: none;
+  color: hsl(var(--ds-text-secondary));
+  cursor: pointer;
+  transition: color 150ms var(--bxf-e), border-color 150ms var(--bxf-e);
+}
+.bxf-retour:hover { color: hsl(var(--ds-text-primary)); border-color: hsl(var(--ds-accent-special)); }
+.bxf-retour:focus-visible { outline: 2px solid hsl(var(--ds-accent-special)); outline-offset: 2px; }
+.bxf-retour svg { width: 17px; height: 17px; }
+
+.bxf-qui { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bxf-nom {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: max(14px, 0.875rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: hsl(var(--ds-text-primary));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* « Encrypted Channel » disait la ligne d'avant. Les messages sont
+   stockés en clair dans Postgres : c'était faux, et faux sur le seul
+   sujet où l'on ne plaisante pas. Ici on affiche le dernier signe de
+   vie, qui est vrai et utile. */
+.bxf-vu {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  color: hsl(var(--ds-text-muted));
+}
+.bxf-outils { margin-left: auto; display: flex; gap: 6px; }
+
+.bxf-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 4px 8px; }
+.bxf-messages { display: flex; flex-direction: column; gap: 7px; }
+
+.bxf-date {
+  align-self: center;
+  margin: 12px 0 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: hsl(var(--ds-surface-2));
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: hsl(var(--ds-text-muted));
+}
+.bxf-date:first-child { margin-top: 0; }
+
+.bxf-bulle {
+  max-width: min(74%, 46ch);
+  padding: 9px 13px 7px;
+  border: 1px solid hsl(var(--ds-border-default) / 0.16);
+  border-radius: 15px;
+  background: hsl(var(--ds-surface-2));
+  color: hsl(var(--ds-text-primary));
+}
+.bxf-bulle[data-de="moi"] {
+  align-self: flex-end;
+  border-color: hsl(var(--ds-accent-special) / 0.4);
+  background: hsl(var(--ds-accent-special) / 0.14);
+  border-bottom-right-radius: 5px;
+}
+.bxf-bulle[data-de="lui"] { align-self: flex-start; border-bottom-left-radius: 5px; }
+/* Une bulle encore en vol : elle est là, mais pas encore confirmée. */
+.bxf-bulle[data-vol="oui"] { opacity: 0.6; }
+.bxf-bulle p { margin: 0; font-size: max(15px, 0.9375rem); line-height: 1.45; overflow-wrap: anywhere; }
+.bxf-bulle-pied {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(9.5px, 0.59375rem);
+  color: hsl(var(--ds-text-muted));
+}
+.bxf-bulle[data-de="moi"] .bxf-bulle-pied { justify-content: flex-end; }
+.bxf-bulle-pied svg { width: 12px; height: 12px; color: hsl(var(--ds-accent-special)); }
+
+.bxf-pied { flex-shrink: 0; padding: 11px 4px 14px; border-top: 1px solid hsl(var(--ds-border-default) / 0.18); }
+.bxf-champ { display: flex; align-items: flex-end; gap: 9px; }
+.bxf-champ textarea {
+  flex: 1;
+  min-height: 42px;
+  max-height: 140px;
+  padding: 10px 13px;
+  border: 1px solid hsl(var(--ds-text-muted) / 0.5);
+  border-radius: 11px;
+  background: hsl(var(--ds-surface-2));
+  color: hsl(var(--ds-text-primary));
+  font-family: inherit;
+  font-size: max(15px, 0.9375rem);
+  line-height: 1.4;
+  resize: none;
+}
+.bxf-champ textarea::placeholder { color: hsl(var(--ds-text-muted)); }
+.bxf-champ textarea:focus-visible { outline: 2px solid hsl(var(--ds-accent-special)); outline-offset: 1px; }
+.bxf-envoi {
+  display: grid; place-items: center;
+  width: 42px; height: 42px;
+  border: 0;
+  border-radius: 11px;
+  background: hsl(var(--ds-accent-special));
+  color: hsl(var(--ds-bg-base));
+  cursor: pointer;
+  transition: opacity 140ms var(--bxf-e);
+}
+.bxf-envoi:disabled { opacity: 0.4; cursor: not-allowed; }
+.bxf-envoi:focus-visible { outline: 2px solid hsl(var(--ds-accent-special)); outline-offset: 2px; }
+.bxf-envoi svg { width: 17px; height: 17px; }
+
+.bxf-note {
+  margin: 8px 0 0;
+  font-size: max(12.5px, 0.78125rem);
+  line-height: 1.45;
+  color: hsl(var(--ds-text-muted));
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .bx { padding-top: 14px; }
+  .bx-onglet { font-size: 11px; letter-spacing: 0.04em; }
+  .bx-avis { grid-template-columns: auto minmax(0, 1fr); }
+  .bx-avis-image { display: none; }
+  .bxf-bulle { max-width: 86%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bx-fil, .bx-onglet, .bx-action, .bx-avis, .bx-ecarter, .bx-allie { transition: none; }
+  .bx-fil:hover { transform: none; }
+  .bx-os { animation: none; }
+}

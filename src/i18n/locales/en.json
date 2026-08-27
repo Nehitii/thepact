@@ -2132,9 +2132,7 @@
     "loadingMessages": "Loading messages...",
     "emptyNotifications": "No notifications",
     "emptyNotificationsDesc": "You're all caught up!",
-    "emptyMessages": "No messages yet",
-    "emptyMessagesDesc": "Private messaging coming soon",
-    "unknownUser": "Unknown User",
+    "emptyMessages": "No conversations",
     "notifications": {
       "markAllRead": "Mark all as read",
       "clearAll": "Clear all",
@@ -2147,15 +2145,36 @@
     "messages": {
       "empty": "No messages",
       "emptyDesc": "Start a conversation",
-      "sendMessage": "Send message",
-      "typePlaceholder": "Type a message..."
+      "sendMessage": "Send",
+      "typePlaceholder": "Write a message…"
     },
     "categories": {
       "system": "System",
       "progress": "Progress",
       "social": "Social",
       "marketing": "Marketing"
-    }
+    },
+    "emptyNotificationsWhy": "Nothing needs your attention. Reminders from your modules will land here.",
+    "emptyMessagesAllies": "You write to your allies. Pick one below.",
+    "emptyMessagesNoAlly": "You write to your allies. Add someone to open a first conversation.",
+    "goToFriends": "Find allies",
+    "writeTo": "Write to an ally",
+    "write": "Write",
+    "you": "You",
+    "yesterdayShort": "Yesterday",
+    "groupWeek": "This week",
+    "clearAllTitle": "Delete every notification?",
+    "clearAllWhy": "They will be deleted for good, including the ones your category settings hide here. This cannot be undone.",
+    "rewardClaimed": "Reward claimed",
+    "rewardBonds": "+{{n}} Bonds credited",
+    "rewardCosmetic": "Added to your collection",
+    "rewardFailed": "The reward could not be claimed",
+    "rewardRetry": "Try again in a moment.",
+    "claimed": "Claimed",
+    "claim": "Claim",
+    "claimBonds": "Claim +{{n}}",
+    "open": "Open",
+    "dismiss": "Dismiss this notification"
   },
   "home": {
     "title": "Command Center",
@@ -3646,5 +3665,20 @@
       "reste_one": "1 day left.",
       "reste_other": "{{count}} days left."
     }
+  },
+  "thread": {
+    "lastSeen": "Seen {{quand}}",
+    "block": "Block",
+    "blockTitle": "Block {{nom}}?",
+    "blockWhy": "You will no longer receive their messages, and cannot write to them. Messages already exchanged stay readable. Blocks are lifted from Privacy.",
+    "blocked": "{{nom}} is blocked",
+    "blockFailed": "The block failed",
+    "sendFailed": "The message could not be sent",
+    "sendFailedWhy": "Try again in a moment.",
+    "sendFailedNoAlly": "You write to your allies. This person is not one.",
+    "notAlly": "You write to your allies. This person is not one — send a request from the Allies page.",
+    "emptyTitle": "Nothing yet",
+    "emptyAlly": "Write the first message. It leaves straight away.",
+    "emptyNoAlly": "You write to your allies. Add this person to open the conversation."
   }
 }

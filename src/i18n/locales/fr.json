@@ -2132,9 +2132,7 @@
     "loadingMessages": "Chargement des messages...",
     "emptyNotifications": "Aucune notification",
     "emptyNotificationsDesc": "Tu es à jour !",
-    "emptyMessages": "Pas encore de messages",
-    "emptyMessagesDesc": "Messagerie privée bientôt disponible",
-    "unknownUser": "Utilisateur inconnu",
+    "emptyMessages": "Aucune conversation",
     "notifications": {
       "markAllRead": "Tout marquer comme lu",
       "clearAll": "Tout effacer",
@@ -2147,15 +2145,36 @@
     "messages": {
       "empty": "Aucun message",
       "emptyDesc": "Commence une conversation",
-      "sendMessage": "Envoyer un message",
-      "typePlaceholder": "Tape un message..."
+      "sendMessage": "Envoyer",
+      "typePlaceholder": "Écrire un message…"
     },
     "categories": {
       "system": "Système",
       "progress": "Progrès",
       "social": "Social",
       "marketing": "Marketing"
-    }
+    },
+    "emptyNotificationsWhy": "Rien n'attend votre attention. Les rappels de vos modules arriveront ici.",
+    "emptyMessagesAllies": "Vous écrivez à vos alliés. Choisissez-en un ci-dessous.",
+    "emptyMessagesNoAlly": "On écrit à ses alliés. Ajoutez quelqu'un pour ouvrir une première conversation.",
+    "goToFriends": "Trouver des alliés",
+    "writeTo": "Écrire à un allié",
+    "write": "Écrire",
+    "you": "Vous",
+    "yesterdayShort": "Hier",
+    "groupWeek": "Cette semaine",
+    "clearAllTitle": "Effacer toutes les notifications ?",
+    "clearAllWhy": "Elles seront supprimées définitivement, y compris celles que vos réglages de catégories masquent ici. Cette action ne s'annule pas.",
+    "rewardClaimed": "Récompense récupérée",
+    "rewardBonds": "+{{n}} Bonds crédités",
+    "rewardCosmetic": "Ajoutée à votre collection",
+    "rewardFailed": "La récompense n'a pas pu être récupérée",
+    "rewardRetry": "Réessayez dans un instant.",
+    "claimed": "Récupérée",
+    "claim": "Récupérer",
+    "claimBonds": "Récupérer +{{n}}",
+    "open": "Ouvrir",
+    "dismiss": "Écarter cette notification"
   },
   "home": {
     "title": "Centre de commande",
@@ -3646,5 +3665,20 @@
       "reste_one": "Il te reste 1 jour.",
       "reste_other": "Il te reste {{count}} jours."
     }
+  },
+  "thread": {
+    "lastSeen": "Vu·e {{quand}}",
+    "block": "Bloquer",
+    "blockTitle": "Bloquer {{nom}} ?",
+    "blockWhy": "Vous ne recevrez plus ses messages et ne pourrez plus lui écrire. Les messages déjà échangés restent lisibles. Le blocage se retire depuis Confidentialité.",
+    "blocked": "{{nom}} est bloqué·e",
+    "blockFailed": "Le blocage a échoué",
+    "sendFailed": "Le message n'a pas pu être envoyé",
+    "sendFailedWhy": "Réessayez dans un instant.",
+    "sendFailedNoAlly": "On écrit à ses alliés. Cette personne n'en est pas un.",
+    "notAlly": "On écrit à ses alliés. Cette personne n'en est pas un — la demande se fait depuis la page Alliés.",
+    "emptyTitle": "Rien encore",
+    "emptyAlly": "Écrivez le premier message. Il partira tout de suite.",
+    "emptyNoAlly": "On écrit à ses alliés. Ajoutez cette personne pour ouvrir la conversation."
   }
 }

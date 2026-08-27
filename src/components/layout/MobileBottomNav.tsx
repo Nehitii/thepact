@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Home, Target, Handshake, Inbox, UserCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
-import { useMessages } from "@/hooks/useMessages";
+import { useMessagesNonLus } from "@/hooks/useMessages";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,9 @@ export function MobileBottomNav() {
   const isMobile = useIsMobile();
   const location = useLocation();
   const { count: friendCount } = usePendingFriendCount();
-  const { unreadCount: messageCount } = useMessages();
+  /* Le compte seul : la barre n'affiche qu'une pastille, elle n'a pas
+     besoin de la correspondance entière pour la calculer. */
+  const { nonLus: messageCount } = useMessagesNonLus();
   const social = useSocialFeatures();
 
   if (!isMobile) return null;

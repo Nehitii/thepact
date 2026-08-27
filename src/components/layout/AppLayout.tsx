@@ -4,6 +4,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { useFuseauDuProfil } from "@/hooks/useFuseauDuProfil";
+import { useMessagesEnDirect } from "@/hooks/useMessages";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ReseauMia, type EtatMia } from "@/components/mia/ReseauMia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
@@ -40,6 +41,9 @@ export function AppLayout() {
   /* La colonne « timezone » du profil valait UTC pour tout le monde ;
      deux fonctions serveur la lisaient quand meme. */
   useFuseauDuProfil(user?.id);
+  /* Un message reçu doit se voir sans recharger. Ici et nulle part
+     ailleurs : deux abonnements au même nom se refusent l'un l'autre. */
+  useMessagesEnDirect();
   const queryClient = useQueryClient();
 
   useEffect(() => {

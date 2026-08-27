@@ -1,203 +1,293 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
+import { ArrowLeft, Send, CheckCheck, UserX } from "lucide-react";
+import { toast } from "sonner";
+import "@/styles/community.css";
+import "@/styles/inbox.css";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessages } from "@/hooks/useMessages";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, CheckCheck } from "lucide-react";
-import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { useFriends } from "@/hooks/useFriends";
+import { useCadres } from "@/hooks/community/useCadres";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { Pastille } from "@/components/community/Pastille";
+import { nomAffichable } from "@/components/community/vocabulaire";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+/**
+ * UNE CONVERSATION.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE QUI ÉTAIT FAUX ICI
+ *
+ * — « ENCRYPTED CHANNEL », sous le nom de l'interlocuteur. Les
+ *   messages sont stockés en clair dans Postgres. C'était faux, et
+ *   faux sur le seul sujet où une application n'a pas le droit de se
+ *   vanter. Remplacé par le dernier signe de vie, qui est vrai.
+ *
+ * — LE PROFIL D'EN FACE ÉTAIT TOUJOURS NUL. La page lisait
+ *   `profiles` en direct pour l'autre personne. Cette table n'a
+ *   qu'une politique de lecture : « auth.uid() = id ». La requête
+ *   rendait donc null à tous les coups, et l'en-tête affichait
+ *   « Unknown User » avec un « ? » — pour tout le monde, toujours.
+ *
+ * — RIEN N'ÉTAIT TRADUIT. « Unknown User », « No messages yet. Start
+ *   the conversation. », « Type a message... », « Yesterday ». Dans
+ *   une application française.
+ *
+ * — L'ABONNEMENT TEMPS RÉEL ÉCOUTAIT LE VIDE. private_messages ne
+ *   figurait pas dans la publication `supabase_realtime`. La
+ *   migration l'y a ajoutée, et l'abonnement vit maintenant dans le
+ *   hook, une seule fois pour toute l'application.
+ *
+ * — « h-screen » DANS UNE MISE EN PAGE QUI A DÉJÀ SA HAUTEUR : la
+ *   page dépassait de la fenêtre d'exactement ce qui la précède.
+ *
+ * — ON POUVAIT ÉCRIRE À N'IMPORTE QUEL IDENTIFIANT. La politique
+ *   d'insertion ne vérifiait que l'expéditeur. Elle exige désormais
+ *   une alliance acceptée et l'absence de blocage ; l'écran le dit
+ *   avant, plutôt que de laisser partir un message qui sera refusé.
+ * ═══════════════════════════════════════════════════════════════
+ */
 
 export default function InboxThread() {
   const { userId } = useParams<{ userId: string }>();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { messages, sendMessage, markConversationAsRead } = useMessages();
-  // React Query mutation's `mutate` is referentially stable across renders.
-  const { mutate: markAsRead } = markConversationAsRead;
-  const [newMessage, setNewMessage] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const locale = useDateFnsLocale();
+  const queryClient = useQueryClient();
 
-  // Fetch other user's profile
-  const { data: otherProfile } = useQuery({
-    queryKey: ["thread-profile", userId],
-    queryFn: async () => {
-      if (!userId) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", userId)
-        .maybeSingle();
-      return data;
-    },
+  const { messages, envoyer, marquerLuLaConversation } = useMessages();
+  const { mutate: marquerLu } = marquerLuLaConversation;
+  const { getFriendshipStatus, friendsLoading } = useFriends();
+
+  const [brouillon, setBrouillon] = useState("");
+  const [blocageDemande, setBlocageDemande] = useState(false);
+  const bas = useRef<HTMLDivElement>(null);
+  const champ = useRef<HTMLTextAreaElement>(null);
+
+  const { data: profil } = useQuery({
+    queryKey: ["profil-fil", userId],
+    queryFn: async () => (userId ? (await chargerProfilsPublics([userId])).get(userId) ?? null : null),
     enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
   });
+  const { data: cadres } = useCadres(userId ? [userId] : []);
 
-  // Filter messages for this thread
-  const threadMessages = messages
-    .filter(
-      (m) =>
-        (m.sender_id === userId && m.receiver_id === user?.id) ||
-        (m.sender_id === user?.id && m.receiver_id === userId)
-    )
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  const fil = useMemo(
+    () =>
+      messages
+        .filter(
+          (m) =>
+            (m.sender_id === userId && m.receiver_id === user?.id) ||
+            (m.sender_id === user?.id && m.receiver_id === userId),
+        )
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [messages, userId, user?.id],
+  );
 
-  // Mark as read on mount
+  const allie = userId ? getFriendshipStatus(userId) === "accepted" : false;
+  const nom = nomAffichable(profil?.display_name, t("friends.unknownAgent", "Agent Inconnu"));
+
+  /* Marquer lu à l'ouverture, et à chaque message reçu ensuite : le
+     hook invalide le fil, ce qui rejoue cet effet. */
   useEffect(() => {
-    if (userId) {
-      markAsRead(userId);
-    }
-  }, [userId, markAsRead]);
+    if (userId) marquerLu(userId);
+  }, [userId, marquerLu, fil.length]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [threadMessages.length]);
+    bas.current?.scrollIntoView({ behavior: fil.length > 1 ? "smooth" : "auto" });
+  }, [fil.length]);
 
-  // Realtime subscription
-  useEffect(() => {
-    if (!user?.id || !userId) return;
-    const channel = supabase
-      .channel(`thread-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "private_messages",
-          filter: `sender_id=eq.${userId}`,
-        },
-        () => {
-          markAsRead(userId);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, userId, markAsRead]);
-
-  const handleSend = async () => {
-    if (!newMessage.trim() || !userId) return;
-    await sendMessage.mutateAsync({ receiverId: userId, content: newMessage.trim() });
-    setNewMessage("");
+  const grandir = () => {
+    const el = champ.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   };
 
-  const formatMsgTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    if (isToday(d)) return format(d, "HH:mm");
-    if (isYesterday(d)) return `Yesterday ${format(d, "HH:mm")}`;
-    return format(d, "dd/MM HH:mm");
+  const partir = async () => {
+    const texte = brouillon.trim();
+    if (!texte || !userId || envoyer.isPending) return;
+    setBrouillon("");
+    if (champ.current) champ.current.style.height = "auto";
+    try {
+      await envoyer.mutateAsync({ destinataire: userId, contenu: texte });
+    } catch {
+      /* Le refus vient presque toujours de la politique d'insertion.
+         On ne dit pas « vous êtes bloqué » : l'ignorer fait partie de
+         ce qu'un blocage protège. On rend le texte, plutôt que de le
+         perdre. */
+      setBrouillon(texte);
+      toast.error(t("thread.sendFailed", "Le message n'a pas pu être envoyé"), {
+        description: allie
+          ? t("thread.sendFailedWhy", "Réessayez dans un instant.")
+          : t("thread.sendFailedNoAlly", "On écrit à ses alliés. Cette personne n'en est pas un."),
+      });
+    }
+  };
+
+  const bloquer = async () => {
+    if (!user?.id || !userId) return;
+    const { error } = await supabase
+      .from("blocked_users")
+      .insert({ user_id: user.id, blocked_user_id: userId });
+    if (error) {
+      toast.error(t("thread.blockFailed", "Le blocage a échoué"));
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["blocked-users", user.id] });
+    toast.success(t("thread.blocked", "{{nom}} est bloqué·e", { nom }));
+    navigate("/inbox");
+  };
+
+  const jourDe = (iso: string) => {
+    const d = new Date(iso);
+    if (isToday(d)) return t("inbox.notifications.today", "Aujourd'hui");
+    if (isYesterday(d)) return t("inbox.notifications.yesterday", "Hier");
+    return format(d, "d MMMM yyyy", { locale });
   };
 
   if (!user) return null;
 
+  let dernierJour = "";
+
   return (
-    <div className="h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] opacity-40" />
-      </div>
+    <div className="bxf page-px">
+      <header className="bxf-tete">
+        <button
+          type="button" className="bxf-retour"
+          onClick={() => navigate("/inbox")}
+          aria-label={t("common.back", "Retour")}
+        >
+          <ArrowLeft aria-hidden="true" />
+        </button>
 
-      <div className="flex-1 flex flex-col max-w-3xl w-full mx-auto relative z-10 h-full">
-        {/* Header */}
-        <div className="flex items-center gap-4 p-4 border-b border-white/10 bg-background/80 backdrop-blur-xl shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/inbox")}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+        <Pastille
+          identifiant={userId} nom={profil?.display_name} image={profil?.avatar_url}
+          cadre={cadres?.get(userId ?? "")} petite
+        />
 
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-violet-950 border-2 border-violet-500/50 flex items-center justify-center text-sm font-bold font-orbitron text-violet-200">
-              {otherProfile?.display_name?.[0]?.toUpperCase() || "?"}
-            </div>
-            <div>
-              <h2 className="text-sm font-bold font-orbitron tracking-wide text-foreground">
-                {otherProfile?.display_name || "Unknown User"}
-              </h2>
-              <p className="ds-t-label text-muted-foreground font-mono">Encrypted Channel</p>
-            </div>
-          </div>
+        <div className="bxf-qui">
+          <h1 className="bxf-nom">{nom}</h1>
+          {/* Le dernier signe de vie n'apparaît que si la personne
+              accepte de le montrer : le serveur ne l'envoie pas sinon. */}
+          {profil?.last_seen_at && (
+            <p className="bxf-vu">
+              {t("thread.lastSeen", "Vu·e {{quand}}", {
+                quand: formatDistanceToNow(new Date(profil.last_seen_at), { addSuffix: true, locale }),
+              })}
+            </p>
+          )}
         </div>
 
-        {/* Messages */}
-        <ScrollArea className="flex-1">
-          <div className="p-4 space-y-3">
-            {threadMessages.length === 0 && (
-              <div className="text-center py-20 text-muted-foreground text-sm">
-                No messages yet. Start the conversation.
-              </div>
-            )}
-            {threadMessages.map((msg) => {
-              const isMine = msg.sender_id === user.id;
+        <div className="bxf-outils">
+          <button
+            type="button" className="bxf-retour"
+            onClick={() => setBlocageDemande(true)}
+            aria-label={t("thread.block", "Bloquer")}
+            title={t("thread.block", "Bloquer")}
+          >
+            <UserX aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+
+      <div className="bxf-corps">
+        <div className="bxf-messages">
+          {fil.length === 0 ? (
+            <div className="bx-vide">
+              <Send aria-hidden="true" />
+              <h3>{t("thread.emptyTitle", "Rien encore")}</h3>
+              <p>
+                {allie
+                  ? t("thread.emptyAlly", "Écrivez le premier message. Il partira tout de suite.")
+                  : t("thread.emptyNoAlly", "On écrit à ses alliés. Ajoutez cette personne pour ouvrir la conversation.")}
+              </p>
+            </div>
+          ) : (
+            fil.map((m) => {
+              const jour = jourDe(m.created_at);
+              const nouveauJour = jour !== dernierJour;
+              dernierJour = jour;
+              const deMoi = m.sender_id === user.id;
               return (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={cn("flex", isMine ? "justify-end" : "justify-start")}
-                >
+                <div key={m.id} style={{ display: "contents" }}>
+                  {nouveauJour && <span className="bxf-date">{jour}</span>}
                   <div
-                    className={cn(
-                      "max-w-[75%] px-4 py-2.5 rounded-2xl text-sm",
-                      isMine
-                        ? "bg-primary/20 border border-primary/30 text-foreground rounded-br-sm"
-                        : "bg-white/5 border border-white/10 text-slate-200 rounded-bl-sm"
-                    )}
+                    className="bxf-bulle"
+                    data-de={deMoi ? "moi" : "lui"}
+                    data-vol={m.id.startsWith("provisoire-") ? "oui" : "non"}
                   >
-                    <p className="break-words">{msg.content}</p>
-                    <div className={cn("flex items-center gap-1.5 mt-1", isMine ? "justify-end" : "justify-start")}>
-                      <span className="ds-t-label text-muted-foreground font-mono">
-                        {formatMsgTime(msg.created_at)}
-                      </span>
-                      {isMine && msg.is_read && (
-                        <CheckCheck className="h-3 w-3 text-primary" />
-                      )}
+                    <p>{m.content}</p>
+                    <div className="bxf-bulle-pied">
+                      <span>{format(new Date(m.created_at), "HH:mm")}</span>
+                      {deMoi && m.is_read && <CheckCheck aria-hidden="true" />}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
-            })}
-            <div ref={bottomRef} />
-          </div>
-        </ScrollArea>
-
-        {/* Input */}
-        <div className="p-4 border-t border-white/10 bg-background/80 backdrop-blur-xl shrink-0">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-            className="flex items-center gap-3"
-          >
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 bg-white/5 border-white/10 focus:border-primary/50 font-rajdhani"
-              autoFocus
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!newMessage.trim() || sendMessage.isPending}
-              className="bg-primary hover:bg-primary/80 text-primary-foreground shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+            })
+          )}
+          <div ref={bas} />
         </div>
       </div>
+
+      <div className="bxf-pied">
+        {allie || friendsLoading ? (
+          <form className="bxf-champ" onSubmit={(e) => { e.preventDefault(); partir(); }}>
+            <textarea
+              ref={champ}
+              value={brouillon}
+              rows={1}
+              maxLength={2000}
+              placeholder={t("inbox.messages.typePlaceholder", "Écrire un message…")}
+              aria-label={t("inbox.messages.typePlaceholder", "Écrire un message…")}
+              onChange={(e) => { setBrouillon(e.target.value); grandir(); }}
+              /* Entrée envoie, Maj+Entrée passe à la ligne : c'est ce
+                 que fait toute messagerie, et l'ancien champ à une
+                 ligne ne permettait pas le retour du tout. */
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); partir(); }
+              }}
+            />
+            <button
+              type="submit" className="bxf-envoi"
+              disabled={!brouillon.trim() || envoyer.isPending}
+              aria-label={t("inbox.messages.sendMessage", "Envoyer")}
+            >
+              <Send aria-hidden="true" />
+            </button>
+          </form>
+        ) : (
+          <p className="bxf-note">
+            {t("thread.notAlly", "On écrit à ses alliés. Cette personne n'en est pas un — la demande se fait depuis la page Alliés.")}
+          </p>
+        )}
+      </div>
+
+      <AlertDialog open={blocageDemande} onOpenChange={setBlocageDemande}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("thread.blockTitle", "Bloquer {{nom}} ?", { nom })}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("thread.blockWhy", "Vous ne recevrez plus ses messages et ne pourrez plus lui écrire. Les messages déjà échangés restent lisibles. Le blocage se retire depuis Confidentialité.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel", "Annuler")}</AlertDialogCancel>
+            <AlertDialogAction onClick={bloquer}>{t("thread.block", "Bloquer")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

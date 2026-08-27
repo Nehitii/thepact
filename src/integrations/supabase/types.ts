@@ -5113,6 +5113,14 @@ export type Database = {
       }
       carte_profil_public: { Args: { p_user_id: string }; Returns: Json }
       categories_cosmetiques: { Args: never; Returns: number }
+      chercher_profils: {
+        Args: { p_requete: string }
+        Returns: {
+          avatar: string
+          id: string
+          nom: string
+        }[]
+      }
       check_and_increment_ai_quota: {
         Args: { _daily_limit?: number; _function_name: string }
         Returns: Json

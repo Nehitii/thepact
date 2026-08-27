@@ -195,32 +195,27 @@ export function useFriends() {
     return "none";
   };
 
-  // Search profiles (filtered by blocked users)
+  /* LA RECHERCHE D'ALLIÉS NE POUVAIT RIEN RENDRE.
+     Elle interrogeait `profiles` en ilike. Or cette table n'a qu'une
+     politique de lecture — « auth.uid() = id » — et la requête
+     s'excluait elle-même de ses résultats : elle rendait donc toujours
+     zéro ligne, quelle que soit la saisie. Zéro amitié en base : ce
+     n'était pas un désintérêt, c'était une impasse.
+
+     Elle filtrait aussi les blocages « dans les deux sens » en lisant
+     blocked_users avec blocked_user_id = moi. Cette lecture-là ne rend
+     rien non plus, pour la même raison : on ne voit que les blocages
+     qu'on a posés. La moitié du filtre était décorative.
+
+     `chercher_profils` fait les deux côté serveur, ne rend que les
+     profils qui ont accepté d'être trouvés, et neutralise les jokers
+     de la saisie. */
   const searchProfiles = async (query: string) => {
-    if (!user?.id || !query.trim()) return [];
-
-    const { data: blocked } = await supabase
-      .from("blocked_users")
-      .select("blocked_user_id")
-      .eq("user_id", user.id);
-    const blockedIds = (blocked ?? []).map((b) => b.blocked_user_id);
-
-    const { data: blockedBy } = await supabase
-      .from("blocked_users")
-      .select("user_id")
-      .eq("blocked_user_id", user.id);
-    const blockedByIds = (blockedBy ?? []).map((b) => b.user_id);
-
-    const excludeIds = [...new Set([user.id, ...blockedIds, ...blockedByIds])];
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, display_name, avatar_url")
-      .not("id", "in", `(${excludeIds.join(",")})`)
-      .ilike("display_name", `%${query}%`)
-      .limit(20);
+    if (!user?.id || query.trim().length < 2) return [];
+    const { data, error } = await supabase.rpc("chercher_profils", { p_requete: query.trim() });
     if (error) throw error;
-    return data ?? [];
+    return ((data ?? []) as { id: string; nom: string | null; avatar: string | null }[])
+      .map((p) => ({ id: p.id, display_name: p.nom, avatar_url: p.avatar }));
   };
 
   return {

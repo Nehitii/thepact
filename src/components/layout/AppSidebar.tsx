@@ -18,7 +18,7 @@ import type { LucideIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useMessages } from "@/hooks/useMessages";
+import { useMessagesNonLus } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { prefetchRoute } from "@/lib/prefetchRoutes";
 import { raccourciPalette } from "@/lib/toucheRaccourci";
@@ -169,7 +169,7 @@ export const AppSidebar = memo(function AppSidebar() {
   const [chercheOuverte, setChercheOuverte] = useState(false);
 
   const { unreadCount, unreadByModule } = useNotifications();
-  const { unreadCount: messagesNonLus } = useMessages();
+  const { nonLus: messagesNonLus } = useMessagesNonLus();
   const { count: demandesAmis } = usePendingFriendCount();
   const social = useSocialFeatures();
   const totalNonLus = unreadCount + messagesNonLus + demandesAmis;
