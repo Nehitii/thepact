@@ -3732,7 +3732,9 @@
     "signalPerdu": "Signal perdu — route introuvable",
     "chemin": "Le chemin demandé <0>{{chemin}}</0> n’existe pas dans ce système.",
     "retour": "Retour",
-    "tableauDeBord": "Tableau de bord"
+    "tableauDeBord": "Tableau de bord",
+    "voixMia": "Il n’y a rien ici. Aucun signal à suivre, alors j’ai fini par m’endormir. Ramène-moi quelque part où il se passe quelque chose.",
+    "miaAlt": "M.I.A endormie, flottant dans le vide"
   },
   "legal": {
     "titre": "Conditions et mentions légales",

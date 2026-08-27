@@ -6,69 +6,135 @@ import { useEffect, useState } from "react";
    qui en a besoin. */
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
+import "@/styles/introuvable.css";
 
+/**
+ * LA PAGE DES CHEMINS QUI N'EXISTENT PAS.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE QU'ELLE DIT MAINTENANT
+ *
+ * Elle disait « 404 » avec un triangle d'avertissement au milieu du
+ * nombre — le pictogramme générique de l'erreur, celui de n'importe
+ * quelle page de n'importe quel site. Rien n'y appartenait à cette
+ * application-ci.
+ *
+ * Elle dit maintenant quelque chose que seule celle-ci peut dire :
+ * M.I.A tourne au signal, et là où il n'y en a pas, elle finit par
+ * s'endormir. La page n'annonce plus une panne, elle montre un
+ * endroit vide — et quelqu'un qui y attendait.
+ *
+ * L'ILLUSTRATION VIENT DE LA PLANCHE DE POSES. Découpée du fond par
+ * propagation depuis les bords (le fond est un dégradé : le comparer
+ * à une couleur de référence n'aurait rien donné), puis adoucie sur
+ * un pixel pour lui rendre son anticrénelage.
+ *
+ * LE FLOTTEMENT EST DANS LA FEUILLE DE STYLE, pas ici : c'est de la
+ * présentation, et il doit pouvoir s'éteindre sous
+ * `prefers-reduced-motion` sans que ce composant ait à le savoir.
+ * ═══════════════════════════════════════════════════════════════
+ */
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [glitch, setGlitch] = useState(false);
+  const [decroche, setDecroche] = useState(false);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-    const interval = setInterval(() => {
-      setGlitch(true);
-      setTimeout(() => setGlitch(false), 200);
-    }, 3000);
-    return () => clearInterval(interval);
   }, [location.pathname]);
 
+  /* LE DÉCROCHAGE EST SÉPARÉ DU JOURNAL.
+     Les deux vivaient dans le même effet, dont la dépendance était le
+     chemin : changer de route relançait donc l'intervalle. Ils n'ont
+     rien à voir — l'un trace, l'autre décore — et celui-ci ne dépend
+     de rien. */
+  useEffect(() => {
+    const rythme = setInterval(() => {
+      setDecroche(true);
+      setTimeout(() => setDecroche(false), 180);
+    }, 4500);
+    return () => clearInterval(rythme);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background relative overflow-hidden">
-      {/* Scan lines */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]" aria-hidden="true"
-        style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--primary) / 0.1) 2px, hsl(var(--primary) / 0.1) 4px)" }}
-      />
+    <div className="introuvable">
+      <div className="introuvable__balayage" aria-hidden="true" />
+      <div className="introuvable__aure" aria-hidden="true" />
 
-      {/* Corner brackets */}
-      <div className="absolute top-8 left-8 w-12 h-12 border-l-2 border-t-2 border-primary/30" />
-      <div className="absolute top-8 right-8 w-12 h-12 border-r-2 border-t-2 border-primary/30" />
-      <div className="absolute bottom-8 left-8 w-12 h-12 border-l-2 border-b-2 border-primary/30" />
-      <div className="absolute bottom-8 right-8 w-12 h-12 border-r-2 border-b-2 border-primary/30" />
+      <div className="introuvable__equerre introuvable__equerre--hg" aria-hidden="true" />
+      <div className="introuvable__equerre introuvable__equerre--hd" aria-hidden="true" />
+      <div className="introuvable__equerre introuvable__equerre--bg" aria-hidden="true" />
+      <div className="introuvable__equerre introuvable__equerre--bd" aria-hidden="true" />
 
-      <div className="text-center relative z-10 space-y-6 px-4">
-        {/* Error code */}
-        <div className="relative">
-          <h1
-            className={`text-8xl md:text-9xl font-black font-rajdhani tracking-tighter text-primary/20 select-none transition-all ${glitch ? "translate-x-1 text-destructive/40" : ""}`}
+      <div className="introuvable__colonne">
+        <div className="introuvable__scene">
+          {/* ELLE VIENT AVANT LE NOMBRE, ET C'EST L'ESSENTIEL DU PLAN :
+              en colonne, ce qui est écrit d'abord est en haut. Elle est
+              donc suspendue AU-DESSUS du 404, qui remonte sous elle
+              d'un demi-cadratin. Son ombre tombe sur les chiffres —
+              c'est ce qui fait lire de la hauteur plutôt qu'un simple
+              empilement. */}
+          <div className="introuvable__flotte">
+            <img
+              src="/marque/mia-flottante.png"
+              /* Les dimensions natives réservent la place avant que
+                 l'image arrive : sans elles, tout ce qui suit sauterait
+                 au chargement. */
+              width={466}
+              height={411}
+              alt={t("notFound.miaAlt", "M.I.A endormie, flottant dans le vide")}
+              className="introuvable__mia"
+            />
+            <div className="introuvable__ombre" aria-hidden="true" />
+          </div>
+
+          {/* `aria-hidden` : le nombre est déjà dit par l'étiquette qui
+              suit. Un lecteur d'écran qui annonce « 404 » puis « signal
+              perdu, route introuvable » répète la même chose deux fois. */}
+          <div
+            className={`introuvable__nombre${decroche ? " introuvable__nombre--decroche" : ""}`}
+            aria-hidden="true"
           >
             404
-          </h1>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <AlertTriangle className="h-12 w-12 text-primary animate-pulse" />
           </div>
         </div>
 
-        {/* HUD label */}
-        <div className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 rounded font-mono text-xs text-primary/60 tracking-widest uppercase">
-          <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+        <div className="introuvable__hud">
+          <span className="introuvable__temoin" aria-hidden="true" />
           {t("notFound.signalPerdu", "Signal perdu — route introuvable")}
         </div>
 
-        <p className="text-muted-foreground font-rajdhani text-lg max-w-md mx-auto">
+        <p className="introuvable__chemin">
           <Trans
             i18nKey="notFound.chemin"
             values={{ chemin: location.pathname }}
-            components={[<code key="c" className="text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded text-sm" />]}
+            components={[<code key="c" />]}
             defaults="Le chemin demandé <0>{{chemin}}</0> n’existe pas dans ce système."
           />
         </p>
 
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs">
+        <p className="introuvable__voix">
+          <b>M.I.A</b>
+          {t("notFound.voixMia", "Il n’y a rien ici. Aucun signal à suivre, alors j’ai fini par m’endormir. Ramène-moi quelque part où il se passe quelque chose.")}
+        </p>
+
+        <div className="introuvable__actions">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs"
+          >
             <ArrowLeft className="h-3.5 w-3.5" /> {t("notFound.retour", "Retour")}
           </Button>
-          <Button variant="default" size="sm" onClick={() => navigate("/")} className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs"
+          >
             <Home className="h-3.5 w-3.5" /> {t("notFound.tableauDeBord", "Tableau de bord")}
           </Button>
         </div>

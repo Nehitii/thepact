@@ -1,0 +1,355 @@
+/* ═══════════════════════════════════════════════════════════════
+   LA ZONE MORTE
+
+   Une 404 dit « ce chemin n'existe pas ». Celle-ci le dit avec ce que
+   l'application a de propre : M.I.A tourne au signal, et là où il n'y
+   en a pas, elle s'endort. Le vide n'est plus une erreur affichée,
+   c'est un endroit où il ne se passe rien — et on y trouve quelqu'un
+   qui a fini par somnoler en attendant.
+
+   ═══ CE QUI VEND LA LÉVITATION ═══
+
+   Une image qui monte et descend ne flotte pas : elle glisse. Trois
+   choses font la différence, et elles sont ici :
+
+   1. L'OMBRE RESPIRE À CONTRETEMPS. Quand elle monte, l'ombre
+      rétrécit et pâlit. C'est ce couple-là que l'œil lit comme de la
+      hauteur ; sans lui, la silhouette a l'air posée sur un ascenseur.
+   2. ELLE DÉRIVE. Une rotation d'un demi-degré, sur une durée qui
+      n'est pas un multiple de celle du va-et-vient (7 s contre 6 s) :
+      les deux mouvements ne se resynchronisent jamais, donc le cycle
+      ne se laisse pas compter.
+   3. L'AURE PULSE PLUS LENTEMENT QUE TOUT LE RESTE (11 s). Une
+      respiration de fond qui n'appartient à aucun des deux autres.
+
+   ═══ ET CE QUI L'ARRÊTE ═══
+
+   `prefers-reduced-motion` coupe les trois. Il reste une silhouette
+   posée avec son ombre — la composition tient sans le mouvement,
+   c'est la condition pour avoir le droit de l'ajouter.
+   ═══════════════════════════════════════════════════════════════ */
+
+.introuvable {
+  --accent: var(--ds-current-accent, var(--ds-accent-primary));
+
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  /* `safe` : sur un écran très court, un contenu plus haut que la
+     zone déborde vers le BAS et reste atteignable, au lieu d'être
+     rogné des deux côtés par un centrage strict. */
+  place-items: safe center;
+  padding: clamp(1.5rem, 5vh, 3rem) 1.25rem;
+  overflow: hidden;
+  background: hsl(var(--ds-bg-base));
+}
+
+/* ── Le fond : lignes de balayage + une lueur qui ne va nulle part ── */
+
+.introuvable__balayage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    hsl(var(--accent) / 0.6) 2px,
+    hsl(var(--accent) / 0.6) 4px
+  );
+}
+
+.introuvable__aure {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(46rem, 120vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    hsl(var(--accent) / 0.13) 0%,
+    hsl(var(--accent) / 0.05) 38%,
+    transparent 68%
+  );
+  animation: introuvable-aure 11s ease-in-out infinite;
+}
+
+/* ── Les équerres d'angle, reprises du reste de l'interface ── */
+
+.introuvable__equerre {
+  position: absolute;
+  width: 3rem;
+  height: 3rem;
+  border: 0 solid hsl(var(--accent) / 0.28);
+  pointer-events: none;
+}
+.introuvable__equerre--hg { top: 2rem; left: 2rem; border-left-width: 2px; border-top-width: 2px; }
+.introuvable__equerre--hd { top: 2rem; right: 2rem; border-right-width: 2px; border-top-width: 2px; }
+.introuvable__equerre--bg { bottom: 2rem; left: 2rem; border-left-width: 2px; border-bottom-width: 2px; }
+.introuvable__equerre--bd { bottom: 2rem; right: 2rem; border-right-width: 2px; border-bottom-width: 2px; }
+
+/* ── La colonne ── */
+
+.introuvable__colonne {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 2.4vh, 1.5rem);
+  width: 100%;
+  max-width: 34rem;
+  text-align: center;
+}
+
+/* ── La scène : elle dort AU-DESSUS du nombre ──
+
+   PREMIER ESSAI, MESURÉ ET ABANDONNÉ : les deux dans la même case
+   de grille, elle par-dessus. Relevé dans le navigateur — nombre
+   412 px de large, silhouette 257 px centrée dessus : le tiers du
+   milieu fait 137 px et disparaissait entièrement. On lisait
+   « 4 _ 4 ». Pour que le zéro dépasse, il aurait fallu un nombre
+   trois fois plus large qu'elle, soit 771 px dans une fenêtre de
+   917 — ou la réduire jusqu'à l'anecdote.
+
+   DONC : empilement vertical, et le nombre remonte sous elle d'un
+   demi-cadratin. Le « 404 » se lit en entier, elle repose dessus,
+   et le flottement se lit mieux — on flotte AU-DESSUS de quelque
+   chose, pas devant. La hauteur reste honnête : c'est une marge
+   négative, pas un décalage visuel par-dessus une case vide. */
+
+.introuvable__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.introuvable__nombre {
+  font-family: Orbitron, sans-serif;
+  font-weight: 900;
+  font-size: clamp(7rem, 26vw, 13rem);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  color: hsl(var(--ds-text-primary) / 0.09);
+  user-select: none;
+  /* En cadratins, donc proportionnel au nombre lui-même : le
+     chevauchement reste le même à toutes les tailles d'écran, ce
+     qu'un pourcentage — calculé sur la LARGEUR du parent — ne
+     ferait pas. */
+  margin-top: -0.3em;
+}
+
+/* Le décrochage : deux copies décalées en rouge et en accent, le
+   temps d'un souffle. C'est une perte de signal, pas un clignotant —
+   d'où les 4,5 s d'attente entre deux, et les 180 ms de secousse. */
+.introuvable__nombre--decroche {
+  color: hsl(var(--ds-text-primary) / 0.07);
+  text-shadow:
+    0.06em 0 hsl(var(--destructive) / 0.28),
+    -0.06em 0 hsl(var(--accent) / 0.22);
+  translate: 0.05em 0;
+}
+
+/* ── La dormeuse ── */
+
+.introuvable__flotte {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  animation: introuvable-flotte 6s ease-in-out infinite;
+}
+
+.introuvable__mia {
+  display: block;
+  width: clamp(11rem, 42vw, 17rem);
+  height: auto;
+  /* La lueur du manteau existe déjà dans l'image ; celle-ci l'étend
+     de quelques pixels pour que la silhouette ne se découpe pas
+     comme un autocollant sur le fond. */
+  filter: drop-shadow(0 0 26px hsl(var(--accent) / 0.28));
+  animation: introuvable-derive 7s ease-in-out infinite;
+}
+
+/* L'ombre d'une chose qui ne touche pas le sol.
+
+   ELLE TOMBE SUR LE NOMBRE. Collée sous ses bottes, elle ressemblait
+   à une lueur qui lui appartient — donc à rien. Descendue d'un cran,
+   elle se pose sur le « 404 » : il devient le sol, et la distance
+   entre les deux devient de la hauteur. */
+.introuvable__ombre {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  translate: -50% 0;
+  width: 52%;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, hsl(var(--accent) / 0.5) 0%, hsl(var(--accent) / 0.16) 45%, transparent 74%);
+  filter: blur(7px);
+  animation: introuvable-ombre 6s ease-in-out infinite;
+}
+
+/* ── Les textes ── */
+
+.introuvable__hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid hsl(var(--accent) / 0.22);
+  border-radius: 2px;
+  background: hsl(var(--accent) / 0.05);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--accent) / 0.8);
+}
+
+.introuvable__temoin {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: hsl(var(--destructive));
+  animation: introuvable-temoin 2.2s ease-in-out infinite;
+}
+
+.introuvable__chemin {
+  max-width: 30rem;
+  font-family: Rajdhani, sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: hsl(var(--ds-text-secondary));
+}
+
+.introuvable__chemin code {
+  padding: 0.1em 0.4em;
+  border-radius: 2px;
+  background: hsl(var(--accent) / 0.08);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  color: hsl(var(--accent) / 0.85);
+  /* Un chemin peut être long et n'a pas d'espaces où se couper. */
+  overflow-wrap: anywhere;
+}
+
+/* La phrase de M.I.A. Elle dort : c'est elle qui parle, en retrait,
+   et le trait à gauche la marque comme une voix et non comme une
+   consigne de l'interface. */
+.introuvable__voix {
+  max-width: 28rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid hsl(var(--accent) / 0.3);
+  font-family: Rajdhani, sans-serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: left;
+  color: hsl(var(--ds-text-muted));
+}
+
+.introuvable__voix b {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: hsl(var(--accent) / 0.6);
+}
+
+.introuvable__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding-top: 0.2rem;
+}
+
+/* ── Mouvements ── */
+
+@keyframes introuvable-flotte {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+
+/* Une dérive, pas une rotation : un demi-degré suffit à casser
+   l'impression de rail vertical. */
+@keyframes introuvable-derive {
+  0%, 100% { transform: rotate(-0.6deg); }
+  50%      { transform: rotate(0.7deg); }
+}
+
+/* À contretemps du flottement : au sommet, l'ombre est petite et
+   pâle. C'est ce décalage qui donne la hauteur. */
+@keyframes introuvable-ombre {
+  0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 0.85; }
+  50%      { transform: translateX(-50%) scaleX(0.78); opacity: 0.42; }
+}
+
+@keyframes introuvable-aure {
+  0%, 100% { opacity: 0.75; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.06); }
+}
+
+@keyframes introuvable-temoin {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .introuvable__flotte,
+  .introuvable__mia,
+  .introuvable__ombre,
+  .introuvable__aure,
+  .introuvable__temoin {
+    animation: none;
+  }
+  /* L'ombre garde sa taille de repos : sans le va-et-vient, une
+     ombre rétrécie n'aurait plus rien à quoi correspondre. */
+  .introuvable__ombre { transform: translateX(-50%); opacity: 0.7; }
+}
+
+/* ── Thème clair ──
+   L'illustration est une silhouette sombre à liserés lumineux : elle
+   se tient sur fond clair, mais l'aure et la lueur portée, calibrées
+   pour du noir, y deviennent un voile sale. On les rentre.
+
+   LE SÉLECTEUR EST `:root.light`, PAS `prefers-color-scheme`. Le
+   thème de cette application est une CLASSE posée sur <html> : elle
+   suit un réglage de profil, pas celui du système. Écouter la
+   préférence du navigateur ici rendrait la page claire à quelqu'un
+   qui a explicitement choisi le sombre.
+
+   Les classes sont répétées pour monter à (0,4,0) : cette feuille est
+   importée par un composant, donc chargée après theme-clair.css, et
+   on ne veut rien devoir à l'ordre des feuilles. */
+
+:root.light .introuvable__aure.introuvable__aure { opacity: 0.45; }
+
+:root.light .introuvable__mia.introuvable__mia {
+  filter: drop-shadow(0 8px 18px hsl(220 50% 20% / 0.28));
+}
+
+:root.light .introuvable__nombre.introuvable__nombre {
+  color: hsl(var(--ds-text-primary) / 0.1);
+}
+
+:root.light .introuvable__nombre--decroche.introuvable__nombre--decroche {
+  color: hsl(var(--ds-text-primary) / 0.08);
+}
+
+/* Une lueur d'accent ne se lit pas comme une ombre sur fond clair :
+   elle y devient une tache. En clair, l'ombre redevient de l'ombre —
+   grise, et plus serrée puisqu'elle n'a plus à rayonner. */
+:root.light .introuvable__ombre.introuvable__ombre {
+  background: radial-gradient(ellipse, hsl(220 30% 25% / 0.3) 0%, hsl(220 30% 25% / 0.1) 45%, transparent 74%);
+}

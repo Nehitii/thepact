@@ -3732,7 +3732,9 @@
     "signalPerdu": "Signal lost — route not found",
     "chemin": "The requested path <0>{{chemin}}</0> does not exist in this system.",
     "retour": "Go back",
-    "tableauDeBord": "Dashboard"
+    "tableauDeBord": "Dashboard",
+    "voixMia": "There is nothing here. No signal to follow, so I ended up dozing off. Take me somewhere something happens.",
+    "miaAlt": "M.I.A asleep, floating in the void"
   },
   "legal": {
     "titre": "Terms and legal notice",

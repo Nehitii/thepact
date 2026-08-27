@@ -63,7 +63,12 @@ export default defineConfig(({ mode }) => ({
            jamais. Workbox refuse d'ailleurs au-delà de 2 Mio, et il a
            raison : lever la limite aurait été répondre à côté. Elle est
            prise au vol et gardée trente jours, règle ci-dessous. */
-        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/push-sw.js"],
+        /* mia-flottante.png : 322 Ko, vue uniquement sur une 404. La
+           précharger ferait descendre l'illustration d'une page
+           d'erreur à CHAQUE installation, sur chaque téléphone.
+           Même traitement que la ville de l'écran de connexion :
+           prise au vol, gardée trente jours, règle ci-dessous. */
+        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/marque/mia-flottante.png", "**/push-sw.js"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {
@@ -77,9 +82,12 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "google-fonts", expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
           },
           {
-            /* La ville de l'écran de connexion : jamais préchargée,
-               prise au premier affichage puis gardée. */
-            urlPattern: ({ url }) => url.pathname === "/marque/auth-cite.png",
+            /* Les deux grandes illustrations — la ville de l'écran de
+               connexion, la dormeuse de la 404 : jamais préchargées,
+               prises au premier affichage puis gardées. */
+            urlPattern: ({ url }) =>
+              url.pathname === "/marque/auth-cite.png" ||
+              url.pathname === "/marque/mia-flottante.png",
             handler: "CacheFirst",
             options: {
               cacheName: "marque",
