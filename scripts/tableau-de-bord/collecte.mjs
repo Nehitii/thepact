@@ -22,13 +22,13 @@ import { execFileSync } from "node:child_process";
        d'un outil, et types.ts (5 722 lignes) écraserait à lui seul
        tout classement par taille ;
      · ce qui n'est pas du code du produit — les compétences installées
-       sous .claude, les instantanés de ce tableau lui-même.
+       sous .claude et .agents, les instantanés de ce tableau lui-même.
    ═══════════════════════════════════════════════════════════════ */
 
 export const EXCLUS = {
   dossiers: [
     "node_modules", "dist", "dist-ssr", ".git", ".vite",
-    ".claude",              // compétences installées, pas le produit
+    ".claude", ".agents",   // compétences installées, pas le produit
     "docs/instantanes",     // les instantanés de ce tableau
     "public/sounds",        // binaires audio, comptés comme ressources
   ],
@@ -56,6 +56,28 @@ const estExclu = (rel) => {
   return EXCLUS.dossiers.some((d) => p === d || p.startsWith(d + "/"));
 };
 
+/* CE QUE GIT IGNORE N'EST PAS DANS LE DÉPÔT, DONC PAS DANS LE COMPTE.
+   EXCLUS n'énumère que ce que git ne sait pas écarter tout seul. Le
+   reste, on le demande à git : recopier `.gitignore` dans une liste en
+   dur, c'est se condamner à la voir diverger. `migrer-images.mjs`, un
+   script de migration lancé une fois et ignoré depuis, était compté
+   comme du code orphelin du produit — il n'est pas versionné du tout. */
+const ignoresParGit = (chemins) => {
+  if (!chemins.length) return new Set();
+  try {
+    const sortie = execFileSync("git", ["check-ignore", "--stdin", "-z"], {
+      cwd: RACINE, encoding: "utf8", input: chemins.join("\0"),
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    return new Set(sortie.split("\0").filter(Boolean));
+  } catch (e) {
+    /* Sortie 1 = « rien n'est ignoré », ce n'est pas une panne. Toute
+       autre sortie (pas de dépôt, pas de git) : on ne filtre rien. */
+    if (e.status === 1) return new Set(String(e.stdout ?? "").split("\0").filter(Boolean));
+    return new Set();
+  }
+};
+
 /** Parcours du dépôt, exclusions appliquées. */
 export function arbre(depuis = ".") {
   const out = [];
@@ -71,7 +93,9 @@ export function arbre(depuis = ".") {
     }
   };
   marcher(depuis);
-  return out;
+
+  const ignores = ignoresParGit(out);
+  return ignores.size ? out.filter((f) => !ignores.has(f)) : out;
 }
 
 const CODE = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts", ".css", ".sql", ".json", ".md", ".html"]);
