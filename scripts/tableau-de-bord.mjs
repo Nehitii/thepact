@@ -300,9 +300,11 @@ fs.writeFileSync(path.join(RACINE, SORTIE), html);
 const aCompleter = [
   !manifeste.identite?.pitch && "le pitch",
   !manifeste.identite?.pourQui && "le public",
+  !manifeste.identite?.intention && "l'intention",
   !manifeste.identite?.etat && "l'état d'avancement",
   modules.filter((m) => !m.statut).length && `${modules.filter((m) => !m.statut).length} statut(s) de module`,
-  (manifeste.ressources ?? []).filter((r) => !r.licence).length && "des licences",
+  (manifeste.ressources ?? []).filter((r) => !/^service/i.test(r.nature ?? "") && !r.licence).length && "des licences",
+  (manifeste.ressources ?? []).filter((r) => /^service/i.test(r.nature ?? "") && !r.cout).length && "des formules de service",
 ].filter(Boolean);
 
 console.log(`Page écrite : ${SORTIE}`);

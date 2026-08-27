@@ -8,115 +8,508 @@
     "Un champ laissé vide s'affiche « à compléter » dans la page. C'est voulu :",
     "mieux vaut un trou visible qu'un contenu vraisemblable."
   ],
-
   "identite": {
-    "_aide": "Les quatre phrases que seul le porteur du projet peut écrire. Laissées vides à dessein : rien ici ne se devine depuis le code.",
+    "_aide": "Quatre phrases. Deux sont déduites de mesures et signalées comme telles ; deux ne peuvent venir que de vous.",
     "nom": "Vowpact",
-    "pitch": null,
+    "_pitch": "DÉDUIT DU CODE, à corriger si c'est faux. Décrit ce que l'application FAIT, en lisant ses 46 écrans, ses tables et sa boutique. Ce n'est pas une promesse commerciale : c'est un inventaire mis en phrase.",
+    "pitch": "Une application de discipline personnelle bâtie autour d'un « pacte » : des objectifs découpés en étapes, avec leur coût et leur échéance, entourés de modules de suivi — finances, santé, journal, tâches, sessions de concentration — et d'une couche de jeu qui récompense la constance en jetons, cosmétiques et grades.",
     "pourQui": null,
     "intention": null,
-    "etat": null
+    "_etat": "DÉDUIT DE MESURES, à corriger. Relevé le 27/08/2026 : 46 écrans dont 45 repris dans les dix derniers jours ; 4 comptes en base dont un seul actif ; aucun test configuré ; les fonctions sociales sont derrière des drapeaux, dont quatre encore fermés.",
+    "etat": "Utilisable de bout en bout par une personne, et une seule l'utilise vraiment. Les vingt derniers jours ont été consacrés à reprendre les écrans un par un plutôt qu'à en ajouter ; ce qui manque avant un deuxième utilisateur n'est pas une fonction, c'est un filet — aucun test n'est configuré, et quatre fonctions sociales restent fermées par drapeau."
   },
-
+  "_modules": [
+    "CRITÈRE RETENU POUR LES STATUTS, à corriger sans scrupule :",
+    "  · « en pause » — le drapeau qui commande la fonction est à false en base",
+    "    (table feature_flags). C'est le seul signal objectif d'un arrêt volontaire.",
+    "  · « livré » — l'écran est atteignable et rien n'indique de travail ouvert.",
+    "",
+    "CE CRITÈRE NE DISCRIMINE PRESQUE PAS, et il faut le dire : 45 écrans sur 46",
+    "ont été repris entre le 16 et le 27 août. Les dates ne distinguent donc pas",
+    "ce qui est FINI de ce qui est seulement EN PLACE — cette différence-là est",
+    "dans votre tête, pas dans le dépôt. Passez la liste et rétrogradez en",
+    "« en cours » tout ce que vous savez inachevé."
+  ],
   "modules": [
     {
-      "_aide": "Le dépôt LISTE les écrans, ce tableau les QUALIFIE. `page` doit correspondre à un fichier de src/pages. `statut` vaut idée | en cours | livré | en pause. `aussi` ajoute les dossiers qui appartiennent au module — ses lignes et sa dernière activité les incluent alors.",
       "page": "src/pages/Home.tsx",
       "nom": "Tableau de bord",
-      "statut": null,
-      "aussi": ["src/components/home"]
+      "statut": "livré",
+      "aussi": [
+        "src/components/home"
+      ]
     },
-    { "page": "src/pages/Goals.tsx", "nom": "Objectifs", "statut": null, "aussi": ["src/components/goals"] },
-    { "page": "src/pages/Finance.tsx", "nom": "Finances", "statut": null, "aussi": ["src/components/finance"] },
-    { "page": "src/pages/Journal.tsx", "nom": "Journal", "statut": null, "aussi": ["src/components/journal"] },
-    { "page": "src/pages/Health.tsx", "nom": "Santé", "statut": null, "aussi": ["src/components/health"] },
-    { "page": "src/pages/TodoList.tsx", "nom": "Tâches", "statut": null, "aussi": ["src/components/todo"] },
-    { "page": "src/pages/Focus.tsx", "nom": "Focus", "statut": null, "aussi": ["src/components/focus"] },
-    { "page": "src/pages/Calendar.tsx", "nom": "Calendrier", "statut": null, "aussi": ["src/components/calendar"] },
-    { "page": "src/pages/Analytics.tsx", "nom": "Analytique", "statut": null, "aussi": ["src/components/analytics"] },
-    { "page": "src/pages/Inbox.tsx", "nom": "Boîte de réception", "statut": null, "aussi": ["src/components/notifications"] },
-    { "page": "src/pages/InboxThread.tsx", "nom": "Conversation privée", "statut": null, "aussi": [] },
-    { "page": "src/pages/Community.tsx", "nom": "Communauté", "statut": null, "aussi": ["src/components/community"] },
-    { "page": "src/pages/Friends.tsx", "nom": "Alliés", "statut": null, "aussi": ["src/components/friends"] },
-    { "page": "src/pages/GuildPage.tsx", "nom": "Guildes", "statut": null, "aussi": [] },
-    { "page": "src/pages/Shop.tsx", "nom": "Boutique", "statut": null, "aussi": ["src/components/shop"] },
-    { "page": "src/pages/Wishlist.tsx", "nom": "Souhaits", "statut": null, "aussi": ["src/components/wishlist"] },
-    { "page": "src/pages/Achievements.tsx", "nom": "Succès", "statut": null, "aussi": [] },
-    { "page": "src/pages/Leaderboard.tsx", "nom": "Classement", "statut": null, "aussi": [] },
-    { "page": "src/pages/TheCall.tsx", "nom": "The Call", "statut": null, "aussi": [] },
-    { "page": "src/pages/Admin.tsx", "nom": "Administration", "statut": null, "aussi": ["src/components/admin"] }
+    {
+      "page": "src/pages/Goals.tsx",
+      "nom": "Objectifs",
+      "statut": "livré",
+      "aussi": [
+        "src/components/goals"
+      ]
+    },
+    {
+      "page": "src/pages/GoalDetail.tsx",
+      "nom": "Fiche d'objectif",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/GoalsGraph.tsx",
+      "nom": "Constellation des objectifs",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/NewGoal.tsx",
+      "nom": "Nouvel objectif",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/StepDetail.tsx",
+      "nom": "Fiche d'étape",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Finance.tsx",
+      "nom": "Finances",
+      "statut": "livré",
+      "aussi": [
+        "src/components/finance"
+      ]
+    },
+    {
+      "page": "src/pages/Journal.tsx",
+      "nom": "Journal",
+      "statut": "livré",
+      "aussi": [
+        "src/components/journal"
+      ]
+    },
+    {
+      "page": "src/pages/Health.tsx",
+      "nom": "Santé",
+      "statut": "livré",
+      "aussi": [
+        "src/components/health"
+      ]
+    },
+    {
+      "page": "src/pages/TodoList.tsx",
+      "nom": "Tâches",
+      "statut": "livré",
+      "aussi": [
+        "src/components/todo"
+      ]
+    },
+    {
+      "page": "src/pages/Focus.tsx",
+      "nom": "Focus",
+      "statut": "livré",
+      "aussi": [
+        "src/components/focus"
+      ]
+    },
+    {
+      "page": "src/pages/Calendar.tsx",
+      "nom": "Calendrier",
+      "statut": "livré",
+      "aussi": [
+        "src/components/calendar"
+      ]
+    },
+    {
+      "page": "src/pages/Analytics.tsx",
+      "nom": "Analytique",
+      "statut": "livré",
+      "aussi": [
+        "src/components/analytics"
+      ]
+    },
+    {
+      "page": "src/pages/TheCall.tsx",
+      "nom": "The Call",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Achievements.tsx",
+      "nom": "Succès",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Shop.tsx",
+      "nom": "Boutique",
+      "statut": "livré",
+      "aussi": [
+        "src/components/shop"
+      ]
+    },
+    {
+      "page": "src/pages/Wishlist.tsx",
+      "nom": "Souhaits",
+      "statut": "livré",
+      "aussi": [
+        "src/components/wishlist"
+      ]
+    },
+    {
+      "page": "src/pages/Inbox.tsx",
+      "nom": "Boîte de réception",
+      "statut": "livré",
+      "aussi": [
+        "src/components/notifications"
+      ]
+    },
+    {
+      "page": "src/pages/InboxThread.tsx",
+      "nom": "Conversation privée",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Community.tsx",
+      "nom": "Communauté",
+      "statut": "livré",
+      "aussi": [
+        "src/components/community"
+      ]
+    },
+    {
+      "page": "src/pages/Friends.tsx",
+      "nom": "Alliés",
+      "statut": "livré",
+      "aussi": [
+        "src/components/friends"
+      ]
+    },
+    {
+      "page": "src/pages/GuildPage.tsx",
+      "nom": "Guildes",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Leaderboard.tsx",
+      "nom": "Classement",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/HallOfFame.tsx",
+      "nom": "Panthéon",
+      "statut": "livré",
+      "note": "Dernière reprise le 14/05/2026 : le seul écran que la vague d'août n'a pas touché.",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/ContractSign.tsx",
+      "nom": "Signature de contrat",
+      "statut": "en pause",
+      "note": "Le drapeau goal_contracts est à false en base. L'écran lui-même ne porte aucune garde : le drapeau ferme ses entrées (le panneau des contrats et la section de GoalDetail), pas l'URL — qui reste atteignable si on la connaît.",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Onboarding.tsx",
+      "nom": "Premier pas",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Auth.tsx",
+      "nom": "Connexion",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/TwoFactor.tsx",
+      "nom": "Second facteur",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Legal.tsx",
+      "nom": "Mentions légales",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/NotFound.tsx",
+      "nom": "Page introuvable",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Profile.tsx",
+      "nom": "Profil — coque",
+      "statut": "livré",
+      "aussi": [
+        "src/components/profile"
+      ]
+    },
+    {
+      "page": "src/pages/profile/BoundedProfile.tsx",
+      "nom": "Profil public",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/PactSettings.tsx",
+      "nom": "Réglages du pacte",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/DisplaySound.tsx",
+      "nom": "Apparence et sons",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/PrivacyControl.tsx",
+      "nom": "Confidentialité",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/NotificationSettings.tsx",
+      "nom": "Réglages de notification",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/HealthSettings.tsx",
+      "nom": "Réglages de santé",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/profile/DataPortability.tsx",
+      "nom": "Mes données",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/Admin.tsx",
+      "nom": "Administration — centre",
+      "statut": "livré",
+      "aussi": [
+        "src/components/admin"
+      ]
+    },
+    {
+      "page": "src/pages/AdminAcces.tsx",
+      "nom": "Administration — accès",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminNotifications.tsx",
+      "nom": "Administration — diffusion",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminCosmeticsManager.tsx",
+      "nom": "Administration — cosmétiques",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminModuleManager.tsx",
+      "nom": "Administration — modules",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminMoneyManager.tsx",
+      "nom": "Administration — monnaie",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminPromoManager.tsx",
+      "nom": "Administration — codes",
+      "statut": "livré",
+      "aussi": []
+    },
+    {
+      "page": "src/pages/AdminMode.tsx",
+      "nom": "Administration — banc d'essai",
+      "statut": "livré",
+      "aussi": []
+    }
   ],
-
   "da": {
     "_aide": "Les règles ci-dessous ne sont pas des intentions : elles sont tenues par des outils du dépôt, et transcrites ici. Ajoutez les vôtres.",
     "regles": [
       "Toute couleur descend des jetons --ds-* de src/styles/design-tokens.css, qui possèdent déjà leur miroir clair. Une couleur écrite en dur ne suit pas le thème.",
       "Une feuille de style construite sur les jetons n'a besoin d'AUCUNE surcharge .light. C'est le critère : si vous devez en ajouter une, c'est qu'une couleur est écrite en dur quelque part.",
       "Trois familles de caractères, trois emplois : Orbitron pour les titres, Rajdhani pour le texte courant, JetBrains Mono pour les étiquettes, les chiffres et les données.",
-      "Le néon s'évapore sur papier : en thème clair, la teinte se garde et la luminosité tombe. Un lime qui reste lime sur blanc devient illisible."
+      "Le néon s'évapore sur papier : en thème clair, la teinte se garde et la luminosité tombe. Un lime qui reste lime sur blanc devient illisible.",
+      "L'application est une vitrine, l'administration est l'arrière-boutique : mêmes jetons, emploi plus dense et plus sobre, la couleur réservée à ce qui change d'état."
     ],
     "interdits": [
       "Ne pas composer un nom de classe Tailwind à l'exécution (border-${couleur}) : le compilateur ne voit jamais ces chaînes et ne produit aucune règle. La classe existe dans le DOM, le style n'existe pas.",
       "Ne pas poser de halo ni de flou en position fixe derrière une page d'outil : l'administration et les réglages se lisent longtemps, ils ne se contemplent pas.",
       "Ne pas écrire de texte destiné à la base de données sans passer par i18n. Une notification garde ses mots pour toujours : changer de langue ensuite ne les traduit pas.",
-      "Ne pas annoncer à l'écran ce qui n'est pas vrai — pas de pastille « en ligne » simulée, pas de « canal chiffré » sur des données en clair, pas de barre de progression décorative."
+      "Ne pas annoncer à l'écran ce qui n'est pas vrai — pas de pastille « en ligne » simulée, pas de « canal chiffré » sur des données en clair, pas de barre de progression décorative.",
+      "Ne pas cacher un geste derrière le seul survol : un écran tactile n'en a pas, et le bouton devient introuvable."
     ]
   },
-
   "visuels": [
     {
-      "_aide": "Une entrée par visuel dont vous connaissez l'origine. `chemin` doit correspondre exactement au fichier dans public/. Les visuels absents de cette liste apparaissent quand même dans la page, avec « à compléter » en face de l'outil et du prompt.",
+      "_aide": "Une entrée par visuel dont vous connaissez l'origine. `chemin` doit correspondre exactement au fichier dans public/. Les visuels absents de cette liste apparaissent quand même dans la page, avec « à compléter » en face de l'outil et du prompt. Je n'ai renseigné aucune entrée : l'outil et le prompt ne se lisent nulle part dans le dépôt.",
       "chemin": "public/logo-vowpact.webp",
       "outil": null,
       "prompt": null
     }
   ],
-
   "ressources": [
     {
-      "_aide": "Tout ce qui vient d'ailleurs. Une licence laissée vide est signalée en rouge dans la page : c'est le but, tant qu'on ne sait pas, on ne sait pas.",
+      "_aide": "Une licence vide est signalée en rouge dans la page. Je n'ai rempli que ce que j'ai pu VÉRIFIER dans node_modules. Les polices arrivent en woff2 nus, sans fichier de licence : je ne peux pas les certifier depuis le dépôt, et une licence de police est un sujet juridique — à vous de confirmer. Les coûts dépendent de votre formule chez chaque prestataire.",
       "nom": "Orbitron",
       "nature": "police",
       "licence": null,
       "cout": null,
       "url": "https://fonts.google.com/specimen/Orbitron"
     },
-    { "nom": "Rajdhani", "nature": "police", "licence": null, "cout": null, "url": "https://fonts.google.com/specimen/Rajdhani" },
-    { "nom": "JetBrains Mono", "nature": "police", "licence": null, "cout": null, "url": "https://www.jetbrains.com/lp/mono/" },
-    { "nom": "Switzer", "nature": "police", "licence": null, "cout": null, "url": "https://www.fontshare.com/fonts/switzer" },
-    { "nom": "Noto Sans JP", "nature": "police", "licence": null, "cout": null, "url": "https://fonts.google.com/noto/specimen/Noto+Sans+JP" },
-    { "nom": "Lucide", "nature": "icônes", "licence": null, "cout": null, "url": "https://lucide.dev" },
-    { "nom": "Supabase", "nature": "service — base de données, authentification, stockage, fonctions", "licence": null, "cout": null, "url": "https://supabase.com" },
-    { "nom": "Cloudflare Workers", "nature": "service — hébergement", "licence": null, "cout": null, "url": "https://workers.cloudflare.com" },
-    { "nom": "Sentry", "nature": "service — suivi des erreurs", "licence": null, "cout": null, "url": "https://sentry.io" }
+    {
+      "nom": "Rajdhani",
+      "nature": "police",
+      "licence": null,
+      "cout": null,
+      "url": "https://fonts.google.com/specimen/Rajdhani"
+    },
+    {
+      "nom": "JetBrains Mono",
+      "nature": "police",
+      "licence": null,
+      "cout": null,
+      "url": "https://www.jetbrains.com/lp/mono/"
+    },
+    {
+      "nom": "Switzer",
+      "nature": "police",
+      "licence": null,
+      "cout": null,
+      "url": "https://www.fontshare.com/fonts/switzer"
+    },
+    {
+      "nom": "Noto Sans JP",
+      "nature": "police",
+      "licence": null,
+      "cout": null,
+      "url": "https://fonts.google.com/noto/specimen/Noto+Sans+JP"
+    },
+    {
+      "nom": "Lucide",
+      "nature": "icônes",
+      "licence": "ISC — vérifiée dans node_modules/lucide-react",
+      "cout": "gratuit",
+      "url": "https://lucide.dev"
+    },
+    {
+      "nom": "React",
+      "nature": "bibliothèque — interface",
+      "licence": "MIT — vérifiée dans node_modules/react",
+      "cout": "gratuit",
+      "url": "https://react.dev"
+    },
+    {
+      "nom": "Supabase",
+      "nature": "service — base de données, authentification, stockage, fonctions",
+      "licence": null,
+      "cout": null,
+      "url": "https://supabase.com"
+    },
+    {
+      "nom": "Cloudflare Workers",
+      "nature": "service — hébergement",
+      "licence": null,
+      "cout": null,
+      "url": "https://workers.cloudflare.com"
+    },
+    {
+      "nom": "Sentry",
+      "nature": "service — suivi des erreurs",
+      "licence": null,
+      "cout": null,
+      "url": "https://sentry.io"
+    }
   ],
-
-  "architecture": "Application à page unique en React, rendue par Vite. Toutes les données passent par Supabase — PostgreSQL avec sécurité au niveau des lignes, authentification, stockage de fichiers et fonctions de bord en Deno. Il n'y a pas de serveur applicatif : le navigateur parle directement à la base, et ce sont les politiques RLS qui décident de ce que chacun voit. Ce qui doit échapper à ces politiques — diffusion, administration, projections publiques — passe par des fonctions SECURITY DEFINER qui vérifient elles-mêmes le droit d'agir.",
-
+  "architecture": "Application à page unique en React, rendue par Vite. Toutes les données passent par Supabase — PostgreSQL avec sécurité au niveau des lignes, authentification, stockage de fichiers et fonctions de bord en Deno. Il n'y a pas de serveur applicatif : le navigateur parle directement à la base, et ce sont les politiques RLS qui décident de ce que chacun voit. Ce qui doit échapper à ces politiques — diffusion, administration, projections publiques — passe par des fonctions SECURITY DEFINER qui vérifient elles-mêmes le droit d'agir. L'hébergement est un Worker Cloudflare qui sert les fichiers construits.",
   "conventions": [
     "Le français partout : noms de fonctions et de variables du code métier, classes CSS, messages de commit, commentaires. Les bibliothèques gardent leurs noms.",
     "Un commentaire dit POURQUOI, jamais QUOI. Il porte le relevé qui a motivé le choix, pour que le prochain lecteur puisse le contredire avec des chiffres.",
     "Chaque migration porte un en-tête qui explique ce qui était faux, ce qui a été mesuré, et comment annuler.",
-    "On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur."
+    "On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur.",
+    "Toute fonction SECURITY DEFINER fige son search_path. C'est le premier vecteur d'escalade de PostgreSQL, et il est fermé partout dans ce dépôt."
   ],
-
   "ouTrouverQuoi": [
-    { "quoi": "Les routes et les écrans", "ou": "src/App.tsx" },
-    { "quoi": "La barre latérale et la coque commune", "ou": "src/components/layout/" },
-    { "quoi": "Les jetons de couleur et le miroir clair", "ou": "src/styles/design-tokens.css, src/styles/theme-clair.css" },
-    { "quoi": "Les accès aux données, par domaine", "ou": "src/hooks/" },
-    { "quoi": "Le modèle de données et son histoire", "ou": "supabase/migrations/" },
-    { "quoi": "Les traitements serveur", "ou": "supabase/functions/" },
-    { "quoi": "Les traductions", "ou": "src/i18n/locales/" },
-    { "quoi": "Les décisions déjà prises et parquées", "ou": "mem/" },
-    { "quoi": "Ce tableau de bord", "ou": "scripts/tableau-de-bord.mjs" }
-  ],
-
-  "decisions": [
     {
-      "_aide": "Ajoutez ici les décisions structurantes. Les notes de mem/ sont reprises automatiquement, inutile de les recopier. Format court : titre, date, une ligne de contexte, l'alternative écartée."
+      "quoi": "Les routes et les écrans",
+      "ou": "src/App.tsx"
+    },
+    {
+      "quoi": "La barre latérale et la coque commune",
+      "ou": "src/components/layout/"
+    },
+    {
+      "quoi": "Les jetons de couleur et le miroir clair",
+      "ou": "src/styles/design-tokens.css, src/styles/theme-clair.css"
+    },
+    {
+      "quoi": "Les accès aux données, par domaine",
+      "ou": "src/hooks/"
+    },
+    {
+      "quoi": "Le modèle de données et son histoire",
+      "ou": "supabase/migrations/"
+    },
+    {
+      "quoi": "Les traitements serveur",
+      "ou": "supabase/functions/"
+    },
+    {
+      "quoi": "Les traductions",
+      "ou": "src/i18n/locales/"
+    },
+    {
+      "quoi": "Les drapeaux de fonctionnalité",
+      "ou": "table feature_flags, via src/hooks/useSocialFeatures.ts"
+    },
+    {
+      "quoi": "Les décisions déjà prises et parquées",
+      "ou": "mem/"
+    },
+    {
+      "quoi": "Ce tableau de bord",
+      "ou": "scripts/tableau-de-bord.mjs"
     }
   ],
-
-  "prochainesEtapes": []
+  "decisions": [
+    {
+      "_aide": "Les notes de mem/ sont reprises automatiquement, inutile de les recopier. Ajoutez ici ce que vous voulez garder de plus.",
+      "titre": "L'administration exige une session élevée, pas seulement le rôle",
+      "date": "2026-08-27",
+      "contexte": "Le rôle d'administrateur est permanent et voyage avec un jeton de session volé. L'accès demande désormais un second facteur présenté pour CETTE session.",
+      "alternative": "Se contenter du rôle, comme avant — écarté : un jeton volé le porte aussi."
+    },
+    {
+      "titre": "Les fonctions sociales sont derrière des drapeaux — trois ne commandent rien",
+      "date": "2026-08-27",
+      "contexte": "Douze lignes dans feature_flags. Le code n'en lit que dix : goal_contracts, goal_decompose_ai et huit social.*. Croisement fait le 27/08 — social.templates_marketplace (ouvert) et coach_write_tools (fermé) ne sont lus nulle part, et social.victory_reels est résolu par useSocialFeatures mais consommé par personne : les vidéos du fil ne sont donc pas gardées par lui. Restent trois fermetures qui agissent vraiment : social.sharing (GoalDetail), goal_contracts (deux entrées), et rien d'autre.",
+      "alternative": "Retirer le code des fonctions non ouvertes — écarté : le rouvrir coûterait une réécriture. Mais un drapeau que personne ne lit ment sur ce qu'il commande : celui-là se retire sans rien casser."
+    }
+  ],
+  "prochainesEtapes": [
+    "Écrire « pourQui » et « intention » dans ce fichier : ce sont les deux seules phrases que le dépôt ne peut pas déduire.",
+    "Confirmer les licences des cinq polices et le coût des trois services — sept cases rouges dans le tableau de bord.",
+    "Décider si un filet de tests est nécessaire avant un deuxième utilisateur : aucun outil n'est configuré aujourd'hui.",
+    "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
+    "Nettoyer les drapeaux : social.templates_marketplace et coach_write_tools ne sont lus par aucun code, social.victory_reels est lu mais jamais consommé. Les retirer, ou les brancher."
+  ]
 }

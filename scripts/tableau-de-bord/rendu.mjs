@@ -338,13 +338,22 @@ function sectionVisuels(d, m) {
 
 function sectionRessources(d, m) {
   const liste = m.ressources ?? [];
-  const sansLicence = liste.filter((r) => !r.licence).length;
+
+  /* UN SERVICE N'A PAS DE LICENCE, IL A UN CONTRAT ET UNE FORMULE.
+     Les compter comme « licence manquante » posait trois alertes rouges
+     qu'aucune réponse ne pouvait lever — et un signal qu'on ne peut pas
+     éteindre finit par ne plus rien signaler. Pour eux, le manque est
+     ailleurs : c'est la formule, donc de l'argent qui part. */
+  const estService = (r) => /^service/i.test(r.nature ?? "");
+  const sansLicence = liste.filter((r) => !estService(r) && !r.licence).length;
+  const sansFormule = liste.filter((r) => estService(r) && !r.cout).length;
   return `
 <section id="ressources" class="sect">
   <h2><span class="num">5</span> Ressources externes</h2>
-  <p class="intro">Polices, icônes, services : ce qui vient d'ailleurs, sous quelle licence et à quel coût. Une licence non renseignée est signalée.</p>
+  <p class="intro">Polices, icônes, services : ce qui vient d'ailleurs, sous quelle licence et à quel coût. Ce qui s'installe se lit sous une licence ; ce qui se loue se lit sous une formule. Les deux manques sont signalés, séparément.</p>
 
   ${sansLicence ? `<p class="alerte">${sansLicence} ressource${sansLicence > 1 ? "s" : ""} sans licence renseignée. Tant que la case est vide, on ne sait pas si l'usage est permis.</p>` : ""}
+  ${sansFormule ? `<p class="alerte">${sansFormule} service${sansFormule > 1 ? "s" : ""} sans formule renseignée. C'est de l'argent qui part tous les mois sans être écrit ici.</p>` : ""}
 
   ${liste.length ? `
   <table class="tableau">
@@ -354,8 +363,12 @@ function sectionRessources(d, m) {
       <tr class="cherchable" data-texte="${ech(r.nom + " " + (r.nature ?? ""))}">
         <td>${r.url ? `<a href="${ech(r.url)}" rel="noreferrer">${ech(r.nom)}</a>` : ech(r.nom)}</td>
         <td>${ech(r.nature ?? "—")}</td>
-        <td>${r.licence ? ech(r.licence) : `<span class="manque">non renseignée</span>`}</td>
-        <td>${ech(r.cout ?? "—")}</td>
+        <td>${r.licence ? ech(r.licence)
+          : estService(r) ? `<span class="doux">conditions du prestataire</span>`
+          : `<span class="manque">non renseignée</span>`}</td>
+        <td>${r.cout ? ech(r.cout)
+          : estService(r) ? `<span class="manque">formule non renseignée</span>`
+          : "—"}</td>
       </tr>`).join("")}
     </tbody>
   </table>` : `<p>${aCompleter(null, "les ressources externes")}</p>`}
@@ -741,6 +754,9 @@ main{padding:24px 0 96px;min-width:0}
 .etat[data-s="à compléter"]{color:var(--alerte)}
 .etiquette{padding:1px 7px;border-radius:4px;background:var(--creux);font:600 11px ui-monospace,monospace}
 .vide,.manque{color:var(--alerte);font-style:italic}
+/* Pas un manque : un fait qui ne se remplit pas. Le rouge est réservé
+   à ce qui attend une réponse. */
+.doux{color:var(--encre-3);font-style:italic}
 .alerte{border:1px solid var(--alerte);background:var(--alerte-doux);color:var(--encre);padding:12px 15px;border-radius:var(--r);margin:12px 0;max-width:78ch}
 .ok{color:var(--encre-3);font-size:13.5px}
 

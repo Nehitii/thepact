@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T12:23:47.296Z",
+  "genere": "2026-08-27T13:34:22.394Z",
   "fichiers": 1047,
-  "lignes": 239276,
+  "lignes": 239709,
   "parDossier": [
     {
       "dossier": ".agents/skills",
@@ -19,8 +19,8 @@
     {
       "dossier": "(racine)",
       "fichiers": 18,
-      "lignes": 1169,
-      "poids": 42784
+      "lignes": 1562,
+      "poids": 52827
     },
     {
       "dossier": ".impeccable",
@@ -31,8 +31,8 @@
     {
       "dossier": "docs",
       "fichiers": 2,
-      "lignes": 3764,
-      "poids": 209595
+      "lignes": 3786,
+      "poids": 213256
     },
     {
       "dossier": "mem/design",
@@ -79,14 +79,14 @@
     {
       "dossier": "scripts",
       "fichiers": 4,
-      "lignes": 845,
-      "poids": 38742
+      "lignes": 847,
+      "poids": 38957
     },
     {
       "dossier": "scripts/tableau-de-bord",
       "fichiers": 2,
-      "lignes": 1277,
-      "poids": 62245
+      "lignes": 1293,
+      "poids": 63383
     },
     {
       "dossier": "src",
@@ -207,14 +207,14 @@
     {
       "langage": "JSON",
       "fichiers": 12,
-      "lignes": 7851,
-      "poids": 296859
+      "lignes": 8244,
+      "poids": 306902
     },
     {
       "langage": "JavaScript",
       "fichiers": 115,
-      "lignes": 69287,
-      "poids": 2944744
+      "lignes": 69305,
+      "poids": 2946097
     },
     {
       "langage": "sans extension",
@@ -231,8 +231,8 @@
     {
       "langage": "HTML",
       "fichiers": 3,
-      "lignes": 3909,
-      "poids": 214604
+      "lignes": 3931,
+      "poids": 218265
     },
     {
       "langage": "SVG",
@@ -301,7 +301,7 @@
       "poids": 500
     }
   ],
-  "commits": 3107,
+  "commits": 3108,
   "orphelins": 69,
   "marqueurs": 15
 }

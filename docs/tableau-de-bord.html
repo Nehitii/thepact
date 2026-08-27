@@ -145,6 +145,9 @@ main{padding:24px 0 96px;min-width:0}
 .etat[data-s="à compléter"]{color:var(--alerte)}
 .etiquette{padding:1px 7px;border-radius:4px;background:var(--creux);font:600 11px ui-monospace,monospace}
 .vide,.manque{color:var(--alerte);font-style:italic}
+/* Pas un manque : un fait qui ne se remplit pas. Le rouge est réservé
+   à ce qui attend une réponse. */
+.doux{color:var(--encre-3);font-style:italic}
 .alerte{border:1px solid var(--alerte);background:var(--alerte-doux);color:var(--encre);padding:12px 15px;border-radius:var(--r);margin:12px 0;max-width:78ch}
 .ok{color:var(--encre-3);font-size:13.5px}
 
@@ -271,7 +274,7 @@ main{padding:24px 0 96px;min-width:0}
   <div class="grille-2">
     <article class="carte">
       <h3>Le projet en une phrase</h3>
-      <p class="phrase"><span class="vide" title="Rien n'est renseigné pour le pitch dans projet.manifeste.json">à compléter</span></p>
+      <p class="phrase">Une application de discipline personnelle bâtie autour d'un « pacte » : des objectifs découpés en étapes, avec leur coût et leur échéance, entourés de modules de suivi — finances, santé, journal, tâches, sessions de concentration — et d'une couche de jeu qui récompense la constance en jetons, cosmétiques et grades.</p>
     </article>
     <article class="carte">
       <h3>À qui ça s'adresse</h3>
@@ -283,15 +286,15 @@ main{padding:24px 0 96px;min-width:0}
     </article>
     <article class="carte pleine">
       <h3>Où ça en est</h3>
-      <p class="phrase"><span class="vide" title="Rien n'est renseigné pour l'état d'avancement dans projet.manifeste.json">à compléter</span></p>
+      <p class="phrase">Utilisable de bout en bout par une personne, et une seule l'utilise vraiment. Les vingt derniers jours ont été consacrés à reprendre les écrans un par un plutôt qu'à en ajouter ; ce qui manque avant un deuxième utilisateur n'est pas une fonction, c'est un filet — aucun test n'est configuré, et quatre fonctions sociales restent fermées par drapeau.</p>
       <p class="note">Cette phrase est écrite à la main, dans le manifeste. Aucun pourcentage n'est calculé : il n'existe pas de mesure honnête de « combien il reste ».</p>
     </article>
   </div>
 
   <div class="mesures">
     <div class="mesure"><b>1 047</b><span>fichiers analysés</span></div>
-    <div class="mesure"><b>239 276</b><span>lignes</span></div>
-    <div class="mesure"><b>3 107</b><span>commits</span></div>
+    <div class="mesure"><b>239 709</b><span>lignes</span></div>
+    <div class="mesure"><b>3 108</b><span>commits</span></div>
     <div class="mesure"><b>aujourd'hui</b><span>dernier commit</span></div>
   </div>
 </section>
@@ -303,9 +306,9 @@ main{padding:24px 0 96px;min-width:0}
   <details class="methode"><summary>Comment c'est calculé</summary><p>Chaque fichier de <code>src/pages</code> est un module. Ses lignes additionnent la page et les dossiers déclarés en <code>aussi</code> dans le manifeste. La dernière activité est la date du commit le plus récent ayant touché l'un de ces fichiers. Un module absent du manifeste apparaît quand même, en « à compléter » : il ne peut pas se cacher.</p></details>
 
   <div class="liste">
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminCosmeticsManager src/pages/AdminCosmeticsManager.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — cosmétiques src/pages/AdminCosmeticsManager.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminCosmeticsManager <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — cosmétiques <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminCosmeticsManager.tsx</code>
           <span>812 lignes</span>
@@ -315,9 +318,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminNotifications src/pages/AdminNotifications.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — diffusion src/pages/AdminNotifications.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminNotifications <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — diffusion <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminNotifications.tsx</code>
           <span>420 lignes</span>
@@ -327,9 +330,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminMode src/pages/AdminMode.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — banc d'essai src/pages/AdminMode.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminMode <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — banc d'essai <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminMode.tsx</code>
           <span>302 lignes</span>
@@ -339,9 +342,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Tableau de bord src/pages/Home.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Tableau de bord src/pages/Home.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Tableau de bord <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Tableau de bord <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Home.tsx</code>
           <span>4 015 lignes</span>
@@ -351,9 +354,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminMoneyManager src/pages/AdminMoneyManager.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — monnaie src/pages/AdminMoneyManager.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminMoneyManager <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — monnaie <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminMoneyManager.tsx</code>
           <span>386 lignes</span>
@@ -363,9 +366,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminModuleManager src/pages/AdminModuleManager.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — modules src/pages/AdminModuleManager.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminModuleManager <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — modules <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminModuleManager.tsx</code>
           <span>306 lignes</span>
@@ -375,9 +378,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminPromoManager src/pages/AdminPromoManager.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — codes src/pages/AdminPromoManager.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminPromoManager <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — codes <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminPromoManager.tsx</code>
           <span>266 lignes</span>
@@ -387,9 +390,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="AdminAcces src/pages/AdminAcces.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — accès src/pages/AdminAcces.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">AdminAcces <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — accès <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/AdminAcces.tsx</code>
           <span>225 lignes</span>
@@ -399,9 +402,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Administration src/pages/Admin.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Administration — centre src/pages/Admin.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Administration <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Administration — centre <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Admin.tsx</code>
           <span>539 lignes</span>
@@ -411,9 +414,21 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Analytique src/pages/Analytics.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Profil — coque src/pages/Profile.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Analytique <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Profil — coque <span class="etat" data-s="livré">livré</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/Profile.tsx</code>
+          <span>5 062 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>2 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Analytique src/pages/Analytics.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Analytique <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Analytics.tsx</code>
           <span>2 520 lignes</span>
@@ -423,9 +438,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Boîte de réception src/pages/Inbox.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Boîte de réception src/pages/Inbox.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Boîte de réception <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Boîte de réception <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Inbox.tsx</code>
           <span>534 lignes</span>
@@ -434,10 +449,10 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Conversation privée src/pages/InboxThread.tsx">
+    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Conversation privée src/pages/InboxThread.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Conversation privée <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Conversation privée <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/InboxThread.tsx</code>
           <span>294 lignes</span>
@@ -446,10 +461,10 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Communauté src/pages/Community.tsx">
+    </div>
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Communauté src/pages/Community.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Communauté <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Communauté <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Community.tsx</code>
           <span>2 784 lignes</span>
@@ -459,9 +474,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Souhaits src/pages/Wishlist.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Souhaits src/pages/Wishlist.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Souhaits <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Souhaits <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Wishlist.tsx</code>
           <span>2 938 lignes</span>
@@ -471,9 +486,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="GoalDetail src/pages/GoalDetail.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Fiche d'objectif src/pages/GoalDetail.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">GoalDetail <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Fiche d'objectif <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/GoalDetail.tsx</code>
           <span>741 lignes</span>
@@ -483,9 +498,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="DisplaySound src/pages/profile/DisplaySound.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Apparence et sons src/pages/profile/DisplaySound.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">DisplaySound <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Apparence et sons <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/DisplaySound.tsx</code>
           <span>458 lignes</span>
@@ -495,9 +510,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Alliés src/pages/Friends.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Alliés src/pages/Friends.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Alliés <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Alliés <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Friends.tsx</code>
           <span>1 184 lignes</span>
@@ -507,9 +522,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Calendrier src/pages/Calendar.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Calendrier src/pages/Calendar.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Calendrier <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Calendrier <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Calendar.tsx</code>
           <span>2 688 lignes</span>
@@ -519,9 +534,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Journal src/pages/Journal.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Journal src/pages/Journal.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Journal <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Journal <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Journal.tsx</code>
           <span>2 332 lignes</span>
@@ -531,9 +546,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Objectifs src/pages/Goals.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Objectifs src/pages/Goals.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Objectifs <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Objectifs <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Goals.tsx</code>
           <span>6 420 lignes</span>
@@ -543,9 +558,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Tâches src/pages/TodoList.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Tâches src/pages/TodoList.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Tâches <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Tâches <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/TodoList.tsx</code>
           <span>2 331 lignes</span>
@@ -555,9 +570,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Boutique src/pages/Shop.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Boutique src/pages/Shop.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Boutique <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Boutique <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Shop.tsx</code>
           <span>4 268 lignes</span>
@@ -567,9 +582,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Classement src/pages/Leaderboard.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Classement src/pages/Leaderboard.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Classement <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Classement <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Leaderboard.tsx</code>
           <span>350 lignes</span>
@@ -579,9 +594,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Focus src/pages/Focus.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Focus src/pages/Focus.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Focus <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Focus <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Focus.tsx</code>
           <span>3 075 lignes</span>
@@ -591,21 +606,21 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="NotificationSettings src/pages/profile/NotificationSettings.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages de notification src/pages/profile/NotificationSettings.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">NotificationSettings <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Réglages de notification <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/NotificationSettings.tsx</code>
           <span>310 lignes</span>
           <span>activité hier</span>
-          <span>7 reprises récentes</span>
+          <span>6 reprises récentes</span>
         </p>
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="PrivacyControl src/pages/profile/PrivacyControl.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Confidentialité src/pages/profile/PrivacyControl.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">PrivacyControl <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Confidentialité <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/PrivacyControl.tsx</code>
           <span>260 lignes</span>
@@ -615,9 +630,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="DataPortability src/pages/profile/DataPortability.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Mes données src/pages/profile/DataPortability.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">DataPortability <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Mes données <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/DataPortability.tsx</code>
           <span>671 lignes</span>
@@ -627,9 +642,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Finances src/pages/Finance.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Finances src/pages/Finance.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Finances <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Finances <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Finance.tsx</code>
           <span>5 081 lignes</span>
@@ -639,9 +654,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="HealthSettings src/pages/profile/HealthSettings.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages de santé src/pages/profile/HealthSettings.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">HealthSettings <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Réglages de santé <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/HealthSettings.tsx</code>
           <span>203 lignes</span>
@@ -651,9 +666,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Santé src/pages/Health.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Santé src/pages/Health.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Santé <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Santé <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Health.tsx</code>
           <span>1 147 lignes</span>
@@ -663,9 +678,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Auth src/pages/Auth.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Connexion src/pages/Auth.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Auth <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Connexion <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Auth.tsx</code>
           <span>460 lignes</span>
@@ -675,9 +690,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Legal src/pages/Legal.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Mentions légales src/pages/Legal.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Legal <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Mentions légales <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Legal.tsx</code>
           <span>192 lignes</span>
@@ -687,9 +702,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="TwoFactor src/pages/TwoFactor.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Second facteur src/pages/TwoFactor.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">TwoFactor <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Second facteur <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/TwoFactor.tsx</code>
           <span>193 lignes</span>
@@ -699,9 +714,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="PactSettings src/pages/profile/PactSettings.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages du pacte src/pages/profile/PactSettings.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">PactSettings <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Réglages du pacte <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/PactSettings.tsx</code>
           <span>133 lignes</span>
@@ -711,9 +726,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="BoundedProfile src/pages/profile/BoundedProfile.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Profil public src/pages/profile/BoundedProfile.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">BoundedProfile <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Profil public <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/profile/BoundedProfile.tsx</code>
           <span>55 lignes</span>
@@ -723,21 +738,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Profile src/pages/Profile.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Nouvel objectif src/pages/NewGoal.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Profile <span class="etat" data-s="à compléter">à compléter</span></p>
-        <p class="ligne-meta">
-          <code>src/pages/Profile.tsx</code>
-          <span>77 lignes</span>
-          <span>activité il y a 2 j</span>
-          <span>2 reprises récentes</span>
-        </p>
-        
-      </div>
-    </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="NewGoal src/pages/NewGoal.tsx">
-      <div class="ligne-corps">
-        <p class="ligne-nom">NewGoal <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Nouvel objectif <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/NewGoal.tsx</code>
           <span>785 lignes</span>
@@ -747,9 +750,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Succès src/pages/Achievements.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Succès src/pages/Achievements.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Succès <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Succès <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Achievements.tsx</code>
           <span>609 lignes</span>
@@ -759,21 +762,21 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Guildes src/pages/GuildPage.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Guildes src/pages/GuildPage.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Guildes <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Guildes <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/GuildPage.tsx</code>
           <span>247 lignes</span>
-          <span>activité il y a 3 j</span>
+          <span>activité il y a 4 j</span>
           <span>6 reprises récentes</span>
         </p>
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="StepDetail src/pages/StepDetail.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Fiche d'étape src/pages/StepDetail.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">StepDetail <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Fiche d'étape <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/StepDetail.tsx</code>
           <span>406 lignes</span>
@@ -783,9 +786,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="GoalsGraph src/pages/GoalsGraph.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Constellation des objectifs src/pages/GoalsGraph.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">GoalsGraph <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Constellation des objectifs <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/GoalsGraph.tsx</code>
           <span>424 lignes</span>
@@ -795,9 +798,9 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="Onboarding src/pages/Onboarding.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Premier pas src/pages/Onboarding.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">Onboarding <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Premier pas <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/Onboarding.tsx</code>
           <span>513 lignes</span>
@@ -807,45 +810,45 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="The Call src/pages/TheCall.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="The Call src/pages/TheCall.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">The Call <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">The Call <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/TheCall.tsx</code>
           <span>821 lignes</span>
-          <span>activité il y a 6 j</span>
+          <span>activité il y a 7 j</span>
           <span>8 reprises récentes</span>
         </p>
         
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="ContractSign src/pages/ContractSign.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="en pause" data-texte="Signature de contrat src/pages/ContractSign.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">ContractSign <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Signature de contrat <span class="etat" data-s="en pause">en pause</span></p>
         <p class="ligne-meta">
           <code>src/pages/ContractSign.tsx</code>
           <span>264 lignes</span>
           <span>activité il y a 9 j</span>
           <span>1 reprises récentes</span>
         </p>
-        
+        <p class="ligne-note">Le drapeau goal_contracts est à false en base. L'écran lui-même ne porte aucune garde : le drapeau ferme ses entrées (le panneau des contrats et la section de GoalDetail), pas l'URL — qui reste atteignable si on la connaît.</p>
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="HallOfFame src/pages/HallOfFame.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Panthéon src/pages/HallOfFame.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">HallOfFame <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Panthéon <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/HallOfFame.tsx</code>
           <span>167 lignes</span>
           <span>activité il y a 4 mois</span>
           
         </p>
-        
+        <p class="ligne-note">Dernière reprise le 14/05/2026 : le seul écran que la vague d'août n'a pas touché.</p>
       </div>
     </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="NotFound src/pages/NotFound.tsx">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Page introuvable src/pages/NotFound.tsx">
       <div class="ligne-corps">
-        <p class="ligne-nom">NotFound <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-nom">Page introuvable <span class="etat" data-s="livré">livré</span></p>
         <p class="ligne-meta">
           <code>src/pages/NotFound.tsx</code>
           <span>70 lignes</span>
@@ -1096,10 +1099,10 @@ main{padding:24px 0 96px;min-width:0}
   </div>
 
   <h3 class="sous">Règles d'usage</h3>
-  <ul class="regles"><li>Toute couleur descend des jetons --ds-* de src/styles/design-tokens.css, qui possèdent déjà leur miroir clair. Une couleur écrite en dur ne suit pas le thème.</li><li>Une feuille de style construite sur les jetons n'a besoin d'AUCUNE surcharge .light. C'est le critère : si vous devez en ajouter une, c'est qu'une couleur est écrite en dur quelque part.</li><li>Trois familles de caractères, trois emplois : Orbitron pour les titres, Rajdhani pour le texte courant, JetBrains Mono pour les étiquettes, les chiffres et les données.</li><li>Le néon s'évapore sur papier : en thème clair, la teinte se garde et la luminosité tombe. Un lime qui reste lime sur blanc devient illisible.</li></ul>
+  <ul class="regles"><li>Toute couleur descend des jetons --ds-* de src/styles/design-tokens.css, qui possèdent déjà leur miroir clair. Une couleur écrite en dur ne suit pas le thème.</li><li>Une feuille de style construite sur les jetons n'a besoin d'AUCUNE surcharge .light. C'est le critère : si vous devez en ajouter une, c'est qu'une couleur est écrite en dur quelque part.</li><li>Trois familles de caractères, trois emplois : Orbitron pour les titres, Rajdhani pour le texte courant, JetBrains Mono pour les étiquettes, les chiffres et les données.</li><li>Le néon s'évapore sur papier : en thème clair, la teinte se garde et la luminosité tombe. Un lime qui reste lime sur blanc devient illisible.</li><li>L'application est une vitrine, l'administration est l'arrière-boutique : mêmes jetons, emploi plus dense et plus sobre, la couleur réservée à ce qui change d'état.</li></ul>
 
   <h3 class="sous">Ce qu'il ne faut pas faire</h3>
-  <ul class="regles interdits"><li>Ne pas composer un nom de classe Tailwind à l'exécution (border-${couleur}) : le compilateur ne voit jamais ces chaînes et ne produit aucune règle. La classe existe dans le DOM, le style n'existe pas.</li><li>Ne pas poser de halo ni de flou en position fixe derrière une page d'outil : l'administration et les réglages se lisent longtemps, ils ne se contemplent pas.</li><li>Ne pas écrire de texte destiné à la base de données sans passer par i18n. Une notification garde ses mots pour toujours : changer de langue ensuite ne les traduit pas.</li><li>Ne pas annoncer à l'écran ce qui n'est pas vrai — pas de pastille « en ligne » simulée, pas de « canal chiffré » sur des données en clair, pas de barre de progression décorative.</li></ul>
+  <ul class="regles interdits"><li>Ne pas composer un nom de classe Tailwind à l'exécution (border-${couleur}) : le compilateur ne voit jamais ces chaînes et ne produit aucune règle. La classe existe dans le DOM, le style n'existe pas.</li><li>Ne pas poser de halo ni de flou en position fixe derrière une page d'outil : l'administration et les réglages se lisent longtemps, ils ne se contemplent pas.</li><li>Ne pas écrire de texte destiné à la base de données sans passer par i18n. Une notification garde ses mots pour toujours : changer de langue ensuite ne les traduit pas.</li><li>Ne pas annoncer à l'écran ce qui n'est pas vrai — pas de pastille « en ligne » simulée, pas de « canal chiffré » sur des données en clair, pas de barre de progression décorative.</li><li>Ne pas cacher un geste derrière le seul survol : un écran tactile n'en a pas, et le bouton devient introuvable.</li></ul>
 </section>
   
 <section id="visuels" class="sect">
@@ -1929,9 +1932,10 @@ main{padding:24px 0 96px;min-width:0}
   
 <section id="ressources" class="sect">
   <h2><span class="num">5</span> Ressources externes</h2>
-  <p class="intro">Polices, icônes, services : ce qui vient d'ailleurs, sous quelle licence et à quel coût. Une licence non renseignée est signalée.</p>
+  <p class="intro">Polices, icônes, services : ce qui vient d'ailleurs, sous quelle licence et à quel coût. Ce qui s'installe se lit sous une licence ; ce qui se loue se lit sous une formule. Les deux manques sont signalés, séparément.</p>
 
-  <p class="alerte">9 ressources sans licence renseignée. Tant que la case est vide, on ne sait pas si l'usage est permis.</p>
+  <p class="alerte">5 ressources sans licence renseignée. Tant que la case est vide, on ne sait pas si l'usage est permis.</p>
+  <p class="alerte">3 services sans formule renseignée. C'est de l'argent qui part tous les mois sans être écrit ici.</p>
 
   
   <table class="tableau">
@@ -1971,26 +1975,32 @@ main{padding:24px 0 96px;min-width:0}
       <tr class="cherchable" data-texte="Lucide icônes">
         <td><a href="https://lucide.dev" rel="noreferrer">Lucide</a></td>
         <td>icônes</td>
-        <td><span class="manque">non renseignée</span></td>
-        <td>—</td>
+        <td>ISC — vérifiée dans node_modules/lucide-react</td>
+        <td>gratuit</td>
+      </tr>
+      <tr class="cherchable" data-texte="React bibliothèque — interface">
+        <td><a href="https://react.dev" rel="noreferrer">React</a></td>
+        <td>bibliothèque — interface</td>
+        <td>MIT — vérifiée dans node_modules/react</td>
+        <td>gratuit</td>
       </tr>
       <tr class="cherchable" data-texte="Supabase service — base de données, authentification, stockage, fonctions">
         <td><a href="https://supabase.com" rel="noreferrer">Supabase</a></td>
         <td>service — base de données, authentification, stockage, fonctions</td>
-        <td><span class="manque">non renseignée</span></td>
-        <td>—</td>
+        <td><span class="doux">conditions du prestataire</span></td>
+        <td><span class="manque">formule non renseignée</span></td>
       </tr>
       <tr class="cherchable" data-texte="Cloudflare Workers service — hébergement">
         <td><a href="https://workers.cloudflare.com" rel="noreferrer">Cloudflare Workers</a></td>
         <td>service — hébergement</td>
-        <td><span class="manque">non renseignée</span></td>
-        <td>—</td>
+        <td><span class="doux">conditions du prestataire</span></td>
+        <td><span class="manque">formule non renseignée</span></td>
       </tr>
       <tr class="cherchable" data-texte="Sentry service — suivi des erreurs">
         <td><a href="https://sentry.io" rel="noreferrer">Sentry</a></td>
         <td>service — suivi des erreurs</td>
-        <td><span class="manque">non renseignée</span></td>
-        <td>—</td>
+        <td><span class="doux">conditions du prestataire</span></td>
+        <td><span class="manque">formule non renseignée</span></td>
       </tr>
     </tbody>
   </table>
@@ -2037,7 +2047,7 @@ main{padding:24px 0 96px;min-width:0}
 
   <div class="mesures">
     <div class="mesure"><b>1 047</b><span>fichiers</span></div>
-    <div class="mesure"><b>239 276</b><span>lignes</span></div>
+    <div class="mesure"><b>239 709</b><span>lignes</span></div>
     <div class="mesure"><b>69</b><span>fichiers orphelins</span></div>
     <div class="mesure"><b>15</b><span>marqueurs</span></div>
   </div>
@@ -2099,22 +2109,22 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="docs">
       <span class="barre-nom"><code>docs</code></span>
       <span class="barre-piste"><i style="width:5%"></i></span>
-      <span class="barre-val">3 764<small> lignes · 2 fich.</small></span>
+      <span class="barre-val">3 786<small> lignes · 2 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src">
       <span class="barre-nom"><code>src</code></span>
       <span class="barre-piste"><i style="width:3%"></i></span>
       <span class="barre-val">2 253<small> lignes · 4 fich.</small></span>
     </div>
-    <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
-      <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
-      <span class="barre-piste"><i style="width:2%"></i></span>
-      <span class="barre-val">1 277<small> lignes · 2 fich.</small></span>
-    </div>
     <div class="barre cherchable" data-texte="(racine)">
       <span class="barre-nom"><code>(racine)</code></span>
       <span class="barre-piste"><i style="width:2%"></i></span>
-      <span class="barre-val">1 169<small> lignes · 18 fich.</small></span>
+      <span class="barre-val">1 562<small> lignes · 18 fich.</small></span>
+    </div>
+    <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
+      <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
+      <span class="barre-piste"><i style="width:2%"></i></span>
+      <span class="barre-val">1 293<small> lignes · 2 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="public/fonts">
       <span class="barre-nom"><code>public/fonts</code></span>
@@ -2129,7 +2139,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="scripts">
       <span class="barre-nom"><code>scripts</code></span>
       <span class="barre-piste"><i style="width:1%"></i></span>
-      <span class="barre-val">845<small> lignes · 4 fich.</small></span>
+      <span class="barre-val">847<small> lignes · 4 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/content">
       <span class="barre-nom"><code>src/content</code></span>
@@ -2202,7 +2212,7 @@ main{padding:24px 0 96px;min-width:0}
   <details class="repli"><summary>Le détail des 19 langages</summary>
   <table class="tableau">
     <thead><tr><th>Langage</th><th>Fichiers</th><th>Lignes</th><th>Poids</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">377</td><td class="n">72 155</td><td class="n">2.81 Mo</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">115</td><td class="n">69 287</td><td class="n">2.81 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">39</td><td class="n">31 558</td><td class="n">1.14 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">201</td><td class="n">28 637</td><td class="n">1.04 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">170</td><td class="n">11 460</td><td class="n">469.3 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">12</td><td class="n">7 851</td><td class="n">289.9 ko</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">18</td><td class="n">6 058</td><td class="n">1.50 Mo</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">45</td><td class="n">5 615</td><td class="n">392.9 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">3</td><td class="n">3 909</td><td class="n">209.6 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">629</td><td class="n">151.1 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">28</td><td class="n">451</td><td class="n">88.6 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">5</td><td class="n">326</td><td class="n">34.2 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">2</td><td class="n">202</td><td class="n">49.1 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">11</td><td class="n">64</td><td class="n">1.3 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="YAML"><td>YAML</td><td class="n">1</td><td class="n">4</td><td class="n">235 o</td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">377</td><td class="n">72 155</td><td class="n">2.81 Mo</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">115</td><td class="n">69 305</td><td class="n">2.81 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">39</td><td class="n">31 558</td><td class="n">1.14 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">201</td><td class="n">28 637</td><td class="n">1.04 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">170</td><td class="n">11 460</td><td class="n">469.3 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">12</td><td class="n">8 244</td><td class="n">299.7 ko</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">18</td><td class="n">6 058</td><td class="n">1.50 Mo</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">45</td><td class="n">5 615</td><td class="n">392.9 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">3</td><td class="n">3 931</td><td class="n">213.1 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">629</td><td class="n">151.1 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">28</td><td class="n">451</td><td class="n">88.6 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">5</td><td class="n">326</td><td class="n">34.2 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">2</td><td class="n">202</td><td class="n">49.1 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">11</td><td class="n">64</td><td class="n">1.3 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="YAML"><td>YAML</td><td class="n">1</td><td class="n">4</td><td class="n">235 o</td></tr></tbody>
   </table></details>
 
   <h3 class="sous">Gros et souvent repris</h3>
@@ -2339,7 +2349,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/guild.css</code></td>
         <td class="n">1 663</td>
         <td class="n">50.6 ko</td>
-        <td>il y a 3 j</td>
+        <td>il y a 4 j</td>
         <td class="n">6<small> / 6 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/wishlist.css">
@@ -2368,7 +2378,7 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">1 367</td>
         <td class="n">59.6 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">14<small> / 5 récents</small></td>
+        <td class="n">14<small> / 4 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/journal.css">
         <td><code>src/styles/journal.css</code></td>
@@ -2423,7 +2433,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/pages/TheCall.tsx</code></td>
         <td class="n">821</td>
         <td class="n">36.8 ko</td>
-        <td>il y a 6 j</td>
+        <td>il y a 7 j</td>
         <td class="n">53<small> / 8 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/pages/AdminCosmeticsManager.tsx">
@@ -2563,7 +2573,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/guild.css</code></td>
         <td class="n">1 663</td>
         <td class="n">50.6 ko</td>
-        <td>il y a 3 j</td>
+        <td>il y a 4 j</td>
         <td class="n">6<small> / 6 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/wishlist.css">
@@ -2592,7 +2602,7 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">1 367</td>
         <td class="n">59.6 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">14<small> / 5 récents</small></td>
+        <td class="n">14<small> / 4 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/journal.css">
         <td><code>src/styles/journal.css</code></td>
@@ -3077,7 +3087,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/components/home/NeuralPanel.tsx</code></td>
         <td class="n">139</td>
         
-        <td>il y a 8 j</td>
+        <td>il y a 9 j</td>
         <td class="n">7<small> / 3 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="migrer-images.mjs">
@@ -3472,7 +3482,7 @@ main{padding:24px 0 96px;min-width:0}
   <p class="intro">Par où entrer dans le code, et où trouver quoi.</p>
 
   <h3 class="sous">Architecture</h3>
-  <p>Application à page unique en React, rendue par Vite. Toutes les données passent par Supabase — PostgreSQL avec sécurité au niveau des lignes, authentification, stockage de fichiers et fonctions de bord en Deno. Il n'y a pas de serveur applicatif : le navigateur parle directement à la base, et ce sont les politiques RLS qui décident de ce que chacun voit. Ce qui doit échapper à ces politiques — diffusion, administration, projections publiques — passe par des fonctions SECURITY DEFINER qui vérifient elles-mêmes le droit d'agir.</p>
+  <p>Application à page unique en React, rendue par Vite. Toutes les données passent par Supabase — PostgreSQL avec sécurité au niveau des lignes, authentification, stockage de fichiers et fonctions de bord en Deno. Il n'y a pas de serveur applicatif : le navigateur parle directement à la base, et ce sont les politiques RLS qui décident de ce que chacun voit. Ce qui doit échapper à ces politiques — diffusion, administration, projections publiques — passe par des fonctions SECURITY DEFINER qui vérifient elles-mêmes le droit d'agir. L'hébergement est un Worker Cloudflare qui sert les fichiers construits.</p>
 
   <h3 class="sous">Points d'entrée</h3>
   <ul class="puces">
@@ -3487,11 +3497,11 @@ main{padding:24px 0 96px;min-width:0}
   
   <table class="tableau">
     <thead><tr><th>Je cherche…</th><th>C'est ici</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="Les routes et les écrans"><td>Les routes et les écrans</td><td><code>src/App.tsx</code></td></tr><tr class="cherchable" data-texte="La barre latérale et la coque commune"><td>La barre latérale et la coque commune</td><td><code>src/components/layout/</code></td></tr><tr class="cherchable" data-texte="Les jetons de couleur et le miroir clair"><td>Les jetons de couleur et le miroir clair</td><td><code>src/styles/design-tokens.css, src/styles/theme-clair.css</code></td></tr><tr class="cherchable" data-texte="Les accès aux données, par domaine"><td>Les accès aux données, par domaine</td><td><code>src/hooks/</code></td></tr><tr class="cherchable" data-texte="Le modèle de données et son histoire"><td>Le modèle de données et son histoire</td><td><code>supabase/migrations/</code></td></tr><tr class="cherchable" data-texte="Les traitements serveur"><td>Les traitements serveur</td><td><code>supabase/functions/</code></td></tr><tr class="cherchable" data-texte="Les traductions"><td>Les traductions</td><td><code>src/i18n/locales/</code></td></tr><tr class="cherchable" data-texte="Les décisions déjà prises et parquées"><td>Les décisions déjà prises et parquées</td><td><code>mem/</code></td></tr><tr class="cherchable" data-texte="Ce tableau de bord"><td>Ce tableau de bord</td><td><code>scripts/tableau-de-bord.mjs</code></td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="Les routes et les écrans"><td>Les routes et les écrans</td><td><code>src/App.tsx</code></td></tr><tr class="cherchable" data-texte="La barre latérale et la coque commune"><td>La barre latérale et la coque commune</td><td><code>src/components/layout/</code></td></tr><tr class="cherchable" data-texte="Les jetons de couleur et le miroir clair"><td>Les jetons de couleur et le miroir clair</td><td><code>src/styles/design-tokens.css, src/styles/theme-clair.css</code></td></tr><tr class="cherchable" data-texte="Les accès aux données, par domaine"><td>Les accès aux données, par domaine</td><td><code>src/hooks/</code></td></tr><tr class="cherchable" data-texte="Le modèle de données et son histoire"><td>Le modèle de données et son histoire</td><td><code>supabase/migrations/</code></td></tr><tr class="cherchable" data-texte="Les traitements serveur"><td>Les traitements serveur</td><td><code>supabase/functions/</code></td></tr><tr class="cherchable" data-texte="Les traductions"><td>Les traductions</td><td><code>src/i18n/locales/</code></td></tr><tr class="cherchable" data-texte="Les drapeaux de fonctionnalité"><td>Les drapeaux de fonctionnalité</td><td><code>table feature_flags, via src/hooks/useSocialFeatures.ts</code></td></tr><tr class="cherchable" data-texte="Les décisions déjà prises et parquées"><td>Les décisions déjà prises et parquées</td><td><code>mem/</code></td></tr><tr class="cherchable" data-texte="Ce tableau de bord"><td>Ce tableau de bord</td><td><code>scripts/tableau-de-bord.mjs</code></td></tr></tbody>
   </table>
 
   <h3 class="sous">Conventions</h3>
-  <ul class="regles"><li>Le français partout : noms de fonctions et de variables du code métier, classes CSS, messages de commit, commentaires. Les bibliothèques gardent leurs noms.</li><li>Un commentaire dit POURQUOI, jamais QUOI. Il porte le relevé qui a motivé le choix, pour que le prochain lecteur puisse le contredire avec des chiffres.</li><li>Chaque migration porte un en-tête qui explique ce qui était faux, ce qui a été mesuré, et comment annuler.</li><li>On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur.</li></ul>
+  <ul class="regles"><li>Le français partout : noms de fonctions et de variables du code métier, classes CSS, messages de commit, commentaires. Les bibliothèques gardent leurs noms.</li><li>Un commentaire dit POURQUOI, jamais QUOI. Il porte le relevé qui a motivé le choix, pour que le prochain lecteur puisse le contredire avec des chiffres.</li><li>Chaque migration porte un en-tête qui explique ce qui était faux, ce qui a été mesuré, et comment annuler.</li><li>On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur.</li><li>Toute fonction SECURITY DEFINER fige son search_path. C'est le premier vecteur d'escalade de PostgreSQL, et il est fermé partout dans ce dépôt.</li></ul>
 </section>
   
 <section id="decisions" class="sect">
@@ -3501,6 +3511,30 @@ main{padding:24px 0 96px;min-width:0}
   
   <div class="liste">
     
+    <div class="ligne cherchable" data-texte="L'administration exige une session élevée, pas seulement le rôle Le rôle d'administrateur est permanent et voyage avec un jeton de session volé. L'accès demande désormais un second facteur présenté pour CETTE session.">
+      <div class="ligne-corps">
+        <p class="ligne-nom">L'administration exige une session élevée, pas seulement le rôle</p>
+        <p class="ligne-meta">
+          <span>27 août 2026</span>
+          
+          
+        </p>
+        <p class="ligne-note">Le rôle d'administrateur est permanent et voyage avec un jeton de session volé. L'accès demande désormais un second facteur présenté pour CETTE session.</p>
+        <p class="ligne-note"><b>Écarté :</b> Se contenter du rôle, comme avant — écarté : un jeton volé le porte aussi.</p>
+      </div>
+    </div>
+    <div class="ligne cherchable" data-texte="Les fonctions sociales sont derrière des drapeaux — trois ne commandent rien Douze lignes dans feature_flags. Le code n'en lit que dix : goal_contracts, goal_decompose_ai et huit social.*. Croisement fait le 27/08 — social.templates_marketplace (ouvert) et coach_write_tools (fermé) ne sont lus nulle part, et social.victory_reels est résolu par useSocialFeatures mais consommé par personne : les vidéos du fil ne sont donc pas gardées par lui. Restent trois fermetures qui agissent vraiment : social.sharing (GoalDetail), goal_contracts (deux entrées), et rien d'autre.">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Les fonctions sociales sont derrière des drapeaux — trois ne commandent rien</p>
+        <p class="ligne-meta">
+          <span>27 août 2026</span>
+          
+          
+        </p>
+        <p class="ligne-note">Douze lignes dans feature_flags. Le code n'en lit que dix : goal_contracts, goal_decompose_ai et huit social.*. Croisement fait le 27/08 — social.templates_marketplace (ouvert) et coach_write_tools (fermé) ne sont lus nulle part, et social.victory_reels est résolu par useSocialFeatures mais consommé par personne : les vidéos du fil ne sont donc pas gardées par lui. Restent trois fermetures qui agissent vraiment : social.sharing (GoalDetail), goal_contracts (deux entrées), et rien d'autre.</p>
+        <p class="ligne-note"><b>Écarté :</b> Retirer le code des fonctions non ouvertes — écarté : le rouvrir coûterait une réécriture. Mais un drapeau que personne ne lit ment sur ce qu'il commande : celui-là se retire sans rien casser.</p>
+      </div>
+    </div>
     <div class="ligne cherchable" data-texte="Page layout foundations (Phase 1) Mandatory page-level wrappers DSPageShell/DSBackground/DSPageHeader/DSPageLoader and the 5 allowed widths">
       <div class="ligne-corps">
         <p class="ligne-nom">Page layout foundations (Phase 1)</p>
@@ -3537,25 +3571,13 @@ main{padding:24px 0 96px;min-width:0}
         
       </div>
     </div>
-    <div class="ligne cherchable" data-texte="undefined ">
-      <div class="ligne-corps">
-        <p class="ligne-nom"></p>
-        <p class="ligne-meta">
-          <span>date inconnue</span>
-          
-          
-        </p>
-        
-        
-      </div>
-    </div>
   </div>
 </section>
   
 <section id="suite" class="sect">
   <h2><span class="num">10</span> Prochaines étapes</h2>
   <p class="intro">Cinq lignes au plus. Ce qui déborde n'a pas sa place ici.</p>
-  <p><span class="vide" title="Rien n'est renseigné pour les prochaines étapes dans projet.manifeste.json">à compléter</span></p>
+  <ol class="etapes"><li>Écrire « pourQui » et « intention » dans ce fichier : ce sont les deux seules phrases que le dépôt ne peut pas déduire.</li><li>Confirmer les licences des cinq polices et le coût des trois services — sept cases rouges dans le tableau de bord.</li><li>Décider si un filet de tests est nécessaire avant un deuxième utilisateur : aucun outil n'est configuré aujourd'hui.</li><li>Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.</li><li>Nettoyer les drapeaux : social.templates_marketplace et coach_write_tools ne sont lus par aucun code, social.victory_reels est lu mais jamais consommé. Les retirer, ou les brancher.</li></ol>
   
 </section>
 
