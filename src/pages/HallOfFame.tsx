@@ -5,6 +5,7 @@ import { Trophy, Crown, Medal, Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DSPanel, DSBadge, DSEmptyState, DSLoadingState } from "@/components/ds";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface SeasonRow {
   id: string;
@@ -68,29 +69,31 @@ export default function HallOfFame() {
     },
   });
 
+  const { t } = useTranslation();
+
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-6">
       <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon" aria-label="Retour">
+        <Button asChild variant="ghost" size="icon" aria-label={t("common.retour", "Retour")}>
           <Link to="/leaderboard"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
         <div className="flex items-center gap-3">
           <Trophy className="h-7 w-7 text-yellow-400" />
           <div>
-            <h1 className="font-orbitron text-2xl tracking-wide">Hall of Fame</h1>
-            <p className="text-sm text-muted-foreground">Champions des saisons passées</p>
+            <h1 className="font-orbitron text-2xl tracking-wide">{t("hallOfFame.titre", "Panthéon")}</h1>
+            <p className="text-sm text-muted-foreground">{t("hallOfFame.sous", "Champions des saisons passées")}</p>
           </div>
         </div>
       </div>
 
       {loadingSeasons ? (
-        <DSLoadingState message="LOADING SEASONS" />
+        <DSLoadingState message={t("hallOfFame.chargementSaisons", "CHARGEMENT DES SAISONS")} />
       ) : endedSeasons.length === 0 ? (
         <DSEmptyState
           visual="icon"
           icon={Sparkles}
-          message="NO SEASON ARCHIVED"
-          description="La première saison sera archivée ici à sa fin."
+          message={t("hallOfFame.aucuneSaison", "AUCUNE SAISON ARCHIVÉE")}
+          description={t("hallOfFame.aucuneSaisonDetail", "La première saison sera archivée ici à sa fin.")}
         />
       ) : (
         <>
@@ -112,14 +115,14 @@ export default function HallOfFame() {
 
           <DSPanel className="p-0 overflow-hidden">
             {loadingHof ? (
-              <div className="p-6"><DSLoadingState message="LOADING LEADERBOARD" /></div>
+              <div className="p-6"><DSLoadingState message={t("hallOfFame.chargementClassement", "CHARGEMENT DU CLASSEMENT")} /></div>
             ) : !leaderboard || leaderboard.length === 0 ? (
               <div className="p-6">
                 <DSEmptyState
                   visual="icon"
                   icon={Trophy}
-                  message="SNAPSHOT UNAVAILABLE"
-                  description="Cette saison n'a pas encore été archivée."
+                  message={t("hallOfFame.releveIndisponible", "RELEVÉ INDISPONIBLE")}
+                  description={t("hallOfFame.releveIndisponibleDetail", "Cette saison n’a pas encore été archivée.")}
                 />
               </div>
             ) : (
@@ -143,17 +146,17 @@ export default function HallOfFame() {
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-rajdhani text-base">
-                        {row.display_name ?? "Anonyme"}
+                        {row.display_name ?? t("hallOfFame.anonyme", "Anonyme")}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {row.goals_completed} missions accomplies
+                        {t("hallOfFame.missionsAccomplies", "{{n}} missions accomplies", { n: row.goals_completed })}
                       </div>
                     </div>
                     {row.prestige_awarded > 0 && (
                       <DSBadge variant="new" label={`+${row.prestige_awarded} PRESTIGE`} />
                     )}
                     <div className="font-mono text-sm tabular-nums text-primary">
-                      {row.points.toLocaleString()} pts
+                      {t("hallOfFame.points", "{{n}} pts", { n: row.points.toLocaleString() })}
                     </div>
                   </li>
                 ))}

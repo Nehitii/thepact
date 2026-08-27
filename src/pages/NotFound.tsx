@@ -1,11 +1,17 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+/* `Trans` plutôt que `t()` : la phrase porte le chemin DANS une balise
+   <code>. Avec `t()` seul, il faudrait la couper en deux morceaux dont
+   l'ordre change d'une langue à l'autre. C'est le seul endroit du dépôt
+   qui en a besoin. */
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [glitch, setGlitch] = useState(false);
 
   useEffect(() => {
@@ -46,19 +52,24 @@ const NotFound = () => {
         {/* HUD label */}
         <div className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 rounded font-mono text-xs text-primary/60 tracking-widest uppercase">
           <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-          Signal Lost — Route not found
+          {t("notFound.signalPerdu", "Signal perdu — route introuvable")}
         </div>
 
         <p className="text-muted-foreground font-rajdhani text-lg max-w-md mx-auto">
-          The requested path <code className="text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded text-sm">{location.pathname}</code> does not exist in this system.
+          <Trans
+            i18nKey="notFound.chemin"
+            values={{ chemin: location.pathname }}
+            components={[<code key="c" className="text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded text-sm" />]}
+            defaults="Le chemin demandé <0>{{chemin}}</0> n’existe pas dans ce système."
+          />
         </p>
 
         <div className="flex items-center justify-center gap-3 pt-2">
           <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs">
-            <ArrowLeft className="h-3.5 w-3.5" /> Go Back
+            <ArrowLeft className="h-3.5 w-3.5" /> {t("notFound.retour", "Retour")}
           </Button>
           <Button variant="default" size="sm" onClick={() => navigate("/")} className="gap-1.5 font-rajdhani uppercase tracking-wider text-xs">
-            <Home className="h-3.5 w-3.5" /> Dashboard
+            <Home className="h-3.5 w-3.5" /> {t("notFound.tableauDeBord", "Tableau de bord")}
           </Button>
         </div>
       </div>

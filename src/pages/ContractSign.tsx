@@ -13,12 +13,14 @@ import { useQuery } from "@tanstack/react-query";
 import { DSPanel, DSBadge, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { ArrowLeft, Handshake, ShieldCheck, Users, Check, Clock } from "lucide-react";
 
 const HOLD_DURATION = 1500;
 
 export default function ContractSign() {
+  const { t } = useTranslation();
   const { contractId } = useParams<{ contractId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -90,15 +92,15 @@ export default function ContractSign() {
     setProgress(0);
   };
 
-  if (isLoading) return <DSPageLoader message="LOADING PACT" />;
+  if (isLoading) return <DSPageLoader message={t("contract.chargement", "CHARGEMENT DU PACTE")} />;
 
   if (!contract) {
     return (
       <DSPageShell width="md" padding="tight">
         <DSEmptyState
-          message="CONTRACT NOT FOUND"
-          description="Ce pacte a peut-être été annulé ou ne t'est pas accessible."
-          ctaLabel="Retour à l'accueil"
+          message={t("contract.introuvable", "PACTE INTROUVABLE")}
+          description={t("contract.introuvableDetail", "Ce pacte a peut-être été annulé ou ne t’est pas accessible.")}
+          ctaLabel={t("contract.retourAccueil", "Retour à l’accueil")}
           to="/"
         />
       </DSPageShell>
@@ -127,11 +129,11 @@ export default function ContractSign() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-primary/80 font-display">
               <Handshake className="w-4 h-4" />
-              Pacte d'engagement
+              {t("contract.pacteEngagement", "Pacte d’engagement")}
             </div>
-            <h1 className="text-2xl font-display tracking-wide">{goal?.name || "Objectif"}</h1>
+            <h1 className="text-2xl font-display tracking-wide">{goal?.name || t("contract.objectifSansNom", "Objectif")}</h1>
             <p className="text-sm text-muted-foreground">
-              Engagé par <span className="text-foreground font-medium">{owner?.display_name || "—"}</span>
+              {t("contract.engagePar", "Engagé par")} <span className="text-foreground font-medium">{owner?.display_name || "—"}</span>
             </p>
           </div>
           <DSBadge variant={statusVariant[contract.status] || "stale"} label={contract.status} />
@@ -139,21 +141,21 @@ export default function ContractSign() {
 
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Mise</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">{t("contract.mise", "Mise")}</div>
             <div className="flex items-center justify-center gap-1 mt-1">
               <BondIcon size={16} />
               <span className="text-lg font-mono">{contract.stake_bonds}</span>
             </div>
           </div>
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Signatures</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">{t("contract.signatures", "Signatures")}</div>
             <div className="flex items-center justify-center gap-1 mt-1 text-lg font-mono tabular-nums">
               <Users className="w-3.5 h-3.5 text-muted-foreground" />
               {signedCount}/{required}
             </div>
           </div>
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Échéance</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">{t("contract.echeance", "Échéance")}</div>
             <div className="flex items-center justify-center gap-1 mt-1 text-sm font-mono">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               {contract.deadline ? new Date(contract.deadline).toLocaleDateString() : "—"}
@@ -169,9 +171,9 @@ export default function ContractSign() {
 
         {/* Signatures list */}
         <div className="space-y-1.5">
-          <Label className="ds-t-label uppercase tracking-wider text-muted-foreground">Témoins ayant signé</Label>
+          <Label className="ds-t-label uppercase tracking-wider text-muted-foreground">{t("contract.temoinsAyantSigne", "Témoins ayant signé")}</Label>
           {signatures.length === 0 ? (
-            <p className="text-xs text-muted-foreground/60 italic">Personne n'a encore signé.</p>
+            <p className="text-xs text-muted-foreground/60 italic">{t("contract.personneEncore", "Personne n’a encore signé.")}</p>
           ) : (
             <ul className="space-y-1">
               {signatures.map((s) => (
@@ -193,35 +195,35 @@ export default function ContractSign() {
       {/* Sign panel */}
       {!isWitness ? (
         <DSPanel className="p-4 text-sm text-muted-foreground">
-          Tu n'es pas un témoin désigné de ce pacte.
+          {t("contract.pasTemoin", "Tu n’es pas un témoin désigné de ce pacte.")}
         </DSPanel>
       ) : alreadySigned ? (
         <DSPanel className="p-6 text-center space-y-2">
           <ShieldCheck className="w-8 h-8 text-emerald-400 mx-auto" />
-          <p className="text-sm font-medium">Tu as déjà signé ce pacte.</p>
+          <p className="text-sm font-medium">{t("contract.dejaSigne", "Tu as déjà signé ce pacte.")}</p>
           {contract.status === "active" && (
-            <p className="text-xs text-muted-foreground">Tous les témoins requis ont signé. Le pacte est actif.</p>
+            <p className="text-xs text-muted-foreground">{t("contract.tousSigne", "Tous les témoins requis ont signé. Le pacte est actif.")}</p>
           )}
         </DSPanel>
       ) : contract.status !== "pending" ? (
         <DSPanel className="p-4 text-sm text-muted-foreground">
-          Ce pacte n'est plus en attente de signatures.
+          {t("contract.plusEnAttente", "Ce pacte n’est plus en attente de signatures.")}
         </DSPanel>
       ) : (
         <DSPanel className="p-6 space-y-4">
           <div className="space-y-1">
-            <h2 className="font-display text-lg">Apposer ta signature</h2>
+            <h2 className="font-display text-lg">{t("contract.apposer", "Apposer ta signature")}</h2>
             <p className="text-xs text-muted-foreground">
-              En signant, tu acceptes d'être témoin moral. Si l'engagement échoue, les Bonds en jeu seront redistribués.
+              {t("contract.engagementTemoin", "En signant, tu acceptes d’être témoin moral. Si l’engagement échoue, les Bonds en jeu seront redistribués.")}
             </p>
           </div>
 
           <div>
-            <Label className="text-xs">Nom complet</Label>
+            <Label className="text-xs">{t("contract.nomComplet", "Nom complet")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Prénom Nom"
+              placeholder={t("contract.nomPlaceholder", "Prénom Nom")}
               className="mt-1"
             />
           </div>
@@ -235,7 +237,7 @@ export default function ContractSign() {
               onTouchEnd={cancelHold}
               disabled={!name || name.trim().length < 2 || sign.isPending}
               className="relative w-full overflow-hidden rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/15 disabled:opacity-50 disabled:cursor-not-allowed transition py-4 text-sm font-display uppercase tracking-[0.2em] text-primary"
-              aria-label="Maintenir pour signer"
+              aria-label={t("contract.maintenirPourSigner", "Maintenir pour signer")}
             >
               <AnimatePresence>
                 {progress > 0 && (
@@ -250,11 +252,11 @@ export default function ContractSign() {
               </AnimatePresence>
               <span className="relative flex items-center justify-center gap-2">
                 {progress >= 100 ? <Check className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-                Maintenir pour signer
+                {t("contract.maintenirPourSigner", "Maintenir pour signer")}
               </span>
             </button>
             <p className="ds-t-label text-muted-foreground/60 text-center">
-              Maintiens enfoncé pendant 1,5 seconde pour confirmer.
+              {t("contract.maintiensConfirmer", "Maintiens enfoncé pendant 1,5 seconde pour confirmer.")}
             </p>
           </div>
         </DSPanel>

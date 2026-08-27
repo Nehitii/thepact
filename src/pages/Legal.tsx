@@ -1,5 +1,6 @@
 import { ArrowLeft, AlertTriangle, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { DSPageShell, DSBackground } from "@/components/ds";
 import { Panneau, Bouton } from "@/components/profile/console-ui";
 import {
@@ -85,6 +86,7 @@ function CorpsArticle({ article }: { article: Article }) {
 
 export default function Legal() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const revenir = () => {
     if (window.history.length > 1) navigate(-1);
@@ -96,13 +98,13 @@ export default function Legal() {
       <div className="rg-volet lg-volet">
         <button type="button" className="lg-retour" onClick={revenir}>
           <ArrowLeft aria-hidden="true" />
-          Retour
+          {t("common.retour", "Retour")}
         </button>
 
         <header className="rg-volet-tete">
-          <h1 className="rg-volet-titre">Conditions et mentions légales</h1>
+          <h1 className="rg-volet-titre">{t("legal.titre", "Conditions et mentions légales")}</h1>
           <p className="rg-volet-note">
-            Ce que {PRODUIT} enregistre, où ça va, et ce que tu peux exiger.
+            {t("legal.sous", "Ce que {{produit}} enregistre, où ça va, et ce que tu peux exiger.", { produit: PRODUIT })}
           </p>
         </header>
 
@@ -114,8 +116,10 @@ export default function Legal() {
           <div className="lg-manque" role="status">
             <AlertTriangle aria-hidden="true" />
             <div>
-              <b>Document incomplet.</b> L’identité de l’éditeur reste à renseigner
-              dans <code>src/content/mentions-legales.ts</code> :{" "}
+              <b>{t("legal.incompletTitre", "Document incomplet.")}</b>{" "}
+              {t("legal.incompletDetail", "L’identité de l’éditeur reste à renseigner dans {{fichier}} :", {
+                fichier: "src/content/mentions-legales.ts",
+              })}{" "}
               {CHAMPS_MANQUANTS.map((c) => ETIQUETTES[c] ?? c).join(", ")}.
             </div>
           </div>
@@ -149,12 +153,12 @@ export default function Legal() {
                         <div key={cle}>
                           <dt>{ETIQUETTES[cle] ?? cle}</dt>
                           <dd data-vide={valeur.trim() ? undefined : ""}>
-                            {valeur.trim() || "à renseigner"}
+                            {valeur.trim() || t("legal.aRenseigner", "à renseigner")}
                           </dd>
                         </div>
                       ))}
                       <div>
-                        <dt>hébergeur</dt>
+                        <dt>{t("legal.hebergeur", "hébergeur")}</dt>
                         <dd>{HEBERGEUR.nom}</dd>
                       </div>
                     </dl>
@@ -170,7 +174,7 @@ export default function Legal() {
                   {section.code === "Suppression du compte" && (
                     <div className="lg-vers-suppression">
                       <Bouton role="danger" onClick={() => navigate("/profile/data")}>
-                        <Trash2 /> Aller à la zone sensible
+                        <Trash2 /> {t("legal.zoneSensible", "Aller à la zone sensible")}
                       </Bouton>
                     </div>
                   )}

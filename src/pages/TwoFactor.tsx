@@ -9,6 +9,8 @@ import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
 import { Input } from "@/components/ui/input";
 import { Smartphone, Loader2, KeyRound } from "lucide-react";
 import { DSPageShell } from "@/components/ds";
+import { useTranslation } from "react-i18next";
+import { messageDErreur } from "@/lib/erreurs";
 
 type FromState = { from?: string };
 
@@ -21,6 +23,7 @@ type FromState = { from?: string };
  */
 export default function TwoFactor() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const location = useLocation();
   const mfa = useMfa();
 
@@ -57,10 +60,10 @@ export default function TwoFactor() {
     setBusy(true);
     try {
       await mfa.verify(code);
-      toast.success("Identite confirmee");
+      toast.success(t("twoFactor.porte.identiteConfirmee", "Identité confirmée"));
       navigate(from, { replace: true });
     } catch (e) {
-      toast.error("Code refusé", { description: e instanceof Error ? e.message : String(e) });
+      toast.error(t("twoFactor.porte.codeRefuse", "Code refusé"), { description: messageDErreur(e) });
       setCode("");
     } finally {
       setBusy(false);
@@ -72,15 +75,15 @@ export default function TwoFactor() {
     setBusy(true);
     try {
       await utiliser(codeSecours);
-      toast.success("Second facteur retiré", {
-        description: "Ton compte est de nouveau accessible. Pense à le réactiver.",
+      toast.success(t("twoFactor.porte.facteurRetire", "Second facteur retiré"), {
+        description: t("twoFactor.porte.facteurRetireDetail", "Ton compte est de nouveau accessible. Pense à le réactiver."),
       });
       /* Le facteur n existe plus : `isRequired` retombe, et l effet
          ci-dessus renvoie l utilisateur d ou il venait. */
       await mfa.refresh();
       navigate(from, { replace: true });
     } catch (e) {
-      toast.error("Code refusé", {
+      toast.error(t("twoFactor.porte.codeRefuse", "Code refusé"), {
         description: motifLisible(e instanceof Error ? e.message : String(e)),
       });
       setCodeSecours("");
@@ -113,10 +116,10 @@ export default function TwoFactor() {
               <Smartphone className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="font-mono uppercase tracking-widest text-sm">
-              Verification requise
+              {t("twoFactor.porte.titre", "Vérification requise")}
             </CardTitle>
             <CardDescription className="font-mono ds-t-label">
-              Saisis le code a six chiffres affiche par ton application d'authentification.
+              {t("twoFactor.porte.consigne", "Saisis le code à six chiffres affiché par ton application d’authentification.")}
             </CardDescription>
           </CardHeader>
 
@@ -128,7 +131,7 @@ export default function TwoFactor() {
                     htmlFor="code-de-secours"
                     className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground"
                   >
-                    Code de secours
+                    {t("twoFactor.recoveryCode", "Code de secours")}
                   </label>
                   <Input
                     id="code-de-secours"
@@ -147,12 +150,11 @@ export default function TwoFactor() {
                   disabled={busy || !codeSecours.trim()}
                   className="w-full font-mono ds-t-label uppercase tracking-widest"
                 >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Utiliser ce code"}
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("twoFactor.porte.utiliserCeCode", "Utiliser ce code")}
                 </Button>
 
                 <p className="text-center font-mono ds-t-label leading-relaxed text-muted-foreground">
-                  Ce code retire ton second facteur au lieu de le vérifier&nbsp;: il te rend
-                  l’accès, il ne le contourne pas. Il ne servira qu’une fois.
+                  {t("twoFactor.porte.avertissementSecours", "Ce code retire ton second facteur au lieu de le vérifier : il te rend l’accès, il ne le contourne pas. Il ne servira qu’une fois.")}
                 </p>
               </>
             ) : (
@@ -170,7 +172,7 @@ export default function TwoFactor() {
                   disabled={busy || code.length !== 6}
                   className="w-full font-mono ds-t-label uppercase tracking-widest"
                 >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Valider"}
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("twoFactor.porte.valider", "Valider")}
                 </Button>
               </>
             )}
@@ -182,7 +184,9 @@ export default function TwoFactor() {
               className="w-full flex items-center justify-center gap-2 font-mono ds-t-label uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
             >
               <KeyRound className="h-3 w-3" />
-              {modeSecours ? "Revenir au code de l’application" : "Utiliser un code de secours"}
+              {modeSecours
+                ? t("twoFactor.porte.revenirApplication", "Revenir au code de l’application")
+                : t("twoFactor.useRecovery", "Utiliser un code de secours")}
             </button>
           </CardContent>
         </Card>

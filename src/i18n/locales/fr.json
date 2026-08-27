@@ -49,7 +49,8 @@
     "off": "NON",
     "or": "ou",
     "previous": "Précédent",
-    "copy": "Copier"
+    "copy": "Copier",
+    "retour": "Retour"
   },
   "auth": {
     "brand": "Pact",
@@ -114,6 +115,18 @@
       "disabledSuccess": "2FA par email désactivée",
       "active": "Actif",
       "inactive": "Inactif"
+    },
+    "porte": {
+      "titre": "Vérification requise",
+      "consigne": "Saisis le code à six chiffres affiché par ton application d’authentification.",
+      "utiliserCeCode": "Utiliser ce code",
+      "avertissementSecours": "Ce code retire ton second facteur au lieu de le vérifier : il te rend l’accès, il ne le contourne pas. Il ne servira qu’une fois.",
+      "valider": "Valider",
+      "revenirApplication": "Revenir au code de l’application",
+      "identiteConfirmee": "Identité confirmée",
+      "codeRefuse": "Code refusé",
+      "facteurRetire": "Second facteur retiré",
+      "facteurRetireDetail": "Ton compte est de nouveau accessible. Pense à le réactiver."
     }
   },
   "profile": {
@@ -3689,5 +3702,57 @@
     "emptyTitle": "Rien encore",
     "emptyAlly": "Écrivez le premier message. Il partira tout de suite.",
     "emptyNoAlly": "On écrit à ses alliés. Ajoutez cette personne pour ouvrir la conversation."
+  },
+  "notFound": {
+    "signalPerdu": "Signal perdu — route introuvable",
+    "chemin": "Le chemin demandé <0>{{chemin}}</0> n’existe pas dans ce système.",
+    "retour": "Retour",
+    "tableauDeBord": "Tableau de bord"
+  },
+  "legal": {
+    "titre": "Conditions et mentions légales",
+    "sous": "Ce que {{produit}} enregistre, où ça va, et ce que tu peux exiger.",
+    "incompletTitre": "Document incomplet.",
+    "incompletDetail": "L’identité de l’éditeur reste à renseigner dans {{fichier}} :",
+    "aRenseigner": "à renseigner",
+    "hebergeur": "hébergeur",
+    "zoneSensible": "Aller à la zone sensible"
+  },
+  "hallOfFame": {
+    "titre": "Panthéon",
+    "sous": "Champions des saisons passées",
+    "chargementSaisons": "CHARGEMENT DES SAISONS",
+    "aucuneSaison": "AUCUNE SAISON ARCHIVÉE",
+    "aucuneSaisonDetail": "La première saison sera archivée ici à sa fin.",
+    "chargementClassement": "CHARGEMENT DU CLASSEMENT",
+    "releveIndisponible": "RELEVÉ INDISPONIBLE",
+    "releveIndisponibleDetail": "Cette saison n’a pas encore été archivée.",
+    "anonyme": "Anonyme",
+    "missionsAccomplies": "{{n}} missions accomplies",
+    "points": "{{n}} pts"
+  },
+  "contract": {
+    "chargement": "CHARGEMENT DU PACTE",
+    "introuvable": "PACTE INTROUVABLE",
+    "introuvableDetail": "Ce pacte a peut-être été annulé ou ne t’est pas accessible.",
+    "retourAccueil": "Retour à l’accueil",
+    "objectifSansNom": "Objectif",
+    "mise": "Mise",
+    "signatures": "Signatures",
+    "echeance": "Échéance",
+    "temoinsAyantSigne": "Témoins ayant signé",
+    "personneEncore": "Personne n’a encore signé.",
+    "dejaSigne": "Tu as déjà signé ce pacte.",
+    "tousSigne": "Tous les témoins requis ont signé. Le pacte est actif.",
+    "apposer": "Apposer ta signature",
+    "nomComplet": "Nom complet",
+    "nomPlaceholder": "Prénom Nom",
+    "maintenirPourSigner": "Maintenir pour signer",
+    "pacteEngagement": "Pacte d’engagement",
+    "engagePar": "Engagé par",
+    "pasTemoin": "Tu n’es pas un témoin désigné de ce pacte.",
+    "plusEnAttente": "Ce pacte n’est plus en attente de signatures.",
+    "engagementTemoin": "En signant, tu acceptes d’être témoin moral. Si l’engagement échoue, les Bonds en jeu seront redistribués.",
+    "maintiensConfirmer": "Maintiens enfoncé pendant 1,5 seconde pour confirmer."
   }
 }

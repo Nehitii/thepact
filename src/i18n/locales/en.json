@@ -49,7 +49,8 @@
     "off": "OFF",
     "or": "or",
     "previous": "Previous",
-    "copy": "Copy"
+    "copy": "Copy",
+    "retour": "Back"
   },
   "auth": {
     "brand": "Pact",
@@ -114,6 +115,18 @@
       "disabledSuccess": "Email 2FA disabled",
       "active": "Active",
       "inactive": "Inactive"
+    },
+    "porte": {
+      "titre": "Verification required",
+      "consigne": "Enter the six-digit code shown by your authenticator app.",
+      "utiliserCeCode": "Use this code",
+      "avertissementSecours": "This code removes your second factor instead of checking it: it gives you back access, it does not bypass it. It works once.",
+      "valider": "Confirm",
+      "revenirApplication": "Back to the app code",
+      "identiteConfirmee": "Identity confirmed",
+      "codeRefuse": "Code rejected",
+      "facteurRetire": "Second factor removed",
+      "facteurRetireDetail": "Your account is reachable again. Remember to turn it back on."
     }
   },
   "profile": {
@@ -3689,5 +3702,57 @@
     "emptyTitle": "Nothing yet",
     "emptyAlly": "Write the first message. It leaves straight away.",
     "emptyNoAlly": "You write to your allies. Add this person to open the conversation."
+  },
+  "notFound": {
+    "signalPerdu": "Signal lost — route not found",
+    "chemin": "The requested path <0>{{chemin}}</0> does not exist in this system.",
+    "retour": "Go back",
+    "tableauDeBord": "Dashboard"
+  },
+  "legal": {
+    "titre": "Terms and legal notice",
+    "sous": "What {{produit}} records, where it goes, and what you can demand.",
+    "incompletTitre": "Incomplete document.",
+    "incompletDetail": "The publisher's identity is still to be filled in {{fichier}}:",
+    "aRenseigner": "to be filled in",
+    "hebergeur": "host",
+    "zoneSensible": "Go to the sensitive area"
+  },
+  "hallOfFame": {
+    "titre": "Hall of Fame",
+    "sous": "Champions of past seasons",
+    "chargementSaisons": "LOADING SEASONS",
+    "aucuneSaison": "NO SEASON ARCHIVED",
+    "aucuneSaisonDetail": "The first season will be archived here when it ends.",
+    "chargementClassement": "LOADING LEADERBOARD",
+    "releveIndisponible": "SNAPSHOT UNAVAILABLE",
+    "releveIndisponibleDetail": "This season has not been archived yet.",
+    "anonyme": "Anonymous",
+    "missionsAccomplies": "{{n}} missions completed",
+    "points": "{{n}} pts"
+  },
+  "contract": {
+    "chargement": "LOADING PACT",
+    "introuvable": "CONTRACT NOT FOUND",
+    "introuvableDetail": "This pact may have been cancelled, or it is not open to you.",
+    "retourAccueil": "Back to the dashboard",
+    "objectifSansNom": "Goal",
+    "mise": "Stake",
+    "signatures": "Signatures",
+    "echeance": "Deadline",
+    "temoinsAyantSigne": "Witnesses who signed",
+    "personneEncore": "Nobody has signed yet.",
+    "dejaSigne": "You have already signed this pact.",
+    "tousSigne": "Every required witness has signed. The pact is active.",
+    "apposer": "Add your signature",
+    "nomComplet": "Full name",
+    "nomPlaceholder": "First name Last name",
+    "maintenirPourSigner": "Hold to sign",
+    "pacteEngagement": "Commitment pact",
+    "engagePar": "Committed by",
+    "pasTemoin": "You are not a named witness to this pact.",
+    "plusEnAttente": "This pact is no longer waiting for signatures.",
+    "engagementTemoin": "By signing, you agree to stand as a moral witness. If the commitment fails, the Bonds at stake are redistributed.",
+    "maintiensConfirmer": "Hold for 1.5 seconds to confirm."
   }
 }
