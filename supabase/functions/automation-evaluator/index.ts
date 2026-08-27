@@ -15,6 +15,31 @@
 //
 // Cooldown: a rule never fires twice in the same UTC day.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import type { ClientSupabase } from "../_shared/client.ts";
+
+/* UNE REGLE, TELLE QUE LA TABLE LA PORTE.
+   `rule: any` laissait passer n'importe quel nom de champ : une colonne
+   renommee en base ne se serait vue qu'a l'execution, sur la regle d'un
+   utilisateur, une fois par nuit. Les deux `_config` restent en JSON —
+   leur forme depend du type de declencheur, et c'est deliberement libre. */
+interface RegleAutomatisation {
+  id: string;
+  user_id: string;
+  name: string | null;
+  description: string | null;
+  trigger_type: string | null;
+  trigger_config: Record<string, unknown> | null;
+  action_type: string | null;
+  action_config: Record<string, unknown> | null;
+  last_run_at: string | null;
+  last_status: string | null;
+  run_count: number | null;
+}
+
+interface LigneHabitude { goal_id: string | null; log_date: string; streak_count: number | null; completed: boolean | null }
+interface LigneIdent { id: string }
+interface LigneTransaction { amount: number | string | null; category: string | null; transaction_type: string | null }
+interface LigneSeance { duration_seconds: number | null }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,27 +54,31 @@ function sameUtcDay(a: Date, b: Date) {
   return a.toISOString().slice(0, 10) === b.toISOString().slice(0, 10);
 }
 
-async function evalTrigger(sb: any, userId: string, rule: any): Promise<boolean> {
+async function evalTrigger(sb: ClientSupabase, userId: string, rule: RegleAutomatisation): Promise<boolean> {
   const cfg = rule.trigger_config ?? {};
   switch (rule.trigger_type) {
     case "streak_broken": {
       const minStreak = Number(cfg.min_streak_days ?? 2);
       const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
       const q = sb.from("habit_logs").select("goal_id,log_date,streak_count,completed").eq("user_id", userId).gte("log_date", since).order("log_date", { ascending: false });
-      const { data } = cfg.habit_goal_id ? await q.eq("goal_id", cfg.habit_goal_id) : await q;
+      /* .returns() se pose en DERNIER : applique avant .eq(), le type
+         impose masque les filtres encore disponibles. */
+      const { data } = cfg.habit_goal_id
+        ? await q.eq("goal_id", String(cfg.habit_goal_id)).returns<LigneHabitude[]>()
+        : await q.returns<LigneHabitude[]>();
       if (!data?.length) return false;
       // streak considered broken if today missing AND yesterday's streak >= minStreak
       const today = new Date().toISOString().slice(0, 10);
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      const todayLog = data.find((d: any) => d.log_date === today && d.completed);
+      const todayLog = data.find((d) => d.log_date === today && d.completed);
       if (todayLog) return false;
-      const yesterdayBest = Math.max(0, ...data.filter((d: any) => d.log_date === yesterday).map((d: any) => d.streak_count ?? 0));
+      const yesterdayBest = Math.max(0, ...data.filter((d) => d.log_date === yesterday).map((d) => d.streak_count ?? 0));
       return yesterdayBest >= minStreak;
     }
     case "goal_overdue": {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: pacts } = await sb.from("pacts").select("id").eq("user_id", userId);
-      const ids = (pacts ?? []).map((p: any) => p.id);
+      const { data: pacts } = await sb.from("pacts").select("id").eq("user_id", userId).returns<LigneIdent[]>();
+      const ids = (pacts ?? []).map((p) => p.id);
       if (!ids.length) return false;
       let q = sb.from("goals").select("id,deadline,status,name").in("pact_id", ids).in("status", ["in_progress", "not_started"]).lt("deadline", today);
       if (cfg.goal_id) q = q.eq("id", cfg.goal_id);
@@ -59,15 +88,15 @@ async function evalTrigger(sb: any, userId: string, rule: any): Promise<boolean>
     case "budget_exceeded": {
       const monthStart = new Date(); monthStart.setUTCDate(1);
       const ws = monthStart.toISOString().slice(0, 10);
-      const { data } = await sb.from("bank_transactions").select("amount,category,transaction_type").eq("user_id", userId).gte("transaction_date", ws).eq("transaction_type", "expense");
-      const total = (data ?? []).filter((t: any) => !cfg.category || t.category === cfg.category).reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
+      const { data } = await sb.from("bank_transactions").select("amount,category,transaction_type").eq("user_id", userId).gte("transaction_date", ws).eq("transaction_type", "expense").returns<LigneTransaction[]>();
+      const total = (data ?? []).filter((t) => !cfg.category || t.category === cfg.category).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
       const threshold = Number(cfg.threshold ?? 0);
       return threshold > 0 && total >= threshold;
     }
     case "low_focus_week": {
       const since = new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data } = await sb.from("focus_sessions").select("duration_seconds").eq("user_id", userId).gte("started_at", since);
-      const minutes = (data ?? []).reduce((s: number, r: any) => s + Number(r.duration_seconds ?? 0), 0) / 60;
+      const { data } = await sb.from("focus_sessions").select("duration_seconds").eq("user_id", userId).gte("started_at", since).returns<LigneSeance[]>();
+      const minutes = (data ?? []).reduce((s, r) => s + Number(r.duration_seconds ?? 0), 0) / 60;
       return minutes < Number(cfg.min_minutes ?? 60);
     }
     case "daily_schedule": {
@@ -79,7 +108,7 @@ async function evalTrigger(sb: any, userId: string, rule: any): Promise<boolean>
   }
 }
 
-async function runAction(sb: any, userId: string, rule: any): Promise<string> {
+async function runAction(sb: ClientSupabase, userId: string, rule: RegleAutomatisation): Promise<string> {
   const cfg = rule.action_config ?? {};
   switch (rule.action_type) {
     case "send_notification": {
@@ -112,7 +141,15 @@ async function runAction(sb: any, userId: string, rule: any): Promise<string> {
     case "grant_bonds": {
       const amount = Math.max(0, Math.min(500, Number(cfg.amount ?? 0)));
       if (amount > 0) {
-        await sb.rpc("award_bonds", { p_amount: amount, p_reason: `Automation: ${rule.name}` }).catch(() => null);
+        /* IL Y AVAIT UN .catch() ICI, ET IL N'EXISTE PAS.
+           Le constructeur rendu par .rpc() n'implemente que PromiseLike :
+           il a un .then(), jamais un .catch(). L'appel levait donc
+           « catch is not a function » — a chaque fois que cette action
+           partait, c'est-a-dire a chaque regle « grant_bonds ». Personne
+           ne l'a vu parce que `sb: any` eteignait la verification. */
+        try {
+          await sb.rpc("award_bonds", { p_amount: amount, p_reason: `Automation: ${rule.name}` });
+        } catch { /* l'octroi echoue : la regle a quand meme tourne */ }
       }
       return `bonds_${amount}`;
     }
@@ -135,7 +172,8 @@ Deno.serve(async (req) => {
   const { data: rules } = await sb
     .from("user_automation_rules")
     .select("*")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .returns<RegleAutomatisation[]>();
 
   let fired = 0, skipped = 0, errors = 0;
   const now = new Date();

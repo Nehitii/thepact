@@ -1,4 +1,9 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+/* EPINGLE, ET SUR LA MEME VERSION QUE _shared/quota.ts.
+   « @2 » resout vers la derniere 2.x du jour : le type SupabaseClient
+   qu'elle rend n'est plus celui qu'attend checkAiQuota, et le controle
+   de types echouait ici depuis que les deux ont diverge. Le commentaire
+   en tete de quota.ts prevenait deja de ce piege. */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {

@@ -2,6 +2,7 @@
 // Requires secrets: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (e.g. "mailto:owner@vowpact.app").
 // Optional: ADMIN_SHARED_SECRET to gate cron callers.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+// @ts-types="./web-push.d.ts"
 import webpush from "https://esm.sh/web-push@3.6.7";
 import { statutDErreur } from "../_shared/erreurs.ts";
 

@@ -7,6 +7,19 @@
 //   - fire push if subscription exists
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
+import type { ClientSupabase } from "../_shared/client.ts";
+
+interface LigneIdent { id: string }
+interface LigneUtilisateur { user_id: string }
+interface LigneEtape { id: string; goal_id: string }
+
+/** Ce qu'une semaine a laisse comme trace, pour une personne. */
+interface StatsSemaine {
+  stepsCompleted: number;
+  habitLogs: number;
+  journalCount: number;
+  todoCount: number;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,20 +45,21 @@ function weekBounds(offsetWeeks = 0) {
   };
 }
 
-async function statsForUser(sb: any, userId: string, ws: string, we: string) {
-  const { data: userPacts } = await sb.from("pacts").select("id").eq("user_id", userId);
-  const pactIds = (userPacts || []).map((p: any) => p.id);
+async function statsForUser(sb: ClientSupabase, userId: string, ws: string, we: string) {
+  const { data: userPacts } = await sb.from("pacts").select("id").eq("user_id", userId).returns<LigneIdent[]>();
+  const pactIds = (userPacts || []).map((p) => p.id);
   const goalsRes = pactIds.length
-    ? await sb.from("goals").select("id").in("pact_id", pactIds)
-    : { data: [] };
-  const goalIds = new Set((goalsRes.data || []).map((g: any) => g.id));
+    ? await sb.from("goals").select("id").in("pact_id", pactIds).returns<LigneIdent[]>()
+    : { data: [] as LigneIdent[] };
+  const goalIds = new Set((goalsRes.data || []).map((g) => g.id));
 
   const stepsCompleted = goalIds.size
     ? (await sb
         .from("steps")
         .select("id,goal_id")
         .gte("validated_at", `${ws}T00:00:00`)
-        .lte("validated_at", `${we}T23:59:59`)).data?.filter((s: any) => goalIds.has(s.goal_id)).length ?? 0
+        .lte("validated_at", `${we}T23:59:59`)
+        .returns<LigneEtape[]>()).data?.filter((s) => goalIds.has(s.goal_id)).length ?? 0
     : 0;
 
   const { count: habitLogs } = await sb
@@ -87,7 +101,7 @@ function deltaLabel(curr: number, prev: number) {
   return `${diff > 0 ? "+" : ""}${diff} (${pct > 0 ? "+" : ""}${pct}%)`;
 }
 
-async function generateInsight(curr: any, prev: any): Promise<string> {
+async function generateInsight(curr: StatsSemaine, prev: StatsSemaine): Promise<string> {
   if (!AI_API_KEY) {
     return `Cette semaine : ${curr.stepsCompleted} étape(s), ${curr.habitLogs} habitude(s), ${curr.journalCount} entrée(s) journal, ${curr.todoCount} tâche(s). Compare à la semaine passée : étapes ${deltaLabel(curr.stepsCompleted, prev.stepsCompleted)}, habitudes ${deltaLabel(curr.habitLogs, prev.habitLogs)}.`;
   }
@@ -125,8 +139,9 @@ Deno.serve(async (req) => {
     const { data } = await admin
       .from("notification_settings")
       .select("user_id")
-      .eq("coach_proactive_enabled", true);
-    targetUsers = (data ?? []).map((r: any) => r.user_id);
+      .eq("coach_proactive_enabled", true)
+      .returns<LigneUtilisateur[]>();
+    targetUsers = (data ?? []).map((r) => r.user_id);
   } else {
     const authHeader = req.headers.get("Authorization") ?? "";
     if (!authHeader.startsWith("Bearer ")) {

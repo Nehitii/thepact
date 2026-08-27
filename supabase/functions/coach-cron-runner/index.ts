@@ -34,7 +34,9 @@ Deno.serve(async (req) => {
 
   const admin = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const started = Date.now();
-  const errors: any[] = [];
+  /* Ce qui a rate, et ou. La forme varie selon l'etape : on garde le
+     nom du souci plutot qu'un type qui n'en decrirait aucun. */
+  const errors: Array<Record<string, string>> = [];
   let usersProcessed = 0;
   let insightsCreated = 0;
 
@@ -52,10 +54,10 @@ Deno.serve(async (req) => {
     ]);
 
     if (indexRes.status === "rejected") errors.push({ fn: "index-memory", err: String(indexRes.reason) });
-    else usersProcessed += Number((indexRes.value as any)?.users ?? 0);
+    else usersProcessed += Number((indexRes.value as { users?: unknown })?.users ?? 0);
 
     if (patternRes.status === "rejected") errors.push({ fn: "pattern-detect", err: String(patternRes.reason) });
-    else usersProcessed += Number((patternRes.value as any)?.processed ?? 0);
+    else usersProcessed += Number((patternRes.value as { processed?: unknown })?.processed ?? 0);
 
     // Count fresh insights from this window
     const since = new Date(started - 60_000).toISOString();

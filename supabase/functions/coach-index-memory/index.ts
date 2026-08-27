@@ -4,6 +4,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { embedBatch, getAiKey } from "../_shared/ai.ts";
+import type { ClientSupabase } from "../_shared/client.ts";
+
+interface LigneSource { source_type: string; source_id: string }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,15 +18,16 @@ const BATCH_SIZE = 16;
 // Stored content, not search queries — keep the document side of the embedding space.
 const embed = (texts: string[], aiKey: string) => embedBatch(texts, aiKey, "RETRIEVAL_DOCUMENT");
 
-interface Item { source_type: string; source_id: string; content: string; metadata: any }
+interface Item { source_type: string; source_id: string; content: string; metadata: Record<string, unknown> }
 
-async function indexUser(supabase: any, userId: string, aiKey: string) {
+async function indexUser(supabase: ClientSupabase, userId: string, aiKey: string) {
   // Find latest indexed timestamps per source type
   const { data: latest } = await supabase
     .from("coach_embeddings")
     .select("source_type, source_id")
-    .eq("user_id", userId);
-  const seen = new Set<string>((latest ?? []).map((r: any) => `${r.source_type}:${r.source_id}`));
+    .eq("user_id", userId)
+    .returns<LigneSource[]>();
+  const seen = new Set<string>((latest ?? []).map((r) => `${r.source_type}:${r.source_id}`));
 
   const items: Item[] = [];
 
@@ -94,7 +98,9 @@ async function indexUser(supabase: any, userId: string, aiKey: string) {
       source_type: b.source_type,
       source_id: b.source_id,
       content: b.content,
-      embedding: vectors[idx] as any,
+      /* pgvector attend sa representation texte : « [0.1,0.2,…] ».
+         Le tableau part tel quel, supabase-js le serialise. */
+      embedding: vectors[idx] as unknown as string,
       metadata: b.metadata,
     }));
     const { error } = await supabase.from("coach_embeddings").insert(rows);

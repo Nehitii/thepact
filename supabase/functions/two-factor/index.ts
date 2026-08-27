@@ -236,7 +236,9 @@ Deno.serve(async (req) => {
     } else {
       try {
         const res = await supabaseClient.auth.getClaims(token);
-        const claims: any = (res.data as any)?.claims;
+        /* Les revendications d'un jeton : on ne sait pas ce qu'il y a
+           dedans, et les deux `typeof` juste dessous le disent deja. */
+        const claims = (res.data as { claims?: Record<string, unknown> } | null)?.claims;
         userId = typeof claims?.sub === "string" ? claims.sub : "";
         userEmail = typeof claims?.email === "string" ? claims.email : null;
       } catch (e) {

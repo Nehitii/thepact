@@ -1,6 +1,6 @@
 // AI Coach — streaming chat via the configured AI provider (see _shared/ai.ts).
 // Persists user + assistant messages in coach_messages, supports tool calls.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 
@@ -404,6 +404,67 @@ const TOOLS = [
   },
 ];
 
+/* ═══ LES FORMES QUI TRAVERSENT CE FICHIER ═══
+
+   Elles etaient toutes en `any`. Ce n'est pas la meme chose que « on ne
+   sait pas » : `any` eteint la verification pour tout ce qui touche la
+   valeur, y compris les champs dont on est sur. Le nom d'un outil mal
+   orthographie, un champ de reponse renomme par le fournisseur, une
+   colonne absente d'un `select` : rien de tout cela ne se voyait. */
+
+/** Le client tel que les fonctions internes le recoivent. */
+type ClientSupabase = SupabaseClient;
+
+/** Les arguments d'un outil viennent du modele, en JSON : rien n'est sur. */
+type ArgsOutil = Record<string, unknown>;
+
+/** Un appel d'outil tel qu'il ARRIVE : en morceaux, tout est optionnel. */
+interface FragmentAppelOutil {
+  id?: string;
+  index?: number;
+  type?: string;
+  function?: { name?: string; arguments?: string };
+  /* Gemini 3 joint ici sa signature de pensee. On ne la lit jamais : on
+     la transporte, parce qu'il refuse le tour suivant sans elle. */
+  extra_content?: Record<string, unknown>;
+}
+
+/** Un appel d'outil RECOLLE : tous ses morceaux sont arrives. */
+interface AppelOutil {
+  id: string;
+  type: string;
+  function: { name: string; arguments: string };
+  extra_content?: Record<string, unknown>;
+}
+
+/** Un message de la conversation envoyee au modele. */
+interface MessageIA {
+  role: string;
+  content: string;
+  tool_calls?: AppelOutil[];
+  tool_call_id?: string;
+  name?: string;
+}
+
+/** Un fragment du flux SSE renvoye par le fournisseur. */
+interface FragmentFlux {
+  choices?: Array<{ delta?: { content?: string; tool_calls?: FragmentAppelOutil[] } }>;
+}
+
+/* ── Les lignes lues en base, une par `select` ── */
+interface LigneIdent { id: string }
+interface LignePacte { id: string; name: string | null; project_start_date: string | null; project_end_date: string | null }
+interface LigneBut {
+  id: string; name: string | null; status: string | null;
+  validated_steps: number | null; total_steps: number | null;
+  pact_id: string | null; is_focus: boolean | null; deadline: string | null;
+}
+interface LigneOrdre { title: string | null; progress: number | null; target: number | null; status: string | null; reward_bonds: number | null }
+interface LigneFocus { duration_minutes: number | null }
+interface LigneTache { name: string | null; deadline: string | null }
+interface LigneJournal { title: string | null; mood: string | null; content: string | null; created_at: string }
+interface LigneMemoire { source_type: string; source_id: string; content: string | null; similarity?: number }
+
 interface ToolReceipt {
   citations?: Array<{ source_type: string; source_id: string; snippet: string; similarity?: number }>;
   action?: { tool: string; status: "ok" | "error"; label: string; ref_id?: string; ref_type?: string; error?: string };
@@ -411,16 +472,16 @@ interface ToolReceipt {
 
 async function runTool(
   name: string,
-  args: any,
-  supabase: any,
+  args: ArgsOutil,
+  supabase: ClientSupabase,
   userId: string,
   aiKey: string,
   receipts: ToolReceipt,
 ): Promise<string> {
   try {
     if (name === "list_active_goals") {
-      const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId);
-      const ids = (pacts ?? []).map((p: any) => p.id);
+      const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId).returns<LigneIdent[]>();
+      const ids = (pacts ?? []).map((p) => p.id);
       if (!ids.length) return JSON.stringify([]);
       const { data: profile } = await supabase
         .from("profiles")
@@ -433,10 +494,10 @@ async function runTool(
         .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus,pact_id")
         .in("pact_id", ids)
         .in("status", ["in_progress", "not_started"])
-        .limit(args?.limit ?? 20);
+        .limit(Number(args?.limit ?? 20));
       const enriched = (data ?? [])
-        .map((g: any) => ({ ...g, is_active_pact: g.pact_id === activePactId }))
-        .sort((a: any, b: any) => {
+        .map((g) => ({ ...g, is_active_pact: g.pact_id === activePactId }))
+        .sort((a, b) => {
           if (a.is_active_pact !== b.is_active_pact) return a.is_active_pact ? -1 : 1;
           if (a.is_focus !== b.is_focus) return a.is_focus ? -1 : 1;
           if (a.status !== b.status) return a.status === "in_progress" ? -1 : 1;
@@ -450,8 +511,11 @@ async function runTool(
         .select("title,mood,content,created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(args?.limit ?? 10);
-      const trimmed = (data ?? []).map((e: any) => ({
+        /* Le modele peut rendre « 10 » en chaine : .limit() attend un
+           nombre, et une chaine partait telle quelle dans l'URL. */
+        .limit(Number(args?.limit ?? 10))
+        .returns<LigneJournal[]>();
+      const trimmed = (data ?? []).map((e) => ({
         ...e,
         content: (e.content ?? "").slice(0, 400),
       }));
@@ -474,7 +538,7 @@ async function runTool(
         _query: vector,
         _match_count: 6,
       });
-      const rows = (data ?? []) as Array<any>;
+      const rows = (data ?? []) as LigneMemoire[];
       receipts.citations = (receipts.citations ?? []).concat(
         rows.map((r) => ({
           source_type: r.source_type,
@@ -501,7 +565,7 @@ async function runTool(
       const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
       if (!pact) return JSON.stringify({ error: "pact_not_found" });
       const totalSteps = Math.max(1, Math.min(50, Number(args?.total_steps ?? 1)));
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         pact_id,
         name: nm,
         difficulty: args?.difficulty ?? "medium",
@@ -526,7 +590,7 @@ async function runTool(
       const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
       if (!pact) return JSON.stringify({ error: "pact_not_found" });
       const days = Math.max(7, Math.min(365, Number(args?.habit_duration_days ?? 21)));
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         pact_id,
         name: nm,
         goal_type: "habit",
@@ -567,7 +631,7 @@ async function runTool(
       const title = String(args?.title ?? "").trim().slice(0, 200);
       const content = String(args?.content ?? "").trim();
       if (!title || !content) return JSON.stringify({ error: "title_and_content_required" });
-      const payload: any = { user_id: userId, title, content };
+      const payload: Record<string, unknown> = { user_id: userId, title, content };
       if (typeof args?.mood === "string" && args.mood.trim()) payload.mood = args.mood.trim();
       const { data, error } = await supabase.from("journal_entries").insert(payload).select("id,title").single();
       if (error) {
@@ -599,7 +663,7 @@ async function runTool(
         .select("id,goal_id,title,status,due_date,order")
         .in("goal_id", idsButs)
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(args?.limit ?? 40);
+        .limit(Number(args?.limit ?? 40));
       if (args?.only_pending !== false) q = q.eq("status", "pending");
       const { data } = await q;
       return JSON.stringify(
@@ -665,7 +729,7 @@ async function runTool(
         .select("id,name,deadline,priority,is_urgent,status,category,appointment_time")
         .eq("user_id", userId)
         .order("deadline", { ascending: true, nullsFirst: false })
-        .limit(args?.limit ?? 30);
+        .limit(Number(args?.limit ?? 30));
       if (!args?.include_done) q = q.eq("status", "active");
       const { data } = await q;
       return JSON.stringify(data ?? []);
@@ -759,12 +823,12 @@ async function runTool(
 
     if (name === "create_calendar_event") {
       const titre = String(args?.title ?? "").slice(0, 200);
-      const debut = args?.start_time ? new Date(args.start_time) : null;
+      const debut = args?.start_time ? new Date(String(args.start_time)) : null;
       if (!debut || Number.isNaN(debut.getTime())) {
         receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: "début illisible" };
         return JSON.stringify({ error: "start_time invalide" });
       }
-      const fin = args?.end_time ? new Date(args.end_time) : new Date(debut.getTime() + 3600000);
+      const fin = args?.end_time ? new Date(String(args.end_time)) : new Date(debut.getTime() + 3600000);
       const { data, error } = await supabase
         .from("calendar_events")
         .insert({
@@ -792,7 +856,7 @@ async function runTool(
         .eq("user_id", userId)
         .order("acquired", { ascending: true })
         .order("priority", { ascending: false, nullsFirst: false })
-        .limit(args?.limit ?? 30);
+        .limit(Number(args?.limit ?? 30));
       return JSON.stringify(data ?? []);
     }
 
@@ -866,7 +930,7 @@ async function runTool(
  * donc du navigateur, avec la question. La colonne sert de second recours.
  * ═══════════════════════════════════════════════════════════════
  */
-async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promise<string> {
+async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: string): Promise<string> {
   const maintenant = new Date();
 
   /* Un fuseau inventé ferait lever Intl : on vérifie avant de s'en
@@ -900,14 +964,14 @@ async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promi
 
   const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
     supabase.from("profiles").select("active_pact_id, display_name, timezone").eq("id", userId).maybeSingle(),
-    supabase.from("pacts").select("id,name,project_start_date,project_end_date").eq("user_id", userId),
+    supabase.from("pacts").select("id,name,project_start_date,project_end_date").eq("user_id", userId).returns<LignePacte[]>(),
     /* `goals` n'a pas de user_id : le lien passe par le pacte. Les
        politiques RLS font le filtrage, on récupère donc tout ce que
        l'utilisateur a le droit de voir. */
-    supabase.from("goals").select("id,name,status,validated_steps,total_steps,pact_id,is_focus,deadline"),
-    supabase.from("daily_quests").select("title,progress,target,status,reward_bonds").eq("user_id", userId).eq("date", jour),
-    supabase.from("pomodoro_sessions").select("duration_minutes").eq("user_id", userId).eq("completed", true).gte("started_at", `${jour}T00:00:00`),
-    supabase.from("todo_tasks").select("name,deadline").eq("user_id", userId).eq("status", "active").limit(40),
+    supabase.from("goals").select("id,name,status,validated_steps,total_steps,pact_id,is_focus,deadline").returns<LigneBut[]>(),
+    supabase.from("daily_quests").select("title,progress,target,status,reward_bonds").eq("user_id", userId).eq("date", jour).returns<LigneOrdre[]>(),
+    supabase.from("pomodoro_sessions").select("duration_minutes").eq("user_id", userId).eq("completed", true).gte("started_at", `${jour}T00:00:00`).returns<LigneFocus[]>(),
+    supabase.from("todo_tasks").select("name,deadline").eq("user_id", userId).eq("status", "active").limit(40).returns<LigneTache[]>(),
     supabase.from("bond_balance").select("balance").eq("user_id", userId).maybeSingle(),
   ]);
 
@@ -923,7 +987,7 @@ async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promi
 
   const actifId = profil?.data?.active_pact_id ?? null;
   const listePacts = pacts?.data ?? [];
-  const pacte = listePacts.find((p: any) => p.id === actifId) ?? listePacts[0] ?? null;
+  const pacte = listePacts.find((p) => p.id === actifId) ?? listePacts[0] ?? null;
 
   if (pacte) {
     const debut = pacte.project_start_date ? new Date(pacte.project_start_date).getTime() : null;
@@ -940,21 +1004,21 @@ async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promi
       lignes.push(`Pacte actif : ${pacte.name} (pas de dates posées).`);
     }
     if (listePacts.length > 1) {
-      lignes.push(`Autres pactes : ${listePacts.filter((p: any) => p.id !== pacte.id).map((p: any) => p.name).join(", ")}.`);
+      lignes.push(`Autres pactes : ${listePacts.filter((p) => p.id !== pacte.id).map((p) => p.name).join(", ")}.`);
     }
   } else {
     lignes.push("Aucun pacte enregistré.");
   }
 
-  const buts = (objectifs?.data ?? []).filter((g: any) =>
-    listePacts.some((p: any) => p.id === g.pact_id),
+  const buts = (objectifs?.data ?? []).filter((g) =>
+    listePacts.some((p) => p.id === g.pact_id),
   );
   if (buts.length) {
-    const enCours = buts.filter((g: any) => g.status === "in_progress").length;
-    const aVenir = buts.filter((g: any) => g.status === "not_started").length;
-    const finis = buts.filter((g: any) => g.status === "fully_completed" || g.status === "validated").length;
-    const faites = buts.reduce((s: number, g: any) => s + (g.validated_steps ?? 0), 0);
-    const etapes = buts.reduce((s: number, g: any) => s + (g.total_steps ?? 0), 0);
+    const enCours = buts.filter((g) => g.status === "in_progress").length;
+    const aVenir = buts.filter((g) => g.status === "not_started").length;
+    const finis = buts.filter((g) => g.status === "fully_completed" || g.status === "validated").length;
+    const faites = buts.reduce((s, g) => s + (g.validated_steps ?? 0), 0);
+    const etapes = buts.reduce((s, g) => s + (g.total_steps ?? 0), 0);
     /* ON DONNE LES TOTAUX DÉJÀ FAITS, PAS LEURS INGRÉDIENTS.
 
        Premier essai, l'état annonçait « 14 en cours, 11 non commencés,
@@ -968,8 +1032,8 @@ async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promi
        et il n'a plus qu'à le lire. */
     const restant = (statut: string) =>
       buts
-        .filter((g: any) => g.status === statut)
-        .reduce((s: number, g: any) => s + Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)), 0);
+        .filter((g) => g.status === statut)
+        .reduce((s, g) => s + Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)), 0);
 
     lignes.push(
       `Objectifs : ${enCours} en cours (${restant("in_progress")} étapes restantes), ` +
@@ -980,43 +1044,46 @@ async function etatDuJour(supabase: any, userId: string, fuseau?: string): Promi
     );
 
     const plusGros = buts
-      .filter((g: any) => g.status === "in_progress")
-      .map((g: any) => ({ nom: g.name, reste: Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)) }))
-      .filter((g: any) => g.reste > 0)
-      .sort((a: any, b: any) => b.reste - a.reste)
+      .filter((g) => g.status === "in_progress")
+      .map((g) => ({ nom: g.name, reste: Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)) }))
+      .filter((g) => g.reste > 0)
+      .sort((a, b) => b.reste - a.reste)
       .slice(0, 3);
     if (plusGros.length) {
       lignes.push(
-        `Plus gros restes en cours : ${plusGros.map((g: any) => `${g.nom} (${g.reste})`).join(", ")}.`,
+        `Plus gros restes en cours : ${plusGros.map((g) => `${g.nom} (${g.reste})`).join(", ")}.`,
       );
     }
-    const brigade = buts.filter((g: any) => g.is_focus && g.status !== "fully_completed").map((g: any) => g.name);
+    const brigade = buts.filter((g) => g.is_focus && g.status !== "fully_completed").map((g) => g.name);
     if (brigade.length) lignes.push(`Brigade (objectifs épinglés) : ${brigade.join(", ")}.`);
   }
 
   const listeOrdres = ordres?.data ?? [];
   if (listeOrdres.length) {
-    const prime = listeOrdres.reduce((s: number, q: any) => s + (q.reward_bonds ?? 0), 0);
+    const prime = listeOrdres.reduce((s, q) => s + (q.reward_bonds ?? 0), 0);
     const acquise = listeOrdres
-      .filter((q: any) => q.status === "claimed")
-      .reduce((s: number, q: any) => s + (q.reward_bonds ?? 0), 0);
+      .filter((q) => q.status === "claimed")
+      .reduce((s, q) => s + (q.reward_bonds ?? 0), 0);
     lignes.push(
       `Ordres du jour : ` +
-        listeOrdres.map((q: any) => `${q.title} ${q.progress}/${q.target}`).join(" · ") +
+        listeOrdres.map((q) => `${q.title} ${q.progress}/${q.target}`).join(" · ") +
         ` — prime ${acquise}/${prime} bonds.`,
     );
   }
 
-  const minutes = (focus?.data ?? []).reduce((s: number, p: any) => s + (p.duration_minutes ?? 0), 0);
+  const minutes = (focus?.data ?? []).reduce((s, p) => s + (p.duration_minutes ?? 0), 0);
   lignes.push(`Focus aujourd'hui : ${minutes} minute${minutes > 1 ? "s" : ""}.`);
 
   const listeTaches = taches?.data ?? [];
   if (listeTaches.length) {
     const prochaines = listeTaches
-      .filter((t: any) => t.deadline)
-      .sort((a: any, b: any) => String(a.deadline).localeCompare(String(b.deadline)))
+      /* Un predicat de type, et non un simple filtre : sans lui,
+         TypeScript ne relie pas ce test au .map() qui suit, et
+         new Date(null) rendrait une date invalide sans un mot. */
+      .filter((t): t is LigneTache & { deadline: string } => Boolean(t.deadline))
+      .sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))
       .slice(0, 4)
-      .map((t: any) => {
+      .map((t) => {
         /* « Aujourd'hui » et « demain » plutôt qu'une date : c'est ce
            qu'on dit en parlant, et c'est ce que le modèle recopiera. */
         const d = new Date(t.deadline);
@@ -1064,10 +1131,10 @@ async function pomperUnTour(
   amont: Response,
   controller: ReadableStreamDefaultController<Uint8Array>,
   encoder: TextEncoder,
-): Promise<{ texte: string; outils: any[] }> {
+): Promise<{ texte: string; outils: AppelOutil[] }> {
   const lecteur = amont.body!.getReader();
   const decodeur = new TextDecoder();
-  const outils: any[] = [];
+  const outils: AppelOutil[] = [];
   let reste = "";
   let texte = "";
 
@@ -1081,7 +1148,7 @@ async function pomperUnTour(
       if (!ligne.startsWith("data: ")) continue;
       const charge = ligne.slice(6).trim();
       if (!charge || charge === "[DONE]") continue;
-      let json: any;
+      let json: FragmentFlux;
       try {
         json = JSON.parse(charge);
       } catch (_) {
@@ -1205,12 +1272,12 @@ Deno.serve(async (req) => {
        les règles. Le modèle l'a lu comme la consigne la plus fraîche et
        a répondu sur le ton d'un rapport. Les règles, l'état et le rappel
        tiennent maintenant dans un seul bloc, le rappel en dernier. */
-    const workMessages: any[] = [
+    const workMessages: MessageIA[] = [
       { role: "system", content: `${SYSTEM_PROMPT}\n\n${etat}\n\n${RAPPEL_VOIX}` },
-      ...historique.map((m: any) => ({ role: m.role, content: m.content })),
+      ...historique.map((m) => ({ role: m.role, content: m.content })),
     ];
 
-    const appeler = (messages: any[], avecOutils: boolean) =>
+    const appeler = (messages: MessageIA[], avecOutils: boolean) =>
       chatCompletion(
         avecOutils
           ? { model, messages, tools: TOOLS, tool_choice: "auto", stream: true }
@@ -1258,13 +1325,13 @@ Deno.serve(async (req) => {
                outils demandés dans le même tour s'exécutaient l'un après
                l'autre. Ce sont des requêtes Postgres indépendantes. */
             const resultats = await Promise.all(
-              outils.map(async (appel: any) => {
-                let args: any = {};
+              outils.map(async (appel) => {
+                let args: ArgsOutil = {};
                 try {
                   args = JSON.parse(appel.function?.arguments ?? "{}");
                 } catch (_) { /* arguments illisibles : on appelle à vide */ }
                 const recu: ToolReceipt = {};
-                const sortie = await runTool(appel.function?.name, args, supabase, userId, aiKey, recu);
+                const sortie = await runTool(appel.function?.name ?? "", args, supabase, userId, aiKey, recu);
                 return { appel, sortie, recu };
               }),
             );

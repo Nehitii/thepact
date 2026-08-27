@@ -112,7 +112,9 @@ Deno.serve(async (req) => {
     }
     const json = await res.json();
     const call = json?.choices?.[0]?.message?.tool_calls?.[0];
-    let parsed: any = null;
+    /* Ce que le modele est cense rendre. Il peut rendre autre chose :
+       le `!parsed?.steps` juste dessous est la pour ca. */
+    let parsed: { steps?: unknown[] } | null = null;
     try { parsed = JSON.parse(call?.function?.arguments ?? "{}"); } catch (_) { /* ignore */ }
     if (!parsed?.steps) {
       return new Response(JSON.stringify({ error: "no_decomposition" }), {

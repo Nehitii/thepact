@@ -71,8 +71,9 @@ Deno.serve(async (req) => {
     ];
 
     // Delete goals via pacts
-    const { data: pacts } = await adminClient.from("pacts").select("id").eq("user_id", userId);
-    const pactIds = pacts?.map((p: any) => p.id) || [];
+    const { data: pacts } = await adminClient.from("pacts").select("id").eq("user_id", userId)
+      .returns<Array<{ id: string }>>();
+    const pactIds = pacts?.map((p) => p.id) || [];
     if (pactIds.length > 0) {
       await adminClient.from("goals").delete().in("pact_id", pactIds);
     }

@@ -2,6 +2,11 @@
 // Per-user invocation (JWT) or cron mode (CRON_SECRET) to seed all active users.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { messageDErreur } from "../_shared/erreurs.ts";
+import type { ClientSupabase } from "../_shared/client.ts";
+
+interface LigneGenre { kind: string | null }
+interface LigneNommee { id: string; name: string | null }
+interface LigneUtilisateur { user_id: string }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,14 +15,14 @@ const corsHeaders = {
 
 type Quest = { kind: string; title: string; description: string; target: number; reward_bonds: number };
 
-async function buildQuests(supabase: any, userId: string): Promise<Quest[]> {
+async function buildQuests(supabase: ClientSupabase, userId: string): Promise<Quest[]> {
   const today = new Date().toISOString().slice(0, 10);
   const [{ data: existing }, { data: goals }, { data: habits }] = await Promise.all([
-    supabase.from("daily_quests").select("kind").eq("user_id", userId).eq("date", today),
-    supabase.from("goals").select("id,name").eq("user_id", userId).neq("status", "completed").neq("status", "archived").limit(5),
-    supabase.from("habits").select("id,name").eq("user_id", userId).limit(5),
+    supabase.from("daily_quests").select("kind").eq("user_id", userId).eq("date", today).returns<LigneGenre[]>(),
+    supabase.from("goals").select("id,name").eq("user_id", userId).neq("status", "completed").neq("status", "archived").limit(5).returns<LigneNommee[]>(),
+    supabase.from("habits").select("id,name").eq("user_id", userId).limit(5).returns<LigneNommee[]>(),
   ]);
-  const have = new Set((existing ?? []).map((r: any) => r.kind));
+  const have = new Set((existing ?? []).map((r) => r.kind));
   const out: Quest[] = [];
 
   if (!have.has("complete_steps") && (goals?.length ?? 0) > 0) {
@@ -35,7 +40,7 @@ async function buildQuests(supabase: any, userId: string): Promise<Quest[]> {
   return out.slice(0, 3);
 }
 
-async function seedUser(supabase: any, userId: string) {
+async function seedUser(supabase: ClientSupabase, userId: string) {
   const quests = await buildQuests(supabase, userId);
   if (quests.length === 0) return { count: 0 };
   const { data: season } = await supabase.from("seasons").select("id").lte("starts_at", new Date().toISOString()).gte("ends_at", new Date().toISOString()).maybeSingle();
@@ -54,8 +59,8 @@ Deno.serve(async (req) => {
     if (isCron) {
       const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
       const since = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
-      const { data: actives } = await admin.from("habit_logs").select("user_id").gte("date", since.slice(0, 10)).limit(2000);
-      const ids = Array.from(new Set((actives ?? []).map((r: any) => r.user_id)));
+      const { data: actives } = await admin.from("habit_logs").select("user_id").gte("date", since.slice(0, 10)).limit(2000).returns<LigneUtilisateur[]>();
+      const ids = Array.from(new Set((actives ?? []).map((r) => r.user_id)));
       let total = 0;
       for (const uid of ids.slice(0, 200)) {
         try { total += (await seedUser(admin, uid)).count; } catch (_) { /* skip */ }

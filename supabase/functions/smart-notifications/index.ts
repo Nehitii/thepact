@@ -1,4 +1,18 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { messageDErreur } from "../_shared/erreurs.ts";
+
+/* LA JOINTURE A UNE FORME, ET PERSONNE NE LA DECLARAIT.
+   `pacts!inner(user_id)` produit un objet imbrique que les types generes
+   ne savent pas deduire : le reflexe etait `(goal as any).pacts`, qui
+   eteignait aussi le controle sur name, deadline et pact_id — les trois
+   champs lus juste apres. */
+interface LigneEcheance {
+  id: string;
+  name: string | null;
+  deadline: string | null;
+  pact_id: string | null;
+  pacts: { user_id: string } | null;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,11 +59,15 @@ Deno.serve(async (req) => {
       .select("id, name, deadline, pact_id, pacts!inner(user_id)")
       .not("deadline", "is", null)
       .in("status", ["not_started", "in_progress"])
-      .lte("deadline", new Date(now.getTime() + 3 * 86400000).toISOString().split("T")[0]);
+      .lte("deadline", new Date(now.getTime() + 3 * 86400000).toISOString().split("T")[0])
+      /* .returns() se pose en DERNIER : chaque appel de filtre rend un
+         constructeur different, et le type impose ici ne connait plus
+         .not() ni .in(). */
+      .returns<LigneEcheance[]>();
 
     if (goals) {
       for (const goal of goals) {
-        const userId = (goal as any).pacts?.user_id;
+        const userId = goal.pacts?.user_id;
         if (!userId) continue;
 
         const deadlineDate = new Date(goal.deadline!);
@@ -281,9 +299,9 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: messageDErreur(error) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

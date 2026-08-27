@@ -5,13 +5,24 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 import { messageDErreur } from "../_shared/erreurs.ts";
+import type { ClientSupabase } from "../_shared/client.ts";
+
+/** Un message envoye au modele. */
+interface MessageIA { role: string; content: string }
+
+/** Ce que le modele est cense rendre. Il peut rendre autre chose : on
+    verifie avant de s'en servir, au lieu de le supposer. */
+interface Constat { title?: string; body?: string; category?: string }
+interface ReponseModele { insights?: Constat[] }
+
+interface LigneUtilisateur { user_id: string }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function llm(messages: any[], aiKey: string) {
+async function llm(messages: MessageIA[], aiKey: string) {
   const res = await chatCompletion(
     { model: DEFAULT_CHAT_MODEL, messages, response_format: { type: "json_object" } },
     aiKey,
@@ -21,7 +32,7 @@ async function llm(messages: any[], aiKey: string) {
   return j.choices?.[0]?.message?.content ?? "{}";
 }
 
-async function snapshot(supabase: any, userId: string) {
+async function snapshot(supabase: ClientSupabase, userId: string) {
   const since = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
   const [habits, journal, goals, tx] = await Promise.all([
     supabase.from("habit_logs").select("habit_id,date,completed").eq("user_id", userId).gte("date", since.slice(0, 10)),
@@ -37,7 +48,7 @@ async function snapshot(supabase: any, userId: string) {
   };
 }
 
-async function processUser(supabase: any, userId: string, aiKey: string) {
+async function processUser(supabase: ClientSupabase, userId: string, aiKey: string) {
   // Respect user opt-out
   const { data: prefs } = await supabase
     .from("notification_settings")
@@ -59,7 +70,7 @@ async function processUser(supabase: any, userId: string, aiKey: string) {
     { role: "system", content: prompt },
     { role: "user", content: JSON.stringify(snap) },
   ], aiKey);
-  let parsed: any = {};
+  let parsed: ReponseModele = {};
   try { parsed = JSON.parse(raw); } catch { parsed = { insights: [] }; }
   const insights = Array.isArray(parsed.insights) ? parsed.insights.slice(0, 3) : [];
 
@@ -108,9 +119,10 @@ Deno.serve(async (req) => {
         .from("journal_entries")
         .select("user_id")
         .gte("created_at", since)
-        .limit(500);
-      const userIds = Array.from(new Set((actives ?? []).map((r: any) => r.user_id)));
-      const results: any[] = [];
+        .limit(500)
+        .returns<LigneUtilisateur[]>();
+      const userIds = Array.from(new Set((actives ?? []).map((r) => r.user_id)));
+      const results: Array<Record<string, unknown>> = [];
       for (const uid of userIds.slice(0, 100)) {
         try { results.push({ uid, ...(await processUser(admin, uid, aiKey)) }); }
         catch (e: unknown) { results.push({ uid, error: messageDErreur(e) }); }
