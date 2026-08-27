@@ -241,7 +241,7 @@ export default function AdminCosmeticsManager() {
   };
 
   return (
-    <AdminPageShell title="Cosmetics Manager" subtitle="Manage frames, banners, and titles" icon={<Palette className="h-6 w-6" />}>
+    <AdminPageShell titre="Cosmétiques" sous="Cadres, bannières et titres portés par les profils" icone={<Palette aria-hidden="true" />}>
       {/* Search */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />

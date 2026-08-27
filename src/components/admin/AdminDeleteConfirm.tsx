@@ -9,41 +9,55 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
 import { Trash2, AlertTriangle } from "lucide-react";
 
-interface AdminDeleteConfirmProps {
+/**
+ * LA CONFIRMATION DE SUPPRESSION.
+ *
+ * Elle parlait anglais — « Delete item », « This action cannot be
+ * undone » — dans une application française, et son déclencheur était
+ * un bouton shadcn rouge qui ne ressemblait à aucun autre geste de
+ * l'administration.
+ *
+ * Le TYPE de l'objet est repris tel quel dans le titre : « Supprimer
+ * ce code promotionnel », « Supprimer ce cadre ». Un message qui dit
+ * ce qu'on supprime vaut mieux qu'un message qui dit « cet élément ».
+ */
+export function AdminDeleteConfirm({
+  onConfirm,
+  itemName,
+  itemType = "élément",
+}: {
   onConfirm: () => void;
   itemName: string;
   itemType?: string;
-}
-
-export function AdminDeleteConfirm({ onConfirm, itemName, itemType = "item" }: AdminDeleteConfirmProps) {
+}) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button size="icon" variant="ghost" className="text-red-400/60 hover:text-red-400">
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <button
+          type="button"
+          className="ad-icone"
+          data-ton="danger"
+          aria-label={`Supprimer ${itemName}`}
+        >
+          <Trash2 aria-hidden="true" />
+        </button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-card border-primary/30">
+      <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-primary flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-400" />
-            Delete {itemType}
+          <AlertDialogTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertTriangle aria-hidden="true" style={{ width: 18, height: 18, color: "hsl(var(--ds-accent-warning))" }} />
+            Supprimer ce {itemType} ?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-primary/60">
-            Are you sure you want to delete <strong className="text-primary">"{itemName}"</strong>? This action cannot be undone.
+          <AlertDialogDescription>
+            <strong>« {itemName} »</strong> sera retiré définitivement. Cette action
+            ne s'annule pas.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="border-primary/30 text-primary">Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30"
-          >
-            Delete
-          </AlertDialogAction>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Supprimer</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

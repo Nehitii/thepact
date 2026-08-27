@@ -1,87 +1,82 @@
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Palette, Coins, Puzzle, Sparkles, Bell, ShieldCheck } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { SECTIONS_ADMIN } from "@/components/admin/sections";
+import "@/styles/admin.css";
 
-interface AdminPageShellProps {
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
+/**
+ * LA COQUE DE L'ADMINISTRATION.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE QUI CHANGE
+ *
+ * — LE FIL D'ARIANE ÉTAIT UNE RANGÉE DE SEPT LIENS de onze pixels,
+ *   séparés par des points médians, à quarante pour cent d'opacité.
+ *   On ne savait pas où l'on était, et on visait mal ce qu'on
+ *   voulait. C'est devenu un rail d'onglets, dans le langage que la
+ *   boîte de réception et les statistiques emploient déjà.
+ *
+ * — CHAQUE ÉCRAN POSAIT SON PROPRE FOND : un halo de 800 px en
+ *   « position: fixed » derrière chacun des sept, plus « min-h-screen »
+ *   à l'intérieur d'une mise en page qui a déjà sa hauteur.
+ *
+ * — LE TITRE ET LE SOUS-TITRE ÉTAIENT EN ANGLAIS, dans une
+ *   application française.
+ *
+ * — LA FLÈCHE « RETOUR » MENAIT AU CENTRE, que le rail atteint déjà
+ *   en un clic. Elle disparaît : deux chemins pour le même endroit,
+ *   dont l'un occupait le coin le plus précieux de la page.
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+interface Props {
+  titre: string;
+  sous: string;
+  icone: React.ReactNode;
+  /** Compteurs par section, affichés dans le rail quand ils existent. */
+  compteurs?: Partial<Record<string, number>>;
+  /** Placé à droite du titre : le geste principal de l'écran. */
+  action?: React.ReactNode;
   children: React.ReactNode;
-  maxWidth?: string;
 }
 
-const adminSections = [
-  { label: "Hub", href: "/admin", icon: Shield },
-  { label: "Accès", href: "/admin/acces", icon: ShieldCheck },
-  { label: "Mode", href: "/admin/mode", icon: Shield },
-  { label: "Cosmetics", href: "/admin/cosmetics", icon: Palette },
-  { label: "Money", href: "/admin/money", icon: Coins },
-  { label: "Modules", href: "/admin/modules", icon: Puzzle },
-  { label: "Promos", href: "/admin/promo-codes", icon: Sparkles },
-  { label: "Notifications", href: "/admin/notifications", icon: Bell },
-];
-
-export function AdminPageShell({ title, subtitle, icon, children, maxWidth = "max-w-4xl" }: AdminPageShellProps) {
-  const navigate = useNavigate();
-  /* « window.location.pathname » est lu au rendu et ne change pas quand
-     react-router navigue sans rechargement : l'onglet actif restait sur
-     la page d'arrivée. useLocation, lui, provoque le rendu. */
-  const currentPath = useLocation().pathname;
+export function AdminPageShell({ titre, sous, icone, compteurs, action, children }: Props) {
+  const chemin = useLocation().pathname;
 
   return (
-    <div className="min-h-screen bg-background relative">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-      </div>
+    <div className="ad page-px">
+      <nav className="ad-rail" aria-label="Sections de l'administration">
+        {SECTIONS_ADMIN.map((s) => {
+          const Icone = s.icone;
+          const actif = chemin === s.href;
+          const n = compteurs?.[s.cle];
+          return (
+            <Link
+              key={s.cle}
+              to={s.href}
+              className="ad-onglet"
+              data-actif={actif}
+              aria-current={actif ? "page" : undefined}
+            >
+              <Icone aria-hidden="true" />
+              {s.libelle}
+              {typeof n === "number" && n > 0 && <i>{n}</i>}
+            </Link>
+          );
+        })}
+      </nav>
 
-      <div className={`${maxWidth} mx-auto p-6 relative z-10`}>
-        {/* Breadcrumb Nav */}
-        <nav className="flex items-center gap-1 mb-4 flex-wrap">
-          {adminSections.map((section, i) => {
-            const isActive = currentPath === section.href;
-            const SIcon = section.icon;
-            return (
-              <React.Fragment key={section.href}>
-                {i > 0 && <span className="text-primary/30 text-xs mx-0.5">·</span>}
-                <Link
-                  to={section.href}
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-rajdhani transition-all ${
-                    isActive
-                      ? "bg-primary/20 text-primary border border-primary/30"
-                      : "text-primary/40 hover:text-primary/70 hover:bg-primary/5"
-                  }`}
-                >
-                  <SIcon className="h-3 w-3" />
-                  {section.label}
-                </Link>
-              </React.Fragment>
-            );
-          })}
-        </nav>
-
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/admin")}
-            className="text-primary hover:bg-primary/10"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-orbitron text-primary flex items-center gap-2">
-              {icon}
-              {title}
-            </h1>
-            <p className="text-sm text-primary/60 font-rajdhani">{subtitle}</p>
+      <header className="ad-tete">
+        <div className="ad-tete-gauche">
+          <span className="ad-tete-icone">{icone}</span>
+          <div style={{ minWidth: 0 }}>
+            <h1 className="ad-titre">{titre}</h1>
+            <p className="ad-sous">{sous}</p>
           </div>
         </div>
+        {action}
+      </header>
 
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

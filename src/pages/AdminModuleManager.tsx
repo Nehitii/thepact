@@ -1,19 +1,39 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Puzzle, Plus, Pencil, TrendingUp, Phone, BookOpen, ListTodo, Heart, Search, Copy, X,
+} from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
 import { logAdminAction } from "@/hooks/useAdminAudit";
-import { 
-  Puzzle, Plus, Pencil, TrendingUp, Phone, BookOpen, ListTodo, Heart, Search, Copy
-} from "lucide-react";
+
+/**
+ * LES MODULES DE LA BOUTIQUE.
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * CE QUI CHANGE
+ *
+ * — L'ÉDITION VIVAIT DANS UNE MODALE, par-dessus la liste qu'on
+ *   vient de quitter. Modifier un prix demande de voir les autres
+ *   prix : le formulaire se déplie EN TÊTE de la liste, qui reste
+ *   visible dessous.
+ *
+ * — « DUPLIQUER » PUBLIAIT LA COPIE. Il créait un doublon actif, en
+ *   boutique, nommé « (copy) ». Dupliquer pour ajuster ensuite est le
+ *   cas courant ; vendre deux fois le même module est l'accident. La
+ *   copie naît coupée.
+ *
+ * — « COMING SOON » ET « ACTIVE » ÉTAIENT DEUX INTERRUPTEURS SANS
+ *   ÉTIQUETTE dans une grille. Ce sont les deux seuls réglages qui
+ *   décident si un module se vend : ils portent leur mot.
+ *
+ * — LES ERREURS ÉTAIENT AVALÉES. Chaque écriture annonçait « Module
+ *   saved! » sans regarder si elle avait abouti.
+ *
+ * — TOUT ÉTAIT EN ANGLAIS.
+ * ═══════════════════════════════════════════════════════════════
+ */
 
 interface ShopModule {
   id: string;
@@ -29,7 +49,7 @@ interface ShopModule {
   display_order: number | null;
 }
 
-const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICONES: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp,
   "the-call": Phone,
   journal: BookOpen,
@@ -37,166 +57,249 @@ const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> =
   "track-health": Heart,
 };
 
+const RARETES = ["common", "rare", "epic", "legendary"] as const;
+
+const NOUVEAU: Partial<ShopModule> = {
+  key: "", name: "", description: "",
+  price_bonds: 2200, price_eur: 19.99,
+  rarity: "epic", is_active: true, is_coming_soon: false, display_order: 0,
+};
+
 export default function AdminModuleManager() {
   const [modules, setModules] = useState<ShopModule[]>([]);
-  const [editingModule, setEditingModule] = useState<Partial<ShopModule> | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [edition, setEdition] = useState<Partial<ShopModule> | null>(null);
+  const [recherche, setRecherche] = useState("");
+  const [chargement, setChargement] = useState(true);
 
-  useEffect(() => { loadModules(); }, []);
-
-  const loadModules = async () => {
-    const { data } = await supabase.from("shop_modules").select("*").order("display_order");
+  const charger = useCallback(async () => {
+    const { data, error } = await supabase.from("shop_modules").select("*").order("display_order");
+    if (error) toast.error("Chargement impossible", { description: error.message });
     if (data) setModules(data);
-  };
+    setChargement(false);
+  }, []);
 
-  const saveModule = async () => {
-    if (!editingModule?.name || !editingModule?.key) return;
-    const moduleData = {
-      key: editingModule.key,
-      name: editingModule.name,
-      description: editingModule.description || null,
-      price_bonds: editingModule.price_bonds || 2200,
-      price_eur: editingModule.price_eur || 19.99,
-      rarity: editingModule.rarity || "epic",
-      icon_key: editingModule.icon_key || null,
-      is_active: editingModule.is_active ?? true,
-      is_coming_soon: editingModule.is_coming_soon ?? false,
-      display_order: editingModule.display_order || 0,
-    };
-    if (editingModule.id) {
-      await supabase.from("shop_modules").update(moduleData).eq("id", editingModule.id);
-      await logAdminAction("update", "module", editingModule.id, { name: editingModule.name });
-    } else {
-      await supabase.from("shop_modules").insert(moduleData);
-      await logAdminAction("create", "module", undefined, { name: editingModule.name });
+  useEffect(() => { charger(); }, [charger]);
+
+  const enregistrer = async () => {
+    if (!edition?.name?.trim() || !edition?.key?.trim()) {
+      toast.error("Il manque le nom ou la clé");
+      return;
     }
-    toast.success("Module saved!");
-    setEditingModule(null);
-    loadModules();
+    const ligne = {
+      key: edition.key.trim(),
+      name: edition.name.trim(),
+      description: edition.description || null,
+      price_bonds: edition.price_bonds ?? 2200,
+      price_eur: edition.price_eur ?? 19.99,
+      rarity: edition.rarity || "epic",
+      icon_key: edition.icon_key || null,
+      is_active: edition.is_active ?? true,
+      is_coming_soon: edition.is_coming_soon ?? false,
+      display_order: edition.display_order ?? 0,
+    };
+    const { error } = edition.id
+      ? await supabase.from("shop_modules").update(ligne).eq("id", edition.id)
+      : await supabase.from("shop_modules").insert(ligne);
+    if (error) { toast.error("Enregistrement refusé", { description: error.message }); return; }
+    await logAdminAction(edition.id ? "update" : "create", "module", edition.id, { name: ligne.name });
+    toast.success(`« ${ligne.name} » enregistré`);
+    setEdition(null);
+    charger();
   };
 
-  const deleteModule = async (id: string, name: string) => {
-    await supabase.from("shop_modules").delete().eq("id", id);
-    await logAdminAction("delete", "module", id, { name });
-    toast.success("Module deleted");
-    loadModules();
+  const dupliquer = async (m: ShopModule) => {
+    const { id, ...reste } = m;
+    const { error } = await supabase.from("shop_modules").insert({
+      ...reste,
+      name: `${reste.name} (copie)`,
+      key: `${reste.key}-copie`,
+      is_active: false,
+    });
+    if (error) { toast.error("Copie refusée", { description: error.message }); return; }
+    await logAdminAction("duplicate", "module", id, { name: m.name });
+    toast.success(`« ${m.name} » copié`, { description: "La copie est coupée : activez-la quand elle est prête." });
+    charger();
   };
 
-  const duplicateModule = async (mod: ShopModule) => {
-    const { id, ...rest } = mod;
-    await supabase.from("shop_modules").insert({ ...rest, name: `${rest.name} (copy)`, key: `${rest.key}-copy` });
-    await logAdminAction("duplicate", "module", id, { name: mod.name });
-    toast.success("Module duplicated!");
-    loadModules();
-  };
-
-  const filtered = modules.filter(m => !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filtres = useMemo(() => {
+    const q = recherche.trim().toLowerCase();
+    if (!q) return modules;
+    return modules.filter((m) =>
+      m.name.toLowerCase().includes(q) || m.key.toLowerCase().includes(q));
+  }, [modules, recherche]);
 
   return (
-    <AdminPageShell title="Module Manager" subtitle="Manage purchasable modules" icon={<Puzzle className="h-6 w-6" />}>
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-        <Input placeholder="Search modules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-card/50 border-primary/30 text-primary" />
+    <AdminPageShell
+      titre="Modules"
+      sous="Ce que la boutique vend, et à quel prix"
+      icone={<Puzzle aria-hidden="true" />}
+      action={
+        <button
+          type="button" className="ad-geste" data-ton="primaire"
+          onClick={() => setEdition(edition ? null : { ...NOUVEAU })}
+        >
+          {edition ? <X aria-hidden="true" /> : <Plus aria-hidden="true" />}
+          {edition ? "Fermer" : "Nouveau module"}
+        </button>
+      }
+    >
+      {edition && (
+        <section className="ad-panneau">
+          <header className="ad-panneau-tete">
+            <h2 className="ad-panneau-titre">
+              {edition.id ? `Modifier « ${edition.name} »` : "Nouveau module"}
+            </h2>
+          </header>
+
+          <div className="ad-champs">
+            <label className="ad-champ">
+              <span>Nom</span>
+              <input value={edition.name ?? ""} onChange={(e) => setEdition({ ...edition, name: e.target.value })} placeholder="Finance" />
+            </label>
+
+            <label className="ad-champ">
+              <span>Clé — identifiant technique, figé après création</span>
+              <input
+                value={edition.key ?? ""}
+                onChange={(e) => setEdition({ ...edition, key: e.target.value })}
+                placeholder="finance"
+                disabled={!!edition.id}
+              />
+            </label>
+
+            <label className="ad-champ">
+              <span>Prix en Bonds</span>
+              <input type="number" min={0} value={edition.price_bonds ?? 0}
+                onChange={(e) => setEdition({ ...edition, price_bonds: parseInt(e.target.value, 10) || 0 })} />
+            </label>
+
+            <label className="ad-champ">
+              <span>Prix en euros</span>
+              <input type="number" min={0} step="0.01" value={edition.price_eur ?? 0}
+                onChange={(e) => setEdition({ ...edition, price_eur: parseFloat(e.target.value) || 0 })} />
+            </label>
+
+            <label className="ad-champ">
+              <span>Rareté</span>
+              <select value={edition.rarity ?? "epic"} onChange={(e) => setEdition({ ...edition, rarity: e.target.value })}>
+                {RARETES.map((r) => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </label>
+
+            <label className="ad-champ">
+              <span>Ordre d'affichage</span>
+              <input type="number" value={edition.display_order ?? 0}
+                onChange={(e) => setEdition({ ...edition, display_order: parseInt(e.target.value, 10) || 0 })} />
+            </label>
+
+            <label className="ad-champ ad-champ--large">
+              <span>Description — lue en boutique</span>
+              <textarea value={edition.description ?? ""} onChange={(e) => setEdition({ ...edition, description: e.target.value })} />
+            </label>
+          </div>
+
+          {/* LES DEUX SEULS RÉGLAGES QUI DÉCIDENT S'IL SE VEND. */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button" className="ad-bascule"
+              aria-pressed={edition.is_active ?? true}
+              onClick={() => setEdition({ ...edition, is_active: !(edition.is_active ?? true) })}
+            >
+              <u aria-hidden="true" />
+              {(edition.is_active ?? true) ? "En boutique" : "Retiré de la boutique"}
+            </button>
+
+            <button
+              type="button" className="ad-bascule"
+              aria-pressed={edition.is_coming_soon ?? false}
+              onClick={() => setEdition({ ...edition, is_coming_soon: !(edition.is_coming_soon ?? false) })}
+            >
+              <u aria-hidden="true" />
+              {edition.is_coming_soon ? "Annoncé, pas encore vendu" : "Vendable"}
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" className="ad-geste" data-ton="primaire" onClick={enregistrer}>
+              Enregistrer
+            </button>
+            <button type="button" className="ad-geste" onClick={() => setEdition(null)}>Annuler</button>
+          </div>
+        </section>
+      )}
+
+      <div className="ad-champ">
+        <div style={{ position: "relative" }}>
+          <Search aria-hidden="true"
+            style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, opacity: 0.5 }} />
+          <input
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            placeholder="Chercher un module par nom ou par clé…"
+            aria-label="Chercher un module"
+            style={{ paddingLeft: 34 }}
+          />
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <Dialog open={!!editingModule} onOpenChange={(open) => !open && setEditingModule(null)}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingModule({})} className="bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">
-              <Plus className="h-4 w-4 mr-2" /> Add Module
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-primary/30">
-            <DialogHeader>
-              <DialogTitle className="text-primary font-orbitron">{editingModule?.id ? "Edit Module" : "Add Module"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              <div>
-                <Label className="text-primary/80">Key (unique identifier)</Label>
-                <Input placeholder="e.g., journal" value={editingModule?.key || ""} onChange={(e) => setEditingModule({ ...editingModule, key: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
-              </div>
-              <div>
-                <Label className="text-primary/80">Name</Label>
-                <Input value={editingModule?.name || ""} onChange={(e) => setEditingModule({ ...editingModule, name: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
-              </div>
-              <div>
-                <Label className="text-primary/80">Description</Label>
-                <Textarea value={editingModule?.description || ""} onChange={(e) => setEditingModule({ ...editingModule, description: e.target.value })} className="bg-card/50 border-primary/30 text-primary" />
-              </div>
-              <div>
-                <Label className="text-primary/80">Rarity</Label>
-                <Select value={editingModule?.rarity || "epic"} onValueChange={(v) => setEditingModule({ ...editingModule, rarity: v })}>
-                  <SelectTrigger className="bg-card/50 border-primary/30 text-primary"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="common">Common</SelectItem>
-                    <SelectItem value="rare">Rare</SelectItem>
-                    <SelectItem value="epic">Epic</SelectItem>
-                    <SelectItem value="legendary">Legendary</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-primary/80">Price (Bonds)</Label>
-                  <Input type="number" value={editingModule?.price_bonds || 2200} onChange={(e) => setEditingModule({ ...editingModule, price_bonds: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
-                </div>
-                <div>
-                  <Label className="text-primary/80">Price (EUR)</Label>
-                  <Input type="number" step="0.01" value={editingModule?.price_eur || 19.99} onChange={(e) => setEditingModule({ ...editingModule, price_eur: parseFloat(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-primary/80">Display Order</Label>
-                <Input type="number" value={editingModule?.display_order || 0} onChange={(e) => setEditingModule({ ...editingModule, display_order: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label className="text-primary/80">Active (visible in Shop)</Label>
-                <Switch checked={editingModule?.is_active ?? true} onCheckedChange={(c) => setEditingModule({ ...editingModule, is_active: c })} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label className="text-primary/80">Coming Soon</Label>
-                <Switch checked={editingModule?.is_coming_soon ?? false} onCheckedChange={(c) => setEditingModule({ ...editingModule, is_coming_soon: c })} />
-              </div>
-              <Button onClick={saveModule} className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary">Save Module</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <div className="grid gap-3">
-          {filtered.map((module) => {
-            const Icon = moduleIcons[module.key] || Puzzle;
+      {chargement ? (
+        <div className="ad-liste" aria-busy="true">
+          {[0, 1, 2].map((i) => <span key={i} className="ad-os" style={{ height: 62 }} />)}
+        </div>
+      ) : filtres.length === 0 ? (
+        <div className="ad-vide">
+          <Puzzle aria-hidden="true" />
+          <h3>{recherche ? "Aucun module de ce nom" : "Aucun module"}</h3>
+          <p>
+            {recherche
+              ? "La recherche porte sur le nom et sur la clé technique."
+              : "Un module est une partie de l'application qui se vend séparément."}
+          </p>
+        </div>
+      ) : (
+        <div className="ad-liste">
+          {filtres.map((m) => {
+            const Icone = ICONES[m.key] ?? Puzzle;
             return (
-              <div key={module.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-primary font-rajdhani font-medium">{module.name}</div>
-                    <div className="text-xs text-primary/50">{module.rarity} · {module.price_bonds} Bonds · €{module.price_eur}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {module.is_coming_soon && (
-                    <span className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-400">Soon</span>
-                  )}
-                  <span className={`text-xs px-2 py-1 rounded ${module.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                    {module.is_active ? "Active" : "Inactive"}
+              <div key={m.id} className="ad-ligne" data-inactif={!m.is_active}>
+                <span className="ad-apercu"><Icone aria-hidden="true" /></span>
+
+                <span className="ad-ligne-corps">
+                  <span className="ad-ligne-nom">{m.name}</span>
+                  <span className="ad-ligne-meta">
+                    {!m.is_active && <span className="ad-etat" data-ton="dormant">retiré</span>}
+                    {m.is_coming_soon && <span className="ad-etat" data-ton="veille">annoncé</span>}
+                    <span>{m.key}</span>
+                    <span>{m.price_bonds} Bonds</span>
+                    {m.price_eur != null && <span>{m.price_eur.toFixed(2)} €</span>}
+                    <span>{m.rarity}</span>
                   </span>
-                  <Button size="icon" variant="ghost" onClick={() => duplicateModule(module)} className="text-primary/40 hover:text-primary" title="Duplicate">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => setEditingModule(module)} className="text-primary/60 hover:text-primary">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <AdminDeleteConfirm onConfirm={() => deleteModule(module.id, module.name)} itemName={module.name} itemType="module" />
-                </div>
+                </span>
+
+                <span className="ad-ligne-gestes">
+                  <button type="button" className="ad-icone" aria-label={`Modifier ${m.name}`} onClick={() => setEdition(m)}>
+                    <Pencil aria-hidden="true" />
+                  </button>
+                  <button type="button" className="ad-icone" aria-label={`Dupliquer ${m.name}`} onClick={() => dupliquer(m)}>
+                    <Copy aria-hidden="true" />
+                  </button>
+                  <AdminDeleteConfirm
+                    onConfirm={async () => {
+                      const { error } = await supabase.from("shop_modules").delete().eq("id", m.id);
+                      if (error) { toast.error("Suppression refusée", { description: error.message }); return; }
+                      await logAdminAction("delete", "module", m.id, { name: m.name });
+                      toast.success(`« ${m.name} » supprimé`);
+                      charger();
+                    }}
+                    itemName={m.name}
+                    itemType="module"
+                  />
+                </span>
               </div>
             );
           })}
         </div>
-      </div>
+      )}
     </AdminPageShell>
   );
 }

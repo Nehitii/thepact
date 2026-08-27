@@ -58,7 +58,7 @@ export default function Home() {
     if (!disponible) setTirageOuvert(false);
   }, []);
 
-  const { data: pact, isLoading: pactLoading } = usePact(user?.id);
+  const { data: pact, isFetching: pactFetching, isSuccess: pactVu } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
@@ -171,12 +171,18 @@ export default function Home() {
     };
   }, [allGoals, financeSettings, pact?.created_at, isModulePurchased]);
 
-  // Phase 4: Wrap navigation in useEffect to avoid render-time side effects
+  /* ON N'ENVOIE À L'ONBOARDING QUE SUR UNE RÉPONSE, JAMAIS SUR UN VIDE.
+     « !pactLoading » ne suffit pas : une requête périmée sert sa donnée
+     en cache avec isLoading à faux pendant qu'elle recharge. Après une
+     élévation de session, cette donnée en cache est un null produit par
+     les politiques RLS de la fenêtre précédente — et l'utilisateur
+     partait fonder un pacte qu'il possède déjà.
+     « isSuccess && !isFetching » attend la vraie réponse. */
   useEffect(() => {
-    if (!pactLoading && !pact && user) {
+    if (pactVu && !pactFetching && !pact && user) {
       navigate("/onboarding");
     }
-  }, [pactLoading, pact, user, navigate]);
+  }, [pactVu, pactFetching, pact, user, navigate]);
 
   /* LA MESURE CHOISIE, RETENUE.
 
@@ -197,7 +203,10 @@ export default function Home() {
     try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
   }, [mesure]);
 
-  if (!pactLoading && !pact && user) {
+  /* Le retour anticipé suit la même condition que la redirection :
+     s'ils divergent, on rend un écran vide sans jamais partir, ou
+     l'inverse. */
+  if (pactVu && !pactFetching && !pact && user) {
     return null;
   }
 

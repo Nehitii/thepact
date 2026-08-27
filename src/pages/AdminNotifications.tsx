@@ -153,7 +153,7 @@ export default function AdminNotifications() {
   };
 
   return (
-    <AdminPageShell title="Notifications & Messages" subtitle="Send notifications and view history" icon={<Bell className="h-6 w-6" />} maxWidth="max-w-2xl">
+    <AdminPageShell titre="Diffusion" sous="Écrire à tout le monde, ou à une personne" icone={<Bell aria-hidden="true" />}>
       {/* Main Tabs: Compose / History */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "compose" | "history")} className="mb-6">
         <TabsList className="w-full bg-card/50 border border-primary/20 p-1">

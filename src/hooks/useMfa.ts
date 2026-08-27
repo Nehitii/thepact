@@ -128,15 +128,28 @@ export function useMfa() {
       if (!factorId) throw new Error("Aucun facteur vérifié sur ce compte");
       const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
       if (error) throw error;
-      // Pendant la fenetre aal1 — apres le mot de passe, avant le code — les
-      // politiques RLS filtrent toutes les tables protegees. Les requetes ne
-      // renvoient pas d'erreur : elles renvoient du vide, que React Query met
-      // en cache. Le JWT vient de passer en aal2, donc ces reponses vides sont
-      // toutes fausses. Sans invalidation globale, Home.tsx lit un pacte
-      // inexistant et redirige vers l'onboarding a chaque connexion sur un
-      // appareil neuf. invalidateQueries() sans cle vide tout le cache, y
-      // compris ["mfa"], ce qui rend refresh() redondant ici.
-      await qc.invalidateQueries();
+      /* PENDANT LA FENÊTRE aal1 — après le mot de passe, avant le code —
+         les politiques RLS filtrent toutes les tables protégées. Les
+         requêtes ne renvoient pas d'erreur : elles renvoient du VIDE, que
+         React Query met en cache. Le jeton vient de passer en aal2, donc
+         ces réponses vides sont toutes fausses.
+
+         ON EFFACE, ON N'INVALIDE PAS — et la nuance était le bogue.
+         « invalidateQueries » marque périmé et ne rafraîchit que les
+         requêtes ACTIVES. Or au moment du code, seule la page du second
+         facteur est montée : la requête du pacte est inactive, donc
+         marquée mais pas rechargée. On navigue, Home se monte, React
+         Query lui sert INSTANTANÉMENT le null périmé — avec isLoading à
+         faux, puisqu'il y a une donnée en cache — et la redirection vers
+         l'onboarding part avant que le rechargement n'aboutisse.
+         Rapporté depuis l'usage : « ça m'emmène dans l'onboarding après
+         avoir entré le code ».
+
+         « resetQueries » RETIRE la donnée. Au montage il n'y a plus rien
+         à servir : isLoading est vrai, et la redirection attend la vraie
+         réponse. Ce qui est faux ne doit pas être gardé le temps d'être
+         corrigé — il doit disparaître. */
+      await qc.resetQueries();
     },
     [qc, verifiedFactor],
   );
