@@ -42,11 +42,18 @@ export function useMfa() {
       if (factorsError) throw factorsError;
       if (aalError) throw aalError;
 
-      const totp: MfaFactor[] = (factorsData?.totp ?? []).map((f) => ({
-        id: f.id,
-        friendlyName: f.friendly_name ?? null,
-        status: f.status as MfaFactor["status"],
-      }));
+      /* « all » ET NON « totp ». La bibliothèque type le champ `totp`
+         comme « Factor<'totp', 'verified'>[] » : il ne contient QUE les
+         facteurs vérifiés. Lire `totp` rendait donc les enrôlements
+         inachevés invisibles au hook — et le filtre sur le statut, juste
+         en dessous, ne pouvait rien écarter. Seul « all » les porte. */
+      const totp: MfaFactor[] = (factorsData?.all ?? [])
+        .filter((f) => f.factor_type === "totp")
+        .map((f) => ({
+          id: f.id,
+          friendlyName: f.friendly_name ?? null,
+          status: f.status as MfaFactor["status"],
+        }));
 
       return {
         factors: totp,
@@ -78,10 +85,16 @@ export function useMfa() {
 
   /** Crée un facteur non vérifié et renvoie de quoi l'afficher. */
   const enroll = useCallback(async (friendlyName = "Authenticator"): Promise<MfaEnrollment> => {
-    // Un enrôlement inachevé laisse un facteur non vérifié qui bloquerait
-    // le suivant : on nettoie avant de recommencer.
+    /* UN ENRÔLEMENT INACHEVÉ BLOQUAIT TOUS LES SUIVANTS.
+       Cette boucle existait déjà — et ne nettoyait rien. Elle parcourait
+       « existing.totp », que la bibliothèque garantit VÉRIFIÉ : la
+       condition « status !== verified » n'était jamais vraie, pas un
+       facteur n'était retiré, et le nouvel enrôlement se heurtait à
+       « A factor with the friendly name "Vowpact" already exists ».
+       Sans écran pour le voir ni bouton pour le défaire : un cul-de-sac.
+       « all » porte les deux statuts. */
     const { data: existing } = await supabase.auth.mfa.listFactors();
-    for (const f of existing?.totp ?? []) {
+    for (const f of existing?.all ?? []) {
       if (f.status !== "verified") await supabase.auth.mfa.unenroll({ factorId: f.id });
     }
 

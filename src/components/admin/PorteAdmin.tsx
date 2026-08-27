@@ -75,25 +75,48 @@ export function PorteAdmin({ children }: { children: React.ReactNode }) {
 
   const cadre = "max-w-md mx-auto mt-16 rounded-lg border border-primary/25 bg-card/70 p-6";
 
-  /* Aucun second facteur sur ce compte : on ne refuse pas, on conduit. */
+  /* Aucun second facteur sur ce compte : on ne refuse pas, on conduit.
+
+     ON DISTINGUE « JAMAIS COMMENCÉ » DE « COMMENCÉ SANS ALLER AU BOUT ».
+     La première version affichait le même texte dans les deux cas :
+     quelqu'un qui venait d'installer l'application d'authentification
+     et de scanner le code lisait « protégez ce compte d'abord » sans
+     comprendre — il l'avait fait. Un enrôlement s'achève par les six
+     chiffres, et c'est cette étape-là qui manque. */
+  const enPlan = mfa.factors.some((f) => f.status !== "verified");
+
   if (!mfa.enabled) {
     return (
       <div className={cadre}>
         <div className="flex items-center gap-3 mb-3">
           <ShieldAlert className="h-6 w-6 text-amber-400" />
-          <h1 className="text-lg font-orbitron text-primary">Protégez ce compte d'abord</h1>
+          <h1 className="text-lg font-orbitron text-primary">
+            {enPlan ? "Enrôlement à terminer" : "Protégez ce compte d'abord"}
+          </h1>
         </div>
-        <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed mb-2">
-          L'administration écrit à tous les utilisateurs, distribue des récompenses
-          et donne les droits. Le mot de passe seul ne suffit pas à l'ouvrir : il
-          faut un second facteur sur ce compte.
-        </p>
-        <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed mb-5">
-          L'enrôlement prend une minute et se fait depuis les réglages du compte.
-        </p>
+        {enPlan ? (
+          <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed mb-5">
+            Un second facteur a été créé sur ce compte mais n'a jamais été
+            confirmé par un code à six chiffres — il ne protège donc rien.
+            Reprenez depuis les réglages : un nouveau code y sera proposé, et
+            l'ancienne entrée « Vowpact » de votre application peut être
+            supprimée.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed mb-2">
+              L'administration écrit à tous les utilisateurs, distribue des récompenses
+              et donne les droits. Le mot de passe seul ne suffit pas à l'ouvrir : il
+              faut un second facteur sur ce compte.
+            </p>
+            <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed mb-5">
+              L'enrôlement prend une minute et se fait depuis les réglages du compte.
+            </p>
+          </>
+        )}
         <Button onClick={() => navigate("/profile/security")} className="w-full">
           <KeyRound className="h-4 w-4 mr-2" />
-          Activer le second facteur
+          {enPlan ? "Reprendre l'enrôlement" : "Activer le second facteur"}
         </Button>
       </div>
     );

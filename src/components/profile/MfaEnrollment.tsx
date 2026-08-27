@@ -174,11 +174,21 @@ export function MfaEnrollment({ userId, onEvenement }: { userId?: string; onEven
     );
   }
 
-  // ── Aucun facteur ──
+  // ── Aucun facteur, ou un enrôlement resté en plan ──
+  //
+  // On distingue les deux. Un enrôlement inachevé laisse une entrée
+  // « Vowpact » dans l'application d'authentification qui ne servira
+  // jamais : recommencer produit un NOUVEAU secret, et l'ancienne
+  // entrée devient un code qui ne marchera pas. Le dire évite de
+  // chercher pendant dix minutes pourquoi le code est refusé.
+  const enPlan = mfa.factors.some((f) => f.status !== "verified");
+
   return (
     <Reglage
       nom="Application d’authentification"
-      note="Aucun second facteur. Ton mot de passe protège seul ton compte."
+      note={enPlan
+        ? "Un enrôlement précédent n'a pas été confirmé. Recommencer donnera un nouveau code : supprime l'ancienne entrée « Vowpact » de ton application."
+        : "Aucun second facteur. Ton mot de passe protège seul ton compte."}
       icone={<ShieldOff aria-hidden="true" />}
     >
       <Bouton role="primaire" onClick={start} disabled={busy}>
