@@ -45,10 +45,25 @@ export function AvatarFrame({
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
-      {/* Glow effect behind (Lueur arrière) */}
+      {/* ── LA LUEUR ARRIÈRE ──────────────────────────────────
+          C'ÉTAIT UN DISQUE PLEIN FLOUTÉ À 12 PX, et un flou déborde
+          de sa boîte sans l'agrandir : le rendu s'étalait sur 24 px
+          alors que le rectangle, lui, ne bougeait pas. Posé à 10 px
+          du bas d'une bannière en « overflow: hidden », il se faisait
+          trancher net — un trait droit là où le halo aurait dû
+          s'éteindre, et l'arrondi coupé. Invisible en sombre, où la
+          lueur se fond dans le noir ; flagrant sur du papier.
+
+          Un dégradé radial n'a pas ce défaut : il s'éteint de
+          lui-même avant son propre bord, donc rien ne dépasse et rien
+          n'a besoin d'être rogné. Il ne coûte pas non plus de couche
+          de composition, contrairement à « filter ». */}
       <div
-        className={cn("absolute inset-0 rounded-full blur-md transition-all duration-300")}
-        style={{ backgroundColor: glowColor, opacity: 0.6 }}
+        className={cn("absolute -inset-2 rounded-full transition-all duration-300")}
+        style={{
+          background: `radial-gradient(circle, ${glowColor} 0%, ${glowColor} 34%, transparent 68%)`,
+          opacity: 0.55,
+        }}
       />
 
       {/* Main Avatar (L'image ronde) */}

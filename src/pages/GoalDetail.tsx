@@ -407,6 +407,17 @@ export default function GoalDetail() {
         await synchroniserGroupes(goal.pact_id);
         queryClient.invalidateQueries({ queryKey: ["goals"] });
         queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+        /* TROIS CACHES LISENT LA TABLE DES ETAPES, PAS UN.
+           Renommer une etape ici la mettait a jour dans cette page et
+           nulle part ailleurs : le Registre de la page Objectifs lit
+           « goal-steps » et le calendrier lit « calendar-steps », deux
+           clefs qu aucune invalidation ne touchait. Avec une fraicheur
+           d une minute, l ancien nom restait affiche jusqu a
+           soixante secondes apres l enregistrement — constate.
+           Une seule main ecrit dans « steps » ; il faut prevenir tous
+           ceux qui la lisent. */
+        queryClient.invalidateQueries({ queryKey: ["goal-steps"] });
+        queryClient.invalidateQueries({ queryKey: ["calendar-steps"] });
         setEditDialogOpen(false);
         setSaving(false);
         toast.success("Goal Updated", { description: "Changes saved successfully" });
