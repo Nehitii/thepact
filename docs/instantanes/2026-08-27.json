@@ -1,20 +1,20 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T16:23:46.340Z",
-  "fichiers": 838,
-  "lignes": 161330,
+  "genere": "2026-08-27T16:37:18.082Z",
+  "fichiers": 840,
+  "lignes": 161505,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1426,
-      "poids": 47797
+      "lignes": 1438,
+      "poids": 49218
     },
     {
       "dossier": "docs",
       "fichiers": 2,
       "lignes": 3253,
-      "poids": 190893
+      "poids": 191038
     },
     {
       "dossier": "mem/design",
@@ -86,13 +86,13 @@
       "dossier": "src/components",
       "fichiers": 304,
       "lignes": 50133,
-      "poids": 2019595
+      "poids": 2019587
     },
     {
       "dossier": "src/content",
       "fichiers": 1,
       "lignes": 492,
-      "poids": 19730
+      "poids": 19712
     },
     {
       "dossier": "src/contexts",
@@ -103,14 +103,14 @@
     {
       "dossier": "src/hooks",
       "fichiers": 94,
-      "lignes": 15135,
-      "poids": 548505
+      "lignes": 15134,
+      "poids": 548546
     },
     {
       "dossier": "src/i18n",
       "fichiers": 4,
       "lignes": 7563,
-      "poids": 280657
+      "poids": 280651
     },
     {
       "dossier": "src/integrations",
@@ -128,7 +128,7 @@
       "dossier": "src/pages",
       "fichiers": 46,
       "lignes": 17229,
-      "poids": 760960
+      "poids": 760958
     },
     {
       "dossier": "src/styles",
@@ -150,15 +150,15 @@
     },
     {
       "dossier": "supabase/functions",
-      "fichiers": 25,
-      "lignes": 5290,
-      "poids": 221608
+      "fichiers": 26,
+      "lignes": 5378,
+      "poids": 225606
     },
     {
       "dossier": "supabase/migrations",
-      "fichiers": 174,
-      "lignes": 11892,
-      "poids": 499823
+      "fichiers": 175,
+      "lignes": 11968,
+      "poids": 503711
     }
   ],
   "parLangage": [
@@ -177,8 +177,8 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8248,
-      "poids": 304405
+      "lignes": 8260,
+      "poids": 305820
     },
     {
       "langage": "Markdown",
@@ -190,7 +190,7 @@
       "langage": "HTML",
       "fichiers": 2,
       "lignes": 3158,
-      "poids": 186837
+      "poids": 186982
     },
     {
       "langage": "JavaScript",
@@ -236,15 +236,15 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 197,
-      "lignes": 28494,
-      "poids": 1091479
+      "fichiers": 198,
+      "lignes": 28581,
+      "poids": 1095500
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
       "lignes": 67089,
-      "poids": 2768813
+      "poids": 2768803
     },
     {
       "langage": "CSS",
@@ -260,9 +260,9 @@
     },
     {
       "langage": "SQL",
-      "fichiers": 174,
-      "lignes": 11892,
-      "poids": 499823
+      "fichiers": 175,
+      "lignes": 11968,
+      "poids": 503711
     },
     {
       "langage": "JSONC",
@@ -271,7 +271,7 @@
       "poids": 500
     }
   ],
-  "commits": 3119,
+  "commits": 3121,
   "orphelins": 0,
   "marqueurs": 12
 }

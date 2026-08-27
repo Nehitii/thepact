@@ -499,17 +499,29 @@
       "alternative": "Se contenter du rôle, comme avant — écarté : un jeton volé le porte aussi."
     },
     {
-      "titre": "Les fonctions sociales sont derrière des drapeaux — trois ne commandent rien",
+      "titre": "Les fonctions sociales sont derrière des drapeaux — et les drapeaux morts sont partis",
       "date": "2026-08-27",
-      "contexte": "Douze lignes dans feature_flags. Le code n'en lit que dix : goal_contracts, goal_decompose_ai et huit social.*. Croisement fait le 27/08 — social.templates_marketplace (ouvert) et coach_write_tools (fermé) ne sont lus nulle part, et social.victory_reels est résolu par useSocialFeatures mais consommé par personne : les vidéos du fil ne sont donc pas gardées par lui. Restent trois fermetures qui agissent vraiment : social.sharing (GoalDetail), goal_contracts (deux entrées), et rien d'autre.",
-      "alternative": "Retirer le code des fonctions non ouvertes — écarté : le rouvrir coûterait une réécriture. Mais un drapeau que personne ne lit ment sur ce qu'il commande : celui-là se retire sans rien casser."
+      "contexte": "Douze lignes dans feature_flags, dont TROIS que le code ne lisait pas. `coach_write_tools` était fermé pendant que M.I.A écrivait quand même avec ses onze outils : il est ouvert et branché, et le refermer lui retire la plume sans redéployer. `social.templates_marketplace` (écran inexistant) et `social.victory_reels` (résolu, jamais consommé) sont retirés. Restent dix drapeaux et dix lecteurs.",
+      "alternative": "Retirer le code des fonctions non ouvertes — écarté : le rouvrir coûterait une réécriture. Mais un drapeau que personne ne lit ment sur ce qu'il commande, et celui-là se retire sans rien casser."
+    },
+    {
+      "titre": "Une politique RLS de 2FA doit être RESTRICTIVE, jamais PERMISSIVE",
+      "date": "2026-08-27",
+      "contexte": "Sur wishlist_lists, la politique mfa_aal2_requis était PERMISSIVE sur le rôle `public` — les 88 autres tables la portent en RESTRICTIVE sur `authenticated`. PERMISSIVE veut dire OU : elle DONNE au lieu de retirer. Pour un visiteur sans compte, `NOT a_un_second_facteur()` valait vrai et ouvrait toute la table. Deux noms de listes et l'identifiant du propriétaire étaient lisibles avec la seule clé publiable.",
+      "alternative": "Fermer la table à `anon` au niveau des droits — écarté : ça masque le défaut sans le corriger, et la prochaine table posée de travers repasserait inaperçue."
+    },
+    {
+      "titre": "Une garde en amont ne protège pas ce qui a déjà été recopié",
+      "date": "2026-08-27",
+      "contexte": "hall_of_fame est une photo prise depuis profiles. Celle de la saison 1 datait d'avant la garde `pas_d_adresse_en_pseudo` : elle gardait trois adresses e-mail, lisibles sans compte, et le même contenu se trouvait une seconde fois dans seasons.leaderboard_snapshot. La même garde est désormais posée sur la table qui reçoit la photo, pas seulement sur celle qui la fournit.",
+      "alternative": "Se fier à la garde amont — écarté : c'est exactement ce qui a laissé passer ces trois lignes."
     }
   ],
   "prochainesEtapes": [
     "Écrire « pourQui » et « intention » dans ce fichier : ce sont les deux seules phrases que le dépôt ne peut pas déduire.",
-    "Confirmer les licences des cinq polices et le coût des trois services — sept cases rouges dans le tableau de bord.",
+    "Confirmer les licences des cinq polices et la formule des trois services — huit cases rouges dans le tableau de bord.",
+    "Redéployer la fonction Edge `ai-coach` pour que `coach_write_tools` gouverne vraiment. Tant qu'elle n'est pas redéployée, elle écrit sans consulter — même résultat qu'aujourd'hui puisque le drapeau est ouvert, mais l'interrupteur ne coupera rien tant que le geste n'est pas fait.",
     "Décider si un filet de tests est nécessaire avant un deuxième utilisateur : aucun outil n'est configuré aujourd'hui.",
-    "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
-    "Nettoyer les drapeaux : social.templates_marketplace et coach_write_tools ne sont lus par aucun code, social.victory_reels est lu mais jamais consommé. Les retirer, ou les brancher."
+    "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place."
   ]
 }
