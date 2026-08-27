@@ -1,6 +1,7 @@
 // Generates 3 daily quests for a user based on their active goals/habits.
 // Per-user invocation (JWT) or cron mode (CRON_SECRET) to seed all active users.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { messageDErreur } from "../_shared/erreurs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
     if (quotaResp) return quotaResp;
     const result = await seedUser(supabase, claims.claims.sub);
     return new Response(JSON.stringify({ ok: true, ...result }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e: unknown) {
+    return new Response(JSON.stringify({ error: messageDErreur(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

@@ -16,7 +16,7 @@ export interface FocusSession {
 // Reusable fetcher — used by useFocusSessions and by background prefetch.
 export async function fetchFocusSessions(limit = 50): Promise<FocusSession[]> {
   const { data, error } = await supabase
-    .from("focus_sessions" as any)
+    .from("focus_sessions")
     .select("*")
     .order("started_at", { ascending: false })
     .limit(limit);
@@ -46,7 +46,7 @@ export function useLogFocusSession() {
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
       const { data, error } = await supabase
-        .from("focus_sessions" as any)
+        .from("focus_sessions")
         .insert({
           user_id: user.id,
           duration_minutes: input.duration_minutes,

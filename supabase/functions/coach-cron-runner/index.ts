@@ -2,6 +2,7 @@
 // (index-memory, pattern-detect) for active users. Called by pg_cron with a
 // shared secret header.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { messageDErreur } from "../_shared/erreurs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,8 +64,8 @@ Deno.serve(async (req) => {
       .select("*", { count: "exact", head: true })
       .gte("created_at", since);
     insightsCreated = count ?? 0;
-  } catch (e: any) {
-    errors.push({ fatal: e?.message ?? String(e) });
+  } catch (e: unknown) {
+    errors.push({ fatal: messageDErreur(e) });
   }
 
   const duration = Date.now() - started;

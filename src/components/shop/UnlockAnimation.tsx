@@ -76,7 +76,9 @@ export function UnlockAnimation({
   const playUnlockSound = useCallback(() => {
     if (!playSound) return;
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const audioContext = new Ctx();
       const oscillator1 = audioContext.createOscillator();
       const oscillator2 = audioContext.createOscillator();
       const gainNode = audioContext.createGain();

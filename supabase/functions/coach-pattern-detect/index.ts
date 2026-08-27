@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
+import { messageDErreur } from "../_shared/erreurs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -112,7 +113,7 @@ Deno.serve(async (req) => {
       const results: any[] = [];
       for (const uid of userIds.slice(0, 100)) {
         try { results.push({ uid, ...(await processUser(admin, uid, aiKey)) }); }
-        catch (e: any) { results.push({ uid, error: e.message }); }
+        catch (e: unknown) { results.push({ uid, error: messageDErreur(e) }); }
       }
       return new Response(JSON.stringify({ ok: true, processed: results.length }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
     if (quotaResp) return quotaResp;
     const result = await processUser(supabase, claims.claims.sub, aiKey);
     return new Response(JSON.stringify({ ok: true, ...result }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e: unknown) {
+    return new Response(JSON.stringify({ error: messageDErreur(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

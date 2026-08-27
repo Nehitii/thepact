@@ -90,14 +90,20 @@ function loadSettings(): Partial<PersistedSettings> {
   try {
     const raw = localStorage.getItem(PREF.OBJECTIFS_FILTRES);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    /* Navigation privee, quota plein, JSON abime : on repart des
+       reglages par defaut. Un filtre perdu ne vaut pas un ecran blanc. */
+  }
   return {};
 }
 
 function saveSettings(s: PersistedSettings) {
   try {
     localStorage.setItem(PREF.OBJECTIFS_FILTRES, JSON.stringify(s));
-  } catch {}
+  } catch {
+    /* Meme raison : ne pas pouvoir retenir un filtre n'est pas une
+       erreur qui merite d'interrompre quoi que ce soit. */
+  }
 }
 
 // ── Utilities ──────────────────────────────────────────────

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
+import { messageDErreur } from "@/lib/erreurs";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
@@ -193,8 +194,8 @@ export default function Onboarding() {
       await new Promise((r) => setTimeout(r, 1600));
       toast.success(t("onboarding.welcomeToast"), { description: t("onboarding.pactSealed") });
       navigate("/");
-    } catch (error: any) {
-      toast.error(t("common.error"), { description: error.message });
+    } catch (error: unknown) {
+      toast.error(t("common.error"), { description: messageDErreur(error) });
       setIsSubmitting(false);
     }
   };

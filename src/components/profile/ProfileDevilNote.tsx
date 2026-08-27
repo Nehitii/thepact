@@ -50,7 +50,7 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
     if (isHovering || isPressed) return;
     
     let frame: number;
-    let startTime = Date.now();
+    const startTime = Date.now();
     
     const animate = () => {
       const elapsed = (Date.now() - startTime) / 1000;

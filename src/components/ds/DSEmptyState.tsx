@@ -3,6 +3,7 @@ import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import type { DSAccent } from "./DSPanel";
+import type { StyleAvecVariables } from "@/lib/varsCss";
 
 type Visual = "radar" | "scope" | "wave" | "icon";
 
@@ -81,7 +82,7 @@ export function DSEmptyState({
         "w-full h-full flex flex-col items-center justify-center gap-3 px-4 text-center",
         className,
       )}
-      style={{ ["--ds-current-accent" as any]: ACCENT_VAR[accent] }}
+      style={{ "--ds-current-accent": ACCENT_VAR[accent] } as StyleAvecVariables}
     >
       <Visual variant={visual} icon={Icon} />
       <span className="ds-text-label">{message}</span>

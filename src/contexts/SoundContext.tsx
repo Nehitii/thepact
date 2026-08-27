@@ -67,7 +67,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
   const ensureAudio = useCallback(() => {
     if (audioCtxRef.current) return audioCtxRef.current;
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     audioCtxRef.current = new Ctx();
     // Pre-load UI click sound

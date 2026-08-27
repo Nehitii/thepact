@@ -12,7 +12,7 @@ import { synchroniserGroupes } from "@/lib/superGoals";
 import { PLAFOND_BRIGADE, recrutable } from "@/lib/brigade";
 import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/lib/achievements";
 import { toast } from "sonner";
-import type { GoalDetailData, StepData } from "@/hooks/useGoalDetail";
+import type { GoalDetailData, StatutObjectif, StepData } from "@/hooks/useGoalDetail";
 
 interface CostItem {
   id: string;
@@ -40,8 +40,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
   const detailKey = ["goal-detail", goalId] as const;
   const costKey = ["cost-items", goalId] as const;
 
-  const getDetail = () => qc.getQueryData<DetailCache>(detailKey as any) ?? null;
-  const getCostItems = () => qc.getQueryData<CostItem[]>(costKey as any) ?? [];
+  const getDetail = () => qc.getQueryData<DetailCache>(detailKey) ?? null;
+  const getCostItems = () => qc.getQueryData<CostItem[]>(costKey) ?? [];
 
   /* Un groupe n a ni etape ni jour a cocher : son avancement est
      celui de ses membres, et le declencheur qui derive le statut en
@@ -114,20 +114,20 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onMutate: async ({ stepId, currentStatus }) => {
       await qc.cancelQueries({ queryKey: detailKey });
-      const snapshot = qc.getQueryData<DetailCache>(detailKey as any);
+      const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot) {
         const newStatus = currentStatus === "completed" ? "pending" : "completed";
         const newSteps = snapshot.steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s));
         const validated = newSteps.filter((s) => s.status === "completed").length;
-        qc.setQueryData<DetailCache>(detailKey as any, {
+        qc.setQueryData<DetailCache>(detailKey, {
           goal: { ...snapshot.goal, validated_steps: validated },
           steps: newSteps,
         });
       }
       return { snapshot };
     },
-    onError: (err: any, _vars, ctx) => {
-      if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
+    onError: (err, _vars, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update step" });
     },
     onSettled: async () => {
@@ -210,13 +210,13 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onMutate: async ({ dayIndex, coche }) => {
       await qc.cancelQueries({ queryKey: detailKey });
-      const snapshot = qc.getQueryData<DetailCache>(detailKey as any);
+      const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot?.goal.habit_checks) {
         const newChecks = [...snapshot.goal.habit_checks];
         newChecks[dayIndex] = coche;
         const completedCount = newChecks.filter(Boolean).length;
         const isNowComplete = completedCount === snapshot.goal.habit_duration_days;
-        qc.setQueryData<DetailCache>(detailKey as any, {
+        qc.setQueryData<DetailCache>(detailKey, {
           ...snapshot,
           goal: {
             ...snapshot.goal,
@@ -228,8 +228,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       }
       return { snapshot };
     },
-    onError: (err: any, _v, ctx) => {
-      if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
+    onError: (err, _v, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update habit" });
     },
     onSettled: async () => {
@@ -319,7 +319,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       }
       toast.success("Goal Completed! 🎉", { description: "All steps have been marked as complete" });
     },
-    onError: (err: any) => toast.error("Error", { description: err?.message ?? "Failed to complete goal" }),
+    onError: (err) => toast.error("Error", { description: err?.message ?? "Failed to complete goal" }),
     onSettled: async () => {
       await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
@@ -329,23 +329,23 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
   // ---------- Status changes (pause/resume/archive) ----------
   const updateStatus = useMutation({
-    mutationFn: async (newStatus: string) => {
+    mutationFn: async (newStatus: StatutObjectif) => {
       const detail = getDetail();
       if (!detail) throw new Error("Goal not loaded");
-      const { error } = await supabase.from("goals").update({ status: newStatus as any }).eq("id", detail.goal.id);
+      const { error } = await supabase.from("goals").update({ status: newStatus }).eq("id", detail.goal.id);
       if (error) throw error;
       return newStatus;
     },
     onMutate: async (newStatus) => {
       await qc.cancelQueries({ queryKey: detailKey });
-      const snapshot = qc.getQueryData<DetailCache>(detailKey as any);
+      const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot) {
-        qc.setQueryData<DetailCache>(detailKey as any, { ...snapshot, goal: { ...snapshot.goal, status: newStatus } });
+        qc.setQueryData<DetailCache>(detailKey, { ...snapshot, goal: { ...snapshot.goal, status: newStatus } });
       }
       return { snapshot };
     },
-    onError: (err: any, _v, ctx) => {
-      if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
+    onError: (err, _v, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update status" });
     },
     onSettled: async () => {
@@ -417,20 +417,20 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         .insert({
           pact_id: pactResult.id,
           name: `${goal.name} (Copy)`,
-          type: goal.type as any,
-          difficulty: goal.difficulty as any,
+          type: goal.type,
+          difficulty: goal.difficulty,
           estimated_cost: goal.estimated_cost,
           notes: goal.notes,
           total_steps: goal.total_steps,
           potential_score: goal.potential_score,
           start_date: new Date().toISOString(),
-          status: "not_started" as any,
+          status: "not_started",
           goal_type: goal.goal_type || "normal",
           habit_duration_days: goal.habit_duration_days,
           habit_checks: goal.goal_type === "habit" ? Array(goal.habit_duration_days || 7).fill(false) : null,
           image_url: goal.image_url,
           deadline: null,
-        } as any)
+        })
         .select()
         .single();
       if (goalError) throw goalError;
@@ -473,7 +473,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       toast.success("Goal Duplicated", { description: "A copy of this goal has been created." });
       navigate(`/goals/${newId}`);
     },
-    onError: (err: any) => toast.error("Error", { description: err?.message ?? "Failed to duplicate goal" }),
+    onError: (err) => toast.error("Error", { description: err?.message ?? "Failed to duplicate goal" }),
   });
 
   // ---------- Delete ----------
@@ -493,7 +493,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       toast.success("Goal Deleted", { description: "This evolution has been removed from your Pact" });
       navigate("/goals");
     },
-    onError: (err: any) => toast.error("Error", { description: err?.message }),
+    onError: (err) => toast.error("Error", { description: err?.message }),
   });
 
   // ---------- Toggle Focus ----------
@@ -523,9 +523,9 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onMutate: async () => {
       await qc.cancelQueries({ queryKey: detailKey });
-      const snapshot = qc.getQueryData<DetailCache>(detailKey as any);
+      const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot) {
-        qc.setQueryData<DetailCache>(detailKey as any, {
+        qc.setQueryData<DetailCache>(detailKey, {
           ...snapshot,
           goal: { ...snapshot.goal, is_focus: !snapshot.goal.is_focus },
         });
@@ -533,7 +533,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       return { snapshot };
     },
     onError: (e: Error, _v, ctx) => {
-      if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
+      if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       /* Une etoile qui ne s allume pas sans un mot passe pour une
          panne : le refus se dit. */
       if (e?.message === "BRIGADE_PLEINE") {

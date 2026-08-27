@@ -145,7 +145,7 @@ export function useTodoList() {
 
       // If no stats exist, create them via SECURITY DEFINER RPC
       if (!data) {
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('init_todo_stats' as any);
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('init_todo_stats');
         if (rpcError) throw rpcError;
         data = rpcResult as any;
       }
@@ -287,7 +287,7 @@ export function useTodoList() {
 
         const newLongestStreak = Math.max(stats.longest_streak, newStreak);
 
-        const { error: statsError } = await supabase.rpc('record_todo_completion' as any, {
+        const { error: statsError } = await supabase.rpc('record_todo_completion', {
           p_score_increment: 10,
           p_new_streak: newStreak,
           p_longest_streak: newLongestStreak,

@@ -13,10 +13,10 @@ export function useFeatureFlag(key: string): { enabled: boolean; isLoading: bool
     queryKey: ["feature-flag", key, user?.id ?? "anon"],
     queryFn: async () => {
       const [{ data: flag }, override] = await Promise.all([
-        supabase.from("feature_flags" as any).select("enabled").eq("key", key).maybeSingle(),
+        supabase.from("feature_flags").select("enabled").eq("key", key).maybeSingle(),
         user?.id
           ? supabase
-              .from("user_feature_overrides" as any)
+              .from("user_feature_overrides")
               .select("enabled")
               .eq("user_id", user.id)
               .eq("key", key)

@@ -47,7 +47,6 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
       if (cancelled) return;
       if (error) {
-        // eslint-disable-next-line no-console
         console.warn("[i18n] Failed to load profile language", error);
       }
 

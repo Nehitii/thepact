@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { toast } from "sonner";
 import { Handshake, Check, X, Users } from "lucide-react";
+import { messageDErreur } from "@/lib/erreurs";
 
 interface Props { goalId: string; goalName: string; }
 
@@ -63,7 +64,7 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
   const handleSettle = async (id: string, outcome: "succeeded" | "failed") => {
     setSettling(id);
     try {
-      const { data, error } = await supabase.rpc("settle_contract" as any, {
+      const { data, error } = await supabase.rpc("settle_contract", {
         _contract_id: id,
         _outcome: outcome,
       });
@@ -71,8 +72,8 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
       toast.success(outcome === "succeeded" ? "Contrat honoré — Bonds restitués" : "Contrat échoué — Bonds redistribués aux témoins");
       qc.invalidateQueries({ queryKey: ["goal-contracts"] });
       qc.invalidateQueries({ queryKey: ["bond-balance"] });
-    } catch (e: any) {
-      toast.error(e.message || "Erreur");
+    } catch (e: unknown) {
+      toast.error(messageDErreur(e, "Erreur"));
     } finally {
       setSettling(null);
     }

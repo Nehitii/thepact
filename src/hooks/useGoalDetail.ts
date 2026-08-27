@@ -9,15 +9,20 @@ import type { Json, Tables } from "@/integrations/supabase/types";
 
 /** L enum goal_difficulty, tel que la base le definit. */
 export type Difficulte = NonNullable<Tables<"goals">["difficulty"]>;
+/** Les deux autres enums de la table, pour la meme raison. */
+export type StatutObjectif = NonNullable<Tables<"goals">["status"]>;
+export type TypeObjectif = NonNullable<Tables<"goals">["type"]>;
 
 export interface GoalDetailData {
   id: string;
   name: string;
-  type: string | null;
-  /* Enum en base : le declarer « string » laissait passer n importe
-     quelle valeur jusqu au refus de la base. */
+  /* Trois enums en base. Les declarer « string » laissait passer
+     n importe quelle valeur jusqu au refus de la base — et obligeait a
+     un « as any » a chaque ecriture, ce qui eteignait le controle sur
+     TOUT le reste de la ligne ecrite. */
+  type: TypeObjectif | null;
   difficulty: Difficulte | null;
-  status: string | null;
+  status: StatutObjectif | null;
   validated_steps: number | null;
   total_steps: number | null;
   estimated_cost: number | null;

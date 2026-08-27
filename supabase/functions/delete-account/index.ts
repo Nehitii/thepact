@@ -4,6 +4,7 @@
 // Exception: `guilds.owner_id` is NOT cascaded (a guild may outlive its
 // creator). We delete owned guilds explicitly here.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { messageDErreur } from "../_shared/erreurs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,8 +74,8 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("delete-account error:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: messageDErreur(err) }), { status: 500, headers: corsHeaders });
   }
 });

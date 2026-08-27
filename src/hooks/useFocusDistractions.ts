@@ -18,7 +18,7 @@ export function useFocusDistractions(limit = 30) {
     enabled: !!user?.id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("focus_distractions" as any)
+        .from("focus_distractions")
         .select("*")
         .order("logged_at", { ascending: false })
         .limit(limit);
@@ -35,7 +35,7 @@ export function useLogFocusDistraction() {
     mutationFn: async (input: { note: string; category?: string | null; session_id?: string | null }) => {
       if (!user?.id) throw new Error("Not authenticated");
       const { data, error } = await supabase
-        .from("focus_distractions" as any)
+        .from("focus_distractions")
         .insert({
           user_id: user.id,
           note: input.note,

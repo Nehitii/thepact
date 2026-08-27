@@ -6,6 +6,7 @@ import { Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { optimizeImage } from "@/lib/imageOptimization";
+import { messageDErreur } from "@/lib/erreurs";
 interface GoalImageUploadProps {
   value: string;
   onChange: (url: string) => void;
@@ -59,9 +60,9 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
       onChange(urlData.signedUrl);
 
       toast.success("Image uploaded", { description: "Your image has been uploaded successfully" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Upload error:", error);
-      toast.error("Upload failed", { description: error.message || "Failed to upload image" });
+      toast.error("Upload failed", { description: messageDErreur(error, "Failed to upload image") });
     } finally {
       setUploading(false);
       // Reset file input

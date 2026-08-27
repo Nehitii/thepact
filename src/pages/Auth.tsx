@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { DSPageShell } from "@/components/ds";
+import { messageDErreur } from "@/lib/erreurs";
 
 /* ═══════════════════════════════════════════════════════════
    VOWPACT — Auth v7 (Deep Cyber Terminal)
@@ -99,8 +100,8 @@ export default function Auth() {
         toast.success("SUCCESS", { description: "IDENTITY ESTABLISHED." });
         setIsLogin(true);
       }
-    } catch (err: any) {
-      toast.error("ACCESS DENIED", { description: err.message });
+    } catch (err: unknown) {
+      toast.error("ACCESS DENIED", { description: messageDErreur(err) });
     } finally {
       setLoading(false);
     }

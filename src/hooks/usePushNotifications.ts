@@ -56,7 +56,7 @@ export function usePushNotifications() {
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
       return { ok: false, reason: "invalid-subscription" as const };
     }
-    const { error } = await supabase.from("push_subscriptions" as any).upsert(
+    const { error } = await supabase.from("push_subscriptions").upsert(
       {
         user_id: user.id,
         endpoint: json.endpoint,
@@ -77,7 +77,7 @@ export function usePushNotifications() {
     const reg = await navigator.serviceWorker.getRegistration();
     const sub = await reg?.pushManager.getSubscription();
     if (sub) {
-      await supabase.from("push_subscriptions" as any).delete().eq("endpoint", sub.endpoint);
+      await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
       await sub.unsubscribe();
     }
     setSubscribed(false);

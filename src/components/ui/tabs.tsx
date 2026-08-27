@@ -35,7 +35,7 @@ const TabsTrigger = React.forwardRef<
       )}
       {...props}
       onClick={(e) => {
-        if (!(props as any)?.disabled) {
+        if (!props.disabled) {
           sound.play("ui", "soft");
         }
         onClick?.(e);

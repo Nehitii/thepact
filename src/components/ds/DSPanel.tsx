@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { DSCornerBrackets } from "./DSCornerBrackets";
+import type { StyleAvecVariables } from "@/lib/varsCss";
 
 export type DSPanelTier = "primary" | "secondary" | "muted";
 export type DSAccent = "primary" | "success" | "warning" | "critical" | "special";
@@ -69,8 +70,8 @@ export function DSPanel({
     <div
       className={cn("ds-panel", tierClass, flicker && "ds-flicker", className)}
       style={{
-        ["--ds-current-accent" as any]: ACCENT_VAR[accent],
-      }}
+        "--ds-current-accent": ACCENT_VAR[accent],
+      } as StyleAvecVariables}
     >
       {accentRail && <span className="ds-accent-rail" aria-hidden="true" />}
 

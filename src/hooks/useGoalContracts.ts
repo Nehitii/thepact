@@ -23,7 +23,7 @@ export function useGoalContracts(goalId?: string) {
   return useQuery({
     queryKey: ["goal-contracts", goalId, user?.id],
     queryFn: async () => {
-      const q = supabase.from("goal_contracts" as any).select("*").order("created_at", { ascending: false });
+      const q = supabase.from("goal_contracts").select("*").order("created_at", { ascending: false });
       const { data, error } = goalId ? await q.eq("goal_id", goalId) : await q;
       if (error) throw error;
       return (data ?? []) as unknown as GoalContract[];
@@ -45,7 +45,7 @@ export function useCreateGoalContract() {
     }) => {
       if (!user?.id) throw new Error("Auth required");
       const { data, error } = await supabase
-        .from("goal_contracts" as any)
+        .from("goal_contracts")
         .insert({
           ...input,
           owner_id: user.id,
@@ -71,7 +71,7 @@ export function useUpdateContractStatus() {
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: GoalContract["status"] }) => {
       const { error } = await supabase
-        .from("goal_contracts" as any)
+        .from("goal_contracts")
         .update({ status, settled_at: status === "succeeded" || status === "failed" ? new Date().toISOString() : null } as any)
         .eq("id", id);
       if (error) throw error;
@@ -133,7 +133,7 @@ export function useGoalContractById(contractId?: string) {
     queryFn: async () => {
       if (!contractId) return null;
       const { data, error } = await supabase
-        .from("goal_contracts" as any)
+        .from("goal_contracts")
         .select("*")
         .eq("id", contractId)
         .maybeSingle();

@@ -18,7 +18,7 @@ const Switch = React.forwardRef<
       {...props}
       ref={ref}
       onCheckedChange={(checked) => {
-        if (!(props as any)?.disabled) {
+        if (!props.disabled) {
           sound.play("ui", "soft");
         }
         onCheckedChange?.(checked);

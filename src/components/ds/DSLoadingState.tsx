@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { DSAccent } from "./DSPanel";
+import type { StyleAvecVariables } from "@/lib/varsCss";
 
 const ACCENT_VAR: Record<DSAccent, string> = {
   primary:  "var(--ds-accent-primary)",
@@ -36,7 +37,7 @@ export function DSLoadingState({
         "w-full h-full flex flex-col items-center justify-center gap-3",
         className,
       )}
-      style={{ ["--ds-current-accent" as any]: ACCENT_VAR[accent] }}
+      style={{ "--ds-current-accent": ACCENT_VAR[accent] } as StyleAvecVariables}
       role="status"
       aria-live="polite"
     >

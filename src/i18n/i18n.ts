@@ -25,7 +25,6 @@ if (!i18n.isInitialized) {
       returnEmptyString: false,
       saveMissing: true,
       missingKeyHandler: (_lngs, _ns, key) => {
-        // eslint-disable-next-line no-console
         console.warn(`[i18n] Missing key: ${key}`);
       },
     });

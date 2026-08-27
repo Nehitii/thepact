@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { codeDErreur } from "@/lib/erreurs";
 
 export type DeadlineType = '24h' | '48h' | '72h' | '1week' | '1month';
 
@@ -137,9 +138,10 @@ export function useActiveMission() {
 
       toast.success('Mission locked in! 🎯');
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error focusing mission:', err);
-      if (err.code === '23505') {
+      /* 23505 = contrainte d'unicite : une mission est deja active. */
+      if (codeDErreur(err) === '23505') {
         toast.error('You already have an active mission');
       } else {
         toast.error('Failed to focus mission');

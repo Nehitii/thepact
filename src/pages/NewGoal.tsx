@@ -25,6 +25,7 @@ import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
 import "@/styles/cyberpunk.css";
 import "@/styles/goal-dossier.css";
 import "@/styles/goal-editeur.css";
+import { messageDErreur } from "@/lib/erreurs";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({
@@ -114,8 +115,8 @@ export default function NewGoal() {
       } else {
         toast.success("Décomposition IA appliquée");
       }
-    } catch (e: any) {
-      toast.error("Échec décomposition IA", { description: e?.message ?? String(e) });
+    } catch (e: unknown) {
+      toast.error("Échec décomposition IA", { description: messageDErreur(e) });
     } finally {
       setAiDecomposing(false);
     }
@@ -324,11 +325,11 @@ export default function NewGoal() {
       }, 0);
       toast.success(goalType === "super" ? "Super Goal Created" : "Goal Created", { description: "Your Pact evolution has been added" });
       navigate(`/goals/${goalData.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         toast.error("Validation Error", { description: error.errors[0].message });
       } else {
-        toast.error("Error", { description: error.message || "Failed to create goal" });
+        toast.error("Error", { description: messageDErreur(error, "Failed to create goal") });
       }
     } finally {
       setLoading(false);

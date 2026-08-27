@@ -202,7 +202,7 @@ function extractImage(html: string, base: string): string | null {
 /* « 1 299,00 », « 1,299.00 », « 299.99 » : trois ecritures du meme
    nombre. On tranche par la position du dernier separateur. */
 function lireMontant(brut: string): number | null {
-  const propre = decoderEntites(brut).replace(/[\s  ]/g, '').replace(/[^\d.,-]/g, '');
+  const propre = decoderEntites(brut).replace(/[\s\u00A0\u202F]/g, '').replace(/[^\d.,-]/g, '');
   if (!propre) return null;
 
   const dernierPoint = propre.lastIndexOf('.');

@@ -34,8 +34,59 @@ export interface TrendData {
  * ═══════════════════════════════════════════════════════════════
  */
 
-/* Les lignes telles qu'elles arrivent. Le reste du fichier travaille
-   encore en `any` — ce n'est pas une raison d'en ajouter. */
+/* LES LIGNES TELLES QU'ELLES ARRIVENT.
+   Une interface par `.select()`, avec exactement ses colonnes : demander
+   un champ qui n'a pas ete lu devient une erreur de compilation, au lieu
+   d'un `undefined` qui traverse tout le calcul et ressort en zero. */
+interface LigneObjectif {
+  id: string;
+  name: string | null;
+  created_at: string;
+  start_date: string | null;
+  status: string | null;
+  completion_date: string | null;
+  difficulty: string | null;
+  estimated_cost: number | null;
+  potential_score: number | null;
+  total_steps: number | null;
+  validated_steps: number | null;
+  goal_type: string | null;
+  habit_duration_days: number | null;
+  habit_checks: boolean[] | null;
+}
+interface LigneVitrine {
+  id: string;
+  name: string | null;
+  image_url: string | null;
+  status: string | null;
+  difficulty: string | null;
+  potential_score: number | null;
+  completion_date: string | null;
+  total_steps: number | null;
+  validated_steps: number | null;
+  goal_type: string | null;
+  habit_duration_days: number | null;
+  habit_checks: boolean[] | null;
+}
+interface LigneEtape {
+  id: string;
+  goal_id: string;
+  status: string | null;
+  validated_at: string | null;
+}
+interface LigneTag {
+  goal_id: string;
+  tag: string;
+}
+interface LignePiece {
+  goal_id: string;
+  price: number | null;
+  step_id: string | null;
+}
+interface LigneHabitude {
+  log_date: string;
+  completed: boolean | null;
+}
 interface LigneTodo {
   completed_at: string | null;
   task_name: string | null;
@@ -238,7 +289,12 @@ function computeTrend(current: number, previous: number): TrendData {
  * sont deja comptes en habitudes, et il affiche l'habitude a 0 % quel que
  * soit le nombre de jours reellement tenus.
  */
-function avancementBrut(g: any): { total: number; completed: number } {
+type AvancementLisible = Pick<
+  LigneObjectif,
+  "goal_type" | "habit_duration_days" | "habit_checks" | "total_steps" | "validated_steps"
+>;
+
+function avancementBrut(g: AvancementLisible): { total: number; completed: number } {
   if (g?.goal_type === "habit") {
     return {
       total: g.habit_duration_days || 0,
@@ -296,11 +352,11 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         supabase.from("todo_tasks").select("deadline").eq("user_id", user.id).not("deadline", "is", null),
       ]);
 
-      const allGoals = goalsRes.data || [];
+      const allGoals = (goalsRes.data ?? []) as LigneObjectif[];
 
       // Dynamic XP calculation (same logic as useRankXP)
       let totalXP = 0;
-      for (const g of allGoals as any[]) {
+      for (const g of allGoals) {
         const goalXP = g.potential_score || 0;
         if (g.status === "fully_completed" || g.status === "validated") {
           totalXP += goalXP;
@@ -314,9 +370,9 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       }
       const goals = period === "all" 
         ? allGoals 
-        : allGoals.filter((g: any) => new Date(g.created_at) >= start);
-      const goalIds = goals.map((g: any) => g.id);
-      const allGoalIds = allGoals.map((g: any) => g.id);
+        : allGoals.filter((g) => new Date(g.created_at) >= start);
+      const goalIds = goals.map((g) => g.id);
+      const allGoalIds = allGoals.map((g) => g.id);
 
       // Showcase goals (with images, names) for visual gallery
       const showcaseRes = pactId
@@ -326,8 +382,8 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
             .eq("pact_id", pactId)
             .order("created_at", { ascending: false })
             .limit(60)
-        : { data: [] as any[] };
-      const showcaseGoals = (showcaseRes.data || []) as any[];
+        : { data: [] };
+      const showcaseGoals = (showcaseRes.data ?? []) as LigneVitrine[];
 
       // Fetch steps, tags, cost items only for user's goals
       const [stepsRes, tagsRes, costItemsRes] = allGoalIds.length > 0
@@ -338,35 +394,35 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           ])
         : [{ data: [] }, { data: [] }, { data: [] }];
 
-      const allSteps = stepsRes.data || [];
+      const allSteps = (stepsRes.data ?? []) as LigneEtape[];
       const steps = period === "all" 
         ? allSteps 
-        : allSteps.filter((s: any) => goalIds.includes(s.goal_id));
-      const tags = tagsRes.data || [];
-      const costItems = costItemsRes.data || [];
+        : allSteps.filter((s) => goalIds.includes(s.goal_id));
+      const tags = (tagsRes.data ?? []) as LigneTag[];
+      const costItems = (costItemsRes.data ?? []) as LignePiece[];
       
       const allHealth = healthRes.data || [];
       const health = period === "all" 
         ? allHealth 
-        : allHealth.filter((h: any) => new Date(h.entry_date) >= start);
+        : allHealth.filter((h) => new Date(h.entry_date) >= start);
       
       const finance = financeRes.data || [];
       const habits = habitRes.data || [];
       const allTodos = todoRes.data || [];
       const todos = period === "all"
         ? allTodos
-        : allTodos.filter((t: any) => new Date(t.completed_at) >= start);
+        : allTodos.filter((t) => new Date(t.completed_at) >= start);
       
       const allPomodoros = pomodoroRes.data || [];
       const pomodoros = period === "all"
         ? allPomodoros
-        : allPomodoros.filter((p: any) => new Date(p.completed_at || p.started_at) >= start);
+        : allPomodoros.filter((p) => new Date(p.completed_at || p.started_at) >= start);
       
       const alreadyFunded = financeSettingsRes.data?.already_funded ?? 0;
 
       // Goals over time (by month)
       const goalsByMonth = new Map<string, { created: number; completed: number }>();
-      goals.forEach((g: any) => {
+      goals.forEach((g) => {
         const m = g.created_at?.slice(0, 7);
         if (m) {
           const entry = goalsByMonth.get(m) || { created: 0, completed: 0 };
@@ -383,7 +439,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
       // Goals by difficulty
       const difficultyCount = new Map<string, number>();
-      goals.forEach((g: any) => {
+      goals.forEach((g) => {
         const d = g.difficulty || "easy";
         difficultyCount.set(d, (difficultyCount.get(d) || 0) + 1);
       });
@@ -395,8 +451,8 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
       // Goals by tag (count unique goals per tag)
       const tagCount = new Map<string, number>();
-      const filteredTags = tags.filter((t: any) => goalIds.includes(t.goal_id));
-      filteredTags.forEach((t: any) => {
+      const filteredTags = tags.filter((t) => goalIds.includes(t.goal_id));
+      filteredTags.forEach((t) => {
         tagCount.set(t.tag, (tagCount.get(t.tag) || 0) + 1);
       });
       const goalsByTag = Array.from(tagCount.entries()).map(([tag, count]) => ({
@@ -407,38 +463,38 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
       // Steps statistics
       const totalSteps = steps.length;
-      const completedSteps = steps.filter((s: any) => s.status === "completed").length;
+      const completedSteps = steps.filter((s) => s.status === "completed").length;
 
       // Cost calculations (use all goals for total cost)
       const completedGoalIds = new Set(
         allGoals
-          .filter((g: any) => ["completed", "fully_completed", "validated"].includes(g.status))
-          .map((g: any) => g.id)
+          .filter((g) => ["completed", "fully_completed", "validated"].includes(g.status ?? ""))
+          .map((g) => g.id)
       );
 
-      const totalCost = allGoals.reduce((sum: number, g: any) => sum + (g.estimated_cost || 0), 0);
+      const totalCost = allGoals.reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
       
       // Paid = completed goals' costs + already_funded
       const completedGoalsCost = allGoals
-        .filter((g: any) => completedGoalIds.has(g.id))
-        .reduce((sum: number, g: any) => sum + (g.estimated_cost || 0), 0);
+        .filter((g) => completedGoalIds.has(g.id))
+        .reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
       
       const paidCost = Math.min(completedGoalsCost + alreadyFunded, totalCost);
       const remainingCost = Math.max(totalCost - paidCost, 0);
 
       // Active goals
-      const activeGoals = allGoals.filter((g: any) => 
+      const activeGoals = allGoals.filter((g) => 
         g.status === "in_progress" || g.status === "not_started"
       ).length;
 
       // Monthly burn rate calculation
-      const monthsWithExpenses = allGoals.filter((g: any) => g.completion_date).length;
+      const monthsWithExpenses = allGoals.filter((g) => g.completion_date).length;
       const monthlyBurnRate = monthsWithExpenses > 0 
         ? Math.round(completedGoalsCost / Math.max(monthsWithExpenses, 1))
         : 0;
 
       // Health trend
-      const healthTrend = health.map((h: any) => {
+      const healthTrend = health.map((h) => {
         const metrics = [h.sleep_quality, h.mood_level, h.activity_level, h.hydration_glasses ? Math.min(h.hydration_glasses / 8 * 5, 5) : null, h.meal_balance, h.stress_level ? 6 - h.stress_level : null].filter(Boolean) as number[];
         const avg = metrics.length ? metrics.reduce((a, b) => a + b, 0) / metrics.length : 0;
         return { date: h.entry_date, score: Math.round(avg * 20) };
@@ -451,7 +507,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
          mensuelles. Elle lit desormais celles-ci — seulement les mois
          reellement valides, puisqu un mois non valide n a pas de
          montants constates. L epargne est ce qui reste. */
-      const financeTrend = finance.map((f: any) => {
+      const financeTrend = finance.map((f) => {
         const entrees = Number(f.actual_total_income || 0);
         const sorties = Number(f.actual_total_expenses || 0);
         return {
@@ -475,11 +531,11 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
        * retombe sur habit_logs si un jour ce mecanisme est rebranche. */
       const habitByDate = new Map<string, { completed: number; total: number }>();
 
-      (allGoals as any[])
-        .filter((g) => g.goal_type === "habit" && Array.isArray(g.habit_checks) && g.created_at)
-        .forEach((g) => {
+      allGoals.forEach((g) => {
+          const coches = g.habit_checks;
+          if (g.goal_type !== "habit" || !Array.isArray(coches) || !g.created_at) return;
           const depart = new Date(g.created_at);
-          g.habit_checks.forEach((coche: boolean, i: number) => {
+          coches.forEach((coche, i) => {
             const d = new Date(depart);
             d.setDate(d.getDate() + i);
             // Un jour a venir n'est ni tenu ni manque : il n'existe pas encore.
@@ -492,7 +548,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           });
         });
 
-      habits.forEach((h: any) => {
+      habits.forEach((h) => {
         const entry = habitByDate.get(h.log_date) || { completed: 0, total: 0 };
         entry.total++;
         if (h.completed) entry.completed++;
@@ -501,14 +557,14 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
       // Todo stats by month
       const todoByMonth = new Map<string, number>();
-      todos.forEach((t: any) => {
+      todos.forEach((t) => {
         const m = t.completed_at?.slice(0, 7);
         if (m) todoByMonth.set(m, (todoByMonth.get(m) || 0) + 1);
       });
 
       // Pomodoro trend by day
       const pomodoroByDate = new Map<string, number>();
-      pomodoros.forEach((p: any) => {
+      pomodoros.forEach((p) => {
         const d = (p.completed_at || p.started_at)?.slice(0, 10);
         if (d) pomodoroByDate.set(d, (pomodoroByDate.get(d) || 0) + (p.duration_minutes || 0));
       });
@@ -529,13 +585,13 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // artefact de saisie, et il tirait la moyenne mensuelle jusqu'a
       // -135 jours sur le graphique.
       const goalVelocityByMonth = new Map<string, { totalDays: number; count: number }>();
-      goals
-        .filter((g: any) => g.completion_date && (g.start_date || g.created_at))
-        .forEach((g: any) => {
+      goals.forEach((g) => {
+          const fin = g.completion_date;
+          if (!fin) return;                       // pas encore franchi
           const depart = parseISO(g.start_date || g.created_at);
-          const days = differenceInDays(parseISO(g.completion_date), depart);
+          const days = differenceInDays(parseISO(fin), depart);
           if (days < 0) return;
-          const month = g.completion_date.slice(0, 7);
+          const month = fin.slice(0, 7);
           const entry = goalVelocityByMonth.get(month) || { totalDays: 0, count: 0 };
           entry.totalDays += days;
           entry.count++;
@@ -548,36 +604,36 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         }))
         .sort((a, b) => a.month.localeCompare(b.month));
 
-      const completedGoals = goals.filter((g: any) => g.status === "fully_completed").length;
+      const completedGoals = goals.filter((g) => g.status === "fully_completed").length;
       const avgHealth = healthTrend.length ? healthTrend.reduce((a, h) => a + h.score, 0) / healthTrend.length : 0;
       const totalSaved = financeTrend.reduce((a, f) => a + f.savings, 0);
-      const pomodoroMinutes = pomodoros.reduce((a: number, p: any) => a + (p.duration_minutes || 0), 0);
+      const pomodoroMinutes = pomodoros.reduce((a, p) => a + (p.duration_minutes || 0), 0);
 
       // Compute trends (current period vs previous period)
-      const prevGoals = period === "all" ? allGoals : allGoals.filter((g: any) => {
+      const prevGoals = period === "all" ? allGoals : allGoals.filter((g) => {
         const date = new Date(g.created_at);
         return date >= mid && date < start;
       });
-      const prevCompletedGoals = prevGoals.filter((g: any) => g.status === "fully_completed").length;
+      const prevCompletedGoals = prevGoals.filter((g) => g.status === "fully_completed").length;
       
-      const prevHealth = period === "all" ? [] : allHealth.filter((h: any) => {
+      const prevHealth = period === "all" ? [] : allHealth.filter((h) => {
         const date = new Date(h.entry_date);
         return date >= mid && date < start;
       });
       const prevAvgHealth = prevHealth.length 
-        ? prevHealth.map((h: any) => {
+        ? prevHealth.map((h) => {
             const metrics = [h.sleep_quality, h.mood_level, h.activity_level].filter(Boolean) as number[];
             return metrics.length ? metrics.reduce((a, b) => a + b, 0) / metrics.length * 20 : 0;
           }).reduce((a, b) => a + b, 0) / prevHealth.length
         : 0;
 
-      const prevPomodoros = period === "all" ? [] : allPomodoros.filter((p: any) => {
+      const prevPomodoros = period === "all" ? [] : allPomodoros.filter((p) => {
         const date = new Date(p.completed_at || p.started_at);
         return date >= mid && date < start;
       });
-      const prevPomodoroMinutes = prevPomodoros.reduce((a: number, p: any) => a + (p.duration_minutes || 0), 0);
+      const prevPomodoroMinutes = prevPomodoros.reduce((a, p) => a + (p.duration_minutes || 0), 0);
 
-      const prevSteps = period === "all" ? [] : allSteps.filter((s: any) => {
+      const prevSteps = period === "all" ? [] : allSteps.filter((s) => {
         if (!s.validated_at) return false;
         const date = new Date(s.validated_at);
         return date >= mid && date < start;
@@ -800,7 +856,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           healthScore: computeTrend(Math.round(avgHealth), Math.round(prevAvgHealth)),
           focusMinutes: computeTrend(pomodoroMinutes, prevPomodoroMinutes),
         },
-        goalShowcase: showcaseGoals.map((g: any) => ({
+        goalShowcase: showcaseGoals.map((g) => ({
           id: g.id,
           name: g.name || "Sans nom",
           image_url: g.image_url || null,
@@ -814,10 +870,10 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           })(),
         })),
         topGoals: showcaseGoals
-          .filter((g: any) => ["fully_completed", "validated"].includes(g.status))
-          .sort((a: any, b: any) => (b.potential_score || 0) - (a.potential_score || 0))
+          .filter((g) => ["fully_completed", "validated"].includes(g.status ?? ""))
+          .sort((a, b) => (b.potential_score || 0) - (a.potential_score || 0))
           .slice(0, 5)
-          .map((g: any) => ({
+          .map((g) => ({
             id: g.id,
             name: g.name || "Sans nom",
             image_url: g.image_url || null,

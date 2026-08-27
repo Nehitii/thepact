@@ -3,6 +3,7 @@
 // Optional: ADMIN_SHARED_SECRET to gate cron callers.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import webpush from "https://esm.sh/web-push@3.6.7";
+import { statutDErreur } from "../_shared/erreurs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -161,8 +162,10 @@ Deno.serve(async (req) => {
         payload,
       );
       sent++;
-    } catch (err: any) {
-      if (err?.statusCode === 404 || err?.statusCode === 410) dead.push(s.id);
+    } catch (err: unknown) {
+      /* 404 / 410 : l'abonnement n'existe plus chez le navigateur. */
+      const statut = statutDErreur(err);
+      if (statut === 404 || statut === 410) dead.push(s.id);
     }
   }
   if (dead.length) {

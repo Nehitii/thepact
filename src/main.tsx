@@ -96,8 +96,10 @@ function initSentryDeferred() {
   });
 }
 
+/* Safari n'a `requestIdleCallback` que depuis la 18.4 : on retombe sur
+   un simple delai plus bas quand il manque. */
 const ric: typeof window.requestIdleCallback | undefined =
-  typeof window !== "undefined" ? (window as any).requestIdleCallback : undefined;
+  typeof window !== "undefined" ? window.requestIdleCallback : undefined;
 if (ric) {
   ric(() => initSentryDeferred(), { timeout: 4000 });
 } else {

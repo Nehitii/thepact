@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { trackGoalCompleted } from "@/lib/achievements";
+import { messageDErreur } from "@/lib/erreurs";
 
 export async function handleFullyComplete(
   goalId: string,
@@ -59,8 +60,8 @@ export async function handleFullyComplete(
     }, 0);
 
     onSuccess();
-  } catch (error: any) {
-    onError(error.message || "Failed to complete goal");
+  } catch (error: unknown) {
+    onError(messageDErreur(error, "Failed to complete goal"));
   }
 }
 
@@ -110,7 +111,7 @@ export async function handleUpdateGoal(
      * de se tromper. Une seule main sur la table des etapes.
      */
     onSuccess();
-  } catch (error: any) {
-    onError(error.message || "Failed to update goal");
+  } catch (error: unknown) {
+    onError(messageDErreur(error, "Failed to update goal"));
   }
 }
