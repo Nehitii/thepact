@@ -23,14 +23,28 @@ import { optimizeImage } from "@/lib/imageOptimization";
  * webp, ce qui aplatirait l animation ; il ecarte deja le type
  * image/gif de lui-meme. On lui fait confiance et on garde
  * l extension d origine.
+ *
+ * ET LES VIDEOS AUSSI, POUR UNE AUTRE RAISON. Le fil ne les acceptait
+ * pas du tout : « TYPES_ACCEPTES » ne portait que des images, donc le
+ * selecteur de fichiers les filtrait et « deposerMedia » les aurait
+ * refusees. Ce n etait pas une panne, c etait une fonction absente.
+ *
+ * Une video ne passe evidemment pas par optimizeImage — c est un
+ * optimiseur d IMAGES : il faut le contourner, pas esperer qu il se
+ * debrouille. Et elle a sa propre limite de poids : huit megaoctets
+ * conviennent a une image, pas a un plan de dix secondes.
  */
 
 export const DEPOT_COMMUNITY = "community-media";
 
-/** 8 Mo : la limite du depot. Un GIF anime depasse vite une image fixe. */
+/** 8 Mo pour une image : un GIF anime depasse vite une image fixe. */
 export const POIDS_MAX = 8 * 1024 * 1024;
 
-export const TYPES_ACCEPTES = [
+/** 25 Mo pour une video. Les reels vont jusqu a 100, mais ils sont le
+ *  format long ; un fil se parcourt, il ne se regarde pas. */
+export const POIDS_MAX_VIDEO = 25 * 1024 * 1024;
+
+export const TYPES_IMAGE = [
   "image/jpeg",
   "image/png",
   "image/webp",
@@ -38,11 +52,36 @@ export const TYPES_ACCEPTES = [
   "image/avif",
 ];
 
+/** Les trois conteneurs que tout navigateur sait lire. « quicktime »
+ *  est le .mov des iPhone : le refuser reviendrait a refuser la
+ *  moitie des videos qu on filme. */
+export const TYPES_VIDEO = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+];
+
+export const TYPES_ACCEPTES = [...TYPES_IMAGE, ...TYPES_VIDEO];
+
+export function estUneVideo(type: string): boolean {
+  return TYPES_VIDEO.includes(type);
+}
+
 export function estUnTypeAccepte(type: string): boolean {
   return TYPES_ACCEPTES.includes(type);
 }
 
+/** Reconnait une video a son URL — la publication ne retient qu une
+ *  adresse, pas un type. L extension suffit et evite une colonne. */
+export function urlEstUneVideo(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return /[.](mp4|webm|mov)([?]|$)/i.test(url);
+}
+
 function extensionDe(fichier: File): string {
+  if (fichier.type === "video/mp4") return "mp4";
+  if (fichier.type === "video/webm") return "webm";
+  if (fichier.type === "video/quicktime") return "mov";
   if (fichier.type === "image/gif") return "gif";
   if (fichier.type === "image/avif") return "avif";
   if (fichier.type === "image/png") return "png";
@@ -61,8 +100,11 @@ export async function deposerMedia(fichier: File, userId: string): Promise<Resul
     throw new Error("type-refuse");
   }
 
-  const prepare = await optimizeImage(fichier, "journal");
-  if (prepare.size > POIDS_MAX) {
+  /* Une video ne traverse pas l optimiseur d images : elle part
+     telle quelle, et se juge sur sa propre limite. */
+  const video = estUneVideo(fichier.type);
+  const prepare = video ? fichier : await optimizeImage(fichier, "journal");
+  if (prepare.size > (video ? POIDS_MAX_VIDEO : POIDS_MAX)) {
     throw new Error("trop-lourd");
   }
 

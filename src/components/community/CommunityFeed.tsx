@@ -11,7 +11,10 @@ import { useCadres } from "@/hooks/community/useCadres";
 import { ChoixObjectif } from "./ChoixObjectif";
 import { ChoixEmoji } from "./ChoixEmoji";
 import { ChoixGif } from "./ChoixGif";
-import { deposerMedia, estUnTypeAccepte, retirerMedia, TYPES_ACCEPTES } from "@/lib/communityMedia";
+import {
+  deposerMedia, estUnTypeAccepte, estUneVideo, retirerMedia,
+  POIDS_MAX, POIDS_MAX_VIDEO, TYPES_ACCEPTES, urlEstUneVideo,
+} from "@/lib/communityMedia";
 import {
   useCommunityPosts,
   useCreatePost,
@@ -115,7 +118,7 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
   const choisirFichier = async (f: File | undefined) => {
     if (!f || !user) return;
     if (!estUnTypeAccepte(f.type)) {
-      toast.error(t("community.create.badType", "Format non accepté : images et GIF seulement"));
+      toast.error(t("community.create.badType", "Format non accepté : images, GIF et vidéos"));
       return;
     }
     setDepotEnCours(true);
@@ -125,9 +128,14 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
       const depose = await deposerMedia(f, user.id);
       setMedia(depose);
     } catch (e) {
+      /* La limite depend du type : annoncer « 8 Mo » a quelqu un qui
+         depose une video de 30 Mo l enverrait compresser jusqu a 8 alors
+         que 25 suffisaient. Le chiffre se lit sur la constante, il ne se
+         recopie pas — sinon il se desynchronise a la premiere revision. */
       const trop = e instanceof Error && e.message === "trop-lourd";
+      const mo = Math.round((estUneVideo(f.type) ? POIDS_MAX_VIDEO : POIDS_MAX) / 1048576);
       toast.error(trop
-        ? t("community.create.tooHeavy", "Fichier trop lourd (8 Mo maximum)")
+        ? t("community.create.tooHeavy", "Fichier trop lourd ({{mo}} Mo maximum)", { mo })
         : t("community.create.uploadFailed", "Le dépôt a échoué"));
     } finally {
       setDepotEnCours(false);
@@ -241,11 +249,13 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                       <span className="co-os" style={{ display: "block", height: 180, borderRadius: 12 }} />
                     ) : (
                       <>
-                        <img src={media!.url} alt="" />
+                        {urlEstUneVideo(media!.url)
+                          ? <video src={media!.url} controls playsInline preload="metadata" />
+                          : <img src={media!.url} alt="" />}
                         <button
                           type="button"
                           className="co-media-retirer"
-                          aria-label={t("community.create.removeImage", "Retirer l'image")}
+                          aria-label={t("community.create.removeImage", "Retirer le média")}
                           onClick={retirerLeMedia}
                         >
                           <X aria-hidden="true" />
@@ -266,8 +276,8 @@ export function CommunityFeed({ filtre, onFiltre, tri, onTri }: Props) {
                   <button
                     type="button"
                     className="co-puce"
-                    aria-label={t("community.create.addImage", "Ajouter une image ou un GIF")}
-                    title={t("community.create.addImage", "Ajouter une image ou un GIF")}
+                    aria-label={t("community.create.addImage", "Ajouter une image ou une vidéo")}
+                    title={t("community.create.addImage", "Ajouter une image ou une vidéo")}
                     disabled={depotEnCours}
                     onClick={() => fichier.current?.click()}
                   >

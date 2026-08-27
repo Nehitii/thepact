@@ -30,6 +30,7 @@ import {
   useDeletePost,
 } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
+import { urlEstUneVideo } from "@/lib/communityMedia";
 
 /* UN POST — une ligne du fil, pas une carte.
  *
@@ -245,14 +246,35 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
         {post.image_url && (
           /* Le rapport est libre : un GIF est souvent large et court,
              une capture est haute. On borne la hauteur pour qu une
-             image ne pousse pas le reste du fil hors de l ecran. */
-          <img
-            className="co-post-image"
-            src={post.image_url}
-            alt=""
-            loading="lazy"
-            onClick={(e) => e.stopPropagation()}
-          />
+             image ne pousse pas le reste du fil hors de l ecran.
+
+             UNE VIDEO SE RECONNAIT A SON EXTENSION. La publication ne
+             retient qu une adresse, pas un type : plutot qu ajouter une
+             colonne pour distinguer deux cas, on lit la fin de l URL.
+
+             Elle porte ses commandes et ne demarre pas toute seule : un
+             fil ou quatre videos se lancent en meme temps est
+             insupportable. « playsInline » evite le plein ecran force
+             sur iPhone, et « preload=metadata » ne tire que la premiere
+             image plutot que le fichier entier. */
+          urlEstUneVideo(post.image_url) ? (
+            <video
+              className="co-post-image"
+              src={post.image_url}
+              controls
+              playsInline
+              preload="metadata"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              className="co-post-image"
+              src={post.image_url}
+              alt=""
+              loading="lazy"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )
         )}
 
         {post.goal_name && objectifVisible && (

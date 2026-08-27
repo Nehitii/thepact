@@ -1226,7 +1226,9 @@
   overflow: hidden;
   background: var(--co-fond-creux);
 }
-.co-composeur-media img {
+/* L apercu accepte les deux : une video se cadre comme une image. */
+.co-composeur-media img,
+.co-composeur-media video {
   display: block;
   width: 100%;
   max-height: 320px;
