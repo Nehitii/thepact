@@ -17,7 +17,7 @@ interface LigneEcheance {
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-cron-secret",
 };
 
 Deno.serve(async (req) => {
@@ -26,10 +26,36 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Require CRON_SECRET — this endpoint runs over all users and must not be publicly callable.
+    /* ═══ LE SECRET N'ARRIVAIT PAS PAR LA PORTE QU'ON SURVEILLAIT ═══
+
+       Cette fonction a répondu 401 vingt-deux fois sur vingt-deux en
+       vingt-quatre heures. Elle n'était pas cassée : elle refusait
+       correctement un appelant qui ne s'annonçait pas — sauf que
+       l'appelant, c'était le cron du projet.
+
+       Le travail planifié envoie le secret dans `x-cron-secret` :
+
+         headers := jsonb_build_object(
+           'Content-Type', 'application/json',
+           'x-cron-secret', COALESCE(private.cron_get('CRON_SECRET'), '')
+         )
+
+       Ici on ne lisait que `Authorization: Bearer …`. Deux noms pour
+       la même chose, et personne pour les rapprocher. Sur les neuf
+       fonctions gardées par CRON_SECRET, cinq acceptaient déjà les
+       deux en-têtes ; celle-ci était restée sur l'ancien seul, et
+       c'est la seule que le cron appelle directement — donc la seule
+       où l'écart se voyait.
+
+       ON ACCEPTE LES DEUX, comme season-reset et push-send. Retirer
+       `Authorization` fermerait la porte à un appel manuel qui,
+       lui, marchait. */
     const cronSecret = Deno.env.get("CRON_SECRET");
     const auth = req.headers.get("Authorization") ?? "";
-    if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
+    const enTeteCron = req.headers.get("x-cron-secret") ?? "";
+    const autorise = Boolean(cronSecret) &&
+      (auth === `Bearer ${cronSecret}` || enTeteCron === cronSecret);
+    if (!autorise) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
