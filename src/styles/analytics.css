@@ -399,9 +399,19 @@
    le sélecteur de période garde sa taille. « flex: 1 1 auto » laissait
    la bascule réclamer la largeur de son contenu, ce qui renvoyait le
    sélecteur à la ligne — 72 px au lieu de 37 pour cette rangée. */
-.ana-nav[data-collee="true"] .ana-nav-haut { flex-wrap: nowrap; align-items: center; }
-.ana-nav[data-collee="true"] .ana-vues { flex: 1 1 0; min-width: 0; flex-wrap: nowrap; }
-.ana-nav[data-collee="true"] .cp-periode { flex: 0 0 auto; }
+/* LA RANGÉE DU HAUT PASSE À LA LIGNE D'ELLE-MÊME. Première version :
+   « nowrap » avec une base de zéro — la bascule se laissait comprimer
+   jusqu'à écraser les trois noms plutôt que de renvoyer le sélecteur
+   dessous. Une largeur minimale déclenche le passage à la ligne quand
+   la place manque vraiment, et suit le repli de la barre latérale sans
+   qu'aucune requête de média ait à deviner la largeur disponible. */
+.ana-nav[data-collee="true"] .ana-nav-haut { flex-wrap: wrap; align-items: center; }
+.ana-nav[data-collee="true"] .ana-vues {
+  flex: 1 1 30rem;
+  min-width: min(100%, 27rem);
+  flex-wrap: nowrap;
+}
+.ana-nav[data-collee="true"] .cp-periode { flex: 0 0 auto; margin-left: auto; }
 .ana-nav[data-collee="true"] .ana-vue {
   flex: 1 1 0;
   min-width: 0;
@@ -413,10 +423,13 @@
 .ana-nav[data-collee="true"] .ana-vue-in { min-width: 0; }
 .ana-nav[data-collee="true"] .ana-vue-nom {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  /* Le rembourrage de l'état déplié mangeait 26 px sur les 85 restants :
-     « TRAJECTOIRE » sortait en « TRAJECT… ». Collée, le nom se cale sur
-     le rembourrage du bouton et rien d'autre. */
-  padding: 0;
+  /* LE RETRAIT À GAUCHE N'EST PAS DÉCORATIF. Le bouton est chanfreiné
+     et l'onglet actif porte une barre jaune de 3 px collée à son bord :
+     sans ces 14 px, le nom vient buter dessus et son initiale passe
+     sous le chanfrein. Mesuré à l'écran : « RÉPARTITION » commençait
+     dans le liseré. Seul le rembourrage VERTICAL saute, puisque la
+     barre repliée n'a plus qu'une ligne. */
+  padding: 0 12px 0 14px;
   letter-spacing: 0.5px;
 }
 .ana-nav[data-collee="true"] .ana-vue-sous { display: none; }
@@ -469,8 +482,14 @@
      le rembourrage et le chanfrein retirés. « TRAJECTOIRE » en demande
      97 à cette taille — il tient, de justesse, et c'est le seul qui
      posait problème. */
-  .ana-nav[data-collee="true"] .ana-vue-nom { font-size: 0.68rem; letter-spacing: 0.2px; }
-  .ana-nav[data-collee="true"] .ana-vue { padding: 0.3rem 0.3rem; }
+  /* 356 px pour trois boutons. Le retrait à gauche reste obligatoire —
+     le chanfrein et la barre de l'onglet actif sont là aussi — donc
+     c'est sur la taille, les écarts et la marge à droite qu'on gagne les
+     pixels. Mesuré : « TRAJECTOIRE » demande 88 px pour 97 disponibles.
+     Sans ce réglage il sortait en « TRAJECTOI… ». */
+  .ana-nav[data-collee="true"] .ana-vue-nom { font-size: 0.64rem; letter-spacing: 0.2px; padding: 0 4px 0 10px; }
+  .ana-nav[data-collee="true"] .ana-vue { padding: 0.3rem 0.1rem; }
+  .ana-nav[data-collee="true"] .ana-vues { gap: 0.25rem; }
   /* SOUS 640 PX, LA BASCULE PREND TOUTE LA LARGEUR ET LE SÉLECTEUR
      PASSE DESSOUS. Les laisser partager la ligne ne donnait que 145 px
      aux trois boutons : mesuré sur un écran de 375, les trois noms

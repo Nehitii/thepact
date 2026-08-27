@@ -517,7 +517,7 @@ export default function Analytics() {
                   accomplissement : c'est la seule trace de ce qui a été
                   difficile à commencer, et rien ne la lisait. */}
               <Panneau
-                titre="Ce qu'il a fallu de tentatives"
+                titre="Reports par tâche"
                 droite={reports.length ? `${totalReportees} sur ${totalTaches} reportées` : undefined}
                 vide={reports.length === 0}
                 messageVide="Aucune tâche accomplie"
@@ -564,7 +564,7 @@ export default function Analytics() {
                 par soustraction, et l'écart mesure une chose qu'on ne
                 mesure jamais — la justesse d'une prévision. */}
             <Panneau
-              titre="Prévu contre réel"
+              titre="Dépenses prévues et réelles"
               droite={prevuReel.length ? `${prevuReel.length} mois pointés` : undefined}
               vide={prevuReel.length < 3}
               messageVide={prevuReel.length === 0
@@ -600,7 +600,7 @@ export default function Analytics() {
           <div className="ana-grille">
             <div className="ana-duo">
               <Panneau
-                titre="Par difficulté"
+                titre="Objectifs par difficulté"
                 droite={`${summary.totalGoals} objectifs`}
                 vide={radarDiff.length === 0}
                 messageVide="Aucun objectif à classer"
@@ -620,7 +620,7 @@ export default function Analytics() {
               </Panneau>
 
               <Panneau
-                titre="Par domaine"
+                titre="Objectifs par domaine"
                 droite={tags.length ? `${tags.length} étiquettes` : undefined}
                 vide={tags.length === 0}
                 messageVide="Aucune étiquette posée"
@@ -635,7 +635,7 @@ export default function Analytics() {
                 contredire une intention — le pacte annonce une priorité,
                 les minutes disent autre chose. */}
             <Panneau
-              titre="Où part le focus"
+              titre="Focus par objectif"
               droite={`${matiere.sessionsLiees} session${matiere.sessionsLiees > 1 ? "s" : ""} rattachée${matiere.sessionsLiees > 1 ? "s" : ""}`}
               vide={focusParObjectif.length === 0}
               messageVide="Aucune session rattachée à un objectif"
@@ -679,7 +679,7 @@ export default function Analytics() {
                 le montre pour décider ; ici on le montre pour comprendre la
                 part de l'année qui n'est pas modulable. */}
             <Panneau
-              titre="La forme de l'année qui prélève"
+              titre="Dépenses par mois"
               droite={chargeAnnuelle ? `${formatCurrency(chargeAnnuelle, currency)} sur douze mois` : undefined}
               vide={chargeAnnuelle === 0}
               messageVide="Aucune dépense récurrente"
@@ -833,7 +833,7 @@ export default function Analytics() {
                 le travail déclaré et le travail fait tombent au même
                 moment de la journée. */}
             <Panneau
-              titre="L'heure où les choses se font"
+              titre="Activité par heure"
               droite={heurePleine !== null ? `Pic à ${heurePleine} h` : undefined}
               vide={totalTaches === 0 && summary.pomodoroMinutes === 0}
               messageVide="Rien d'horodaté"
@@ -857,7 +857,7 @@ export default function Analytics() {
 
             <div className="ana-duo">
               <Panneau
-                titre="Les jours qui portent"
+                titre="Tâches par jour de la semaine"
                 droite={totalTaches ? `${totalTaches} tâches réparties` : undefined}
                 vide={totalTaches === 0}
                 messageVide="Aucune tâche accomplie"
@@ -866,7 +866,7 @@ export default function Analytics() {
               </Panneau>
 
               <Panneau
-                titre="Les ruptures de série"
+                titre="Tâches jour par jour"
                 droite={bandeDesJours.length ? `${joursTenus} jours sur ${bandeDesJours.length}` : undefined}
                 vide={bandeDesJours.length === 0}
                 messageVide="Aucune tâche accomplie"
@@ -891,7 +891,7 @@ export default function Analytics() {
                 rythme — quels mois portent quelque chose, lesquels sont
                 vides, et si la charge se concentre. */}
             <Panneau
-              titre="Ce qui tombe à date"
+              titre="Échéances par mois"
               droite={totalQuiTombe ? `${totalQuiTombe} sur ${cequiTombe.length} mois` : undefined}
               vide={cequiTombe.length === 0}
               messageVide="Rien de daté : ni événement, ni échéance"
