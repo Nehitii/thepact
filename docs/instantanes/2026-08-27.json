@@ -1,8 +1,8 @@
 {
   "date": "2026-08-27",
-  "genere": "2026-08-27T15:51:35.293Z",
-  "fichiers": 830,
-  "lignes": 160757,
+  "genere": "2026-08-27T16:23:46.340Z",
+  "fichiers": 838,
+  "lignes": 161330,
   "parDossier": [
     {
       "dossier": "(racine)",
@@ -13,8 +13,8 @@
     {
       "dossier": "docs",
       "fichiers": 2,
-      "lignes": 3265,
-      "poids": 191507
+      "lignes": 3253,
+      "poids": 190893
     },
     {
       "dossier": "mem/design",
@@ -84,9 +84,9 @@
     },
     {
       "dossier": "src/components",
-      "fichiers": 301,
-      "lignes": 50124,
-      "poids": 2018296
+      "fichiers": 304,
+      "lignes": 50133,
+      "poids": 2019595
     },
     {
       "dossier": "src/content",
@@ -102,15 +102,15 @@
     },
     {
       "dossier": "src/hooks",
-      "fichiers": 92,
-      "lignes": 15034,
-      "poids": 544729
+      "fichiers": 94,
+      "lignes": 15135,
+      "poids": 548505
     },
     {
       "dossier": "src/i18n",
       "fichiers": 4,
-      "lignes": 7433,
-      "poids": 274584
+      "lignes": 7563,
+      "poids": 280657
     },
     {
       "dossier": "src/integrations",
@@ -127,8 +127,8 @@
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17204,
-      "poids": 757994
+      "lignes": 17229,
+      "poids": 760960
     },
     {
       "dossier": "src/styles",
@@ -156,9 +156,9 @@
     },
     {
       "dossier": "supabase/migrations",
-      "fichiers": 171,
-      "lignes": 11572,
-      "poids": 485582
+      "fichiers": 174,
+      "lignes": 11892,
+      "poids": 499823
     }
   ],
   "parLangage": [
@@ -177,8 +177,8 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8118,
-      "poids": 298332
+      "lignes": 8248,
+      "poids": 304405
     },
     {
       "langage": "Markdown",
@@ -189,8 +189,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3170,
-      "poids": 187451
+      "lignes": 3158,
+      "poids": 186837
     },
     {
       "langage": "JavaScript",
@@ -236,15 +236,15 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 193,
-      "lignes": 28328,
-      "poids": 1083237
+      "fichiers": 197,
+      "lignes": 28494,
+      "poids": 1091479
     },
     {
       "langage": "TypeScript (JSX)",
-      "fichiers": 334,
-      "lignes": 67120,
-      "poids": 2769014
+      "fichiers": 335,
+      "lignes": 67089,
+      "poids": 2768813
     },
     {
       "langage": "CSS",
@@ -260,9 +260,9 @@
     },
     {
       "langage": "SQL",
-      "fichiers": 171,
-      "lignes": 11572,
-      "poids": 485582
+      "fichiers": 174,
+      "lignes": 11892,
+      "poids": 499823
     },
     {
       "langage": "JSONC",
@@ -271,7 +271,7 @@
       "poids": 500
     }
   ],
-  "commits": 3115,
+  "commits": 3119,
   "orphelins": 0,
   "marqueurs": 12
 }
