@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { DSPageShell, DSBackground } from "@/components/ds";
 import { Panneau, Bouton } from "@/components/profile/console-ui";
 import {
-  SECTIONS, EDITEUR, HEBERGEUR, VERSION, MISE_A_JOUR, PRODUIT,
+  SECTIONS, EDITEUR, HEBERGEUR, VERSION, MISE_A_JOUR, PRODUIT, CHAMPS_REQUIS,
   type Article,
 } from "@/content/mentions-legales";
 import "@/styles/reglages.css";
@@ -41,10 +41,19 @@ import "@/styles/legal.css";
    recopier.
    ═══════════════════════════════════════════════════════════════ */
 
-/** L'éditeur doit se nommer. Tant qu'il ne l'a pas fait, on le dit. */
-const CHAMPS_MANQUANTS = Object.entries(EDITEUR)
-  .filter(([, v]) => !v.trim())
-  .map(([k]) => k);
+/* L'éditeur doit fournir ce que SON RÉGIME exige, et on le dit tant que
+   ce n'est pas fait.
+
+   Le calcul portait auparavant sur tous les champs, ce qui affichait un
+   avertissement permanent alors qu'un éditeur non professionnel a le
+   DROIT de taire son nom et son adresse (LCEN 6-III-2). Un manque
+   signalé vaut mieux qu'un manque discret ; un faux manque signalé ne
+   vaut rien du tout — il apprend à ignorer l'avertissement.
+
+   `CHAMPS_REQUIS` vient du régime déclaré dans le contenu. Le jour où
+   il passe à « professionnel », les cinq autres champs redeviennent
+   obligatoires et l'avertissement revient de lui-même. */
+const CHAMPS_MANQUANTS = CHAMPS_REQUIS.filter((c) => !EDITEUR[c].trim());
 
 const ETIQUETTES: Record<string, string> = {
   nom: "raison sociale ou nom",

@@ -521,6 +521,6 @@
     "Trancher la licence de Switzer. Elle est auto-hébergée donc redistribuée, et son ITF Free Font License n'est pas libre : plusieurs sources indiquent que l'auto-hébergement demande l'accord écrit d'ITF. Les quatre autres polices sont en OFL 1.1, vérifiées à la source.",
     "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
     "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
-    "Renseigner l identite de l editeur dans src/content/mentions-legales.ts : nom, forme juridique, adresse, immatriculation, directeur de la publication. Les cinq champs sont vides et la page /legal affiche un avertissement visible tant qu il en manque un. Cette page est desormais celle que l ecran de consentement Google presente comme regles de confidentialite, et l obligation legale commence des le premier utilisateur qui n est pas vous."
+    "Le jour ou un paiement est encaisse, basculer REGIME sur \"professionnel\" dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel."
   ]
 }

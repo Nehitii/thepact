@@ -36,26 +36,91 @@ import {
    fait ; il ne remplace pas une relecture juridique.
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   SOUS QUEL RÉGIME CE SERVICE EST ÉDITÉ
+
+   « particulier » — personne physique éditant à titre NON
+   professionnel. L'article 6-III-2 de la LCEN l'autorise à ne pas
+   publier son nom ni son adresse, pour préserver son anonymat, À DEUX
+   CONDITIONS : les avoir communiqués à son hébergeur, et publier en
+   échange le nom et l'adresse de celui-ci. Les comptes Cloudflare et
+   Supabase sont ouverts à l'identité réelle de l'éditeur : la première
+   condition est remplie de fait, la seconde par la section ci-dessous.
+
+   « professionnel » — toute activité commerciale. Le régime complet
+   s'applique alors : nom, forme juridique, adresse, immatriculation,
+   directeur de la publication, tous publics.
+
+   ═══ CE QUI FAIT BASCULER LE RÉGIME, ET QUAND ═══
+
+   LE JOUR OÙ L'ENCAISSEMENT EST BRANCHÉ. Aujourd'hui la boutique
+   affiche des prix en euros mais `handlePackPurchase` ne fait
+   qu'annoncer « le paiement n'est pas encore branché » — aucune
+   intégration Stripe, PayPal ou équivalent n'existe dans le dépôt,
+   vérifié le 28/08/2026. Le service ne vend rien, donc rien n'est
+   commercial.
+
+   Le premier commit qui encaisse un euro rend ce fichier faux. Passer
+   REGIME à "professionnel" fera réapparaître l'avertissement de la
+   page tant que les cinq champs restent vides — c'est voulu, c'est le
+   rappel.
+
+   ═══ CE QUE CE RÉGIME NE DISPENSE PAS DE FAIRE ═══
+
+   LE RGPD EST UN TEXTE SÉPARÉ, et l'anonymat de la LCEN ne s'y étend
+   pas. Le responsable de traitement doit rester identifiable et
+   joignable, et ce service collecte des données de santé, catégorie
+   particulière. D'où `courriel`, qui reste obligatoire dans les deux
+   régimes : c'est par là que passent les demandes d'accès, de
+   rectification et d'effacement.
+
+   Ce fichier décrit ce que l'application fait et ce que les textes
+   demandent. Il ne remplace pas une relecture juridique.
+   ═══════════════════════════════════════════════════════════════ */
+
+export type Regime = "particulier" | "professionnel";
+
+export const REGIME: Regime = "particulier";
+
 /**
- * L'IDENTITÉ DE L'ÉDITEUR — À COMPLÉTER.
+ * L'IDENTITÉ DE L'ÉDITEUR.
  *
- * Aucune de ces valeurs ne peut être déduite du code. Tant qu'une
- * seule reste vide, la page affiche un avertissement visible : mieux
- * vaut un manque signalé qu'un manque discret.
+ * En régime « particulier », seul `courriel` est requis : les autres
+ * champs peuvent rester vides sans que la page le signale, parce que
+ * les taire est un droit et non un oubli. En régime « professionnel »,
+ * tous deviennent obligatoires et la page redit ce qui manque.
  */
 export const EDITEUR = {
-  /** Raison sociale ou nom complet de la personne qui édite le service. */
+  /** Raison sociale ou nom complet. Facultatif en régime particulier. */
   nom: "",
   /** Forme juridique et capital, s'il y a une société. */
   forme: "",
-  /** Adresse postale complète. */
+  /** Adresse postale complète. Facultative en régime particulier. */
   adresse: "",
   /** SIREN / SIRET, ou numéro d'immatriculation équivalent. */
   immatriculation: "",
   /** Directeur de la publication. */
   directeur: "",
-  /** Adresse de contact pour les demandes légales et les données. */
-  courriel: "",
+  /** Adresse de contact. REQUISE DANS LES DEUX RÉGIMES — voir le RGPD ci-dessus. */
+  courriel: "support.overwrite@gmail.com",
+};
+
+/** Les champs que le régime en vigueur rend obligatoires. */
+export const CHAMPS_REQUIS: (keyof typeof EDITEUR)[] =
+  REGIME === "particulier"
+    ? ["courriel"]
+    : ["nom", "forme", "adresse", "immatriculation", "directeur", "courriel"];
+
+/* L'HÉBERGEUR DU SITE ET CELUI DES DONNÉES NE SONT PAS LE MÊME, et la
+   LCEN vise d'abord celui qui met le contenu à disposition du public.
+   Ne nommer que Supabase était donc incomplet : c'est Cloudflare qui
+   sert l'application. Les deux sont désormais cités, chacun pour ce
+   qu'il héberge. */
+
+export const HEBERGEUR_SITE = {
+  nom: "Cloudflare, Inc.",
+  detail: "101 Townsend St., San Francisco, CA 94107, États-Unis",
+  role: "Hébergement de l'application (Cloudflare Workers).",
 };
 
 export const HEBERGEUR = {
@@ -103,15 +168,24 @@ export const SECTIONS: SectionLegale[] = [
       {
         n: 1,
         titre: "Éditeur du service",
-        corps: [
-          `${PRODUIT} est édité par la personne ou l'entité désignée ci-dessous, qui en assure la publication et la responsabilité.`,
-        ],
+        corps:
+          REGIME === "particulier"
+            ? [
+                `${PRODUIT} est édité par une personne physique, à titre non professionnel. Le service ne vend rien et ne perçoit aucun paiement.`,
+                "L'article 6-III-2 de la loi pour la confiance dans l'économie numérique permet à un éditeur non professionnel de ne pas rendre publiques son identité et son adresse, à condition de les avoir communiquées à son hébergeur — ce qui est le cas — et de publier en échange les coordonnées de celui-ci, données à l'article suivant.",
+                `Pour toute demande — légale, ou portant sur tes données — écris à ${EDITEUR.courriel}. Cette adresse est relevée : c'est par elle que passent les demandes d'accès, de rectification et d'effacement.`,
+                "Sur réquisition de l'autorité judiciaire, l'hébergeur communique l'identité de l'éditeur. L'anonymat vaut à l'égard du public, pas de la justice.",
+              ]
+            : [
+                `${PRODUIT} est édité par la personne ou l'entité désignée ci-dessous, qui en assure la publication et la responsabilité.`,
+              ],
       },
       {
         n: 2,
         titre: "Hébergement",
         corps: [
-          `Les données de ${PRODUIT} sont hébergées par ${HEBERGEUR.nom}, ${HEBERGEUR.detail}.`,
+          `L'application ${PRODUIT} est hébergée par ${HEBERGEUR_SITE.nom}, ${HEBERGEUR_SITE.detail}.`,
+          `Les données sont hébergées séparément par ${HEBERGEUR.nom}, ${HEBERGEUR.detail}.`,
           HEBERGEUR.region,
           "Le Royaume-Uni ne fait plus partie de l'Union européenne. Les transferts vers ce pays s'appuient sur la décision d'adéquation dont il bénéficie.",
         ],
