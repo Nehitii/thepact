@@ -154,11 +154,11 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
               <Label className="text-xs">Témoins ({selectedWitnesses.length} sélectionné{selectedWitnesses.length > 1 ? "s" : ""})</Label>
               <div className="max-h-40 overflow-y-auto space-y-1 mt-2 rounded border border-border/40 p-2">
                 {friendList.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Aucun ami pour le moment.</p>
+                  <p className="text-xs text-muted-foreground">Aucun allié pour le moment.</p>
                 ) : (
                   friendList.map((f) => {
                     const fid = f.friend_id;
-                    const name = f.display_name || "Ami";
+                    const name = f.display_name || "Allié";
                     const checked = selectedWitnesses.includes(fid);
                     return (
                       <button

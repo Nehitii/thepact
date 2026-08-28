@@ -170,9 +170,9 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const { unreadCount, unreadByModule } = useNotifications();
   const { nonLus: messagesNonLus } = useMessagesNonLus();
-  const { count: demandesAmis } = usePendingFriendCount();
+  const { count: demandesAllies } = usePendingFriendCount();
   const social = useSocialFeatures();
-  const totalNonLus = unreadCount + messagesNonLus + demandesAmis;
+  const totalNonLus = unreadCount + messagesNonLus + demandesAllies;
 
   const { data: tousModules = [] } = useShopModules();
   const { data: modulesAchetes = [] } = useUserModulePurchases(user?.id);
@@ -206,12 +206,12 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const compte = useCallback((e: Entree) => {
     let n = 0;
-    if (e.badge === "friends") n += demandesAmis;
+    if (e.badge === "friends") n += demandesAllies;
     if (e.badge === "messages") n += messagesNonLus;
     if (e.badge === "inbox") n += messagesNonLus + unreadCount;
     if (e.module && unreadByModule[e.module]) n += unreadByModule[e.module];
     return n;
-  }, [demandesAmis, messagesNonLus, unreadCount, unreadByModule]);
+  }, [demandesAllies, messagesNonLus, unreadCount, unreadByModule]);
 
   const categories = useMemo(() => {
     const c: Record<Categorie, Entree[]> = {

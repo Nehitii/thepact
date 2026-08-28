@@ -1,0 +1,288 @@
+{
+  "_lisez": "docs/glossaire.md explique ce fichier. Il est verifie par npm run langue:check : chaque `base` doit exister dans le schema checke dans le depot, et aucun mot `refuses` ne doit apparaitre dans un identifiant, dans du texte affiche, ni dans fr.json. Les listes `refuses` ne contiennent que des mots VERIFIES absents du depot : un mot deja employe ailleurs pour autre chose n est pas un synonyme fautif, et la premiere version de ce fichier s est fait reprendre sur 182 cas pour l avoir oublie.",
+  "concepts": [
+    {
+      "concept": "objectif",
+      "base": [
+        "goals"
+      ],
+      "francais": "objectif",
+      "refuses": [
+        "visee"
+      ],
+      "note": "Le mot central de l application. 650 occurrences cote francais, `goal` dans 58 noms de colonnes."
+    },
+    {
+      "concept": "pacte",
+      "base": [
+        "pacts"
+      ],
+      "francais": "pacte",
+      "refuses": [],
+      "note": "Le pacte est l engagement d ensemble ; un `goal_contract` est autre chose — voir plus bas."
+    },
+    {
+      "concept": "contrat d objectif",
+      "base": [
+        "goal_contracts"
+      ],
+      "francais": "contrat",
+      "refuses": [],
+      "note": "Ferme par drapeau. Un contrat porte sur UN objectif ; le pacte porte sur tous."
+    },
+    {
+      "concept": "jalon d objectif",
+      "base": [
+        "steps",
+        "step_status_history"
+      ],
+      "francais": "etape",
+      "refuses": [],
+      "note": "« etape » a gagne par l usage (67 `step` en base, 1 seul `jalon` dans le code). On ne cree pas un troisieme mot."
+    },
+    {
+      "concept": "palier",
+      "base": [
+        "ranks",
+        "guild_ranks"
+      ],
+      "francais": "palier",
+      "refuses": [],
+      "note": "N EST PAS UN SYNONYME D « ETAPE », et la garde l a prouve en le signalant 50 fois. Un palier est un rang de progression (RanksCard, Leaderboard) ou le niveau d un objectif dont une etape descend — useEtapes.ts : « le palier de l objectif d ou vient l etape ». Deux concepts, deux mots."
+    },
+    {
+      "concept": "piece chiffree d un objectif",
+      "base": [
+        "goal_cost_items"
+      ],
+      "francais": "piece",
+      "refuses": [
+        "morceau"
+      ],
+      "note": "143 occurrences. C est ce qui coute dans un objectif, et c est aussi ce que la liste de souhaits affiche."
+    },
+    {
+      "concept": "liste de souhaits",
+      "base": [
+        "wishlist_items"
+      ],
+      "francais": "souhaits",
+      "refuses": [
+        "voeu"
+      ],
+      "note": "La table n est jamais ecrite par un geste : useWishlistGoalSync la fabrique a partir des pieces."
+    },
+    {
+      "concept": "succes",
+      "base": [
+        "user_achievements",
+        "achievement_definitions",
+        "achievement_tracking"
+      ],
+      "francais": "succes",
+      "refuses": [
+        "accomplissement"
+      ],
+      "note": "341 occurrences. UN succes = UNE condition franchie. ATTENTION AU MOT « REUSSITE », QUI N EST PAS REFUSE ICI : il garde son sens ordinaire. `settings.display.soundSuccess` dit « Sons de reussite » et se decrit comme « Achevement de taches et objectifs » — c est le son joue quand on acheve quelque chose, pas un son de la page Succes. La garde l a signale, on a lu, et on a tranche pour deux sens plutot qu un seul mot."
+    },
+    {
+      "concept": "trophee",
+      "base": [],
+      "francais": "trophee",
+      "refuses": [],
+      "note": "N EST PAS UN SYNONYME DE SUCCES, et c est la raison d etre de cette entree. Un trophee recompense une CATEGORIE entierement franchie ; un succes recompense une condition. `useTrophees` et `useSucces` sont deux hooks distincts, sur la meme page. Confondre les deux est l erreur naturelle."
+    },
+    {
+      "concept": "guilde",
+      "base": [
+        "guilds",
+        "guild_members",
+        "guild_messages"
+      ],
+      "francais": "guilde",
+      "refuses": [
+        "clan"
+      ],
+      "note": "163 occurrences."
+    },
+    {
+      "concept": "allie",
+      "base": [
+        "friendships"
+      ],
+      "francais": "allie",
+      "refuses": [
+        "ami",
+        "camarade",
+        "copain"
+      ],
+      "note": "La base dit `friendships`, l interface dit « allie ». Le 28/08, l application disait les deux : 13 chaines « allie » contre 15 « ami », pour le meme concept. « Allie » a ete retenu parce que c est le registre du reste — pacte, guilde, serment, pantheon — et que « Amis » etait le reste de l echafaudage d origine. Les 15 chaines ont ete reecrites une par une, pas par substitution : « Retirer de mes amis » est devenu « Rompre l alliance », pas « Retirer de mes allies »."
+    },
+    {
+      "concept": "classement",
+      "base": [],
+      "francais": "classement",
+      "refuses": [],
+      "note": "Aucune table propre : se calcule sur `profiles`. Ne pas confondre avec le palmares du mois, qui est une vue de finance."
+    },
+    {
+      "concept": "pantheon",
+      "base": [
+        "hall_of_fame"
+      ],
+      "francais": "pantheon",
+      "refuses": [
+        "temple",
+        "galerie"
+      ],
+      "note": "Rempli par la cloture de saison, jamais par une saisie."
+    },
+    {
+      "concept": "tache",
+      "base": [
+        "todo_tasks",
+        "todo_history"
+      ],
+      "francais": "tache",
+      "refuses": [
+        "besogne",
+        "corvee"
+      ],
+      "note": "151 occurrences."
+    },
+    {
+      "concept": "habitude",
+      "base": [
+        "habit_logs"
+      ],
+      "francais": "habitude",
+      "refuses": [
+        "routine"
+      ],
+      "note": "« rituel » apparait dans des commentaires : c est de la prose, pas du vocabulaire."
+    },
+    {
+      "concept": "depense recurrente",
+      "base": [
+        "recurring_expenses"
+      ],
+      "francais": "depense",
+      "refuses": [],
+      "note": "Il n y a plus de table de mouvements bancaires depuis le 20/08 : les flux recurrents sont ce qui reste."
+    },
+    {
+      "concept": "revenu recurrent",
+      "base": [
+        "recurring_income"
+      ],
+      "francais": "revenu",
+      "refuses": [],
+      "note": ""
+    },
+    {
+      "concept": "validation mensuelle",
+      "base": [
+        "monthly_finance_validations"
+      ],
+      "francais": "mois valide",
+      "refuses": [
+        "mensualite"
+      ],
+      "note": "« mois » est le mot le plus dense de la finance : 60 occurrences en identifiants."
+    },
+    {
+      "concept": "boutique",
+      "base": [
+        "shop_modules",
+        "shop_bundles"
+      ],
+      "francais": "boutique",
+      "refuses": [
+        "magasin",
+        "echoppe"
+      ],
+      "note": "Seul module portant une marque d inachevement dans son code : le paiement n est pas branche."
+    },
+    {
+      "concept": "cosmetique",
+      "base": [
+        "cosmetic_frames",
+        "cosmetic_banners"
+      ],
+      "francais": "cosmetique",
+      "refuses": [
+        "parure",
+        "ornement",
+        "apparat"
+      ],
+      "note": "« cosmetique » l a emporte sur « parure », qui n existe nulle part."
+    },
+    {
+      "concept": "recompense de saison",
+      "base": [
+        "season_rewards",
+        "seasons"
+      ],
+      "francais": "recompense",
+      "refuses": [
+        "gratification"
+      ],
+      "note": "Vivante : atteinte par snapshot_season_leaderboard(), que le cron season-reset-daily declenche chaque jour a 3 h 30."
+    },
+    {
+      "concept": "entree de journal",
+      "base": [
+        "journal_entries"
+      ],
+      "francais": "entree",
+      "refuses": [],
+      "note": "« journal » se dit pareil dans les deux langues."
+    },
+    {
+      "concept": "seance de concentration",
+      "base": [
+        "focus_sessions"
+      ],
+      "francais": "seance",
+      "refuses": [],
+      "note": "« focus » est garde tel quel : c est le nom que l application donne au module, pas une traduction manquee."
+    },
+    {
+      "concept": "evenement d agenda",
+      "base": [
+        "calendar_events"
+      ],
+      "francais": "evenement",
+      "refuses": [],
+      "note": ""
+    },
+    {
+      "concept": "serie",
+      "base": [
+        "health_streaks"
+      ],
+      "francais": "serie",
+      "refuses": [],
+      "note": "57 occurrences."
+    },
+    {
+      "concept": "reglages",
+      "base": [
+        "profiles"
+      ],
+      "francais": "reglage",
+      "refuses": [],
+      "note": "Il n y a PAS de table `finance_settings` : les quatre colonnes de reglage financier sont posees sur `profiles`, parce qu elles decrivent la personne et non un mois."
+    },
+    {
+      "concept": "membre",
+      "base": [
+        "profiles",
+        "guild_members"
+      ],
+      "francais": "membre",
+      "refuses": [],
+      "note": "`user` reste `user` partout ou Supabase le nomme ainsi — c est le mot de la bibliotheque, pas un anglicisme."
+    }
+  ]
+}

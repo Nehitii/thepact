@@ -83,7 +83,7 @@ const ENTREES: Entree[] = [
 
   /* ── Le social ── */
   { cle: "nav.community", repli: "Communauté", icone: Users, route: "/community", groupe: "social", mots: "community fil publications" },
-  { cle: "nav.friends", repli: "Amis", icone: Share2, route: "/friends", groupe: "social", mots: "friends brigade guilde" },
+  { cle: "nav.friends", repli: "Alliés", icone: Share2, route: "/friends", groupe: "social", mots: "friends brigade guilde" },
   { cle: "nav.leaderboard", repli: "Classement", icone: Medal, route: "/leaderboard", groupe: "social", mots: "leaderboard rang podium" },
   { cle: "nav.hallOfFame", repli: "Panthéon", icone: Trophy, route: "/hall-of-fame", groupe: "social", mots: "hall of fame pantheon gloire" },
   { cle: "nav.inbox", repli: "Messages", icone: Inbox, route: "/inbox", groupe: "social", mots: "inbox boite messages" },
