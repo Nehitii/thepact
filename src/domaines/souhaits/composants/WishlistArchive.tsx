@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { WishlistPoste } from "@/components/wishlist/WishlistPoste";
-import type { PactWishlistItem } from "@/hooks/usePactWishlist";
-import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
+import { WishlistPoste } from "@/domaines/souhaits/composants/WishlistPoste";
+import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
+import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
 
 interface WishlistArchiveProps {
   items: PactWishlistItem[];

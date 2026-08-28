@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import {
   useListesWishlist, useCreerListe, useRenommerListe, useSupprimerListe, LISTES_MAX,
-} from "@/hooks/useWishlistLists";
+} from "@/domaines/souhaits/hooks/useWishlistLists";
 
 /**
  * LES OUTILS DE LA LISTE COURANTE.

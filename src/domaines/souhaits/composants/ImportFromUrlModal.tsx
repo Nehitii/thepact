@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, Globe, Loader2, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { ChampImage } from "@/components/wishlist/ChampImage";
+import { ChampImage } from "@/domaines/souhaits/composants/ChampImage";
 
 /* Le serveur nomme la cause ; ici on la dit. Un « non-2xx » n apprend
    rien a qui essaie d importer un canape. */

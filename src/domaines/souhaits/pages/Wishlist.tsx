@@ -24,27 +24,27 @@ import {
   usePactWishlistItems,
   useUpdatePactWishlistItem,
   type PactWishlistItem,
-} from "@/hooks/usePactWishlist";
+} from "@/domaines/souhaits/hooks/usePactWishlist";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
-import { useWishlistGoalSync } from "@/hooks/useWishlistGoalSync";
-import { useWishlistPieces } from "@/hooks/useWishlistPieces";
+import { useWishlistGoalSync } from "@/domaines/souhaits/hooks/useWishlistGoalSync";
+import { useWishlistPieces } from "@/domaines/souhaits/hooks/useWishlistPieces";
 import { useDepotImages } from "@/hooks/useDepotImages";
 import { cheminDuDepot } from "@/lib/wishlistDepot";
-import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
-import { ImportFromUrlModal, type ScrapedProduct } from "@/components/wishlist/ImportFromUrlModal";
-import { DeleteConfirmDialog } from "@/components/wishlist/DeleteConfirmDialog";
-import { WishlistFiche } from "@/components/wishlist/WishlistFiche";
-import { WishlistPoste } from "@/components/wishlist/WishlistPoste";
+import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/domaines/souhaits/composants/DuplicateMergeDialog";
+import { ImportFromUrlModal, type ScrapedProduct } from "@/domaines/souhaits/composants/ImportFromUrlModal";
+import { DeleteConfirmDialog } from "@/domaines/souhaits/composants/DeleteConfirmDialog";
+import { WishlistFiche } from "@/domaines/souhaits/composants/WishlistFiche";
+import { WishlistPoste } from "@/domaines/souhaits/composants/WishlistPoste";
 
 /* La forme de la liste, retenue d une visite a l autre. */
-import { WishlistRegistre } from "@/components/wishlist/WishlistRegistre";
-import { GestionDesListes } from "@/components/wishlist/GestionDesListes";
-import { useListesWishlist } from "@/hooks/useWishlistLists";
-import { WishlistArchive } from "@/components/wishlist/WishlistArchive";
-import { WishlistRail } from "@/components/wishlist/WishlistRail";
-import { ChampImage } from "@/components/wishlist/ChampImage";
-import "@/styles/wishlist.css";
+import { WishlistRegistre } from "@/domaines/souhaits/composants/WishlistRegistre";
+import { GestionDesListes } from "@/domaines/souhaits/composants/GestionDesListes";
+import { useListesWishlist } from "@/domaines/souhaits/hooks/useWishlistLists";
+import { WishlistArchive } from "@/domaines/souhaits/composants/WishlistArchive";
+import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
+import { ChampImage } from "@/domaines/souhaits/composants/ChampImage";
+import "@/domaines/souhaits/souhaits.css";
 import { PREF } from "@/lib/preferencesAffichage";
 
 /* ═══════════════════════════════════════════════════════════════

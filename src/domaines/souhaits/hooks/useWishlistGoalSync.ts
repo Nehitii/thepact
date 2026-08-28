@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useGoals, type Goal } from "@/hooks/useGoals";
-import type { PactWishlistItem } from "@/hooks/usePactWishlist";
+import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
 export function useWishlistGoalSync(

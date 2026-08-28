@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { useParticleEffect } from "@/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/hooks/useCostItems";
-import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
+import { useCreatePactWishlistItem } from "@/domaines/souhaits";
 import { useUserShop } from "@/hooks/useShop";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";

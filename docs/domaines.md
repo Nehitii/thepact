@@ -4,9 +4,9 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **7 domaines sur 12**. M.I.A., santé, journal, focus, finance, tâches et agenda, le 28/08/2026.
+État : **8 domaines sur 13**. M.I.A., santé, journal, focus, finance, tâches, agenda et souhaits, le 28/08/2026.
 
-*Douze et non onze : l agenda s’est scindé en deux — voir le sixième domaine.*
+*Treize et non onze : l’agenda s’est scindé en deux (sixième domaine), et les souhaits aussi (huitième).*
 
 ---
 
@@ -284,6 +284,32 @@ ont changé d'adresse et le code émis est le même fichier, à l'octet près.
 
 ---
 
+## Ce que le huitième domaine a ajouté
+
+**Deux listes de souhaits, et le hook au nom le plus court est celui de
+l’autre.** Cinq hooks du dépôt portent « wishlist ».  — le
+nom générique, celui qu’on prend par défaut — lit ****, pas
+ : ce sont les parures qu’on convoite, payables en bonds. Ses
+trois appelants sont ,  et .
+
+| | table | ce que c’est |
+|---|---|---|
+| liste du pacte | ,  | des choses réelles à acquérir, fabriquées depuis les pièces d’objectif |
+| liste de boutique |  | des parures, payables en bonds |
+
+**Elles ne partagent ni table, ni hook, ni composant — seulement un mot.** D’où
+deux domaines, et une entrée de plus au glossaire. Vérifié à l’exécution :
+ a fait 3 requêtes sur , 1 sur , et
+**zéro** sur .
+
+**Deuxième fois qu’un fichier reste dehors parce qu’il sert trop de monde.**
+ porte le nom du domaine, mais ses cinq exports sont des
+aides de stockage, le compartiment s’appelle , et
+ n’en prend qu’une constante — pour les souhaits *et*
+pour les vidéos de la communauté. Le faire entrer rendrait la communauté
+dépendante des souhaits. Même raisonnement que pour la devise chez la finance.
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -308,7 +334,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 12 | **7 / 12** |
+| domaines rangés | 0 / 13 | **8 / 13** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -340,10 +366,16 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **finance** | 33 |
 | ✔ | **tâches** | 18 |
 | ✔ | **agenda** | 22 |
-| 7 | souhaits | 52 |
-| 8 | profil | 55 |
-| 9 | guildes | 57 |
-| 10 | objectifs | 60 |
-| 11 | socle | 61 |
+| ✔ | **souhaits** | 17 |
+| 9 | boutique | ~32 |
+| 10 | profil | ~55 |
+| 11 | guildes | ~57 |
+| 12 | objectifs | ~60 |
+| 13 | socle | ~61 |
+
+Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils
+étaient faits sur le nom des fichiers, et deux domaines sur huit se sont
+scindés une fois le couplage mesuré. Ce qui reste est donc une estimation, pas
+un engagement.
 
 Chaque domaine est un commit qui se révoque seul.

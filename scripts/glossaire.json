@@ -70,7 +70,16 @@
       "refuses": [
         "voeu"
       ],
-      "note": "La table n est jamais ecrite par un geste : useWishlistGoalSync la fabrique a partir des pieces."
+      "note": "La table n est jamais ecrite par un geste : useWishlistGoalSync la fabrique a partir des pieces d objectif. ATTENTION, IL Y EN A DEUX — voir l entree suivante."
+    },
+    {
+      "concept": "liste de souhaits de la boutique",
+      "base": [
+        "shop_wishlist"
+      ],
+      "francais": "souhaits de boutique",
+      "refuses": [],
+      "note": "DEUXIEME LISTE, ET LE HOOK AU NOM LE PLUS COURT EST CELUI-CI. Releve le 28/08 en rangeant les souhaits : cinq hooks portent « wishlist », et `hooks/useWishlist.ts` — le nom generique — lit `shop_wishlist`, pas `wishlist_items`. Ce sont les parures qu on convoite, payables en bonds ; ses trois appelants sont WishlistButton, WishlistPanel et pages/Shop. Les deux listes ne partagent ni table, ni hook, ni composant : seulement un mot. C est pourquoi souhaits et boutique sont deux domaines."
     },
     {
       "concept": "succes",

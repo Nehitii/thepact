@@ -4,8 +4,8 @@ import { format } from "date-fns";
 import { fr as dateFr } from "date-fns/locale";
 import { Check, ExternalLink, Pencil, Trash2, Undo2 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import type { PactWishlistItem } from "@/hooks/usePactWishlist";
-import type { PieceDeLEtape } from "@/hooks/useWishlistPieces";
+import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
+import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
 
 /* ═══════════════════════════════════════════════════════════════
    UNE LIGNE DE REGISTRE

@@ -23,7 +23,7 @@ export const routeImports = {
   notificationSettings: () => import("@/pages/profile/NotificationSettings"),
   dataPortability: () => import("@/pages/profile/DataPortability"),
   healthSettings: () => import("@/domaines/sante/pages/HealthSettings"),
-  wishlist: () => import("@/pages/Wishlist"),
+  wishlist: () => import("@/domaines/souhaits/pages/Wishlist"),
 } as const;
 
 export type RouteImportKey = keyof typeof routeImports;
