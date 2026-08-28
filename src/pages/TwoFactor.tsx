@@ -175,7 +175,7 @@ export default function TwoFactor() {
         <img
           src="/marque/mia-sas.png"
           width={440}
-          height={336}
+          height={381}
           alt=""
           aria-hidden="true"
           className="sas-mia"

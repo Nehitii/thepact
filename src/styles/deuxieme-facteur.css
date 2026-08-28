@@ -79,25 +79,34 @@
    Le dessin la montre penchée par-dessus un rebord, les deux mains
    posées dessus. Le rebord, c'est la bordure haute de cette carte.
 
-   TROIS NOMBRES, RELEVÉS SUR L'IMAGE SOURCE (1254 × 1254) :
-     — la zone opaque va de y = 78 à y = 1032 ;
+   DEUX NOMBRES, RELEVÉS SUR L'IMAGE SOURCE (1254 × 1254) :
      — la ligne qu'elle agrippe est à y = 860 : c'est là que le
-       nombre de pixels opaques chute de 988 à 634 sur quatre lignes ;
-     — les doigts finissent à y = 918, mesuré par bandes (main
-       gauche x 150-360, main droite x 940-1160).
+       nombre de pixels opaques chute de 988 à 634 sur quatre lignes.
+       La chute EST le rebord ;
+     — la zone opaque finit à y = 1032.
 
-   On coupe donc à 922 — sous les doigts, au-dessus du rebord dessiné
-   que la carte remplace. Le chevauchement vaut (922 − 860) / (922 −
-   78) = 7,3 % de la hauteur : c'est exactement de combien elle doit
-   redescendre pour que ses mains retombent SUR la bordure et non
-   au-dessus.
+   PREMIÈRE COUPE, FAUSSE : à y = 922, juste sous les doigts. Je
+   croyais voir un rebord sombre en dessous et je l'ai jeté. Sondage
+   des couleurs sous la ligne des doigts : les colonnes du milieu
+   (x 600-720) sont VIDES, et ce qui reste à x 360-500 et x 700-860
+   est du cyan saturé — R ≈ 1, G ≈ 210, B ≈ 245. Ce ne sont pas des
+   ombres, ce sont SES MÈCHES, et elles descendent jusqu'à 1032. Le
+   « rebord sombre » n'existait pas : c'était de la transparence
+   affichée sur fond noir par la visionneuse. Je les avais tranchées
+   en deux.
+
+   On garde donc tout jusqu'à 1036. Les mèches retombent DEVANT la
+   carte, ce qui est précisément le geste du dessin. Le chevauchement
+   vaut (1036 − 860) / 959 = 18,35 % de la hauteur : de combien elle
+   redescend pour que ses mains retombent SUR la bordure.
 
    LA MARGE HAUTE N'EST PAS DÉCORATIVE. Elle est absolue, donc hors
    flux : sans marge, la grille centrerait la carte seule et la tête
    sortirait par le haut — `overflow: hidden` la couperait sans un
    mot. La marge appartient à la boîte de la carte, donc la grille
-   centre bien l'ENSEMBLE. Sa valeur : hauteur × (1 − 7,3 %), et la
-   hauteur vaut largeur ÷ 1,310, d'où le facteur 0,708. */
+   centre bien l'ENSEMBLE. Sa valeur : hauteur × (1 − 18,35 %), et la
+   hauteur vaut largeur ÷ 1,155, d'où le facteur 0,707 — inchangé par
+   la recoupe, puisque tout le supplément tombe SOUS la ligne. */
 .sas-carte {
   --mia: clamp(140px, 40vw, 210px);
 
@@ -107,7 +116,13 @@
   max-width: 480px;
   margin-top: calc(var(--mia) * 0.708);
   box-sizing: border-box;
-  padding: clamp(28px, 5vw, 46px) clamp(24px, 5vw, 44px) clamp(26px, 4vw, 38px);
+  /* LA MARGE HAUTE DÉRIVE DU CHEVAUCHEMENT, elle n'est pas choisie.
+     Les mèches descendent de 18,35 % de la hauteur sous la bordure,
+     soit 0,159 × la largeur (0,1835 ÷ 1,155). Avec un `clamp` fixe,
+     l'écart aux mèches variait avec la taille : mesuré, 12 px en
+     1280 et 4 px en 375 — au bord de toucher l'étiquette. En le
+     calculant, le dégagement vaut 16 px partout. */
+  padding: calc(var(--mia) * 0.159 + 16px) clamp(24px, 5vw, 44px) clamp(26px, 4vw, 38px);
   border: 1px solid rgba(139, 92, 246, 0.16);
   border-radius: 22px;
   background:
@@ -363,11 +378,12 @@
   position: absolute;
   left: 50%;
   bottom: 100%;
-  /* `bottom: 100%` pose son bas SUR la bordure ; les 7,3 % la font
-     redescendre juste ce qu'il faut pour que les doigts la chevauchent.
+  /* `bottom: 100%` pose son bas SUR la bordure ; les 18,35 % la font
+     redescendre juste ce qu'il faut pour que les mains se posent sur
+     l'arête et que les mèches pendent devant.
      Le pourcentage d'un `translate` se calcule sur la propre hauteur
      de l'élément, ce qui rend le calage indépendant de sa taille. */
-  translate: -50% 7.3%;
+  translate: -50% 18.35%;
   width: var(--mia);
   height: auto;
   z-index: 2;
