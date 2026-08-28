@@ -20,8 +20,6 @@ export type { DSPageWidth } from "./DSPageShell";
 export { DSBackground } from "./DSBackground";
 export type { DSBackgroundVariant } from "./DSBackground";
 export { DSPageLoader } from "./DSPageLoader";
-export { DSPageHeader } from "./DSPageHeader";
-export type { DSPageHeaderBadge } from "./DSPageHeader";
 
 export { DSPanel } from "./DSPanel";
 export type { DSPanelTier, DSAccent } from "./DSPanel";
@@ -38,10 +36,14 @@ export { DSCornerBrackets } from "./DSCornerBrackets";
 export { DSEmptyState } from "./DSEmptyState";
 export { DSLoadingState } from "./DSLoadingState";
 
-/* ─── Module dialects — assumed by design ─────────────────────
+/* DSPageHeader et ModuleHeader ont ete supprimes le 28/08/2026 : le
+ * second etait @deprecated et rendu nulle part, et il etait le SEUL a
+ * rendre le premier. GoalsHeader dit le remplacer, Home dit s en passer
+ * volontairement. Le paquet construit ne contenait deja aucune de leurs
+ * lignes — l elagueur les avait vues avant nous.
+ *
+ * ─── Module dialects — assumed by design ─────────────────────
  * Canonical DSPanel is the default for new code. Module-specific
  * Prism sub-components for Analytics) coexist legitimately — they
  * encode module identity that DSPanel doesn't aim to absorb.
  * ───────────────────────────────────────────────────────────── */
-export { ModuleHeader } from "@/components/layout/ModuleHeader";
-export type { ModuleHeaderBadge } from "@/components/layout/ModuleHeader";

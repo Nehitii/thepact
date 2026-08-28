@@ -8,14 +8,32 @@
   0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor, 0 0 20px currentColor; }
   50%     { opacity: 0.7; box-shadow: 0 0 12px currentColor, 0 0 40px currentColor; }
 }
-@keyframes journal-rotate-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes journal-rotate-slow-r {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(-360deg); }
-}
+/* CETTE FEUILLE N EST PAS CELLE DU JOURNAL, MALGRE SON NOM.
+ *
+ * Releve du 28/08/2026, en rangeant le domaine journal. Elle declare
+ * 119 classes, dont 113 en `jr-` ou `journal-` qui sont bien du
+ * journal — mais les six autres tiennent toute l application :
+ *
+ *   font-orbitron       cite par 64 fichiers, partout
+ *   journal-noise       le fond du systeme de design (DSBackground)
+ *   journal-grid-bg     idem
+ *   journal-scanline    animation, utilisee par DSBackground ET goals.css
+ *   journal-pulse       animation, utilisee par DSPageHeader
+ *   hud-blink           animation
+ *
+ * C est pourquoi `main.tsx` la charge globalement, alors que finance,
+ * analytics et goals sont co-localisees avec leur page. Ce n est pas un
+ * oubli : c est une dette, et la deplacer telle quelle casserait la
+ * typographie de 64 fichiers.
+ *
+ * ELLE RESTE DONC ICI JUSQU A L ETAPE 4 du plan de masse, qui separera
+ * les six globales du reste — avec captures d ecran avant/apres, en
+ * thème sombre et en thème clair, parce que le CSS ne se prouve pas au
+ * compilateur.
+ *
+ * `journal-rotate-slow` et sa jumelle inverse ont ete supprimees le
+ * meme jour : elles n animaient qu un anneau de `DSPageHeader`, un
+ * composant qu aucun ecran ne rendait plus. */
 @keyframes hud-blink {
   0%,90%,100% { opacity: 1; }
   95%         { opacity: 0.2; }

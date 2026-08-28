@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDailyJournalPrompt, useEnregistrerOrientation } from "@/hooks/useJournalPrompt";
+import { useDailyJournalPrompt, useEnregistrerOrientation } from "@/domaines/journal/hooks/useJournalPrompt";
 import { useProfile } from "@/hooks/useProfile";
-import { FAMILLES, famillesRetenues } from "@/lib/journal/familles";
+import { FAMILLES, famillesRetenues } from "@/domaines/journal/logique/familles";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useQuestionCongediee } from "@/hooks/useQuestionCongediee";
+import { useQuestionCongediee } from "@/domaines/journal/hooks/useQuestionCongediee";
 
 interface Props {
   onUse?: (prompt: string) => void;

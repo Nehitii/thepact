@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **2 domaines sur 11**. M.I.A. et santé, le 28/08/2026.
+État : **3 domaines sur 11**. M.I.A., santé et journal, le 28/08/2026.
 
 ---
 
@@ -107,14 +107,51 @@ au rang le plus haut, `AppLayout` et `AppSidebar` qui l'importent devenaient des
 inversions `composants → app`. Elles n'en sont pas : ces fichiers *sont* la
 coquille de l'application, pas des composants réutilisables. Ils rejoignent
 `app/`, et les trois inversions disparaissent au lieu d'être tolérées.
-`ModuleHeader`, lui, reste dans `ds/` — il est réexporté par le système de
-design, c'est sa vraie place.
+`ModuleHeader`, lui, reste dans `components/layout/` — il est réexporté par le
+système de design. *(Le domaine suivant a montré qu'il était mort : il a été
+supprimé le jour même. Voir plus bas.)*
 
 **Un fichier peut porter le nom d'un domaine sans en être.**
 `components/habits/HabitHeatmap.tsx` semblait relever de la santé. Il n'importe
 rien de santé : c'est une carte de chaleur générique, appelée par le dossier
 d'objectif. Il reste dehors. Le critère n'est jamais le nom — c'est ce que le
 fichier importe et qui l'appelle.
+
+---
+
+## Ce que le troisième domaine a ajouté
+
+**Une porte peut être vide, et c'est une information.** Rien, dans le reste de
+l'application, n'appelle le journal — ni l'éditeur, ni les entrées, ni les
+familles de questions. La seule chose que le dehors demande est la *page*, et
+les pages ne passent pas par la porte. Un `index.ts` vide vaut mieux que pas de
+fichier : il dit que la question a été posée.
+
+**Un fichier peut porter le nom du domaine et n'y être pour rien — deux fois.**
+
+`lib/journalSecurite.ts` est le journal de **connexions** (`security_events`),
+lu par les écrans de compte et de MFA. Aucun rapport avec le journal intime.
+
+`components/journal/JournalDecorations.tsx` exportait cinq composants que le
+journal **n'importait pas**. Son unique lecteur était `DSPageHeader`, qui n'en
+prenait que deux ; les trois autres n'avaient aucune référence dans le dépôt.
+
+**Une feuille de style peut porter le nom du domaine et tenir toute l'app.**
+`journal.css` déclare 119 classes, dont 113 en `jr-`/`journal-` — mais les six
+autres sont `font-orbitron` (citée par **64 fichiers**), le fond du système de
+design, et deux animations. C'est pourquoi `main.tsx` la charge globalement
+alors que finance, analytics et goals sont co-localisées avec leur page. Elle
+**n'est pas entrée dans le domaine** : la déplacer telle quelle casserait la
+typographie de 64 fichiers. Le partage revient à l'étape 4, qui a les captures
+d'écran comme instrument.
+
+**Et le fil a mené à du code mort.** En sortant les deux décorations vivantes
+vers `ds/`, j'ai voulu vérifier que l'anneau tournait encore : il n'apparaissait
+dans **aucun morceau du build**. `DSPageHeader` n'est rendu que par
+`ModuleHeader`, marqué `@deprecated` et rendu nulle part. `GoalsHeader` dit le
+remplacer ; `Home` dit s'en passer volontairement. L'élagueur les avait déjà
+vus. Trois fichiers supprimés — dont les décorations que je venais d'extraire
+pour un lecteur mort.
 
 ---
 
@@ -142,10 +179,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 11 | **2 / 11** |
+| domaines rangés | 0 / 11 | **3 / 11** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **20** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **19** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -161,7 +198,7 @@ fichier à sa place.
 
 ---
 
-## Les neuf domaines restants, dans l'ordre
+## Les huit domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -169,7 +206,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 |---|---|---|
 | ✔ | **mia** | 15 |
 | ✔ | **santé** | 15 |
-| 3 | journal | 17 |
+| ✔ | **journal** | 12 |
 | 4 | focus | 23 |
 | 5 | finance | 37 |
 | 6 | agenda | 43 |

@@ -13,11 +13,11 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n/i18n";
-import type { JournalEntry } from "@/types/journal";
+import type { JournalEntry } from "@/domaines/journal/types";
 import { trackJournalEntry } from "@/lib/achievements";
 
-export type { JournalEntry, JournalMood } from "@/types/journal";
-export { MOOD_CONFIG } from "@/types/journal";
+export type { JournalEntry, JournalMood } from "@/domaines/journal/types";
+export { MOOD_CONFIG } from "@/domaines/journal/types";
 
 const PAGE_SIZE = 20;
 const tr = (cle: string, params?: Record<string, unknown>) => i18n.t(cle, params) as string;

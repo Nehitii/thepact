@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
-import { famillesRetenues } from "@/lib/journal/familles";
+import { famillesRetenues } from "@/domaines/journal/logique/familles";
 
 /* ═══════════════════════════════════════════════════════════════
    LA QUESTION DU JOUR

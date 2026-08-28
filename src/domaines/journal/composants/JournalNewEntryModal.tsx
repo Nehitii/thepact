@@ -5,13 +5,13 @@ import { PanelRightClose, PanelRightOpen, SpellCheck, X } from "lucide-react";
 const JournalEditor = lazy(() =>
   import("./JournalEditor").then((m) => ({ default: m.JournalEditor })),
 );
-import { useCreateJournalEntry, useUpdateJournalEntry } from "@/hooks/useJournal";
-import type { JournalEntry } from "@/types/journal";
+import { useCreateJournalEntry, useUpdateJournalEntry } from "@/domaines/journal/hooks/useJournal";
+import type { JournalEntry } from "@/domaines/journal/types";
 import {
   ACCENT_COLORS, MOOD_OPTIONS, FONT_OPTIONS, SIZE_OPTIONS, ALIGN_OPTIONS,
   getAccentEtat,
-} from "@/types/journal";
-import { compterMots, minutesDeLecture, referenceDe, sansParagrapheFinal, texteNu } from "@/lib/journalHtml";
+} from "@/domaines/journal/types";
+import { compterMots, minutesDeLecture, referenceDe, sansParagrapheFinal, texteNu } from "@/domaines/journal/logique/html";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { usePact } from "@/hooks/usePact";
 import { useAuth } from "@/contexts/AuthContext";

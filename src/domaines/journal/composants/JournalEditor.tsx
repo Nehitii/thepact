@@ -14,8 +14,8 @@ import {
   List, ListOrdered, ListChecks, Quote, Minus, Code, Link2, Sparkles,
   Highlighter, RemoveFormatting, Droplet, Check, X, type LucideIcon,
 } from "lucide-react";
-import { EncreEtat, Lueur, Marque } from "./marquesJournal";
-import { MOOD_OPTIONS, getAlign, getFont, getSize } from "@/types/journal";
+import { EncreEtat, Lueur, Marque } from "@/domaines/journal/logique/marques";
+import { MOOD_OPTIONS, getAlign, getFont, getSize } from "@/domaines/journal/types";
 
 /* LA FEUILLE
  *

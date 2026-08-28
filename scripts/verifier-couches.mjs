@@ -65,6 +65,17 @@ const RANGS = [
      logique pure, et n a pas plus le droit d appeler un composant
      parce qu il est voisin. L index est au sommet du domaine — c est
      lui qui assemble, donc lui seul peut tout voir. */
+  /* Un fichier de types d un domaine est inerte, comme `types/` a la
+     racine : rang 0. Sans cette ligne il tombait dans la regle
+     generique `domaines/` au rang 5, et le hook du journal important
+     ses propres types passait pour une inversion.
+
+     `(\.|$)` et non `\.` : ce classement s applique aussi bien au
+     FICHIER `types.ts` qu au CHEMIN D IMPORT `@/domaines/journal/types`,
+     qui lui n a pas d extension. La premiere version n attrapait que le
+     premier des deux, et l inversion restait. */
+  [/^domaines\/[^/]+\/types(\.|$)/, 0, "types de domaine"],
+
   [/^domaines\/[^/]+\/logique\//,    1, "logique de domaine"],
   [/^domaines\/[^/]+\/hooks\//,      4, "hooks de domaine"],
   [/^domaines\/[^/]+\/composants\//, 5, "composants de domaine"],
@@ -133,7 +144,10 @@ const TOLERE = new Map([
   ["components/ui/switch.tsx",  "etape 3 — idem"],
   ["components/ui/tabs.tsx",    "etape 3 — idem"],
   ["components/ds/DSBackground.tsx", "etape 3 — importe CyberBackground et AuraBackground"],
-  ["components/ds/DSPageHeader.tsx", "etape 3 — importe JournalDecorations et use-mobile"],
+  /* `components/ds/DSPageHeader.tsx` a ete supprime le 28/08 : il
+     n etait rendu que par `ModuleHeader`, lui-meme @deprecated et rendu
+     nulle part. L inversion `ds → composants` qu il portait n a pas ete
+     deplacee, elle a disparu avec le code. */
   ["components/focus/FocusToolbar.tsx", "etape 3 — importe pages/Focus pour un type"],
   ["types/finance.ts",       "etape 3 — importe lib/financeCategories"],
 ]);

@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { MoreVertical, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
-import type { JournalEntry } from "@/types/journal";
-import { getMood, getFont, getSize, getAlign, getAccentEtat } from "@/types/journal";
-import { assainirJournal, compterMots, referenceDe } from "@/lib/journalHtml";
-import { useToggleFavorite } from "@/hooks/useJournal";
+import type { JournalEntry } from "@/domaines/journal/types";
+import { getMood, getFont, getSize, getAlign, getAccentEtat } from "@/domaines/journal/types";
+import { assainirJournal, compterMots, referenceDe } from "@/domaines/journal/logique/html";
+import { useToggleFavorite } from "@/domaines/journal/hooks/useJournal";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
