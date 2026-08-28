@@ -3,7 +3,7 @@ import { Loader2, Target, Trophy, Upload, Video, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { teinteDuPalier } from "@/hooks/useCarteObjectif";
+import { teinteDuPalier } from "@/domaines/objectifs";
 import { useCreateVictoryReel, useCompletedGoals } from "@/domaines/social/hooks/useCommunity";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";

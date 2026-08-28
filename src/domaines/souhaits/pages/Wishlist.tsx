@@ -25,8 +25,8 @@ import {
   useUpdatePactWishlistItem,
   type PactWishlistItem,
 } from "@/domaines/souhaits/hooks/usePactWishlist";
-import { usePact } from "@/hooks/usePact";
-import { useGoals } from "@/hooks/useGoals";
+import { usePact } from "@/domaines/objectifs";
+import { useGoals } from "@/domaines/objectifs";
 import { useWishlistGoalSync } from "@/domaines/souhaits/hooks/useWishlistGoalSync";
 import { useWishlistPieces } from "@/domaines/souhaits/hooks/useWishlistPieces";
 import { useDepotImages } from "@/hooks/useDepotImages";

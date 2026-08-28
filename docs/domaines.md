@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **13 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration, succès, profil et social, le 28/08/2026.
+État : **14 domaines sur 15**. Tous rangés sauf le socle, le 28/08/2026.
 
 *Quinze et non onze : l'agenda s'est scindé en deux (sixième domaine), les
 souhaits aussi (huitième), un groupe de huit pages d'administration a été
@@ -481,6 +481,39 @@ fichier : elle attend l'étape 4.
 
 ---
 
+## Ce que le quatorzième domaine a ajouté
+
+**Le motif du type dans le hook, pour la huitième fois — et la plus chère.**
+`Goal` était déclaré dans `hooks/useGoals.ts`, `Pact` dans `hooks/usePact.ts`.
+Ce n'était plus une couche interne qui remontait : **cinq domaines** dépendaient
+d'un hook React pour connaître la forme d'un objectif — la finance pour compter
+les pièces, les souhaits pour la synchronisation, les succès pour l'expérience,
+le social pour choisir un objectif à partager, le profil pour la carte
+d'identité. Les deux types sont descendus dans `types.ts` ; les hooks les
+réexportent ; la porte les expose. `useGoals` maigrit de 35 lignes, `usePact` de
+12.
+
+**Une porte écrite sur un relevé périmé est une porte trouée.** J'avais écrit
+l'index d'après le relevé fait *avant* le déplacement — un relevé qui ne pouvait
+pas voir quatre appels, parce que les trois domaines qui les font n'existaient
+pas encore quand il a été pris. La garde les a trouvés tous les quatre :
+`useResetPact`, `usePactMutation`, `useCarteObjectif`, `PactSelectorModal`.
+
+**Et le coût est dit, pas caché.** Le paquet d'entrée gagne **197 octets** :
+`prefetchData` importe la porte, et les trois petits hooks qu'elle vient
+d'exporter deviennent joignables statiquement. Vérifié : aucune page, aucun
+composant n'est entré — les sept morceaux de pages sont intacts. C'est le prix
+d'une frontière correcte, et il se mesure.
+
+**Deux faux amis de plus, dans les deux sens.** `components/front/FrontListe.tsx`
+est entré malgré son dossier : son en-tête dit « la quatrième vue de la page
+Goals », et son seul lecteur est `GoalsList` — un dossier `front/` pour un seul
+fichier n'était pas un module. `components/analytics/GoalContrats.tsx` est resté
+dehors malgré son nom : il vit avec trois autres composants d'analytique, un
+domaine que le plan n'a toujours pas rangé.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -505,10 +538,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 15 | **13 / 15** |
+| domaines rangés | 0 / 15 | **14 / 15** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **15** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **12** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -524,7 +557,7 @@ fichier à sa place.
 
 ---
 
-## Les deux domaines restants
+## Ce qui reste
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -543,7 +576,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **succès** | 14 |
 | ✔ | **profil** | 38 |
 | ✔ | **social** | 58 |
-| 14 | objectifs | ~60 |
+| ✔ | **objectifs** | 66 |
 | 15 | socle | ~61 |
 
 Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils

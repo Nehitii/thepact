@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { Dices, Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw, X } from "lucide-react";
-import { Goal } from "@/hooks/useGoals";
+import { Goal } from "@/domaines/objectifs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";

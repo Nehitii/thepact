@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Pact } from "@/hooks/usePact";
+import { Pact } from "@/domaines/objectifs";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/domaines/boutique";

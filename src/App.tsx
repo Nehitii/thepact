@@ -18,7 +18,7 @@ const TheCall = lazy(() => import("./pages/TheCall"));
 const Goals = lazy(routeImports.goals);
 const NewGoal = lazy(routeImports.newGoal);
 const GoalDetail = lazy(routeImports.goalDetail);
-const StepDetail = lazy(() => import("./pages/StepDetail"));
+const StepDetail = lazy(() => import("@/domaines/objectifs/pages/StepDetail"));
 const Finance = lazy(routeImports.finance);
 const Journal = lazy(routeImports.journal);
 const Profile = lazy(routeImports.profile);
@@ -43,11 +43,13 @@ const Focus = lazy(routeImports.focus);
 const Analytics = lazy(routeImports.analytics);
 const Friends = lazy(() => import("@/domaines/social/pages/Friends"));
 const Calendar = lazy(routeImports.calendar);
-const ContractSign = lazy(() => import("./pages/ContractSign"));
-const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
+const ContractSign = lazy(() => import("@/domaines/objectifs/pages/ContractSign"));
+const GoalsGraph = lazy(() => import("@/domaines/objectifs/pages/GoalsGraph"));
 const HallOfFame = lazy(() => import("@/domaines/succes/pages/HallOfFame"));
 const GuildPage = lazy(() => import("@/domaines/social/pages/GuildPage"));
-const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
+const PactSelector = lazy(() =>
+  import("@/domaines/objectifs").then((m) => ({ default: m.PactSelectorModal })),
+);
 const Admin = lazy(() => import("@/domaines/administration/pages/Admin"));
 const AdminAcces = lazy(() => import("@/domaines/administration/pages/AdminAcces"));
 const AdminCosmeticsManager = lazy(() => import("@/domaines/administration/pages/AdminCosmeticsManager"));

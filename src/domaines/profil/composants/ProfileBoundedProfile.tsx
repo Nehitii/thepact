@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankCore } from "@/domaines/succes";
 import { useRankXP } from "@/domaines/succes";
-import { usePact } from "@/hooks/usePact";
+import { usePact } from "@/domaines/objectifs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";

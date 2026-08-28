@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CornerBrackets } from "./CornerBrackets";
-import { PactVisual } from "@/components/PactVisual";
+import { PactVisual } from "@/domaines/objectifs";
 import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/lib/preferencesAffichage";
 import { useThemeSombre } from "@/hooks/useThemeSombre";

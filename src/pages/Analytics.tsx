@@ -25,7 +25,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { formatCurrency } from "@/lib/currency";
-import { getDifficultyLabel, getTagLabel } from "@/lib/goalConstants";
+import { getDifficultyLabel, getTagLabel } from "@/domaines/objectifs";
 
 /* ─────────────────────────────────────────────────────────────
    STATISTIQUES

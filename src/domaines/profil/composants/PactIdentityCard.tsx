@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { PactVisual } from "@/components/PactVisual";
+import { PactVisual } from "@/domaines/objectifs";
 import { cn } from "@/lib/utils";
 
 const SYMBOL_OPTIONS = [

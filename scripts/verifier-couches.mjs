@@ -117,7 +117,6 @@ const TOLERE = new Map([
      qu une ligne de logique change — c est ce que le plan de masse
      annoncait. */
 
-  ["lib/brigade.ts",         "etape 3 — importe hooks/useGoals pour un type"],
 
   /* M.I.A. A DEMENAGE (etape 2, 28/08). Les sept tolerances `lib/mia*`
      ont disparu avec les fichiers. Quatre reviennent sous leur nouveau
@@ -132,13 +131,27 @@ const TOLERE = new Map([
   ["domaines/mia/logique/reflexes.ts",      "etape 3 — idem"],
   ["domaines/mia/logique/reflexes.test.ts", "etape 3 — suit reflexes.ts"],
 
-  ["lib/superGoals.ts",      "etape 3 — importe components/goals/super pour un type"],
   /* `lib/todo/natures.ts` allait chercher `TodoTaskType` dans son hook.
      En rangeant les taches (28/08), les NEUF types du domaine sont
      descendus d un coup dans `domaines/taches/types.ts` — quatrieme
      fois que le motif se presente, donc on l a traite en entier plutot
      que de deplacer les deux types genants. `useTodoList` les
      reexporte. */
+
+  /* LES TROIS TOLERANCES DES OBJECTIFS SONT MORTES ENSEMBLE (28/08).
+     `brigade`, `superGoals` et `useGoals` importaient tous un type
+     declare ailleurs — `Goal` dans son hook, `SuperGoalRule` dans un
+     composant. Les deux sont descendus dans
+     `domaines/objectifs/types.ts`, et les hooks les reexportent.
+
+     HUITIEME FOIS LE MOTIF, ET LE PLUS COUTEUX : ce n etait pas une
+     couche interne qui remontait, c etaient CINQ DOMAINES qui
+     dependaient d un hook React pour connaitre la forme d un objectif —
+     la finance pour compter les pieces, les souhaits pour la
+     synchronisation, les succes pour l experience, le social pour
+     choisir un objectif a partager, le profil pour la carte
+     d identite. */
+
   ["hooks/useAnalytics.ts",  "etape 3 — importe PeriodSelector pour son type de periode"],
   ["hooks/useAnalyticsState.ts", "etape 3 — idem"],
   /* `hooks/useCalendarEvents.ts` importait `components/calendar/temps`.
@@ -146,7 +159,6 @@ const TOLERE = new Map([
      le hook chez lui, `temps.ts` dans `logique/`. Ce n etait pas une
      erreur de conception, seulement deux fichiers du meme module ranges
      dans deux couches differentes. */
-  ["hooks/useGoals.ts",      "etape 3 — importe components/goals/super/types"],
   ["hooks/useParticleEffect.tsx", "etape 3 — importe components/ParticleEffect"],
   ["components/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
   ["components/ui/dialog.tsx",  "etape 3 — idem"],

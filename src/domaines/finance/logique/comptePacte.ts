@@ -1,4 +1,4 @@
-import type { Goal } from "@/hooks/useGoals";
+import type { Goal } from "@/domaines/objectifs";
 import type { CostItem } from "@/hooks/useCostItems";
 
 /* CE QUE COUTE LE PACTE, CE QUI EST PAYE, CE QUI RESTE.

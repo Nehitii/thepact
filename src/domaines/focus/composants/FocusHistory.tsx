@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { PomodoroSession } from "@/domaines/focus/hooks/usePomodoro";
-import type { Goal } from "@/hooks/useGoals";
+import type { Goal } from "@/domaines/objectifs";
 import type { TodoTask } from "@/domaines/taches";
 
 const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";

@@ -12,8 +12,8 @@ import {
   getAccentEtat,
 } from "@/domaines/journal/types";
 import { compterMots, minutesDeLecture, referenceDe, sansParagrapheFinal, texteNu } from "@/domaines/journal/logique/html";
-import { useGoals, Goal } from "@/hooks/useGoals";
-import { usePact } from "@/hooks/usePact";
+import { useGoals, Goal } from "@/domaines/objectifs";
+import { usePact } from "@/domaines/objectifs";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";

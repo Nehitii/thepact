@@ -21,9 +21,9 @@ import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";
-import { usePact } from "@/hooks/usePact";
+import { usePact } from "@/domaines/objectifs";
 import { useProfile } from "@/domaines/profil";
-import { useGoals } from "@/hooks/useGoals";
+import { useGoals } from "@/domaines/objectifs";
 import { useUserShop } from "@/domaines/boutique";
 import { useFinanceSettings } from "@/domaines/finance";
 import { useRankXP } from "@/domaines/succes";

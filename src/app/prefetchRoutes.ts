@@ -3,9 +3,9 @@
 
 export const routeImports = {
   home: () => import("@/pages/Home"),
-  goals: () => import("@/pages/Goals"),
-  newGoal: () => import("@/pages/NewGoal"),
-  goalDetail: () => import("@/pages/GoalDetail"),
+  goals: () => import("@/domaines/objectifs/pages/Goals"),
+  newGoal: () => import("@/domaines/objectifs/pages/NewGoal"),
+  goalDetail: () => import("@/domaines/objectifs/pages/GoalDetail"),
   finance: () => import("@/domaines/finance/pages/Finance"),
   journal: () => import("@/domaines/journal/pages/Journal"),
   health: () => import("@/domaines/sante/pages/Health"),

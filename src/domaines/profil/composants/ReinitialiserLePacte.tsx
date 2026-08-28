@@ -7,7 +7,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Bouton } from "@/components/ds/console-ui";
-import { useResetPact } from "@/hooks/useResetPact";
+import { useResetPact } from "@/domaines/objectifs";
 
 /**
  * LA REINITIALISATION DU PACTE A REJOINT LES DEUX AUTRES DESTRUCTIONS.

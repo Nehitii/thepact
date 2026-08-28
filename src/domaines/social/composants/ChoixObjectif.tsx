@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Search, Target, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getStatusLabel } from "@/lib/goalConstants";
-import { teinteDuPalier } from "@/hooks/useCarteObjectif";
+import { getStatusLabel } from "@/domaines/objectifs";
+import { teinteDuPalier } from "@/domaines/objectifs";
 import { useUserGoals, type UserGoal } from "@/domaines/social/hooks/useCommunity";
 
 /* RATTACHER UN OBJECTIF A UNE PUBLICATION.

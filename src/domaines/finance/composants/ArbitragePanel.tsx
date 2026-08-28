@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency, getCurrencySymbol } from "@/lib/currency";
 import { usePactCostItems, useAcquerirPieces, type CostItem } from "@/hooks/useCostItems";
-import type { Goal } from "@/hooks/useGoals";
+import type { Goal } from "@/domaines/objectifs";
 
 /* L ARBITRAGE
  *

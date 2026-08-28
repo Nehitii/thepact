@@ -2,8 +2,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMfa } from "@/domaines/profil";
 import { useProfile } from "@/domaines/profil";
-import { usePact } from "@/hooks/usePact";
-import { useSharedPacts } from "@/hooks/useSharedPacts";
+import { usePact } from "@/domaines/objectifs";
+import { useSharedPacts } from "@/domaines/objectifs";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

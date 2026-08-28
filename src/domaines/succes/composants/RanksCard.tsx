@@ -11,7 +11,7 @@ import { RankCard } from "@/domaines/succes/composants/RankCard";
 import { RankEditor } from "@/domaines/succes/composants/RankEditor";
 import type { Rank } from "@/domaines/succes/types";
 import { useRankXP } from "@/domaines/succes/hooks/useRankXP";
-import { usePact } from "@/hooks/usePact";
+import { usePact } from "@/domaines/objectifs";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trophy, Plus, Trash2, Edit2, Sparkles, Target, MoreVertical, Info } from "lucide-react";
