@@ -38,7 +38,9 @@ interface RegleAutomatisation {
 
 interface LigneHabitude { goal_id: string | null; log_date: string; streak_count: number | null; completed: boolean | null }
 interface LigneIdent { id: string }
-interface LigneTransaction { amount: number | string | null; category: string | null; transaction_type: string | null }
+/* `LigneTransaction` décrivait une ligne de `bank_transactions`, table
+   supprimée le 20/08. Le seul cas qui l'employait lève désormais — le
+   type n'a plus rien à décrire. */
 interface LigneSeance { duration_seconds: number | null }
 
 const corsHeaders = {
@@ -86,12 +88,29 @@ async function evalTrigger(sb: ClientSupabase, userId: string, rule: RegleAutoma
       return (data?.length ?? 0) > 0;
     }
     case "budget_exceeded": {
-      const monthStart = new Date(); monthStart.setUTCDate(1);
-      const ws = monthStart.toISOString().slice(0, 10);
-      const { data } = await sb.from("bank_transactions").select("amount,category,transaction_type").eq("user_id", userId).gte("transaction_date", ws).eq("transaction_type", "expense").returns<LigneTransaction[]>();
-      const total = (data ?? []).filter((t) => !cfg.category || t.category === cfg.category).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-      const threshold = Number(cfg.threshold ?? 0);
-      return threshold > 0 && total >= threshold;
+      /* ═══ CETTE RÈGLE N'A PLUS DE SOURCE, ET ELLE LE DIT ═══
+
+         Elle interrogeait `bank_transactions`, supprimée le 20/08 par
+         la migration `recentrer_finance_sur_le_pacte` en même temps que
+         `user_accounts`. Personne n'a repris ce cas.
+
+         CE QU'ELLE FAISAIT AVANT CETTE CORRECTION EST PIRE QUE DE NE
+         RIEN FAIRE : la requête échouait, `data` valait null, le total
+         tombait à zéro, et `total >= threshold` restait faux. Une règle
+         que quelqu'un aurait configurée ne se serait JAMAIS déclenchée,
+         sans un message, sans une trace. Une panne silencieuse dans un
+         moteur de règles est indétectable par construction — on attend
+         une notification qui ne vient pas, et rien ne dit pourquoi.
+
+         On lève donc. `user_automation_rules` est vide au 28/08 :
+         personne ne peut être surpris aujourd'hui. Le jour où l'écran
+         qui manque permettra de créer une telle règle, l'erreur dira
+         quoi rebrancher — probablement `recurring_expenses` et
+         `pact_spending`, qui sont ce qui reste des dépenses. */
+      throw new Error(
+        "budget_exceeded est hors service : sa source bank_transactions a été supprimée le 20/08. " +
+          "À rebrancher sur les tables de dépenses actuelles avant de proposer cette règle.",
+      );
     }
     case "low_focus_week": {
       const since = new Date(Date.now() - 7 * 86400000).toISOString();
