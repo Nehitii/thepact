@@ -518,7 +518,7 @@
     }
   ],
   "prochainesEtapes": [
-    "Brancher GitHub et Google : Discord est actif depuis le 28/08/2026 et le parcours complet a ete verifie. Il reste a creer les applications chez les deux autres et a poser identifiant et secret dans Supabase. Marche a suivre dans docs/fournisseurs-oauth.md.",
+    "Brancher Google, dernier des trois fournisseurs. Discord et GitHub sont actifs depuis le 28/08/2026, parcours complet verifie pour les deux. Google demande en plus un ecran de consentement : la portee openid est a ajouter a la main, et l audience doit etre publiee sinon seuls les testeurs declares peuvent se connecter. Marche a suivre dans docs/fournisseurs-oauth.md.",
     "Poser le secret VAPID_SUBJECT avant de déployer push-send : c'est l'adresse de contact envoyée aux services de push, et la fonction ne peut pas s'en passer.",
     "Trancher la licence de Switzer. Elle est auto-hébergée donc redistribuée, et son ITF Free Font License n'est pas libre : plusieurs sources indiquent que l'auto-hébergement demande l'accord écrit d'ITF. Les quatre autres polices sont en OFL 1.1, vérifiées à la source.",
     "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
