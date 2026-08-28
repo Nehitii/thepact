@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FocusPanels } from "./FocusPanels";
 import type { Goal } from "@/hooks/useGoals";
-import type { TodoTask } from "@/hooks/useTodoList";
+import type { TodoTask } from "@/domaines/taches";
 import type { ObjetClause } from "@/domaines/focus/types";
 
 export type FocusPanel = "config" | "media" | "stats" | "history" | null;

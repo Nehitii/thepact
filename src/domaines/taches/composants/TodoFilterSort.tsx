@@ -1,6 +1,6 @@
 import { ChevronDown, ArrowDown, ArrowUp, List, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NATURES_TACHE } from '@/lib/todo/natures';
+import { NATURES_TACHE } from '@/domaines/taches/logique/natures';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTranslation } from 'react-i18next';
 

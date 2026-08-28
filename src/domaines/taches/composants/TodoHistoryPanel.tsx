@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trash2, Clock, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
-import { useTodoList } from '@/hooks/useTodoList';
+import { useTodoList } from '@/domaines/taches/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,

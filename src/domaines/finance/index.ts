@@ -26,3 +26,10 @@
  * disparu avec eux.
  */
 export { fetchFinanceSettings, useFinanceSettings } from "./hooks/useFinance";
+
+/* LE POINTAGE DU MOIS. Il vivait dans `hooks/`, et un releve par mot
+   l avait d abord classe avec les taches — « pointage » evoque une
+   liste a cocher. C est une ligne par prelevement constate, avec son
+   montant reel : ses deux appelants sont le parcours du mois et la
+   page souhaits, qui parlent d argent tous les deux. */
+export { useEcrirePointage, useEffacerPointage } from "./hooks/usePointages";

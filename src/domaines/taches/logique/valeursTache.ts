@@ -1,4 +1,4 @@
-import type { TodoPriority, TodoTaskType, ReminderFrequency } from "@/hooks/useTodoList";
+import type { TodoPriority, TodoTaskType, ReminderFrequency } from "@/domaines/taches/types";
 
 /* Ce que le terminal de saisie tient, et ce que la base attend. La
    conversion se faisait deux fois — une par formulaire — avec les

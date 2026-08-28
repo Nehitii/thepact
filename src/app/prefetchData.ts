@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { shouldSkipPrefetch } from "./prefetchRoutes";
 import { fetchPact } from "@/hooks/usePact";
 import { fetchGoals } from "@/hooks/useGoals";
-import { fetchTodoTasks } from "@/hooks/useTodoList";
+import { fetchTodoTasks } from "@/domaines/taches";
 import { fetchFinanceSettings } from "@/domaines/finance";
 import { fetchTodayHealth } from "@/domaines/sante";
 import { fetchFocusSessions } from "@/domaines/focus";

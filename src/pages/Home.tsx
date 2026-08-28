@@ -20,7 +20,7 @@ import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
-import { useTodoReminders } from "@/hooks/useTodoReminders";
+import { useTodoReminders } from "@/domaines/taches";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";

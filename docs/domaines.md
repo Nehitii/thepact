@@ -4,7 +4,9 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **5 domaines sur 11**. M.I.A., santé, journal, focus et finance, le 28/08/2026.
+État : **6 domaines sur 12**. M.I.A., santé, journal, focus, finance et tâches, le 28/08/2026.
+
+*Douze et non onze : l agenda s’est scindé en deux — voir le sixième domaine.*
 
 ---
 
@@ -216,6 +218,40 @@ faire qu'annoncé : la fusion est cosmétique côté source, pas côté réseau.
 
 ---
 
+## Ce que le sixième domaine a ajouté
+
+**Un domaine annoncé peut en cacher deux.** Le plan comptait « agenda,
+43 fichiers » — calendrier et tâches ensemble. Avant de bouger, j'ai mesuré le
+couplage dans les deux sens :
+
+| | |
+|---|---|
+| calendrier → tâches | `useCalendarEvents` interroge `todo_tasks`, importe `TodoTaskType` et `natureDe` ; `calendar/sources.ts` importe `natureDe` |
+| tâches → calendrier | l'icône `Calendar` de lucide, et le `calendar` de shadcn |
+
+**Une flèche, pas deux.** Ce sont donc deux domaines, et non un de quarante-trois
+fichiers. Le plan passe de onze à douze.
+
+**La première vraie flèche entre deux domaines passe par la porte.**
+`@/domaines/taches` exporte quatre choses, dont trois pour le calendrier :
+`useTodoList`, `natureDe`, `estRendezVous`. C'est le premier cas où la garde des
+domaines garde autre chose que le vide.
+
+**Quatrième fois le même motif — donc on le traite en entier.** `natures.ts` et
+`valeursTache.ts` importaient des types depuis `useTodoList`. Après
+`ExpressionMia`, `ObjetClause` et `FinanceCategory`, ce ne sont plus les deux
+types gênants qui descendent : **les neuf** types du domaine passent dans
+`types.ts`, et le hook les réexporte. Il maigrit de 62 lignes.
+
+**Deux faux amis de plus, tous deux sur le mot.** `usePointages` — « pointage »
+évoque une liste à cocher ; c'est une ligne par prélèvement constaté, appelée
+par le parcours du mois et la page souhaits. Parti chez la finance.
+`useDailyQuests` / `DailyQuestsPanel` — les ordres du jour lisent `daily_quests`
+avec saison, statut et récompense en bonds : c'est de la gamification, pas une
+liste de tâches. Ils partiront avec le profil.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -240,10 +276,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 11 | **5 / 11** |
+| domaines rangés | 0 / 12 | **6 / 12** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **17** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **16** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -270,7 +306,8 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **journal** | 12 |
 | ✔ | **focus** | 19 |
 | ✔ | **finance** | 33 |
-| 6 | agenda | 43 |
+| ✔ | **tâches** | 18 |
+| 7 | agenda (calendrier) | 25 |
 | 7 | souhaits | 52 |
 | 8 | profil | 55 |
 | 9 | guildes | 57 |

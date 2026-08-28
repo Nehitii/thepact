@@ -1,5 +1,5 @@
 import { Sparkles, Hourglass, CalendarClock, Clock, type LucideIcon } from "lucide-react";
-import type { TodoTaskType } from "@/hooks/useTodoList";
+import type { TodoTaskType } from "@/domaines/taches/types";
 
 /* ═══════════════════════════════════════════════════════════════
    LES QUATRE NATURES D'UNE TÂCHE, DÉFINIES UNE FOIS

@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
 import { format, startOfMonth } from "date-fns";
 import { fr as dateFr } from "date-fns/locale";
-import { useEcrirePointage, useEffacerPointage } from "@/hooks/usePointages";
+import { useEcrirePointage, useEffacerPointage } from "@/domaines/finance";
 import { Globe, Grid2X2, Plus, Rows3, Search } from "lucide-react";
 import {
   PactWishlistItemType,

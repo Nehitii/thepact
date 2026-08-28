@@ -3,7 +3,7 @@ import { format, isPast, isToday, isTomorrow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
-import type { TodoTask, TodoStats } from "@/hooks/useTodoList";
+import type { TodoTask, TodoStats } from "@/domaines/taches/hooks/useTodoList";
 
 /* LE CARTOUCHE
  *

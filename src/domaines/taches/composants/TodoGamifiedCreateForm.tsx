@@ -1,6 +1,6 @@
-import type { CreateTaskInput, TodoTaskType } from "@/hooks/useTodoList";
+import type { CreateTaskInput, TodoTaskType } from "@/domaines/taches/hooks/useTodoList";
 import { TodoFormulaire } from "./TodoFormulaire";
-import { versEntree } from "./valeursTache";
+import { versEntree } from "@/domaines/taches/logique/valeursTache";
 
 /* La creation et l edition partageaient quatre cents lignes identiques
    a la virgule pres — la seconde avec ses libelles anglais en dur. Il

@@ -16,11 +16,11 @@ import {
   endOfWeek,
   parseISO,
 } from 'date-fns';
-import { TodoTask } from '@/hooks/useTodoList';
+import { TodoTask } from '@/domaines/taches/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { categorieDe, fondDe } from '@/lib/todo/categories';
+import { categorieDe, fondDe } from '@/domaines/taches/logique/categories';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 interface TodoCalendarViewProps {

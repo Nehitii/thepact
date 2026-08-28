@@ -6,7 +6,7 @@ import { Maximize, Minimize, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/domaines/focus/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
-import { useTodoList } from "@/hooks/useTodoList";
+import { useTodoList } from "@/domaines/taches";
 import { usePact } from "@/hooks/usePact";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";

@@ -26,7 +26,7 @@ import { chercherGeste, type Geste } from "@/domaines/mia/logique/gestes";
 import { POSSIBLES, GROUPES } from "@/domaines/mia/logique/possibles";
 import { causeDeLEchec, excuseMia, apaiser } from "@/domaines/mia/logique/excuses";
 import { humeurAmbiante } from "@/domaines/mia/logique/humeur";
-import { useTodoList } from "@/hooks/useTodoList";
+import { useTodoList } from "@/domaines/taches";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 
 /**

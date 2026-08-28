@@ -6,24 +6,24 @@ import {
   type DragEndEvent, type DragStartEvent, type DropAnimation,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { useTodoList, TodoTask } from '@/hooks/useTodoList';
+import { useTodoList, TodoTask } from '@/domaines/taches/hooks/useTodoList';
 import { DSPageShell, DSBackground, DSPageLoader } from '@/components/ds';
-import { TodoLigne } from '@/components/todo/TodoLigne';
-import { TodoCartouche } from '@/components/todo/TodoCartouche';
-import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
-import { TodoHistoryPanel } from '@/components/todo/TodoHistoryPanel';
-import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
-import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
-import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
-import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
-import { FocusOverlay } from '@/components/todo/FocusOverlay';
-import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
+import { TodoLigne } from '@/domaines/taches/composants/TodoLigne';
+import { TodoCartouche } from '@/domaines/taches/composants/TodoCartouche';
+import { TodoGamifiedCreateForm } from '@/domaines/taches/composants/TodoGamifiedCreateForm';
+import { TodoHistoryPanel } from '@/domaines/taches/composants/TodoHistoryPanel';
+import { TodoCalendarView } from '@/domaines/taches/composants/TodoCalendarView';
+import { TodoFilterSort, SortField, SortDirection } from '@/domaines/taches/composants/TodoFilterSort';
+import { TodoEditForm, UpdateTaskInput } from '@/domaines/taches/composants/TodoEditForm';
+import { QuickTaskInput } from '@/domaines/taches/composants/QuickTaskInput';
+import { FocusOverlay } from '@/domaines/taches/composants/FocusOverlay';
+import { TodoCommandInfo } from '@/domaines/taches/composants/TodoCommandInfo';
 import { useTranslation } from 'react-i18next';
 import { useDialogueConsole } from '@/hooks/useDialogueConsole';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import '@/styles/todo.css';
+import '@/domaines/taches/taches.css';
 import { PREF } from "@/lib/preferencesAffichage";
 
 /* TSK.01 — LA CONSOLE D OPERATIONS

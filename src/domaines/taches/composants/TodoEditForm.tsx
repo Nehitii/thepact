@@ -1,6 +1,6 @@
-import type { TodoPriority, TodoTask, ReminderFrequency } from "@/hooks/useTodoList";
+import type { TodoPriority, TodoTask, ReminderFrequency } from "@/domaines/taches/hooks/useTodoList";
 import { TodoFormulaire } from "./TodoFormulaire";
-import { versEntree } from "./valeursTache";
+import { versEntree } from "@/domaines/taches/logique/valeursTache";
 
 /* Meme terminal que la creation, avec la tache pre-remplie et son
    identifiant rendu au dessus. */

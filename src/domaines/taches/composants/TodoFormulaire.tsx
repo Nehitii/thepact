@@ -7,16 +7,16 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { CATEGORIES_TACHE } from "@/lib/todo/categories";
-import { NATURES_TACHE } from "@/lib/todo/natures";
+import { CATEGORIES_TACHE } from "@/domaines/taches/logique/categories";
+import { NATURES_TACHE } from "@/domaines/taches/logique/natures";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
-import type { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from "@/hooks/useTodoList";
+import type { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from "@/domaines/taches/hooks/useTodoList";
 import { Calendar as CalendrierChoix } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { ValeursTache } from "./valeursTache";
+import type { ValeursTache } from "@/domaines/taches/logique/valeursTache";
 
 /* LE TERMINAL DE SAISIE
  *

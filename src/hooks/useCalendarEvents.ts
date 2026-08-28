@@ -11,8 +11,8 @@ import {
   startOfDay, endOfDay, addHours, format as formaterDate,
 } from "date-fns";
 import { trackCalendarEventCreated } from "@/lib/achievements";
-import type { TodoTaskType } from "@/hooks/useTodoList";
-import { natureDe, estRendezVous } from "@/lib/todo/natures";
+import type { TodoTaskType } from "@/domaines/taches";
+import { natureDe, estRendezVous } from "@/domaines/taches";
 import { composerInstant } from "@/components/calendar/temps";
 
 /**

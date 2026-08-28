@@ -11,7 +11,7 @@ import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDialogueConsole } from "@/hooks/useDialogueConsole";
 import { useParticleEffect } from "@/hooks/useParticleEffect";
-import type { TodoTask } from "@/hooks/useTodoList";
+import type { TodoTask } from "@/domaines/taches/hooks/useTodoList";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";

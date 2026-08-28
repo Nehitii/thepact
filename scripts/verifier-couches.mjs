@@ -133,7 +133,12 @@ const TOLERE = new Map([
   ["domaines/mia/logique/reflexes.test.ts", "etape 3 — suit reflexes.ts"],
 
   ["lib/superGoals.ts",      "etape 3 — importe components/goals/super pour un type"],
-  ["lib/todo/natures.ts",    "etape 3 — importe hooks/useTodoList pour un type"],
+  /* `lib/todo/natures.ts` allait chercher `TodoTaskType` dans son hook.
+     En rangeant les taches (28/08), les NEUF types du domaine sont
+     descendus d un coup dans `domaines/taches/types.ts` — quatrieme
+     fois que le motif se presente, donc on l a traite en entier plutot
+     que de deplacer les deux types genants. `useTodoList` les
+     reexporte. */
   ["hooks/useAnalytics.ts",  "etape 3 — importe PeriodSelector pour son type de periode"],
   ["hooks/useAnalyticsState.ts", "etape 3 — idem"],
   ["hooks/useCalendarEvents.ts", "etape 3 — importe components/calendar/temps"],

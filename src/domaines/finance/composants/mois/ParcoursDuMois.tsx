@@ -46,7 +46,7 @@ import {
   useAddRecurringExpense, useAddRecurringIncome,
   useMonthlyValidation, useUpsertMonthlyValidation,
 } from '@/domaines/finance/hooks/useFinance';
-import { usePointages, useEcrirePointage, useEffacerPointage } from '@/hooks/usePointages';
+import { usePointages, useEcrirePointage, useEffacerPointage } from '@/domaines/finance/hooks/usePointages';
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
