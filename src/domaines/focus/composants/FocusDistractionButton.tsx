@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Brain, X, Smartphone, MessageSquare, Users, CloudLightning, Coffee, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useLogFocusDistraction } from "@/hooks/useFocusDistractions";
+import { useLogFocusDistraction } from "@/domaines/focus/hooks/useFocusDistractions";
 
 /* LE CARNET DE DISTRACTIONS
  *

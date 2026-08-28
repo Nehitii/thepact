@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { FocusFond } from "./FocusFond";
-import { VARIANTES_FOND, type VarianteFond } from "./variantesFond";
+import { VARIANTES_FOND, type VarianteFond } from "@/domaines/focus/logique/variantesFond";
 
 const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";
 

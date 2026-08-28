@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **3 domaines sur 11**. M.I.A., santé et journal, le 28/08/2026.
+État : **4 domaines sur 11**. M.I.A., santé, journal et focus, le 28/08/2026.
 
 ---
 
@@ -155,6 +155,30 @@ pour un lecteur mort.
 
 ---
 
+## Ce que le quatrième domaine a ajouté
+
+**Un domaine peut avoir deux index sans se contredire**, tant que l'un regarde
+dedans et l'autre dehors. `composants/index.ts` réexporte les douze composants
+que `pages/Focus` importe d'un coup : c'est un confort interne, il existait déjà
+avant le rangement. `index.ts` à la racine du domaine est la porte, et elle
+n'exporte **qu'une fonction** — `fetchFocusSessions`, appelée par
+`app/prefetchData`.
+
+**Un type défini dans une page est une inversion en attente.** `FocusToolbar`
+allait chercher `ObjetClause` dans `pages/Focus` : la dernière inversion
+`composants → pages` du dépôt. Le type est descendu dans
+`domaines/focus/types.ts`, la page le réexporte, et l'inversion disparaît. Même
+geste que `ExpressionMia` sur le premier domaine — c'est un motif, pas un
+accident.
+
+**La preuve la plus forte de la séance : le paquet d'entrée a gardé le même
+hachage.** Pas la même taille — le même fichier, `index-D--UZ_2i.js`. Les
+chemins d'import disparaissent au bundling, donc un domaine déjà entièrement
+chargé en différé se range sans toucher au chemin critique. Quand le hachage
+change alors qu'on n'a fait que déplacer, c'est qu'on a déplacé plus que prévu.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -179,10 +203,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 11 | **3 / 11** |
+| domaines rangés | 0 / 11 | **4 / 11** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **19** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **18** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -198,7 +222,7 @@ fichier à sa place.
 
 ---
 
-## Les huit domaines restants, dans l'ordre
+## Les sept domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -207,7 +231,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **mia** | 15 |
 | ✔ | **santé** | 15 |
 | ✔ | **journal** | 12 |
-| 4 | focus | 23 |
+| ✔ | **focus** | 19 |
 | 5 | finance | 37 |
 | 6 | agenda | 43 |
 | 7 | souhaits | 52 |

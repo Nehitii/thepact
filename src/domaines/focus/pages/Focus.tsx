@@ -1,8 +1,10 @@
+import type { ObjetClause } from "@/domaines/focus/types";
+export type { ObjetClause };
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Maximize, Minimize, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/hooks/usePomodoro";
+import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/domaines/focus/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
 import { usePact } from "@/hooks/usePact";
@@ -12,7 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { DSPageShell } from "@/components/ds";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
-import "@/styles/focus.css";
+import "@/domaines/focus/focus.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +37,7 @@ import {
   type VarianteFond,
   FocusControls,
   type FocusPanel,
-} from "@/components/focus";
+} from "@/domaines/focus/composants/index";
 import { PREF } from "@/lib/preferencesAffichage";
 
 /* Reglages et objectif lie survivent au demontage, comme la session
@@ -54,7 +56,7 @@ import { PREF } from "@/lib/preferencesAffichage";
  * Un seul emplacement rend la chose impossible par construction, au lieu
  * de la rendre seulement improbable. Les deux colonnes de la base sont
  * derivees au moment de l ecriture, la ou elles existent vraiment. */
-export type ObjetClause = { type: "goal" | "todo"; id: string } | null;
+
 
 function lireObjet(): ObjetClause {
   try {

@@ -13,7 +13,7 @@ import { useReducedMotion } from "framer-motion";
  * pas du tout : la boucle n est meme pas lancee.
  */
 
-import type { VarianteFond } from "./variantesFond";
+import type { VarianteFond } from "@/domaines/focus/logique/variantesFond";
 export type { VarianteFond };
 
 

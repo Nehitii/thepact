@@ -1,6 +1,6 @@
 export { FocusSeal } from "./FocusSeal";
 export { FocusFond } from "./FocusFond";
-export { VARIANTES_FOND, type VarianteFond } from "./variantesFond";
+export { VARIANTES_FOND, type VarianteFond } from "@/domaines/focus/logique/variantesFond";
 export { FocusControls } from "./FocusControls";
 export { FocusStats } from "./FocusStats";
 export { FocusHistory } from "./FocusHistory";

@@ -148,7 +148,10 @@ const TOLERE = new Map([
      n etait rendu que par `ModuleHeader`, lui-meme @deprecated et rendu
      nulle part. L inversion `ds → composants` qu il portait n a pas ete
      deplacee, elle a disparu avec le code. */
-  ["components/focus/FocusToolbar.tsx", "etape 3 — importe pages/Focus pour un type"],
+  /* `components/focus/FocusToolbar.tsx` allait chercher `ObjetClause`
+     dans `pages/Focus` : la derniere inversion `composants → pages` du
+     depot. Le type est descendu dans `domaines/focus/types.ts` en
+     rangeant le domaine (28/08), et la page le reexporte. */
   ["types/finance.ts",       "etape 3 — importe lib/financeCategories"],
 ]);
 

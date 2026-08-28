@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useReducedMotion } from "framer-motion";
-import type { PomodoroPhase } from "@/hooks/usePomodoro";
+import type { PomodoroPhase } from "@/domaines/focus/hooks/usePomodoro";
 
 /* LE SCELLÉ
  *

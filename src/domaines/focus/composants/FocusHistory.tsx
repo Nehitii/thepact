@@ -3,7 +3,7 @@ import { ChevronDown, Check, X, Clock, Target, ListTodo, History } from "lucide-
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import type { PomodoroSession } from "@/hooks/usePomodoro";
+import type { PomodoroSession } from "@/domaines/focus/hooks/usePomodoro";
 import type { Goal } from "@/hooks/useGoals";
 import type { TodoTask } from "@/hooks/useTodoList";
 

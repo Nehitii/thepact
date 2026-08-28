@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FocusPanels } from "./FocusPanels";
 import type { Goal } from "@/hooks/useGoals";
 import type { TodoTask } from "@/hooks/useTodoList";
-import type { ObjetClause } from "@/pages/Focus";
+import type { ObjetClause } from "@/domaines/focus/types";
 
 export type FocusPanel = "config" | "media" | "stats" | "history" | null;
 
