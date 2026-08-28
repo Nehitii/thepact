@@ -70,6 +70,21 @@ interface Regle {
   intention: string;
   /** Tous les mots d'un groupe doivent être là ; un groupe suffit. */
   motifs: string[][];
+  /**
+   * Au-delà de tant de mots, ce n'est plus cette intention.
+   *
+   * UN MOT COURANT NE PORTE PAS UNE INTENTION À LUI SEUL. « résume »,
+   * « aide », « super », « stupide » apparaissent dans des phrases qui
+   * ne demandent rien de tel — et le motif teste l'APPARTENANCE, pas
+   * une séquence : un groupe se satisfait de ses mots présents
+   * n'importe où.
+   *
+   * Le plafond dit combien de mots une phrase peut avoir tout en
+   * restant CETTE demande-là. Il diffère par intention parce que les
+   * intentions diffèrent : une salutation se permet « bonjour,
+   * comment vas-tu aujourd'hui ? », un remerciement non.
+   */
+  motsMax?: number;
   repondre: (e: EtatDuJour) => Reflexe | null;
 }
 
@@ -77,6 +92,7 @@ const REGLES: Regle[] = [
   /* ── L'ÉTAT ── */
   {
     intention: "etat",
+    motsMax: 6,
     motifs: [
       ["ou", "j", "en", "suis"],
       ["ou", "en", "suis", "je"],
@@ -111,10 +127,15 @@ const REGLES: Regle[] = [
   /* ── LE TEMPS QUI RESTE ── */
   {
     intention: "reste",
+    motsMax: 12,
+    /* « il reste combien » SANS « jours » attrapait « combien
+       d'étapes il me reste ? », qui appartient à l'intention
+       suivante. Cette règle-ci parle de l'échéance du pacte : elle
+       doit le dire. */
     motifs: [
       ["combien", "jours"],
       ["reste", "jours"],
-      ["il", "reste", "combien"],
+      ["il", "reste", "combien", "jours"],
       ["echeance", "pacte"],
       ["quand", "finit"],
       ["quand", "se", "termine"],
@@ -137,6 +158,7 @@ const REGLES: Regle[] = [
   /* ── LES ÉTAPES ── */
   {
     intention: "etapes",
+    motsMax: 12,
     motifs: [
       ["combien", "etapes"],
       ["reste", "etapes"],
@@ -164,10 +186,15 @@ const REGLES: Regle[] = [
   /* ── LES TÂCHES ── */
   {
     intention: "taches",
+    motsMax: 8,
+    /* ["a", "faire"] ÉTAIT LE GROUPE LE PLUS LARGE DU FICHIER. Deux
+       mots parmi les plus courants du français, testés en
+       appartenance : « ça a l'air de faire du bien » le déclenchait.
+       Il faut un troisième mot pour que la demande existe. */
     motifs: [
       ["mes", "taches"],
       ["quoi", "faire"],
-      ["a", "faire"],
+      ["reste", "a", "faire"],
       ["ma", "todo"],
       ["taches", "ouvertes"],
       ["qu", "est", "ce", "qu", "il", "reste", "a", "faire"],
@@ -196,6 +223,7 @@ const REGLES: Regle[] = [
   /* ── LE FOCUS ── */
   {
     intention: "focus",
+    motsMax: 12,
     motifs: [
       ["combien", "focus"],
       ["mon", "focus"],
@@ -224,6 +252,7 @@ const REGLES: Regle[] = [
   /* ── LES ORDRES DU JOUR ── */
   {
     intention: "ordres",
+    motsMax: 12,
     motifs: [
       ["ordres", "du", "jour"],
       ["mes", "quetes"],
@@ -247,6 +276,7 @@ const REGLES: Regle[] = [
   /* ── LE SOLDE ── */
   {
     intention: "solde",
+    motsMax: 12,
     motifs: [["mon", "solde"], ["combien", "bonds"], ["j", "ai", "combien", "de", "bonds"]],
     repondre: (e) =>
       e.solde == null
@@ -261,6 +291,7 @@ const REGLES: Regle[] = [
      déjà — c'est une conversation. */
   {
     intention: "aide",
+    motsMax: 5,
     motifs: [["aide"], ["aide", "moi"], ["tu", "sais", "faire", "quoi"], ["que", "sais", "tu", "faire"], ["commandes"]],
     repondre: () => ({
       intention: "aide",
@@ -279,6 +310,7 @@ const REGLES: Regle[] = [
      aujourd'hui ? » : la question suivante viendra toute seule. */
   {
     intention: "salut",
+    motsMax: 8,
     motifs: [["bonjour"], ["salut"], ["hey"], ["coucou"], ["bonsoir"], ["yo"]],
     repondre: (e) => ({
       intention: "salut",
@@ -292,6 +324,7 @@ const REGLES: Regle[] = [
   },
   {
     intention: "merci",
+    motsMax: 4,
     motifs: [["merci"], ["nickel"], ["parfait"], ["super"]],
     repondre: () => ({
       intention: "merci",
@@ -301,6 +334,7 @@ const REGLES: Regle[] = [
   },
   {
     intention: "adieu",
+    motsMax: 6,
     motifs: [["a", "plus"], ["bonne", "nuit"], ["salut", "a", "demain"], ["au", "revoir"], ["bye"]],
     repondre: () => ({
       intention: "adieu",
@@ -314,11 +348,20 @@ const REGLES: Regle[] = [
      enregistre, elle ne juge pas. */
   {
     intention: "provocation",
+    motsMax: 6,
+    /* ["idiote"] ET ["stupide"] SEULS ÉTAIENT UNE ERREUR DE NATURE.
+       Une insulte se définit par son DESTINATAIRE, pas par sa
+       longueur : « cette approche est stupide » fait quatre mots,
+       « tu es stupide » aussi. Aucun plafond ne les sépare — seul le
+       sujet le fait. On exige donc qu'on la lui adresse. */
     motifs: [
       ["tu", "sers", "a", "rien"],
       ["t", "es", "nulle"],
-      ["idiote"],
-      ["stupide"],
+      ["tu", "es", "nulle"],
+      ["tu", "es", "stupide"],
+      ["t", "es", "stupide"],
+      ["tu", "es", "idiote"],
+      ["t", "es", "idiote"],
       ["ferme", "la"],
       ["tais", "toi"],
     ],
@@ -349,9 +392,41 @@ export function chercherReflexe(question: string, etat: EtatDuJour | undefined):
      exprès — on préfère rater un réflexe que rater une vraie question. */
   if (mots.length > 12) return null;
 
+  /* ═══ LE GROUPE LE PLUS LONG L'EMPORTE, PAS LE PREMIER DÉCLARÉ ═══
+
+     On rendait la première règle qui collait. L'ordre de déclaration
+     décidait donc des conflits, et il décidait mal : « tu sais faire
+     quoi ? » collait à ["quoi", "faire"] de « taches » avant
+     d'atteindre ["tu", "sais", "faire", "quoi"] de « aide », qui
+     décrit pourtant exactement la question posée.
+
+     Le nombre de mots d'un groupe mesure ce qu'il a fallu reconnaître
+     pour conclure. Quatre mots reconnus valent mieux que deux : c'est
+     une lecture plus engagée, donc plus sûre. À égalité, l'ordre de
+     déclaration tranche encore — d'où le « > » strict. */
+  const candidates: { regle: Regle; poids: number }[] = [];
+
   for (const regle of REGLES) {
-    const colle = regle.motifs.some((groupe) => groupe.every((m) => ensemble.has(m)));
-    if (!colle) continue;
+    /* Le plafond d'abord : au-delà, ce n'est plus cette intention,
+       quel que soit le groupe qui collerait. */
+    if (regle.motsMax !== undefined && mots.length > regle.motsMax) continue;
+    let poids = 0;
+    for (const groupe of regle.motifs) {
+      if (groupe.length > poids && groupe.every((m) => ensemble.has(m))) poids = groupe.length;
+    }
+    if (poids) candidates.push({ regle, poids });
+  }
+
+  /* ON GARDE LE REPLI DE LA VERSION D'AVANT. Elle parcourait les règles
+     et ne rendait que si `repondre` donnait quelque chose : une règle
+     qui colle mais ne peut pas répondre — « où j'en suis » sans pacte —
+     laissait sa place à la suivante. Trier ne doit pas supprimer ce
+     repli, seulement en changer l'ordre.
+
+     `sort` est stable en JavaScript depuis ES2019 : à poids égal,
+     l'ordre de déclaration est conservé. */
+  candidates.sort((x, y) => y.poids - x.poids);
+  for (const { regle } of candidates) {
     const r = regle.repondre(etat);
     if (r) return r;
   }
