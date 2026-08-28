@@ -7,9 +7,8 @@
 -- Renommer les tables sans elles aurait cassé le site en production.
 --
 -- IL A ÉTÉ REDÉPLOYÉ. Et on ne le croit pas sur parole : le fichier
--- `/assets/MiaConsole-iKiIaY25.js` servi par
--- https://thepact.geoffrey-luzignant.workers.dev a été récupéré et
--- lu — 192 330 octets contenant « ai-mia », « mia_messages » et
+-- `/assets/MiaConsole-iKiIaY25.js` servi en production a été récupéré
+-- et lu — 192 330 octets contenant « ai-mia », « mia_messages » et
 -- « mia_conversations », et ne contenant NI « ai-coach » NI
 -- « coach_messages ». La couche n'a plus de lecteur.
 --

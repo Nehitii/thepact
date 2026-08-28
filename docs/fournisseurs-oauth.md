@@ -45,7 +45,7 @@ consentement, pas un réglage manqué.
 <https://github.com/settings/developers>)
 
 1. **Application name** : `Overwrite`.
-2. **Homepage URL** : `https://thepact.geoffrey-luzignant.workers.dev`
+2. **Homepage URL** : `https://thepact.thepact-palimpseste.workers.dev`
 3. **Authorization callback URL** : l'URL de retour.
 4. **Enable Device Flow** décoché, puis **Register application**.
 5. Copier le **Client ID**, puis **Generate a new client secret** — il
@@ -72,7 +72,7 @@ Tous les tutoriels antérieurs indiquent l'ancien chemin.
    <https://console.cloud.google.com/auth/clients/create>, type **Web
    application**.
 5. **Authorized JavaScript origins** :
-   `https://thepact.geoffrey-luzignant.workers.dev` et
+   `https://thepact.thepact-palimpseste.workers.dev` et
    `http://localhost:8080`
 6. **Authorized redirect URIs** : l'URL de retour.
 7. **Create** → copier Client ID et Client Secret.
@@ -91,7 +91,7 @@ déplier le fournisseur, **Enabled** à ON, coller identifiant et secret,
 Puis, une seule fois pour tout le projet,
 [URL Configuration](https://supabase.com/dashboard/project/upfethjdvrgmmfgfvqdo/auth/url-configuration) :
 
-- **Site URL** : `https://thepact.geoffrey-luzignant.workers.dev`
+- **Site URL** : `https://thepact.thepact-palimpseste.workers.dev`
 - **Redirect URLs** : ajouter `http://localhost:8080/**`
 
 Le code demande le retour sur `${window.location.origin}/`. Ce qui n'est
