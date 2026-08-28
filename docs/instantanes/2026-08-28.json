@@ -1,20 +1,20 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T09:47:00.348Z",
+  "genere": "2026-08-28T09:55:28.231Z",
   "fichiers": 878,
-  "lignes": 176220,
+  "lignes": 176219,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 17,
-      "lignes": 1559,
-      "poids": 58833
+      "lignes": 1560,
+      "poids": 59987
     },
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3671,
-      "poids": 219097
+      "lignes": 3669,
+      "poids": 219102
     },
     {
       "dossier": "mem/design",
@@ -189,8 +189,8 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8326,
-      "poids": 311957
+      "lignes": 8327,
+      "poids": 313111
     },
     {
       "langage": "Markdown",
@@ -201,8 +201,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3560,
-      "poids": 214863
+      "lignes": 3558,
+      "poids": 214868
     },
     {
       "langage": "JavaScript",
@@ -283,7 +283,7 @@
       "poids": 500
     }
   ],
-  "commits": 3153,
+  "commits": 3154,
   "orphelins": 4,
   "marqueurs": 13
 }
