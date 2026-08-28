@@ -369,39 +369,39 @@
   ],
   "ressources": [
     {
-      "_aide": "Une licence vide est signalée en rouge dans la page. Je n'ai rempli que ce que j'ai pu VÉRIFIER dans node_modules. Les polices arrivent en woff2 nus, sans fichier de licence : je ne peux pas les certifier depuis le dépôt, et une licence de police est un sujet juridique — à vous de confirmer. Les coûts dépendent de votre formule chez chaque prestataire.",
+      "_aide": "Une licence vide est signalée en rouge dans la page. Les licences de police ont été vérifiées le 28/08 dans les fichiers OFL.txt des dépôts d'origine, pas dans les pages de présentation — la ligne de copyright est citée pour qu'on puisse refaire le contrôle. Switzer fait exception et reste à trancher : sa licence n'est pas libre et son texte n'a pas pu être lu. Les coûts dépendent de votre formule chez chaque prestataire.",
       "nom": "Orbitron",
       "nature": "police",
-      "licence": null,
-      "cout": null,
+      "licence": "SIL Open Font License 1.1 — vérifiée le 28/08 dans google/fonts/ofl/orbitron/OFL.txt (« Copyright 2018 The Orbitron Project Authors »). Autorise l'auto-hébergement et la redistribution.",
+      "cout": "gratuit",
       "url": "https://fonts.google.com/specimen/Orbitron"
     },
     {
       "nom": "Rajdhani",
       "nature": "police",
-      "licence": null,
-      "cout": null,
+      "licence": "SIL Open Font License 1.1 — vérifiée le 28/08 dans google/fonts/ofl/rajdhani/OFL.txt (« Copyright (c) 2014, Indian Type Foundry »). Autorise l'auto-hébergement et la redistribution.",
+      "cout": "gratuit",
       "url": "https://fonts.google.com/specimen/Rajdhani"
     },
     {
       "nom": "JetBrains Mono",
       "nature": "police",
-      "licence": null,
-      "cout": null,
+      "licence": "SIL Open Font License 1.1 — vérifiée le 28/08 dans JetBrains/JetBrainsMono/OFL.txt (« Copyright 2020 The JetBrains Mono Project Authors »). Autorise l'auto-hébergement et la redistribution.",
+      "cout": "gratuit",
       "url": "https://www.jetbrains.com/lp/mono/"
     },
     {
       "nom": "Switzer",
       "nature": "police",
-      "licence": null,
-      "cout": null,
+      "licence": "À TRANCHER — ITF Free Font License (Fontshare, Indian Type Foundry), qui n'est PAS une licence libre. Gratuite pour un usage personnel et commercial, mais plusieurs sources indiquent que l'auto-hébergement des fichiers demande l'accord écrit d'ITF, l'API Fontshare étant la voie prévue. Le texte faisant foi n'a pas pu être lu : la page fontshare.com/licenses/itf-ffl est rendue côté client. Or les fichiers SONT auto-hébergés (public/fonts/switzer-*.woff2, déclarés dans src/styles/community.css) et utilisés par auth.css, deuxieme-facteur.css, carte-profil.css et community.css.",
+      "cout": "gratuit",
       "url": "https://www.fontshare.com/fonts/switzer"
     },
     {
       "nom": "Noto Sans JP",
       "nature": "police",
-      "licence": null,
-      "cout": null,
+      "licence": "SIL Open Font License 1.1 — vérifiée le 28/08 dans google/fonts/ofl/notosansjp/OFL.txt (« Copyright 2014-2021 Adobe »). Autorise l'auto-hébergement et la redistribution.",
+      "cout": "gratuit",
       "url": "https://fonts.google.com/noto/specimen/Noto+Sans+JP"
     },
     {

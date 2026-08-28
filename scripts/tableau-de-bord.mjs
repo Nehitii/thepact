@@ -119,7 +119,15 @@ const chauds = codeSource
   .sort((a, b) => a.score - b.score)
   .slice(0, 10);
 
-const pages = codeSource.filter((d) => /^src\/pages\//.test(d.chemin))
+/* UN TEST N'EST PAS UNE PAGE. `src/pages/TwoFactor.test.tsx` s'est
+   retrouvé compté comme un module de plus — sans statut, donc signalé
+   en rouge dans le manifeste — le jour où le dépôt a eu ses premiers
+   tests. Le fichier de test vit à côté de ce qu'il éprouve, et c'est
+   la bonne place ; c'est ce filtre qui devait apprendre à l'en
+   distinguer. */
+const estUnTest = (chemin) => /\.test\.[jt]sx?$/.test(chemin);
+
+const pages = codeSource.filter((d) => /^src\/pages\//.test(d.chemin) && !estUnTest(d.chemin))
   .sort((a, b) => b.lignes - a.lignes);
 const horsPages = codeSource.filter((d) => !/^src\/pages\//.test(d.chemin))
   .sort((a, b) => b.lignes - a.lignes).slice(0, 15);
