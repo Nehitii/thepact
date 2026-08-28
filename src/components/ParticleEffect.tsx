@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useProfileSettings } from "@/domaines/profil";
 
 interface ParticleEffectProps {
   x: number;

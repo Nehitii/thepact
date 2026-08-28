@@ -3,8 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
-import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
+import { useProfile } from "@/domaines/profil";
+import { useProfileSettings, type ThemePreference } from "@/domaines/profil";
 import { useShopModules, useUserModulePurchases } from "@/domaines/boutique";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
@@ -23,7 +23,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { prefetchRoute } from "@/app/prefetchRoutes";
 import { raccourciPalette } from "@/lib/toucheRaccourci";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
-import { useCarteProfil } from "@/hooks/useCarteProfil";
+import { useCarteProfil } from "@/domaines/profil";
 import { RechercheBarre, type EntreeCherchable } from "./RechercheBarre";
 
 /* ═══════════════════════════════════════════════════════════════

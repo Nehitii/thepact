@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **11 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration et succès, le 28/08/2026.
+État : **12 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration, succès et profil, le 28/08/2026.
 
 *Quinze et non onze : l'agenda s'est scindé en deux (sixième domaine), les
 souhaits aussi (huitième), un groupe de huit pages d'administration a été
@@ -418,6 +418,31 @@ déjà écrite au premier domaine et que je l'ai quand même refaite* : la porte
 
 ---
 
+## Ce que le douzième domaine a ajouté
+
+**Une trousse d'interface finit toujours dans le premier module qui en a eu
+besoin.** `console-ui.tsx` vivait sous `components/profile/` et servait
+**dix-neuf fichiers** — dont la santé, les succès et les mentions légales. Ce
+n'est pas du profil : c'est le vocabulaire visuel des réglages — `Panneau`,
+`Reglage`, `Segmente`, `Jauge`, `Bouton`, `Champ`, `Alerte`. Elle a rejoint
+`components/ds/`, avec `settings-ui.tsx` et `reglages.css`.
+
+**Un composant sans rendu ne tire aucun arbre.** `ProfilePreferencesSync` et
+`AccentColorSync` s'installent dans `AppProviders` et synchronisent une
+préférence : ils restent en export **statique**, contrairement aux trois
+composants de la porte des succès qui ont dû passer en différé. La règle n'est
+pas « les composants passent en `lazy` » — c'est « mesurer ce que l'export
+traîne ».
+
+**Et la garde a trouvé un emprunt légitime.** `/profile/health` est une page du
+domaine santé qui vit dans la console de réglages du profil. La garde des
+domaines l'a signalé dès que le domaine a existé, et la réponse n'était pas de
+déplacer la page — c'était d'ouvrir la porte : `ConsoleReglages` s'exporte, la
+santé l'emprunte. Vérifié à l'écran : la page rend dans la console, son rail
+affiche les dix entrées, et la requête `health_settings` part.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -442,7 +467,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 15 | **11 / 15** |
+| domaines rangés | 0 / 15 | **12 / 15** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -461,7 +486,7 @@ fichier à sa place.
 
 ---
 
-## Les quatre domaines restants, dans l'ordre
+## Les trois domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -478,7 +503,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **boutique** | 34 |
 | ✔ | **administration** | 18 |
 | ✔ | **succès** | 14 |
-| 12 | profil | ~37 |
+| ✔ | **profil** | 38 |
 | 12 | guildes | ~57 |
 | 13 | objectifs | ~60 |
 | 14 | socle | ~61 |

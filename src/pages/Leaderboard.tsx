@@ -8,7 +8,7 @@ import "@/styles/classement.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
-import { SurvolProfil } from "@/components/profile/SurvolProfil";
+import { SurvolProfil } from "@/domaines/profil";
 import { useCadres, type Cadre } from "@/hooks/community/useCadres";
 import { useCordee, type Grimpeur } from "@/hooks/useCordee";
 import { useLeaderboard } from "@/hooks/useLeaderboard";

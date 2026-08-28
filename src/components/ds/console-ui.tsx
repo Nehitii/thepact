@@ -1,7 +1,7 @@
 import { ReactNode, ReactElement, cloneElement, forwardRef, isValidElement, useId } from "react";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import "@/styles/reglages.css";
+import "@/components/ds/reglages.css";
 
 /* LES BRIQUES DE LA CONSOLE.
  *

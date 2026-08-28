@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
-import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
+import { TitreCosmetique } from "@/domaines/profil/composants/TitreCosmetique";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankCore } from "@/domaines/succes";

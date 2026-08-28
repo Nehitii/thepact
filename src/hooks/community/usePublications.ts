@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { chargerProfilsPublics } from "@/domaines/profil";
 import { trackCommunityPost } from "@/domaines/succes";
 import type { CommunityPost, CommunityReply, VictoryReel, PostFilterType, PostSortOption } from "./types";
 

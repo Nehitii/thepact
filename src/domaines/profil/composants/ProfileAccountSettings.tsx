@@ -8,12 +8,12 @@ import { SelectItem } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { toast } from "sonner";
-import { MfaEnrollment } from "@/components/profile/MfaEnrollment";
+import { MfaEnrollment } from "@/domaines/profil/composants/MfaEnrollment";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { texteDepuisDateCivile, aujourdHuiCivil } from "@/lib/dateCivile";
 import { noterEvenementSecurite, LIBELLES_EVENEMENT, type EvenementSecurite } from "@/lib/journalSecurite";
-import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/components/profile/console-ui";
-import { CodeDeVerrouillage } from "@/components/profile/CodeDeVerrouillage";
+import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/components/ds/console-ui";
+import { CodeDeVerrouillage } from "@/domaines/profil/composants/CodeDeVerrouillage";
 
 const TIMEZONES = [
   "UTC", "Europe/Paris", "Europe/London", "America/New_York", "America/Los_Angeles",

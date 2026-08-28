@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { DevilNoteModal } from "./DevilNoteModal";
+import { DevilNoteModal } from "@/domaines/profil/composants/DevilNoteModal";
 
 interface ProfileDevilNoteProps {
   isVisible?: boolean;

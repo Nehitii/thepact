@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/domaines/boutique/hooks/useShop";
 import { HoldPurchaseButton } from "./HoldPurchaseButton";
 import { BondIcon } from "@/components/ui/bond-icon";
-import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
-import { useCarteProfil, type CarteProfil } from "@/hooks/useCarteProfil";
+import { CarteProfilPublic } from "@/domaines/profil";
+import { useCarteProfil, type CarteProfil } from "@/domaines/profil";
 import { useRarityLabel, getRarity } from "@/domaines/boutique/logique/shopRarity";
 
 type PreviewItem =

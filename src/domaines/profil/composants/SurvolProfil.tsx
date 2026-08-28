@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
-import { useCarteProfil } from "@/hooks/useCarteProfil";
-import "@/styles/carte-profil.css";
+import { CarteProfilPublic } from "@/domaines/profil/composants/CarteProfilPublic";
+import { useCarteProfil } from "@/domaines/profil/hooks/useCarteProfil";
+import "@/domaines/profil/carte-profil.css";
 
 /* MONTRER LA CARTE DE QUELQU UN EN LE SURVOLANT.
  *

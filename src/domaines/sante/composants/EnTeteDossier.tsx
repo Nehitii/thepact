@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { laVeille } from "@/domaines/sante/logique/journee";
 
 interface Props {

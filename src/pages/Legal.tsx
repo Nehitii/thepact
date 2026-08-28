@@ -2,12 +2,12 @@ import { ArrowLeft, AlertTriangle, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DSPageShell, DSBackground } from "@/components/ds";
-import { Panneau, Bouton } from "@/components/profile/console-ui";
+import { Panneau, Bouton } from "@/components/ds/console-ui";
 import {
   SECTIONS, EDITEUR, HEBERGEUR, VERSION, MISE_A_JOUR, PRODUIT, CHAMPS_REQUIS,
   type Article,
 } from "@/content/mentions-legales";
-import "@/styles/reglages.css";
+import "@/components/ds/reglages.css";
 import "@/styles/legal.css";
 
 /* ═══════════════════════════════════════════════════════════════

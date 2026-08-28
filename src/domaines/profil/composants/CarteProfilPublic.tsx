@@ -1,8 +1,8 @@
 import { Crown, Shield, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
-import { nombre, type CarteProfil } from "@/hooks/useCarteProfil";
-import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
+import { nombre, type CarteProfil } from "@/domaines/profil/hooks/useCarteProfil";
+import { TitreCosmetique } from "@/domaines/profil/composants/TitreCosmetique";
 
 /* LA CARTE PORTE SA FEUILLE DE STYLE.
  *
@@ -12,7 +12,7 @@ import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
  * lieu de 280, un fond de hauteur nulle, et le texte retombant sous
  * l avatar. Un composant qui depend d une feuille que son appelant
  * doit penser a charger finit toujours par etre appele ailleurs. */
-import "@/styles/carte-profil.css";
+import "@/domaines/profil/carte-profil.css";
 
 /* LA CARTE DE PROFIL PUBLIC.
  *

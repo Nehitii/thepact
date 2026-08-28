@@ -1,15 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 import { Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
-import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useProfileSettings } from "@/domaines/profil/hooks/useProfileSettings";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { Panneau, Reglage } from "@/components/profile/console-ui";
-import { BlockedUsersPanel } from "@/components/profile/BlockedUsersPanel";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
+import { Panneau, Reglage } from "@/components/ds/console-ui";
+import { BlockedUsersPanel } from "@/domaines/profil/composants/BlockedUsersPanel";
 
 /* Trois cles de plus figuraient ici — share_achievements,
    community_updates_enabled, achievement_celebrations_enabled —

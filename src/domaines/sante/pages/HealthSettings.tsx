@@ -5,8 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHealthSettings, useUpsertHealthSettings } from "@/domaines/sante/hooks/useHealth";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { Panneau, Reglage, Segmente, Jauge, ChampTexte, Alerte, Bouton } from "@/components/profile/console-ui";
+import { ConsoleReglages } from "@/domaines/profil";
+import { Panneau, Reglage, Segmente, Jauge, ChampTexte, Alerte, Bouton } from "@/components/ds/console-ui";
 import {
   type UniteHydratation, CL_PAR_VERRE, uniteValide, quantiteAffichee,
   verresDepuisAffichage, formaterQuantite, pasAffiche, uniteCourte,

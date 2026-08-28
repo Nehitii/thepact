@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
-import { ProfileAccountSettings, type VoletCompte } from "@/components/profile/ProfileAccountSettings";
-import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
+import { useProfile } from "@/domaines/profil/hooks/useProfile";
+import { ProfileAccountSettings, type VoletCompte } from "@/domaines/profil/composants/ProfileAccountSettings";
+import { ProfileDevilNote } from "@/domaines/profil/composants/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { dateCivileDepuisTexte } from "@/lib/dateCivile";
 import { Loader2 } from "lucide-react";
 

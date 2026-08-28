@@ -9,8 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/components/profile/console-ui";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
+import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/components/ds/console-ui";
 
 const HEURES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyJournalPrompt, useEnregistrerOrientation } from "@/domaines/journal/hooks/useJournalPrompt";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { FAMILLES, famillesRetenues } from "@/domaines/journal/logique/familles";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useQuestionCongediee } from "@/domaines/journal/hooks/useQuestionCongediee";

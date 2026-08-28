@@ -7,7 +7,7 @@ import {
   useSignGoalContract,
 } from "@/hooks/useGoalContracts";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { DSPanel, DSBadge, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";

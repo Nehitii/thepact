@@ -6,8 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Panneau } from "@/components/profile/console-ui";
-import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { Panneau } from "@/components/ds/console-ui";
+import { chargerProfilsPublics } from "@/domaines/profil/logique/profilsPublics";
 import { useTranslation } from "react-i18next";
 
 export function BlockedUsersPanel() {

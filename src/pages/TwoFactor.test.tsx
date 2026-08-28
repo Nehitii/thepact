@@ -44,7 +44,7 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const verifier = vi.fn();
 let etatMfa: Record<string, unknown>;
 
-vi.mock("@/hooks/useMfa", () => ({ useMfa: () => etatMfa }));
+vi.mock("@/domaines/profil", () => ({ useMfa: () => etatMfa }));
 vi.mock("@/hooks/useCodesDeSecours", () => ({
   useCodesDeSecours: () => ({ utiliser: vi.fn() }),
   motifLisible: (m: string) => m,

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
-import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
+import { TitreCosmetique } from "@/domaines/profil";
 import type { ArticleAchetable } from "@/domaines/boutique/logique/articleAchetable";
 
 interface ShopSpotlightProps {

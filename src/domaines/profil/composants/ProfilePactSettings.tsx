@@ -1,10 +1,10 @@
 /* Seize imports en desservaient trois : le code de verrouillage et la
    reinitialisation sont partis avec les leurs. */
 import { useTranslation } from "react-i18next";
-import { ProjectTimelineCard } from "./ProjectTimelineCard";
-import { CustomDifficultyCard } from "./CustomDifficultyCard";
+import { ProjectTimelineCard } from "@/domaines/profil/composants/ProjectTimelineCard";
+import { CustomDifficultyCard } from "@/domaines/profil/composants/CustomDifficultyCard";
 import { RanksCard } from "@/domaines/succes";
-import { PactIdentityCard } from "./PactIdentityCard";
+import { PactIdentityCard } from "@/domaines/profil/composants/PactIdentityCard";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
    L identite du pacte est un editeur a elle seule — 1 282 px — et les

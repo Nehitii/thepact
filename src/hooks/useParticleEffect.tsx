@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ParticleEffect } from "@/components/ParticleEffect";
-import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useProfileSettings } from "@/domaines/profil";
 
 /**
  * LE DÉCLENCHEUR DES PARTICULES, SORTI DU FICHIER DU COMPOSANT.

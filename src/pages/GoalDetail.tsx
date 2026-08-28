@@ -12,7 +12,7 @@ import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/hooks/useGoalContracts";
 import { useGoalDetail , type StepData, type Difficulte } from "@/hooks/useGoalDetail";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { toast } from "sonner";
 import { useParticleEffect } from "@/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";

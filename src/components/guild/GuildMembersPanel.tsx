@@ -7,7 +7,7 @@ import { nomAffichable } from "@/components/community/vocabulaire";
 import { useCadres } from "@/hooks/community/useCadres";
 import { useFriends } from "@/hooks/useFriends";
 import { useRangs } from "@/hooks/useRangs";
-import { SurvolProfil } from "@/components/profile/SurvolProfil";
+import { SurvolProfil } from "@/domaines/profil";
 import { useGuildMembers, useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
 
 /* LES MEMBRES D UNE GUILDE.

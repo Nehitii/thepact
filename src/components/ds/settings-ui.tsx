@@ -1,5 +1,5 @@
 import React from "react";
-import { Panneau } from "@/components/profile/console-ui";
+import { Panneau } from "@/components/ds/console-ui";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 

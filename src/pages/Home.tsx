@@ -22,7 +22,7 @@ import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";
 import { usePact } from "@/hooks/usePact";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { useGoals } from "@/hooks/useGoals";
 import { useUserShop } from "@/domaines/boutique";
 import { useFinanceSettings } from "@/domaines/finance";

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
+import { TitreCosmetique } from "@/domaines/profil";
 import { useTranslation } from "react-i18next";
 import { Package, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { WishlistButton } from "./WishlistButton";
 import { ShopBundle } from "@/hooks/useBundles";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 import { useShopFrames, useShopBanners, useShopTitles } from "@/domaines/boutique/hooks/useShop";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { useAuth } from "@/contexts/AuthContext";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
 

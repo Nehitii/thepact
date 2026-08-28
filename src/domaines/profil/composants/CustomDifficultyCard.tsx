@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { DataPanel, SettingRow } from "./settings-ui";
+import { DataPanel, SettingRow } from "@/components/ds/settings-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";

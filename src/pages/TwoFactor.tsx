@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { OTPInput } from "input-otp";
 import { toast } from "sonner";
-import { useMfa } from "@/hooks/useMfa";
+import { useMfa } from "@/domaines/profil";
 import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
 import { ShieldCheck, KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";

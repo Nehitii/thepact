@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,10 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { ReinitialiserLePacte } from "@/components/profile/ReinitialiserLePacte";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
+import { ReinitialiserLePacte } from "@/domaines/profil/composants/ReinitialiserLePacte";
 import { oublierLesPreferences, preferencesPosees } from "@/lib/preferencesAffichage";
-import { Panneau } from "@/components/profile/console-ui";
+import { Panneau } from "@/components/ds/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 

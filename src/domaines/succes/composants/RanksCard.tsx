@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { DataPanel } from "@/components/profile/settings-ui";
+import { DataPanel } from "@/components/ds/settings-ui";
 import { RankCard } from "@/domaines/succes/composants/RankCard";
 import { RankEditor } from "@/domaines/succes/composants/RankEditor";
 import type { Rank } from "@/domaines/succes/types";

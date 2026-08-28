@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
+import { ProfilePactSettings } from "@/domaines/profil/composants/ProfilePactSettings";
 import { Loader2 } from "lucide-react";
 import { usePactMutation } from "@/hooks/usePactMutation";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 

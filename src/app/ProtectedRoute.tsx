@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMfa } from "@/hooks/useMfa";
-import { useProfile } from "@/hooks/useProfile";
+import { useMfa } from "@/domaines/profil";
+import { useProfile } from "@/domaines/profil";
 import { usePact } from "@/hooks/usePact";
 import { useSharedPacts } from "@/hooks/useSharedPacts";
 

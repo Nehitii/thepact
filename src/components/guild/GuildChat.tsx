@@ -7,7 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { chargerProfilsPublics } from "@/domaines/profil";
 import { trackGuildMessageSent } from "@/domaines/succes";
 
 interface GuildMessage {

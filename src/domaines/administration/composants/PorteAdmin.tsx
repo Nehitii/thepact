@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KeyRound, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMfa } from "@/hooks/useMfa";
+import { useMfa } from "@/domaines/profil";
 
 /**
  * LA PORTE DE L'ADMINISTRATION.

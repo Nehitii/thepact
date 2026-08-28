@@ -6,7 +6,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { useResetPact } from "@/hooks/useResetPact";
 
 /**

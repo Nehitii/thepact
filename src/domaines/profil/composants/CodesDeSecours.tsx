@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { KeyRound, Copy, Loader2, AlertTriangle, Check } from "lucide-react";
-import { Bouton, Reglage } from "@/components/profile/console-ui";
-import "@/styles/mfa.css";
+import { Bouton, Reglage } from "@/components/ds/console-ui";
+import "@/domaines/profil/mfa.css";
 import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
 
 /**

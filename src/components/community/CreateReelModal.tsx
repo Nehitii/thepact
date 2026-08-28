@@ -7,7 +7,7 @@ import { teinteDuPalier } from "@/hooks/useCarteObjectif";
 import { useCreateVictoryReel, useCompletedGoals } from "@/hooks/useCommunity";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { useProfileSettings } from "@/domaines/profil";
 
 /* PUBLIER UNE VIDEO DE VICTOIRE.
  *

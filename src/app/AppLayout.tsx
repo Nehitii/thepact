@@ -3,7 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
-import { useFuseauDuProfil } from "@/hooks/useFuseauDuProfil";
+import { useFuseauDuProfil } from "@/domaines/profil";
 import { useMessagesEnDirect } from "@/hooks/useMessages";
 import { Suspense, useEffect, useState } from "react";
 import { ReseauMia, MiaConsole, type EtatMia } from "@/domaines/mia";

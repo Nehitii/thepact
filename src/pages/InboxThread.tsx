@@ -13,7 +13,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { useFriends } from "@/hooks/useFriends";
 import { useCadres } from "@/hooks/community/useCadres";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { chargerProfilsPublics } from "@/domaines/profil";
 import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
 import {

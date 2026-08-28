@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bouton, Reglage } from "@/components/profile/console-ui";
+import { Bouton, Reglage } from "@/components/ds/console-ui";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Loader2, ShieldCheck, ShieldOff, Copy } from "lucide-react";
-import { useMfa, type MfaEnrollment as Enrollment } from "@/hooks/useMfa";
+import { useMfa, type MfaEnrollment as Enrollment } from "@/domaines/profil/hooks/useMfa";
 import { noterEvenementSecurite } from "@/lib/journalSecurite";
-import { CodesDeSecours } from "@/components/profile/CodesDeSecours";
-import "@/styles/mfa.css";
+import { CodesDeSecours } from "@/domaines/profil/composants/CodesDeSecours";
+import "@/domaines/profil/mfa.css";
 
 /**
  * Enrôlement d'un facteur TOTP via Supabase Auth.

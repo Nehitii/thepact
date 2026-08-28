@@ -1,5 +1,5 @@
-import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
-import type { CarteProfil } from "@/hooks/useCarteProfil";
+import { CarteProfilPublic } from "@/domaines/profil";
+import type { CarteProfil } from "@/domaines/profil";
 import type { CosmeticBanner } from "@/domaines/boutique/hooks/useShop";
 
 interface Props {

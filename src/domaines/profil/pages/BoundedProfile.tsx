@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
+import { ProfileBoundedProfile } from "@/domaines/profil/composants/ProfileBoundedProfile";
 import { useTranslation } from "react-i18next";
-import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
-import { Panneau } from "@/components/profile/console-ui";
+import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
+import { Panneau } from "@/components/ds/console-ui";
 
 export default function BoundedProfile() {
   const { t } = useTranslation();

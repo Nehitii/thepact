@@ -14,7 +14,7 @@ import { useParticleEffect } from "@/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, type Goal } from "@/hooks/useGoals";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/domaines/profil";
 import { useGoalFilters } from "@/hooks/useGoalFilters";
 import { GoalsHeader } from "@/components/goals/GoalsHeader";
 import { GoalsToolbar } from "@/components/goals/GoalsToolbar";

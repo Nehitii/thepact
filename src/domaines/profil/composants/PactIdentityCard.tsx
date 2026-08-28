@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { Bouton } from "@/components/profile/console-ui";
+import { Bouton } from "@/components/ds/console-ui";
 import { Sparkles, Save, Loader2, Type, Wand2 } from "lucide-react";
-import { DataPanel } from "./settings-ui";
+import { DataPanel } from "@/components/ds/settings-ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";

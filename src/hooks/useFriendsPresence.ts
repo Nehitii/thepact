@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { chargerProfilsPublics } from "@/domaines/profil";
 
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 
