@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { messageDErreur } from "@/lib/erreurs";
+import { consommerErreurOAuth, messageDErreurOAuth } from "@/lib/erreurOAuth";
 import { useFournisseursActifs, type Fournisseur } from "@/hooks/useFournisseursActifs";
 import "@/styles/auth.css";
 
@@ -81,6 +82,32 @@ export default function Auth() {
   const [motDePasse, setMotDePasse] = useState("");
   const [devoile, setDevoile] = useState(false);
   const [enCours, setEnCours] = useState(false);
+
+  /* ═══ LE VERROU DOIT SAUTER AU RETOUR ═══
+     `parFournisseur` pose `enCours` puis laisse `signInWithOAuth`
+     remplacer la page. Il n'y a donc aucun chemin de succès qui le
+     relâche — et il n'y en a pas besoin, tant que la page est vraiment
+     détruite. Elle ne l'est pas toujours : au retour du fournisseur,
+     ou sur un simple « précédent », le navigateur restaure la page
+     depuis son cache arrière avec l'état React intact. Tous les
+     champs et tous les boutons reviennent alors `disabled`, et l'écran
+     paraît planté alors qu'il est seulement verrouillé.
+
+     `pageshow` se déclenche dans les deux cas — chargement normal ET
+     restauration — donc on relâche sans condition. */
+  useEffect(() => {
+    const relacher = () => setEnCours(false);
+    window.addEventListener("pageshow", relacher);
+    return () => window.removeEventListener("pageshow", relacher);
+  }, []);
+
+  /* L'erreur laissée par un fournisseur, capturée avant le rendu par
+     `lib/erreurOAuth` parce que le rebond « / » → « /auth » perd le
+     fragment. On la consomme une fois, ici, où elle a un sens. */
+  useEffect(() => {
+    const e = consommerErreurOAuth();
+    if (e) toast.error(t("auth.oauthFailed", "Connexion refusée"), { description: messageDErreurOAuth(e) });
+  }, [t]);
   const [faute, setFaute] = useState<{ champ: "email" | "motDePasse"; texte: string } | null>(null);
   const fournisseurs = useFournisseursActifs();
 

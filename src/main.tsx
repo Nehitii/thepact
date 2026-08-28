@@ -8,6 +8,13 @@
    liste : la fonction ne fait rien la seconde fois. */
 import "./lib/renommageLocal";
 
+/* ═══ CELUI-CI AUSSI DOIT PRÉCÉDER LE RENDU ═══
+   Il capture l'erreur qu'un fournisseur d'authentification laisse dans
+   l'URL. Le retour se fait sur « / », une route protégée : sans
+   session le routeur rebondit vers « /auth » et le rebond perd le
+   fragment. Ce module le lit avant que React n'existe. */
+import "./lib/erreurOAuth";
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
