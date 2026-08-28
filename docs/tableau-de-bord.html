@@ -292,9 +292,9 @@ main{padding:24px 0 96px;min-width:0}
   </div>
 
   <div class="mesures">
-    <div class="mesure"><b>878</b><span>fichiers analysés</span></div>
-    <div class="mesure"><b>181 478</b><span>lignes</span></div>
-    <div class="mesure"><b>3 144</b><span>commits</span></div>
+    <div class="mesure"><b>883</b><span>fichiers analysés</span></div>
+    <div class="mesure"><b>176 440</b><span>lignes</span></div>
+    <div class="mesure"><b>3 150</b><span>commits</span></div>
     <div class="mesure"><b>aujourd'hui</b><span>dernier commit</span></div>
   </div>
 </section>
@@ -306,6 +306,18 @@ main{padding:24px 0 96px;min-width:0}
   <details class="methode"><summary>Comment c'est calculé</summary><p>Chaque fichier de <code>src/pages</code> est un module. Ses lignes additionnent la page et les dossiers déclarés en <code>aussi</code> dans le manifeste. La dernière activité est la date du commit le plus récent ayant touché l'un de ces fichiers. Un module absent du manifeste apparaît quand même, en « à compléter » : il ne peut pas se cacher.</p></details>
 
   <div class="liste">
+    <div class="ligne compacte cherchable filtrable" data-statut="à compléter" data-texte="TwoFactor.test src/pages/TwoFactor.test.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">TwoFactor.test <span class="etat" data-s="à compléter">à compléter</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/TwoFactor.test.tsx</code>
+          <span>144 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>1 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Second facteur src/pages/TwoFactor.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Second facteur <span class="etat" data-s="livré">livré</span></p>
@@ -313,7 +325,7 @@ main{padding:24px 0 96px;min-width:0}
           <code>src/pages/TwoFactor.tsx</code>
           <span>281 lignes</span>
           <span>activité aujourd'hui</span>
-          <span>10 reprises récentes</span>
+          <span>12 reprises récentes</span>
         </p>
         
       </div>
@@ -437,7 +449,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div>
+    </div></div><details class="repli"><summary>Voir les 35 écrans restants</summary><div class="liste">
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Tâches src/pages/TodoList.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Tâches <span class="etat" data-s="livré">livré</span></p>
@@ -449,7 +461,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Journal src/pages/Journal.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Journal <span class="etat" data-s="livré">livré</span></p>
@@ -672,7 +684,7 @@ main{padding:24px 0 96px;min-width:0}
         <p class="ligne-meta">
           <code>src/pages/Inbox.tsx</code>
           <span>534 lignes</span>
-          <span>activité aujourd'hui</span>
+          <span>activité hier</span>
           <span>3 reprises récentes</span>
         </p>
         
@@ -684,7 +696,7 @@ main{padding:24px 0 96px;min-width:0}
         <p class="ligne-meta">
           <code>src/pages/InboxThread.tsx</code>
           <span>294 lignes</span>
-          <span>activité aujourd'hui</span>
+          <span>activité hier</span>
           <span>2 reprises récentes</span>
         </p>
         
@@ -792,7 +804,7 @@ main{padding:24px 0 96px;min-width:0}
         <p class="ligne-meta">
           <code>src/pages/profile/PactSettings.tsx</code>
           <span>133 lignes</span>
-          <span>activité il y a 2 j</span>
+          <span>activité il y a 3 j</span>
           <span>3 reprises récentes</span>
         </p>
         
@@ -1117,8 +1129,8 @@ main{padding:24px 0 96px;min-width:0}
         <figcaption>
           <p class="ligne-nom">auth-cite.png</p>
           <p class="ligne-meta">
-            <span>1536×1024</span>
-            <span>2.17 Mo</span>
+            <span>880×1024</span>
+            <span>913.6 ko</span>
             <span>png</span>
           </p>
           <p class="ligne-meta"><span title="vite.config.ts">employé dans 1 fichier</span></p>
@@ -1168,8 +1180,8 @@ main{padding:24px 0 96px;min-width:0}
         <figcaption>
           <p class="ligne-nom">mia-sas.png</p>
           <p class="ligne-meta">
-            <span>440×336</span>
-            <span>236.7 ko</span>
+            <span>440×381</span>
+            <span>243.3 ko</span>
             <span>png</span>
           </p>
           <p class="ligne-meta"><span title="src/pages/TwoFactor.tsx, vite.config.ts">employé dans 2 fichiers</span></p>
@@ -2318,21 +2330,21 @@ main{padding:24px 0 96px;min-width:0}
 
   <div class="mesures">
     <div class="mesure"><b>71</b><span>dépendances d'exécution</span></div>
-    <div class="mesure"><b>19</b><span>de développement</span></div>
-    <div class="mesure"><b>10</b><span>scripts npm</span></div>
+    <div class="mesure"><b>23</b><span>de développement</span></div>
+    <div class="mesure"><b>12</b><span>scripts npm</span></div>
   </div>
 
   <h3 class="sous">Scripts</h3>
   <table class="tableau">
     <thead><tr><th>Commande</th><th>Ce qu'elle lance</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="dev vite"><td><code>npm run dev</code></td><td><code>vite</code></td></tr><tr class="cherchable" data-texte="build vite build"><td><code>npm run build</code></td><td><code>vite build</code></td></tr><tr class="cherchable" data-texte="build:dev vite build --mode development"><td><code>npm run build:dev</code></td><td><code>vite build --mode development</code></td></tr><tr class="cherchable" data-texte="lint eslint ."><td><code>npm run lint</code></td><td><code>eslint .</code></td></tr><tr class="cherchable" data-texte="i18n:check node scripts/verifier-i18n.mjs"><td><code>npm run i18n:check</code></td><td><code>node scripts/verifier-i18n.mjs</code></td></tr><tr class="cherchable" data-texte="preview vite preview"><td><code>npm run preview</code></td><td><code>vite preview</code></td></tr><tr class="cherchable" data-texte="typecheck tsc -p tsconfig.app.json --noEmit"><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.app.json --noEmit</code></td></tr><tr class="cherchable" data-texte="tableau node scripts/tableau-de-bord.mjs"><td><code>npm run tableau</code></td><td><code>node scripts/tableau-de-bord.mjs</code></td></tr><tr class="cherchable" data-texte="edge:check node scripts/verifier-edge.mjs"><td><code>npm run edge:check</code></td><td><code>node scripts/verifier-edge.mjs</code></td></tr><tr class="cherchable" data-texte="edge:test deno test --allow-env supabase/functions/_shared/"><td><code>npm run edge:test</code></td><td><code>deno test --allow-env supabase/functions/_shared/</code></td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="dev vite"><td><code>npm run dev</code></td><td><code>vite</code></td></tr><tr class="cherchable" data-texte="build vite build"><td><code>npm run build</code></td><td><code>vite build</code></td></tr><tr class="cherchable" data-texte="build:dev vite build --mode development"><td><code>npm run build:dev</code></td><td><code>vite build --mode development</code></td></tr><tr class="cherchable" data-texte="lint eslint ."><td><code>npm run lint</code></td><td><code>eslint .</code></td></tr><tr class="cherchable" data-texte="i18n:check node scripts/verifier-i18n.mjs"><td><code>npm run i18n:check</code></td><td><code>node scripts/verifier-i18n.mjs</code></td></tr><tr class="cherchable" data-texte="preview vite preview"><td><code>npm run preview</code></td><td><code>vite preview</code></td></tr><tr class="cherchable" data-texte="typecheck tsc -p tsconfig.app.json --noEmit"><td><code>npm run typecheck</code></td><td><code>tsc -p tsconfig.app.json --noEmit</code></td></tr><tr class="cherchable" data-texte="tableau node scripts/tableau-de-bord.mjs"><td><code>npm run tableau</code></td><td><code>node scripts/tableau-de-bord.mjs</code></td></tr><tr class="cherchable" data-texte="edge:check node scripts/verifier-edge.mjs"><td><code>npm run edge:check</code></td><td><code>node scripts/verifier-edge.mjs</code></td></tr><tr class="cherchable" data-texte="edge:test deno test --allow-env supabase/functions/_shared/"><td><code>npm run edge:test</code></td><td><code>deno test --allow-env supabase/functions/_shared/</code></td></tr><tr class="cherchable" data-texte="test vitest run"><td><code>npm run test</code></td><td><code>vitest run</code></td></tr><tr class="cherchable" data-texte="test:watch vitest"><td><code>npm run test:watch</code></td><td><code>vitest</code></td></tr></tbody>
   </table>
 
   <details class="repli">
-    <summary>Les 90 dépendances</summary>
+    <summary>Les 94 dépendances</summary>
     <table class="tableau">
       <thead><tr><th>Paquet</th><th>Version</th><th>Rôle</th></tr></thead>
-      <tbody><tr class="cherchable" data-texte="@dnd-kit/core"><td><code>@dnd-kit/core</code></td><td>^6.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="@dnd-kit/sortable"><td><code>@dnd-kit/sortable</code></td><td>^10.0.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@dnd-kit/utilities"><td><code>@dnd-kit/utilities</code></td><td>^3.2.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@hookform/resolvers"><td><code>@hookform/resolvers</code></td><td>^3.10.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-accordion"><td><code>@radix-ui/react-accordion</code></td><td>^1.2.11</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-alert-dialog"><td><code>@radix-ui/react-alert-dialog</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-aspect-ratio"><td><code>@radix-ui/react-aspect-ratio</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-avatar"><td><code>@radix-ui/react-avatar</code></td><td>^1.1.10</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-checkbox"><td><code>@radix-ui/react-checkbox</code></td><td>^1.3.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-collapsible"><td><code>@radix-ui/react-collapsible</code></td><td>^1.1.11</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-context-menu"><td><code>@radix-ui/react-context-menu</code></td><td>^2.2.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-dialog"><td><code>@radix-ui/react-dialog</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-dropdown-menu"><td><code>@radix-ui/react-dropdown-menu</code></td><td>^2.1.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-hover-card"><td><code>@radix-ui/react-hover-card</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-label"><td><code>@radix-ui/react-label</code></td><td>^2.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-menubar"><td><code>@radix-ui/react-menubar</code></td><td>^1.1.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-navigation-menu"><td><code>@radix-ui/react-navigation-menu</code></td><td>^1.2.13</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-popover"><td><code>@radix-ui/react-popover</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-progress"><td><code>@radix-ui/react-progress</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-radio-group"><td><code>@radix-ui/react-radio-group</code></td><td>^1.3.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-scroll-area"><td><code>@radix-ui/react-scroll-area</code></td><td>^1.2.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-select"><td><code>@radix-ui/react-select</code></td><td>^2.2.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-separator"><td><code>@radix-ui/react-separator</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-slider"><td><code>@radix-ui/react-slider</code></td><td>^1.3.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-slot"><td><code>@radix-ui/react-slot</code></td><td>^1.2.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-switch"><td><code>@radix-ui/react-switch</code></td><td>^1.2.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-tabs"><td><code>@radix-ui/react-tabs</code></td><td>^1.1.12</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-toggle"><td><code>@radix-ui/react-toggle</code></td><td>^1.1.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-toggle-group"><td><code>@radix-ui/react-toggle-group</code></td><td>^1.1.10</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-tooltip"><td><code>@radix-ui/react-tooltip</code></td><td>^1.2.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-visually-hidden"><td><code>@radix-ui/react-visually-hidden</code></td><td>^1.2.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="@sentry/react"><td><code>@sentry/react</code></td><td>^10.53.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="@supabase/supabase-js"><td><code>@supabase/supabase-js</code></td><td>^2.84.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tanstack/react-query"><td><code>@tanstack/react-query</code></td><td>^5.83.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-task-item"><td><code>@tiptap/extension-task-item</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-task-list"><td><code>@tiptap/extension-task-list</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-text-style"><td><code>@tiptap/extension-text-style</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/react"><td><code>@tiptap/react</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/starter-kit"><td><code>@tiptap/starter-kit</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@types/dompurify"><td><code>@types/dompurify</code></td><td>^3.0.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@types/papaparse"><td><code>@types/papaparse</code></td><td>^5.5.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="browser-image-compression"><td><code>browser-image-compression</code></td><td>^2.0.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="class-variance-authority"><td><code>class-variance-authority</code></td><td>^0.7.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="clsx"><td><code>clsx</code></td><td>^2.1.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="cmdk"><td><code>cmdk</code></td><td>^1.1.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="date-fns"><td><code>date-fns</code></td><td>^3.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="dompurify"><td><code>dompurify</code></td><td>^3.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="embla-carousel-react"><td><code>embla-carousel-react</code></td><td>^8.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="framer-motion"><td><code>framer-motion</code></td><td>^12.23.24</td><td>exécution</td></tr><tr class="cherchable" data-texte="i18next"><td><code>i18next</code></td><td>^25.8.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="input-otp"><td><code>input-otp</code></td><td>^1.4.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="lucide-react"><td><code>lucide-react</code></td><td>^0.462.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="next-themes"><td><code>next-themes</code></td><td>^0.3.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="papaparse"><td><code>papaparse</code></td><td>^5.5.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="qrcode"><td><code>qrcode</code></td><td>^1.5.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="react"><td><code>react</code></td><td>^18.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-day-picker"><td><code>react-day-picker</code></td><td>^8.10.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-dom"><td><code>react-dom</code></td><td>^18.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-hook-form"><td><code>react-hook-form</code></td><td>^7.61.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-i18next"><td><code>react-i18next</code></td><td>^16.5.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-markdown"><td><code>react-markdown</code></td><td>^10.1.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-resizable-panels"><td><code>react-resizable-panels</code></td><td>^2.1.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-router-dom"><td><code>react-router-dom</code></td><td>^7.18.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="reactflow"><td><code>reactflow</code></td><td>^11.11.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="recharts"><td><code>recharts</code></td><td>^2.15.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="remark-gfm"><td><code>remark-gfm</code></td><td>^4.0.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="sonner"><td><code>sonner</code></td><td>^1.7.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="tailwind-merge"><td><code>tailwind-merge</code></td><td>^2.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="tailwindcss-animate"><td><code>tailwindcss-animate</code></td><td>^1.0.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="vaul"><td><code>vaul</code></td><td>^0.9.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="zod"><td><code>zod</code></td><td>^3.25.76</td><td>exécution</td></tr><tr class="cherchable" data-texte="@eslint/js"><td><code>@eslint/js</code></td><td>^9.32.0</td><td>développement</td></tr><tr class="cherchable" data-texte="@tailwindcss/typography"><td><code>@tailwindcss/typography</code></td><td>^0.5.16</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/node"><td><code>@types/node</code></td><td>^22.16.5</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/react"><td><code>@types/react</code></td><td>^18.3.23</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/react-dom"><td><code>@types/react-dom</code></td><td>^18.3.7</td><td>développement</td></tr><tr class="cherchable" data-texte="@vitejs/plugin-react-swc"><td><code>@vitejs/plugin-react-swc</code></td><td>^3.11.0</td><td>développement</td></tr><tr class="cherchable" data-texte="autoprefixer"><td><code>autoprefixer</code></td><td>^10.4.21</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint"><td><code>eslint</code></td><td>^9.32.0</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint-plugin-react-hooks"><td><code>eslint-plugin-react-hooks</code></td><td>^5.2.0</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint-plugin-react-refresh"><td><code>eslint-plugin-react-refresh</code></td><td>^0.4.20</td><td>développement</td></tr><tr class="cherchable" data-texte="globals"><td><code>globals</code></td><td>^15.15.0</td><td>développement</td></tr><tr class="cherchable" data-texte="postcss"><td><code>postcss</code></td><td>^8.5.6</td><td>développement</td></tr><tr class="cherchable" data-texte="rollup-plugin-visualizer"><td><code>rollup-plugin-visualizer</code></td><td>^7.0.1</td><td>développement</td></tr><tr class="cherchable" data-texte="supabase"><td><code>supabase</code></td><td>^2.114.0</td><td>développement</td></tr><tr class="cherchable" data-texte="tailwindcss"><td><code>tailwindcss</code></td><td>^3.4.17</td><td>développement</td></tr><tr class="cherchable" data-texte="typescript"><td><code>typescript</code></td><td>^5.8.3</td><td>développement</td></tr><tr class="cherchable" data-texte="typescript-eslint"><td><code>typescript-eslint</code></td><td>^8.38.0</td><td>développement</td></tr><tr class="cherchable" data-texte="vite"><td><code>vite</code></td><td>^7.3.6</td><td>développement</td></tr><tr class="cherchable" data-texte="vite-plugin-pwa"><td><code>vite-plugin-pwa</code></td><td>^1.3.0</td><td>développement</td></tr></tbody>
+      <tbody><tr class="cherchable" data-texte="@dnd-kit/core"><td><code>@dnd-kit/core</code></td><td>^6.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="@dnd-kit/sortable"><td><code>@dnd-kit/sortable</code></td><td>^10.0.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@dnd-kit/utilities"><td><code>@dnd-kit/utilities</code></td><td>^3.2.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@hookform/resolvers"><td><code>@hookform/resolvers</code></td><td>^3.10.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-accordion"><td><code>@radix-ui/react-accordion</code></td><td>^1.2.11</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-alert-dialog"><td><code>@radix-ui/react-alert-dialog</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-aspect-ratio"><td><code>@radix-ui/react-aspect-ratio</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-avatar"><td><code>@radix-ui/react-avatar</code></td><td>^1.1.10</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-checkbox"><td><code>@radix-ui/react-checkbox</code></td><td>^1.3.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-collapsible"><td><code>@radix-ui/react-collapsible</code></td><td>^1.1.11</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-context-menu"><td><code>@radix-ui/react-context-menu</code></td><td>^2.2.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-dialog"><td><code>@radix-ui/react-dialog</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-dropdown-menu"><td><code>@radix-ui/react-dropdown-menu</code></td><td>^2.1.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-hover-card"><td><code>@radix-ui/react-hover-card</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-label"><td><code>@radix-ui/react-label</code></td><td>^2.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-menubar"><td><code>@radix-ui/react-menubar</code></td><td>^1.1.15</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-navigation-menu"><td><code>@radix-ui/react-navigation-menu</code></td><td>^1.2.13</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-popover"><td><code>@radix-ui/react-popover</code></td><td>^1.1.14</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-progress"><td><code>@radix-ui/react-progress</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-radio-group"><td><code>@radix-ui/react-radio-group</code></td><td>^1.3.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-scroll-area"><td><code>@radix-ui/react-scroll-area</code></td><td>^1.2.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-select"><td><code>@radix-ui/react-select</code></td><td>^2.2.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-separator"><td><code>@radix-ui/react-separator</code></td><td>^1.1.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-slider"><td><code>@radix-ui/react-slider</code></td><td>^1.3.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-slot"><td><code>@radix-ui/react-slot</code></td><td>^1.2.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-switch"><td><code>@radix-ui/react-switch</code></td><td>^1.2.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-tabs"><td><code>@radix-ui/react-tabs</code></td><td>^1.1.12</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-toggle"><td><code>@radix-ui/react-toggle</code></td><td>^1.1.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-toggle-group"><td><code>@radix-ui/react-toggle-group</code></td><td>^1.1.10</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-tooltip"><td><code>@radix-ui/react-tooltip</code></td><td>^1.2.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="@radix-ui/react-visually-hidden"><td><code>@radix-ui/react-visually-hidden</code></td><td>^1.2.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="@sentry/react"><td><code>@sentry/react</code></td><td>^10.53.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="@supabase/supabase-js"><td><code>@supabase/supabase-js</code></td><td>^2.84.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tanstack/react-query"><td><code>@tanstack/react-query</code></td><td>^5.83.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-task-item"><td><code>@tiptap/extension-task-item</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-task-list"><td><code>@tiptap/extension-task-list</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/extension-text-style"><td><code>@tiptap/extension-text-style</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/react"><td><code>@tiptap/react</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@tiptap/starter-kit"><td><code>@tiptap/starter-kit</code></td><td>^3.30.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="@types/dompurify"><td><code>@types/dompurify</code></td><td>^3.0.5</td><td>exécution</td></tr><tr class="cherchable" data-texte="@types/papaparse"><td><code>@types/papaparse</code></td><td>^5.5.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="browser-image-compression"><td><code>browser-image-compression</code></td><td>^2.0.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="class-variance-authority"><td><code>class-variance-authority</code></td><td>^0.7.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="clsx"><td><code>clsx</code></td><td>^2.1.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="cmdk"><td><code>cmdk</code></td><td>^1.1.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="date-fns"><td><code>date-fns</code></td><td>^3.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="dompurify"><td><code>dompurify</code></td><td>^3.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="embla-carousel-react"><td><code>embla-carousel-react</code></td><td>^8.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="framer-motion"><td><code>framer-motion</code></td><td>^12.23.24</td><td>exécution</td></tr><tr class="cherchable" data-texte="i18next"><td><code>i18next</code></td><td>^25.8.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="input-otp"><td><code>input-otp</code></td><td>^1.4.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="lucide-react"><td><code>lucide-react</code></td><td>^0.462.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="next-themes"><td><code>next-themes</code></td><td>^0.3.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="papaparse"><td><code>papaparse</code></td><td>^5.5.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="qrcode"><td><code>qrcode</code></td><td>^1.5.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="react"><td><code>react</code></td><td>^18.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-day-picker"><td><code>react-day-picker</code></td><td>^8.10.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-dom"><td><code>react-dom</code></td><td>^18.3.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-hook-form"><td><code>react-hook-form</code></td><td>^7.61.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-i18next"><td><code>react-i18next</code></td><td>^16.5.3</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-markdown"><td><code>react-markdown</code></td><td>^10.1.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-resizable-panels"><td><code>react-resizable-panels</code></td><td>^2.1.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="react-router-dom"><td><code>react-router-dom</code></td><td>^7.18.2</td><td>exécution</td></tr><tr class="cherchable" data-texte="reactflow"><td><code>reactflow</code></td><td>^11.11.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="recharts"><td><code>recharts</code></td><td>^2.15.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="remark-gfm"><td><code>remark-gfm</code></td><td>^4.0.1</td><td>exécution</td></tr><tr class="cherchable" data-texte="sonner"><td><code>sonner</code></td><td>^1.7.4</td><td>exécution</td></tr><tr class="cherchable" data-texte="tailwind-merge"><td><code>tailwind-merge</code></td><td>^2.6.0</td><td>exécution</td></tr><tr class="cherchable" data-texte="tailwindcss-animate"><td><code>tailwindcss-animate</code></td><td>^1.0.7</td><td>exécution</td></tr><tr class="cherchable" data-texte="vaul"><td><code>vaul</code></td><td>^0.9.9</td><td>exécution</td></tr><tr class="cherchable" data-texte="zod"><td><code>zod</code></td><td>^3.25.76</td><td>exécution</td></tr><tr class="cherchable" data-texte="@eslint/js"><td><code>@eslint/js</code></td><td>^9.32.0</td><td>développement</td></tr><tr class="cherchable" data-texte="@tailwindcss/typography"><td><code>@tailwindcss/typography</code></td><td>^0.5.16</td><td>développement</td></tr><tr class="cherchable" data-texte="@testing-library/react"><td><code>@testing-library/react</code></td><td>^16.3.3</td><td>développement</td></tr><tr class="cherchable" data-texte="@testing-library/user-event"><td><code>@testing-library/user-event</code></td><td>^14.6.6</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/node"><td><code>@types/node</code></td><td>^22.16.5</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/react"><td><code>@types/react</code></td><td>^18.3.23</td><td>développement</td></tr><tr class="cherchable" data-texte="@types/react-dom"><td><code>@types/react-dom</code></td><td>^18.3.7</td><td>développement</td></tr><tr class="cherchable" data-texte="@vitejs/plugin-react-swc"><td><code>@vitejs/plugin-react-swc</code></td><td>^3.11.0</td><td>développement</td></tr><tr class="cherchable" data-texte="autoprefixer"><td><code>autoprefixer</code></td><td>^10.4.21</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint"><td><code>eslint</code></td><td>^9.32.0</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint-plugin-react-hooks"><td><code>eslint-plugin-react-hooks</code></td><td>^5.2.0</td><td>développement</td></tr><tr class="cherchable" data-texte="eslint-plugin-react-refresh"><td><code>eslint-plugin-react-refresh</code></td><td>^0.4.20</td><td>développement</td></tr><tr class="cherchable" data-texte="globals"><td><code>globals</code></td><td>^15.15.0</td><td>développement</td></tr><tr class="cherchable" data-texte="jsdom"><td><code>jsdom</code></td><td>^30.0.1</td><td>développement</td></tr><tr class="cherchable" data-texte="postcss"><td><code>postcss</code></td><td>^8.5.6</td><td>développement</td></tr><tr class="cherchable" data-texte="rollup-plugin-visualizer"><td><code>rollup-plugin-visualizer</code></td><td>^7.0.1</td><td>développement</td></tr><tr class="cherchable" data-texte="supabase"><td><code>supabase</code></td><td>^2.114.0</td><td>développement</td></tr><tr class="cherchable" data-texte="tailwindcss"><td><code>tailwindcss</code></td><td>^3.4.17</td><td>développement</td></tr><tr class="cherchable" data-texte="typescript"><td><code>typescript</code></td><td>^5.8.3</td><td>développement</td></tr><tr class="cherchable" data-texte="typescript-eslint"><td><code>typescript-eslint</code></td><td>^8.38.0</td><td>développement</td></tr><tr class="cherchable" data-texte="vite"><td><code>vite</code></td><td>^7.3.6</td><td>développement</td></tr><tr class="cherchable" data-texte="vite-plugin-pwa"><td><code>vite-plugin-pwa</code></td><td>^1.3.0</td><td>développement</td></tr><tr class="cherchable" data-texte="vitest"><td><code>vitest</code></td><td>^3.2.7</td><td>développement</td></tr></tbody>
     </table>
   </details>
 </section>
@@ -2352,9 +2364,9 @@ main{padding:24px 0 96px;min-width:0}
   </details>
 
   <div class="mesures">
-    <div class="mesure"><b>878</b><span>fichiers</span></div><span class="delta hausse">+2 depuis le 2026-08-27</span>
-    <div class="mesure"><b>181 478</b><span>lignes</span></div><span class="delta hausse">+1 542 depuis le 2026-08-27</span>
-    <div class="mesure"><b>1</b><span>fichiers orphelins</span></div>
+    <div class="mesure"><b>883</b><span>fichiers</span></div><span class="delta hausse">+7 depuis le 2026-08-27</span>
+    <div class="mesure"><b>176 440</b><span>lignes</span></div><span class="delta baisse">-3 496 depuis le 2026-08-27</span>
+    <div class="mesure"><b>4</b><span>fichiers orphelins</span></div>
     <div class="mesure"><b>13</b><span>marqueurs</span></div>
   </div>
 
@@ -2370,27 +2382,27 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="src/styles">
       <span class="barre-nom"><code>src/styles</code></span>
       <span class="barre-piste"><i style="width:62%"></i></span>
-      <span class="barre-val">31 095<small> lignes · 41 fich.</small></span>
+      <span class="barre-val">31 126<small> lignes · 41 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/pages">
       <span class="barre-nom"><code>src/pages</code></span>
-      <span class="barre-piste"><i style="width:34%"></i></span>
-      <span class="barre-val">17 278<small> lignes · 46 fich.</small></span>
-    </div>
-    <div class="barre cherchable" data-texte="public/marque">
-      <span class="barre-nom"><code>public/marque</code></span>
-      <span class="barre-piste"><i style="width:32%"></i></span>
-      <span class="barre-val">16 150<small> lignes · 19 fich.</small></span>
+      <span class="barre-piste"><i style="width:35%"></i></span>
+      <span class="barre-val">17 422<small> lignes · 47 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/hooks">
       <span class="barre-nom"><code>src/hooks</code></span>
       <span class="barre-piste"><i style="width:30%"></i></span>
-      <span class="barre-val">15 175<small> lignes · 94 fich.</small></span>
+      <span class="barre-val">15 305<small> lignes · 95 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="supabase/migrations">
       <span class="barre-nom"><code>supabase/migrations</code></span>
       <span class="barre-piste"><i style="width:27%"></i></span>
       <span class="barre-val">13 700<small> lignes · 187 fich.</small></span>
+    </div>
+    <div class="barre cherchable" data-texte="public/marque">
+      <span class="barre-nom"><code>public/marque</code></span>
+      <span class="barre-piste"><i style="width:21%"></i></span>
+      <span class="barre-val">10 531<small> lignes · 19 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/i18n">
       <span class="barre-nom"><code>src/i18n</code></span>
@@ -2404,8 +2416,8 @@ main{padding:24px 0 96px;min-width:0}
     </div>
     <div class="barre cherchable" data-texte="src/lib">
       <span class="barre-nom"><code>src/lib</code></span>
-      <span class="barre-piste"><i style="width:11%"></i></span>
-      <span class="barre-val">5 717<small> lignes · 47 fich.</small></span>
+      <span class="barre-piste"><i style="width:12%"></i></span>
+      <span class="barre-val">5 912<small> lignes · 48 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="supabase/functions">
       <span class="barre-nom"><code>supabase/functions</code></span>
@@ -2415,7 +2427,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="docs">
       <span class="barre-nom"><code>docs</code></span>
       <span class="barre-piste"><i style="width:7%"></i></span>
-      <span class="barre-val">3 631<small> lignes · 3 fich.</small></span>
+      <span class="barre-val">3 648<small> lignes · 3 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src">
       <span class="barre-nom"><code>src</code></span>
@@ -2425,7 +2437,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="(racine)">
       <span class="barre-nom"><code>(racine)</code></span>
       <span class="barre-piste"><i style="width:3%"></i></span>
-      <span class="barre-val">1 516<small> lignes · 16 fich.</small></span>
+      <span class="barre-val">1 559<small> lignes · 17 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
       <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
@@ -2477,6 +2489,11 @@ main{padding:24px 0 96px;min-width:0}
       <span class="barre-piste"><i style="width:1%"></i></span>
       <span class="barre-val">63<small> lignes · 1 fich.</small></span>
     </div>
+    <div class="barre cherchable" data-texte="src/tests">
+      <span class="barre-nom"><code>src/tests</code></span>
+      <span class="barre-piste"><i style="width:1%"></i></span>
+      <span class="barre-val">21<small> lignes · 1 fich.</small></span>
+    </div>
     <div class="barre cherchable" data-texte="mem/features">
       <span class="barre-nom"><code>mem/features</code></span>
       <span class="barre-piste"><i style="width:1%"></i></span>
@@ -2503,7 +2520,7 @@ main{padding:24px 0 96px;min-width:0}
   <details class="repli"><summary>Le détail des 18 langages</summary>
   <table class="tableau">
     <thead><tr><th>Langage</th><th>Fichiers</th><th>Lignes</th><th>Poids</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">335</td><td class="n">67 229</td><td class="n">2.65 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 072</td><td class="n">1.19 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">200</td><td class="n">29 113</td><td class="n">1.07 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">29</td><td class="n">22 183</td><td class="n">4.64 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">187</td><td class="n">13 700</td><td class="n">566.4 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 320</td><td class="n">301.7 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 520</td><td class="n">205.9 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 185</td><td class="n">99.0 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">337</td><td class="n">67 503</td><td class="n">2.66 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 103</td><td class="n">1.20 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">203</td><td class="n">29 366</td><td class="n">1.08 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">29</td><td class="n">16 564</td><td class="n">3.37 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">187</td><td class="n">13 700</td><td class="n">566.4 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 326</td><td class="n">301.9 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 537</td><td class="n">206.8 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 185</td><td class="n">99.0 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
   </table></details>
 
   <h3 class="sous">Gros et souvent repris</h3>
@@ -2654,7 +2671,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/community.css</code></td>
         <td class="n">1 516</td>
         <td class="n">47.9 ko</td>
-        <td>aujourd'hui</td>
+        <td>hier</td>
         <td class="n">11<small> / 11 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="supabase/functions/ai-mia/index.ts">
@@ -2701,7 +2718,7 @@ main{padding:24px 0 96px;min-width:0}
       </tr>
     </tbody>
   </table></details>
-  <details class="repli"><summary>Les écrans, du plus gros au plus petit — 46 écrans</summary><p class="note">Séparés des fichiers utilitaires, pour voir d'un coup d'œil quel écran a grossi.</p>
+  <details class="repli"><summary>Les écrans, du plus gros au plus petit — 47 écrans</summary><p class="note">Séparés des fichiers utilitaires, pour voir d'un coup d'œil quel écran a grossi.</p>
   <table class="tableau serre">
     <thead><tr><th>Fichier</th><th>lignes</th><th>poids</th><th>modifié</th><th>commits</th></tr></thead>
     <tbody>
@@ -2878,7 +2895,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/community.css</code></td>
         <td class="n">1 516</td>
         <td class="n">47.9 ko</td>
-        <td>aujourd'hui</td>
+        <td>hier</td>
         <td class="n">11<small> / 11 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="supabase/functions/ai-mia/index.ts">
@@ -3152,11 +3169,25 @@ main{padding:24px 0 96px;min-width:0}
 
   <h3 class="sous">Fichiers orphelins</h3>
   <details class="methode"><summary>Comment c'est calculé</summary><p>Fichiers de code que <b>rien n'importe</b>. Le graphe est construit sur les chemins littéraux des <code>import</code> : un chemin calculé à l'exécution y échappe. Les points d'entrée sont écartés — <code>main.tsx</code>, <code>App.tsx</code>, les écrans montés par le routeur, les fonctions de bord et les scripts —, ils ne sont importés par personne <em>par construction</em>.</p></details>
-  <details class="repli"><summary>Les 1 fichiers que rien n'importe</summary>
+  <details class="repli"><summary>Les 4 fichiers que rien n'importe</summary>
   <table class="tableau serre">
     <thead><tr><th>Fichier</th><th>lignes</th><th>modifié</th><th>commits</th></tr></thead>
     <tbody>
       
+      <tr class="cherchable" data-texte="src/hooks/useMfa.test.tsx">
+        <td><code>src/hooks/useMfa.test.tsx</code></td>
+        <td class="n">130</td>
+        
+        <td>aujourd'hui</td>
+        <td class="n">1<small> / 1 récents</small></td>
+      </tr>
+      <tr class="cherchable" data-texte="src/lib/miaReflexes.test.ts">
+        <td><code>src/lib/miaReflexes.test.ts</code></td>
+        <td class="n">120</td>
+        
+        <td>aujourd'hui</td>
+        <td class="n">1<small> / 1 récents</small></td>
+      </tr>
       <tr class="cherchable" data-texte="src/components/ui/card.tsx">
         <td><code>src/components/ui/card.tsx</code></td>
         <td class="n">110</td>
@@ -3164,14 +3195,21 @@ main{padding:24px 0 96px;min-width:0}
         <td>il y a 8 mois</td>
         <td class="n">8<small> / 0 récents</small></td>
       </tr>
+      <tr class="cherchable" data-texte="src/tests/preparation.ts">
+        <td><code>src/tests/preparation.ts</code></td>
+        <td class="n">21</td>
+        
+        <td>aujourd'hui</td>
+        <td class="n">1<small> / 1 récents</small></td>
+      </tr>
     </tbody>
   </table></details>
 
   <h3 class="sous">Dépendances</h3>
   <div class="grille-2">
     <article class="carte">
-      <h4>Déclarées, jamais importées — 17</h4>
-      <ul class="puces"><li class="cherchable" data-texte="@hookform/resolvers"><code>@hookform/resolvers</code></li><li class="cherchable" data-texte="@radix-ui/react-accordion"><code>@radix-ui/react-accordion</code></li><li class="cherchable" data-texte="@radix-ui/react-aspect-ratio"><code>@radix-ui/react-aspect-ratio</code></li><li class="cherchable" data-texte="@radix-ui/react-context-menu"><code>@radix-ui/react-context-menu</code></li><li class="cherchable" data-texte="@radix-ui/react-hover-card"><code>@radix-ui/react-hover-card</code></li><li class="cherchable" data-texte="@radix-ui/react-menubar"><code>@radix-ui/react-menubar</code></li><li class="cherchable" data-texte="@radix-ui/react-navigation-menu"><code>@radix-ui/react-navigation-menu</code></li><li class="cherchable" data-texte="@radix-ui/react-separator"><code>@radix-ui/react-separator</code></li><li class="cherchable" data-texte="@radix-ui/react-toggle"><code>@radix-ui/react-toggle</code></li><li class="cherchable" data-texte="@radix-ui/react-toggle-group"><code>@radix-ui/react-toggle-group</code></li><li class="cherchable" data-texte="embla-carousel-react"><code>embla-carousel-react</code></li><li class="cherchable" data-texte="papaparse"><code>papaparse</code></li><li class="cherchable" data-texte="qrcode"><code>qrcode</code></li><li class="cherchable" data-texte="react-hook-form"><code>react-hook-form</code></li><li class="cherchable" data-texte="react-resizable-panels"><code>react-resizable-panels</code></li><li class="cherchable" data-texte="vaul"><code>vaul</code></li><li class="cherchable" data-texte="supabase"><code>supabase</code></li></ul>
+      <h4>Déclarées, jamais importées — 18</h4>
+      <ul class="puces"><li class="cherchable" data-texte="@hookform/resolvers"><code>@hookform/resolvers</code></li><li class="cherchable" data-texte="@radix-ui/react-accordion"><code>@radix-ui/react-accordion</code></li><li class="cherchable" data-texte="@radix-ui/react-aspect-ratio"><code>@radix-ui/react-aspect-ratio</code></li><li class="cherchable" data-texte="@radix-ui/react-context-menu"><code>@radix-ui/react-context-menu</code></li><li class="cherchable" data-texte="@radix-ui/react-hover-card"><code>@radix-ui/react-hover-card</code></li><li class="cherchable" data-texte="@radix-ui/react-menubar"><code>@radix-ui/react-menubar</code></li><li class="cherchable" data-texte="@radix-ui/react-navigation-menu"><code>@radix-ui/react-navigation-menu</code></li><li class="cherchable" data-texte="@radix-ui/react-separator"><code>@radix-ui/react-separator</code></li><li class="cherchable" data-texte="@radix-ui/react-toggle"><code>@radix-ui/react-toggle</code></li><li class="cherchable" data-texte="@radix-ui/react-toggle-group"><code>@radix-ui/react-toggle-group</code></li><li class="cherchable" data-texte="embla-carousel-react"><code>embla-carousel-react</code></li><li class="cherchable" data-texte="papaparse"><code>papaparse</code></li><li class="cherchable" data-texte="qrcode"><code>qrcode</code></li><li class="cherchable" data-texte="react-hook-form"><code>react-hook-form</code></li><li class="cherchable" data-texte="react-resizable-panels"><code>react-resizable-panels</code></li><li class="cherchable" data-texte="vaul"><code>vaul</code></li><li class="cherchable" data-texte="jsdom"><code>jsdom</code></li><li class="cherchable" data-texte="supabase"><code>supabase</code></li></ul>
       <details class="methode"><summary>Comment c'est calculé</summary><p>Les outils de construction sont écartés nommément — ils ne s'importent jamais depuis <code>src</code> et les compter serait un faux positif : <code>vite</code>, <code>typescript</code>, <code>tailwindcss</code>, <code>autoprefixer</code>, <code>postcss</code>, <code>eslint</code>, etc.</p></details>
     </article>
     <article class="carte">
@@ -3267,7 +3305,7 @@ main{padding:24px 0 96px;min-width:0}
   </table></details>
 
   <h3 class="sous">Tests</h3>
-  <p class="alerte">Pas de tests configurés. Aucun outil de test ne figure dans <code>package.json</code> et aucun fichier <code>.test.</code> ou <code>.spec.</code> n'existe dans le dépôt. Un taux de couverture serait ici un zéro décoratif : il n'est pas affiché.</p>
+  <p>Outils détectés : <code>vitest</code>, <code>@testing-library/react</code> — 3 fichier(s) de test.</p>
 
   
   <h3 class="sous">Évolution</h3>
@@ -3275,7 +3313,7 @@ main{padding:24px 0 96px;min-width:0}
   <table class="tableau">
     <thead><tr><th>Relevé</th><th>Fichiers</th><th>Lignes</th><th>Commits</th><th>Orphelins</th><th>Marqueurs</th></tr></thead>
     <tbody>
-      <tr><td>2026-08-28</td><td class="n">878</td><td class="n">181 478</td><td class="n">3 144</td><td class="n">1</td><td class="n">13</td></tr>
+      <tr><td>2026-08-28</td><td class="n">883</td><td class="n">176 440</td><td class="n">3 150</td><td class="n">4</td><td class="n">13</td></tr>
       <tr><td>2026-08-27</td><td class="n">876</td><td class="n">179 936</td><td class="n">3 140</td><td class="n">0</td><td class="n">13</td></tr></tbody>
   </table>
 </section>
@@ -3290,7 +3328,7 @@ main{padding:24px 0 96px;min-width:0}
   <h3 class="sous">Points d'entrée</h3>
   <ul class="puces">
     <li><code>src/main.tsx</code> — montage de l'application</li>
-    <li><code>src/App.tsx</code> — les 46 écrans et leurs routes</li>
+    <li><code>src/App.tsx</code> — les 47 écrans et leurs routes</li>
     <li><code>src/components/layout/AppLayout.tsx</code> — la coque commune</li>
     <li><code>src/integrations/supabase/client.ts</code> — l'accès aux données</li>
     <li><code>supabase/migrations</code> — le modèle de données, migration par migration</li>
