@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lock, Plus } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { totalDuMois, montantDuMois } from '@/lib/finance/cadence';
+import { totalDuMois, montantDuMois } from '@/domaines/finance/logique/cadence';
 import {
   type FinanceCategory,
   getItemCategory,
   groupItemsByCategory,
-} from '@/lib/financeCategories';
-import type { FinancialItem } from '@/types/finance';
+} from '@/domaines/finance/logique/categories';
+import type { FinancialItem } from '@/domaines/finance/types';
 import { LigneAffiche } from './LigneAffiche';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 

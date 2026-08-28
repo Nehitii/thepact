@@ -5,14 +5,14 @@ import { formatCurrency } from '@/lib/currency';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCurrencySymbol } from '@/lib/currency';
-import { getCategoryLabel, type FinanceCategory } from '@/lib/financeCategories';
+import { getCategoryLabel, type FinanceCategory } from '@/domaines/finance/logique/categories';
 import { CadreurDImage } from '../CadreurDImage';
-import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/lib/finance/cadre';
-import { couleurDe } from '@/lib/finance/marque';
-import { lireNom, lireMontant, direLeRefus, NOM_MAX } from '@/lib/finance/garde';
+import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/domaines/finance/logique/cadre';
+import { couleurDe } from '@/domaines/finance/logique/marque';
+import { lireNom, lireMontant, direLeRefus, NOM_MAX } from '@/domaines/finance/logique/garde';
 import { SelecteurDeMois } from './SelecteurDeMois';
-import { moisDeChute, motifDepuisMois } from '@/lib/finance/cadence';
-import type { FinancialItem } from '@/types/finance';
+import { moisDeChute, motifDepuisMois } from '@/domaines/finance/logique/cadence';
+import type { FinancialItem } from '@/domaines/finance/types';
 
 /* UNE LIGNE RECURRENTE
  *

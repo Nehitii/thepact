@@ -11,15 +11,15 @@ import {
   useUpdateRecurringIncome,
   useDeleteRecurringExpense,
   useDeleteRecurringIncome,
-} from '@/hooks/useFinance';
+} from '@/domaines/finance/hooks/useFinance';
 import { format, startOfMonth } from 'date-fns';
-import { totalDuMois, provisionMensuelle, tombeEn } from '@/lib/finance/cadence';
-import { etatDuMois, peutModifier } from '@/lib/finance/moisAffiche';
+import { totalDuMois, provisionMensuelle, tombeEn } from '@/domaines/finance/logique/cadence';
+import { etatDuMois, peutModifier } from '@/domaines/finance/logique/moisAffiche';
 import { CorrigerLeMois } from './CorrigerLeMois';
-import { placeDisponible, LIGNES_MAX } from '@/lib/finance/garde';
+import { placeDisponible, LIGNES_MAX } from '@/domaines/finance/logique/garde';
 import { LigneRecurrente, type ValeursLigne } from './LigneRecurrente';
 import { EcheancesParticulieres } from './EcheancesParticulieres';
-import type { FinancialItem } from '@/types/finance';
+import type { FinancialItem } from '@/domaines/finance/types';
 import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { MoisPalmares } from './MoisPalmares';
@@ -29,9 +29,9 @@ import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
   calculateActiveTotal,
-} from '@/lib/financeCategories';
+} from '@/domaines/finance/logique/categories';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings, useMonthlyValidations } from '@/hooks/useFinance';
+import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings, useMonthlyValidations } from '@/domaines/finance/hooks/useFinance';
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, Scale, PiggyBank } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { AnimatedNumber } from '../widgets';
+import { AnimatedNumber } from '@/domaines/finance/composants/widgets';
 
 /* LE SOLDE DU MOIS
  *

@@ -40,10 +40,10 @@ import { motion } from 'framer-motion';
 import { CalendarClock, LayoutGrid, CalendarRange, Plus, PiggyBank } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import type { FinancialItem } from '@/types/finance';
+import type { FinancialItem } from '@/domaines/finance/types';
 import { PlancheDesCreanciers } from './PlancheDesCreanciers';
 import { AnneeDesEcheances } from './AnneeDesEcheances';
-import { provisionMensuelle, totalDuMois } from '@/lib/finance/cadence';
+import { provisionMensuelle, totalDuMois } from '@/domaines/finance/logique/cadence';
 import { PREF } from "@/lib/preferencesAffichage";
 
 interface Props {

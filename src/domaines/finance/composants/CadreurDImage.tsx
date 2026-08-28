@@ -31,7 +31,7 @@ import { optimizeImage } from '@/lib/imageOptimization';
 import {
   CADRE_PAR_DEFAUT, DECALAGE_MAX, estCadreParDefaut, styleDuCadre,
   type CadreImage, type Ajustement, type FondDeMarque,
-} from '@/lib/finance/cadre';
+} from '@/domaines/finance/logique/cadre';
 
 interface Props {
   url: string | null;

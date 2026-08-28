@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **4 domaines sur 11**. M.I.A., santé, journal et focus, le 28/08/2026.
+État : **5 domaines sur 11**. M.I.A., santé, journal, focus et finance, le 28/08/2026.
 
 ---
 
@@ -179,6 +179,43 @@ change alors qu'on n'a fait que déplacer, c'est qu'on a déplacé plus que pré
 
 ---
 
+## Ce que le cinquième domaine a ajouté
+
+**Ce qui porte l'odeur d'un domaine ne lui appartient pas toujours.**
+`lib/currency.ts` et `contexts/CurrencyContext.tsx` sentent la finance — mais
+ils servent **seize fichiers ailleurs** : les objectifs, les souhaits,
+l'analytique, le profil, et `AppProviders` qui monte le contexte pour toute
+l'application. Une devise n'appartient pas au module qui compte l'argent ; elle
+appartient à tout ce qui affiche un prix. Ils resteront au socle.
+
+C'est la première fois qu'un fichier est laissé dehors **parce qu'il sert trop
+de monde**, et non parce qu'il fait autre chose.
+
+**Deux fonds de page vivaient chez ceux qui ne les lisaient pas.**
+`AuraBackground` s'appelait « AURA Neo-Banking » et vivait sous
+`components/finance/aura/` ; `CyberBackground` vivait à la racine des
+composants. Leur **unique** lecteur, à tous les deux, était
+`components/ds/DSBackground`. Ils l'ont rejoint, et la tolérance
+`ds → composants` a disparu en entier.
+
+**Une interface déclarée au milieu des données tire un fichier de types vers le
+haut.** `FinanceCategory` était dans `logique/categories.ts`, entre les icônes
+Lucide et les vingt catégories de dépense ; `types.ts` allait la chercher par un
+`import(…)` inline. Un fichier de **types** qui dépend d'un fichier de
+**données** : la garde l'a vu dès que le domaine s'est refermé. L'interface est
+descendue, `categories.ts` la réexporte.
+
+Troisième domaine d'affilée où le geste est le même — `ExpressionMia`,
+`ObjetClause`, `FinanceCategory`. **Un type déclaré là où il sert d'abord finit
+toujours par tirer sa couche derrière lui.**
+
+**Et les deux feuilles de style arrivent déjà fusionnées.** `finance.css` (316 l)
+et `finance-cyber.css` (3 159 l) sont chargées ensemble par la page, et Vite les
+émet en **un seul** morceau, `Finance-q5Qyx5KF.css`. L'étape 4 aura donc moins à
+faire qu'annoncé : la fusion est cosmétique côté source, pas côté réseau.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -203,10 +240,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 11 | **4 / 11** |
+| domaines rangés | 0 / 11 | **5 / 11** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **18** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **17** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -222,7 +259,7 @@ fichier à sa place.
 
 ---
 
-## Les sept domaines restants, dans l'ordre
+## Les six domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -232,7 +269,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **santé** | 15 |
 | ✔ | **journal** | 12 |
 | ✔ | **focus** | 19 |
-| 5 | finance | 37 |
+| ✔ | **finance** | 33 |
 | 6 | agenda | 43 |
 | 7 | souhaits | 52 |
 | 8 | profil | 55 |

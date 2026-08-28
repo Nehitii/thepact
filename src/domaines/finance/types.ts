@@ -1,3 +1,18 @@
+/** Une categorie de depense ou de revenu.
+ *
+ * Elle etait declaree dans `logique/categories.ts`, au milieu des
+ * donnees, et ce fichier allait l y chercher par un import inline — un
+ * fichier de TYPES qui depend d un fichier de DONNEES. La garde des
+ * couches l a signale des que le domaine s est referme. */
+export interface FinanceCategory {
+  value: string;
+  labelKey: string;      // cle de traduction
+  icon: LucideIcon;
+  color: string;         // classe de couleur Tailwind
+  bg: string;            // classe de fond Tailwind
+  hexColor: string;      // couleur hex pour les graphiques
+}
+
 // ============================================
 // SHARED FINANCE TYPES
 // ============================================
@@ -155,7 +170,7 @@ export interface FinancialBlockProps {
   title: string;
   type: 'expense' | 'income';
   items: FinancialItem[];
-  categories: import('@/lib/financeCategories').FinanceCategory[];
+  categories: FinanceCategory[];
   isLoading: boolean;
   onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
   onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;

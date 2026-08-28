@@ -9,11 +9,11 @@ import { format, startOfMonth, subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { useMonthlyValidations } from '@/hooks/useFinance';
+import { useMonthlyValidations } from '@/domaines/finance/hooks/useFinance';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
-import { totalDuMois, montantDuMois, tombeEn } from '@/lib/finance/cadence';
-import { peutPointer, estLeMoisCourant, type EtatDuMois } from '@/lib/finance/moisAffiche';
-import type { FinancialItem } from '@/types/finance';
+import { totalDuMois, montantDuMois, tombeEn } from '@/domaines/finance/logique/cadence';
+import { peutPointer, estLeMoisCourant, type EtatDuMois } from '@/domaines/finance/logique/moisAffiche';
+import type { FinancialItem } from '@/domaines/finance/types';
 
 /* LE PALMARES DU MOIS
  *

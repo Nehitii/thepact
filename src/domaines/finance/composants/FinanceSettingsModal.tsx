@@ -4,9 +4,9 @@ import { Calendar, Target, Wallet, HandCoins, X } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { useUpdateFinanceSettings } from '@/hooks/useFinance';
+import { useUpdateFinanceSettings } from '@/domaines/finance/hooks/useFinance';
 import { toast } from 'sonner';
-import type { FinanceSettings } from '@/types/finance';
+import type { FinanceSettings } from '@/domaines/finance/types';
 
 /* LES REGLAGES DE L APPAREIL
  *

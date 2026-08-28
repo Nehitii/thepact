@@ -1,5 +1,5 @@
-import { CyberBackground } from "@/components/CyberBackground";
-import { AuraBackground } from "@/components/finance/aura/AuraBackground";
+import { CyberBackground } from "./CyberBackground";
+import { AuraBackground } from "./AuraBackground";
 
 export type DSBackgroundVariant =
   | "none"

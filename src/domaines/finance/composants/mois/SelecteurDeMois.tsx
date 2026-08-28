@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, Wand2 } from 'lucide-react';
 import {
   motifDepuisMois, regulariser, moisDuMotif, cadenceDe,
-} from '@/lib/finance/cadence';
+} from '@/domaines/finance/logique/cadence';
 
 interface Props {
   /** Les mois coches, par indice de 0 a 11. */

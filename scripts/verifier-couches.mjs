@@ -143,7 +143,19 @@ const TOLERE = new Map([
   ["components/ui/dialog.tsx",  "etape 3 — idem"],
   ["components/ui/switch.tsx",  "etape 3 — idem"],
   ["components/ui/tabs.tsx",    "etape 3 — idem"],
-  ["components/ds/DSBackground.tsx", "etape 3 — importe CyberBackground et AuraBackground"],
+  /* `components/ds/DSBackground.tsx` n est plus une inversion : ses deux
+     fonds, `CyberBackground` et `AuraBackground`, l ont rejoint dans
+     `ds/` en rangeant la finance (28/08). Il etait leur SEUL lecteur —
+     l un vivait a la racine des composants, l autre sous
+     `finance/aura/`, et aucun des deux n avait de raison d y etre.
+
+     `types/finance.ts` non plus : l interface `FinanceCategory` etait
+     declaree au milieu des donnees de `financeCategories.ts`, et le
+     fichier de types allait l y chercher par un import inline. Elle vit
+     desormais dans `domaines/finance/types.ts`. */
+
+  ["domaines/finance/logique/comptePacte.ts",
+   "etape 3 — importe les TYPES Goal et CostItem depuis leurs hooks ; se resoudra quand objectifs et souhaits seront ranges"],
   /* `components/ds/DSPageHeader.tsx` a ete supprime le 28/08 : il
      n etait rendu que par `ModuleHeader`, lui-meme @deprecated et rendu
      nulle part. L inversion `ds → composants` qu il portait n a pas ete
@@ -152,7 +164,6 @@ const TOLERE = new Map([
      dans `pages/Focus` : la derniere inversion `composants → pages` du
      depot. Le type est descendu dans `domaines/focus/types.ts` en
      rangeant le domaine (28/08), et la page le reexporte. */
-  ["types/finance.ts",       "etape 3 — importe lib/financeCategories"],
 ]);
 
 function sources(dossier, acc = []) {

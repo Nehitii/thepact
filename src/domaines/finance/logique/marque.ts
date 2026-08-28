@@ -11,7 +11,7 @@
  * elles vivent ici plutot que dans le composant — pour qu on puisse
  * les eprouver sans monter de React.
  */
-import { getExpenseCategory } from '@/lib/financeCategories';
+import { getExpenseCategory } from '@/domaines/finance/logique/categories';
 
 /**
  * Les mots-outils, ecartes des initiales.

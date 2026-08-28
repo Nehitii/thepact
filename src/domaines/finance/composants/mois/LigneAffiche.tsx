@@ -26,10 +26,10 @@
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
-import { getCategoryLabel, getExpenseCategory, getIncomeCategory } from '@/lib/financeCategories';
-import { couleurDe } from '@/lib/finance/marque';
-import { montantDuMois, cadenceDe } from '@/lib/finance/cadence';
-import type { FinancialItem } from '@/types/finance';
+import { getCategoryLabel, getExpenseCategory, getIncomeCategory } from '@/domaines/finance/logique/categories';
+import { couleurDe } from '@/domaines/finance/logique/marque';
+import { montantDuMois, cadenceDe } from '@/domaines/finance/logique/cadence';
+import type { FinancialItem } from '@/domaines/finance/types';
 import { MarqueCreancier } from './MarqueCreancier';
 
 interface Props {

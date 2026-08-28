@@ -45,13 +45,13 @@ import {
   useUpdateRecurringExpense, useUpdateRecurringIncome,
   useAddRecurringExpense, useAddRecurringIncome,
   useMonthlyValidation, useUpsertMonthlyValidation,
-} from '@/hooks/useFinance';
+} from '@/domaines/finance/hooks/useFinance';
 import { usePointages, useEcrirePointage, useEffacerPointage } from '@/hooks/usePointages';
-import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/lib/finance/cadence';
-import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/lib/finance/garde';
+import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
+import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
 import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
-import type { FinancialItem } from '@/types/finance';
+import type { FinancialItem } from '@/domaines/finance/types';
 
 type Etape = 'expense' | 'income' | 'bilan';
 const ETAPES: Etape[] = ['expense', 'income', 'bilan'];

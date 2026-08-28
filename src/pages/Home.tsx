@@ -25,7 +25,7 @@ import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
 import { useUserShop } from "@/hooks/useShop";
-import { useFinanceSettings } from "@/hooks/useFinance";
+import { useFinanceSettings } from "@/domaines/finance";
 import { useRankXP } from "@/hooks/useRankXP";
 
 type UserState = "onboarding" | "active" | "advanced";

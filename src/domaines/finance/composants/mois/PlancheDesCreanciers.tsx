@@ -21,13 +21,13 @@ import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import type { FinancialItem } from '@/types/finance';
+import type { FinancialItem } from '@/domaines/finance/types';
 import { MarqueCreancier } from './MarqueCreancier';
-import { couleurDe } from '@/lib/finance/marque';
+import { couleurDe } from '@/domaines/finance/logique/marque';
 import {
   cadenceDe, montantDuMois, tombeEn, prochaineEcheance,
   rangEcheance, tombeDansLAnnee,
-} from '@/lib/finance/cadence';
+} from '@/domaines/finance/logique/cadence';
 
 interface Props {
   items: FinancialItem[];

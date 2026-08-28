@@ -6,18 +6,17 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { TFunction } from 'i18next';
 
+/* L INTERFACE VIT DANS types.ts, PAS ICI.
+   Elle etait declaree au milieu des donnees, et `types.ts` allait la
+   chercher par un import inline — un fichier de TYPES qui depend d un
+   fichier de DONNEES. On la reexporte pour ne casser aucun appelant. */
+import type { FinanceCategory } from '@/domaines/finance/types';
+
 // ============================================
 // SHARED FINANCE CATEGORY CONFIGURATION
 // ============================================
 
-export interface FinanceCategory {
-  value: string;
-  labelKey: string;      // Translation key for i18n
-  icon: LucideIcon;
-  color: string;         // Tailwind text color class
-  bg: string;            // Tailwind bg color class
-  hexColor: string;      // Hex color for charts/inline styles
-}
+export type { FinanceCategory };
 
 // Expense Categories - Single source of truth
 export const EXPENSE_CATEGORIES: FinanceCategory[] = [

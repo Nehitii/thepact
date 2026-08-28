@@ -18,8 +18,8 @@
  * image ne se lit pas comme une ligne incomplete.
  */
 import { useMemo } from 'react';
-import { initialesDe, couleurDe } from '@/lib/finance/marque';
-import { normaliserCadre, styleDuCadre } from '@/lib/finance/cadre';
+import { initialesDe, couleurDe } from '@/domaines/finance/logique/marque';
+import { normaliserCadre, styleDuCadre } from '@/domaines/finance/logique/cadre';
 
 interface Props {
   nom: string;

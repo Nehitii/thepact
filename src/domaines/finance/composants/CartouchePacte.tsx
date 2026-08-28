@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Landmark, PackageCheck, Hourglass } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
-import { AnimatedNumber } from "./widgets";
-import type { ComptePacte } from "./comptePacte";
+import { AnimatedNumber } from "@/domaines/finance/composants/widgets";
+import type { ComptePacte } from "@/domaines/finance/logique/comptePacte";
 
 /* LE CARTOUCHE
  *
