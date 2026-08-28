@@ -88,6 +88,21 @@
     height: min(958px, calc(100dvh - 64px));
   }
 
+  /* ⚠ CE RAPPORT EST UNE DÉPENDANCE DE L'IMAGE, PAS QU'UN CHOIX.
+
+     auth-cite.png a été recadrée à 880 × 1024 en s'appuyant dessus.
+     La scène est ce panneau moins des marges en pixels, donc son
+     rapport varie de 0,775 (petit panneau) à 0,792 (panneau plein,
+     mesuré 740 × 934). En `cover`, l'image n'est ajustée en HAUTEUR
+     — et donc jamais bordée — que tant que son propre rapport reste
+     supérieur : 880/1024 = 0,859, soit 8,5 % de marge sur le pire
+     cas.
+
+     ÉLARGIR CE PANNEAU MANGE CETTE MARGE. Au-delà d'un rapport de
+     0,859 pour la scène, `cover` ajusterait en largeur et le haut ou
+     le bas de la ville sortirait du cadre. Si ce rapport doit
+     changer, il faut recouper l'image depuis l'originale (1536 ×
+     1024, « Nouveau dossier » sur le bureau). */
   .auth-visuel {
     display: block;
     position: relative;
