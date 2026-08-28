@@ -5,6 +5,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { messageDErreur } from "@/lib/erreurs";
+import { useFournisseursActifs, type Fournisseur } from "@/hooks/useFournisseursActifs";
 import "@/styles/auth.css";
 
 /**
@@ -21,11 +22,14 @@ import "@/styles/auth.css";
  *   ligne. Quelqu'un qui oubliait son mot de passe était dehors. Le lien
  *   envoie maintenant un courriel de réinitialisation.
  *
- * — LES TROIS FOURNISSEURS SONT BRANCHÉS, pas décoratifs. Ils appellent
- *   `signInWithOAuth`. Tant que Discord, GitHub et Google ne sont pas
- *   configurés dans le tableau de bord Supabase — identifiant et secret
- *   client, gratuits chez les trois — le serveur répond « provider is
- *   not enabled » et l'écran le dit en clair au lieu de rester muet.
+ * — LES FOURNISSEURS N'APPARAISSENT QUE S'ILS RÉPONDENT. Ils étaient
+ *   trois, écrits en dur, et aucun n'était configuré : le serveur
+ *   renvoyait « provider is not enabled » à qui cliquait. La liste vient
+ *   maintenant de `/auth/v1/settings` (voir `useFournisseursActifs`) —
+ *   configurer Discord, GitHub ou Google dans le tableau de bord
+ *   Supabase les fait apparaître seuls, sans toucher à ce fichier. Le
+ *   message d'erreur reste, pour le cas où l'un s'éteint entre le
+ *   chargement de l'écran et le clic.
  *
  * — LES CONDITIONS RESTENT SUR L'INSCRIPTION. Leur article 5 pose
  *   l'acceptation à la création du compte. La maquette ne les mentionne
@@ -34,7 +38,39 @@ import "@/styles/auth.css";
  */
 
 type Mode = "connexion" | "inscription";
-type Fournisseur = "discord" | "github" | "google";
+
+/* Les marques, sorties du corps de l'écran : la liste est décidée par le
+   serveur, le dessin de chacune n'a plus à être recopié à côté d'un
+   `if`. `nom` sert d'`aria-label` — les logos n'ont pas de texte. */
+const MARQUES: Record<Fournisseur, { nom: string; dessin: JSX.Element }> = {
+  discord: {
+    nom: "Discord",
+    dessin: (
+      <svg viewBox="0 0 24 24" fill="#a78bfa" aria-hidden="true">
+        <path d="M20.317 4.369a19.79 19.79 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.6 12.6 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.1 13.1 0 01-1.872-.892.077.077 0 01-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.009c.12.099.246.198.373.292a.077.077 0 01-.006.127c-.598.35-1.22.645-1.873.891a.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.029 19.84 19.84 0 006.002-3.03.077.077 0 00.032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.331c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.211 0 2.176 1.096 2.157 2.42 0 1.332-.955 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.332-.946 2.418-2.157 2.418z" />
+      </svg>
+    ),
+  },
+  github: {
+    nom: "GitHub",
+    dessin: (
+      <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
+        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+      </svg>
+    ),
+  },
+  google: {
+    nom: "Google",
+    dessin: (
+      <svg viewBox="0 0 48 48" width="32" height="32" aria-hidden="true">
+        <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 01-4.4 6.65v5.52h7.1c4.16-3.83 6.58-9.47 6.58-16.18z" />
+        <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.32l-7.1-5.52c-1.98 1.32-4.5 2.1-7.46 2.1-5.74 0-10.6-3.87-12.34-9.08H4.34v5.7A22 22 0 0024 46z" />
+        <path fill="#FBBC05" d="M11.66 28.18A13.2 13.2 0 0110.96 24c0-1.45.25-2.86.7-4.18v-5.7H4.34A22 22 0 002 24c0 3.55.85 6.91 2.34 9.88l7.32-5.7z" />
+        <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.3-6.3C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.32 5.7c1.74-5.21 6.6-9.07 12.34-9.07z" />
+      </svg>
+    ),
+  },
+};
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -46,6 +82,7 @@ export default function Auth() {
   const [devoile, setDevoile] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [faute, setFaute] = useState<{ champ: "email" | "motDePasse"; texte: string } | null>(null);
+  const fournisseurs = useFournisseursActifs();
 
   const inscription = mode === "inscription";
 
@@ -312,32 +349,32 @@ export default function Auth() {
           </p>
         )}
 
-        <div className="auth-ou">
-          <i />
-          <span>{t("auth.ouAvec", "OU CONTINUER AVEC")}</span>
-          <i />
-        </div>
+        {/* Le séparateur part avec les tuiles : « OU CONTINUER AVEC »
+            au-dessus de rien annoncerait un choix qui n'existe pas. */}
+        {fournisseurs.length > 0 && (
+          <>
+            <div className="auth-ou">
+              <i />
+              <span>{t("auth.ouAvec", "OU CONTINUER AVEC")}</span>
+              <i />
+            </div>
 
-        <div className="auth-fournisseurs">
-          <button type="button" className="auth-fournisseur" onClick={() => parFournisseur("discord")} disabled={enCours} aria-label="Discord">
-            <svg viewBox="0 0 24 24" fill="#a78bfa" aria-hidden="true">
-              <path d="M20.317 4.369a19.79 19.79 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.6 12.6 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.1 13.1 0 01-1.872-.892.077.077 0 01-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.009c.12.099.246.198.373.292a.077.077 0 01-.006.127c-.598.35-1.22.645-1.873.891a.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.029 19.84 19.84 0 006.002-3.03.077.077 0 00.032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.028zM8.02 15.331c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.211 0 2.176 1.096 2.157 2.42 0 1.332-.955 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.332-.946 2.418-2.157 2.418z" />
-            </svg>
-          </button>
-          <button type="button" className="auth-fournisseur" onClick={() => parFournisseur("github")} disabled={enCours} aria-label="GitHub">
-            <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
-              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-            </svg>
-          </button>
-          <button type="button" className="auth-fournisseur" onClick={() => parFournisseur("google")} disabled={enCours} aria-label="Google">
-            <svg viewBox="0 0 48 48" width="32" height="32" aria-hidden="true">
-              <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 01-4.4 6.65v5.52h7.1c4.16-3.83 6.58-9.47 6.58-16.18z" />
-              <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.32l-7.1-5.52c-1.98 1.32-4.5 2.1-7.46 2.1-5.74 0-10.6-3.87-12.34-9.08H4.34v5.7A22 22 0 0024 46z" />
-              <path fill="#FBBC05" d="M11.66 28.18A13.2 13.2 0 0110.96 24c0-1.45.25-2.86.7-4.18v-5.7H4.34A22 22 0 002 24c0 3.55.85 6.91 2.34 9.88l7.32-5.7z" />
-              <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.3-6.3C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.32 5.7c1.74-5.21 6.6-9.07 12.34-9.07z" />
-            </svg>
-          </button>
-        </div>
+            <div className="auth-fournisseurs">
+              {fournisseurs.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className="auth-fournisseur"
+                  onClick={() => parFournisseur(f)}
+                  disabled={enCours}
+                  aria-label={MARQUES[f].nom}
+                >
+                  {MARQUES[f].dessin}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="auth-pied">
           <span>

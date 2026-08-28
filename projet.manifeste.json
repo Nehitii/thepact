@@ -518,8 +518,7 @@
     }
   ],
   "prochainesEtapes": [
-    "Donner à M.I.A la place que l'intention lui assigne : un lore et une histoire, des apparitions aux endroits clés — onboarding en bulles, The Call, trouvailles cachées — puis un visage et une voix hors de l'application. Elle tient déjà la 404 et la porte du second facteur.",
-    "Configurer les fournisseurs OAuth dans le tableau de bord Supabase. Les trois tuiles sont sur l'écran de connexion et les journaux d'authentification montrent des clics qui rendent « provider is not enabled ».",
+    "Brancher au moins un fournisseur OAuth : créer l'application chez Discord, GitHub ou Google, poser identifiant et secret dans Supabase. La tuile apparaît seule ensuite, sans redéploiement — l'écran lit /auth/v1/settings au chargement. Marche à suivre exacte dans docs/fournisseurs-oauth.md.",
     "Poser le secret VAPID_SUBJECT avant de déployer push-send : c'est l'adresse de contact envoyée aux services de push, et la fonction ne peut pas s'en passer.",
     "Trancher la licence de Switzer. Elle est auto-hébergée donc redistribuée, et son ITF Free Font License n'est pas libre : plusieurs sources indiquent que l'auto-hébergement demande l'accord écrit d'ITF. Les quatre autres polices sont en OFL 1.1, vérifiées à la source.",
     "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
