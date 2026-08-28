@@ -1,6 +1,6 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T15:38:25.835Z",
+  "genere": "2026-08-28T15:44:56.045Z",
   "fichiers": 891,
   "lignes": 177712,
   "parDossier": [
@@ -8,7 +8,7 @@
       "dossier": "(racine)",
       "fichiers": 17,
       "lignes": 1581,
-      "poids": 63469
+      "poids": 63867
     },
     {
       "dossier": "docs",
@@ -190,7 +190,7 @@
       "langage": "JSON",
       "fichiers": 8,
       "lignes": 8348,
-      "poids": 316593
+      "poids": 316991
     },
     {
       "langage": "Markdown",
@@ -283,7 +283,7 @@
       "poids": 500
     }
   ],
-  "commits": 3170,
+  "commits": 3171,
   "orphelins": 8,
   "marqueurs": 13
 }
