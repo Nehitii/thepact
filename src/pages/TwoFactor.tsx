@@ -1,6 +1,6 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { OTPInput, OTPInputContext } from "input-otp";
+import { OTPInput } from "input-otp";
 import { toast } from "sonner";
 import { useMfa } from "@/hooks/useMfa";
 import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
@@ -11,26 +11,41 @@ import "@/styles/deuxieme-facteur.css";
 
 type FromState = { from?: string };
 
+/** Ce que `render` donne pour chaque case. */
+type Fente = { char: string | null; isActive: boolean };
+
 /**
- * UNE CASE, LUE DEPUIS LE CONTEXTE D'`input-otp`.
+ * UNE CASE.
  *
- * `InputOTPSlot` de components/ui existe, mais il impose ses propres
- * classes : six cases COLLÉES, bordures partagées, coins arrondis aux
- * seules extrémités. Le dessin en veut six séparées. Lutter contre ces
- * utilitaires à coups de spécificité aurait tenu jusqu'à la première
- * mise à jour du composant.
+ * `InputOTPSlot` de components/ui est écarté : il impose six cases
+ * COLLÉES, bordures partagées, coins arrondis aux seules extrémités.
+ * Le dessin en veut six séparées, et lutter contre ces utilitaires à
+ * coups de spécificité n'aurait tenu que jusqu'à la prochaine mise à
+ * jour du composant.
  *
- * `OTPInputContext` est l'API publique de la bibliothèque : on lit le
- * caractère et l'état actif, on peint le reste. Le comportement — le
- * collage, le retour arrière, le déplacement du curseur — reste celui
- * d'`OTPInput`, qu'on ne touche pas.
+ * ═══ ELLE REÇOIT SA FENTE, ELLE NE LA CHERCHE PAS ═══
+ *
+ * Première version : `useContext(OTPInputContext)`, comme le fait
+ * `InputOTPSlot`. Elle plantait au montage —
+ * « Cannot read properties of undefined (reading '5') ».
+ *
+ * La source de la bibliothèque dit pourquoi :
+ *
+ *   render ? render(valeur) : createElement(Contexte.Provider, …, children)
+ *
+ * LE FOURNISSEUR DE CONTEXTE N'EXISTE QUE SUR LA VOIE `children`.
+ * Passer par `render`, comme ici, le court-circuite : le contexte lu
+ * est la valeur PAR DÉFAUT, son `slots` vaut `undefined`, et
+ * `slots[5]` lève. `InputOTPSlot` fonctionne parce qu'il est un
+ * enfant, pas parce que le contexte est toujours là.
+ *
+ * `render` donne déjà les fentes en argument. On les passe en
+ * propriété : plus court, et vrai dans les deux voies.
  */
-function Case({ index }: { index: number }) {
-  const contexte = useContext(OTPInputContext);
-  const { char, isActive } = contexte.slots[index];
+function Case({ fente }: { fente: Fente }) {
   return (
-    <div className="sas-case" data-active={isActive ? "true" : undefined} aria-hidden="true">
-      {char}
+    <div className="sas-case" data-active={fente.isActive ? "true" : undefined} aria-hidden="true">
+      {fente.char}
     </div>
   );
 }
@@ -218,7 +233,7 @@ export default function TwoFactor() {
               containerClassName="sas-cases"
               aria-label={t("twoFactor.porte.consigne", "Saisis le code à six chiffres affiché par ton application d’authentification.")}
               render={({ slots }) => (
-                <>{slots.map((_, i) => <Case key={i} index={i} />)}</>
+                <>{slots.map((fente, i) => <Case key={i} fente={fente} />)}</>
               )}
             />
 
