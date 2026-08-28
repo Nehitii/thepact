@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { aLHeure } from "./temps";
+import { aLHeure } from "@/domaines/agenda/logique/temps";
 
 /* LA SAISIE RAPIDE
  *

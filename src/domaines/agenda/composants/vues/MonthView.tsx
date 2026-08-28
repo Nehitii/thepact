@@ -8,7 +8,7 @@ import {
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import type { Locale } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
 import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";
 import {
@@ -17,7 +17,7 @@ import {
   type DragEndEvent, type DragStartEvent, type DropAnimation,
 } from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { estImportee } from "../sources";
+import { estImportee } from "@/domaines/agenda/logique/sources";
 
 /* LA CARTE
  *

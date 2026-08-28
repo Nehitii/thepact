@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
 import { Repeat } from "lucide-react";
-import type { RecurrenceRule } from "@/hooks/useCalendarEvents";
+import type { RecurrenceRule } from "@/domaines/agenda/types";
 
 interface RecurrenceEditorProps {
   rule: RecurrenceRule | null;

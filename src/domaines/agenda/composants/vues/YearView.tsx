@@ -6,8 +6,8 @@ import {
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import type { CalendarEvent, CalendarSourceType } from "@/hooks/useCalendarEvents";
-import { SOURCES, ORDRE_SOURCES, sourceDe } from "../sources";
+import type { CalendarEvent, CalendarSourceType } from "@/domaines/agenda/types";
+import { SOURCES, ORDRE_SOURCES, sourceDe } from "@/domaines/agenda/logique/sources";
 
 /* L annee : douze cartes du meme metal que le reste. Elles etaient des
    tuiles arrondies, et leurs points de couleur venaient de classes

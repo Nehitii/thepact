@@ -1,4 +1,4 @@
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
 import { GrilleHoraire } from "./GrilleHoraire";
 
 /* Le jour, c est la grille horaire a une colonne. Il avait sa propre

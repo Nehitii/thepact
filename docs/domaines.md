@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **6 domaines sur 12**. M.I.A., santé, journal, focus, finance et tâches, le 28/08/2026.
+État : **7 domaines sur 12**. M.I.A., santé, journal, focus, finance, tâches et agenda, le 28/08/2026.
 
 *Douze et non onze : l agenda s’est scindé en deux — voir le sixième domaine.*
 
@@ -252,6 +252,38 @@ liste de tâches. Ils partiront avec le profil.
 
 ---
 
+## Ce que le septième domaine a ajouté
+
+**La porte d'un autre domaine n'est pas une couche, c'est une frontière — et ce
+n'est pas la garde des couches qui en juge.** `useCalendarEvents` (un hook,
+rang 4) importe `@/domaines/taches` (rang 5 via la règle générique) : vu comme un
+rang, c'est une inversion. Vu comme ce que c'est, c'est une dépendance externe,
+au même titre qu'une bibliothèque. La garde des couches ignore désormais les
+imports de porte ; `domaines:check` vérifie déjà qu'on passe par la porte et non
+par la fenêtre. **Deux gardes, deux questions, et aucune ne répond à la place de
+l'autre.**
+
+Éprouvé sur quatre cas : la porte d'autrui passe, une entrée par la fenêtre est
+refusée *par l'autre garde*, une inversion interne reste vue, et sa propre porte
+importée depuis l'intérieur reste vue aussi — c'est un risque de cycle.
+
+**Un `git checkout` sur un fichier `git mv` restaure la version de l'index, pas
+la version courante.** En nettoyant deux cas de test j'ai ramené `sources.ts` et
+`temps.ts` à leur état d'avant la réécriture des imports. Le compilateur l'a vu ;
+sans lui, deux fichiers seraient partis avec des chemins morts.
+
+**Cinquième fois le motif du type dans le hook** — `CalendarSourceType` et trois
+autres. Cette fois on est allé jusqu'au bout : les quatre types descendent dans
+`types.ts`, **et les quatorze composants qui les prenaient via le hook** sont
+rebranchés dessus. Extraire un type sans rebrancher ses lecteurs, c'est déplacer
+le problème d'un fichier.
+
+**La preuve la plus nette du rangement :** le morceau `Calendar-LeAFYdZN.js`
+garde **exactement le même hachage** qu'avant le déplacement. Vingt-deux fichiers
+ont changé d'adresse et le code émis est le même fichier, à l'octet près.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -276,10 +308,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 12 | **6 / 12** |
+| domaines rangés | 0 / 12 | **7 / 12** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **16** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **15** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -295,7 +327,7 @@ fichier à sa place.
 
 ---
 
-## Les six domaines restants, dans l'ordre
+## Les cinq domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -307,7 +339,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **focus** | 19 |
 | ✔ | **finance** | 33 |
 | ✔ | **tâches** | 18 |
-| 7 | agenda (calendrier) | 25 |
+| ✔ | **agenda** | 22 |
 | 7 | souhaits | 52 |
 | 8 | profil | 55 |
 | 9 | guildes | 57 |

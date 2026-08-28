@@ -13,7 +13,7 @@ import {
 import { trackCalendarEventCreated } from "@/lib/achievements";
 import type { TodoTaskType } from "@/domaines/taches";
 import { natureDe, estRendezVous } from "@/domaines/taches";
-import { composerInstant } from "@/components/calendar/temps";
+import { composerInstant } from "@/domaines/agenda/logique/temps";
 
 /**
  * Le moment complet d un rendez-vous : le JOUR de son echeance, a
@@ -38,59 +38,10 @@ function momentDuJour(echeance: string, heure: string): { debut: string; fin: st
   return { debut: debut.toISOString(), fin: addHours(debut, 1).toISOString() };
 }
 
-// ─── Types ───────────────────────────────────────────────────
-export interface RecurrenceRule {
-  freq: "daily" | "weekly" | "monthly" | "yearly";
-  interval?: number;
-  byDay?: string[];
-  bySetPos?: number[];
-  count?: number;
-  until?: string;
-}
+// ─── Types — voir `../types.ts`, reexportes ici ─────────────
+import type { RecurrenceRule, CalendarSourceType, CalendarEvent, CalendarEventInsert } from "@/domaines/agenda/types";
+export type { RecurrenceRule, CalendarSourceType, CalendarEvent, CalendarEventInsert };
 
-export type CalendarSourceType = "event" | "todo" | "goal" | "step";
-
-export interface CalendarEvent {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string | null;
-  location: string | null;
-  start_time: string;
-  end_time: string;
-  all_day: boolean;
-  color: string;
-  category: string;
-  recurrence_rule: RecurrenceRule | null;
-  recurrence_parent_id: string | null;
-  recurrence_exception: boolean;
-  reminders: { type: string; minutes_before: number }[];
-  is_busy: boolean;
-  linked_goal_id: string | null;
-  linked_todo_id: string | null;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-  _virtual?: boolean;
-  _originalStart?: string;
-  _source?: CalendarSourceType;
-  _sourceId?: string; // original ID from the source table
-  /* CE QU EST l entree, quand sa source ne suffit pas a le dire.
-     Une tache importee arrivait indifferenciee : rendez-vous,
-     echeance ou tache souple avaient la meme couleur et la meme
-     icone. La source dit D OU ca vient ; la nature dit ce que c est. */
-  _nature?: TodoTaskType;
-}
-
-/* LES CHAMPS EN « _ » N'ONT PAS DE COLONNE : ce sont des marqueurs posés
-   par l'application pour se souvenir d'où vient une entrée et de ce
-   qu'elle est. « _nature » manquait à cette liste — il pouvait donc partir
-   dans un insert, où PostgREST l'aurait refusé (« column _nature does not
-   exist »). Le cast « as any » sur l'insert rendait ce départ muet. */
-export type CalendarEventInsert = Omit<
-  CalendarEvent,
-  "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId" | "_nature"
->;
 
 // ─── Recurrence expansion ───────────────────────────────────
 const DAY_MAP: Record<string, number> = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };

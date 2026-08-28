@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { format, parseISO } from "date-fns";
 import { Repeat } from "lucide-react";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
 import { cn } from "@/lib/utils";
-import { estImportee } from "./sources";
+import { estImportee } from "@/domaines/agenda/logique/sources";
 
 /* LA BANDE
  *

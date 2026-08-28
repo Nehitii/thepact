@@ -1,5 +1,5 @@
 import { CalendarDays, CheckSquare, Target, Footprints, type LucideIcon } from "lucide-react";
-import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
+import type { CalendarSourceType } from "@/domaines/agenda/types";
 import { natureDe } from "@/domaines/taches";
 
 /* LES QUATRE SOURCES, DEFINIES UNE FOIS

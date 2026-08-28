@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
-import { SOURCES, ORDRE_SOURCES } from "./sources";
+import type { CalendarSourceType } from "@/domaines/agenda/types";
+import { SOURCES, ORDRE_SOURCES } from "@/domaines/agenda/logique/sources";
 
 interface SourceFilterChipsProps {
   active: Set<CalendarSourceType>;

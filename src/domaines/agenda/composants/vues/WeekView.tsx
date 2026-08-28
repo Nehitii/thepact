@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { startOfWeek, addDays } from "date-fns";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
 import { GrilleHoraire } from "./GrilleHoraire";
 
 /* La semaine, c est la grille horaire a sept colonnes. Rien d autre ne

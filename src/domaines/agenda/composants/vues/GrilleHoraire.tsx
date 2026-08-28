@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { cn } from "@/lib/utils";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
-import { estImportee, iconeDe } from "../sources";
+import type { CalendarEvent } from "@/domaines/agenda/types";
+import { estImportee, iconeDe } from "@/domaines/agenda/logique/sources";
 
 /* LA GRILLE HORAIRE — une seule fois
  *

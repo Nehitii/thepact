@@ -6,7 +6,7 @@ import {
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
 
 /* LA TELEMETRIE
  *

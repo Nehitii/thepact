@@ -10,7 +10,7 @@ import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { SourceFilterChips } from "./SourceFilterChips";
-import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
+import type { CalendarSourceType } from "@/domaines/agenda/types";
 
 /* La vue « agenda » listait les jours a venir. Le ruban fait le meme
    travail — chronologique, jour par jour — mais montre en plus a quelle

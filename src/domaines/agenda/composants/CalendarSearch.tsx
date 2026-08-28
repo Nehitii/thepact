@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Search, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
-import { useCalendarEventSearch } from "@/hooks/useCalendarEvents";
+import type { CalendarEvent } from "@/domaines/agenda/types";
+import { useCalendarEventSearch } from "@/domaines/agenda/hooks/useCalendarEvents";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { format, parseISO, isSameYear } from "date-fns";
 

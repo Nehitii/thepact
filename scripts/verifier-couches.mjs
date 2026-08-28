@@ -141,7 +141,11 @@ const TOLERE = new Map([
      reexporte. */
   ["hooks/useAnalytics.ts",  "etape 3 — importe PeriodSelector pour son type de periode"],
   ["hooks/useAnalyticsState.ts", "etape 3 — idem"],
-  ["hooks/useCalendarEvents.ts", "etape 3 — importe components/calendar/temps"],
+  /* `hooks/useCalendarEvents.ts` importait `components/calendar/temps`.
+     Les deux sont entres dans `domaines/agenda` en le rangeant (28/08) :
+     le hook chez lui, `temps.ts` dans `logique/`. Ce n etait pas une
+     erreur de conception, seulement deux fichiers du meme module ranges
+     dans deux couches differentes. */
   ["hooks/useGoals.ts",      "etape 3 — importe components/goals/super/types"],
   ["hooks/useParticleEffect.tsx", "etape 3 — importe components/ParticleEffect"],
   ["components/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
@@ -204,7 +208,22 @@ for (const f of sources(RACINE)) {
   const cibles = new Set();
   for (const m of MOTIFS) for (const c of source.matchAll(m)) cibles.add(c[1].slice(2));
 
+  /* Dans quel domaine suis-je ? Rien, si je n en suis pas. */
+  const monDomaine = rel.startsWith("domaines/") ? rel.split("/")[1] : null;
+
   for (const cible of cibles) {
+    /* LA PORTE D UN AUTRE DOMAINE N EST PAS UNE COUCHE, C EST UNE
+       FRONTIERE — et ce n est pas ce script qui en juge.
+       `domaines/agenda/hooks/useCalendarEvents.ts` importe
+       `@/domaines/taches` : vu comme un rang, c est un hook (4) qui
+       appelle un domaine (5), donc une inversion. Vu comme ce que
+       c est, c est une dependance externe, au meme titre qu une
+       bibliotheque. `npm run domaines:check` verifie deja qu on passe
+       par la porte et pas par la fenetre ; deux gardes, deux
+       questions, et aucune des deux ne repond a la place de l autre. */
+    const porteAutre = cible.match(/^domaines\/([^/]+)(?:\/index(?:\.tsx?)?)?$/);
+    if (porteAutre && porteAutre[1] !== monDomaine) continue;
+
     const vers = classer(cible);
     if (vers.rang <= de.rang) continue;
     if (TOLERE.has(rel)) { exceptionsUtilisees.add(rel); continue; }
