@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Target, Handshake, Inbox, UserCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
-import { useMessagesNonLus } from "@/hooks/useMessages";
+import { usePendingFriendCount } from "@/domaines/social";
+import { useMessagesNonLus } from "@/domaines/social";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { cn } from "@/lib/utils";
 

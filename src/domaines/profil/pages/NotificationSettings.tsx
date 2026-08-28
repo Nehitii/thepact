@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain, Send, BellOff } from "lucide-react";
-import { useNotificationSettings } from "@/hooks/useNotifications";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useNotificationSettings } from "@/domaines/social";
+import { usePushNotifications } from "@/domaines/profil/hooks/usePushNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

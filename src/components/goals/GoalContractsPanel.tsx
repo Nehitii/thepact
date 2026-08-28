@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGoalContracts, useCreateGoalContract, type GoalContract } from "@/hooks/useGoalContracts";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
-import { useFriends } from "@/hooks/useFriends";
+import { useFriends } from "@/domaines/social";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { DSPanel } from "@/components/ds";

@@ -67,8 +67,22 @@ const STATIQUES = [
 ];
 const DYNAMIQUE = /import\s*\(\s*["'](@\/[^"']+)["']\s*\)/g;
 
+/* CE QUI EST ENCORE TOLERE, ET POURQUOI.
+ *
+ * Meme discipline que la garde des couches : chaque entree porte sa
+ * raison, et une tolerance qui ne sert plus FAIT ECHOUER le script. On
+ * note la paire « qui » → « quoi », pas seulement le fichier : une
+ * effraction se juge sur sa destination. */
+const TOLERE = new Map([
+  ["domaines/administration/pages/AdminNotifications.tsx|domaines/social/inbox.css",
+   "etape 4 — l apercu d avis reecrit a la main le balisage de AvisCarte pour " +
+   "garantir la fidelite ; les dix classes bx-avis-* doivent monter dans ds/, " +
+   "ou l apercu doit rendre le composant"],
+]);
+
 const effractions = [];
 const socleIndiscret = [];
+const tolereesVues = new Set();
 
 for (const f of sources(RACINE)) {
   const rel = path.relative(RACINE, f).replace(/\\/g, "/");
@@ -103,14 +117,26 @@ for (const f of sources(RACINE)) {
 
     /* La porte, et rien d autre : `domaines/x` ou `domaines/x/index`. */
     const parLaPorte = reste.length === 0 || (reste.length === 1 && /^index(\.tsx?)?$/.test(reste[0]));
-    if (!parLaPorte) effractions.push({ rel, cible, vise, chezMoi, mode });
+    if (parLaPorte) continue;
+
+    const cle = `${rel}|${cible}`;
+    if (TOLERE.has(cle)) { tolereesVues.add(cle); continue; }
+    effractions.push({ rel, cible, vise, chezMoi, mode });
   }
 }
 
+const perimees = [...TOLERE.keys()].filter((k) => !tolereesVues.has(k));
+
 console.log(
   `domaines : ${noms.length} domaine(s) — ${noms.join(", ")}. ` +
-  `${effractions.length} effraction(s), ${socleIndiscret.length} fuite(s) du socle.`,
+  `${effractions.length} effraction(s), ${socleIndiscret.length} fuite(s) du socle, ` +
+  `${tolereesVues.size} toleree(s).`,
 );
+
+if (perimees.length) {
+  console.log(`\n${perimees.length} TOLERANCE(S) QUI NE SERVENT PLUS — a retirer de TOLERE :`);
+  for (const p of perimees) console.log(`  ${p.replace("|", "\n      ⟶ ")}`);
+}
 
 if (effractions.length) {
   console.log("\nUN DOMAINE IMPORTE L INTERIEUR D UN AUTRE :");
@@ -126,4 +152,4 @@ if (socleIndiscret.length) {
   for (const s of socleIndiscret) console.log(`  ${s.rel}  ⟶  ${s.cible}`);
 }
 
-process.exit(effractions.length + socleIndiscret.length === 0 ? 0 : 1);
+process.exit(effractions.length + socleIndiscret.length + perimees.length === 0 ? 0 : 1);

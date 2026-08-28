@@ -11,7 +11,7 @@ import { SoundProvider } from "@/contexts/SoundContext";
 import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
 import { ProfilePreferencesSync } from "@/domaines/profil";
 import { AccentColorSync } from "@/domaines/profil";
-import { OnlineStatusPing } from "@/components/friends/OnlineStatusPing";
+import { OnlineStatusPing } from "@/domaines/social";
 
 const queryClient = new QueryClient({
   defaultOptions: {

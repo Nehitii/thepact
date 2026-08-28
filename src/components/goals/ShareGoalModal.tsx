@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link2, Loader2, Check } from "lucide-react";
-import { useFriends } from "@/hooks/useFriends";
+import { useFriends } from "@/domaines/social";
 import { useSharedGoals } from "@/hooks/useSharedGoals";
 import { toast } from "sonner";
 

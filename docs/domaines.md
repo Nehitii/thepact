@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **12 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration, succès et profil, le 28/08/2026.
+État : **13 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration, succès, profil et social, le 28/08/2026.
 
 *Quinze et non onze : l'agenda s'est scindé en deux (sixième domaine), les
 souhaits aussi (huitième), un groupe de huit pages d'administration a été
@@ -443,6 +443,44 @@ affiche les dix entrées, et la requête `health_settings` part.
 
 ---
 
+## Ce que le treizième domaine a ajouté
+
+**Mesurer le couplage peut dire « ne séparez pas ».** Le relevé comptait
+guildes, alliés, communauté, classement et messagerie comme cinq modules. On a
+mesuré avant de découper, comme pour l'agenda et les souhaits — et cette fois la
+réponse est l'inverse :
+
+| | | | |
+|---|---|---|---|
+| guildes → alliés | 2 fichiers | alliés → guildes | 3 fichiers |
+| guildes → communauté | 5 fichiers | alliés → communauté | 1 fichier |
+
+**Bidirectionnel et dense.** L'agenda lisait les tâches sans que les tâches
+sachent qu'un calendrier existe ; ici les trois se citent mutuellement. Les
+séparer aurait produit trois portes qui se renvoient la balle — ce qui n'est pas
+une frontière, c'est un couloir.
+
+Un seul domaine, donc : **58 fichiers, 14 854 lignes, et une porte de sept
+exports.** Ce n'est pas une contradiction : ce qui se passe entre deux personnes
+ne concerne que les écrans qui montrent deux personnes. Le reste de
+l'application n'en veut que des **compteurs** — trois pastilles et la liste des
+témoins possibles.
+
+**La garde des domaines gagne un mécanisme de tolérance**, avec la même
+discipline que celle des couches : chaque entrée porte sa raison, et une
+tolérance qui ne sert plus fait échouer le script. Éprouvée sur une entrée
+bidon.
+
+Sa première et unique entrée : `AdminNotifications` importe `inbox.css`. En
+regardant pourquoi, on trouve une **duplication assumée** — la page réécrit à la
+main le balisage d'`AvisCarte` pour que l'aperçu soit fidèle, et son propre
+commentaire le dit : *« un aperçu qui ne ressemble pas au résultat ne sert qu'à
+rassurer »*. Dix classes `bx-avis-*` doivent monter dans `ds/`, ou l'aperçu doit
+rendre le composant. C'est une décision de conception, pas un déplacement de
+fichier : elle attend l'étape 4.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -467,7 +505,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 15 | **12 / 15** |
+| domaines rangés | 0 / 15 | **13 / 15** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -486,7 +524,7 @@ fichier à sa place.
 
 ---
 
-## Les trois domaines restants, dans l'ordre
+## Les deux domaines restants
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -504,13 +542,14 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **administration** | 18 |
 | ✔ | **succès** | 14 |
 | ✔ | **profil** | 38 |
-| 12 | guildes | ~57 |
-| 13 | objectifs | ~60 |
-| 14 | socle | ~61 |
+| ✔ | **social** | 58 |
+| 14 | objectifs | ~60 |
+| 15 | socle | ~61 |
 
 Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils
-étaient faits sur le nom des fichiers, et deux domaines sur huit se sont
-scindés une fois le couplage mesuré. Ce qui reste est donc une estimation, pas
+étaient faits sur le nom des fichiers, et **trois domaines sur treize** se sont
+scindés une fois le couplage mesuré — pendant qu'un quatorzième, l'administration,
+apparaissait là où le relevé ne voyait rien. Ce qui reste est une estimation, pas
 un engagement.
 
 Chaque domaine est un commit qui se révoque seul.

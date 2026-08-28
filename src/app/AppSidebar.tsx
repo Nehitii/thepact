@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/domaines/profil";
 import { useProfileSettings, type ThemePreference } from "@/domaines/profil";
 import { useShopModules, useUserModulePurchases } from "@/domaines/boutique";
-import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
+import { usePendingFriendCount } from "@/domaines/social";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import {
   Home, Target, ShoppingBag, ShoppingCart, Users, LogOut, Settings, UserCircle,
@@ -17,8 +17,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useMessagesNonLus } from "@/hooks/useMessages";
+import { useNotifications } from "@/domaines/social";
+import { useMessagesNonLus } from "@/domaines/social";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { prefetchRoute } from "@/app/prefetchRoutes";
 import { raccourciPalette } from "@/lib/toucheRaccourci";

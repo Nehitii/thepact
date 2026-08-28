@@ -12,7 +12,7 @@ import { AdminPageShell } from "@/domaines/administration/composants/AdminPageSh
 /* L'APERÇU EMPRUNTE LES CLASSES DE LA BOÎTE DE RÉCEPTION.
    C'est le seul moyen qu'il ressemble vraiment à ce qui sera reçu :
    recopier son dessin ici le ferait diverger au premier changement. */
-import "@/styles/inbox.css";
+import "@/domaines/social/inbox.css";
 import {
   useAnnuaire, useDiffuser, useJournalAdmin, motDeLErreur,
 } from "@/domaines/administration/hooks/useAdminServeur";
