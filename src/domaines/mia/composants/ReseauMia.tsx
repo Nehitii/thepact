@@ -2,7 +2,7 @@
    vignette porte le meme sigle et vit dans la mise en page globale,
    alors que la console est en import paresseux. Sans cela la vignette
    reste sans style tant qu on ne l a pas ouverte une fois. */
-import "@/styles/mia.css";
+import "@/domaines/mia/mia.css";
 
 /**
  * Le sigle de M.I.A : neuf cellules, un réseau.

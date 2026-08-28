@@ -1,6 +1,6 @@
-import type { EtatDuJour } from "@/hooks/useEtatDuJour";
-import { gestesConnus, reflexesConnus as _r } from "./miaPossibles";
-import type { ExpressionMia } from "@/components/mia/VisageMia";
+import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import { gestesConnus, reflexesConnus as _r } from "./possibles";
+import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 
 /**
  * Les réflexes de M.I.A.
@@ -434,4 +434,4 @@ export function chercherReflexe(question: string, etat: EtatDuJour | undefined):
 }
 
 /** La liste de ce qu'elle sait faire sans le modèle, pour l'intention « aide ». */
-export { reflexesConnus } from "./miaPossibles";
+export { reflexesConnus } from "./possibles";

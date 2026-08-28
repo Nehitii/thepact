@@ -1,6 +1,6 @@
-import type { EtatDuJour } from "@/hooks/useEtatDuJour";
-import type { ExpressionMia } from "@/components/mia/VisageMia";
-import { PREF } from "./preferencesAffichage";
+import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import type { ExpressionMia } from "@/domaines/mia/logique/visages";
+import { PREF } from "@/lib/preferencesAffichage";
 
 /**
  * L'humeur ambiante de M.I.A.

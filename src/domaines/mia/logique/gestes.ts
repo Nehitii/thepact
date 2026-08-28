@@ -1,6 +1,6 @@
-import type { EtatDuJour } from "@/hooks/useEtatDuJour";
-import type { ExpressionMia } from "@/components/mia/VisageMia";
-import { aplatir } from "./miaReflexes";
+import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import type { ExpressionMia } from "@/domaines/mia/logique/visages";
+import { aplatir } from "./reflexes";
 
 /**
  * Les gestes de M.I.A.
@@ -219,4 +219,4 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
 }
 
 /** Ce qu'elle sait faire sans le modèle, pour l'intention « aide ». */
-export { gestesConnus } from "./miaPossibles";
+export { gestesConnus } from "./possibles";

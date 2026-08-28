@@ -14,18 +14,18 @@ import {
   type MetaMessageMia,
   type SourceMia,
   useEcrireEchange,
-} from "@/hooks/useMia";
+} from "@/domaines/mia/hooks/useMia";
 import { PREF } from "@/lib/preferencesAffichage";
 import { supabase } from "@/integrations/supabase/client";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
 import { VisageMia, type ExpressionMia } from "./VisageMia";
-import { prechargerVisages } from "@/lib/visagesMia";
-import { useEtatDuJour } from "@/hooks/useEtatDuJour";
-import { chercherReflexe } from "@/lib/miaReflexes";
-import { chercherGeste, type Geste } from "@/lib/miaGestes";
-import { POSSIBLES, GROUPES } from "@/lib/miaPossibles";
-import { causeDeLEchec, excuseMia, apaiser } from "@/lib/miaExcuses";
-import { humeurAmbiante } from "@/lib/miaHumeur";
+import { prechargerVisages } from "@/domaines/mia/logique/visages";
+import { useEtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import { chercherReflexe } from "@/domaines/mia/logique/reflexes";
+import { chercherGeste, type Geste } from "@/domaines/mia/logique/gestes";
+import { POSSIBLES, GROUPES } from "@/domaines/mia/logique/possibles";
+import { causeDeLEchec, excuseMia, apaiser } from "@/domaines/mia/logique/excuses";
+import { humeurAmbiante } from "@/domaines/mia/logique/humeur";
 import { useTodoList } from "@/hooks/useTodoList";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 

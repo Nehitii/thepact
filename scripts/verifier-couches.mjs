@@ -59,8 +59,20 @@ const RANGS = [
   [/^components\/ds\//,       2, "ds"],
   [/^contexts\//,             3, "contextes"],
   [/^hooks\//,                4, "hooks"],
+
+  /* UN DOMAINE REJOUE L ECHELLE CHEZ LUI. Ranger par domaine ne doit
+     pas revenir a mettre tout au meme rang : `logique/` reste de la
+     logique pure, et n a pas plus le droit d appeler un composant
+     parce qu il est voisin. L index est au sommet du domaine — c est
+     lui qui assemble, donc lui seul peut tout voir. */
+  [/^domaines\/[^/]+\/logique\//,    1, "logique de domaine"],
+  [/^domaines\/[^/]+\/hooks\//,      4, "hooks de domaine"],
+  [/^domaines\/[^/]+\/composants\//, 5, "composants de domaine"],
+  [/^domaines\/[^/]+\/pages\//,      6, "pages de domaine"],
+  [/^domaines\/[^/]+\/index\./,      6, "porte de domaine"],
+  [/^domaines\//,                    5, "domaines"],
+
   [/^components\//,           5, "composants"],
-  [/^domaines\//,             5, "domaines"],
   [/^pages\//,                6, "pages"],
   [/^app\//,                  7, "app"],
 ];
@@ -87,13 +99,20 @@ const TOLERE = new Map([
   ["lib/prefetchRoutes.ts",  "etape 2 — rejoindra app/, ou pointer vers les pages est son role"],
   ["lib/prefetchData.ts",    "etape 3 — doit recevoir les fonctions de chargement, pas les importer"],
   ["lib/brigade.ts",         "etape 3 — importe hooks/useGoals pour un type"],
-  ["lib/miaGestes.ts",       "etape 3 — importe useEtatDuJour et VisageMia"],
-  ["lib/miaHumeur.ts",       "etape 3 — importe useEtatDuJour et VisageMia"],
-  ["lib/miaReflexes.ts",     "etape 3 — importe useEtatDuJour et VisageMia"],
-  ["lib/miaReflexes.test.ts","etape 3 — suit miaReflexes"],
-  ["lib/miaCadrage.ts",      "etape 3 — importe VisageMia pour un type"],
-  ["lib/miaExcuses.ts",      "etape 3 — importe VisageMia pour un type"],
-  ["lib/visagesMia.ts",      "etape 3 — importe VisageMia pour un type"],
+
+  /* M.I.A. A DEMENAGE (etape 2, 28/08). Les sept tolerances `lib/mia*`
+     ont disparu avec les fichiers. Quatre reviennent sous leur nouveau
+     chemin : la logique appelle encore un hook React, et c est un vrai
+     defaut de conception, pas un effet du rangement.
+
+     Les six autres sont mortes pour de bon — elles ne portaient que
+     `import type { ExpressionMia } from ".../VisageMia"`. Le type est
+     descendu dans `logique/visages.ts`, qui parle deja de visages. */
+  ["domaines/mia/logique/gestes.ts",        "etape 3 — appelle useEtatDuJour ; doit le recevoir en argument"],
+  ["domaines/mia/logique/humeur.ts",        "etape 3 — idem"],
+  ["domaines/mia/logique/reflexes.ts",      "etape 3 — idem"],
+  ["domaines/mia/logique/reflexes.test.ts", "etape 3 — suit reflexes.ts"],
+
   ["lib/superGoals.ts",      "etape 3 — importe components/goals/super pour un type"],
   ["lib/todo/natures.ts",    "etape 3 — importe hooks/useTodoList pour un type"],
   ["hooks/useAnalytics.ts",  "etape 3 — importe PeriodSelector pour son type de periode"],

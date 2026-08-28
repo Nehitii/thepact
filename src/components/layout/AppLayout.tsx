@@ -5,17 +5,13 @@ import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { useFuseauDuProfil } from "@/hooks/useFuseauDuProfil";
 import { useMessagesEnDirect } from "@/hooks/useMessages";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { ReseauMia, type EtatMia } from "@/components/mia/ReseauMia";
+import { Suspense, useEffect, useState } from "react";
+import { ReseauMia, MiaConsole, type EtatMia } from "@/domaines/mia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { prefetchAllRoutes } from "@/lib/prefetchRoutes";
 import { prefetchCoreData } from "@/lib/prefetchData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
-
-const MiaConsole = lazy(() =>
-  import("@/components/mia/MiaConsole").then((m) => ({ default: m.MiaConsole }))
-);
 
 export function AppLayout() {
   const [miaOuverte, setMiaOuverte] = useState(false);

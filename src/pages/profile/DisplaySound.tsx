@@ -12,10 +12,10 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { Panneau, Reglage, Segmente, Jauge } from "@/components/profile/console-ui";
-import { reagitAuxAbsences, reglerReactionAuxAbsences } from "@/lib/miaHumeur";
+import { reagitAuxAbsences, reglerReactionAuxAbsences } from "@/domaines/mia";
 import { useChromeFlottant } from "@/lib/chromeFlottant";
 import { Search } from "lucide-react";
-import { VisageMia } from "@/components/mia/VisageMia";
+import { VisageMia } from "@/domaines/mia";
 
 const ACCENTS = [
   { hex: "#5bb4ff", cle: "cyber" },

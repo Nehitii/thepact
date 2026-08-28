@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useEtatDuJour } from "@/hooks/useEtatDuJour";
-import { chercherPassage, passageDuJour, type Passage } from "@/lib/miaHumeur";
+import { useEtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import { chercherPassage, passageDuJour, type Passage } from "@/domaines/mia/logique/humeur";
 import { PREF } from "@/lib/preferencesAffichage";
 import { VisageMia } from "./VisageMia";
-import "@/styles/mia.css";
+import "@/domaines/mia/mia.css";
 
 /**
  * Les passages de M.I.A.

@@ -14,7 +14,7 @@ import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
-import { PassageMia } from "@/components/mia/PassageMia";
+import { PassageMia } from "@/domaines/mia";
 import { MonitoringPanel } from "@/components/home/MonitoringPanel";
 import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";

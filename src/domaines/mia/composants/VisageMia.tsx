@@ -1,6 +1,8 @@
+import type { ExpressionMia } from "@/domaines/mia/logique/visages";
+export type { ExpressionMia };
 import { useState } from "react";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
-import { cadrerLeVisage } from "@/lib/miaCadrage";
+import { cadrerLeVisage } from "@/domaines/mia/logique/cadrage";
 
 /**
  * Le visage de M.I.A.
@@ -20,28 +22,7 @@ import { cadrerLeVisage } from "@/lib/miaCadrage";
  * à une ligne.
  * ═══════════════════════════════════════════════════════════════
  */
-export type ExpressionMia =
-  /* ── l'anneau reste d'or ── */
-  | "calme"
-  | "neutre"
-  | "joie"
-  | "reflexion"
-  | "surprise"
-  | "contente"
-  | "complice"
-  | "lasse"
-  | "genee"
-  | "contrariee"
-  | "severe"
-  | "peine"
-  | "soupir"
-  /* ── l'anneau vire au rouge : c'est la phase du pacte, pas l'humeur ── */
-  | "colere"
-  | "triste-sourire"
-  | "menacante"
-  /* ── l'anneau s'éteint ── */
-  | "abattue"
-  | "eteinte";
+
 
 /** Ce que le sigle montre quand l'image n'est pas là. */
 const REPLI: Record<ExpressionMia, EtatMia> = {

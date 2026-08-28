@@ -1,4 +1,4 @@
-import type { ExpressionMia } from "@/components/mia/VisageMia";
+import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 
 /**
  * Le cadrage du visage de M.I.A.
