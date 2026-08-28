@@ -1,20 +1,20 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T09:34:35.907Z",
+  "genere": "2026-08-28T09:47:00.348Z",
   "fichiers": 878,
-  "lignes": 176213,
+  "lignes": 176220,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 17,
       "lignes": 1559,
-      "poids": 57429
+      "poids": 58833
     },
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3674,
-      "poids": 218754
+      "lignes": 3671,
+      "poids": 219097
     },
     {
       "dossier": "mem/design",
@@ -73,8 +73,8 @@
     {
       "dossier": "scripts/tableau-de-bord",
       "fichiers": 2,
-      "lignes": 1391,
-      "poids": 68277
+      "lignes": 1401,
+      "poids": 68785
     },
     {
       "dossier": "src",
@@ -190,7 +190,7 @@
       "langage": "JSON",
       "fichiers": 8,
       "lignes": 8326,
-      "poids": 310553
+      "poids": 311957
     },
     {
       "langage": "Markdown",
@@ -201,14 +201,14 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3563,
-      "poids": 214520
+      "lignes": 3560,
+      "poids": 214863
     },
     {
       "langage": "JavaScript",
       "fichiers": 9,
-      "lignes": 2260,
-      "poids": 105147
+      "lignes": 2270,
+      "poids": 105655
     },
     {
       "langage": "SVG",
@@ -283,7 +283,7 @@
       "poids": 500
     }
   ],
-  "commits": 3152,
+  "commits": 3153,
   "orphelins": 4,
   "marqueurs": 13
 }

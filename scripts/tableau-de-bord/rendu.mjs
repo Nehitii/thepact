@@ -46,6 +46,16 @@ const depuis = (iso) => {
 const aCompleter = (v, quoi = "") =>
   v ? ech(v) : `<span class="vide" title="Rien n'est renseigné pour ${ech(quoi)} dans projet.manifeste.json">à compléter</span>`;
 
+/* UNE LIGNE VIDE DANS LE MANIFESTE EST UN CHANGEMENT DE PARAGRAPHE.
+   `aCompleter` interpole du texte dans du HTML, où un saut de ligne ne
+   vaut qu'une espace : un champ écrit en deux temps — l'intention l'est
+   — se retrouvait aplati en un seul bloc. On coupe sur les lignes
+   vides, le reste est échappé comme avant. */
+const aCompleterEnParagraphes = (v, quoi = "") =>
+  v
+    ? v.split(/\n\s*\n/).map((p) => `<p>${ech(p.trim())}</p>`).join("")
+    : `<p>${aCompleter(v, quoi)}</p>`;
+
 /** Le mode de calcul, replié : un chiffre sans sa méthode n'informe pas. */
 const methode = (texte) =>
   `<details class="methode"><summary>Comment c'est calculé</summary><p>${texte}</p></details>`;
@@ -182,7 +192,7 @@ function sectionIdentite(d, m) {
     </article>
     <article class="carte pleine">
       <h3>Intention</h3>
-      <p>${aCompleter(m.identite?.intention, "l'intention")}</p>
+      ${aCompleterEnParagraphes(m.identite?.intention, "l'intention")}
     </article>
     <article class="carte pleine">
       <h3>Où ça en est</h3>
