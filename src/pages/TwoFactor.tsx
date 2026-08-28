@@ -80,10 +80,23 @@ export default function TwoFactor() {
     return isInternal ? candidate : "/";
   }, [location.state]);
 
-  // Si le second facteur n'est plus attendu, ne pas retenir l'utilisateur ici.
+  /* Si le second facteur n'est plus attendu, ne pas retenir ici.
+
+     `isFetching` EN PLUS DE `isLoading`, et c'est la sûreté de cette
+     page. `isLoading` tombe à faux dès qu'une donnée existe en cache,
+     fût-elle périmée. Après une déconnexion suivie d'une reconnexion
+     du même compte, l'entrée de la session précédente — où
+     currentLevel valait « aal2 » — était servie instantanément :
+     `isRequired` retombait, et cet effet ouvrait la porte SANS code.
+
+     La cause est traitée à la racine (AuthContext vide le cache à la
+     déconnexion). Cette condition-ci est la seconde ligne : tant que
+     la requête n'est pas posée, on ne quitte pas la porte. Un cache
+     qui mentirait à nouveau, pour une raison qu'on n'a pas prévue,
+     ne suffirait plus à la franchir. */
   useEffect(() => {
-    if (!mfa.isLoading && !mfa.isRequired) navigate(from, { replace: true });
-  }, [from, navigate, mfa.isLoading, mfa.isRequired]);
+    if (!mfa.isLoading && !mfa.isFetching && !mfa.isRequired) navigate(from, { replace: true });
+  }, [from, navigate, mfa.isLoading, mfa.isFetching, mfa.isRequired]);
 
   const submit = useCallback(async () => {
     if (code.length !== 6) return;

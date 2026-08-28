@@ -192,6 +192,12 @@ export function useMfa() {
 
   return {
     isLoading: query.isLoading,
+    /* EXPOSÉ EXPRÈS, ET PAS COSMÉTIQUE. `isLoading` est faux dès
+       qu'une donnée existe en cache, même périmée et même pendant
+       qu'on la revérifie. La porte du second facteur ne doit pas
+       s'ouvrir sur cette donnée-là : elle attend que la requête soit
+       POSÉE, pas seulement qu'elle réponde quelque chose. */
+    isFetching: query.isFetching,
     isError: query.isError,
     factors,
     verifiedFactor,

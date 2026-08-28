@@ -13,7 +13,26 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { data: personalPact, isError: pactError } = usePact(user?.id);
   const { memberships, isError: sharedError } = useSharedPacts();
 
-  if (loading) {
+  /* ON ATTEND AUSSI DE SAVOIR SI LE SECOND FACTEUR EST DÛ.
+
+     Seul `loading` — l'authentification — était attendu. L'état MFA,
+     lui, était lu tel quel : au premier rendu, avant que la requête
+     n'ait répondu, `isRequired` vaut faux faute de donnée. La garde
+     ci-dessous laissait donc passer, PUIS redirigeait une fois la
+     réponse arrivée. Un aller-retour visible, et une fraction de
+     seconde où l'application se monte alors qu'elle ne devrait pas.
+
+     `mfa.isLoading` n'est vrai qu'au tout premier chargement : la
+     requête est mise en cache trente secondes sous une clé stable, et
+     les rafraîchissements d'arrière-plan ne le rallument pas. Attendre
+     ici ne coûte donc pas un voile de chargement à chaque navigation.
+
+     La redirection reste UN CONFORT : la vraie contrainte est portée
+     par 88 politiques RLS restrictives qui exigent aal2 — vérifié en
+     base, 88 politiques sur 88 tables. La contourner ne donne accès à
+     aucune donnée ; elle évite seulement de se retrouver devant une
+     application vide sans comprendre pourquoi. */
+  if (loading || mfa.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

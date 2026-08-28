@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Sentry from "@sentry/react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  /* `AuthProvider` est monté SOUS `QueryClientProvider` (AppProviders,
+     l. 42 et 47) : le client est donc atteignable ici. */
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Set up auth state listener
@@ -50,8 +54,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         }
 
-        // Handle sign out - use setTimeout to avoid navigation during state update
+        /* ═══ LA DÉCONNEXION VIDE LE CACHE ═══
+
+           Elle ne faisait que naviguer vers /auth. Tout ce que React
+           Query avait mis de côté pour la session précédente restait
+           en mémoire — et la connexion suivante le retrouvait.
+
+           CE QUE ÇA A COÛTÉ : le second facteur cessait d'être
+           demandé. `useMfa` est cachée sous ["mfa", user.id] ; après
+           une déconnexion suivie d'une reconnexion du MÊME compte, la
+           clé est identique, et React Query sert INSTANTANÉMENT
+           l'entrée de la session d'avant — celle où currentLevel valait
+           déjà « aal2 ». `isRequired` retombait à faux, la porte
+           s'ouvrait sans code. Constaté à l'usage, facteur `verified`
+           bien présent en base.
+
+           CE N'EST PAS QU'UNE AFFAIRE DE 2FA. Un cache qui survit à
+           une déconnexion, c'est la personne suivante qui voit un
+           instant les données de la précédente. Sur un poste partagé,
+           ça se voit. On efface tout, sans exception : ce qui
+           appartenait à une session finie n'a rien à faire dans la
+           suivante. */
         if (event === "SIGNED_OUT") {
+          queryClient.clear();
           setTimeout(() => {
             navigate("/auth", { replace: true });
           }, 0);
@@ -82,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, queryClient]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
