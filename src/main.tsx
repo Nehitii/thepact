@@ -88,8 +88,16 @@ function initSentryDeferred() {
       environment: SENTRY_ENV,
       sampleRate: 1.0,
       tracesSampleRate: SENTRY_ENV === "production" ? 0.1 : 0,
+      /* AUCUN ENREGISTREMENT DE SESSION, DANS AUCUN CAS.
+         La page /legal dit « l'enregistrement des sessions est
+         désactivé ». C'était vrai des sessions ordinaires
+         (replaysSessionSampleRate: 0) et faux en cas d'erreur, où une
+         sur deux était bel et bien enregistrée — masquée, mais
+         enregistrée. Deux valeurs à zéro valent mieux qu'une phrase à
+         réécrire : l'enregistrement n'a jamais servi à un diagnostic
+         ici, la pile d'appels suffit. */
       replaysSessionSampleRate: 0,
-      replaysOnErrorSampleRate: 0.5,
+      replaysOnErrorSampleRate: 0,
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),

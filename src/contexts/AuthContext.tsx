@@ -41,7 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Sync user with Sentry for error context
         if (session?.user) {
-          Sentry.setUser({ id: session.user.id, email: session.user.email ?? undefined });
+          /* L'IDENTIFIANT SEUL, PAS L'ADRESSE. La page /legal annonce
+             que Sentry ne reçoit qu'« un identifiant technique de
+             session » — et depuis le 28/08 c'est la page que l'écran de
+             consentement Google présente comme nos règles de
+             confidentialité. L'adresse partait quand même. On aligne le
+             code sur la promesse, pas l'inverse : l'identifiant suffit
+             à relier une erreur à un compte, et il ne dit rien à qui
+             n'a pas déjà accès à la base. */
+          Sentry.setUser({ id: session.user.id });
         } else {
           Sentry.setUser(null);
         }
