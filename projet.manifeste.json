@@ -369,7 +369,7 @@
   ],
   "ressources": [
     {
-      "_aide": "Une licence vide est signalée en rouge dans la page. Les licences de police ont été vérifiées le 28/08 dans les fichiers OFL.txt des dépôts d'origine, pas dans les pages de présentation — la ligne de copyright est citée pour qu'on puisse refaire le contrôle. Switzer fait exception et reste à trancher : sa licence n'est pas libre et son texte n'a pas pu être lu. Les coûts dépendent de votre formule chez chaque prestataire.",
+      "_aide": "Une licence vide est signalée en rouge dans la page. Les licences de police ont été vérifiées le 28/08 dans les fichiers OFL.txt des dépôts d'origine, pas dans les pages de présentation — la ligne de copyright est citée pour qu'on puisse refaire le contrôle. Switzer, la seule non libre, a été tranchée le 28/08 : sa licence autorise l'auto-hébergement et les fichiers sont ceux d'origine. Les coûts dépendent de votre formule chez chaque prestataire.",
       "nom": "Orbitron",
       "nature": "police",
       "licence": "SIL Open Font License 1.1 — vérifiée le 28/08 dans google/fonts/ofl/orbitron/OFL.txt (« Copyright 2018 The Orbitron Project Authors »). Autorise l'auto-hébergement et la redistribution.",
@@ -393,7 +393,7 @@
     {
       "nom": "Switzer",
       "nature": "police",
-      "licence": "À TRANCHER — ITF Free Font License (Fontshare, Indian Type Foundry), qui n'est PAS une licence libre. Gratuite pour un usage personnel et commercial, mais plusieurs sources indiquent que l'auto-hébergement des fichiers demande l'accord écrit d'ITF, l'API Fontshare étant la voie prévue. Le texte faisant foi n'a pas pu être lu : la page fontshare.com/licenses/itf-ffl est rendue côté client. Or les fichiers SONT auto-hébergés (public/fonts/switzer-*.woff2, déclarés dans src/styles/community.css) et utilisés par auth.css, deuxieme-facteur.css, carte-profil.css et community.css.",
+      "licence": "ITF Free Font License v2.0 (17/08/2026) — vérifiée le 28/08 dans le texte réel, rendu côté client sur fontshare.com/licenses/itf-ffl. Sa section 01 autorise explicitement l'auto-hébergement : « You may self-host the Font Software on your own servers... Self-hosting by end users is permitted and recommended... Use of the Fontshare API is optional and is not required for web use. » Sa section 02 écarte nommément le doute sur la redistribution : « nothing in this Section 02 restricts the self-hosting... for the Licensee's own websites ». Restait la clause interdisant sous-ensemble et conversion de format : les trois fichiers de public/fonts/ sont identiques OCTET POUR OCTET à ceux du CDN Fontshare (16 728 / 19 564 / 19 432 o), donc non modifiés. Aucun accord écrit n'est requis. Les sources secondaires qui affirmaient le contraire étaient fausses ou antérieures à la v2.0.",
       "cout": "gratuit",
       "url": "https://www.fontshare.com/fonts/switzer"
     },
@@ -518,7 +518,6 @@
     }
   ],
   "prochainesEtapes": [
-    "Trancher la licence de Switzer. Elle est auto-hébergée donc redistribuée, et son ITF Free Font License n'est pas libre : plusieurs sources indiquent que l'auto-hébergement demande l'accord écrit d'ITF. Les quatre autres polices sont en OFL 1.1, vérifiées à la source.",
     "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
     "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
     "Le jour ou un paiement est encaisse, basculer REGIME sur \"professionnel\" dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel."
