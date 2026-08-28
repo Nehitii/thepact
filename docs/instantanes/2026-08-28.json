@@ -1,20 +1,20 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T07:39:28.582Z",
-  "fichiers": 877,
-  "lignes": 180333,
+  "genere": "2026-08-28T08:13:01.973Z",
+  "fichiers": 878,
+  "lignes": 181478,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 16,
-      "lignes": 1515,
-      "poids": 54075
+      "lignes": 1516,
+      "poids": 54157
     },
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3612,
-      "poids": 213836
+      "lignes": 3631,
+      "poids": 215026
     },
     {
       "dossier": "mem/design",
@@ -54,9 +54,9 @@
     },
     {
       "dossier": "public/marque",
-      "fichiers": 18,
-      "lignes": 15162,
-      "poids": 3139445
+      "fichiers": 19,
+      "lignes": 16150,
+      "poids": 3381865
     },
     {
       "dossier": "public/mia",
@@ -91,8 +91,8 @@
     {
       "dossier": "src/components",
       "fichiers": 304,
-      "lignes": 50166,
-      "poids": 2021226
+      "lignes": 50185,
+      "poids": 2022376
     },
     {
       "dossier": "src/content",
@@ -103,14 +103,14 @@
     {
       "dossier": "src/contexts",
       "fichiers": 4,
-      "lignes": 434,
-      "poids": 13607
+      "lignes": 459,
+      "poids": 15002
     },
     {
       "dossier": "src/hooks",
       "fichiers": 94,
-      "lignes": 15169,
-      "poids": 550494
+      "lignes": 15175,
+      "poids": 550874
     },
     {
       "dossier": "src/i18n",
@@ -133,14 +133,14 @@
     {
       "dossier": "src/pages",
       "fichiers": 46,
-      "lignes": 17237,
-      "poids": 763454
+      "lignes": 17278,
+      "poids": 765226
     },
     {
       "dossier": "src/styles",
       "fichiers": 41,
-      "lignes": 31049,
-      "poids": 1170999
+      "lignes": 31095,
+      "poids": 1172975
     },
     {
       "dossier": "src/types",
@@ -195,8 +195,8 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3501,
-      "poids": 209606
+      "lignes": 3520,
+      "poids": 210796
     },
     {
       "langage": "JavaScript",
@@ -224,9 +224,9 @@
     },
     {
       "langage": "PNG",
-      "fichiers": 28,
-      "lignes": 21195,
-      "poids": 4626419
+      "fichiers": 29,
+      "lignes": 22183,
+      "poids": 4868839
     },
     {
       "langage": "TXT",
@@ -237,14 +237,14 @@
     {
       "langage": "TypeScript",
       "fichiers": 200,
-      "lignes": 29106,
-      "poids": 1119408
+      "lignes": 29113,
+      "poids": 1119870
     },
     {
       "langage": "TypeScript (JSX)",
       "fichiers": 335,
-      "lignes": 67144,
-      "poids": 2773859
+      "lignes": 67229,
+      "poids": 2778176
     },
     {
       "langage": "WEBP",
@@ -255,8 +255,8 @@
     {
       "langage": "CSS",
       "fichiers": 42,
-      "lignes": 33026,
-      "poids": 1251038
+      "lignes": 33072,
+      "poids": 1253014
     },
     {
       "langage": "TOML",
@@ -277,7 +277,7 @@
       "poids": 500
     }
   ],
-  "commits": 3141,
+  "commits": 3144,
   "orphelins": 1,
   "marqueurs": 13
 }

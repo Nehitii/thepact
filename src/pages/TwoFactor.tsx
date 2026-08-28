@@ -168,6 +168,19 @@ export default function TwoFactor() {
       <div className="sas-grille" aria-hidden="true" />
 
       <main className="sas-carte">
+        {/* Décorative : `alt=""` plutôt qu'une description. Elle ne dit
+            rien qu'un lecteur d'écran doive entendre — le titre et la
+            consigne portent déjà tout le sens de l'écran. Les
+            dimensions natives réservent sa place avant qu'elle arrive. */}
+        <img
+          src="/marque/mia-sas.png"
+          width={440}
+          height={336}
+          alt=""
+          aria-hidden="true"
+          className="sas-mia"
+        />
+
         <span className="sas-chip">
           <ShieldCheck aria-hidden="true" />
           {t("twoFactor.porte.titre", "Vérification requise")}

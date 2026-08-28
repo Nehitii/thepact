@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => ({
            d'erreur à CHAQUE installation, sur chaque téléphone.
            Même traitement que la ville de l'écran de connexion :
            prise au vol, gardée trente jours, règle ci-dessous. */
-        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/marque/mia-flottante.png", "**/push-sw.js"],
+        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/marque/mia-flottante.png", "**/marque/mia-sas.png", "**/push-sw.js"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {
@@ -87,7 +87,8 @@ export default defineConfig(({ mode }) => ({
                prises au premier affichage puis gardées. */
             urlPattern: ({ url }) =>
               url.pathname === "/marque/auth-cite.png" ||
-              url.pathname === "/marque/mia-flottante.png",
+              url.pathname === "/marque/mia-flottante.png" ||
+              url.pathname === "/marque/mia-sas.png",
             handler: "CacheFirst",
             options: {
               cacheName: "marque",

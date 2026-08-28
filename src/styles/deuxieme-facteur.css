@@ -74,11 +74,38 @@
   mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
 }
 
+/* ═══ M.I.A EST ASSISE SUR LE BORD ═══
+
+   Le dessin la montre penchée par-dessus un rebord, les deux mains
+   posées dessus. Le rebord, c'est la bordure haute de cette carte.
+
+   TROIS NOMBRES, RELEVÉS SUR L'IMAGE SOURCE (1254 × 1254) :
+     — la zone opaque va de y = 78 à y = 1032 ;
+     — la ligne qu'elle agrippe est à y = 860 : c'est là que le
+       nombre de pixels opaques chute de 988 à 634 sur quatre lignes ;
+     — les doigts finissent à y = 918, mesuré par bandes (main
+       gauche x 150-360, main droite x 940-1160).
+
+   On coupe donc à 922 — sous les doigts, au-dessus du rebord dessiné
+   que la carte remplace. Le chevauchement vaut (922 − 860) / (922 −
+   78) = 7,3 % de la hauteur : c'est exactement de combien elle doit
+   redescendre pour que ses mains retombent SUR la bordure et non
+   au-dessus.
+
+   LA MARGE HAUTE N'EST PAS DÉCORATIVE. Elle est absolue, donc hors
+   flux : sans marge, la grille centrerait la carte seule et la tête
+   sortirait par le haut — `overflow: hidden` la couperait sans un
+   mot. La marge appartient à la boîte de la carte, donc la grille
+   centre bien l'ENSEMBLE. Sa valeur : hauteur × (1 − 7,3 %), et la
+   hauteur vaut largeur ÷ 1,310, d'où le facteur 0,708. */
 .sas-carte {
+  --mia: clamp(140px, 40vw, 210px);
+
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 480px;
+  margin-top: calc(var(--mia) * 0.708);
   box-sizing: border-box;
   padding: clamp(28px, 5vw, 46px) clamp(24px, 5vw, 44px) clamp(26px, 4vw, 38px);
   border: 1px solid rgba(139, 92, 246, 0.16);
@@ -327,4 +354,23 @@
 @media (prefers-reduced-motion: reduce) {
   .sas-rond { animation-duration: 2.4s; }
   .sas-valider, .sas-bascule, .sas-case, .sas-champ { transition: none; }
+}
+
+
+/* Elle est décorative : `pointer-events: none` pour qu'elle n'attrape
+   ni le clic ni le survol destinés à la carte. */
+.sas-mia {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  /* `bottom: 100%` pose son bas SUR la bordure ; les 7,3 % la font
+     redescendre juste ce qu'il faut pour que les doigts la chevauchent.
+     Le pourcentage d'un `translate` se calcule sur la propre hauteur
+     de l'élément, ce qui rend le calage indépendant de sa taille. */
+  translate: -50% 7.3%;
+  width: var(--mia);
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.5));
 }

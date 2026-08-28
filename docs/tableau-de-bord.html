@@ -292,9 +292,9 @@ main{padding:24px 0 96px;min-width:0}
   </div>
 
   <div class="mesures">
-    <div class="mesure"><b>877</b><span>fichiers analysés</span></div>
-    <div class="mesure"><b>180 333</b><span>lignes</span></div>
-    <div class="mesure"><b>3 141</b><span>commits</span></div>
+    <div class="mesure"><b>878</b><span>fichiers analysés</span></div>
+    <div class="mesure"><b>181 478</b><span>lignes</span></div>
+    <div class="mesure"><b>3 144</b><span>commits</span></div>
     <div class="mesure"><b>aujourd'hui</b><span>dernier commit</span></div>
   </div>
 </section>
@@ -306,6 +306,18 @@ main{padding:24px 0 96px;min-width:0}
   <details class="methode"><summary>Comment c'est calculé</summary><p>Chaque fichier de <code>src/pages</code> est un module. Ses lignes additionnent la page et les dossiers déclarés en <code>aussi</code> dans le manifeste. La dernière activité est la date du commit le plus récent ayant touché l'un de ces fichiers. Un module absent du manifeste apparaît quand même, en « à compléter » : il ne peut pas se cacher.</p></details>
 
   <div class="liste">
+    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Second facteur src/pages/TwoFactor.tsx">
+      <div class="ligne-corps">
+        <p class="ligne-nom">Second facteur <span class="etat" data-s="livré">livré</span></p>
+        <p class="ligne-meta">
+          <code>src/pages/TwoFactor.tsx</code>
+          <span>281 lignes</span>
+          <span>activité aujourd'hui</span>
+          <span>10 reprises récentes</span>
+        </p>
+        
+      </div>
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Réglages de notification src/pages/profile/NotificationSettings.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Réglages de notification <span class="etat" data-s="livré">livré</span></p>
@@ -437,7 +449,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div>
+    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Journal src/pages/Journal.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Journal <span class="etat" data-s="livré">livré</span></p>
@@ -449,7 +461,7 @@ main{padding:24px 0 96px;min-width:0}
         </p>
         
       </div>
-    </div></div><details class="repli"><summary>Voir les 34 écrans restants</summary><div class="liste">
+    </div>
     <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Objectifs src/pages/Goals.tsx">
       <div class="ligne-corps">
         <p class="ligne-nom">Objectifs <span class="etat" data-s="livré">livré</span></p>
@@ -458,18 +470,6 @@ main{padding:24px 0 96px;min-width:0}
           <span>6 405 lignes</span>
           <span>activité aujourd'hui</span>
           <span>9 reprises récentes</span>
-        </p>
-        
-      </div>
-    </div>
-    <div class="ligne compacte cherchable filtrable" data-statut="livré" data-texte="Second facteur src/pages/TwoFactor.tsx">
-      <div class="ligne-corps">
-        <p class="ligne-nom">Second facteur <span class="etat" data-s="livré">livré</span></p>
-        <p class="ligne-meta">
-          <code>src/pages/TwoFactor.tsx</code>
-          <span>240 lignes</span>
-          <span>activité aujourd'hui</span>
-          <span>7 reprises récentes</span>
         </p>
         
       </div>
@@ -804,7 +804,7 @@ main{padding:24px 0 96px;min-width:0}
         <p class="ligne-meta">
           <code>src/pages/profile/BoundedProfile.tsx</code>
           <span>55 lignes</span>
-          <span>activité il y a 2 j</span>
+          <span>activité il y a 3 j</span>
           <span>3 reprises récentes</span>
         </p>
         
@@ -1107,7 +1107,7 @@ main{padding:24px 0 96px;min-width:0}
   
 <section id="visuels" class="sect">
   <h2><span class="num">4</span> Bibliothèque de visuels</h2>
-  <p class="intro">Les 65 images réellement présentes dans <code>public/</code>. Miniature, poids, dimensions et emplois sont lus ; l'outil et le prompt viennent du manifeste.</p>
+  <p class="intro">Les 66 images réellement présentes dans <code>public/</code>. Miniature, poids, dimensions et emplois sont lus ; l'outil et le prompt viennent du manifeste.</p>
 
   <details class="methode"><summary>Comment c'est calculé</summary><p>Les dimensions sont lues dans l'en-tête du fichier — PNG, WebP, JPEG et SVG. Un format non reconnu affiche « — » plutôt qu'un chiffre inventé. « Employé dans » cherche le NOM DU FICHIER dans le code source : une adresse construite à l'exécution échappe à cette recherche, et n'apparaît donc pas ici.</p></details>
 
@@ -1156,6 +1156,23 @@ main{padding:24px 0 96px;min-width:0}
             <span>png</span>
           </p>
           <p class="ligne-meta"><span class="vide">aucun emploi trouvé par nom</span></p>
+          <details class="methode">
+            <summary>Origine</summary>
+            <p><b>Outil :</b> <span class="vide" title="Rien n'est renseigné pour l'outil de génération dans projet.manifeste.json">à compléter</span></p>
+            <p><b>Prompt :</b> <span class="vide" title="Rien n'est renseigné pour le prompt d'origine dans projet.manifeste.json">à compléter</span></p>
+          </details>
+        </figcaption>
+      </figure>
+      <figure class="visuel cherchable" data-texte="mia-sas.png public/marque/mia-sas.png">
+        <div class="vignette"><img src="../public/marque/mia-sas.png" alt="Aperçu de mia-sas.png" loading="lazy"></div>
+        <figcaption>
+          <p class="ligne-nom">mia-sas.png</p>
+          <p class="ligne-meta">
+            <span>440×336</span>
+            <span>236.7 ko</span>
+            <span>png</span>
+          </p>
+          <p class="ligne-meta"><span title="src/pages/TwoFactor.tsx, vite.config.ts">employé dans 2 fichiers</span></p>
           <details class="methode">
             <summary>Origine</summary>
             <p><b>Outil :</b> <span class="vide" title="Rien n'est renseigné pour l'outil de génération dans projet.manifeste.json">à compléter</span></p>
@@ -1298,7 +1315,7 @@ main{padding:24px 0 96px;min-width:0}
             <p><b>Prompt :</b> <span class="vide" title="Rien n'est renseigné pour le prompt d'origine dans projet.manifeste.json">à compléter</span></p>
           </details>
         </figcaption>
-      </figure>
+      </figure></div><details class="repli"><summary>Voir les 54 visuels restants</summary><div class="galerie">
       <figure class="visuel cherchable" data-texte="mia-severe.png public/mia/mia-severe.png">
         <div class="vignette"><img src="../public/mia/mia-severe.png" alt="Aperçu de mia-severe.png" loading="lazy"></div>
         <figcaption>
@@ -1315,7 +1332,7 @@ main{padding:24px 0 96px;min-width:0}
             <p><b>Prompt :</b> <span class="vide" title="Rien n'est renseigné pour le prompt d'origine dans projet.manifeste.json">à compléter</span></p>
           </details>
         </figcaption>
-      </figure></div><details class="repli"><summary>Voir les 53 visuels restants</summary><div class="galerie">
+      </figure>
       <figure class="visuel cherchable" data-texte="mia-contrariee.png public/mia/mia-contrariee.png">
         <div class="vignette"><img src="../public/mia/mia-contrariee.png" alt="Aperçu de mia-contrariee.png" loading="lazy"></div>
         <figcaption>
@@ -2335,8 +2352,8 @@ main{padding:24px 0 96px;min-width:0}
   </details>
 
   <div class="mesures">
-    <div class="mesure"><b>877</b><span>fichiers</span></div><span class="delta hausse">+1 depuis le 2026-08-27</span>
-    <div class="mesure"><b>180 333</b><span>lignes</span></div><span class="delta hausse">+397 depuis le 2026-08-27</span>
+    <div class="mesure"><b>878</b><span>fichiers</span></div><span class="delta hausse">+2 depuis le 2026-08-27</span>
+    <div class="mesure"><b>181 478</b><span>lignes</span></div><span class="delta hausse">+1 542 depuis le 2026-08-27</span>
     <div class="mesure"><b>1</b><span>fichiers orphelins</span></div>
     <div class="mesure"><b>13</b><span>marqueurs</span></div>
   </div>
@@ -2348,27 +2365,27 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="src/components">
       <span class="barre-nom"><code>src/components</code></span>
       <span class="barre-piste"><i style="width:100%"></i></span>
-      <span class="barre-val">50 166<small> lignes · 304 fich.</small></span>
+      <span class="barre-val">50 185<small> lignes · 304 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/styles">
       <span class="barre-nom"><code>src/styles</code></span>
       <span class="barre-piste"><i style="width:62%"></i></span>
-      <span class="barre-val">31 049<small> lignes · 41 fich.</small></span>
+      <span class="barre-val">31 095<small> lignes · 41 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/pages">
       <span class="barre-nom"><code>src/pages</code></span>
       <span class="barre-piste"><i style="width:34%"></i></span>
-      <span class="barre-val">17 237<small> lignes · 46 fich.</small></span>
+      <span class="barre-val">17 278<small> lignes · 46 fich.</small></span>
+    </div>
+    <div class="barre cherchable" data-texte="public/marque">
+      <span class="barre-nom"><code>public/marque</code></span>
+      <span class="barre-piste"><i style="width:32%"></i></span>
+      <span class="barre-val">16 150<small> lignes · 19 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/hooks">
       <span class="barre-nom"><code>src/hooks</code></span>
       <span class="barre-piste"><i style="width:30%"></i></span>
-      <span class="barre-val">15 169<small> lignes · 94 fich.</small></span>
-    </div>
-    <div class="barre cherchable" data-texte="public/marque">
-      <span class="barre-nom"><code>public/marque</code></span>
-      <span class="barre-piste"><i style="width:30%"></i></span>
-      <span class="barre-val">15 162<small> lignes · 18 fich.</small></span>
+      <span class="barre-val">15 175<small> lignes · 94 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="supabase/migrations">
       <span class="barre-nom"><code>supabase/migrations</code></span>
@@ -2398,7 +2415,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="docs">
       <span class="barre-nom"><code>docs</code></span>
       <span class="barre-piste"><i style="width:7%"></i></span>
-      <span class="barre-val">3 612<small> lignes · 3 fich.</small></span>
+      <span class="barre-val">3 631<small> lignes · 3 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src">
       <span class="barre-nom"><code>src</code></span>
@@ -2408,7 +2425,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="(racine)">
       <span class="barre-nom"><code>(racine)</code></span>
       <span class="barre-piste"><i style="width:3%"></i></span>
-      <span class="barre-val">1 515<small> lignes · 16 fich.</small></span>
+      <span class="barre-val">1 516<small> lignes · 16 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
       <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
@@ -2430,15 +2447,15 @@ main{padding:24px 0 96px;min-width:0}
       <span class="barre-piste"><i style="width:1%"></i></span>
       <span class="barre-val">492<small> lignes · 1 fich.</small></span>
     </div>
+    <div class="barre cherchable" data-texte="src/contexts">
+      <span class="barre-nom"><code>src/contexts</code></span>
+      <span class="barre-piste"><i style="width:1%"></i></span>
+      <span class="barre-val">459<small> lignes · 4 fich.</small></span>
+    </div>
     <div class="barre cherchable" data-texte="public/cosmetiques">
       <span class="barre-nom"><code>public/cosmetiques</code></span>
       <span class="barre-piste"><i style="width:1%"></i></span>
       <span class="barre-val">450<small> lignes · 27 fich.</small></span>
-    </div>
-    <div class="barre cherchable" data-texte="src/contexts">
-      <span class="barre-nom"><code>src/contexts</code></span>
-      <span class="barre-piste"><i style="width:1%"></i></span>
-      <span class="barre-val">434<small> lignes · 4 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="src/types">
       <span class="barre-nom"><code>src/types</code></span>
@@ -2486,7 +2503,7 @@ main{padding:24px 0 96px;min-width:0}
   <details class="repli"><summary>Le détail des 18 langages</summary>
   <table class="tableau">
     <thead><tr><th>Langage</th><th>Fichiers</th><th>Lignes</th><th>Poids</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">335</td><td class="n">67 144</td><td class="n">2.65 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 026</td><td class="n">1.19 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">200</td><td class="n">29 106</td><td class="n">1.07 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">28</td><td class="n">21 195</td><td class="n">4.41 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">187</td><td class="n">13 700</td><td class="n">566.4 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 320</td><td class="n">301.7 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 501</td><td class="n">204.7 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 185</td><td class="n">99.0 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">335</td><td class="n">67 229</td><td class="n">2.65 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 072</td><td class="n">1.19 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">200</td><td class="n">29 113</td><td class="n">1.07 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">29</td><td class="n">22 183</td><td class="n">4.64 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">187</td><td class="n">13 700</td><td class="n">566.4 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 320</td><td class="n">301.7 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 520</td><td class="n">205.9 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 185</td><td class="n">99.0 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">15</td><td class="n">973</td><td class="n">234.9 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">6</td><td class="n">354</td><td class="n">14.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
   </table></details>
 
   <h3 class="sous">Gros et souvent repris</h3>
@@ -2502,14 +2519,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 788</td>
         <td class="n">132.7 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">214<small> / 157 récents</small></td>
+        <td class="n">215<small> / 158 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 788</td>
         <td class="n">143.2 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">211<small> / 158 récents</small></td>
+        <td class="n">212<small> / 159 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/index.css">
         <td><code>src/index.css</code></td>
@@ -2582,14 +2599,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 788</td>
         <td class="n">132.7 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">214<small> / 157 récents</small></td>
+        <td class="n">215<small> / 158 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 788</td>
         <td class="n">143.2 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">211<small> / 158 récents</small></td>
+        <td class="n">212<small> / 159 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/finance-cyber.css">
         <td><code>src/styles/finance-cyber.css</code></td>
@@ -2672,7 +2689,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/goal-dossier.css</code></td>
         <td class="n">1 163</td>
         <td class="n">40.9 ko</td>
-        <td>aujourd'hui</td>
+        <td>hier</td>
         <td class="n">10<small> / 10 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/pages/Wishlist.tsx">
@@ -2806,14 +2823,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 788</td>
         <td class="n">132.7 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">214<small> / 157 récents</small></td>
+        <td class="n">215<small> / 158 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/fr.json">
         <td><code>src/i18n/locales/fr.json</code></td>
         <td class="n">3 788</td>
         <td class="n">143.2 ko</td>
         <td>aujourd'hui</td>
-        <td class="n">211<small> / 158 récents</small></td>
+        <td class="n">212<small> / 159 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/finance-cyber.css">
         <td><code>src/styles/finance-cyber.css</code></td>
@@ -2896,7 +2913,7 @@ main{padding:24px 0 96px;min-width:0}
         <td><code>src/styles/goal-dossier.css</code></td>
         <td class="n">1 163</td>
         <td class="n">40.9 ko</td>
-        <td>aujourd'hui</td>
+        <td>hier</td>
         <td class="n">10<small> / 10 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/styles/succes.css">
@@ -2918,14 +2935,14 @@ main{padding:24px 0 96px;min-width:0}
         <td class="n">3 788</td>
         
         <td>aujourd'hui</td>
-        <td class="n">211<small> / 158 récents</small></td>
+        <td class="n">212<small> / 159 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/i18n/locales/en.json">
         <td><code>src/i18n/locales/en.json</code></td>
         <td class="n">3 788</td>
         
         <td>aujourd'hui</td>
-        <td class="n">214<small> / 157 récents</small></td>
+        <td class="n">215<small> / 158 récents</small></td>
       </tr>
       <tr class="cherchable" data-texte="src/index.css">
         <td><code>src/index.css</code></td>
@@ -3258,7 +3275,7 @@ main{padding:24px 0 96px;min-width:0}
   <table class="tableau">
     <thead><tr><th>Relevé</th><th>Fichiers</th><th>Lignes</th><th>Commits</th><th>Orphelins</th><th>Marqueurs</th></tr></thead>
     <tbody>
-      <tr><td>2026-08-28</td><td class="n">877</td><td class="n">180 333</td><td class="n">3 141</td><td class="n">1</td><td class="n">13</td></tr>
+      <tr><td>2026-08-28</td><td class="n">878</td><td class="n">181 478</td><td class="n">3 144</td><td class="n">1</td><td class="n">13</td></tr>
       <tr><td>2026-08-27</td><td class="n">876</td><td class="n">179 936</td><td class="n">3 140</td><td class="n">0</td><td class="n">13</td></tr></tbody>
   </table>
 </section>
