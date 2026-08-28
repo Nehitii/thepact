@@ -5,6 +5,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { trackPactEdited } from "@/lib/achievements";
 
 interface PactUpdateData {
   name?: string;
@@ -72,7 +73,11 @@ export function usePactMutation(
     onSuccess: () => {
       // Invalidate to refetch latest data
       queryClient.invalidateQueries({ queryKey: ["pact", userId] });
-      
+
+      /* « Gardien du serment » se gagne en revenant modifier son pacte.
+         Le succès existait, sa condition aussi ; seul l'appel manquait. */
+      if (userId) trackPactEdited(userId);
+
       toast.success("Pacte mis à jour", { description: "Tes changements sont enregistrés." });
       
       options?.onSuccess?.();

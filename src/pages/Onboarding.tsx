@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette, Dumbbell, Brain } from "lucide-react";
 import { Compass } from "lucide-react";
+import { trackPactCreated } from "@/lib/achievements";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -162,6 +163,13 @@ export default function Onboarding() {
         .select()
         .single();
       if (pactErr) throw pactErr;
+
+      /* « Le pacte scellé » — le premier succès de l'application, et le
+         seul moment où il peut se gagner. On ne l'attend pas : si le
+         comptage échoue, l'onboarding continue. Sceller son pacte
+         compte plus que le succès qui le célèbre. */
+      void trackPactCreated(user.id);
+
       if (selectedValues.length > 0) {
         await supabase.from("user_values").insert(
           selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),

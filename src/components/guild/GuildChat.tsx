@@ -8,6 +8,7 @@ import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { chargerProfilsPublics } from "@/lib/profilsPublics";
+import { trackGuildMessageSent } from "@/lib/achievements";
 
 interface GuildMessage {
   id: string;
@@ -86,7 +87,10 @@ export function GuildChat({ guildId, userId }: Props) {
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["guild-chat", guildId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["guild-chat", guildId] });
+      if (userId) trackGuildMessageSent(userId);
+    },
   });
 
   const deleteMutation = useMutation({

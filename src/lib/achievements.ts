@@ -75,26 +75,7 @@ export const rarityColors: Record<AchievementRarity, string> = {
   mythic: "hsl(var(--achievement-mythic))",
 };
 
-export const categoryIcons: Record<string, string> = {
-  Connection: "wifi",
-  GoalsCreation: "target",
-  Difficulty: "mountain",
-  Time: "clock",
-  Pact: "handshake",
-  Finance: "wallet",
-  Hidden: "eye-off",
-  Series: "layers",
-  Todo: "check-square",
-  Focus: "brain",
-  Journal: "book-open",
-  Social: "users",
-  Community: "megaphone",
-  Wishlist: "heart",
-  Calendar: "calendar",
-  Shop: "shopping-bag",
-  ModuleGated: "lock",
-  Legendary: "crown",
-};
+
 
 // Initialize tracking for a new user (via SECURITY DEFINER RPC)
 export async function initializeAchievementTracking(_userId: string) {
@@ -417,7 +398,9 @@ async function checkAchievements(userId: string) {
 }
 
 // Unlock an achievement via SECURITY DEFINER RPC
-export async function unlockAchievement(
+/* Appelée dans ce fichier seulement — plus exportée : rien au-dehors
+   ne débloque un succès à la main, et l ouvrir invitait à le faire. */
+async function unlockAchievement(
   userId: string,
   achievementKey: string,
   achievementName?: string,
@@ -465,70 +448,3 @@ function estEnFrancais(): boolean {
 }
 
 // Get user achievements with definitions
-export async function getUserAchievements(userId: string): Promise<Achievement[]> {
-  const { data: definitions } = await supabase
-    .from("achievement_definitions")
-    .select("*")
-    .order("category");
-
-  if (!definitions) return [];
-
-  const { data: userAchievements } = await supabase
-    .from("user_achievements")
-    .select("*")
-    .eq("user_id", userId);
-
-  const { data: tracking } = await supabase
-    .from("achievement_tracking")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  const achievementMap = new Map(
-    userAchievements?.map(ua => [ua.achievement_key, ua]) || []
-  );
-
-  return definitions.map(def => {
-    const condition = def.conditions as unknown as ConditionSucces;
-    let progress = 0;
-    if (tracking && estChampSuivi(condition.type)) {
-      progress = tracking[condition.type] ?? 0;
-    }
-
-    return {
-      ...def,
-      category: def.category as AchievementCategory,
-      rarity: def.rarity as AchievementRarity,
-      unlocked: achievementMap.has(def.key),
-      unlocked_at: achievementMap.get(def.key)?.unlocked_at,
-      progress,
-      required_module: def.required_module || null,
-      bond_reward: def.bond_reward || 0,
-      points: def.points || 0,
-    };
-  }) as Achievement[];
-}
-
-// Get achievement statistics
-export async function getAchievementStats(userId: string) {
-  const achievements = await getUserAchievements(userId);
-  const unlocked = achievements.filter(a => a.unlocked);
-
-  const byRarity = unlocked.reduce((acc, a) => {
-    acc[a.rarity] = (acc[a.rarity] || 0) + 1;
-    return acc;
-  }, {} as Record<AchievementRarity, number>);
-
-  const totalPoints = unlocked.reduce((sum, a) => sum + (a.points || 0), 0);
-
-  return {
-    total: achievements.length,
-    unlocked: unlocked.length,
-    percentage: Math.round((unlocked.length / achievements.length) * 100),
-    byRarity,
-    totalPoints,
-    recent: unlocked
-      .sort((a, b) => new Date(b.unlocked_at!).getTime() - new Date(a.unlocked_at!).getTime())
-      .slice(0, 5),
-  };
-}

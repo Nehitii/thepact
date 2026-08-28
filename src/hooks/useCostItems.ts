@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { trackWishlistItemAdded, trackWishlistItemAcquired } from "@/lib/achievements";
 
 export interface CostItem {
   id: string;
@@ -35,6 +37,7 @@ export function useCostItems(goalId: string | undefined) {
 
 export function useSaveCostItems() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({
@@ -75,6 +78,11 @@ export function useSaveCostItems() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cost-items", variables.goalId] });
       queryClient.invalidateQueries({ queryKey: ["goals"] });
+      /* LES PIÈCES SONT LA LISTE DE SOUHAITS. `wishlist_items` n'est
+         jamais écrite par un geste : useWishlistGoalSync la fabrique à
+         partir des pièces d'objectif. Le geste que compte
+         `wishlist_items_added`, c'est donc celui-ci. */
+      if (user?.id && variables.items.length > 0) trackWishlistItemAdded(user.id);
     },
   });
 }
@@ -109,6 +117,7 @@ export function usePactCostItems(goalIds: string[] | undefined) {
 /** Marquer des pieces comme acquises, ou revenir dessus. */
 export function useAcquerirPieces() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: async ({ ids, acquis }: { ids: string[]; acquis: boolean }) => {
       if (ids.length === 0) return 0;
@@ -123,7 +132,7 @@ export function useAcquerirPieces() {
       if ((data?.length ?? 0) === 0) throw new Error("Aucune piece mise a jour");
       return data.length;
     },
-    onSuccess: () => {
+    onSuccess: (nombre, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cost-items-pacte"] });
       queryClient.invalidateQueries({ queryKey: ["cost-items"] });
       /* La wishlist montre les memes pieces sous un autre jour : sans
@@ -132,6 +141,15 @@ export function useAcquerirPieces() {
       queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
       queryClient.invalidateQueries({ queryKey: ["wishlist-pieces"] });
       queryClient.invalidateQueries({ queryKey: ["goal-detail"] });
+
+      /* SEULEMENT QUAND ON ACQUIERT. Revenir sur une acquisition n'est
+         pas un succès à décompter : le compteur ne sait qu'ajouter, et
+         on n'ira pas lui apprendre à retrancher pour un geste rare.
+         Une pièce dé-marquée puis re-marquée comptera deux fois — c'est
+         le prix, et il est petit. */
+      if (variables.acquis && user?.id) {
+        for (let i = 0; i < nombre; i++) trackWishlistItemAcquired(user.id);
+      }
     },
   });
 }

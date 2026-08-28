@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings } from '@/types/finance';
 import { createTableCrudHooks } from './utils/createTableCrudHooks';
+import { trackTransactionLogged, trackFinanceMonthValidated } from '@/lib/achievements';
 
 export type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings };
 
@@ -12,6 +13,11 @@ export type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSetti
 const expensesCrud = createTableCrudHooks<RecurringExpense>('recurring_expenses', {
   queryKey: 'recurring-expenses',
   orderBy: { column: 'created_at', ascending: true },
+  /* Poser une dépense récurrente EST une transaction consignée, du point
+     de vue des succès : c'est ce geste-là que compte le compteur
+     `transactions_logged`. Il n'y a plus de table de mouvements
+     bancaires depuis le 20/08 — les flux récurrents sont ce qui reste. */
+  apresEcriture: (userId) => trackTransactionLogged(userId),
 });
 // Preserve legacy signature: `useRecurringExpenses(userId?)` — userId is now
 // derived from the auth context but the argument is kept for API stability.
@@ -24,6 +30,7 @@ export const useDeleteRecurringExpense = expensesCrud.useDelete;
 const incomeCrud = createTableCrudHooks<RecurringIncome>('recurring_income', {
   queryKey: 'recurring-income',
   orderBy: { column: 'created_at', ascending: true },
+  apresEcriture: (userId) => trackTransactionLogged(userId),
 });
 export const useRecurringIncome = (_userId?: string) => incomeCrud.useList();
 export const useAddRecurringIncome = incomeCrud.useUpsert;
@@ -88,6 +95,7 @@ export function useUpsertMonthlyValidation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monthly-validations'] });
       queryClient.invalidateQueries({ queryKey: ['monthly-validation'] });
+      if (user?.id) trackFinanceMonthValidated(user.id);
     },
   });
 }

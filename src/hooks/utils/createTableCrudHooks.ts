@@ -19,6 +19,19 @@ export interface CrudFactoryOptions {
   orderBy?: { column: string; ascending?: boolean };
   /** Optional toast.success messages. If omitted, no toast is shown. */
   successMessages?: { upsert?: string; delete?: string };
+  /**
+   * Appelé après une écriture réussie, avec l'identifiant de la personne.
+   *
+   * SERT À COMPTER, PAS À AGIR. Les succès de l'application ont besoin de
+   * savoir qu'une ligne a été créée ; la fabrique est le seul endroit qui
+   * le sait pour les tables qui passent par elle. On ne veut pas pour
+   * autant y faire entrer `lib/achievements` : l'appelant passe ce qu'il
+   * veut, la fabrique ignore ce que ça fait.
+   *
+   * Ne jamais y mettre quelque chose dont l'échec doive interrompre
+   * l'écriture — elle est déjà faite quand ceci s'exécute.
+   */
+  apresEcriture?: (userId: string) => void;
 }
 
 export function createTableCrudHooks<TRow extends { id: string }>(
@@ -105,6 +118,7 @@ export function createTableCrudHooks<TRow extends { id: string }>(
         if (options.successMessages?.upsert) {
           toast.success(options.successMessages.upsert);
         }
+        if (user?.id) options.apresEcriture?.(user.id);
       },
       onError: (e: Error) => toast.error(e.message),
     });

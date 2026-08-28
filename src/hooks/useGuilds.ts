@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
+import { trackGuildJoined } from "@/lib/achievements";
 
 /* CE QUE RENDENT LES TROIS FONCTIONS EN BASE.
    create_guild_with_owner, join_guild_via_code et respond_to_invite
@@ -392,9 +393,13 @@ export function useGuilds() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_donnee, variables) => {
       qc.invalidateQueries({ queryKey: ["guilds"] });
       qc.invalidateQueries({ queryKey: ["guild-invites"] });
+      /* Rejoindre par invitation ou par code, c'est le même évènement
+         pour qui compte les succès. Décliner n'en est pas un — d'où la
+         condition sur `accept` plutôt qu'un comptage à l'aveugle. */
+      if (variables.accept && user?.id) trackGuildJoined(user.id);
     },
   });
 
@@ -404,7 +409,10 @@ export function useGuilds() {
       if (error) throw error;
       return lireReponse(data);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["guilds"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["guilds"] });
+      if (user?.id) trackGuildJoined(user.id);
+    },
   });
 
   const removeMember = useMutation({
