@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { FramePreview as InlineFramePreview } from "@/components/ui/avatar-frame";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
-import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
-import { logAdminAction } from "@/hooks/useAdminAudit";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
+import { AdminDeleteConfirm } from "@/domaines/administration/composants/AdminDeleteConfirm";
+import { logAdminAction } from "@/domaines/administration/hooks/useAdminAudit";
 import { 
   Sparkles, 
   Crown, 

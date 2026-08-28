@@ -40,3 +40,15 @@ export {
   useShopBanners,
   useUserCosmetics,
 } from "./hooks/useShop";
+
+/* LES CODES PROMO. Ils se creent a l administration et se consomment
+   a la boutique : un seul module, deux audiences. Le concept est
+   commercial, donc il vit ici, et l administration passe par la
+   porte comme tout le monde. */
+export {
+  usePromoCodes,
+  useCreatePromoCode,
+  useUpdatePromoCode,
+  useDeletePromoCode,
+} from "./hooks/usePromoCodes";
+export type { PromoCode } from "./hooks/usePromoCodes";

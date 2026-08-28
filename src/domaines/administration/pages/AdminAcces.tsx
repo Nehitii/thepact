@@ -5,7 +5,7 @@ import {
   KeyRound, ShieldCheck, ShieldOff, UserMinus, UserPlus, ScrollText, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -13,7 +13,7 @@ import {
 import {
   useRosterAdmin, useChangerLeRole, useJournalAdmin, motDeLErreur,
   type LigneRoster,
-} from "@/hooks/useAdminServeur";
+} from "@/domaines/administration/hooks/useAdminServeur";
 
 /**
  * LES ACCÈS.

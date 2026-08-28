@@ -4,8 +4,8 @@ import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { AppSidebar } from "@/app/AppSidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { MobileBottomNav } from "@/app/MobileBottomNav";
-import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
-import { PorteAdmin } from "@/components/admin/PorteAdmin";
+import { useServerAdminCheck } from "@/domaines/administration";
+import { PorteAdmin } from "@/domaines/administration";
 
 /**
  * L'ENTRÉE DE L'ADMINISTRATION.

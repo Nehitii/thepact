@@ -8,14 +8,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 /* L'APERÇU EMPRUNTE LES CLASSES DE LA BOÎTE DE RÉCEPTION.
    C'est le seul moyen qu'il ressemble vraiment à ce qui sera reçu :
    recopier son dessin ici le ferait diverger au premier changement. */
 import "@/styles/inbox.css";
 import {
   useAnnuaire, useDiffuser, useJournalAdmin, motDeLErreur,
-} from "@/hooks/useAdminServeur";
+} from "@/domaines/administration/hooks/useAdminServeur";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,

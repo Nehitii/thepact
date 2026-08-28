@@ -68,10 +68,20 @@ for (const f of fichiersSources(RACINE)) {
    verificateur : il ne controle que les cles qu on lui donne. « The
    Call » a ainsi vecu avec vingt-trois chaines anglaises en dur sans
    qu aucun controle ne bronche. On signale desormais les pages muettes. */
+/* LE DETECTEUR SUIVAIT `src/pages/`, ET LE RANGEMENT PAR DOMAINE LUI A
+   FAIT PERDRE SES PAGES. Vu le 28/08 en deplacant l administration :
+   ses huit pages etaient les huit muettes signalees depuis des
+   semaines, et le controle est passe au vert du jour ou elles ont
+   change d adresse. Une garde qui suit un CHEMIN cesse de garder des
+   qu on demenage ; celle-ci suit desormais les deux formes. */
+const estUnePage = (chemin) =>
+  chemin.startsWith("src/pages/") ||
+  /^src\/domaines\/[^/]+\/pages\//.test(chemin);
+
 const muettes = [];
 for (const f of fichiersSources(RACINE)) {
   const chemin = path.relative(process.cwd(), f).split(path.sep).join("/");
-  if (!chemin.startsWith("src/pages/")) continue;
+  if (!estUnePage(chemin)) continue;
   const source = fs.readFileSync(f, "utf8");
   if (source.includes("useTranslation") || source.includes("<Trans")) continue;
   // Une page sans texte visible n a rien a traduire.

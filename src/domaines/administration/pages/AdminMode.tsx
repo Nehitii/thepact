@@ -4,14 +4,14 @@ import {
   AlertTriangle, ChevronDown, TrendingUp, Phone, BookOpen, ListTodo, Heart,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import {
   useShopModules, useUserModulePurchases, useShopFrames, useShopBanners, useUserCosmetics,
 } from "@/domaines/boutique";
 import {
   useAdminForcePurchaseCosmetic, useAdminResetCosmetic,
   useAdminForcePurchaseModule, useAdminResetModule, useAdminResetAll,
-} from "@/hooks/useAdminMode";
+} from "@/domaines/administration/hooks/useAdminMode";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,

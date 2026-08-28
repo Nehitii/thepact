@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { SECTIONS_ADMIN } from "@/components/admin/sections";
-import "@/styles/admin.css";
+import { SECTIONS_ADMIN } from "@/domaines/administration/composants/sections";
+import "@/domaines/administration/administration.css";
 
 /**
  * LA COQUE DE L'ADMINISTRATION.

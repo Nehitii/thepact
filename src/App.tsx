@@ -48,14 +48,14 @@ const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
-const Admin = lazy(() => import("./pages/Admin"));
-const AdminAcces = lazy(() => import("./pages/AdminAcces"));
-const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
-const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
-const AdminMoneyManager = lazy(() => import("./pages/AdminMoneyManager"));
-const AdminMode = lazy(() => import("./pages/AdminMode"));
-const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
-const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
+const Admin = lazy(() => import("@/domaines/administration/pages/Admin"));
+const AdminAcces = lazy(() => import("@/domaines/administration/pages/AdminAcces"));
+const AdminCosmeticsManager = lazy(() => import("@/domaines/administration/pages/AdminCosmeticsManager"));
+const AdminModuleManager = lazy(() => import("@/domaines/administration/pages/AdminModuleManager"));
+const AdminMoneyManager = lazy(() => import("@/domaines/administration/pages/AdminMoneyManager"));
+const AdminMode = lazy(() => import("@/domaines/administration/pages/AdminMode"));
+const AdminNotifications = lazy(() => import("@/domaines/administration/pages/AdminNotifications"));
+const AdminPromoManager = lazy(() => import("@/domaines/administration/pages/AdminPromoManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function SocialGate({

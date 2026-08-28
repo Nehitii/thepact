@@ -568,7 +568,7 @@ function sectionDoc(d, m) {
   <ul class="puces">
     <li><code>src/main.tsx</code> — montage de l'application</li>
     <li><code>src/App.tsx</code> — les ${d.modules.length} écrans et leurs routes</li>
-    <li><code>src/components/layout/AppLayout.tsx</code> — la coque commune</li>
+    <li><code>src/app/AppLayout.tsx</code> — la coque commune</li>
     <li><code>src/integrations/supabase/client.ts</code> — l'accès aux données</li>
     <li><code>supabase/migrations</code> — le modèle de données, migration par migration</li>
   </ul>

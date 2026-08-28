@@ -4,9 +4,9 @@ import { fr } from "date-fns/locale";
 import { Coins, Gift, Plus, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
-import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
-import { logAdminAction } from "@/hooks/useAdminAudit";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
+import { AdminDeleteConfirm } from "@/domaines/administration/composants/AdminDeleteConfirm";
+import { logAdminAction } from "@/domaines/administration/hooks/useAdminAudit";
 
 /**
  * LA MONNAIE : LOTS DE BONDS ET OFFRES SPÉCIALES.

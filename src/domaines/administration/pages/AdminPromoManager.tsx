@@ -3,12 +3,12 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Ticket, Plus, Copy, Dices, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import { AdminPageShell } from "@/components/admin/AdminPageShell";
-import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
-import { logAdminAction } from "@/hooks/useAdminAudit";
+import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
+import { AdminDeleteConfirm } from "@/domaines/administration/composants/AdminDeleteConfirm";
+import { logAdminAction } from "@/domaines/administration/hooks/useAdminAudit";
 import {
   usePromoCodes, useCreatePromoCode, useUpdatePromoCode, useDeletePromoCode,
-} from "@/hooks/usePromoCodes";
+} from "@/domaines/boutique";
 
 /**
  * LES CODES PROMOTIONNELS.

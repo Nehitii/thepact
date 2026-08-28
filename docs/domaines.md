@@ -4,9 +4,9 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **9 domaines sur 14**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits et boutique, le 28/08/2026.
+État : **10 domaines sur 14**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique et administration, le 28/08/2026.
 
-*Quatorze et non onze : l’agenda s’est scindé en deux (sixième domaine), les souhaits aussi (huitième), et un groupe de huit pages d’administration attend son tour.*
+*Quatorze et non onze : l’agenda s’est scindé en deux (sixième domaine), les souhaits aussi (huitième), et un groupe de huit pages d’administration a été découvert en chemin (dixième).*
 
 ---
 
@@ -344,6 +344,42 @@ par un bout.
 
 ---
 
+## Ce que le dixième domaine a ajouté
+
+**Une garde qui suit un chemin cesse de garder dès qu'on déménage — et son
+silence ressemble au succès.** Deux fois le même jour :
+
+- `verifier-i18n.mjs` ne cherchait les pages muettes que sous `src/pages/`. Les
+  huit pages d'administration ont changé d'adresse, et le contrôle est passé
+  **au vert** le jour même. Les vingt-trois chaînes anglaises en dur étaient
+  toujours là.
+- `verifier-cadence.mts` importait `../src/lib/finance/cadence.ts`. Le fichier
+  est parti chez la finance ; le script échouait à l'import, et personne ne l'a
+  su — il n'était pas dans la chaîne.
+
+Les deux fois, le symptôme était **l'absence de signal**. D'où une sixième
+garde, `npm run chemins:check` : tout chemin `src/…` cité littéralement dans
+`scripts/` doit désigner quelque chose. Elle relève 58 chemins, et a été
+éprouvée en remettant le chemin mort qu'elle venait de faire réparer.
+
+**Un domaine peut être invisible au relevé parce qu'il est déjà rangé — mais
+par audience.** L'administration ne portait aucun nom de module : huit pages,
+quatre composants, quatre hooks, tous entre eux, dispersés dans `pages/`,
+`components/admin/` et `hooks/`. Le relevé par mot-clé ne l'a jamais proposé ;
+c'est en suivant `AdminCosmeticsManager` depuis la boutique qu'il est apparu.
+
+**`AdminRoute` reste dans `app/`**, et c'est délibéré : il compose la coquille —
+`AppSidebar`, `MobileBottomNav`, `ProtectedRoute` — et un domaine n'a pas à
+importer la coquille. Il prend ses deux pièces par la porte, comme n'importe
+quel autre lecteur.
+
+**Un module, deux audiences, une porte.** `usePromoCodes` sert la boutique (on
+consomme un code) et l'administration (on en crée). Le concept est commercial :
+il vit chez la boutique, et l'administration passe par sa porte. C'est le
+deuxième arc entre domaines du dépôt, après agenda → tâches.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -368,7 +404,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 14 | **9 / 14** |
+| domaines rangés | 0 / 14 | **10 / 14** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -387,7 +423,7 @@ fichier à sa place.
 
 ---
 
-## Les cinq domaines restants, dans l'ordre
+## Les quatre domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
@@ -402,7 +438,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **agenda** | 22 |
 | ✔ | **souhaits** | 17 |
 | ✔ | **boutique** | 34 |
-| 10 | administration | ~12 |
+| ✔ | **administration** | 18 |
 | 11 | profil | ~55 |
 | 12 | guildes | ~57 |
 | 13 | objectifs | ~60 |

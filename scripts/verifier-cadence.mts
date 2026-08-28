@@ -13,7 +13,7 @@ import {
   totalDuMois, provisionMensuelle, cadenceDe,
   moisDuMotif, moisDeChute, motifDepuisMois, regulariser,
   dateDeMouvement, dejaPasse,
-} from "../src/lib/finance/cadence.ts";
+} from "../src/domaines/finance/logique/cadence.ts";
 
 let echecs = 0;
 const dit = (nom, obtenu, attendu) => {

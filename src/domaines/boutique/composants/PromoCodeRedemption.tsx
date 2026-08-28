@@ -5,7 +5,7 @@ import { Ticket, Gift, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRedeemPromoCode } from "@/hooks/usePromoCodes";
+import { useRedeemPromoCode } from "@/domaines/boutique/hooks/usePromoCodes";
 
 export function PromoCodeRedemption() {
   const { t } = useTranslation();
