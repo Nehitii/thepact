@@ -16,7 +16,9 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "tableau": "node scripts/tableau-de-bord.mjs",
     "edge:check": "node scripts/verifier-edge.mjs",
-    "edge:test": "deno test --allow-env supabase/functions/_shared/"
+    "edge:test": "deno test --allow-env supabase/functions/_shared/",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -94,6 +96,8 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
@@ -103,6 +107,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "jsdom": "^30.0.1",
     "postcss": "^8.5.6",
     "rollup-plugin-visualizer": "^7.0.1",
     "supabase": "^2.114.0",
@@ -110,6 +115,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^7.3.6",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^3.2.7"
   }
 }
