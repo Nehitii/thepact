@@ -1,20 +1,20 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T09:55:28.231Z",
-  "fichiers": 878,
-  "lignes": 176219,
+  "genere": "2026-08-28T15:38:25.835Z",
+  "fichiers": 891,
+  "lignes": 177712,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 17,
-      "lignes": 1560,
-      "poids": 59987
+      "lignes": 1581,
+      "poids": 63469
     },
     {
       "dossier": "docs",
-      "fichiers": 3,
-      "lignes": 3669,
-      "poids": 219102
+      "fichiers": 4,
+      "lignes": 3823,
+      "poids": 227211
     },
     {
       "dossier": "mem/design",
@@ -79,8 +79,8 @@
     {
       "dossier": "src",
       "fichiers": 4,
-      "lignes": 2287,
-      "poids": 95124
+      "lignes": 2317,
+      "poids": 96810
     },
     {
       "dossier": "src/assets",
@@ -92,25 +92,25 @@
       "dossier": "src/components",
       "fichiers": 304,
       "lignes": 50185,
-      "poids": 2022376
+      "poids": 2022375
     },
     {
       "dossier": "src/content",
-      "fichiers": 1,
-      "lignes": 492,
-      "poids": 19711
+      "fichiers": 2,
+      "lignes": 640,
+      "poids": 27545
     },
     {
       "dossier": "src/contexts",
       "fichiers": 4,
-      "lignes": 459,
-      "poids": 15002
+      "lignes": 471,
+      "poids": 15743
     },
     {
       "dossier": "src/hooks",
-      "fichiers": 95,
-      "lignes": 15305,
-      "poids": 556423
+      "fichiers": 97,
+      "lignes": 15489,
+      "poids": 564754
     },
     {
       "dossier": "src/i18n",
@@ -126,15 +126,15 @@
     },
     {
       "dossier": "src/lib",
-      "fichiers": 48,
-      "lignes": 5912,
-      "poids": 239269
+      "fichiers": 52,
+      "lignes": 6264,
+      "poids": 253448
     },
     {
       "dossier": "src/pages",
       "fichiers": 47,
-      "lignes": 17422,
-      "poids": 771119
+      "lignes": 17495,
+      "poids": 773942
     },
     {
       "dossier": "src/styles",
@@ -168,9 +168,9 @@
     },
     {
       "dossier": "supabase/migrations",
-      "fichiers": 187,
-      "lignes": 13700,
-      "poids": 579956
+      "fichiers": 192,
+      "lignes": 14219,
+      "poids": 604311
     }
   ],
   "parLangage": [
@@ -189,20 +189,20 @@
     {
       "langage": "JSON",
       "fichiers": 8,
-      "lignes": 8327,
-      "poids": 313111
+      "lignes": 8348,
+      "poids": 316593
     },
     {
       "langage": "Markdown",
-      "fichiers": 6,
-      "lignes": 354,
-      "poids": 15059
+      "fichiers": 7,
+      "lignes": 480,
+      "poids": 20648
     },
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3558,
-      "poids": 214868
+      "lignes": 3586,
+      "poids": 217388
     },
     {
       "langage": "JavaScript",
@@ -242,15 +242,15 @@
     },
     {
       "langage": "TypeScript",
-      "fichiers": 203,
-      "lignes": 29366,
-      "poids": 1131281
+      "fichiers": 209,
+      "lignes": 29955,
+      "poids": 1157315
     },
     {
       "langage": "TypeScript (JSX)",
-      "fichiers": 337,
-      "lignes": 67503,
-      "poids": 2789618
+      "fichiers": 338,
+      "lignes": 67713,
+      "poids": 2799177
     },
     {
       "langage": "WEBP",
@@ -272,9 +272,9 @@
     },
     {
       "langage": "SQL",
-      "fichiers": 187,
-      "lignes": 13700,
-      "poids": 579956
+      "fichiers": 192,
+      "lignes": 14219,
+      "poids": 604311
     },
     {
       "langage": "JSONC",
@@ -283,7 +283,7 @@
       "poids": 500
     }
   ],
-  "commits": 3154,
-  "orphelins": 4,
+  "commits": 3170,
+  "orphelins": 8,
   "marqueurs": 13
 }

@@ -21,14 +21,31 @@
   "_modules": [
     "CRITÈRE RETENU POUR LES STATUTS, à corriger sans scrupule :",
     "  · « en pause » — le drapeau qui commande la fonction est à false en base",
-    "    (table feature_flags). C'est le seul signal objectif d'un arrêt volontaire.",
-    "  · « livré » — l'écran est atteignable et rien n'indique de travail ouvert.",
+    "    (table feature_flags). C est le seul signal objectif d un arrêt volontaire.",
+    "  · « en cours » — le code annonce lui-même qu il n a pas fini.",
+    "  · « livré » — l écran est atteignable et rien n indique de travail ouvert.",
     "",
-    "CE CRITÈRE NE DISCRIMINE PRESQUE PAS, et il faut le dire : 45 écrans sur 46",
-    "ont été repris entre le 16 et le 27 août. Les dates ne distinguent donc pas",
-    "ce qui est FINI de ce qui est seulement EN PLACE — cette différence-là est",
-    "dans votre tête, pas dans le dépôt. Passez la liste et rétrogradez en",
-    "« en cours » tout ce que vous savez inachevé."
+    "CE QUE LA MESURE DU 28/08 A CHERCHÉ, ET CE QU ELLE A TROUVÉ. On a passé les",
+    "46 modules au peigne : marques de chantier (TODO, FIXME), annonces « bientôt",
+    "disponible », bouchons, données factices. UN SEUL module en porte — la",
+    "Boutique, dont le paiement n est pas branché et qui le dit 21 fois.",
+    "",
+    "Le premier détecteur en signalait 28. Il comptait les attributs placeholder",
+    "des champs de formulaire et les « à venir » du vocabulaire métier — mois à",
+    "venir, événements à venir. Resserré, il est tombé à 1. Un détecteur qui",
+    "trouve partout ne trouve rien.",
+    "",
+    "LA CONCLUSION TIENT DONC : la différence entre « fini » et « seulement en",
+    "place » n est pas dans le dépôt. Elle est dans votre tête — ou dans l usage.",
+    "",
+    "CE QUE L USAGE DIT, LUI. Cinq modules n ont jamais reçu une seule ligne dans",
+    "leurs tables propres : Conversation privée, Alliés, Guildes, Classement,",
+    "Panthéon. Leur champ _mesure porte le chiffre. Ce ne sont pas des modules",
+    "inachevés — ce sont des modules que personne n a pu éprouver, parce qu ils",
+    "demandent deux personnes et qu il n y a qu un compte. Ils restent « livré ».",
+    "",
+    "Les 40 autres ont un usage mesurable ou sont des écrans sans stockage",
+    "(connexion, second facteur, mentions légales, 404, panneaux d administration)."
   ],
   "modules": [
     {
@@ -142,10 +159,11 @@
     {
       "page": "src/pages/Shop.tsx",
       "nom": "Boutique",
-      "statut": "livré",
+      "statut": "en cours",
       "aussi": [
         "src/components/shop"
-      ]
+      ],
+      "_mesure": "Le code annonce lui-même son inachèvement : handlePackPurchase affiche « le paiement n est pas encore branché » et 21 marques comingSoon parsèment le module. Aucune intégration d encaissement n existe dans le dépôt. Les prix en euros sont de l affichage."
     },
     {
       "page": "src/pages/Wishlist.tsx",
@@ -167,7 +185,8 @@
       "page": "src/pages/InboxThread.tsx",
       "nom": "Conversation privée",
       "statut": "livré",
-      "aussi": []
+      "aussi": [],
+      "_mesure": "JAMAIS ÉPROUVÉ, ce qui n est pas la même chose qu inachevé : private_messages 0, friendships 0, blocked_users 0 au 28/08/2026. Un seul compte utilise l application, et ces écrans demandent deux personnes. Le statut reste « livré » faute de preuve du contraire — la question est posée, pas tranchée."
     },
     {
       "page": "src/pages/Community.tsx",
@@ -183,26 +202,30 @@
       "statut": "livré",
       "aussi": [
         "src/components/friends"
-      ]
+      ],
+      "_mesure": "JAMAIS ÉPROUVÉ, ce qui n est pas la même chose qu inachevé : friendships 0, guild_invites 0, guild_invite_codes 0 au 28/08/2026. Un seul compte utilise l application, et ces écrans demandent deux personnes. Le statut reste « livré » faute de preuve du contraire — la question est posée, pas tranchée."
     },
     {
       "page": "src/pages/GuildPage.tsx",
       "nom": "Guildes",
       "statut": "livré",
-      "aussi": []
+      "aussi": [],
+      "_mesure": "JAMAIS ÉPROUVÉ, ce qui n est pas la même chose qu inachevé : 1 guilde, 1 membre, 1 message ; guild_events 0, guild_raids 0, guild_ranks 0, guild_event_rsvps 0. Un seul compte utilise l application, et ces écrans demandent deux personnes. Le statut reste « livré » faute de preuve du contraire — la question est posée, pas tranchée."
     },
     {
       "page": "src/pages/Leaderboard.tsx",
       "nom": "Classement",
       "statut": "livré",
-      "aussi": []
+      "aussi": [],
+      "_mesure": "JAMAIS ÉPROUVÉ, ce qui n est pas la même chose qu inachevé : aucune table propre ; se calcule sur profiles, qui compte 4 lignes. Un seul compte utilise l application, et ces écrans demandent deux personnes. Le statut reste « livré » faute de preuve du contraire — la question est posée, pas tranchée."
     },
     {
       "page": "src/pages/HallOfFame.tsx",
       "nom": "Panthéon",
       "statut": "livré",
       "note": "Dernière reprise le 14/05/2026 : le seul écran que la vague d'août n'a pas touché.",
-      "aussi": []
+      "aussi": [],
+      "_mesure": "JAMAIS ÉPROUVÉ, ce qui n est pas la même chose qu inachevé : hall_of_fame 4 lignes, toutes générées par la clôture de saison, aucune saisie. Un seul compte utilise l application, et ces écrans demandent deux personnes. Le statut reste « livré » faute de preuve du contraire — la question est posée, pas tranchée."
     },
     {
       "page": "src/pages/ContractSign.tsx",
@@ -520,6 +543,7 @@
   "prochainesEtapes": [
     "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
     "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
-    "Le jour ou un paiement est encaisse, basculer REGIME sur \"professionnel\" dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel."
+    "Le jour ou un paiement est encaisse, basculer REGIME sur \"professionnel\" dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel.",
+    "Décider du sort de six tables que RIEN ne touche — ni un écran, ni une fonction Edge — et qui sont vides : goal_templates, goal_dependencies, template_ratings, habit_skip_rules, net_worth_snapshots, season_rewards. C est du schéma pour des fonctionnalités jamais construites ou retirées sans nettoyer derrière. Chacune porte ses politiques RLS et, depuis le 28/08, ses index. Les supprimer est irréversible : à faire seulement après avoir confirmé qu aucune n est prévue."
   ]
 }
