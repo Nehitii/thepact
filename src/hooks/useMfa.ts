@@ -26,11 +26,30 @@ export type MfaEnrollment = {
 };
 
 export function useMfa() {
-  const { user, session } = useAuth();
+  /* `session` n'est plus lu ici : le jeton a quitté la clé de requête. */
+  const { user } = useAuth();
   const qc = useQueryClient();
 
+  /* ═══ LE JETON N'EST PLUS DANS LA CLÉ ═══
+
+     Elle valait ["mfa", user.id, session.access_token]. Or le jeton
+     change pour des raisons qui n'ont RIEN à voir avec le second
+     facteur : rafraîchissement automatique, réémission après un
+     `verify`, retour d'onglet. À chaque changement, React Query voit
+     une clé neuve — donc une requête neuve, donc `isLoading` à vrai.
+
+     Sur l'écran du second facteur, cela donnait : formulaire, rond de
+     chargement, formulaire, rond de chargement. Rapporté depuis
+     l'usage : « la page où rentrer le code scintille ».
+
+     RIEN NE SE PERD À L'ENLEVER. Le seul moment où l'état MFA change
+     vraiment est la vérification du code, et `verify` appelle déjà
+     `qc.resetQueries()` juste après — ce qui vide cette requête-ci
+     avec les autres et la force à repartir. Le client supabase porte
+     le nouveau jeton en interne ; la clé n'a pas à le savoir.
+     Un changement d'utilisateur reste couvert par `user?.id`. */
   const query = useQuery({
-    queryKey: ["mfa", user?.id, session?.access_token],
+    queryKey: ["mfa", user?.id],
     enabled: !!user,
     staleTime: 30_000,
     queryFn: async () => {

@@ -1,0 +1,283 @@
+{
+  "date": "2026-08-28",
+  "genere": "2026-08-28T07:39:28.582Z",
+  "fichiers": 877,
+  "lignes": 180333,
+  "parDossier": [
+    {
+      "dossier": "(racine)",
+      "fichiers": 16,
+      "lignes": 1515,
+      "poids": 54075
+    },
+    {
+      "dossier": "docs",
+      "fichiers": 3,
+      "lignes": 3612,
+      "poids": 213836
+    },
+    {
+      "dossier": "mem/design",
+      "fichiers": 1,
+      "lignes": 14,
+      "poids": 1322
+    },
+    {
+      "dossier": "mem/features",
+      "fichiers": 1,
+      "lignes": 19,
+      "poids": 1244
+    },
+    {
+      "dossier": "mem/monetization",
+      "fichiers": 1,
+      "lignes": 18,
+      "poids": 972
+    },
+    {
+      "dossier": "public/cosmetiques",
+      "fichiers": 27,
+      "lignes": 450,
+      "poids": 87425
+    },
+    {
+      "dossier": "public",
+      "fichiers": 4,
+      "lignes": 86,
+      "poids": 6765
+    },
+    {
+      "dossier": "public/fonts",
+      "fichiers": 15,
+      "lignes": 973,
+      "poids": 240540
+    },
+    {
+      "dossier": "public/marque",
+      "fichiers": 18,
+      "lignes": 15162,
+      "poids": 3139445
+    },
+    {
+      "dossier": "public/mia",
+      "fichiers": 19,
+      "lignes": 6107,
+      "poids": 1571326
+    },
+    {
+      "dossier": "scripts",
+      "fichiers": 5,
+      "lignes": 908,
+      "poids": 41514
+    },
+    {
+      "dossier": "scripts/tableau-de-bord",
+      "fichiers": 2,
+      "lignes": 1324,
+      "poids": 64938
+    },
+    {
+      "dossier": "src",
+      "fichiers": 4,
+      "lignes": 2306,
+      "poids": 95079
+    },
+    {
+      "dossier": "src/assets",
+      "fichiers": 1,
+      "lignes": 136,
+      "poids": 32190
+    },
+    {
+      "dossier": "src/components",
+      "fichiers": 304,
+      "lignes": 50166,
+      "poids": 2021226
+    },
+    {
+      "dossier": "src/content",
+      "fichiers": 1,
+      "lignes": 492,
+      "poids": 19711
+    },
+    {
+      "dossier": "src/contexts",
+      "fichiers": 4,
+      "lignes": 434,
+      "poids": 13607
+    },
+    {
+      "dossier": "src/hooks",
+      "fichiers": 94,
+      "lignes": 15169,
+      "poids": 550494
+    },
+    {
+      "dossier": "src/i18n",
+      "fichiers": 4,
+      "lignes": 7635,
+      "poids": 284421
+    },
+    {
+      "dossier": "src/integrations",
+      "fichiers": 1,
+      "lignes": 17,
+      "poids": 606
+    },
+    {
+      "dossier": "src/lib",
+      "fichiers": 47,
+      "lignes": 5717,
+      "poids": 230757
+    },
+    {
+      "dossier": "src/pages",
+      "fichiers": 46,
+      "lignes": 17237,
+      "poids": 763454
+    },
+    {
+      "dossier": "src/styles",
+      "fichiers": 41,
+      "lignes": 31049,
+      "poids": 1170999
+    },
+    {
+      "dossier": "src/types",
+      "fichiers": 3,
+      "lignes": 362,
+      "poids": 12874
+    },
+    {
+      "dossier": "supabase",
+      "fichiers": 1,
+      "lignes": 63,
+      "poids": 1690
+    },
+    {
+      "dossier": "supabase/functions",
+      "fichiers": 27,
+      "lignes": 5662,
+      "poids": 237421
+    },
+    {
+      "dossier": "supabase/migrations",
+      "fichiers": 187,
+      "lignes": 13700,
+      "poids": 579956
+    }
+  ],
+  "parLangage": [
+    {
+      "langage": "EXAMPLE",
+      "fichiers": 1,
+      "lignes": 19,
+      "poids": 668
+    },
+    {
+      "langage": "sans extension",
+      "fichiers": 2,
+      "lignes": 51,
+      "poids": 888
+    },
+    {
+      "langage": "JSON",
+      "fichiers": 8,
+      "lignes": 8320,
+      "poids": 308924
+    },
+    {
+      "langage": "Markdown",
+      "fichiers": 6,
+      "lignes": 354,
+      "poids": 15059
+    },
+    {
+      "langage": "HTML",
+      "fichiers": 2,
+      "lignes": 3501,
+      "poids": 209606
+    },
+    {
+      "langage": "JavaScript",
+      "fichiers": 9,
+      "lignes": 2185,
+      "poids": 101344
+    },
+    {
+      "langage": "SVG",
+      "fichiers": 36,
+      "lignes": 476,
+      "poids": 172724
+    },
+    {
+      "langage": "ICO",
+      "fichiers": 1,
+      "lignes": 6,
+      "poids": 594
+    },
+    {
+      "langage": "WOFF2",
+      "fichiers": 15,
+      "lignes": 973,
+      "poids": 240540
+    },
+    {
+      "langage": "PNG",
+      "fichiers": 28,
+      "lignes": 21195,
+      "poids": 4626419
+    },
+    {
+      "langage": "TXT",
+      "fichiers": 2,
+      "lignes": 64,
+      "poids": 2480
+    },
+    {
+      "langage": "TypeScript",
+      "fichiers": 200,
+      "lignes": 29106,
+      "poids": 1119408
+    },
+    {
+      "langage": "TypeScript (JSX)",
+      "fichiers": 335,
+      "lignes": 67144,
+      "poids": 2773859
+    },
+    {
+      "langage": "WEBP",
+      "fichiers": 1,
+      "lignes": 136,
+      "poids": 32190
+    },
+    {
+      "langage": "CSS",
+      "fichiers": 42,
+      "lignes": 33026,
+      "poids": 1251038
+    },
+    {
+      "langage": "TOML",
+      "fichiers": 1,
+      "lignes": 63,
+      "poids": 1690
+    },
+    {
+      "langage": "SQL",
+      "fichiers": 187,
+      "lignes": 13700,
+      "poids": 579956
+    },
+    {
+      "langage": "JSONC",
+      "fichiers": 1,
+      "lignes": 14,
+      "poids": 500
+    }
+  ],
+  "commits": 3141,
+  "orphelins": 1,
+  "marqueurs": 13
+}

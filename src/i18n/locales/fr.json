@@ -151,7 +151,9 @@
       "identiteConfirmee": "Identité confirmée",
       "codeRefuse": "Code refusé",
       "facteurRetire": "Second facteur retiré",
-      "facteurRetireDetail": "Ton compte est de nouveau accessible. Pense à le réactiver."
+      "facteurRetireDetail": "Ton compte est de nouveau accessible. Pense à le réactiver.",
+      "sixChiffres": "Six chiffres",
+      "consigneSecours": "Saisis l’un des codes que tu as mis de côté au moment de l’activation."
     }
   },
   "profile": {

@@ -1,0 +1,330 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE SAS
+
+   Cet écran arrive JUSTE APRÈS celui de connexion. C'est le même
+   geste en deux temps : le mot de passe ouvre la porte, le code
+   franchit le sas. Il portait pourtant les composants génériques de
+   l'application — carte arrondie, bouton plein, champ standard —
+   pendant que l'écran précédent avait son propre monde. On passait
+   d'une identité à une autre au milieu d'une seule action.
+
+   Il reprend donc le vocabulaire de `auth.css` : même fond, même
+   violet, même HUD en Orbitron, même bouton en dégradé.
+
+   ═══ MAIS PAS LA MÊME COMPOSITION ═══
+
+   L'écran de connexion est un diptyque : un panneau d'image, une
+   carte. Ici il n'y a rien à mettre en regard — on est déjà entré,
+   il ne reste qu'à le prouver. Une seule carte, centrée, plus
+   étroite. La sobriété n'est pas un manque : elle dit qu'il n'y a
+   qu'une chose à faire.
+
+   ═══ LES JETONS SONT RECOPIÉS, ET C'EST VOULU ═══
+
+   Les `--au-*` sont définis sur `.auth` dans auth.css. Les importer
+   ici obligerait à emporter aussi sa mise en page en diptyque. On les
+   redéfinit donc — neuf lignes — en sachant que auth.css fait foi :
+   si les deux divergent un jour, c'est un défaut, pas une variante.
+   ═══════════════════════════════════════════════════════════════ */
+
+.sas {
+  --au-fond:        #08040c;
+  --au-violet:      #8b5cf6;
+  --au-violet-clair:#a78bfa;
+  --au-violet-vif:  #c4b5fd;
+  --au-violet-fonce:#7c3aed;
+  --au-encre:       #f2eefb;
+  --au-encre-2:     #cfc8dd;
+  --au-hud: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+  --au-texte: "Switzer", ui-sans-serif, system-ui, sans-serif;
+
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  /* `safe` : sur un écran court, le contenu déborde vers le bas et
+     reste atteignable plutôt que rogné des deux côtés. */
+  place-items: safe center;
+  padding: clamp(16px, 5vh, 48px);
+  overflow: hidden;
+  background: var(--au-fond);
+  font-family: var(--au-texte);
+  color: var(--au-encre);
+}
+
+/* La lueur de fond, reprise de l'écran de connexion pour que le
+   passage de l'un à l'autre ne se voie pas. */
+.sas::before {
+  content: "";
+  position: absolute;
+  inset: -20% -20% auto -20%;
+  height: 80%;
+  pointer-events: none;
+  background: radial-gradient(60% 50% at 50% 0%, rgba(124, 58, 237, 0.22), transparent 70%);
+}
+
+.sas-grille {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(70% 60% at 50% 40%, #000 0%, transparent 100%);
+}
+
+.sas-carte {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+  padding: clamp(28px, 5vw, 46px) clamp(24px, 5vw, 44px) clamp(26px, 4vw, 38px);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  border-radius: 22px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(76, 29, 149, 0.22), transparent 60%),
+    linear-gradient(160deg, #130c1c 0%, #0d0813 100%);
+}
+
+/* Même palier que l'écran de connexion : sur un téléphone, une
+   marge de page de 40 px prise sur 375 en laisse trop peu. */
+@media (max-width: 560px) {
+  .sas { padding: 16px; }
+  .sas-carte { border-radius: 16px; }
+}
+
+/* ── L'en-tête ── */
+
+.sas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 3px;
+  background: rgba(139, 92, 246, 0.06);
+  font-family: var(--au-hud);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--au-violet-clair);
+}
+
+.sas-chip svg { width: 13px; height: 13px; }
+
+.sas-titre {
+  margin: 22px 0 10px;
+  font-family: var(--au-hud);
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.sas-consigne {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--au-encre-2);
+}
+
+/* ── Les six cases ──
+   `InputOTP` est conservé : il gère le collage, le retour arrière et
+   le déplacement du curseur, et il pose `autocomplete="one-time-code"`
+   — c'est ce qui permet à un téléphone de remplir le code seul. On
+   n'en refait que l'habillage. */
+
+.sas-cases {
+  display: flex;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 10px);
+  margin: 32px 0 0;
+}
+
+/* ELLES SE PARTAGENT LA PLACE, ELLES NE LA DEVINENT PAS.
+
+   Écrites `width: clamp(40px, 12vw, 52px)`, les six cases se
+   calculaient sur la largeur de la FENÊTRE — qui ne sait rien des
+   marges de la page ni de celles de la carte. Mesuré à 375 px : la
+   rangée réclamait 308 px, la carte était poussée à 357 de large et
+   commençait à 41, donc son bord droit tombait à 398. `overflow:
+   hidden` masquait le débordement au lieu de le signaler : la carte
+   était COUPÉE sans qu'aucun compteur ne s'en plaigne.
+
+   `flex: 1 1 0` les fait diviser ce qui reste réellement, et
+   `aspect-ratio` garde la proportion 52 × 64 quand elles rétrécissent.
+   Le `max-width` empêche qu'elles s'étalent sur grand écran. */
+.sas-case {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 52px;
+  aspect-ratio: 13 / 16;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.028);
+  font-family: var(--au-hud);
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 700;
+  color: var(--au-encre);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* La case active porte la même marque que le champ de l'écran de
+   connexion : le liseré ET le halo, pour qu'on voie où l'on écrit
+   sans avoir à compter les cases. */
+.sas-case[data-active="true"] {
+  border-color: rgba(139, 92, 246, 0.85);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.22);
+}
+
+.sas-case[data-faute="true"] { border-color: rgba(248, 113, 113, 0.75); }
+
+/* ── Le champ du code de secours ── */
+
+.sas-etiquette {
+  display: block;
+  margin: 30px 0 12px;
+  font-family: var(--au-hud);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--au-violet);
+}
+
+.sas-champ {
+  display: flex;
+  align-items: center;
+  height: 58px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.028);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.sas-champ:focus-within {
+  border-color: rgba(139, 92, 246, 0.85);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.22);
+}
+/* L'input remplit son champ : taper au-dessus ou en dessous du texte
+   doit donner le focus, comme sur l'écran de connexion. */
+.sas-champ input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--au-hud);
+  font-size: 18px;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--au-encre);
+}
+.sas-champ input::placeholder {
+  letter-spacing: 0.12em;
+  color: rgba(226, 222, 235, 0.4);
+}
+
+/* ── Le bouton ── */
+
+.sas-valider {
+  position: relative;
+  width: 100%;
+  margin-top: 28px;
+  height: 60px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(96deg, #7f34f0 0%, #8b5cf6 100%);
+  box-shadow: 0 10px 34px rgba(124, 58, 237, 0.32);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--au-hud);
+  font-size: clamp(15px, 2vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  transition: filter 160ms ease, opacity 160ms ease;
+}
+.sas-valider:hover:not(:disabled) { filter: brightness(1.08); }
+.sas-valider:disabled { opacity: 0.55; cursor: default; }
+.sas-valider:focus-visible { outline: 2px solid var(--au-violet-clair); outline-offset: 3px; }
+
+/* ── La bascule vers le code de secours ── */
+
+.sas-bascule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  /* 44 px en dur : c'est la taille d'un doigt, pas celle du texte. */
+  min-height: 44px;
+  margin-top: 22px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--au-hud);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--au-encre-2);
+  border-radius: 8px;
+  transition: color 160ms ease;
+}
+.sas-bascule:hover:not(:disabled) { color: var(--au-violet-vif); }
+.sas-bascule:disabled { opacity: 0.4; cursor: default; }
+.sas-bascule:focus-visible { outline: 2px solid var(--au-violet); outline-offset: 3px; }
+.sas-bascule svg { width: 13px; height: 13px; }
+
+/* L'avertissement sur le code de secours. Il RETIRE le second
+   facteur : ce n'est pas un détail, et il ne se lit pas comme le
+   reste — d'où le trait à gauche. */
+.sas-note {
+  margin: 20px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid rgba(139, 92, 246, 0.35);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--au-encre-2);
+  text-align: left;
+}
+
+/* ── L'attente ── */
+
+.sas-attente {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  background: var(--au-fond);
+}
+
+.sas-rond {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 92, 246, 0.25);
+  border-top-color: var(--au-violet);
+  animation: sas-tourne 720ms linear infinite;
+}
+
+@keyframes sas-tourne { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sas-rond { animation-duration: 2.4s; }
+  .sas-valider, .sas-bascule, .sas-case, .sas-champ { transition: none; }
+}

@@ -1,18 +1,39 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { OTPInput, OTPInputContext } from "input-otp";
 import { toast } from "sonner";
 import { useMfa } from "@/hooks/useMfa";
 import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
-import { Input } from "@/components/ui/input";
-import { Smartphone, Loader2, KeyRound } from "lucide-react";
-import { DSPageShell } from "@/components/ds";
+import { ShieldCheck, KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { messageDErreur } from "@/lib/erreurs";
+import "@/styles/deuxieme-facteur.css";
 
 type FromState = { from?: string };
+
+/**
+ * UNE CASE, LUE DEPUIS LE CONTEXTE D'`input-otp`.
+ *
+ * `InputOTPSlot` de components/ui existe, mais il impose ses propres
+ * classes : six cases COLLÉES, bordures partagées, coins arrondis aux
+ * seules extrémités. Le dessin en veut six séparées. Lutter contre ces
+ * utilitaires à coups de spécificité aurait tenu jusqu'à la première
+ * mise à jour du composant.
+ *
+ * `OTPInputContext` est l'API publique de la bibliothèque : on lit le
+ * caractère et l'état actif, on peint le reste. Le comportement — le
+ * collage, le retour arrière, le déplacement du curseur — reste celui
+ * d'`OTPInput`, qu'on ne touche pas.
+ */
+function Case({ index }: { index: number }) {
+  const contexte = useContext(OTPInputContext);
+  const { char, isActive } = contexte.slots[index];
+  return (
+    <div className="sas-case" data-active={isActive ? "true" : undefined} aria-hidden="true">
+      {char}
+    </div>
+  );
+}
 
 /**
  * Verification du second facteur sur une session existante.
@@ -20,6 +41,15 @@ type FromState = { from?: string };
  * Un code valide fait reemettre le JWT avec `aal2`. C'est cette
  * revendication que les politiques RLS exigent : sortir de cet ecran sans
  * l'obtenir ne donne acces a rien.
+ *
+ * ═══ POURQUOI CET ÉCRAN A SON PROPRE MONDE ═══
+ *
+ * Il arrive JUSTE APRÈS celui de connexion : c'est le même geste en deux
+ * temps. Il portait pourtant les composants génériques — carte arrondie,
+ * bouton plein, champ standard — pendant que l'écran précédent avait le
+ * sien. On changeait d'identité au milieu d'une seule action. Le style
+ * vit maintenant dans `deuxieme-facteur.css`, qui reprend le vocabulaire
+ * de `auth.css`.
  */
 export default function TwoFactor() {
   const navigate = useNavigate();
@@ -99,98 +129,111 @@ export default function TwoFactor() {
 
   if (mfa.isLoading) {
     return (
-      <DSPageShell>
-        <div className="flex min-h-[100dvh] items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
-      </DSPageShell>
+      <div className="sas-attente">
+        <div className="sas-rond" role="status" aria-label={t("common.loading", "Chargement")} />
+      </div>
     );
   }
 
   return (
-    <DSPageShell>
-      <div className="flex min-h-[100dvh] items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Smartphone className="h-6 w-6 text-primary" />
+    <div className="sas">
+      <div className="sas-grille" aria-hidden="true" />
+
+      <main className="sas-carte">
+        <span className="sas-chip">
+          <ShieldCheck aria-hidden="true" />
+          {t("twoFactor.porte.titre", "Vérification requise")}
+        </span>
+
+        <h1 className="sas-titre">
+          {modeSecours
+            ? t("twoFactor.recoveryCode", "Code de secours")
+            : t("twoFactor.porte.sixChiffres", "Six chiffres")}
+        </h1>
+
+        <p className="sas-consigne">
+          {modeSecours
+            ? t("twoFactor.porte.consigneSecours", "Saisis l’un des codes que tu as mis de côté au moment de l’activation.")
+            : t("twoFactor.porte.consigne", "Saisis le code à six chiffres affiché par ton application d’authentification.")}
+        </p>
+
+        {modeSecours ? (
+          <>
+            <label className="sas-etiquette" htmlFor="code-de-secours">
+              {t("twoFactor.recoveryCode", "Code de secours")}
+            </label>
+            <div className="sas-champ">
+              <input
+                id="code-de-secours"
+                value={codeSecours}
+                onChange={(e) => setCodeSecours(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") void soumettreSecours(); }}
+                placeholder="ABCDE-FGHJK"
+                autoFocus
+                disabled={busy}
+                autoComplete="off"
+                spellCheck={false}
+              />
             </div>
-            <CardTitle className="font-mono uppercase tracking-widest text-sm">
-              {t("twoFactor.porte.titre", "Vérification requise")}
-            </CardTitle>
-            <CardDescription className="font-mono ds-t-label">
-              {t("twoFactor.porte.consigne", "Saisis le code à six chiffres affiché par ton application d’authentification.")}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {modeSecours ? (
-              <>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="code-de-secours"
-                    className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground"
-                  >
-                    {t("twoFactor.recoveryCode", "Code de secours")}
-                  </label>
-                  <Input
-                    id="code-de-secours"
-                    value={codeSecours}
-                    onChange={(e) => setCodeSecours(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") void soumettreSecours(); }}
-                    placeholder="ABCDE-FGHJK"
-                    autoFocus
-                    disabled={busy}
-                    className="font-mono tracking-[0.2em] text-center uppercase"
-                  />
-                </div>
-
-                <Button
-                  onClick={soumettreSecours}
-                  disabled={busy || !codeSecours.trim()}
-                  className="w-full font-mono ds-t-label uppercase tracking-widest"
-                >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("twoFactor.porte.utiliserCeCode", "Utiliser ce code")}
-                </Button>
-
-                <p className="text-center font-mono ds-t-label leading-relaxed text-muted-foreground">
-                  {t("twoFactor.porte.avertissementSecours", "Ce code retire ton second facteur au lieu de le vérifier : il te rend l’accès, il ne le contourne pas. Il ne servira qu’une fois.")}
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="flex justify-center">
-                  <InputOTP maxLength={6} value={code} onChange={setCode} disabled={busy} autoFocus>
-                    <InputOTPGroup>
-                      {[0, 1, 2, 3, 4, 5].map((i) => <InputOTPSlot key={i} index={i} />)}
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-
-                <Button
-                  onClick={submit}
-                  disabled={busy || code.length !== 6}
-                  className="w-full font-mono ds-t-label uppercase tracking-widest"
-                >
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t("twoFactor.porte.valider", "Valider")}
-                </Button>
-              </>
-            )}
 
             <button
               type="button"
-              onClick={() => { setModeSecours((v) => !v); setCode(""); setCodeSecours(""); }}
-              disabled={busy}
-              className="w-full flex items-center justify-center gap-2 font-mono ds-t-label uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+              className="sas-valider"
+              onClick={soumettreSecours}
+              disabled={busy || !codeSecours.trim()}
             >
-              <KeyRound className="h-3 w-3" />
-              {modeSecours
-                ? t("twoFactor.porte.revenirApplication", "Revenir au code de l’application")
-                : t("twoFactor.useRecovery", "Utiliser un code de secours")}
+              {busy
+                ? <span className="sas-rond" aria-hidden="true" />
+                : t("twoFactor.porte.utiliserCeCode", "Utiliser ce code")}
             </button>
-          </CardContent>
-        </Card>
-      </div>
-    </DSPageShell>
+
+            <p className="sas-note">
+              {t("twoFactor.porte.avertissementSecours", "Ce code retire ton second facteur au lieu de le vérifier : il te rend l’accès, il ne le contourne pas. Il ne servira qu’une fois.")}
+            </p>
+          </>
+        ) : (
+          <>
+            {/* `autoComplete="one-time-code"` : c'est lui qui permet à un
+                téléphone de proposer le code sans qu'on le recopie. */}
+            <OTPInput
+              maxLength={6}
+              value={code}
+              onChange={setCode}
+              disabled={busy}
+              autoFocus
+              autoComplete="one-time-code"
+              containerClassName="sas-cases"
+              aria-label={t("twoFactor.porte.consigne", "Saisis le code à six chiffres affiché par ton application d’authentification.")}
+              render={({ slots }) => (
+                <>{slots.map((_, i) => <Case key={i} index={i} />)}</>
+              )}
+            />
+
+            <button
+              type="button"
+              className="sas-valider"
+              onClick={submit}
+              disabled={busy || code.length !== 6}
+            >
+              {busy
+                ? <span className="sas-rond" aria-hidden="true" />
+                : t("twoFactor.porte.valider", "Valider")}
+            </button>
+          </>
+        )}
+
+        <button
+          type="button"
+          className="sas-bascule"
+          onClick={() => { setModeSecours((v) => !v); setCode(""); setCodeSecours(""); }}
+          disabled={busy}
+        >
+          <KeyRound aria-hidden="true" />
+          {modeSecours
+            ? t("twoFactor.porte.revenirApplication", "Revenir au code de l’application")
+            : t("twoFactor.useRecovery", "Utiliser un code de secours")}
+        </button>
+      </main>
+    </div>
   );
 }

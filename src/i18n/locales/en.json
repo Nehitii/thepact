@@ -151,7 +151,9 @@
       "identiteConfirmee": "Identity confirmed",
       "codeRefuse": "Code rejected",
       "facteurRetire": "Second factor removed",
-      "facteurRetireDetail": "Your account is reachable again. Remember to turn it back on."
+      "facteurRetireDetail": "Your account is reachable again. Remember to turn it back on.",
+      "sixChiffres": "Six digits",
+      "consigneSecours": "Enter one of the codes you set aside when you turned this on."
     }
   },
   "profile": {
