@@ -287,27 +287,28 @@ ont changé d'adresse et le code émis est le même fichier, à l'octet près.
 ## Ce que le huitième domaine a ajouté
 
 **Deux listes de souhaits, et le hook au nom le plus court est celui de
-l’autre.** Cinq hooks du dépôt portent « wishlist ».  — le
-nom générique, celui qu’on prend par défaut — lit ****, pas
- : ce sont les parures qu’on convoite, payables en bonds. Ses
-trois appelants sont ,  et .
+l'autre.** Cinq hooks du dépôt portent « wishlist ». `hooks/useWishlist.ts` — le
+nom générique, celui qu'on prend par défaut — lit **`shop_wishlist`**, pas
+`wishlist_items` : ce sont les parures qu'on convoite, payables en bonds. Ses
+trois appelants sont `WishlistButton`, `WishlistPanel` et `pages/Shop`.
 
-| | table | ce que c’est |
+| | table | ce que c'est |
 |---|---|---|
-| liste du pacte | ,  | des choses réelles à acquérir, fabriquées depuis les pièces d’objectif |
-| liste de boutique |  | des parures, payables en bonds |
+| liste du pacte | `wishlist_items`, `wishlist_lists` | des choses réelles à acquérir, fabriquées depuis les pièces d'objectif |
+| liste de boutique | `shop_wishlist` | des parures, payables en bonds |
 
-**Elles ne partagent ni table, ni hook, ni composant — seulement un mot.** D’où
-deux domaines, et une entrée de plus au glossaire. Vérifié à l’exécution :
- a fait 3 requêtes sur , 1 sur , et
-**zéro** sur .
+**Elles ne partagent ni table, ni hook, ni composant — seulement un mot.** D'où
+deux domaines, et une entrée de plus au glossaire. Vérifié à l'exécution :
+`/wishlist` a fait 3 requêtes sur `wishlist_items`, 1 sur `wishlist_lists`, et
+**zéro** sur `shop_wishlist`.
 
-**Deuxième fois qu’un fichier reste dehors parce qu’il sert trop de monde.**
- porte le nom du domaine, mais ses cinq exports sont des
-aides de stockage, le compartiment s’appelle , et
- n’en prend qu’une constante — pour les souhaits *et*
-pour les vidéos de la communauté. Le faire entrer rendrait la communauté
-dépendante des souhaits. Même raisonnement que pour la devise chez la finance.
+**Deuxième fois qu'un fichier reste dehors parce qu'il sert trop de monde.**
+`lib/wishlistDepot.ts` porte le nom du domaine, mais ses cinq exports sont des
+aides de stockage, le compartiment s'appelle `goal-images`, et
+`hooks/useDepotImages` n'en prend qu'une constante — pour les souhaits *et* pour
+les vidéos de la communauté. Le faire entrer rendrait la communauté dépendante
+des souhaits. Même raisonnement que pour la devise chez la finance.
+
 ---
 
 ## Ce que le déplacement a réglé au passage
