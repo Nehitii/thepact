@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import zlib from "node:zlib";
 
 /* ═══════════════════════════════════════════════════════════════
    LA COLLECTE
@@ -333,6 +334,62 @@ export function visuels(fichiers, sources) {
     .sort((a, b) => b.poids - a.poids);
 }
 
+/* ── L'AXE DE GRAISSE D'UNE POLICE VARIABLE ──────────────────────
+   On lit le répertoire de tables du WOFF2, on décompresse le flux
+   brotli, et on prend la table `fvar`. Deviner d'après le nom de
+   fichier ne marche pas : une variable s'appelle « orbitron.woff2 »
+   sans rien annoncer.
+
+   Les étiquettes sont encodées sur 6 bits comme un index dans une
+   liste fixe de la spécification ; 63 signifie « étiquette libre sur
+   quatre octets ». Rend `null` dès que quoi que ce soit résiste —
+   une police illisible ne doit pas faire tomber le tableau. */
+const TAGS_WOFF2 = ["cmap","head","hhea","hmtx","maxp","name","OS/2","post","cvt ","fpgm","glyf","loca","prep","CFF ","VORG","EBDT","EBLC","gasp","hdmx","kern","LTSH","PCLT","VDMX","vhea","vmtx","BASE","GDEF","GPOS","GSUB","EBSC","JSTF","MATH","CBDT","CBLC","COLR","CPAL","SVG ","sbix","acnt","avar","bdat","bloc","bsln","cvar","fdsc","feat","fmtx","fvar","gvar","hsty","just","lcar","mort","morx","opbd","prop","trak","Zapf","Silf","Glat","Gloc","Feat","Sill"];
+
+function axeDeGraisse(chemin) {
+  try {
+    const b = fs.readFileSync(path.join(RACINE, chemin));
+    if (b.toString("latin1", 0, 4) !== "wOF2") return null;
+    const base128 = (i) => {
+      let v = 0;
+      for (let k = 0; k < 5; k++) { const o = b[i++]; v = (v << 7) | (o & 0x7f); if (!(o & 0x80)) return [v, i]; }
+      throw new Error("UIntBase128");
+    };
+    let i = 48;
+    const dir = [];
+    for (let n = 0, N = b.readUInt16BE(12); n < N; n++) {
+      const flags = b[i++], idx = flags & 0x3f;
+      let tag;
+      if (idx === 63) { tag = b.toString("latin1", i, i + 4); i += 4; } else tag = TAGS_WOFF2[idx];
+      let taille; [taille, i] = base128(i);
+      const tr = (flags >> 6) & 3;
+      const transformee = (tag === "glyf" || tag === "loca") ? tr === 0 : tr !== 0;
+      if (transformee) [taille, i] = base128(i);
+      dir.push({ tag: (tag ?? "").trim(), taille });
+    }
+    if (!dir.some((t) => t.tag === "fvar")) return null;
+    const brut = zlib.brotliDecompressSync(b.subarray(i));
+    let off = 0;
+    for (const t of dir) {
+      if (t.tag === "fvar") {
+        const fvar = brut.subarray(off, off + t.taille);
+        const debut = fvar.readUInt16BE(4), taille = fvar.readUInt16BE(10);
+        for (let a = 0, A = fvar.readUInt16BE(8); a < A; a++) {
+          const p = debut + a * taille;
+          if (fvar.toString("latin1", p, p + 4) === "wght") {
+            return [fvar.readInt32BE(p + 4) / 65536, fvar.readInt32BE(p + 12) / 65536];
+          }
+        }
+        return null;
+      }
+      off += t.taille;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function polices(fichiers) {
   return fichiers
     .filter((f) => /\.(woff2?|ttf|otf)$/i.test(f))
@@ -343,6 +400,11 @@ export function polices(fichiers) {
         chemin: f,
         famille: nom.replace(/-\d{3}$/, "").replace(/-/g, " "),
         graisse: graisse ? +graisse[1] : null,
+        /* L'axe wght lu dans la table `fvar` du fichier — nul si la
+           police est statique. Sans lui, une police variable dont le
+           nom ne porte pas de graisse serait déclarée à 400 et
+           perdrait tous ses gras. */
+        plage: axeDeGraisse(f),
         poids: poidsDe(f),
       };
     })

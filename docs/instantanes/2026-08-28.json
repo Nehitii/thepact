@@ -1,20 +1,20 @@
 {
   "date": "2026-08-28",
-  "genere": "2026-08-28T09:24:16.968Z",
-  "fichiers": 883,
-  "lignes": 176486,
+  "genere": "2026-08-28T09:34:35.907Z",
+  "fichiers": 878,
+  "lignes": 176213,
   "parDossier": [
     {
       "dossier": "(racine)",
       "fichiers": 17,
       "lignes": 1559,
-      "poids": 57433
+      "poids": 57429
     },
     {
       "dossier": "docs",
       "fichiers": 3,
-      "lignes": 3686,
-      "poids": 219288
+      "lignes": 3674,
+      "poids": 218754
     },
     {
       "dossier": "mem/design",
@@ -48,9 +48,9 @@
     },
     {
       "dossier": "public/fonts",
-      "fichiers": 15,
-      "lignes": 973,
-      "poids": 240540
+      "fichiers": 10,
+      "lignes": 664,
+      "poids": 161908
     },
     {
       "dossier": "public/marque",
@@ -73,14 +73,14 @@
     {
       "dossier": "scripts/tableau-de-bord",
       "fichiers": 2,
-      "lignes": 1324,
-      "poids": 64938
+      "lignes": 1391,
+      "poids": 68277
     },
     {
       "dossier": "src",
       "fichiers": 4,
-      "lignes": 2306,
-      "poids": 95079
+      "lignes": 2287,
+      "poids": 95124
     },
     {
       "dossier": "src/assets",
@@ -201,14 +201,14 @@
     {
       "langage": "HTML",
       "fichiers": 2,
-      "lignes": 3575,
-      "poids": 215058
+      "lignes": 3563,
+      "poids": 214520
     },
     {
       "langage": "JavaScript",
       "fichiers": 9,
-      "lignes": 2193,
-      "poids": 101808
+      "lignes": 2260,
+      "poids": 105147
     },
     {
       "langage": "SVG",
@@ -224,9 +224,9 @@
     },
     {
       "langage": "WOFF2",
-      "fichiers": 15,
-      "lignes": 973,
-      "poids": 240540
+      "fichiers": 10,
+      "lignes": 664,
+      "poids": 161908
     },
     {
       "langage": "PNG",
@@ -261,8 +261,8 @@
     {
       "langage": "CSS",
       "fichiers": 42,
-      "lignes": 33103,
-      "poids": 1254835
+      "lignes": 33084,
+      "poids": 1254880
     },
     {
       "langage": "TOML",
@@ -283,7 +283,7 @@
       "poids": 500
     }
   ],
-  "commits": 3151,
+  "commits": 3152,
   "orphelins": 4,
   "marqueurs": 13
 }

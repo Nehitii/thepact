@@ -1,38 +1,24 @@
 /* ─── Self-hosted fonts (latin subset, WOFF2) ─── */
+/* ═══ UNE POLICE VARIABLE, UN SEUL FICHIER ═══
+
+   Il y avait cinq @font-face pointant vers cinq fichiers — et les
+   cinq étaient IDENTIQUES, même empreinte MD5, 11 800 octets chacun.
+   Ce n'était pas un mauvais gras pour autant : le fichier porte une
+   table `fvar` avec un axe wght de 400 à 900, lu dans le woff2. Les
+   graisses étaient donc vraies, mais le même fichier était téléchargé
+   jusqu'à cinq fois sous cinq URL différentes, chacune avec son
+   entrée de cache.
+
+   Une seule déclaration, et une PLAGE de graisses au lieu d'une
+   valeur : le navigateur règle l'axe sur ce qu'on demande. La plage
+   n'est pas choisie, elle est relevée dans la table fvar — la
+   déclarer plus large ferait extrapoler, plus étroite ferait borner. */
 @font-face {
   font-family: 'Orbitron';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 900;
   font-display: swap;
-  src: url('/fonts/orbitron-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/orbitron-500.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/orbitron-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/orbitron-700.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Orbitron';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('/fonts/orbitron-900.woff2') format('woff2');
+  src: url('/fonts/orbitron.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Rajdhani';
@@ -62,19 +48,14 @@
   font-display: swap;
   src: url('/fonts/rajdhani-700.woff2') format('woff2');
 }
+/* Même cas : deux fichiers identiques de 31 432 octets, axe wght de
+   400 à 800 relevé dans fvar. */
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 800;
   font-display: swap;
-  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+  src: url('/fonts/jetbrains-mono.woff2') format('woff2');
 }
 
 /* design-tokens.css est importe depuis main.tsx. Un @import place ici, apres

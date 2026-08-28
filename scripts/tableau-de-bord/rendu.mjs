@@ -625,7 +625,12 @@ function sectionSuite(d, m) {
 function styles(d) {
   const faces = d.polices.map((p) => {
     const cle = p.famille.replace(/[^a-z0-9]/gi, "-");
-    return `@font-face{font-family:'${cle}';src:url('../${p.chemin}') format('woff2');font-weight:${p.graisse ?? 400};font-display:swap}`;
+    /* PAS DE GRAISSE DANS LE NOM = POLICE VARIABLE. Retomber sur 400,
+       comme avant, privait le tableau de ses gras : le fichier les
+       porte, mais une déclaration à valeur unique borne l'axe. On
+       déclare alors la plage relevée dans la table fvar. */
+    const poids = p.graisse ?? (p.plage ? `${p.plage[0]} ${p.plage[1]}` : 400);
+    return `@font-face{font-family:'${cle}';src:url('../${p.chemin}') format('woff2');font-weight:${poids};font-display:swap}`;
   }).join("\n");
 
   return `${faces}
