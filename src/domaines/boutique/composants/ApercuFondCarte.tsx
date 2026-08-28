@@ -1,6 +1,6 @@
 import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
 import type { CarteProfil } from "@/hooks/useCarteProfil";
-import type { CosmeticBanner } from "@/hooks/useShop";
+import type { CosmeticBanner } from "@/domaines/boutique/hooks/useShop";
 
 interface Props {
   /* La carte reelle du porteur : son avatar, son cadre, son titre,

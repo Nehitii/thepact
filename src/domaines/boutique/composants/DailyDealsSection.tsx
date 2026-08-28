@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyDeals, usePurchaseDailyDeal, DailyDealWithItem } from "@/hooks/useDailyDeals";
-import { useBondBalance, useUserCosmetics, useUserModulePurchases } from "@/hooks/useShop";
+import { useBondBalance, useUserCosmetics, useUserModulePurchases } from "@/domaines/boutique/hooks/useShop";
 import { DailyDealCard } from "./DailyDealCard";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { UnlockAnimation } from "./UnlockAnimation";

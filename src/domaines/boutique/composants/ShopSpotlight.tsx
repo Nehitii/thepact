@@ -3,16 +3,16 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Star, Eye, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance } from "@/hooks/useShop";
+import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance } from "@/domaines/boutique/hooks/useShop";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { FramePreview } from "@/components/ui/avatar-frame";
 import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
-import { getRarity, useRarityLabel } from "./shopRarity";
+import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
 import { TitreCosmetique } from "@/components/profile/TitreCosmetique";
-import type { ArticleAchetable } from "./articleAchetable";
+import type { ArticleAchetable } from "@/domaines/boutique/logique/articleAchetable";
 
 interface ShopSpotlightProps {
   onPreview?: (item: ArticleAchetable, type: string) => void;

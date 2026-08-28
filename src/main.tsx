@@ -36,7 +36,6 @@ import "./styles/design-tokens.css";
 import "./styles/singularity.css";
 import "./styles/hero-animations.css";
 import "./styles/difficulty.css";
-import "./styles/shop.css";
 import "./styles/glassmorphism.css";
 import "./styles/journal.css";
 import "./styles/sidebar.css";

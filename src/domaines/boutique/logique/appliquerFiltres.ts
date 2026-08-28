@@ -1,4 +1,4 @@
-import type { ShopFilterState } from "./ShopFilters";
+import type { ShopFilterState } from "@/domaines/boutique/types";
 
 /**
  * LE FILTRE DE LA BOUTIQUE, SORTI DU FICHIER DE SON PANNEAU.

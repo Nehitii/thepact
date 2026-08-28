@@ -16,15 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-export type SortOption = "price-asc" | "price-desc" | "name-asc" | "name-desc" | "rarity";
-export type RarityFilter = "all" | "common" | "rare" | "epic" | "legendary";
-
-export interface ShopFilterState {
-  search: string;
-  sort: SortOption;
-  rarity: RarityFilter;
-  hideOwned: boolean;
-}
+import type { SortOption, RarityFilter, ShopFilterState } from "@/domaines/boutique/types";
+export type { SortOption, RarityFilter, ShopFilterState };
 
 interface ShopFiltersProps {
   filters: ShopFilterState;

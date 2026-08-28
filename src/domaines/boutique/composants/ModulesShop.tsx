@@ -1,14 +1,14 @@
 import { useState, useMemo } from "react";
 import { Puzzle, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useShopModules, useUserModulePurchases, useBondBalance } from "@/hooks/useShop";
+import { useShopModules, useUserModulePurchases, useBondBalance } from "@/domaines/boutique/hooks/useShop";
 import { Input } from "@/components/ui/input";
 import { ShopLoadingState } from "./ShopLoadingState";
 import { UnlockAnimation } from "./UnlockAnimation";
 import { ModuleCard } from "./ModuleCard";
-import { useShopTransaction } from "@/hooks/useShopTransaction";
+import { useShopTransaction } from "@/domaines/boutique/hooks/useShopTransaction";
 import { SignalLostEmpty } from "./SignalLostEmpty";
-import { useModuleFeatures } from "./moduleFeatures";
+import { useModuleFeatures } from "@/domaines/boutique/logique/moduleFeatures";
 import { useTranslation } from "react-i18next";
 
 export function ModulesShop() {

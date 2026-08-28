@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import {
   useShopModules, useUserModulePurchases, useShopFrames, useShopBanners, useUserCosmetics,
-} from "@/hooks/useShop";
+} from "@/domaines/boutique";
 import {
   useAdminForcePurchaseCosmetic, useAdminResetCosmetic,
   useAdminForcePurchaseModule, useAdminResetModule, useAdminResetAll,

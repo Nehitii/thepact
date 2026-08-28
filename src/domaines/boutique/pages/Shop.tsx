@@ -1,26 +1,32 @@
 import { useState } from "react";
-import { ShopTabs, ShopTab } from "@/components/shop/ShopTabs";
-import { ShopBondDisplay } from "@/components/shop/ShopBondDisplay";
-import { CosmeticShop } from "@/components/shop/CosmeticShop";
-import { ModulesShop } from "@/components/shop/ModulesShop";
-import { BondsShop } from "@/components/shop/BondsShop";
-import { WishlistPanel } from "@/components/shop/WishlistPanel";
-import { PurchaseHistory } from "@/components/shop/PurchaseHistory";
-import { DailyDealsSection } from "@/components/shop/DailyDealsSection";
-import { BundlesSection } from "@/components/shop/BundlesSection";
-import { ShopSpotlight } from "@/components/shop/ShopSpotlight";
-import { BandeBoutique } from "@/components/shop/BandeBoutique";
-import { PurchaseConfirmModal, PurchaseItem } from "@/components/shop/PurchaseConfirmModal";
-import { UnlockAnimation } from "@/components/shop/UnlockAnimation";
+/* La feuille du domaine. Elle etait chargee globalement par `main.tsx`
+   alors qu elle ne declare que cinq classes, dont aucune n est citee
+   hors de la boutique — contrairement a `journal.css`, qui porte
+   `font-orbitron` et reste globale pour cette raison. Elle sort donc du
+   paquet de demarrage et voyage avec la page. */
+import "@/domaines/boutique/boutique.css";
+import { ShopTabs, ShopTab } from "@/domaines/boutique/composants/ShopTabs";
+import { ShopBondDisplay } from "@/domaines/boutique/composants/ShopBondDisplay";
+import { CosmeticShop } from "@/domaines/boutique/composants/CosmeticShop";
+import { ModulesShop } from "@/domaines/boutique/composants/ModulesShop";
+import { BondsShop } from "@/domaines/boutique/composants/BondsShop";
+import { WishlistPanel } from "@/domaines/boutique/composants/WishlistPanel";
+import { PurchaseHistory } from "@/domaines/boutique/composants/PurchaseHistory";
+import { DailyDealsSection } from "@/domaines/boutique/composants/DailyDealsSection";
+import { BundlesSection } from "@/domaines/boutique/composants/BundlesSection";
+import { ShopSpotlight } from "@/domaines/boutique/composants/ShopSpotlight";
+import { BandeBoutique } from "@/domaines/boutique/composants/BandeBoutique";
+import { PurchaseConfirmModal, PurchaseItem } from "@/domaines/boutique/composants/PurchaseConfirmModal";
+import { UnlockAnimation } from "@/domaines/boutique/composants/UnlockAnimation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWishlist } from "@/hooks/useWishlist";
-import { useBondBalance } from "@/hooks/useShop";
-import { useShopTransaction } from "@/hooks/useShopTransaction";
+import { useWishlist } from "@/domaines/boutique/hooks/useWishlist";
+import { useBondBalance } from "@/domaines/boutique/hooks/useShop";
+import { useShopTransaction } from "@/domaines/boutique/hooks/useShopTransaction";
 import { useTranslation } from "react-i18next";
 import { Store } from "lucide-react";
 import { DSPageShell } from "@/components/ds";
-import type { ArticleAchetable } from "@/components/shop/articleAchetable";
+import type { ArticleAchetable } from "@/domaines/boutique/logique/articleAchetable";
 
 export default function Shop() {
   const { t } = useTranslation();

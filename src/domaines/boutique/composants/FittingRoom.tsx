@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
-import { CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/hooks/useShop";
+import { CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/domaines/boutique/hooks/useShop";
 import { HoldPurchaseButton } from "./HoldPurchaseButton";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { CarteProfilPublic } from "@/components/profile/CarteProfilPublic";
 import { useCarteProfil, type CarteProfil } from "@/hooks/useCarteProfil";
-import { useRarityLabel, getRarity } from "./shopRarity";
+import { useRarityLabel, getRarity } from "@/domaines/boutique/logique/shopRarity";
 
 type PreviewItem =
   | { type: "frame"; data: CosmeticFrame }

@@ -3,7 +3,7 @@
  * Centralizes purchase logic for all item types (module, frame, banner, title).
  */
 import { useState, useCallback } from "react";
-import { usePurchaseCosmetic, usePurchaseModule, useBondBalance } from "@/hooks/useShop";
+import { usePurchaseCosmetic, usePurchaseModule, useBondBalance } from "@/domaines/boutique/hooks/useShop";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { trackModulePurchased, trackCosmeticPurchased, trackBondsSpent } from "@/lib/achievements";

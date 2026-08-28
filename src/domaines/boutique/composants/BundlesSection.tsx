@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopBundles, usePurchaseBundle, ShopBundle } from "@/hooks/useBundles";
-import { useBondBalance, useUserCosmetics, useUserModulePurchases } from "@/hooks/useShop";
+import { useBondBalance, useUserCosmetics, useUserModulePurchases } from "@/domaines/boutique/hooks/useShop";
 import { BundleCard } from "./BundleCard";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { UnlockAnimation } from "./UnlockAnimation";

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
+import { useBondPacks, useBondBalance, useSpecialOffers } from "@/domaines/boutique/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";

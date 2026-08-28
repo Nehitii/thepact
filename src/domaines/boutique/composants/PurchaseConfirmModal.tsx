@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useRarityLabel, getRarity } from "./shopRarity";
+import { useRarityLabel, getRarity } from "@/domaines/boutique/logique/shopRarity";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
-import { HoldPurchaseButton } from "@/components/shop/HoldPurchaseButton";
+import { HoldPurchaseButton } from "@/domaines/boutique/composants/HoldPurchaseButton";
 
 export interface PurchaseItem {
   id: string;

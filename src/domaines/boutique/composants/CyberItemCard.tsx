@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
-import { getRarity, useRarityLabel } from "./shopRarity";
+import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 export type CyberItemType = "module" | "frame" | "banner" | "title";
 

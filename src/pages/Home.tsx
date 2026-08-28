@@ -24,7 +24,7 @@ import { useTodoReminders } from "@/domaines/taches";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
-import { useUserShop } from "@/hooks/useShop";
+import { useUserShop } from "@/domaines/boutique";
 import { useFinanceSettings } from "@/domaines/finance";
 import { useRankXP } from "@/hooks/useRankXP";
 

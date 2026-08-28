@@ -1,7 +1,7 @@
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/useWishlist";
+import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/domaines/boutique/hooks/useWishlist";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 

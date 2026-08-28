@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
-import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
+import { useShopModules, useUserModulePurchases } from "@/domaines/boutique";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import {

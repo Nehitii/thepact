@@ -6,7 +6,7 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { DailyDealWithItem } from "@/hooks/useDailyDeals";
 import { useEffect, useState } from "react";
-import { getRarity, useRarityLabel } from "./shopRarity";
+import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 interface DailyDealCardProps {
   deal: DailyDealWithItem;

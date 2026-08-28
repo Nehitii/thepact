@@ -2,14 +2,14 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Heart, Sparkles, Star, Package, Trash2, ShoppingCart, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWishlist, useRemoveFromWishlist } from "@/hooks/useWishlist";
-import { useBondBalance, useShopFrames, useShopBanners, useShopTitles, useShopModules, useUserCosmetics, useUserModulePurchases } from "@/hooks/useShop";
+import { useWishlist, useRemoveFromWishlist } from "@/domaines/boutique/hooks/useWishlist";
+import { useBondBalance, useShopFrames, useShopBanners, useShopTitles, useShopModules, useUserCosmetics, useUserModulePurchases } from "@/domaines/boutique/hooks/useShop";
 import { useShopBundles } from "@/hooks/useBundles";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { Button } from "@/components/ui/button";
 import { SignalLostEmpty } from "./SignalLostEmpty";
-import { getRarity, useRarityLabel } from "./shopRarity";
-import type { ArticleAchetable } from "./articleAchetable";
+import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
+import type { ArticleAchetable } from "@/domaines/boutique/logique/articleAchetable";
 
 interface WishlistPanelProps {
   onPurchaseItem: (item: ArticleAchetable, itemType: string) => void;

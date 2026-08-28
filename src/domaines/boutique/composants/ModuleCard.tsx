@@ -3,8 +3,8 @@ import { TrendingUp, Phone, BookOpen, ListTodo, Heart, Check, Lock, Sparkles, Za
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { Button } from "@/components/ui/button";
-import { getRarity, useRarityLabel } from "./shopRarity";
-import { useModuleFeatures } from "./moduleFeatures";
+import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
+import { useModuleFeatures } from "@/domaines/boutique/logique/moduleFeatures";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 

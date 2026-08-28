@@ -4,9 +4,9 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **8 domaines sur 13**. M.I.A., santé, journal, focus, finance, tâches, agenda et souhaits, le 28/08/2026.
+État : **9 domaines sur 14**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits et boutique, le 28/08/2026.
 
-*Treize et non onze : l’agenda s’est scindé en deux (sixième domaine), et les souhaits aussi (huitième).*
+*Quatorze et non onze : l’agenda s’est scindé en deux (sixième domaine), les souhaits aussi (huitième), et un groupe de huit pages d’administration attend son tour.*
 
 ---
 
@@ -311,6 +311,39 @@ des souhaits. Même raisonnement que pour la devise chez la finance.
 
 ---
 
+## Ce que le neuvième domaine a ajouté
+
+**Ranger peut lever une ambiguïté sans rien renommer.** `hooks/useWishlist.ts`
+portait le nom le plus court du dépôt pour le concept le moins central. Il vit
+maintenant dans `domaines/boutique/hooks/` — même nom, plus aucun doute :
+**l'adresse fait le travail que le nom ne faisait pas.**
+
+Vérifié des deux côtés. `/wishlist` : `wishlist_items` 3, `shop_wishlist` **0**.
+`/shop` : `shop_wishlist` 1, `wishlist_items` **0**.
+
+**Une feuille globale n'est pas forcément partagée.** `shop.css` était chargée
+par `main.tsx` comme `journal.css`. Mais elle ne déclare que **cinq classes**, et
+la mesure dit que **rien hors de la boutique n'en cite une seule**. Elle sort
+donc du paquet de démarrage : **−1 171 octets** de CSS critique, et
+`premium-shimmer` quitte la feuille globale pour `Shop-B2midpXI.css` (1 281 o).
+
+La leçon du journal n'était pas « les feuilles restent globales », c'était
+« mesurer avant de conclure ». Deux feuilles, deux réponses opposées.
+
+**Sixième fois le motif du type dans le composant — et cette fois l'ironie est
+écrite dans le fichier.** `logique/appliquerFiltres.ts` s'ouvre sur « LE FILTRE
+DE LA BOUTIQUE, SORTI DU FICHIER DE SON PANNEAU ». Quelqu'un avait déjà sorti la
+**fonction** ; les **types** étaient restés derrière, et ils suffisaient à
+maintenir la dépendance. Extraire une fonction sans ses types ne coupe rien.
+
+**Un domaine que le plan n'avait pas vu.** `pages/AdminCosmeticsManager.tsx`
+(812 lignes) gère les parures mais n'importe **rien** de la boutique : il parle à
+la base directement, et vit avec **sept autres pages d'administration** plus
+quatre composants. Ce groupe est un domaine à part entière ; on ne l'entame pas
+par un bout.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -335,7 +368,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 13 | **8 / 13** |
+| domaines rangés | 0 / 14 | **9 / 14** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -368,11 +401,12 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **tâches** | 18 |
 | ✔ | **agenda** | 22 |
 | ✔ | **souhaits** | 17 |
-| 9 | boutique | ~32 |
-| 10 | profil | ~55 |
-| 11 | guildes | ~57 |
-| 12 | objectifs | ~60 |
-| 13 | socle | ~61 |
+| ✔ | **boutique** | 34 |
+| 10 | administration | ~12 |
+| 11 | profil | ~55 |
+| 12 | guildes | ~57 |
+| 13 | objectifs | ~60 |
+| 14 | socle | ~61 |
 
 Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils
 étaient faits sur le nom des fichiers, et deux domaines sur huit se sont
