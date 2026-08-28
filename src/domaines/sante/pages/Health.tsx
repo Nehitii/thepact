@@ -2,15 +2,15 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
-import { useHealthSettings, useHealthHistory } from "@/hooks/useHealth";
-import { useHealthReminders } from "@/hooks/useHealthReminders";
-import { joursARelever, FENETRE_RATTRAPAGE } from "@/lib/health/journee";
-import { EnTeteDossier } from "@/components/health/EnTeteDossier";
-import { Corps } from "@/components/health/Corps";
-import { JournalDuCorps } from "@/components/health/JournalDuCorps";
-import { Respiration } from "@/components/health/Respiration";
-import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
-import "@/styles/health.css";
+import { useHealthSettings, useHealthHistory } from "@/domaines/sante/hooks/useHealth";
+import { useHealthReminders } from "@/domaines/sante/hooks/useHealthReminders";
+import { joursARelever, FENETRE_RATTRAPAGE } from "@/domaines/sante/logique/journee";
+import { EnTeteDossier } from "@/domaines/sante/composants/EnTeteDossier";
+import { Corps } from "@/domaines/sante/composants/Corps";
+import { JournalDuCorps } from "@/domaines/sante/composants/JournalDuCorps";
+import { Respiration } from "@/domaines/sante/composants/Respiration";
+import { HealthDailyCheckin } from "@/domaines/sante/composants/HealthDailyCheckin";
+import "@/domaines/sante/sante.css";
 import { useNavigate } from "react-router-dom";
 
 /**

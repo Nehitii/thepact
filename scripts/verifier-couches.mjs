@@ -78,11 +78,14 @@ const RANGS = [
 ];
 
 /* Ces trois-la vivent a la racine de `src/` et pilotent l application
-   entiere : ils ont le droit de tout importer. */
+   entiere : ils ont le droit de tout importer. Ils sont au meme rang
+   que `app/`, et non en dessous — une premiere version les mettait a 6
+   alors que `app/` est a 7, et `App.tsx` important son propre registre
+   de routes passait pour une inversion. */
 const SOMMET = new Set(["App.tsx", "main.tsx", "App.css"]);
 
 function classer(rel) {
-  if (SOMMET.has(rel)) return { rang: 6, nom: "app" };
+  if (SOMMET.has(rel)) return { rang: 7, nom: "app" };
   for (const [motif, rang, nom] of RANGS) if (motif.test(rel)) return { rang, nom };
   return { rang: 6, nom: "racine" };
 }
@@ -96,8 +99,13 @@ function classer(rel) {
  * Toute exception qui ne sert plus fait echouer le script : une garde
  * qui traine des exceptions perimees ne garde plus rien. */
 const TOLERE = new Map([
-  ["lib/prefetchRoutes.ts",  "etape 2 — rejoindra app/, ou pointer vers les pages est son role"],
-  ["lib/prefetchData.ts",    "etape 3 — doit recevoir les fonctions de chargement, pas les importer"],
+  /* LES DEUX PREFETCH ONT REJOINT `app/` (etape 2, domaine 2). Ils ne
+     sont plus des inversions du tout : `app/` est la racine de
+     composition, elle a le droit de connaitre les pages et les hooks.
+     Vingt-deux inversions ont disparu par ce seul deplacement, sans
+     qu une ligne de logique change — c est ce que le plan de masse
+     annoncait. */
+
   ["lib/brigade.ts",         "etape 3 — importe hooks/useGoals pour un type"],
 
   /* M.I.A. A DEMENAGE (etape 2, 28/08). Les sept tolerances `lib/mia*`

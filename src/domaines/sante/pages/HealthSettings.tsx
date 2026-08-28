@@ -4,13 +4,13 @@ import { Heart, Ruler, Weight, Droplets, Apple } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
-import { useHealthSettings, useUpsertHealthSettings } from "@/hooks/useHealth";
+import { useHealthSettings, useUpsertHealthSettings } from "@/domaines/sante/hooks/useHealth";
 import { ConsoleReglages } from "@/components/profile/ConsoleReglages";
 import { Panneau, Reglage, Segmente, Jauge, ChampTexte, Alerte, Bouton } from "@/components/profile/console-ui";
 import {
   type UniteHydratation, CL_PAR_VERRE, uniteValide, quantiteAffichee,
   verresDepuisAffichage, formaterQuantite, pasAffiche, uniteCourte,
-} from "@/lib/hydratation";
+} from "@/domaines/sante/logique/hydratation";
 
 /* ═══════════════════════════════════════════════════════════════
    LE MODULE SANTÉ REJOINT LA CONSOLE

@@ -4,7 +4,7 @@ import { fetchPact } from "@/hooks/usePact";
 import { fetchGoals } from "@/hooks/useGoals";
 import { fetchTodoTasks } from "@/hooks/useTodoList";
 import { fetchFinanceSettings } from "@/hooks/useFinance";
-import { fetchTodayHealth } from "@/hooks/useHealth";
+import { fetchTodayHealth } from "@/domaines/sante";
 import { fetchFocusSessions } from "@/hooks/useFocusSessions";
 
 /**

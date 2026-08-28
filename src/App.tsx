@@ -2,12 +2,12 @@ import { lazy, Suspense } from "react";
 import { MotionConfig } from "framer-motion";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProviders } from "@/components/AppProviders";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { AdminRoute } from "@/components/AdminRoute";
+import { ProtectedRoute } from "@/app/ProtectedRoute";
+import { AppLayout } from "@/app/AppLayout";
+import { AdminRoute } from "@/app/AdminRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
-import { routeImports } from "@/lib/prefetchRoutes";
+import { routeImports } from "@/app/prefetchRoutes";
 
 // Lazy-loaded pages
 const Auth = lazy(() => import("./pages/Auth"));

@@ -20,7 +20,7 @@ import { Telemetrie } from "@/components/ds/Telemetrie";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { glisse, useBarreCollee, useSommaire } from "@/hooks/useBarreAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
-import { useHealthHistory } from "@/hooks/useHealth";
+import { useHealthHistory } from "@/domaines/sante";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";

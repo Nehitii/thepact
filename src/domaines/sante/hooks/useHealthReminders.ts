@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { useHealthHistory } from "@/hooks/useHealth";
+import { useHealthHistory } from "@/domaines/sante/hooks/useHealth";
 import { supabase } from "@/integrations/supabase/client";
-import { cleDuJour, veilleRelevee, FENETRE_RATTRAPAGE } from "@/lib/health/journee";
+import { cleDuJour, veilleRelevee, FENETRE_RATTRAPAGE } from "@/domaines/sante/logique/journee";
 
 /* ═══════════════════════════════════════════════════════════════
    LE RAPPEL

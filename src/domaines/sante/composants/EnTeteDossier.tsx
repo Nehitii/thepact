@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
-import { laVeille } from "@/lib/health/journee";
+import { laVeille } from "@/domaines/sante/logique/journee";
 
 interface Props {
   /** Combien de journees closes attendent encore d etre relevees. */

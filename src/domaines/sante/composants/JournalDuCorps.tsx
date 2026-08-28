@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 import { ClipboardCheck, Check } from "lucide-react";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cleDuJour, laVeille, pagesDuJournal, veilleRelevee, serieDeJours } from "@/lib/health/journee";
+import { cleDuJour, laVeille, pagesDuJournal, veilleRelevee, serieDeJours } from "@/domaines/sante/logique/journee";
 
 interface Props {
   /** Les dates deja relevees, au format yyyy-MM-dd. */

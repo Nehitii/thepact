@@ -8,8 +8,8 @@ import { useMessagesEnDirect } from "@/hooks/useMessages";
 import { Suspense, useEffect, useState } from "react";
 import { ReseauMia, MiaConsole, type EtatMia } from "@/domaines/mia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
-import { prefetchAllRoutes } from "@/lib/prefetchRoutes";
-import { prefetchCoreData } from "@/lib/prefetchData";
+import { prefetchAllRoutes } from "@/app/prefetchRoutes";
+import { prefetchCoreData } from "@/app/prefetchData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 

@@ -59,11 +59,13 @@ const noms = fs
   .filter((e) => e.isDirectory())
   .map((e) => e.name);
 
-const MOTIFS = [
+/* Statique et dynamique sont releves SEPAREMENT : la seule derogation
+   de ce script depend de la difference entre les deux. */
+const STATIQUES = [
   /import\s[^;]{0,400}?from\s*["'](@\/[^"']+)["']/g,
-  /import\s*\(\s*["'](@\/[^"']+)["']\s*\)/g,
   /import\s*["'](@\/[^"']+)["']/g,
 ];
+const DYNAMIQUE = /import\s*\(\s*["'](@\/[^"']+)["']\s*\)/g;
 
 const effractions = [];
 const socleIndiscret = [];
@@ -71,12 +73,22 @@ const socleIndiscret = [];
 for (const f of sources(RACINE)) {
   const rel = path.relative(RACINE, f).replace(/\\/g, "/");
   const source = fs.readFileSync(f, "utf8");
-  const cibles = new Set();
-  for (const m of MOTIFS) for (const c of source.matchAll(m)) cibles.add(c[1].slice(2));
+
+  const cibles = new Map(); // chemin → "statique" | "differe"
+  for (const c of source.matchAll(DYNAMIQUE)) cibles.set(c[1].slice(2), "differe");
+  for (const m of STATIQUES) for (const c of source.matchAll(m)) cibles.set(c[1].slice(2), "statique");
 
   const chezMoi = rel.startsWith("domaines/") ? rel.split("/")[1] : null;
+  /* LE ROUTAGE CONNAIT LES PAGES, ET C EST SA FONCTION.
+     `app/prefetchRoutes.ts` tient le registre des routes : il doit
+     pouvoir nommer `domaines/x/pages/Y`. Le faire passer par la porte
+     ramenerait toutes les pages dans le paquet de demarrage.
+     La derogation est donc etroite, et double : seul `app/`, et
+     seulement en import DIFFERE — un import statique d une page depuis
+     `app/` defairait le decoupage de toute facon. */
+  const jeSuisLeRoutage = rel.startsWith("app/") || rel === "App.tsx";
 
-  for (const cible of cibles) {
+  for (const [cible, mode] of cibles) {
     if (!cible.startsWith("domaines/")) continue;
     const [, vise, ...reste] = cible.split("/");
     if (!noms.includes(vise)) continue;
@@ -87,9 +99,11 @@ for (const f of sources(RACINE)) {
     }
     if (vise === chezMoi) continue;
 
+    if (jeSuisLeRoutage && mode === "differe" && reste[0] === "pages") continue;
+
     /* La porte, et rien d autre : `domaines/x` ou `domaines/x/index`. */
     const parLaPorte = reste.length === 0 || (reste.length === 1 && /^index(\.tsx?)?$/.test(reste[0]));
-    if (!parLaPorte) effractions.push({ rel, cible, vise, chezMoi });
+    if (!parLaPorte) effractions.push({ rel, cible, vise, chezMoi, mode });
   }
 }
 

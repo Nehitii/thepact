@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
 import { toast } from "sonner";
 import i18next from "i18next";
-import type { UniteHydratation } from "@/lib/hydratation";
+import type { UniteHydratation } from "@/domaines/sante/logique/hydratation";
 
 export interface HealthData {
   id: string;

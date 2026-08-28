@@ -5,7 +5,7 @@ import { Pact } from "@/hooks/usePact";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/hooks/useShop";
-import { usePoulsDuJour } from "@/hooks/usePoulsDuJour";
+import { usePoulsDuJour } from "@/domaines/sante";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { useThemeSombre } from "@/hooks/useThemeSombre";
 import { selonTheme } from "@/lib/encrePapier";

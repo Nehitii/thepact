@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AppSidebar } from "@/components/layout/AppSidebar";
+import { ProtectedRoute } from "@/app/ProtectedRoute";
+import { AppSidebar } from "@/app/AppSidebar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { MobileBottomNav } from "@/app/MobileBottomNav";
 import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { PorteAdmin } from "@/components/admin/PorteAdmin";
 

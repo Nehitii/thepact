@@ -6,8 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useHealthByDate, useHealthSettings, useUpsertHealthData } from "@/hooks/useHealth";
-import { cleDuJour, laVeille } from "@/lib/health/journee";
+import { useHealthByDate, useHealthSettings, useUpsertHealthData } from "@/domaines/sante/hooks/useHealth";
+import { cleDuJour, laVeille } from "@/domaines/sante/logique/journee";
 import {
   uniteValide,
   quantiteAffichee,
@@ -15,8 +15,8 @@ import {
   formaterQuantite,
   pasAffiche,
   uniteCourte,
-} from "@/lib/hydratation";
-import "@/styles/health.css";
+} from "@/domaines/sante/logique/hydratation";
+import "@/domaines/sante/sante.css";
 
 /* ═══════════════════════════════════════════════════════════════
    LE RELEVE, A DEUX VITESSES

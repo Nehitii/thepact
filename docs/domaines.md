@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **1 domaine sur 11**. M.I.A. déplacé le 28/08/2026.
+État : **2 domaines sur 11**. M.I.A. et santé, le 28/08/2026.
 
 ---
 
@@ -16,8 +16,22 @@ src/domaines/<nom>/
   composants/
   hooks/
   logique/
+  pages/
   <nom>.css
 ```
+
+Et, à côté, la racine de composition :
+
+```
+src/app/
+  AppLayout  AppSidebar  MobileBottomNav  RechercheBarre
+  AdminRoute  ProtectedRoute
+  prefetchRoutes.ts  prefetchData.ts
+```
+
+`app/` est **au-dessus de tout** : c'est le seul endroit qui a le droit de
+connaître les pages de tous les domaines, parce que router, c'est
+exactement ça. Le reste de l'application ne connaît que des portes.
 
 Deux règles, vérifiées par `npm run domaines:check` :
 
@@ -72,6 +86,38 @@ le type déplacé.
 
 ---
 
+## Ce que le deuxième domaine a ajouté à la procédure
+
+**Les pages ne passent pas par la porte.** `app/prefetchRoutes.ts` charge chaque
+route en différé ; les faire transiter par l'index les ramènerait toutes dans le
+paquet de démarrage. La garde des domaines connaît donc une dérogation, et elle
+est **double** : seul `app/`, et seulement en import **différé**. Un import
+statique d'une page depuis `app/` défairait le découpage de toute façon, et
+reste refusé.
+
+**Une porte se remplit de ce que le dehors demande, pas de ce qu'on imagine.**
+J'avais mis `EnTeteDossier` dans l'index de santé, par analogie avec un relevé
+qui l'avait classé « objectifs + santé ». Le compilateur a rappelé que son seul
+appelant est `pages/Health`, donc l'intérieur. Trois exports suffisent :
+`fetchTodayHealth`, `useHealthHistory`, `usePoulsDuJour` — sur onze fonctions
+exportées par `useHealth.ts`.
+
+**Créer `app/` oblige à y mettre la coquille.** Une fois `prefetchRoutes` monté
+au rang le plus haut, `AppLayout` et `AppSidebar` qui l'importent devenaient des
+inversions `composants → app`. Elles n'en sont pas : ces fichiers *sont* la
+coquille de l'application, pas des composants réutilisables. Ils rejoignent
+`app/`, et les trois inversions disparaissent au lieu d'être tolérées.
+`ModuleHeader`, lui, reste dans `ds/` — il est réexporté par le système de
+design, c'est sa vraie place.
+
+**Un fichier peut porter le nom d'un domaine sans en être.**
+`components/habits/HabitHeatmap.tsx` semblait relever de la santé. Il n'importe
+rien de santé : c'est une carte de chaleur générique, appelée par le dossier
+d'objectif. Il reste dehors. Le critère n'est jamais le nom — c'est ce que le
+fichier importe et qui l'appelle.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -94,27 +140,35 @@ est traité à l'étape 3, pas ici.
 
 ## Le compte
 
-| | avant | après |
+| | avant étape 2 | après 2 domaines |
 |---|---|---|
+| domaines rangés | 0 / 11 | **2 / 11** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **22** |
-| paquet d'entrée | 437 988 o | **437 988 o** |
-| console dans le chemin critique | non | **non** |
+| dossiers pour toucher à la santé | 5 | **1** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **20** |
+| paquet d'entrée | 437 945 o | **437 988 o** |
 
-Le paquet d'entrée n'a pas bougé d'un octet, et la console garde son morceau
-séparé de 192 943 octets — vérifié dans `dist/`, où son code n'apparaît que là,
-et où `index.html` ne précharge que huit morceaux dont il ne fait pas partie.
+Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
+près. Chaque page garde son morceau : `Health` 21 935 o, `HealthSettings`
+4 512 o, `MiaConsole` 192 943 o, plus une feuille de style par domaine —
+`Health--1gw70OZ.css` porte 146 règles, préfixe `.hlt`, et s'applique bien
+depuis sa nouvelle place.
+
+Et vingt-deux inversions sont mortes d'un seul déplacement, celui de
+`prefetchRoutes.ts` vers `app/` : elles disaient toutes « `lib/` pointe vers
+`pages/` », ce qui était vrai, et ce qui cesse d'être une inversion une fois le
+fichier à sa place.
 
 ---
 
-## Les dix domaines restants, dans l'ordre
+## Les neuf domaines restants, dans l'ordre
 
 Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 
 | | domaine | fichiers |
 |---|---|---|
 | ✔ | **mia** | 15 |
-| 2 | santé | 13 |
+| ✔ | **santé** | 15 |
 | 3 | journal | 17 |
 | 4 | focus | 23 |
 | 5 | finance | 37 |

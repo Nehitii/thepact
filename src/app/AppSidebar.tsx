@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessagesNonLus } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { prefetchRoute } from "@/lib/prefetchRoutes";
+import { prefetchRoute } from "@/app/prefetchRoutes";
 import { raccourciPalette } from "@/lib/toucheRaccourci";
 import { AvatarFrame } from "@/components/ui/avatar-frame";
 import { useCarteProfil } from "@/hooks/useCarteProfil";

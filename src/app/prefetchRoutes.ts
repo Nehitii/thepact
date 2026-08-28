@@ -8,7 +8,7 @@ export const routeImports = {
   goalDetail: () => import("@/pages/GoalDetail"),
   finance: () => import("@/pages/Finance"),
   journal: () => import("@/pages/Journal"),
-  health: () => import("@/pages/Health"),
+  health: () => import("@/domaines/sante/pages/Health"),
   todoList: () => import("@/pages/TodoList"),
   focus: () => import("@/pages/Focus"),
   calendar: () => import("@/pages/Calendar"),
@@ -22,7 +22,7 @@ export const routeImports = {
   privacyControl: () => import("@/pages/profile/PrivacyControl"),
   notificationSettings: () => import("@/pages/profile/NotificationSettings"),
   dataPortability: () => import("@/pages/profile/DataPortability"),
-  healthSettings: () => import("@/pages/profile/HealthSettings"),
+  healthSettings: () => import("@/domaines/sante/pages/HealthSettings"),
   wishlist: () => import("@/pages/Wishlist"),
 } as const;
 

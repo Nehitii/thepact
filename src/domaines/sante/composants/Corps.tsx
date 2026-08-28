@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { SlidersHorizontal } from "lucide-react";
-import { imc, trancheIMC, placeSurEchelle, type TrancheIMC } from "@/lib/health/journee";
+import { imc, trancheIMC, placeSurEchelle, type TrancheIMC } from "@/domaines/sante/logique/journee";
 
 interface Props {
   tailleCm: number | null | undefined;
