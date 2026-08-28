@@ -27,11 +27,19 @@ export function usePushNotifications() {
     "serviceWorker" in navigator &&
     "PushManager" in window &&
     "Notification" in window;
-  // VAPID public key is, by design, public. Hardcoded for the deployed app;
-  // overridable via VITE_VAPID_PUBLIC_KEY if rotated.
+  /* LA CLÉ PUBLIQUE EST PUBLIQUE PAR CONSTRUCTION — le navigateur la
+     reçoit à l'abonnement et lie l'abonnement à elle. L'écrire ici n'est
+     pas une fuite ; c'est sa place.
+
+     CELLE-CI A REMPLACÉ UNE CLÉ MORTE. La précédente venait de Lovable
+     et sa moitié privée n'existait nulle part : aucun envoi n'aurait pu
+     être signé. Rien n'a été cassé en la changeant — la table
+     `push_subscriptions` était vide, vérifié avant. Ce ne sera plus vrai
+     au premier abonné : changer cette clé invalidera alors tous les
+     abonnements existants, qui devront se refaire. */
   const vapidKey =
     (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) ??
-    "BBTweesjGV_pGdvCrWbdXWNcemxMNf-IFP56tKs67CK03Ae5MhdJv5KUCPxIshBi5IJTtXdqYQXphGcTvVZXj1c";
+    "BK849pGLmnyMvW04Cop-fMuyEW4UchxKQLQBNOHiQfJv-qzPQuxM5gNqVrziIyf42H8VltReS84dwr3EjNLpD4g";
 
   useEffect(() => {
     if (!supported) return;
