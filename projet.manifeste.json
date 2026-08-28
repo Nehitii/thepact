@@ -445,21 +445,21 @@
       "nom": "Supabase",
       "nature": "service — base de données, authentification, stockage, fonctions",
       "licence": null,
-      "cout": null,
+      "cout": "Plan « free » — relevé le 28/08/2026 par l'API (organisation « Nehiti's Org »). LE PLAFOND QUI MORD EN PREMIER N'EST PAS UNE QUANTITÉ, C'EST L'INACTIVITÉ : Supabase met en pause un projet gratuit qui reçoit trop peu de requêtes utilisateur sur sept jours, avec un avertissement par courriel une semaine avant, et 90 jours pour le rouvrir ensuite. HYPOTHÈSE NON VÉRIFIÉE, à garder en tête : le cron smart-notifications-hourly appelle une fonction Edge toutes les heures, ce qui génère probablement l'activité qui empêche la pause. Si ce cron est un jour désactivé, le projet pourrait s'endormir — un effet de bord que personne n'a choisi. Autre conséquence mesurée le 28/08 : la protection contre les mots de passe fuités (HaveIBeenPwned) est réservée au plan Pro et reste donc indisponible.",
       "url": "https://supabase.com"
     },
     {
       "nom": "Cloudflare Workers",
       "nature": "service — hébergement",
       "licence": null,
-      "cout": null,
+      "cout": "Plan « free » — 3 000 minutes de compilation par mois, dont 38 consommées au 28/08/2026. Plafonds du plan gratuit qui concernent ce projet, relevés dans la documentation Cloudflare : 100 000 requêtes par jour (au-delà, erreur 1027) ; 10 ms de temps processeur par invocation ; 20 000 fichiers statiques par version — le dernier déploiement en compte 1 741, soit 9 % ; 3 Mo par Worker ; 5 déclencheurs cron par compte, dont aucun n'est utilisé ici (les deux crons du projet sont des pg_cron côté Supabase, pas des crons Cloudflare).",
       "url": "https://workers.cloudflare.com"
     },
     {
       "nom": "Sentry",
       "nature": "service — suivi des erreurs",
       "licence": null,
-      "cout": null,
+      "cout": "Plan gratuit — DÉCLARÉ PAR L'ÉDITEUR le 28/08/2026, non vérifié : aucune API n'est branchée ici pour le confirmer, contrairement à Supabase et Cloudflare. À corriger si c'est faux.",
       "url": "https://sentry.io"
     }
   ],
@@ -541,8 +541,7 @@
     }
   ],
   "prochainesEtapes": [
-    "Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.",
-    "Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.",
+    "Trancher le statut de cinq modules sociaux — Conversation privee, Allies, Guildes, Classement, Pantheon — quand un deuxieme compte pourra les eprouver. Les 46 statuts ont ete passes le 28/08/2026 : un seul module porte une marque d inachevement dans son code (la Boutique, passee en « en cours »), et ces cinq-la n ont simplement jamais recu de ligne parce qu ils demandent deux personnes. Leur champ _mesure porte le chiffre. Rien ne dit qu ils sont inacheves ; rien ne dit qu ils marchent.",
     "Le jour ou un paiement est encaisse, basculer REGIME sur \"professionnel\" dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel.",
     "Brancher cinq mecanismes qui existent cote serveur mais qu aucun ecran n atteint. Verifie le 28/08/2026 : rate_template() sert goal_templates et template_ratings, lies par une cle etrangere ; _check_goal_dependency_cycle() garde goal_dependencies contre les cycles, via un declencheur ; snapshot_net_worth() alimente net_worth_snapshots. Aucune de ces trois fonctions n est appelee, ni depuis src/, ni depuis une fonction Edge — la moitie serveur est ecrite, la moitie client manque. NE PAS SUPPRIMER CES TABLES : ce n est pas du schema mort. Une premiere lecture, limitee au TypeScript, l avait conclu a tort. season_rewards en particulier est atteinte par snapshot_season_leaderboard(), appelee par la fonction season-reset que le cron season-reset-daily declenche chaque jour a 3 h 30 — elle est vivante. Seule habit_skip_rules n a qu un declencheur updated_at et rien d autre."
   ]

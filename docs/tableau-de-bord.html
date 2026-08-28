@@ -288,8 +288,8 @@ main{padding:24px 0 96px;min-width:0}
 
   <div class="mesures">
     <div class="mesure"><b>891</b><span>fichiers analysés</span></div>
-    <div class="mesure"><b>177 712</b><span>lignes</span></div>
-    <div class="mesure"><b>3 171</b><span>commits</span></div>
+    <div class="mesure"><b>177 711</b><span>lignes</span></div>
+    <div class="mesure"><b>3 172</b><span>commits</span></div>
     <div class="mesure"><b>aujourd'hui</b><span>dernier commit</span></div>
   </div>
 </section>
@@ -2236,7 +2236,7 @@ main{padding:24px 0 96px;min-width:0}
   <p class="intro">Polices, icônes, services : ce qui vient d'ailleurs, sous quelle licence et à quel coût. Ce qui s'installe se lit sous une licence ; ce qui se loue se lit sous une formule. Les deux manques sont signalés, séparément.</p>
 
   
-  <p class="alerte">3 services sans formule renseignée. C'est de l'argent qui part tous les mois sans être écrit ici.</p>
+  
 
   
   <table class="tableau">
@@ -2289,19 +2289,19 @@ main{padding:24px 0 96px;min-width:0}
         <td><a href="https://supabase.com" rel="noreferrer">Supabase</a></td>
         <td>service — base de données, authentification, stockage, fonctions</td>
         <td><span class="doux">conditions du prestataire</span></td>
-        <td><span class="manque">formule non renseignée</span></td>
+        <td>Plan « free » — relevé le 28/08/2026 par l'API (organisation « Nehiti's Org »). LE PLAFOND QUI MORD EN PREMIER N'EST PAS UNE QUANTITÉ, C'EST L'INACTIVITÉ : Supabase met en pause un projet gratuit qui reçoit trop peu de requêtes utilisateur sur sept jours, avec un avertissement par courriel une semaine avant, et 90 jours pour le rouvrir ensuite. HYPOTHÈSE NON VÉRIFIÉE, à garder en tête : le cron smart-notifications-hourly appelle une fonction Edge toutes les heures, ce qui génère probablement l'activité qui empêche la pause. Si ce cron est un jour désactivé, le projet pourrait s'endormir — un effet de bord que personne n'a choisi. Autre conséquence mesurée le 28/08 : la protection contre les mots de passe fuités (HaveIBeenPwned) est réservée au plan Pro et reste donc indisponible.</td>
       </tr>
       <tr class="cherchable" data-texte="Cloudflare Workers service — hébergement">
         <td><a href="https://workers.cloudflare.com" rel="noreferrer">Cloudflare Workers</a></td>
         <td>service — hébergement</td>
         <td><span class="doux">conditions du prestataire</span></td>
-        <td><span class="manque">formule non renseignée</span></td>
+        <td>Plan « free » — 3 000 minutes de compilation par mois, dont 38 consommées au 28/08/2026. Plafonds du plan gratuit qui concernent ce projet, relevés dans la documentation Cloudflare : 100 000 requêtes par jour (au-delà, erreur 1027) ; 10 ms de temps processeur par invocation ; 20 000 fichiers statiques par version — le dernier déploiement en compte 1 741, soit 9 % ; 3 Mo par Worker ; 5 déclencheurs cron par compte, dont aucun n'est utilisé ici (les deux crons du projet sont des pg_cron côté Supabase, pas des crons Cloudflare).</td>
       </tr>
       <tr class="cherchable" data-texte="Sentry service — suivi des erreurs">
         <td><a href="https://sentry.io" rel="noreferrer">Sentry</a></td>
         <td>service — suivi des erreurs</td>
         <td><span class="doux">conditions du prestataire</span></td>
-        <td><span class="manque">formule non renseignée</span></td>
+        <td>Plan gratuit — DÉCLARÉ PAR L'ÉDITEUR le 28/08/2026, non vérifié : aucune API n'est branchée ici pour le confirmer, contrairement à Supabase et Cloudflare. À corriger si c'est faux.</td>
       </tr>
     </tbody>
   </table>
@@ -2348,7 +2348,7 @@ main{padding:24px 0 96px;min-width:0}
 
   <div class="mesures">
     <div class="mesure"><b>891</b><span>fichiers</span></div><span class="delta hausse">+15 depuis le 2026-08-27</span>
-    <div class="mesure"><b>177 712</b><span>lignes</span></div><span class="delta baisse">-2 224 depuis le 2026-08-27</span>
+    <div class="mesure"><b>177 711</b><span>lignes</span></div><span class="delta baisse">-2 225 depuis le 2026-08-27</span>
     <div class="mesure"><b>8</b><span>fichiers orphelins</span></div>
     <div class="mesure"><b>13</b><span>marqueurs</span></div>
   </div>
@@ -2420,7 +2420,7 @@ main{padding:24px 0 96px;min-width:0}
     <div class="barre cherchable" data-texte="(racine)">
       <span class="barre-nom"><code>(racine)</code></span>
       <span class="barre-piste"><i style="width:3%"></i></span>
-      <span class="barre-val">1 581<small> lignes · 17 fich.</small></span>
+      <span class="barre-val">1 580<small> lignes · 17 fich.</small></span>
     </div>
     <div class="barre cherchable" data-texte="scripts/tableau-de-bord">
       <span class="barre-nom"><code>scripts/tableau-de-bord</code></span>
@@ -2503,7 +2503,7 @@ main{padding:24px 0 96px;min-width:0}
   <details class="repli"><summary>Le détail des 18 langages</summary>
   <table class="tableau">
     <thead><tr><th>Langage</th><th>Fichiers</th><th>Lignes</th><th>Poids</th></tr></thead>
-    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">338</td><td class="n">67 713</td><td class="n">2.67 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 084</td><td class="n">1.20 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">209</td><td class="n">29 955</td><td class="n">1.10 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">29</td><td class="n">16 564</td><td class="n">3.37 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">192</td><td class="n">14 219</td><td class="n">590.1 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 348</td><td class="n">309.6 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 586</td><td class="n">212.3 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 270</td><td class="n">103.2 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">10</td><td class="n">664</td><td class="n">158.1 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">7</td><td class="n">480</td><td class="n">20.2 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
+    <tbody><tr class="cherchable" data-texte="TypeScript (JSX)"><td>TypeScript (JSX)</td><td class="n">338</td><td class="n">67 713</td><td class="n">2.67 Mo</td></tr><tr class="cherchable" data-texte="CSS"><td>CSS</td><td class="n">42</td><td class="n">33 084</td><td class="n">1.20 Mo</td></tr><tr class="cherchable" data-texte="TypeScript"><td>TypeScript</td><td class="n">209</td><td class="n">29 955</td><td class="n">1.10 Mo</td></tr><tr class="cherchable" data-texte="PNG"><td>PNG</td><td class="n">29</td><td class="n">16 564</td><td class="n">3.37 Mo</td></tr><tr class="cherchable" data-texte="SQL"><td>SQL</td><td class="n">192</td><td class="n">14 219</td><td class="n">590.1 ko</td></tr><tr class="cherchable" data-texte="JSON"><td>JSON</td><td class="n">8</td><td class="n">8 347</td><td class="n">311.4 ko</td></tr><tr class="cherchable" data-texte="HTML"><td>HTML</td><td class="n">2</td><td class="n">3 586</td><td class="n">213.8 ko</td></tr><tr class="cherchable" data-texte="JavaScript"><td>JavaScript</td><td class="n">9</td><td class="n">2 270</td><td class="n">103.2 ko</td></tr><tr class="cherchable" data-texte="WOFF2"><td>WOFF2</td><td class="n">10</td><td class="n">664</td><td class="n">158.1 ko</td></tr><tr class="cherchable" data-texte="Markdown"><td>Markdown</td><td class="n">7</td><td class="n">480</td><td class="n">20.2 ko</td></tr><tr class="cherchable" data-texte="SVG"><td>SVG</td><td class="n">36</td><td class="n">476</td><td class="n">168.7 ko</td></tr><tr class="cherchable" data-texte="WEBP"><td>WEBP</td><td class="n">1</td><td class="n">136</td><td class="n">31.4 ko</td></tr><tr class="cherchable" data-texte="TXT"><td>TXT</td><td class="n">2</td><td class="n">64</td><td class="n">2.4 ko</td></tr><tr class="cherchable" data-texte="TOML"><td>TOML</td><td class="n">1</td><td class="n">63</td><td class="n">1.7 ko</td></tr><tr class="cherchable" data-texte="sans extension"><td>sans extension</td><td class="n">2</td><td class="n">51</td><td class="n">888 o</td></tr><tr class="cherchable" data-texte="EXAMPLE"><td>EXAMPLE</td><td class="n">1</td><td class="n">19</td><td class="n">668 o</td></tr><tr class="cherchable" data-texte="JSONC"><td>JSONC</td><td class="n">1</td><td class="n">14</td><td class="n">500 o</td></tr><tr class="cherchable" data-texte="ICO"><td>ICO</td><td class="n">1</td><td class="n">6</td><td class="n">594 o</td></tr></tbody>
   </table></details>
 
   <h3 class="sous">Gros et souvent repris</h3>
@@ -3324,7 +3324,7 @@ main{padding:24px 0 96px;min-width:0}
   <table class="tableau">
     <thead><tr><th>Relevé</th><th>Fichiers</th><th>Lignes</th><th>Commits</th><th>Orphelins</th><th>Marqueurs</th></tr></thead>
     <tbody>
-      <tr><td>2026-08-28</td><td class="n">891</td><td class="n">177 712</td><td class="n">3 171</td><td class="n">8</td><td class="n">13</td></tr>
+      <tr><td>2026-08-28</td><td class="n">891</td><td class="n">177 711</td><td class="n">3 172</td><td class="n">8</td><td class="n">13</td></tr>
       <tr><td>2026-08-27</td><td class="n">876</td><td class="n">179 936</td><td class="n">3 140</td><td class="n">0</td><td class="n">13</td></tr></tbody>
   </table>
 </section>
@@ -3453,7 +3453,7 @@ main{padding:24px 0 96px;min-width:0}
 <section id="suite" class="sect">
   <h2><span class="num">10</span> Prochaines étapes</h2>
   <p class="intro">Cinq lignes au plus. Ce qui déborde n'a pas sa place ici.</p>
-  <ol class="etapes"><li>Renseigner les formules Cloudflare Workers et Sentry. Supabase est en plan « free », relevé par l'API.</li><li>Passer les 46 statuts de module et rétrograder en « en cours » ce qui est seulement en place.</li><li>Le jour ou un paiement est encaisse, basculer REGIME sur &quot;professionnel&quot; dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel.</li><li>Brancher cinq mecanismes qui existent cote serveur mais qu aucun ecran n atteint. Verifie le 28/08/2026 : rate_template() sert goal_templates et template_ratings, lies par une cle etrangere ; _check_goal_dependency_cycle() garde goal_dependencies contre les cycles, via un declencheur ; snapshot_net_worth() alimente net_worth_snapshots. Aucune de ces trois fonctions n est appelee, ni depuis src/, ni depuis une fonction Edge — la moitie serveur est ecrite, la moitie client manque. NE PAS SUPPRIMER CES TABLES : ce n est pas du schema mort. Une premiere lecture, limitee au TypeScript, l avait conclu a tort. season_rewards en particulier est atteinte par snapshot_season_leaderboard(), appelee par la fonction season-reset que le cron season-reset-daily declenche chaque jour a 3 h 30 — elle est vivante. Seule habit_skip_rules n a qu un declencheur updated_at et rien d autre.</li></ol>
+  <ol class="etapes"><li>Trancher le statut de cinq modules sociaux — Conversation privee, Allies, Guildes, Classement, Pantheon — quand un deuxieme compte pourra les eprouver. Les 46 statuts ont ete passes le 28/08/2026 : un seul module porte une marque d inachevement dans son code (la Boutique, passee en « en cours »), et ces cinq-la n ont simplement jamais recu de ligne parce qu ils demandent deux personnes. Leur champ _mesure porte le chiffre. Rien ne dit qu ils sont inacheves ; rien ne dit qu ils marchent.</li><li>Le jour ou un paiement est encaisse, basculer REGIME sur &quot;professionnel&quot; dans src/content/mentions-legales.ts et renseigner nom, forme juridique, adresse, immatriculation et directeur de la publication. Aujourd hui le service ne vend rien — handlePackPurchase annonce que le paiement n est pas branche — et l article 6-III-2 de la LCEN autorise l editeur non professionnel a taire son identite en publiant celle de ses hebergeurs. La suite de tests echoue des que le regime bascule, c est le rappel.</li><li>Brancher cinq mecanismes qui existent cote serveur mais qu aucun ecran n atteint. Verifie le 28/08/2026 : rate_template() sert goal_templates et template_ratings, lies par une cle etrangere ; _check_goal_dependency_cycle() garde goal_dependencies contre les cycles, via un declencheur ; snapshot_net_worth() alimente net_worth_snapshots. Aucune de ces trois fonctions n est appelee, ni depuis src/, ni depuis une fonction Edge — la moitie serveur est ecrite, la moitie client manque. NE PAS SUPPRIMER CES TABLES : ce n est pas du schema mort. Une premiere lecture, limitee au TypeScript, l avait conclu a tort. season_rewards en particulier est atteinte par snapshot_season_leaderboard(), appelee par la fonction season-reset que le cron season-reset-daily declenche chaque jour a 3 h 30 — elle est vivante. Seule habit_skip_rules n a qu un declencheur updated_at et rien d autre.</li></ol>
   
 </section>
 
