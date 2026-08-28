@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useGoals } from "./useGoals";
-import type { Rank } from "@/types/ranks";
+import { useGoals } from "@/hooks/useGoals";
+import type { Rank } from "@/domaines/succes/types";
 
 export type { Rank };
 

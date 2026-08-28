@@ -3,8 +3,8 @@ import { Check, Clock, Lock, Moon, Sparkles, Trophy, Users, X } from "lucide-rea
 import { format } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
-import "@/styles/pantheon.css";
-import "@/styles/succes.css";
+import "@/domaines/succes/pantheon.css";
+import "@/domaines/succes/succes.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { DSPageShell } from "@/components/ds";
 import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
@@ -12,7 +12,7 @@ import {
   RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs,
   useReclamerTrophees, useSucces, useTrophees,
   type Succes,
-} from "@/hooks/useSucces";
+} from "@/domaines/succes/hooks/useSucces";
 
 /* LE HALL DE L ETERNITE.
  *

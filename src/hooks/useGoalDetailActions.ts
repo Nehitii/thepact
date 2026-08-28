@@ -10,7 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { synchroniserGroupes } from "@/lib/superGoals";
 import { PLAFOND_BRIGADE, recrutable } from "@/lib/brigade";
-import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/lib/achievements";
+import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/domaines/succes";
 import { toast } from "sonner";
 import type { GoalDetailData, StatutObjectif, StepData } from "@/hooks/useGoalDetail";
 

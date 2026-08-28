@@ -4,9 +4,11 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **10 domaines sur 14**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique et administration, le 28/08/2026.
+État : **11 domaines sur 15**. M.I.A., santé, journal, focus, finance, tâches, agenda, souhaits, boutique, administration et succès, le 28/08/2026.
 
-*Quatorze et non onze : l’agenda s’est scindé en deux (sixième domaine), les souhaits aussi (huitième), et un groupe de huit pages d’administration a été découvert en chemin (dixième).*
+*Quinze et non onze : l'agenda s'est scindé en deux (sixième domaine), les
+souhaits aussi (huitième), un groupe de huit pages d'administration a été
+découvert en chemin (dixième), et le profil s'est scindé en deux (onzième).*
 
 ---
 
@@ -380,6 +382,42 @@ deuxième arc entre domaines du dépôt, après agenda → tâches.
 
 ---
 
+## Ce que le onzième domaine a ajouté
+
+**Une porte de vingt et un exports est un domaine qui en cache deux.** Le relevé
+annonçait « profil, 55 fichiers ». En lisant sa porte, deux choses se séparaient
+nettement : le **compte** (réglages, second facteur, portabilité, vie privée) et
+les **succès** (compteurs, rangs, ordres du jour, panthéon). Ils ne partagent
+qu'une table, `profiles`, que la moitié de l'application lit de toute façon.
+
+**Un domaine transversal n'est pas un domaine mal borné.** La porte des succès
+exporte **vingt-quatre** fonctions de comptage, appelées par onze fichiers de
+six domaines. C'est sa fonction : un compteur de gestes écoute tout le monde. Ce
+qui compte, c'est que la flèche aille toujours dans le même sens — les domaines
+lui *parlent*, il ne les interroge jamais.
+
+**Et je suis retombé dans le piège du premier domaine.** La porte exportait
+`RanksCard` statiquement ; `AuthContext` importe la porte pour `trackLogin` ; le
+paquet d'entrée est passé de 438 019 à **451 907 octets**.
+
+La cause ne s'est pas devinée. J'ai construit le commit précédent, comparé les
+deux entrées littéral par littéral, filtré le bruit des noms de morceaux
+re-hachés — et compté les morceaux référencés : **339 → 326**. Treize morceaux
+avaient été **absorbés** dans l'entrée : `alert-dialog`, `input`, `select`,
+`switch`, `label`, `slider`, `textarea`, `scroll-area`, `progress`,
+`console-ui` et sa feuille, deux icônes. Tous tirés par `RanksCard`, que
+personne ne rend au démarrage.
+
+Les trois composants sont passés derrière un `lazy` dans la porte, comme
+`MiaConsole`. L'entrée est revenue à **438 575** — +556 octets sur l'état
+d'avant, soit le coût de la porte elle-même.
+
+**La leçon n'est pas « mettre les composants en `lazy` ».** C'est que *je l'avais
+déjà écrite au premier domaine et que je l'ai quand même refaite* : la porte a
+été écrite avant la mesure. L'ordre importe.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -404,7 +442,7 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 14 | **10 / 14** |
+| domaines rangés | 0 / 15 | **11 / 15** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
 | inversions tolérées (dépôt entier) | 25 fichiers | **15** |
@@ -439,7 +477,8 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **souhaits** | 17 |
 | ✔ | **boutique** | 34 |
 | ✔ | **administration** | 18 |
-| 11 | profil | ~55 |
+| ✔ | **succès** | 14 |
+| 12 | profil | ~37 |
 | 12 | guildes | ~57 |
 | 13 | objectifs | ~60 |
 | 14 | socle | ~61 |

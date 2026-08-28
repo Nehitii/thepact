@@ -3,7 +3,7 @@
 import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
-import { RanksCard } from "./RanksCard";
+import { RanksCard } from "@/domaines/succes";
 import { PactIdentityCard } from "./PactIdentityCard";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.

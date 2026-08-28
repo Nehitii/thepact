@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette, Dumbbell, Brain } from "lucide-react";
 import { Compass } from "lucide-react";
-import { trackPactCreated } from "@/lib/achievements";
+import { trackPactCreated } from "@/domaines/succes";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";

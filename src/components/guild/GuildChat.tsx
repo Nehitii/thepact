@@ -8,7 +8,7 @@ import { Pastille } from "@/components/community/Pastille";
 import { nomAffichable } from "@/components/community/vocabulaire";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { chargerProfilsPublics } from "@/lib/profilsPublics";
-import { trackGuildMessageSent } from "@/lib/achievements";
+import { trackGuildMessageSent } from "@/domaines/succes";
 
 interface GuildMessage {
   id: string;

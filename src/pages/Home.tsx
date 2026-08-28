@@ -16,7 +16,7 @@ import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { PassageMia } from "@/domaines/mia";
 import { MonitoringPanel } from "@/components/home/MonitoringPanel";
-import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
+import { DailyQuestsPanel } from "@/domaines/succes";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
@@ -26,7 +26,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
 import { useUserShop } from "@/domaines/boutique";
 import { useFinanceSettings } from "@/domaines/finance";
-import { useRankXP } from "@/hooks/useRankXP";
+import { useRankXP } from "@/domaines/succes";
 
 type UserState = "onboarding" | "active" | "advanced";
 

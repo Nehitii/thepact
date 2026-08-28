@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDailyQuests, useClaimQuest } from "@/hooks/useDailyQuests";
+import { useDailyQuests, useClaimQuest } from "@/domaines/succes/hooks/useDailyQuests";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import { Button } from "@/components/ui/button";
 import { PREF } from "@/lib/preferencesAffichage";

@@ -6,7 +6,7 @@ import { useState, useCallback } from "react";
 import { usePurchaseCosmetic, usePurchaseModule, useBondBalance } from "@/domaines/boutique/hooks/useShop";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
-import { trackModulePurchased, trackCosmeticPurchased, trackBondsSpent } from "@/lib/achievements";
+import { trackModulePurchased, trackCosmeticPurchased, trackBondsSpent } from "@/domaines/succes";
 
 export type TransactionItemType = "module" | "frame" | "banner" | "title";
 export type TransactionStatus = "idle" | "pending" | "success" | "error";

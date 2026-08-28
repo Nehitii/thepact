@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings } from '@/domaines/finance/types';
 import { createTableCrudHooks } from '@/hooks/utils/createTableCrudHooks';
-import { trackTransactionLogged, trackFinanceMonthValidated } from '@/lib/achievements';
+import { trackTransactionLogged, trackFinanceMonthValidated } from '@/domaines/succes';
 
 export type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings };
 

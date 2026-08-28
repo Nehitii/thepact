@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { RankCard } from "./RankCard";
-import type { Rank } from "@/types/ranks";
+import { RankCard } from "@/domaines/succes/composants/RankCard";
+import type { Rank } from "@/domaines/succes/types";
 import { 
   Palette, 
   Image as ImageIcon, 

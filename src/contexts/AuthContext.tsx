@@ -4,7 +4,7 @@ import * as Sentry from "@/lib/sentry";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { trackLogin, initializeAchievementTracking } from "@/lib/achievements";
+import { trackLogin, initializeAchievementTracking } from "@/domaines/succes";
 
 interface AuthContextType {
   user: User | null;

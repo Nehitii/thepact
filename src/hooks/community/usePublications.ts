@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { chargerProfilsPublics } from "@/lib/profilsPublics";
-import { trackCommunityPost } from "@/lib/achievements";
+import { trackCommunityPost } from "@/domaines/succes";
 import type { CommunityPost, CommunityReply, VictoryReel, PostFilterType, PostSortOption } from "./types";
 
 const PAGE_SIZE = 20;

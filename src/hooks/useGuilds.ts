@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Json } from "@/integrations/supabase/types";
-import { trackGuildJoined } from "@/lib/achievements";
+import { trackGuildJoined } from "@/domaines/succes";
 
 /* CE QUE RENDENT LES TROIS FONCTIONS EN BASE.
    create_guild_with_owner, join_guild_via_code et respond_to_invite

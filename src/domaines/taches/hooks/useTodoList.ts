@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import i18n from '@/i18n/i18n';
-import { trackTodoCompleted } from '@/lib/achievements';
+import { trackTodoCompleted } from '@/domaines/succes';
 
 /* CE CROCHET NE PARLAIT QU ANGLAIS
  *

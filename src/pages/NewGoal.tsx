@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { trackGoalCreated } from "@/lib/achievements";
+import { trackGoalCreated } from "@/domaines/succes";
 import { insertGoalTags } from "@/hooks/useGoalTags";
 import { useGoals } from "@/hooks/useGoals";
 import { usePact } from "@/hooks/usePact";

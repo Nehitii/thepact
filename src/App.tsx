@@ -45,7 +45,7 @@ const Friends = lazy(() => import("./pages/Friends"));
 const Calendar = lazy(routeImports.calendar);
 const ContractSign = lazy(() => import("./pages/ContractSign"));
 const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
-const HallOfFame = lazy(() => import("./pages/HallOfFame"));
+const HallOfFame = lazy(() => import("@/domaines/succes/pages/HallOfFame"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("@/domaines/administration/pages/Admin"));

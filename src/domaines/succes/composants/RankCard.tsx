@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Trophy } from "lucide-react";
-import type { Rank } from "@/types/ranks";
+import type { Rank } from "@/domaines/succes/types";
 
 // Re-export for convenience
 export type { Rank };

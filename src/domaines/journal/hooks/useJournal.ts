@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n/i18n";
 import type { JournalEntry } from "@/domaines/journal/types";
-import { trackJournalEntry } from "@/lib/achievements";
+import { trackJournalEntry } from "@/domaines/succes";
 
 export type { JournalEntry, JournalMood } from "@/domaines/journal/types";
 export { MOOD_CONFIG } from "@/domaines/journal/types";
