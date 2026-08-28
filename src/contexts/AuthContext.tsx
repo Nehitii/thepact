@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import * as Sentry from "@sentry/react";
+import * as Sentry from "@/lib/sentry";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -100,7 +100,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Sync existing session with Sentry
       if (session?.user) {
-        Sentry.setUser({ id: session.user.id, email: session.user.email ?? undefined });
+        /* Même règle qu'au-dessus : l'identifiant seul. Cette
+           occurrence-ci avait survécu à la première correction — deux
+           appels identiques à deux indentations différentes, et le
+           remplacement n'en avait vu qu'un. */
+        Sentry.setUser({ id: session.user.id });
       } else {
         Sentry.setUser(null);
       }

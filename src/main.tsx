@@ -15,6 +15,11 @@ import "./lib/renommageLocal";
    fragment. Ce module le lit avant que React n'existe. */
 import "./lib/erreurOAuth";
 
+/* Le relais vers Sentry. Il n'importe PAS @sentry/react — c'est tout
+   son intérêt : il met les appels en file jusqu'à ce que l'import
+   dynamique plus bas lui passe l'instance réelle. */
+import { attacher as attacherSentry } from "./lib/sentry";
+
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -118,6 +123,16 @@ function initSentryDeferred() {
       beforeSend(event) {
         return event;
       },
+    });
+    /* ═══ LE RELAIS REÇOIT L'INSTANCE ICI, ET PAS AVANT ═══
+       Le reste de l'application appelle `@/lib/sentry`, jamais
+       `@sentry/react` : c'est ce qui garde les 159 Ko hors du premier
+       chargement. Les appels faits avant cette ligne ont été mis en
+       file et sont rejoués maintenant — un utilisateur identifié pendant
+       le démarrage n'est donc pas perdu. */
+    attacherSentry({
+      setUser: (u) => Sentry.setUser(u),
+      captureException: (e, contexte) => Sentry.captureException(e, contexte),
     });
     console.info("[Sentry] initialized", { env: SENTRY_ENV });
   }).catch((err) => {
