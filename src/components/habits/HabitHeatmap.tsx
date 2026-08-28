@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/socle/outils/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/socle/ui/tooltip";
 import { format, eachDayOfInterval, subDays, startOfWeek, getDay } from "date-fns";
 
 interface HabitHeatmapProps {

@@ -1,5 +1,5 @@
 import type { Goal } from "@/domaines/objectifs";
-import type { CostItem } from "@/hooks/useCostItems";
+import type { CostItem } from "@/domaines/objectifs";
 
 /* CE QUE COUTE LE PACTE, CE QUI EST PAYE, CE QUI RESTE.
  *

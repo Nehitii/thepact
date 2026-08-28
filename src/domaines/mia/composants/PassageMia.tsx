@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useEtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
 import { chercherPassage, passageDuJour, type Passage } from "@/domaines/mia/logique/humeur";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 import { VisageMia } from "./VisageMia";
 import "@/domaines/mia/mia.css";
 

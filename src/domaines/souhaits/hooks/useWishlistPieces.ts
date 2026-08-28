@@ -14,7 +14,7 @@
  * Une seule requete pour toute la page.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 
 export interface PieceDeLEtape {
   /** Vrai quand acquired_at a ete pose par la validation de l etape. */

@@ -17,7 +17,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 import { getTagLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import type { GoalDetailData } from "@/domaines/objectifs/hooks/useGoalDetail";

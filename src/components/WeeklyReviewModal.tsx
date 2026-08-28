@@ -4,7 +4,7 @@ import {
   useCurrentWeekReview, useWeeklyReviews, useGenerateWeeklyReview,
   useSaveWeeklyReflection, type WeeklyReview,
 } from "@/hooks/useWeeklyReview";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
 import { Sparkles, Loader2, Check, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { toast } from "sonner";
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Crown, Zap, Save, X, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/socle/ui/button";
+import { Badge } from "@/socle/ui/badge";
+import { Switch } from "@/socle/ui/switch";
+import { Label } from "@/socle/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { GoalSelectionList } from "./GoalSelectionList";
 import { AutoBuildRuleEditor } from "./AutoBuildRuleEditor";

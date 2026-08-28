@@ -19,13 +19,13 @@ import { BandeBoutique } from "@/domaines/boutique/composants/BandeBoutique";
 import { PurchaseConfirmModal, PurchaseItem } from "@/domaines/boutique/composants/PurchaseConfirmModal";
 import { UnlockAnimation } from "@/domaines/boutique/composants/UnlockAnimation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useWishlist } from "@/domaines/boutique/hooks/useWishlist";
 import { useBondBalance } from "@/domaines/boutique/hooks/useShop";
 import { useShopTransaction } from "@/domaines/boutique/hooks/useShopTransaction";
 import { useTranslation } from "react-i18next";
 import { Store } from "lucide-react";
-import { DSPageShell } from "@/components/ds";
+import { DSPageShell } from "@/socle/ds";
 import type { ArticleAchetable } from "@/domaines/boutique/logique/articleAchetable";
 
 export default function Shop() {

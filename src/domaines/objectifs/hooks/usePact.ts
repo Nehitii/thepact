@@ -7,7 +7,7 @@ export type { Pact };
  * Respects active_pact_id from profile if set (for shared pacts).
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 
 
 // Reusable fetcher — used by usePact and by background prefetch.

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import type { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import type { Json } from "@/socle/supabase/types";
 import { trackGuildJoined } from "@/domaines/succes";
 
 /* CE QUE RENDENT LES TROIS FONCTIONS EN BASE.

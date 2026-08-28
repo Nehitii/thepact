@@ -3,15 +3,15 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, AlertTriangle, Check, Flag, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/socle/ui/button';
+import { cn } from '@/socle/outils/utils';
 import { ActiveMission } from '@/hooks/useActiveMission';
 import { useNavigate } from 'react-router-dom';
-import { useVisibleInterval } from '@/hooks/useVisibleInterval';
+import { useVisibleInterval } from '@/socle/hooks/useVisibleInterval';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from '@/socle/ui/alert-dialog';
 
 interface ActiveMissionCardProps {
   mission: ActiveMission;

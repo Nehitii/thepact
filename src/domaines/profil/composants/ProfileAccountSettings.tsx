@@ -4,15 +4,15 @@ import { Loader2, Eye, EyeOff, Check, KeyRound, LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { SelectItem } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { useCurrency } from "@/contexts/CurrencyContext";
+import { SelectItem } from "@/socle/ui/select";
+import { supabase } from "@/socle/supabase/client";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { toast } from "sonner";
 import { MfaEnrollment } from "@/domaines/profil/composants/MfaEnrollment";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { texteDepuisDateCivile, aujourdHuiCivil } from "@/lib/dateCivile";
-import { noterEvenementSecurite, LIBELLES_EVENEMENT, type EvenementSecurite } from "@/lib/journalSecurite";
-import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/components/ds/console-ui";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { texteDepuisDateCivile, aujourdHuiCivil } from "@/domaines/profil/logique/dateCivile";
+import { noterEvenementSecurite, LIBELLES_EVENEMENT, type EvenementSecurite } from "@/domaines/profil/logique/journalSecurite";
+import { Panneau, Reglage, Bouton, Alerte, ChampTexte, ChampListe } from "@/socle/ds/console-ui";
 import { CodeDeVerrouillage } from "@/domaines/profil/composants/CodeDeVerrouillage";
 
 const TIMEZONES = [

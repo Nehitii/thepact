@@ -8,7 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 import { Trash2, AlertTriangle } from "lucide-react";
 
 /**

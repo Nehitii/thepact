@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link2, Check, X, ChevronDown, ChevronUp, Music, Youtube } from "lucide-react";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* LE LIEN AUDIO
  *

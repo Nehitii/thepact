@@ -5,19 +5,19 @@ import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import { Bell, MessageSquare, CheckCheck, Trash2, Settings, PenLine, Users } from "lucide-react";
 import "@/domaines/social/community.css";
 import "@/domaines/social/inbox.css";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useNotifications } from "@/domaines/social/hooks/useNotifications";
 import { useMessages } from "@/domaines/social/hooks/useMessages";
 import { useFriends } from "@/domaines/social/hooks/useFriends";
 import { useCadres } from "@/domaines/social/hooks/useCadres";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
 import { AvisCarte } from "@/domaines/social/composants/AvisCarte";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 
 /**
  * LA BOÎTE DE RÉCEPTION.

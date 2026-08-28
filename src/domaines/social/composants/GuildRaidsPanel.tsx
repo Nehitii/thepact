@@ -8,13 +8,13 @@ import { format, formatDistanceToNowStrict } from "date-fns";
 import { toast } from "sonner";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useGuildMembers } from "@/domaines/social/hooks/useGuilds";
 import {
   METRIQUES, ciblesDe, metriquesDemandees, partFranchie,
   useAvancementRaid, useRaidActions, useRaids,
   type Compte, type Metrique, type Raid,
-} from "@/hooks/useRaids";
+} from "@/domaines/social/hooks/useRaids";
 
 /* LES RAIDS D UNE GUILDE.
  *

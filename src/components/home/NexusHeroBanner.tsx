@@ -3,9 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CornerBrackets } from "./CornerBrackets";
 import { PactVisual } from "@/domaines/objectifs";
 import { RankCore } from "@/domaines/succes";
-import { PREF } from "@/lib/preferencesAffichage";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
-import { selonTheme } from "@/lib/encrePapier";
+import { PREF } from "@/socle/outils/preferencesAffichage";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
+import { selonTheme } from "@/socle/outils/encrePapier";
 
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",

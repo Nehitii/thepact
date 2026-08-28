@@ -9,7 +9,7 @@ import { AdminPageShell } from "@/domaines/administration/composants/AdminPageSh
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 import {
   useRosterAdmin, useChangerLeRole, useJournalAdmin, motDeLErreur,
   type LigneRoster,

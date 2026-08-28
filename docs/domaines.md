@@ -4,7 +4,7 @@ Le dépôt passe d'un rangement **par couche** (`pages/`, `components/`, `hooks/
 `lib/`, `styles/`) à un rangement **par domaine**. C'est l'étape 2 du plan de
 masse, et elle se fait **un domaine à la fois**, du plus petit au plus gros.
 
-État : **14 domaines sur 15**. Tous rangés sauf le socle, le 28/08/2026.
+État : **étape 2 terminée**. Quatorze domaines, un socle, une racine de composition — le 28/08/2026.
 
 *Quinze et non onze : l'agenda s'est scindé en deux (sixième domaine), les
 souhaits aussi (huitième), un groupe de huit pages d'administration a été
@@ -514,6 +514,88 @@ domaine que le plan n'a toujours pas rangé.
 
 ---
 
+## Le socle, et ce qu'il a révélé
+
+**Le socle n'est pas « ce qui reste ».** Ce qui restait hors des domaines, c'était
+164 fichiers — du socle *plus* trois ou quatre modules jamais rangés. Le critère
+mesurable : **combien de domaines appellent ce fichier ?**
+
+| domaines lecteurs | fichiers | verdict |
+|---|---|---|
+| 14 | 1 (`AuthContext`) | socle, sans discussion |
+| 3 à 12 | 27 | socle |
+| 2 | 9 | socle |
+| 1 | 32 | appartient à **ce** domaine |
+| 0 | 88 | soit socle pur, soit un module non rangé |
+
+79 fichiers ont rejoint `src/socle/` — `ui/`, `ds/`, `contextes/`, `i18n/`,
+`supabase/`, `outils/`, `hooks/` — et 22 des 32 « un seul domaine » sont rentrés
+chez eux.
+
+**Le critère « un seul domaine » est nécessaire, pas suffisant.** Cinq fichiers
+que la mesure envoyait dans un domaine étaient aussi lus par `app/` ou par des
+modules non rangés : `chromeFlottant`, `encrePapier`, `erreurs`, `useFeatureFlag`,
+`useSocialFeatures`. Ils sont du socle. Un fichier n'appartient à un domaine que
+si **ce domaine est son seul lecteur, tous lecteurs confondus**.
+
+**La règle du socle guardait le vide — et dès qu'elle a eu quelque chose à
+garder, elle a trouvé deux violations.**
+
+`socle/contextes/AuthContext.tsx` appelait `trackLogin` et
+`initializeAchievementTracking` du domaine succès. Quatorze domaines importent ce
+contexte : lui faire connaître un domaine, c'est le faire cesser d'être le socle.
+Il **annonce** désormais la connexion par un `CustomEvent`, et `App.tsx` — qui a
+le droit de tout connaître — écoute et compte. Même idiome que `OUVRIR_MIA`
+ailleurs dans l'application.
+
+`socle/hooks/useParticleEffect.tsx` lisait `useProfileSettings` à travers la
+porte du profil. Le hook des préférences d'affichage a quatre lecteurs hors
+profil : il est parti au socle.
+
+**Et deux gardes ont perdu leurs chemins, encore.** Le cliquet de taille ne
+reconnaissait plus le schéma généré — le compte a sauté de 97 000 à 103 015
+lignes. `verifier-langue` a planté sur `src/integrations/supabase/types.ts`. Mais
+cette fois **`chemins:check`, écrite le matin même pour cette classe de bogue, a
+nommé le troisième cas avant qu'il ne morde** : `tableau-de-bord/collecte.mjs`.
+
+**Le build a rattrapé ce que le compilateur avait laissé passer.** `main.tsx`
+portait deux imports relatifs *à effet de bord* — `import "./lib/renommageLocal"`
+— sans binding, donc sans erreur de type, mais impossibles à résoudre au
+bundling. Troisième fois de la série que les imports relatifs mordent, et la
+première où le typecheck ne suffit pas. **Le build fait partie de la
+vérification, pas de la livraison.**
+
+*(J'ai d'ailleurs déployé une fois le `dist/` périmé en lisant ses octets après
+un build échoué. La leçon tient en une ligne : lire le code de retour du build
+avant de lire son résultat.)*
+
+**Une dette est née et elle est nommée.** `console-ui` est devenu partagé par
+quatre domaines ; Vite remonte le CSS des morceaux partagés dans la feuille
+d'entrée, et `reglages.css` (681 lignes, 117 sélecteurs `.rg-`) y a atterri —
+environ 18 Ko de CSS critique. C'est écrit en tête du fichier concerné, et c'est
+du ressort de l'étape 4, qui a les captures d'écran pour instrument.
+
+---
+
+## Ce qui n'est pas encore rangé
+
+`src/` contient toujours `components/`, `hooks/`, `lib/`, `pages/`, `styles/`,
+`content/` — et **c'est maintenant lisible comme une liste de travail**, parce
+que tout ce qui était rangeable l'a été. Ce qui reste dessine trois ou quatre
+domaines que le plan n'avait pas vus :
+
+| | ce qu'on y trouve |
+|---|---|
+| **accueil** | `pages/Home.tsx`, `components/home/` (11), `useActiveMission` |
+| **analytique** | `pages/Analytics.tsx`, `components/analytics/` (4), `useAnalytics*` (3) |
+| **the call** | `pages/TheCall.tsx`, `components/thecall/`, `useTheCall`, `singularity.css` |
+| **authentification** | `pages/Auth.tsx`, `pages/TwoFactor.tsx`, `useFournisseursActifs` |
+
+Plus les pages sans domaine (`Legal`, `NotFound`, `Onboarding`), sept composants
+racine, et les quatorze feuilles globales que l'étape 4 doit partager.
+
+---
+
 ## Ce que le déplacement a réglé au passage
 
 Six inversions de dépendance sont mortes sans qu'on écrive une ligne de logique.
@@ -538,10 +620,10 @@ est traité à l'étape 3, pas ici.
 
 | | avant étape 2 | après 2 domaines |
 |---|---|---|
-| domaines rangés | 0 / 15 | **14 / 15** |
+| domaines rangés | 0 / 15 | **15 / 15** |
 | dossiers pour toucher à M.I.A. | 4 | **1** |
 | dossiers pour toucher à la santé | 5 | **1** |
-| inversions tolérées (dépôt entier) | 25 fichiers | **12** |
+| inversions tolérées (dépôt entier) | 25 fichiers | **11** |
 | paquet d'entrée | 437 945 o | **437 988 o** |
 
 Le paquet d'entrée n'a pas bougé entre le domaine 1 et le domaine 2 — à l'octet
@@ -577,7 +659,7 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **profil** | 38 |
 | ✔ | **social** | 58 |
 | ✔ | **objectifs** | 66 |
-| 15 | socle | ~61 |
+| ✔ | **socle** | 79 |
 
 Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils
 étaient faits sur le nom des fichiers, et **trois domaines sur treize** se sont

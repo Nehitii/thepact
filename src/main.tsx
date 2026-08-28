@@ -6,19 +6,19 @@
    « vowpact… » vers « overwrite… ». Le déplacement est aussi déclenché
    par preferencesAffichage.ts, au cas où un outil réordonnerait cette
    liste : la fonction ne fait rien la seconde fois. */
-import "./lib/renommageLocal";
+import "@/socle/outils/renommageLocal";
 
 /* ═══ CELUI-CI AUSSI DOIT PRÉCÉDER LE RENDU ═══
    Il capture l'erreur qu'un fournisseur d'authentification laisse dans
    l'URL. Le retour se fait sur « / », une route protégée : sans
    session le routeur rebondit vers « /auth » et le rebond perd le
    fragment. Ce module le lit avant que React n'existe. */
-import "./lib/erreurOAuth";
+import "@/socle/outils/erreurOAuth";
 
 /* Le relais vers Sentry. Il n'importe PAS @sentry/react — c'est tout
    son intérêt : il met les appels en file jusqu'à ce que l'import
    dynamique plus bas lui passe l'instance réelle. */
-import { attacher as attacherSentry } from "./lib/sentry";
+import { attacher as attacherSentry } from "@/socle/outils/sentry";
 
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
@@ -50,10 +50,10 @@ import "./styles/theme-clair.css";
 // page chunk instead of the initial bundle.
 
 // i18n must be initialized once, before any components render.
-import "@/i18n/i18n";
+import "@/socle/i18n/i18n";
 
 // Suspend les animations perpetuelles quand l'onglet est cache.
-import { watchIdleAnimations } from "@/lib/idleAnimations";
+import { watchIdleAnimations } from "@/socle/outils/idleAnimations";
 watchIdleAnimations();
 
 // Service worker: register only on real top-level pages (push notifications).
@@ -124,7 +124,7 @@ function initSentryDeferred() {
       },
     });
     /* ═══ LE RELAIS REÇOIT L'INSTANCE ICI, ET PAS AVANT ═══
-       Le reste de l'application appelle `@/lib/sentry`, jamais
+       Le reste de l'application appelle `@/socle/outils/sentry`, jamais
        `@sentry/react` : c'est ce qui garde les 159 Ko hors du premier
        chargement. Les appels faits avant cette ligne ont été mis en
        file et sont rejoués maintenant — un utilisateur identifié pendant

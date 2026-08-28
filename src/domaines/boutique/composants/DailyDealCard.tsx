@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Lock, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { Button } from "@/socle/ui/button";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
-import { DailyDealWithItem } from "@/hooks/useDailyDeals";
+import { DailyDealWithItem } from "@/domaines/boutique/hooks/useDailyDeals";
 import { useEffect, useState } from "react";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 

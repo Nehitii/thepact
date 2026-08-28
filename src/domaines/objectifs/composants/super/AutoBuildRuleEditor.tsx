@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Check, Sparkles, Filter, Eye, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/socle/ui/badge";
+import { Switch } from "@/socle/ui/switch";
+import { Label } from "@/socle/ui/label";
+import { ScrollArea } from "@/socle/ui/scroll-area";
 import { DIFFICULTY_OPTIONS, GOAL_TAGS, getDifficultyLabel, getTagLabel, getStatusLabel } from "@/domaines/objectifs/logique/goalConstants";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { SuperGoalRule, filterGoalsByRule } from "@/domaines/objectifs/types";
 import { useTranslation } from "react-i18next";
 

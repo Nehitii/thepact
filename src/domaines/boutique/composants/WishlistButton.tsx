@@ -1,8 +1,8 @@
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/domaines/boutique/hooks/useWishlist";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { useTranslation } from "react-i18next";
 
 interface WishlistButtonProps {

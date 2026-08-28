@@ -12,8 +12,8 @@
  * a la recurrence.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/socle/supabase/client';
+import { useAuth } from '@/socle/contextes/AuthContext';
 
 export interface Pointage {
   id: string;

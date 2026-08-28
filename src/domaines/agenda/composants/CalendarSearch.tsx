@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/socle/ui/input";
 import { Search, X, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/socle/ui/button";
 import { useTranslation } from "react-i18next";
 import type { CalendarEvent } from "@/domaines/agenda/types";
 import { useCalendarEventSearch } from "@/domaines/agenda/hooks/useCalendarEvents";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { format, parseISO, isSameYear } from "date-fns";
 
 interface CalendarSearchProps {

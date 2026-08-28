@@ -1,7 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
-import i18n from "@/i18n/i18n";
+import i18n from "@/socle/i18n/i18n";
 
 export type AchievementCategory =
   | "Connection"

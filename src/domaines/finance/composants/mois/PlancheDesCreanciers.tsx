@@ -19,8 +19,8 @@
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency } from '@/socle/outils/currency';
 import type { FinancialItem } from '@/domaines/finance/types';
 import { MarqueCreancier } from './MarqueCreancier';
 import { couleurDe } from '@/domaines/finance/logique/marque';

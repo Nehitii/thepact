@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useRangs } from "@/hooks/useRangs";
-import { partFranchie, useAvancementRaid, useRaids, type Raid } from "@/hooks/useRaids";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { useRangs } from "@/domaines/social/hooks/useRangs";
+import { partFranchie, useAvancementRaid, useRaids, type Raid } from "@/domaines/social/hooks/useRaids";
 import { teinteDe } from "@/domaines/social/logique/blason";
 import type { Guild, GuildMember } from "@/domaines/social/hooks/useGuilds";
 

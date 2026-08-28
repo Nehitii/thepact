@@ -3,25 +3,25 @@ import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json, TablesUpdate } from "@/integrations/supabase/types";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { supabase } from "@/socle/supabase/client";
+import type { Json, TablesUpdate } from "@/socle/supabase/types";
 
 import { useGoalTags, useSaveGoalTags } from "@/domaines/objectifs/hooks/useGoalTags";
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { useFeatureFlag } from "@/socle/hooks/useFeatureFlag";
 import { useGoalContracts } from "@/domaines/objectifs/hooks/useGoalContracts";
 import { useGoalDetail , type StepData, type Difficulte } from "@/domaines/objectifs/hooks/useGoalDetail";
 import { useProfile } from "@/domaines/profil";
 import { toast } from "sonner";
-import { useParticleEffect } from "@/hooks/useParticleEffect";
-import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
-import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/hooks/useCostItems";
+import { useParticleEffect } from "@/socle/hooks/useParticleEffect";
+import { getDifficultyColor as getUnifiedDifficultyColor } from "@/socle/outils/utils";
+import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/domaines/objectifs/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/domaines/souhaits";
 import { useUserShop } from "@/domaines/boutique";
-import { useSocialFeatures } from "@/hooks/useSocialFeatures";
-import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
-import { Button } from "@/components/ui/button";
+import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/socle/ds";
+import { Button } from "@/socle/ui/button";
 import { ShareGoalModal } from "@/domaines/objectifs/composants/ShareGoalModal";
 import { GoalContractsPanel } from "@/domaines/objectifs/composants/GoalContractsPanel";
 import { FileText, Handshake } from "lucide-react";
@@ -45,7 +45,7 @@ import { GoalDetailEditOverlay } from "@/domaines/objectifs/composants/detail";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 import {
   DossierBandeau, DossierEtapes, DossierRegistre, DossierHabitude,
   DossierCourbe, DossierMembres, DossierPli,

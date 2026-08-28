@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useMfa } from "@/domaines/profil";
 import { useProfile } from "@/domaines/profil";
 import { usePact } from "@/domaines/objectifs";

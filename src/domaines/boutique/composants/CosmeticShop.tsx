@@ -2,9 +2,9 @@ import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image, Frame, Crown, Shuffle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance, CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/domaines/boutique/hooks/useShop";
-import { FramePreview, AvatarFrame } from "@/components/ui/avatar-frame";
+import { FramePreview, AvatarFrame } from "@/socle/ui/avatar-frame";
 import { useProfile } from "@/domaines/profil";
 import { useCarteProfil } from "@/domaines/profil";
 import { TitreCosmetique } from "@/domaines/profil";
@@ -17,8 +17,8 @@ import { UnlockAnimation } from "./UnlockAnimation";
 import { CyberItemCard } from "./CyberItemCard";
 import { FittingRoom } from "./FittingRoom";
 import { useShopTransaction } from "@/domaines/boutique/hooks/useShopTransaction";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/socle/hooks/use-mobile";
+import { cn } from "@/socle/outils/utils";
 
 type CosmeticCategory = "frames" | "banners" | "titles";
 

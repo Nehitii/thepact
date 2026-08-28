@@ -15,8 +15,8 @@ import {
   type SourceMia,
   useEcrireEchange,
 } from "@/domaines/mia/hooks/useMia";
-import { PREF } from "@/lib/preferencesAffichage";
-import { supabase } from "@/integrations/supabase/client";
+import { PREF } from "@/socle/outils/preferencesAffichage";
+import { supabase } from "@/socle/supabase/client";
 import { ReseauMia, type EtatMia } from "./ReseauMia";
 import { VisageMia, type ExpressionMia } from "./VisageMia";
 import { prechargerVisages } from "@/domaines/mia/logique/visages";
@@ -27,7 +27,7 @@ import { POSSIBLES, GROUPES } from "@/domaines/mia/logique/possibles";
 import { causeDeLEchec, excuseMia, apaiser } from "@/domaines/mia/logique/excuses";
 import { humeurAmbiante } from "@/domaines/mia/logique/humeur";
 import { useTodoList } from "@/domaines/taches";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 
 /**
  * M.I.A — Mysterious Intelligence Array.

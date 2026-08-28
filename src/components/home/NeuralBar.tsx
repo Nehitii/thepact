@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Pact } from "@/domaines/objectifs";
-import { BondIcon } from "@/components/ui/bond-icon";
-import { useAuth } from "@/contexts/AuthContext";
+import { BondIcon } from "@/socle/ui/bond-icon";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useBondBalance } from "@/domaines/boutique";
 import { usePoulsDuJour } from "@/domaines/sante";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
-import { selonTheme } from "@/lib/encrePapier";
+import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
+import { selonTheme } from "@/socle/outils/encrePapier";
 
 /* `rankData` etait declaree ici, passee par Home, et jamais lue :
    un reste de la jauge de rang retiree de cette barre. */

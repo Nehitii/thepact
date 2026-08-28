@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface BandeBoutiqueProps {
   children: React.ReactNode;

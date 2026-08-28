@@ -25,9 +25,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ImagePlus, Loader2, Trash2, Maximize2, Minimize2, RotateCcw, Move, StretchHorizontal } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/socle/supabase/client';
 import { toast } from 'sonner';
-import { optimizeImage } from '@/lib/imageOptimization';
+import { optimizeImage } from '@/socle/outils/imageOptimization';
 import {
   CADRE_PAR_DEFAUT, DECALAGE_MAX, estCadreParDefaut, styleDuCadre,
   type CadreImage, type Ajustement, type FondDeMarque,

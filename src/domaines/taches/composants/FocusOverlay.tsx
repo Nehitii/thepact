@@ -4,7 +4,7 @@ import { X, Play, Pause, Check } from "lucide-react";
 import { isPast, isToday } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { TodoTask } from "@/domaines/taches/hooks/useTodoList";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 /* LE POSTE DE FOCUS
  *

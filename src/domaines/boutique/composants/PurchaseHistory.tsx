@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Package, Sparkles, Star, Terminal } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAllTransactions, PurchaseHistoryItem } from "@/hooks/usePurchaseHistory";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useAllTransactions, PurchaseHistoryItem } from "@/domaines/boutique/hooks/usePurchaseHistory";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { format } from "date-fns";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/socle/ui/scroll-area";
 
 function AnimatedCounter({ value }: { value: number }) {
   const [display, setDisplay] = useState(0);

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { GuildCreateModal } from "@/domaines/social/composants/GuildCreateModal";
 import { useGuilds } from "@/domaines/social/hooks/useGuilds";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import type { Guild } from "@/domaines/social/hooks/useGuilds";
 
 /* LES GUILDES.

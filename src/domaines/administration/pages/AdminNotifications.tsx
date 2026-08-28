@@ -7,7 +7,7 @@ import {
   AlertTriangle, History, Megaphone, MessageSquare, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 /* L'APERÇU EMPRUNTE LES CLASSES DE LA BOÎTE DE RÉCEPTION.
    C'est le seul moyen qu'il ressemble vraiment à ce qui sera reçu :
@@ -19,7 +19,7 @@ import {
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 
 /**
  * LA DIFFUSION.

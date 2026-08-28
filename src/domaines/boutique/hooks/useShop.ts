@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 export interface BondBalance {
   id: string;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useProfileSettings } from "@/domaines/profil/hooks/useProfileSettings";
+import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 
 /**
  * Porte l'accent choisi et la taille de police sur :root.

@@ -18,7 +18,7 @@ import { ReportModal } from "@/domaines/social/composants/ReportModal";
 import { nomAffichable, REACTIONS, type TypeReaction } from "@/domaines/social/logique/vocabulaire";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import type { Cadre } from "@/domaines/social/hooks/useCadres";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import {
   CommunityPost,
   useAddReaction,
@@ -29,7 +29,7 @@ import {
   useUpdatePost,
   useDeletePost,
 } from "@/domaines/social/hooks/useCommunity";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { urlEstUneVideo } from "@/domaines/social/logique/communityMedia";
 
 /* UN POST — une ligne du fil, pas une carte.

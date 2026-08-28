@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import type { Cadre } from "@/domaines/social/hooks/useCadres";
 
 /* UNE LIGNE DE MEMBRE, DANS SES QUATRE ETATS.

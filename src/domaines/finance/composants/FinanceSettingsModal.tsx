@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Target, Wallet, HandCoins, X } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency, getCurrencySymbol } from '@/socle/outils/currency';
+import { Dialog, DialogContent, DialogTitle } from '@/socle/ui/dialog';
 import { useUpdateFinanceSettings } from '@/domaines/finance/hooks/useFinance';
 import { toast } from 'sonner';
 import type { FinanceSettings } from '@/domaines/finance/types';

@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Textarea } from "@/socle/ui/textarea";
 import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette, Dumbbell, Brain } from "lucide-react";
 import { Compass } from "lucide-react";
 import { trackPactCreated } from "@/domaines/succes";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { DSPageShell } from "@/components/ds";
-import { cn } from "@/lib/utils";
-import { messageDErreur } from "@/lib/erreurs";
-import type { TablesInsert } from "@/integrations/supabase/types";
+import { DSPageShell } from "@/socle/ds";
+import { cn } from "@/socle/outils/utils";
+import { messageDErreur } from "@/socle/outils/erreurs";
+import type { TablesInsert } from "@/socle/supabase/types";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },

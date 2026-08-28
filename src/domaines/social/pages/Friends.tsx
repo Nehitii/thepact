@@ -8,7 +8,7 @@ import "@/domaines/social/friends.css";
 import "@/domaines/social/guild.css";
 import { PanneauAllies } from "@/domaines/social/composants/PanneauAllies";
 import { PanneauGuildes } from "@/domaines/social/composants/PanneauGuildes";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useFriends } from "@/domaines/social/hooks/useFriends";
 import { useFriendsPresence } from "@/domaines/social/hooks/useFriendsPresence";
 import { useGuilds } from "@/domaines/social/hooks/useGuilds";

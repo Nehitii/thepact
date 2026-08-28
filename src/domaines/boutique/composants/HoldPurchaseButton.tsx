@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Lock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { useTranslation } from "react-i18next";
 
 interface HoldPurchaseButtonProps {

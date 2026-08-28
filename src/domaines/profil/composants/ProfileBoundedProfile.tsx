@@ -1,17 +1,17 @@
 import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Bouton } from "@/components/ds/console-ui";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
+import { Bouton } from "@/socle/ds/console-ui";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
+import { AvatarFrame, FramePreview } from "@/socle/ui/avatar-frame";
 import { TitreCosmetique } from "@/domaines/profil/composants/TitreCosmetique";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/socle/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/socle/ui/tabs";
 import { RankCore } from "@/domaines/succes";
 import { useRankXP } from "@/domaines/succes";
 import { usePact } from "@/domaines/objectifs";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield, Trash2, AlertTriangle } from "lucide-react";
@@ -313,7 +313,7 @@ export function ProfileBoundedProfile({
 
     setUploading(true);
     try {
-      const { optimizeImage } = await import("@/lib/imageOptimization");
+      const { optimizeImage } = await import("@/socle/outils/imageOptimization");
       const optimized = await optimizeImage(file, "avatar");
       const fileExt = optimized.type === "image/gif" ? "gif" : "webp";
       const fileName = `avatar-${Date.now()}.${fileExt}`;

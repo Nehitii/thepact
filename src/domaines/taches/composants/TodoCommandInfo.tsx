@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
 import { useTranslation } from "react-i18next";
 
 /* LA GRAMMAIRE DE L INVITE

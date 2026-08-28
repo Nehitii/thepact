@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { Puzzle, Search } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useShopModules, useUserModulePurchases, useBondBalance } from "@/domaines/boutique/hooks/useShop";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/socle/ui/input";
 import { ShopLoadingState } from "./ShopLoadingState";
 import { UnlockAnimation } from "./UnlockAnimation";
 import { ModuleCard } from "./ModuleCard";

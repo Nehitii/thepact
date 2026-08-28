@@ -8,9 +8,9 @@ export type { Goal };
  * Uses React Query for caching and automatic refetching.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import type { SuperGoalRule } from "@/domaines/objectifs/types";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables } from "@/socle/supabase/types";
 
 
 

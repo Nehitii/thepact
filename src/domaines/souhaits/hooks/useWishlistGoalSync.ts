@@ -7,10 +7,10 @@
  */
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { useGoals, type Goal } from "@/domaines/objectifs";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { TablesInsert, TablesUpdate } from "@/socle/supabase/types";
 
 export function useWishlistGoalSync(
   userId: string | undefined,

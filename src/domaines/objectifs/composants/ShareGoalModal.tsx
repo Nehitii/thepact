@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
+import { Button } from "@/socle/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/socle/ui/avatar";
+import { ScrollArea } from "@/socle/ui/scroll-area";
 import { Link2, Loader2, Check } from "lucide-react";
 import { useFriends } from "@/domaines/social";
 import { useSharedGoals } from "@/domaines/objectifs/hooks/useSharedGoals";

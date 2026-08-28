@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { optimizeImage } from "@/lib/imageOptimization";
+import { supabase } from "@/socle/supabase/client";
+import { optimizeImage } from "@/socle/outils/imageOptimization";
 import {
   DEPOT_WISHLIST, cheminDuDepot, cheminPourNouveauFichier, referenceDepot,
-} from "@/lib/wishlistDepot";
+} from "@/domaines/souhaits/logique/wishlistDepot";
 
 const TYPES_ACCEPTES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const POIDS_MAX = 5 * 1024 * 1024;

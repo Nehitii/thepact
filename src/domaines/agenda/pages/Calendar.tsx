@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarPage } from "@/domaines/agenda/composants/index";
-import { DSPageShell, DSBackground } from "@/components/ds";
+import { DSPageShell, DSBackground } from "@/socle/ds";
 import { useTranslation } from "react-i18next";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
 import "@/domaines/agenda/agenda.css";
 
 /* LE BANDEAU

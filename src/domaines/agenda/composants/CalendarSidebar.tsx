@@ -3,9 +3,9 @@ import {
   format, parseISO, isSameMonth, isSameDay,
   formatDistanceToNowStrict, isBefore,
 } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import type { CalendarEvent } from "@/domaines/agenda/types";
 
 /* LA TELEMETRIE

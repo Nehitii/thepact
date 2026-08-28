@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 import { ClipboardCheck, ChevronDown } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
-import { useAuth } from "@/contexts/AuthContext";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
+import { Slider } from "@/socle/ui/slider";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useHealthByDate, useHealthSettings, useUpsertHealthData } from "@/domaines/sante/hooks/useHealth";
 import { cleDuJour, laVeille } from "@/domaines/sante/logique/journee";
 import {

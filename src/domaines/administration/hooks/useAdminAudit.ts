@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { Json } from "@/socle/supabase/types";
 
 export async function logAdminAction(action: string, targetType: string, targetId?: string, metadata?: Record<string, unknown>) {
   const { data: { session } } = await supabase.auth.getSession();

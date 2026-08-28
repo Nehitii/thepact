@@ -10,9 +10,9 @@
  * qu on defile ne decale plus les pages suivantes.
  */
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
-import i18n from "@/i18n/i18n";
+import i18n from "@/socle/i18n/i18n";
 import type { JournalEntry } from "@/domaines/journal/types";
 import { trackJournalEntry } from "@/domaines/succes";
 

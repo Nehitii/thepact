@@ -1,4 +1,4 @@
-import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 
 /* Le cyan a 0,3 d alpha est fait pour un fond de nuit ; sur du papier
    il n existe pas. Ces equerres sont des REPERES DE CALAGE, et un

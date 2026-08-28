@@ -2,12 +2,12 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Star, Eye, ShoppingCart } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useShopFrames, useShopBanners, useShopTitles, useUserCosmetics, useBondBalance } from "@/domaines/boutique/hooks/useShop";
-import { BondIcon } from "@/components/ui/bond-icon";
-import { FramePreview } from "@/components/ui/avatar-frame";
+import { BondIcon } from "@/socle/ui/bond-icon";
+import { FramePreview } from "@/socle/ui/avatar-frame";
 import { WishlistButton } from "./WishlistButton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/socle/ui/button";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 const rarityOrder: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };

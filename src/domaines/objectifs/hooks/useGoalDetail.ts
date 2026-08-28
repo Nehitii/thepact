@@ -4,8 +4,8 @@
  * Fetches a single goal with its steps using React Query for caching.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json, Tables } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { Json, Tables } from "@/socle/supabase/types";
 
 /** L enum goal_difficulty, tel que la base le definit. */
 export type Difficulte = NonNullable<Tables<"goals">["difficulty"]>;

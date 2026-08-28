@@ -26,18 +26,18 @@ import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import type { TablesUpdate } from "@/integrations/supabase/types";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import type { TablesUpdate } from "@/socle/supabase/types";
 import { synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
-import { getDifficultyColor } from "@/lib/utils";
+import { getDifficultyColor } from "@/socle/outils/utils";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import { toast } from "sonner";
 import {
   ArrowLeft, Check, X, Target, StickyNote, Dices, Sparkle, ListOrdered, Calendar,
 } from "lucide-react";
 import { format } from "date-fns";
-import { DSPageLoader } from "@/components/ds";
+import { DSPageLoader } from "@/socle/ds";
 import "@/styles/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";

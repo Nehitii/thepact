@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { useProfile } from "@/domaines/profil";
 import { famillesRetenues } from "@/domaines/journal/logique/familles";
 

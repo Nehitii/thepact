@@ -8,7 +8,7 @@ import {
 import { toast } from "sonner";
 import "@/domaines/social/community.css";
 import "@/domaines/social/guild.css";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useGuild, useGuildMembers, useGuilds } from "@/domaines/social/hooks/useGuilds";
 import { emblemeDe, teinteDe } from "@/domaines/social/logique/blason";
 /* BlasonGuilde, et non « Blason » : blason.ts porte deja les emblemes

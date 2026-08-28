@@ -1,6 +1,6 @@
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from "@/socle/ui/alert-dialog";
+import { Button } from "@/socle/ui/button";
+import { Badge } from "@/socle/ui/badge";
 
 type ItemType = "required" | "optional";
 

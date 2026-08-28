@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Receipt, ArrowDownToLine, ShoppingCart, Link2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { getCurrencySymbol, formatCurrency } from "@/lib/currency";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { getCurrencySymbol, formatCurrency } from "@/socle/outils/currency";
 import { COST_ITEM_CATEGORIES } from "@/domaines/objectifs/logique/goalConstants";
 
 export interface CostItemData {

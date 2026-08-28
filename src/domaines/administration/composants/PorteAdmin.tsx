@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KeyRound, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/socle/ui/button";
 import { useMfa } from "@/domaines/profil";
 
 /**

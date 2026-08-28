@@ -2,7 +2,7 @@ import { memo } from "react";
 import { format, parseISO } from "date-fns";
 import { Repeat } from "lucide-react";
 import type { CalendarEvent } from "@/domaines/agenda/types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { estImportee } from "@/domaines/agenda/logique/sources";
 
 /* LA BANDE

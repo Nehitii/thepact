@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 
 /**
  * LE PROFIL D AUTRUI NE SE LIT PAS DANS `profiles`.

@@ -22,8 +22,8 @@ import {
   type PostFilterType,
   type PostSortOption,
 } from "@/domaines/social/hooks/useCommunity";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { supabase } from "@/socle/supabase/client";
 
 /* LE FIL.
  *

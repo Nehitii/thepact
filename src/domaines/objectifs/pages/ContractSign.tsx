@@ -6,15 +6,15 @@ import {
   useContractSignatures,
   useSignGoalContract,
 } from "@/domaines/objectifs/hooks/useGoalContracts";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useProfile } from "@/domaines/profil";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { DSPanel, DSBadge, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { DSPanel, DSBadge, DSEmptyState, DSPageShell, DSPageLoader } from "@/socle/ds";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
 import { useTranslation } from "react-i18next";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { ArrowLeft, Handshake, ShieldCheck, Users, Check, Clock } from "lucide-react";
 
 const HOLD_DURATION = 1500;

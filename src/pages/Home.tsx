@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { motion } from "framer-motion";
-import { DSPageShell } from "@/components/ds";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DSPageShell } from "@/socle/ds";
+import { Skeleton } from "@/socle/ui/skeleton";
 
 // Components
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";

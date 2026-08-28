@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useSound } from "@/contexts/SoundContext";
-import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { useSound } from "@/socle/contextes/SoundContext";
+import { useSoundSettings } from "@/domaines/profil";
 
 /**
  * Loads per-user sound preferences and applies them to the global SoundProvider.

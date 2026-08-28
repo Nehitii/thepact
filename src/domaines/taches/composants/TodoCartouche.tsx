@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { format, isPast, isToday, isTomorrow } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cn } from "@/lib/utils";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { cn } from "@/socle/outils/utils";
 import type { TodoTask, TodoStats } from "@/domaines/taches/hooks/useTodoList";
 
 /* LE CARTOUCHE

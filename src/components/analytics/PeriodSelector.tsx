@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 export type AnalyticsPeriod = "30d" | "90d" | "6m" | "all";
 

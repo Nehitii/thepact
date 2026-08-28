@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/socle/ui/skeleton";
 
 interface GoalsSkeletonProps {
   mode?: "bar" | "grid" | "bookmark" | "front";

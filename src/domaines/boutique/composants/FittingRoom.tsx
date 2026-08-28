@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useAuth } from "@/contexts/AuthContext";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/socle/ui/sheet";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { CosmeticFrame, CosmeticBanner, CosmeticTitle } from "@/domaines/boutique/hooks/useShop";
 import { HoldPurchaseButton } from "./HoldPurchaseButton";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { CarteProfilPublic } from "@/domaines/profil";
 import { useCarteProfil, type CarteProfil } from "@/domaines/profil";
 import { useRarityLabel, getRarity } from "@/domaines/boutique/logique/shopRarity";

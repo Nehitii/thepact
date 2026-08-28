@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { subDays, subMonths, format, parseISO, differenceInDays } from "date-fns";
 import type { AnalyticsPeriod } from "@/components/analytics/PeriodSelector";
 

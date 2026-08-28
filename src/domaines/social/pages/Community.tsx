@@ -9,7 +9,7 @@ import { NATURES, libelleNature, type NaturePost } from "@/domaines/social/logiq
 import { useCommunityStats, type PostFilterType, type PostSortOption } from "@/domaines/social/hooks/useCommunity";
 import { useLeaderboard } from "@/domaines/social/hooks/useLeaderboard";
 import { useCadres } from "@/domaines/social/hooks/useCadres";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 
 /* COMMUNITY — la coque.
  *

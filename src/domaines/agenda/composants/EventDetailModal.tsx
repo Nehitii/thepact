@@ -1,10 +1,10 @@
 import { useState, useEffect, useLayoutEffect, useMemo, useRef, useId } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogTitle } from "@/socle/ui/dialog";
+import { Switch } from "@/socle/ui/switch";
 import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import type { CalendarEvent, CalendarEventInsert, RecurrenceRule } from "@/domaines/agenda/types";
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";

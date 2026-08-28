@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ticket, Gift, Loader2, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useRedeemPromoCode } from "@/domaines/boutique/hooks/usePromoCodes";
 
 export function PromoCodeRedemption() {

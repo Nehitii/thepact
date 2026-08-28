@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/domaines/boutique/hooks/useShop";
-import { Button } from "@/components/ui/button";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { Button } from "@/socle/ui/button";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/socle/ui/skeleton";
+import { cn } from "@/socle/outils/utils";
 import { toast } from "sonner";
 export function BondsShop() {
   const { t } = useTranslation();

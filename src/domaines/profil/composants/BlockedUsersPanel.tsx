@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { UserX, Loader2, Search } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { Panneau } from "@/components/ds/console-ui";
+import { Input } from "@/socle/ui/input";
+import { cn } from "@/socle/outils/utils";
+import { Panneau } from "@/socle/ds/console-ui";
 import { chargerProfilsPublics } from "@/domaines/profil/logique/profilsPublics";
 import { useTranslation } from "react-i18next";
 

@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
 import { useTheCall } from "@/hooks/useTheCall";
 import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/components/thecall/CoeurStellaire";
-import { DSPageShell } from "@/components/ds";
-import { cn } from "@/lib/utils";
+import { DSPageShell } from "@/socle/ds";
+import { cn } from "@/socle/outils/utils";
 
 /* RIT.01 — L APPEL
  *

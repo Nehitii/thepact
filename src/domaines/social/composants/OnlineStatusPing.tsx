@@ -1,4 +1,4 @@
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useOnlineStatus } from "@/domaines/social/hooks/useOnlineStatus";
 
 /**
  * Le pointage de presence, monte une fois sous AuthProvider.

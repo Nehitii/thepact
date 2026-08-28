@@ -9,22 +9,22 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
-import { DSPageShell } from "@/components/ds";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DSPageShell } from "@/socle/ds";
+import { Skeleton } from "@/socle/ui/skeleton";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
 import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
 import { GoalContrats } from "@/components/analytics/GoalContrats";
-import { Telemetrie } from "@/components/ds/Telemetrie";
+import { Telemetrie } from "@/socle/ds/Telemetrie";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { glisse, useBarreCollee, useSommaire } from "@/hooks/useBarreAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
 import { useHealthHistory } from "@/domaines/sante";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { formatCurrency } from "@/lib/currency";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { formatCurrency } from "@/socle/outils/currency";
 import { getDifficultyLabel, getTagLabel } from "@/domaines/objectifs";
 
 /* ─────────────────────────────────────────────────────────────

@@ -19,7 +19,7 @@
  * ordinaires ont des etapes a montrer.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 
 export interface Etape {

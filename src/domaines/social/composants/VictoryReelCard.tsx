@@ -10,7 +10,7 @@ import {
   useRemoveReaction,
   useIncrementReelView,
 } from "@/domaines/social/hooks/useCommunity";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 
 /* UNE VIDEO DE VICTOIRE — plein cadre, vertical, une a la fois.
  *

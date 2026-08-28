@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useProfile } from "@/domaines/profil/hooks/useProfile";
 import { ProfileAccountSettings, type VoletCompte } from "@/domaines/profil/composants/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/domaines/profil/composants/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
-import { dateCivileDepuisTexte } from "@/lib/dateCivile";
+import { dateCivileDepuisTexte } from "@/domaines/profil/logique/dateCivile";
 import { Loader2 } from "lucide-react";
 
 /* LES TROIS ONGLETS SONT DEVENUS DEUX SECTIONS DU RAIL.

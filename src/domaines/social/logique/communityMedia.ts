@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
-import { optimizeImage } from "@/lib/imageOptimization";
+import { supabase } from "@/socle/supabase/client";
+import { optimizeImage } from "@/socle/outils/imageOptimization";
 
 /**
  * LES IMAGES ET GIFS DES PUBLICATIONS.

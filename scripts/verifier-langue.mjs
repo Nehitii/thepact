@@ -46,7 +46,7 @@ import process from "node:process";
 
 const RACINE = path.resolve(process.cwd(), "src");
 const GLOSSAIRE = path.resolve(process.cwd(), "scripts/glossaire.json");
-const SCHEMA = path.join(RACINE, "integrations/supabase/types.ts");
+const SCHEMA = path.join(RACINE, "socle/supabase/types.ts");
 
 const { concepts } = JSON.parse(fs.readFileSync(GLOSSAIRE, "utf8"));
 const schema = fs.readFileSync(SCHEMA, "utf8");
@@ -89,7 +89,7 @@ const rechutes = [];
 
 for (const f of sources(RACINE)) {
   const rel = path.relative(RACINE, f).replace(/\\/g, "/");
-  if (rel.startsWith("integrations/")) continue;
+  if (rel.startsWith("socle/supabase/")) continue;
   const brut = fs.readFileSync(f, "utf8");
 
   /* On retire les commentaires AVANT tout le reste : de la prose peut
@@ -134,7 +134,7 @@ for (const f of sources(RACINE)) {
  *
  * On ne regarde que le francais : `en.json` est une traduction, et
  * l anglais d Overwrite n est pas gouverne par ce glossaire. */
-const FR = path.join(RACINE, "i18n/locales/fr.json");
+const FR = path.join(RACINE, "socle/i18n/locales/fr.json");
 const plat = [];
 (function marche(n, chemin = "") {
   if (typeof n === "string") { plat.push([chemin, n]); return; }

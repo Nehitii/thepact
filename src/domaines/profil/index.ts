@@ -39,8 +39,11 @@
  * deux domaines dedans.
  */
 export { useProfile } from "./hooks/useProfile";
-export { useProfileSettings } from "./hooks/useProfileSettings";
-export type { ThemePreference } from "./hooks/useProfileSettings";
+/* useProfileSettings EST PARTI AU SOCLE. Il lit les preferences
+   d affichage sur profiles, et quatre lecteurs hors profil s en
+   servent — la barre laterale, les particules, la communaute. La
+   garde du socle l a signale : useParticleEffect, qui EST du socle,
+   l importait a travers ce domaine. */
 export { useMfa } from "./hooks/useMfa";
 export { useCarteProfil } from "./hooks/useCarteProfil";
 export type { CarteProfil } from "./hooks/useCarteProfil";
@@ -58,3 +61,7 @@ export { CarteProfilPublic } from "./composants/CarteProfilPublic";
 export { TitreCosmetique } from "./composants/TitreCosmetique";
 export { ProfilePreferencesSync } from "./composants/ProfilePreferencesSync";
 export { AccentColorSync } from "./composants/AccentColorSync";
+
+/* Deux hooks que des ecrans non encore ranges appellent. */
+export { useSoundSettings } from "./hooks/useSoundSettings";
+export { useCodesDeSecours, motifLisible } from "./hooks/useCodesDeSecours";

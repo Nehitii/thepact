@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Tag, Type, Coins, X, Repeat, CalendarClock, Layers, AlertTriangle } from 'lucide-react';
-import { formatCurrency } from '@/lib/currency';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { getCurrencySymbol } from '@/lib/currency';
+import { formatCurrency } from '@/socle/outils/currency';
+import { Dialog, DialogContent, DialogTitle } from '@/socle/ui/dialog';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { getCurrencySymbol } from '@/socle/outils/currency';
 import { getCategoryLabel, type FinanceCategory } from '@/domaines/finance/logique/categories';
 import { CadreurDImage } from '../CadreurDImage';
 import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/domaines/finance/logique/cadre';

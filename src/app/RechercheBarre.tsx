@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, X, Target, ListTodo, CornerDownLeft, type LucideIcon } from "lucide-react";
-import { classer } from "@/lib/rechercheMots";
+import { classer } from "@/socle/outils/rechercheMots";
 import { useRechercheBarre } from "@/hooks/useRechercheBarre";
 
 /* ═══════════════════════════════════════════════════════════════

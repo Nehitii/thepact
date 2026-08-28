@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, Coins, PackageCheck, Target, Sparkles, Undo2 } from "lucide-react";
 import { toast } from "sonner";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { formatCurrency, getCurrencySymbol } from "@/lib/currency";
-import { usePactCostItems, useAcquerirPieces, type CostItem } from "@/hooks/useCostItems";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { formatCurrency, getCurrencySymbol } from "@/socle/outils/currency";
+import { usePactCostItems, useAcquerirPieces, type CostItem } from "@/domaines/objectifs";
 import type { Goal } from "@/domaines/objectifs";
 
 /* L ARBITRAGE

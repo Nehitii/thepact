@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import type { Json } from "@/socle/supabase/types";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useEffect, useId, useMemo } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,

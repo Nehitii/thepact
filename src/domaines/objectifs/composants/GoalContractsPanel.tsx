@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { useGoalContracts, useCreateGoalContract, type GoalContract } from "@/domaines/objectifs/hooks/useGoalContracts";
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { useFeatureFlag } from "@/socle/hooks/useFeatureFlag";
 import { useFriends } from "@/domaines/social";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { DSPanel } from "@/components/ds";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { DSPanel } from "@/socle/ds";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
+import { Textarea } from "@/socle/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/socle/ui/dialog";
+import { Badge } from "@/socle/ui/badge";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { toast } from "sonner";
 import { Handshake, Check, X, Users } from "lucide-react";
-import { messageDErreur } from "@/lib/erreurs";
+import { messageDErreur } from "@/socle/outils/erreurs";
 
 interface Props { goalId: string; goalName: string; }
 

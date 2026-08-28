@@ -10,9 +10,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { BondIcon } from "@/components/ui/bond-icon";
+} from "@/socle/ui/dialog";
+import { Button } from "@/socle/ui/button";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { HoldPurchaseButton } from "@/domaines/boutique/composants/HoldPurchaseButton";
 
 export interface PurchaseItem {

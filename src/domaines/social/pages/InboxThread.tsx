@@ -7,19 +7,19 @@ import { ArrowLeft, Send, CheckCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import "@/domaines/social/community.css";
 import "@/domaines/social/inbox.css";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useMessages } from "@/domaines/social/hooks/useMessages";
 import { useFriends } from "@/domaines/social/hooks/useFriends";
 import { useCadres } from "@/domaines/social/hooks/useCadres";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { chargerProfilsPublics } from "@/domaines/profil";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 
 /**
  * UNE CONVERSATION.

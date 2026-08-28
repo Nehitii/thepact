@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Trash2, Clock, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTodoList } from '@/domaines/taches/hooks/useTodoList';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/socle/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,10 +12,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { cn } from '@/lib/utils';
+} from '@/socle/ui/alert-dialog';
+import { cn } from '@/socle/outils/utils';
 import { useTranslation } from 'react-i18next';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 
 const priorityBadge = {
   low: 'bg-muted text-muted-foreground',

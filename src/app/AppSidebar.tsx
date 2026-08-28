@@ -2,12 +2,12 @@ import { useState, memo, useCallback, useMemo, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useProfile } from "@/domaines/profil";
-import { useProfileSettings, type ThemePreference } from "@/domaines/profil";
+import { useProfileSettings, type ThemePreference } from "@/socle/hooks/useProfileSettings";
 import { useShopModules, useUserModulePurchases } from "@/domaines/boutique";
 import { usePendingFriendCount } from "@/domaines/social";
-import { useSocialFeatures } from "@/hooks/useSocialFeatures";
+import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
 import {
   Home, Target, ShoppingBag, ShoppingCart, Users, LogOut, Settings, UserCircle,
   Bell, Shield, Database, Volume2, ListTodo, BookOpen, Wallet, Zap, Heart,
@@ -15,14 +15,14 @@ import {
   Mail, RefreshCw, User, Crown, CalendarDays, Search, Menu, ChevronRight,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/socle/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/socle/ui/tooltip";
 import { useNotifications } from "@/domaines/social";
 import { useMessagesNonLus } from "@/domaines/social";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/socle/hooks/use-mobile";
 import { prefetchRoute } from "@/app/prefetchRoutes";
-import { raccourciPalette } from "@/lib/toucheRaccourci";
-import { AvatarFrame } from "@/components/ui/avatar-frame";
+import { raccourciPalette } from "@/socle/outils/toucheRaccourci";
+import { AvatarFrame } from "@/socle/ui/avatar-frame";
 import { useCarteProfil } from "@/domaines/profil";
 import { RechercheBarre, type EntreeCherchable } from "./RechercheBarre";
 

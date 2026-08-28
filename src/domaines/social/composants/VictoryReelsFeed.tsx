@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { VictoryReelCard } from "@/domaines/social/composants/VictoryReelCard";
 import { CreateReelModal } from "@/domaines/social/composants/CreateReelModal";
 import { useCompletedGoals, useVictoryReels } from "@/domaines/social/hooks/useCommunity";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 
 /* LA PILE DE VIDEOS.
  *

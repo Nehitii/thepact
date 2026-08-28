@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/socle/ui/input";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Bouton } from "@/components/ds/console-ui";
+} from "@/socle/ui/alert-dialog";
+import { Bouton } from "@/socle/ds/console-ui";
 import { useResetPact } from "@/domaines/objectifs";
 
 /**

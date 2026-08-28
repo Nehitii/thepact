@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Check, Clock, Lock, Moon, Sparkles, Trophy, Users, X } from "lucide-react";
 import { format } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import "@/domaines/succes/pantheon.css";
 import "@/domaines/succes/succes.css";
-import { useAuth } from "@/contexts/AuthContext";
-import { DSPageShell } from "@/components/ds";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { DSPageShell } from "@/socle/ds";
 import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
 import {
   RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs,

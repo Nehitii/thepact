@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lock, Plus } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency } from '@/socle/outils/currency';
 import { totalDuMois, montantDuMois } from '@/domaines/finance/logique/cadence';
 import {
   type FinanceCategory,

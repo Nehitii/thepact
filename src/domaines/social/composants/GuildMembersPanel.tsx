@@ -6,7 +6,7 @@ import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
 import { useCadres } from "@/domaines/social/hooks/useCadres";
 import { useFriends } from "@/domaines/social/hooks/useFriends";
-import { useRangs } from "@/hooks/useRangs";
+import { useRangs } from "@/domaines/social/hooks/useRangs";
 import { SurvolProfil } from "@/domaines/profil";
 import { useGuildMembers, useGuilds, type Guild, type GuildMember } from "@/domaines/social/hooks/useGuilds";
 

@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
-import { selonTheme } from "@/lib/encrePapier";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
+import { selonTheme } from "@/socle/outils/encrePapier";
 import { Flame, Footprints, Gem, Globe, Mountain, Target, TrendingUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import "@/domaines/social/community.css";
 import "@/domaines/social/classement.css";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import { nomAffichable } from "@/domaines/social/logique/vocabulaire";
 import { SurvolProfil } from "@/domaines/profil";
 import { useCadres, type Cadre } from "@/domaines/social/hooks/useCadres";
-import { useCordee, type Grimpeur } from "@/hooks/useCordee";
+import { useCordee, type Grimpeur } from "@/domaines/social/hooks/useCordee";
 import { useLeaderboard } from "@/domaines/social/hooks/useLeaderboard";
-import { useRangs } from "@/hooks/useRangs";
-import { avatarSimule } from "@/lib/avatarSimule";
+import { useRangs } from "@/domaines/social/hooks/useRangs";
+import { avatarSimule } from "@/domaines/social/logique/avatarSimule";
 
 /* LE CLASSEMENT.
  *

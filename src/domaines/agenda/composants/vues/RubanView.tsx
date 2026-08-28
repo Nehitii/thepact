@@ -4,9 +4,9 @@ import {
   isToday, isSameDay, isWeekend, startOfDay, endOfDay, isBefore, isAfter, max, min,
 } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
-import { cn } from "@/lib/utils";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
+import { cn } from "@/socle/outils/utils";
 import type { CalendarEvent } from "@/domaines/agenda/types";
 
 /* LE RUBAN

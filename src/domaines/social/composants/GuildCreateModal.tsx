@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/socle/ui/switch";
 import {
   CLES_EMBLEMES, EMBLEMES, TEINTES, TEINTE_PAR_DEFAUT, emblemeDe, estUneTeinte,
 } from "@/domaines/social/logique/blason";

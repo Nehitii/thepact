@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Target, ListTodo, Settings, Music, BarChart3, History, Link2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { FocusPanels } from "./FocusPanels";
 import type { Goal } from "@/domaines/objectifs";
 import type { TodoTask } from "@/domaines/taches";

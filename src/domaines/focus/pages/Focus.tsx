@@ -8,12 +8,12 @@ import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/domai
 import { useGoals } from "@/domaines/objectifs";
 import { useTodoList } from "@/domaines/taches";
 import { usePact } from "@/domaines/objectifs";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSound } from "@/contexts/SoundContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useSound } from "@/socle/contextes/SoundContext";
+import { useIsMobile } from "@/socle/hooks/use-mobile";
 import { toast } from "sonner";
-import { DSPageShell } from "@/components/ds";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { DSPageShell } from "@/socle/ds";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import "@/domaines/focus/focus.css";
 import {
   AlertDialog,
@@ -24,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 import {
   FocusSeal,
   FocusStats,
@@ -38,7 +38,7 @@ import {
   FocusControls,
   type FocusPanel,
 } from "@/domaines/focus/composants/index";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* Reglages et objectif lie survivent au demontage, comme la session
    elle-meme : revenir sur la page avec un minuteur de 45 minutes remis a

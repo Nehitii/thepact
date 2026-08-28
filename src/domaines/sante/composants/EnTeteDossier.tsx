@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Settings as SettingsIcon } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useProfile } from "@/domaines/profil";
 import { laVeille } from "@/domaines/sante/logique/journee";
 

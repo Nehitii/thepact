@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
-import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/socle/ds";
 import { useHealthSettings, useHealthHistory } from "@/domaines/sante/hooks/useHealth";
 import { useHealthReminders } from "@/domaines/sante/hooks/useHealthReminders";
 import { joursARelever, FENETRE_RATTRAPAGE } from "@/domaines/sante/logique/journee";

@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, ExternalLink, Pencil, Target, Trash2 } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/socle/outils/currency";
 import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";

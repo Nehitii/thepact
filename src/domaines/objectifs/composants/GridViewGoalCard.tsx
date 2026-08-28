@@ -1,6 +1,6 @@
 import React from "react";
 import { Star, ImageOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { SharedGoalBadge } from "@/domaines/objectifs/composants/SharedGoalBadge";
 import { GoalLockOverlay } from "@/domaines/objectifs/composants/GoalLockOverlay";
 import { useTranslation } from "react-i18next";

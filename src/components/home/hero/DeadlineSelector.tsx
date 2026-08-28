@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Clock, Zap, Calendar, CalendarDays, CalendarRange } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/socle/ui/button';
+import { cn } from '@/socle/outils/utils';
 import { DeadlineType } from '@/hooks/useActiveMission';
 
 interface DeadlineSelectorProps {

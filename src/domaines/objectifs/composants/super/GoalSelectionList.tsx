@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Search, Check, Target, Zap, Crown, X } from "lucide-react";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/socle/ui/input";
+import { Badge } from "@/socle/ui/badge";
+import { ScrollArea } from "@/socle/ui/scroll-area";
 import { getDifficultyLabel, getTagLabel, getStatusLabel, DIFFICULTY_OPTIONS, GOAL_TAGS } from "@/domaines/objectifs/logique/goalConstants";
-import { getDifficultyColor } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { getDifficultyColor } from "@/socle/outils/utils";
+import { cn } from "@/socle/outils/utils";
 import { useTranslation } from "react-i18next";
 
 interface Goal {

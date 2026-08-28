@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/socle/ui/dialog";
+import { Button } from "@/socle/ui/button";
 import { Lock, ShieldAlert } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface UnlockGoalModalProps {
   open: boolean;

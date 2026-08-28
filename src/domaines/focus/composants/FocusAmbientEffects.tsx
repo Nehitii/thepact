@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { useProfileSettings } from "@/domaines/profil";
+import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 
 interface FocusAmbientEffectsProps {
   progress: number;

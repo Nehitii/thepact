@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { messageDErreur } from "@/lib/erreurs";
-import { consommerErreurOAuth, messageDErreurOAuth } from "@/lib/erreurOAuth";
+import { supabase } from "@/socle/supabase/client";
+import { messageDErreur } from "@/socle/outils/erreurs";
+import { consommerErreurOAuth, messageDErreurOAuth } from "@/socle/outils/erreurOAuth";
 import { useFournisseursActifs, type Fournisseur } from "@/hooks/useFournisseursActifs";
 import "@/styles/auth.css";
 

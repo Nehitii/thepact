@@ -6,11 +6,11 @@ import type { JournalEntry } from "@/domaines/journal/types";
 import { getMood, getFont, getSize, getAlign, getAccentEtat } from "@/domaines/journal/types";
 import { assainirJournal, compterMots, referenceDe } from "@/domaines/journal/logique/html";
 import { useToggleFavorite } from "@/domaines/journal/hooks/useJournal";
-import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { cn } from "@/socle/outils/utils";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/socle/ui/dropdown-menu";
 
 /* LA PIECE DE DOSSIER
  *

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Eye, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { cn } from "@/socle/outils/utils";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/socle/ui/button";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 
 export type CyberItemType = "module" | "frame" | "banner" | "title";

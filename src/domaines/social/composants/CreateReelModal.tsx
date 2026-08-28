@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { teinteDuPalier } from "@/domaines/objectifs";
 import { useCreateVictoryReel, useCompletedGoals } from "@/domaines/social/hooks/useCommunity";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProfileSettings } from "@/domaines/profil";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 
 /* PUBLIER UNE VIDEO DE VICTOIRE.
  *

@@ -21,7 +21,7 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSound } from "@/contexts/SoundContext";
+import { useSound } from "@/socle/contextes/SoundContext";
 
 const DUREE_CHARGE = 850;
 const DUREE_ECLAT = 480;

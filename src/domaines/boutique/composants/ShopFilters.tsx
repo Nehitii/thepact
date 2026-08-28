@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, Eye, EyeOff, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Button } from "@/socle/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+} from "@/socle/ui/dropdown-menu";
+import { Badge } from "@/socle/ui/badge";
 
 import type { SortOption, RarityFilter, ShopFilterState } from "@/domaines/boutique/types";
 export type { SortOption, RarityFilter, ShopFilterState };

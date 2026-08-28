@@ -6,11 +6,11 @@ import {
   CornerUpLeft, Eye, Flame, Lock, Rocket, Trophy,
 } from 'lucide-react';
 import { format, startOfMonth, subMonths } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency } from '@/lib/currency';
+import { useAuth } from '@/socle/contextes/AuthContext';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency } from '@/socle/outils/currency';
 import { useMonthlyValidations } from '@/domaines/finance/hooks/useFinance';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 import { totalDuMois, montantDuMois, tombeEn } from '@/domaines/finance/logique/cadence';
 import { peutPointer, estLeMoisCourant, type EtatDuMois } from '@/domaines/finance/logique/moisAffiche';
 import type { FinancialItem } from '@/domaines/finance/types';

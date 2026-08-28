@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Volume2, Palette, Sparkles, Moon, Sun, Laptop, Loader2, Type, Play } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { useAuth } from "@/contexts/AuthContext";
-import { useSound } from "@/contexts/SoundContext";
-import { useSoundSettings } from "@/hooks/useSoundSettings";
+import { Switch } from "@/socle/ui/switch";
+import { Slider } from "@/socle/ui/slider";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { useSound } from "@/socle/contextes/SoundContext";
+import { useSoundSettings } from "@/domaines/profil/hooks/useSoundSettings";
 import { toast } from "sonner";
-import { useProfileSettings, type ThemePreference } from "@/domaines/profil/hooks/useProfileSettings";
+import { useProfileSettings, type ThemePreference } from "@/socle/hooks/useProfileSettings";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
-import { Panneau, Reglage, Segmente, Jauge } from "@/components/ds/console-ui";
+import { Panneau, Reglage, Segmente, Jauge } from "@/socle/ds/console-ui";
 import { reagitAuxAbsences, reglerReactionAuxAbsences } from "@/domaines/mia";
-import { useChromeFlottant } from "@/lib/chromeFlottant";
+import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
 import { Search } from "lucide-react";
 import { VisageMia } from "@/domaines/mia";
 

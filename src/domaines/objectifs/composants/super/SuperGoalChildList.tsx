@@ -1,11 +1,11 @@
 import React, { memo, useMemo } from "react";
 import { Crown, Target, CheckCircle2, AlertTriangle, ExternalLink, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/socle/ui/badge";
+import { Progress } from "@/socle/ui/progress";
+import { Button } from "@/socle/ui/button";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { getDifficultyColor } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
+import { getDifficultyColor } from "@/socle/outils/utils";
 import { getDifficultyLabel, getStatusLabel, getDifficultyIntensity } from "@/domaines/objectifs/logique/goalConstants";
 import type { SuperGoalChildInfo } from "@/domaines/objectifs/types";
 import { useTranslation } from "react-i18next";

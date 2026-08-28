@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/socle/supabase/client';
+import { useAuth } from '@/socle/contextes/AuthContext';
 import { toast } from 'sonner';
-import { codeDErreur } from "@/lib/erreurs";
+import { codeDErreur } from "@/socle/outils/erreurs";
 
 export type DeadlineType = '24h' | '48h' | '72h' | '1week' | '1month';
 

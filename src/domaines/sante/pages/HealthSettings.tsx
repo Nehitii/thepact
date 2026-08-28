@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Heart, Ruler, Weight, Droplets, Apple } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/socle/ui/switch";
+import { Slider } from "@/socle/ui/slider";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useHealthSettings, useUpsertHealthSettings } from "@/domaines/sante/hooks/useHealth";
 import { ConsoleReglages } from "@/domaines/profil";
-import { Panneau, Reglage, Segmente, Jauge, ChampTexte, Alerte, Bouton } from "@/components/ds/console-ui";
+import { Panneau, Reglage, Segmente, Jauge, ChampTexte, Alerte, Bouton } from "@/socle/ds/console-ui";
 import {
   type UniteHydratation, CL_PAR_VERRE, uniteValide, quantiteAffichee,
   verresDepuisAffichage, formaterQuantite, pasAffiche, uniteCourte,

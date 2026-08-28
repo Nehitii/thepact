@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Bouton } from "@/components/ds/console-ui";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { DataPanel } from "@/components/ds/settings-ui";
+import { Bouton } from "@/socle/ds/console-ui";
+import { supabase } from "@/socle/supabase/client";
+import { Button } from "@/socle/ui/button";
+import { ScrollArea } from "@/socle/ui/scroll-area";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/socle/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/socle/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/socle/ui/tooltip";
+import { DataPanel } from "@/socle/ds/settings-ui";
 import { RankCard } from "@/domaines/succes/composants/RankCard";
 import { RankEditor } from "@/domaines/succes/composants/RankEditor";
 import type { Rank } from "@/domaines/succes/types";
@@ -15,7 +15,7 @@ import { usePact } from "@/domaines/objectifs";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trophy, Plus, Trash2, Edit2, Sparkles, Target, MoreVertical, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface RanksCardProps {

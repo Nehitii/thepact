@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { Bell, X, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

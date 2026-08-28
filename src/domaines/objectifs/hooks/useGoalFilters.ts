@@ -8,7 +8,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { estFranchi } from "@/domaines/objectifs/logique/superGoals";
 import { brigadeDe } from "@/domaines/objectifs/logique/brigade";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 export type SortOption = "difficulty" | "points" | "created" | "name" | "status" | "start" | "progression" | "super";
 

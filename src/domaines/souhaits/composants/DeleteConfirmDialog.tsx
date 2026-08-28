@@ -9,8 +9,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { formatCurrency } from "@/lib/currency";
+} from "@/socle/ui/alert-dialog";
+import { formatCurrency } from "@/socle/outils/currency";
 
 interface DeleteConfirmDialogProps {
   open: boolean;

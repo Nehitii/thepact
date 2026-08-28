@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { MotionConfig } from "framer-motion";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProviders } from "@/components/AppProviders";
@@ -6,7 +6,9 @@ import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { AppLayout } from "@/app/AppLayout";
 import { AdminRoute } from "@/app/AdminRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useSocialFeatures } from "@/hooks/useSocialFeatures";
+import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
+import { CONNEXION_ETABLIE } from "@/socle/contextes/AuthContext";
+import { trackLogin, initializeAchievementTracking } from "@/domaines/succes";
 import { routeImports } from "@/app/prefetchRoutes";
 
 // Lazy-loaded pages
@@ -81,6 +83,22 @@ function SocialGate({
 
 function AppRoutes() {
   const social = useSocialFeatures();
+
+  /* LE COMPTAGE DE LA CONNEXION SE FAIT ICI, PAS DANS LE CONTEXTE.
+     AuthContext vit dans le socle et quatorze domaines l importent ;
+     il annonce la connexion, et c est ce fichier — la racine de
+     composition, la seule qui ait le droit de tout connaitre — qui
+     appelle le domaine succes. */
+  useEffect(() => {
+    const compter = (e: Event) => {
+      const id = (e as CustomEvent<{ userId: string }>).detail?.userId;
+      if (!id) return;
+      initializeAchievementTracking(id);
+      trackLogin(id);
+    };
+    window.addEventListener(CONNEXION_ETABLIE, compter);
+    return () => window.removeEventListener(CONNEXION_ETABLIE, compter);
+  }, []);
   return (
     <Routes>
       {/* Public */}

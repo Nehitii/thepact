@@ -5,10 +5,10 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, CalendarDays } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/socle/outils/utils";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
+import { Calendar } from "@/socle/ui/calendar";
 import { SourceFilterChips } from "./SourceFilterChips";
 import type { CalendarSourceType } from "@/domaines/agenda/types";
 

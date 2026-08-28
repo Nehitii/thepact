@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { supabase } from "@/integrations/supabase/client";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { supabase } from "@/socle/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Textarea } from "@/socle/ui/textarea";
+import { Badge } from "@/socle/ui/badge";
 import { CalendarDays, Plus, Clock, Users, Check, HelpCircle, X } from "lucide-react";
 import { format, formatDistanceToNow, isPast } from "date-fns";
 import { toast } from "sonner";
-import { CyberEmpty } from "@/components/ui/cyber-states";
+import { CyberEmpty } from "@/socle/ui/cyber-states";
 
 interface GuildEvent {
   id: string;

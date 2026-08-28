@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Target, Handshake, Inbox, UserCircle } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/socle/hooks/use-mobile";
 import { usePendingFriendCount } from "@/domaines/social";
 import { useMessagesNonLus } from "@/domaines/social";
-import { useSocialFeatures } from "@/hooks/useSocialFeatures";
-import { cn } from "@/lib/utils";
+import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
+import { cn } from "@/socle/outils/utils";
 
 interface NavTab {
   to: string;

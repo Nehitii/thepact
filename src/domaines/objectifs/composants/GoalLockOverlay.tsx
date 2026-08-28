@@ -1,5 +1,5 @@
 import { Lock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface GoalLockOverlayProps {
   className?: string;

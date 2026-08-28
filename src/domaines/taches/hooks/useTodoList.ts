@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/socle/supabase/client';
+import { useAuth } from '@/socle/contextes/AuthContext';
 import { toast } from 'sonner';
-import i18n from '@/i18n/i18n';
+import i18n from '@/socle/i18n/i18n';
 import { trackTodoCompleted } from '@/domaines/succes';
 
 /* CE CROCHET NE PARLAIT QU ANGLAIS

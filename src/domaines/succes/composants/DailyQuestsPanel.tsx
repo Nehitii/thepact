@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useDailyQuests, useClaimQuest } from "@/domaines/succes/hooks/useDailyQuests";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
-import { Button } from "@/components/ui/button";
-import { PREF } from "@/lib/preferencesAffichage";
+import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
+import { Button } from "@/socle/ui/button";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 const OR = "#ffd700";
 const VERT = "#34d399";

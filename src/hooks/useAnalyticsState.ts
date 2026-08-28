@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { AnalyticsPeriod } from "@/components/analytics/PeriodSelector";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 /** Les trois vues de la page. Voir le commentaire sur SECTIONS. */
 export type PrismSection = "trajectoire" | "repartition" | "rythme";
 

@@ -9,13 +9,13 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { CATEGORIES_TACHE } from "@/domaines/taches/logique/categories";
 import { NATURES_TACHE } from "@/domaines/taches/logique/natures";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cn } from "@/lib/utils";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { cn } from "@/socle/outils/utils";
 import type { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from "@/domaines/taches/hooks/useTodoList";
-import { Calendar as CalendrierChoix } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Calendar as CalendrierChoix } from "@/socle/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
+import { Switch } from "@/socle/ui/switch";
 import type { ValeursTache } from "@/domaines/taches/logique/valeursTache";
 
 /* LE TERMINAL DE SAISIE

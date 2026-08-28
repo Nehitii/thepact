@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Target, Calendar, ShoppingCart, CheckCircle, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/socle/ui/button';
+import { cn } from '@/socle/outils/utils';
 import { motion } from 'framer-motion';
 
 interface GettingStartedStep {

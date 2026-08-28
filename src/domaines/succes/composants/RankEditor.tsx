@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
+import { Textarea } from "@/socle/ui/textarea";
+import { Slider } from "@/socle/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
 import { RankCard } from "@/domaines/succes/composants/RankCard";
 import type { Rank } from "@/domaines/succes/types";
 import { 
@@ -17,7 +17,7 @@ import {
   Check,
   AlertTriangle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface RankEditorProps {
   rank: Rank;

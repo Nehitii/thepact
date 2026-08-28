@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Phone, BookOpen, ListTodo, Heart, Check, Lock, Sparkles, Zap, Bell } from "lucide-react";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/socle/ui/button";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 import { useModuleFeatures } from "@/domaines/boutique/logique/moduleFeatures";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp, "the-call": Phone, journal: BookOpen, "todo-list": ListTodo, "track-health": Heart,

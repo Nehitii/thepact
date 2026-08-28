@@ -2,8 +2,8 @@
    signalements, et l abonnement au direct. */
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { chargerProfilsPublics } from "@/domaines/profil";
 import { trackCommunityPost } from "@/domaines/succes";
 import type { CommunityPost, CommunityReply, VictoryReel, PostFilterType, PostSortOption } from "@/domaines/social/types";

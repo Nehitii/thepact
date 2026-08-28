@@ -2,15 +2,15 @@ import { motion } from "framer-motion";
 import { TitreCosmetique } from "@/domaines/profil";
 import { useTranslation } from "react-i18next";
 import { Package, Check, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { Button } from "@/socle/ui/button";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
-import { ShopBundle } from "@/hooks/useBundles";
+import { ShopBundle } from "@/domaines/boutique/hooks/useBundles";
 import { getRarity, useRarityLabel } from "@/domaines/boutique/logique/shopRarity";
 import { useShopFrames, useShopBanners, useShopTitles } from "@/domaines/boutique/hooks/useShop";
 import { useProfile } from "@/domaines/profil";
-import { useAuth } from "@/contexts/AuthContext";
-import { AvatarFrame } from "@/components/ui/avatar-frame";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { AvatarFrame } from "@/socle/ui/avatar-frame";
 
 interface BundleCardProps {
   bundle: ShopBundle;

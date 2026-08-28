@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
+import { supabase } from "@/socle/supabase/client";
 import { AlertTriangle, Check, Globe, Loader2, X } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/socle/outils/currency";
 import { ChampImage } from "@/domaines/souhaits/composants/ChampImage";
 
 /* Le serveur nomme la cause ; ici on la dit. Un « non-2xx » n apprend

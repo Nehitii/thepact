@@ -1,14 +1,14 @@
 import { useCallback, useRef, useState } from "react";
 import { Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
-import { useProfileSettings } from "@/domaines/profil/hooks/useProfileSettings";
-import { Switch } from "@/components/ui/switch";
+import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
+import { Switch } from "@/socle/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
-import { Panneau, Reglage } from "@/components/ds/console-ui";
+import { Panneau, Reglage } from "@/socle/ds/console-ui";
 import { BlockedUsersPanel } from "@/domaines/profil/composants/BlockedUsersPanel";
 
 /* Trois cles de plus figuraient ici — share_achievements,

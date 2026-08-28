@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/socle/contextes/AuthContext';
 import {
   useRecurringExpenses,
   useRecurringIncome,
@@ -30,7 +30,7 @@ import {
   INCOME_CATEGORIES,
   calculateActiveTotal,
 } from '@/domaines/finance/logique/categories';
-import { useCurrency } from '@/contexts/CurrencyContext';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
 import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings, useMonthlyValidations } from '@/domaines/finance/hooks/useFinance';
 
 interface MonthlyDashboardProps {

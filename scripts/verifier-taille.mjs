@@ -30,10 +30,10 @@ const PLAFONDS = path.resolve(process.cwd(), "scripts/taille-plafonds.json");
 const abaisser = process.argv.includes("--abaisser");
 
 /* CE QU ON NE COMPTE PAS, ET POURQUOI.
-   `integrations/supabase/types.ts` est genere par Supabase : le decouper
+   `socle/supabase/types.ts` est genere par Supabase : le decouper
    serait defait a la prochaine generation. Les `_shared` des fonctions
    Edge sont couverts par `npm run edge:check`. */
-const IGNORE = [/^src\/integrations\//];
+const IGNORE = [/^src\/socle\/supabase\//];
 
 const RACINES = ["src", "supabase/functions"];
 

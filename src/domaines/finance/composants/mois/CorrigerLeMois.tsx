@@ -9,8 +9,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+} from '@/socle/ui/alert-dialog';
+import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 
 /**
  * ROUVRIR UN MOIS CLOS.

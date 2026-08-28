@@ -1,4 +1,4 @@
-import { computeFrameTransform } from "@/components/ui/unified-frame-renderer";
+import { computeFrameTransform } from "@/socle/ui/unified-frame-renderer";
 import type { Cadre } from "@/domaines/social/hooks/useCadres";
 import { Initiales, nomAffichable, teinteAvatar } from "@/domaines/social/logique/vocabulaire";
 

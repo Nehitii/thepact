@@ -1,24 +1,24 @@
 import { useState, useRef } from "react";
-import { Bouton } from "@/components/ds/console-ui";
+import { Bouton } from "@/socle/ds/console-ui";
 import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { differenceInDays, format, parseISO, isValid } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { supabase } from "@/socle/supabase/client";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
 import { toast } from "sonner";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/socle/ui/radio-group";
+import { Label } from "@/socle/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/socle/ui/dialog";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { ReinitialiserLePacte } from "@/domaines/profil/composants/ReinitialiserLePacte";
-import { oublierLesPreferences, preferencesPosees } from "@/lib/preferencesAffichage";
-import { Panneau } from "@/components/ds/console-ui";
+import { oublierLesPreferences, preferencesPosees } from "@/socle/outils/preferencesAffichage";
+import { Panneau } from "@/socle/ds/console-ui";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 

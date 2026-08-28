@@ -3,11 +3,11 @@ import { X, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useDailyJournalPrompt, useEnregistrerOrientation } from "@/domaines/journal/hooks/useJournalPrompt";
 import { useProfile } from "@/domaines/profil";
 import { FAMILLES, famillesRetenues } from "@/domaines/journal/logique/familles";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useQuestionCongediee } from "@/domaines/journal/hooks/useQuestionCongediee";
 
 interface Props {

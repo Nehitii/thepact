@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { Bouton } from "@/components/ds/console-ui";
+import { Bouton } from "@/socle/ds/console-ui";
 import { Sparkles, Save, Loader2, Type, Wand2 } from "lucide-react";
-import { DataPanel } from "@/components/ds/settings-ui";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { DataPanel } from "@/socle/ds/settings-ui";
+import { Input } from "@/socle/ui/input";
+import { Textarea } from "@/socle/ui/textarea";
+import { Label } from "@/socle/ui/label";
 import { toast } from "sonner";
 import { PactVisual } from "@/domaines/objectifs";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 const SYMBOL_OPTIONS = [
   { key: "flame", label: "Flamme" },

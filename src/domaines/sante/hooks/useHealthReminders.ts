@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useHealthHistory } from "@/domaines/sante/hooks/useHealth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { cleDuJour, veilleRelevee, FENETRE_RATTRAPAGE } from "@/domaines/sante/logique/journee";
 
 /* ═══════════════════════════════════════════════════════════════

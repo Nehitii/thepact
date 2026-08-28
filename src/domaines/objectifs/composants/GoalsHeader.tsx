@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Network } from "lucide-react";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { Telemetrie } from "@/components/ds/Telemetrie";
+import { Telemetrie } from "@/socle/ds/Telemetrie";
 
 /* EN-TETE DES OBJECTIFS
  *

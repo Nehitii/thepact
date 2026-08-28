@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { CornerDownLeft } from "lucide-react";
 import { TodoPriority, CreateTaskInput, TodoTaskType } from "@/domaines/taches/hooks/useTodoList";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { useTranslation } from "react-i18next";
 import { IDS_CATEGORIE } from "@/domaines/taches/logique/categories";
 import { addDays } from "date-fns";

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO, subDays } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { totalSecondes } from "@/domaines/sante/logique/souffle";
 import { serieDeJours } from "@/domaines/sante/logique/journee";
 

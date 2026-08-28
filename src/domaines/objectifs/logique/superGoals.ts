@@ -25,7 +25,7 @@
  * et dans la fiche, avec deux definitions differentes du « franchi ».
  * Elle vit ici, une seule fois.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { filterGoalsByRule } from "@/domaines/objectifs/types";
 import type { SuperGoalRule } from "@/domaines/objectifs/types";
 

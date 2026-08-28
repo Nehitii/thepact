@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, AlertCircle } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency, getCurrencySymbol } from '@/socle/outils/currency';
 import { differenceInMonths, addMonths, format } from 'date-fns';
 
 /* L HORIZON

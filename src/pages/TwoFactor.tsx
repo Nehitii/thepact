@@ -3,10 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { OTPInput } from "input-otp";
 import { toast } from "sonner";
 import { useMfa } from "@/domaines/profil";
-import { useCodesDeSecours, motifLisible } from "@/hooks/useCodesDeSecours";
+import { useCodesDeSecours, motifLisible } from "@/domaines/profil";
 import { ShieldCheck, KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { messageDErreur } from "@/lib/erreurs";
+import { messageDErreur } from "@/socle/outils/erreurs";
 import "@/styles/deuxieme-facteur.css";
 
 type FromState = { from?: string };

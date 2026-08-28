@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { useTodoList, TodoTask } from '@/domaines/taches/hooks/useTodoList';
-import { DSPageShell, DSBackground, DSPageLoader } from '@/components/ds';
+import { DSPageShell, DSBackground, DSPageLoader } from '@/socle/ds';
 import { TodoLigne } from '@/domaines/taches/composants/TodoLigne';
 import { TodoCartouche } from '@/domaines/taches/composants/TodoCartouche';
 import { TodoGamifiedCreateForm } from '@/domaines/taches/composants/TodoGamifiedCreateForm';
@@ -19,12 +19,12 @@ import { QuickTaskInput } from '@/domaines/taches/composants/QuickTaskInput';
 import { FocusOverlay } from '@/domaines/taches/composants/FocusOverlay';
 import { TodoCommandInfo } from '@/domaines/taches/composants/TodoCommandInfo';
 import { useTranslation } from 'react-i18next';
-import { useDialogueConsole } from '@/hooks/useDialogueConsole';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useDialogueConsole } from '@/domaines/taches/hooks/useDialogueConsole';
+import { Dialog, DialogContent, DialogTitle } from '@/socle/ui/dialog';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn } from '@/socle/outils/utils';
 import '@/domaines/taches/taches.css';
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* TSK.01 — LA CONSOLE D OPERATIONS
  *

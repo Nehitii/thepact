@@ -34,7 +34,7 @@ export const EXCLUS = {
     "public/sounds",        // binaires audio, comptés comme ressources
   ],
   fichiers: [
-    "src/integrations/supabase/types.ts", // généré par Supabase
+    "src/socle/supabase/types.ts", // généré par Supabase
     "public/sw.js",                        // généré par Workbox
     "package-lock.json", "deno.lock",
     "tsconfig.app.tsbuildinfo", "tsconfig.node.tsbuildinfo",

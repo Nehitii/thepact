@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/socle/outils/utils";
+import { Progress } from "@/socle/ui/progress";
 import { Shield, Trophy } from "lucide-react";
 import type { Rank } from "@/domaines/succes/types";
 

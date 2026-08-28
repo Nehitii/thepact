@@ -54,6 +54,24 @@ const RANGS = [
   [/^types\//,                0, "types"],
   [/^content\//,              0, "content"],
   [/^i18n\//,                 0, "i18n"],
+  /* LE SOCLE REJOUE LA MEME ECHELLE, avec les memes rangs : ce n est
+     pas une couche de plus, c est l ancienne infrastructure rangee
+     sous un seul toit. `supabase/` et `i18n/` sont inertes, `outils/`
+     est de la logique pure, `ui/` et `ds/` presentent, `contextes/`
+     fournit, `hooks/` compose. */
+  [/^socle\/supabase\//,      0, "supabase"],
+  [/^socle\/i18n\//,          0, "i18n"],
+  [/^socle\/outils\//,        1, "outils du socle"],
+  /* `(\/|$)` et non `\/` : les domaines importent la BARRIQUE,
+     `@/socle/ds` sans barre finale. Sans cette alternative le chemin
+     tombait dans la regle par defaut au rang 6, et trois composants
+     qui importent le systeme de design passaient pour des inversions.
+     Meme piege que `types(\.|$)` sur les domaines. */
+  [/^socle\/ui(\/|$)/,        2, "ui"],
+  [/^socle\/ds(\/|$)/,        2, "ds"],
+  [/^socle\/contextes\//,     3, "contextes"],
+  [/^socle\/hooks\//,         4, "hooks du socle"],
+
   [/^lib\//,                  1, "lib"],
   [/^components\/ui\//,       2, "ui"],
   [/^components\/ds\//,       2, "ds"],
@@ -159,11 +177,11 @@ const TOLERE = new Map([
      le hook chez lui, `temps.ts` dans `logique/`. Ce n etait pas une
      erreur de conception, seulement deux fichiers du meme module ranges
      dans deux couches differentes. */
-  ["hooks/useParticleEffect.tsx", "etape 3 — importe components/ParticleEffect"],
-  ["components/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
-  ["components/ui/dialog.tsx",  "etape 3 — idem"],
-  ["components/ui/switch.tsx",  "etape 3 — idem"],
-  ["components/ui/tabs.tsx",    "etape 3 — idem"],
+  ["socle/hooks/useParticleEffect.tsx", "etape 3 — importe components/ParticleEffect, qui n est pas encore range"],
+  ["socle/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
+  ["socle/ui/dialog.tsx",  "etape 3 — idem"],
+  ["socle/ui/switch.tsx",  "etape 3 — idem"],
+  ["socle/ui/tabs.tsx",    "etape 3 — idem"],
   /* `components/ds/DSBackground.tsx` n est plus une inversion : ses deux
      fonds, `CyberBackground` et `AuraBackground`, l ont rejoint dans
      `ds/` en rangeant la finance (28/08). Il etait leur SEUL lecteur —
@@ -175,8 +193,12 @@ const TOLERE = new Map([
      fichier de types allait l y chercher par un import inline. Elle vit
      desormais dans `domaines/finance/types.ts`. */
 
-  ["domaines/finance/logique/comptePacte.ts",
-   "etape 3 — importe les TYPES Goal et CostItem depuis leurs hooks ; se resoudra quand objectifs et souhaits seront ranges"],
+  /*  a cesse d etre une
+     inversion en rangeant les objectifs et le socle : il prenait les
+     types Goal et CostItem dans leurs hooks, il les prend maintenant
+     par la porte des objectifs — et une porte n est pas une couche.
+     C etait ecrit comme une echeance : « se resoudra quand objectifs
+     et souhaits seront ranges ». C est arrive. */
   /* `components/ds/DSPageHeader.tsx` a ete supprime le 28/08 : il
      n etait rendu que par `ModuleHeader`, lui-meme @deprecated et rendu
      nulle part. L inversion `ds → composants` qu il portait n a pas ete

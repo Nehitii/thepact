@@ -4,11 +4,11 @@ import "@/domaines/finance/finance-cyber.css";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { Settings } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { usePact } from "@/domaines/objectifs";
 import { useGoals } from "@/domaines/objectifs";
 import { useFinanceSettings, useRecurringExpenses, useRecurringIncome } from "@/domaines/finance/hooks/useFinance";
-import { usePactCostItems } from "@/hooks/useCostItems";
+import { usePactCostItems } from "@/domaines/objectifs";
 import { CartouchePacte } from "@/domaines/finance/composants/CartouchePacte";
 import { calculerComptePacte } from "@/domaines/finance/logique/comptePacte";
 import { ArbitragePanel } from "@/domaines/finance/composants/ArbitragePanel";
@@ -16,12 +16,12 @@ import { SmartFinancingPanel } from "@/domaines/finance/composants/SmartFinancin
 import { MonthlyDashboard } from "@/domaines/finance/composants/mois/MonthlyDashboard";
 import { FinanceSettingsModal } from "@/domaines/finance/composants/FinanceSettingsModal";
 import { Navette, type Ecran } from "@/domaines/finance/composants/Navette";
-import { DSPageShell } from "@/components/ds";
+import { DSPageShell } from "@/socle/ds";
 import { roundMoney } from "@/domaines/finance/logique/categories";
 import { parseISO } from "date-fns";
 import { totalDuMois, provisionMensuelle } from "@/domaines/finance/logique/cadence";
-import { formatCurrency } from "@/lib/currency";
-import { useCurrency } from "@/contexts/CurrencyContext";
+import { formatCurrency } from "@/socle/outils/currency";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
 
 /* FIN.SYS — L APPAREIL
  *

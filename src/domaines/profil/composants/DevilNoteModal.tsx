@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/socle/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState, useEffect, useRef } from "react";
 import { X, Volume2, VolumeX } from "lucide-react";

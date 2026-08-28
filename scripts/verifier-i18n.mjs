@@ -51,7 +51,7 @@ const presente = (arbre, cle) =>
   SUFFIXES.some((s) => estValeur(feuille(arbre, cle + s)));
 
 const traductions = Object.fromEntries(
-  LANGUES.map((l) => [l, JSON.parse(fs.readFileSync(path.join(RACINE, "i18n/locales", l + ".json"), "utf8"))]),
+  LANGUES.map((l) => [l, JSON.parse(fs.readFileSync(path.join(RACINE, "socle/i18n/locales", l + ".json"), "utf8"))]),
 );
 
 const origine = new Map();

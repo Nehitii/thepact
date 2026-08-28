@@ -9,11 +9,11 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Check, MessageSquare, ListOrdered, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkle } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/socle/outils/currency";
 import { getCostCategoryLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
 import { BoutonHonneur } from "./BoutonHonneur";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 const deuxChiffres = (n: number) => String(n).padStart(2, "0");
 

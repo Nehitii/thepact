@@ -17,11 +17,11 @@ import {
   parseISO,
 } from 'date-fns';
 import { TodoTask } from '@/domaines/taches/hooks/useTodoList';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/socle/ui/button';
+import { cn } from '@/socle/outils/utils';
 import { useTranslation } from 'react-i18next';
 import { categorieDe, fondDe } from '@/domaines/taches/logique/categories';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 
 interface TodoCalendarViewProps {
   tasks: (TodoTask & { category?: string | null; task_type?: string | null })[];

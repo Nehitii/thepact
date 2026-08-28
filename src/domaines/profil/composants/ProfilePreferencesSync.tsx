@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { useProfileSettings } from "@/domaines/profil/hooks/useProfileSettings";
+import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 
 export function ProfilePreferencesSync() {
   const { profile } = useProfileSettings();

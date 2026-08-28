@@ -5,20 +5,20 @@ import {
 } from "lucide-react";
 import { format, isPast, isToday, isTomorrow, addDays } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cn } from "@/lib/utils";
-import { useSound } from "@/contexts/SoundContext";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useDialogueConsole } from "@/hooks/useDialogueConsole";
-import { useParticleEffect } from "@/hooks/useParticleEffect";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { cn } from "@/socle/outils/utils";
+import { useSound } from "@/socle/contextes/SoundContext";
+import { useIsMobile } from "@/socle/hooks/use-mobile";
+import { useDialogueConsole } from "@/domaines/taches/hooks/useDialogueConsole";
+import { useParticleEffect } from "@/socle/hooks/useParticleEffect";
 import type { TodoTask } from "@/domaines/taches/hooks/useTodoList";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/socle/ui/dropdown-menu";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 
 /* LA LIGNE
  *

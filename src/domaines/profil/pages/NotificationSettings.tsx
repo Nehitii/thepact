@@ -2,15 +2,15 @@ import { useCallback, useRef, useState } from "react";
 import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain, Send, BellOff } from "lucide-react";
 import { useNotificationSettings } from "@/domaines/social";
 import { usePushNotifications } from "@/domaines/profil/hooks/usePushNotifications";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { Button } from "@/socle/ui/button";
+import { Switch } from "@/socle/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
-import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/components/ds/console-ui";
+import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/socle/ds/console-ui";
 
 const HEURES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 

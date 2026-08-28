@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useBondBalance } from "@/domaines/boutique/hooks/useShop";
-import { BondIcon } from "@/components/ui/bond-icon";
+import { BondIcon } from "@/socle/ui/bond-icon";
 import { motion } from "framer-motion";
 import { Plus, AlertTriangle } from "lucide-react";
 

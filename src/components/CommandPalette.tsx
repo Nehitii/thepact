@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
+} from "@/socle/ui/command";
 import {
   BarChart3, Bell, BookOpen, CalendarDays, Database, Focus,
   Heart, Home, Inbox, Keyboard, ListTodo, Medal, Search, Settings, Share2,
@@ -17,7 +17,7 @@ import {
   User, UserCircle, Users, Volume2, Wallet, Zap,
 } from "lucide-react";
 import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
-import { classer } from "@/lib/rechercheMots";
+import { classer } from "@/socle/outils/rechercheMots";
 
 /**
  * LA BARRE ⌘K.

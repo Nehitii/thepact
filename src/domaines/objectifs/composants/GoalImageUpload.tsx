@@ -1,12 +1,12 @@
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/socle/ui/button";
+import { Input } from "@/socle/ui/input";
+import { Label } from "@/socle/ui/label";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
-import { optimizeImage } from "@/lib/imageOptimization";
-import { messageDErreur } from "@/lib/erreurs";
+import { optimizeImage } from "@/socle/outils/imageOptimization";
+import { messageDErreur } from "@/socle/outils/erreurs";
 interface GoalImageUploadProps {
   value: string;
   onChange: (url: string) => void;

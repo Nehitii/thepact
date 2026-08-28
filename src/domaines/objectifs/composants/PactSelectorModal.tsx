@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useSharedPacts } from "@/domaines/objectifs/hooks/useSharedPacts";
 import { useActivePact } from "@/domaines/objectifs/hooks/useActivePact";
 import { motion } from "framer-motion";
 import { Users, User, ChevronRight, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import { toast } from "sonner";
 
 export default function PactSelectorPage() {

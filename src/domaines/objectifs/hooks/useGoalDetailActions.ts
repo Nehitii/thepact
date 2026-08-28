@@ -7,7 +7,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
 import { PLAFOND_BRIGADE, recrutable } from "@/domaines/objectifs/logique/brigade";
 import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/domaines/succes";

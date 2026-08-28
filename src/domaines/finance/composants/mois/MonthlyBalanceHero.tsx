@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, Scale, PiggyBank } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency } from '@/socle/outils/currency';
 import { AnimatedNumber } from '@/domaines/finance/composants/widgets';
 
 /* LE SOLDE DU MOIS

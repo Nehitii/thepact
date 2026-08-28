@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Lock, Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Panneau, Reglage, Bouton, ChampTexte } from "@/components/ds/console-ui";
+import { supabase } from "@/socle/supabase/client";
+import { Panneau, Reglage, Bouton, ChampTexte } from "@/socle/ds/console-ui";
 
 /**
  * LE CODE DE VERROUILLAGE A CHANGE DE SECTION.

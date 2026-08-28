@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
+import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 
 /**
  * Le compte a rebours du pacte, en regle.

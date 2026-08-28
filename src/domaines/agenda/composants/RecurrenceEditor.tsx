@@ -1,5 +1,5 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
+import { Switch } from "@/socle/ui/switch";
 import { useTranslation } from "react-i18next";
 import { Repeat } from "lucide-react";
 import type { RecurrenceRule } from "@/domaines/agenda/types";

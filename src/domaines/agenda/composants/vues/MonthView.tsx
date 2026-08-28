@@ -5,9 +5,9 @@ import {
   eachDayOfInterval, isSameMonth, isToday, format, parseISO, getISOWeek,
   startOfDay, endOfDay, differenceInCalendarDays, isSameWeek,
 } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import type { Locale } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 import type { CalendarEvent } from "@/domaines/agenda/types";
 import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";

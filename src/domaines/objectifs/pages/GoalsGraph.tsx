@@ -12,12 +12,12 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import "@/styles/cyberpunk.css";
 import "@/styles/graph.css";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { DSPageShell, DSPageLoader } from "@/components/ds";
+import { supabase } from "@/socle/supabase/client";
+import { DSPageShell, DSPageLoader } from "@/socle/ds";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { filterGoalsByRule, decrireRegle, type SuperGoalRule } from "@/domaines/objectifs/composants/super";
 import { ArrowLeft, Plus } from "lucide-react";

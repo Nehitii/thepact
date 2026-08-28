@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
-import { optimizeImage } from "@/lib/imageOptimization";
+import { supabase } from "@/socle/supabase/client";
+import { optimizeImage } from "@/socle/outils/imageOptimization";
 
 /**
  * LA BANNIERE ET L EMBLEME D UNE GUILDE.

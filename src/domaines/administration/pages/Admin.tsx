@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { Shield, ChevronRight, ScrollText, AlertTriangle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import { SECTIONS_ADMIN } from "@/domaines/administration/composants/sections";
 import { useAnnuaire, useJournalAdmin, useRosterAdmin } from "@/domaines/administration/hooks/useAdminServeur";

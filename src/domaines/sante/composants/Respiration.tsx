@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useReducedMotion } from "framer-motion";
 import { Play, Pause, Square, Volume2, VolumeX, Check } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useBilanDuSouffle, useEnregistrerSeance } from "@/domaines/sante/hooks/useSouffle";
 import {
   SCHEMAS, CIBLES, CIBLE_PAR_DEFAUT, schemaDe, sequenceDe,
   rythmeSuggere, partiesDeDuree, type Temps,
 } from "@/domaines/sante/logique/souffle";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* ═══════════════════════════════════════════════════════════════
    LE PROTOCOLE

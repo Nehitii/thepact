@@ -3,7 +3,7 @@ import { Check, Copy, KeyRound, Loader2, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { useGuilds, useInviteCodes, type GuildInviteCode } from "@/domaines/social/hooks/useGuilds";
 
 /* LES CODES D INVITATION.

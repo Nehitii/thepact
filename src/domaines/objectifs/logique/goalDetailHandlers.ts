@@ -1,8 +1,8 @@
 // Handler functions for GoalDetail - extracted for better code organization
-import { supabase } from "@/integrations/supabase/client";
-import type { TablesUpdate } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { TablesUpdate } from "@/socle/supabase/types";
 import { trackGoalCompleted } from "@/domaines/succes";
-import { messageDErreur } from "@/lib/erreurs";
+import { messageDErreur } from "@/socle/outils/erreurs";
 
 export async function handleFullyComplete(
   goalId: string,

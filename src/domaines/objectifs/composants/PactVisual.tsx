@@ -14,7 +14,7 @@
  */
 
 import { useId } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 

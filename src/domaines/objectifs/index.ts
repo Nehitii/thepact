@@ -52,3 +52,14 @@ export { useResetPact } from "./hooks/useResetPact";
 export { usePactMutation } from "./hooks/usePactMutation";
 export { useCarteObjectif, teinteDuPalier } from "./hooks/useCarteObjectif";
 export { default as PactSelectorModal } from "./composants/PactSelectorModal";
+
+/* LES PIECES CHIFFREES. La finance les lit pour compter ce que coute
+   le pacte, et les souhaits les synchronisent en liste. La table est
+   goal_cost_items : elles appartiennent a l objectif qui les porte. */
+export {
+  usePactCostItems,
+  useAcquerirPieces,
+  useCostItems,
+  useSaveCostItems,
+} from "./hooks/useCostItems";
+export type { CostItem } from "./hooks/useCostItems";

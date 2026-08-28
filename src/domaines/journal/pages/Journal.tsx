@@ -2,8 +2,8 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
 import { Search, Plus, Sun, Moon, MonitorSmartphone, Info, RotateCcw } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useAuth } from "@/contexts/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry, useJournalCounts } from "@/domaines/journal/hooks/useJournal";
 import type { JournalEntry } from "@/domaines/journal/types";
 import { MOOD_OPTIONS } from "@/domaines/journal/types";
@@ -11,13 +11,13 @@ import { JournalEntryCard } from "@/domaines/journal/composants/JournalEntryCard
 import { JournalNewEntryModal } from "@/domaines/journal/composants/JournalNewEntryModal";
 import { DailyPromptBanner } from "@/domaines/journal/composants/DailyPromptBanner";
 import { useQuestionCongediee } from "@/domaines/journal/hooks/useQuestionCongediee";
-import { DSPageShell } from "@/components/ds";
-import { cn } from "@/lib/utils";
+import { DSPageShell } from "@/socle/ds";
+import { cn } from "@/socle/outils/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { PREF } from "@/lib/preferencesAffichage";
+} from "@/socle/ui/alert-dialog";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* LOG.01 — LE DOSSIER
  *

@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { DSPageShell } from "@/components/ds";
-import { useAuth } from "@/contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { formatCurrency } from "@/lib/currency";
+import { DSPageShell } from "@/socle/ds";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { Input } from "@/socle/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
+import { Switch } from "@/socle/ui/switch";
+import { Label } from "@/socle/ui/label";
+import { Textarea } from "@/socle/ui/textarea";
+import { Button } from "@/socle/ui/button";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { formatCurrency } from "@/socle/outils/currency";
 import { toast } from "sonner";
 import { format, startOfMonth } from "date-fns";
 import { fr as dateFr } from "date-fns/locale";
@@ -29,8 +29,8 @@ import { usePact } from "@/domaines/objectifs";
 import { useGoals } from "@/domaines/objectifs";
 import { useWishlistGoalSync } from "@/domaines/souhaits/hooks/useWishlistGoalSync";
 import { useWishlistPieces } from "@/domaines/souhaits/hooks/useWishlistPieces";
-import { useDepotImages } from "@/hooks/useDepotImages";
-import { cheminDuDepot } from "@/lib/wishlistDepot";
+import { useDepotImages } from "@/domaines/souhaits/hooks/useDepotImages";
+import { cheminDuDepot } from "@/domaines/souhaits/logique/wishlistDepot";
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/domaines/souhaits/composants/DuplicateMergeDialog";
 import { ImportFromUrlModal, type ScrapedProduct } from "@/domaines/souhaits/composants/ImportFromUrlModal";
 import { DeleteConfirmDialog } from "@/domaines/souhaits/composants/DeleteConfirmDialog";
@@ -45,7 +45,7 @@ import { WishlistArchive } from "@/domaines/souhaits/composants/WishlistArchive"
 import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
 import { ChampImage } from "@/domaines/souhaits/composants/ChampImage";
 import "@/domaines/souhaits/souhaits.css";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* ═══════════════════════════════════════════════════════════════
    LE BORDEREAU

@@ -14,14 +14,14 @@ import {
 import { compterMots, minutesDeLecture, referenceDe, sansParagrapheFinal, texteNu } from "@/domaines/journal/logique/html";
 import { useGoals, Goal } from "@/domaines/objectifs";
 import { usePact } from "@/domaines/objectifs";
-import { useAuth } from "@/contexts/AuthContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/socle/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { PREF } from "@/lib/preferencesAffichage";
+} from "@/socle/ui/alert-dialog";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* L ATELIER
  *

@@ -3,7 +3,7 @@
  * Handles optimistic updates and cache invalidation for real-time sync.
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { trackPactEdited } from "@/domaines/succes";
 

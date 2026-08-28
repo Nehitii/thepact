@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bouton, Reglage } from "@/components/ds/console-ui";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Bouton, Reglage } from "@/socle/ds/console-ui";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/socle/ui/input-otp";
 import { Loader2, ShieldCheck, ShieldOff, Copy } from "lucide-react";
 import { useMfa, type MfaEnrollment as Enrollment } from "@/domaines/profil/hooks/useMfa";
-import { noterEvenementSecurite } from "@/lib/journalSecurite";
+import { noterEvenementSecurite } from "@/domaines/profil/logique/journalSecurite";
 import { CodesDeSecours } from "@/domaines/profil/composants/CodesDeSecours";
 import "@/domaines/profil/mfa.css";
 

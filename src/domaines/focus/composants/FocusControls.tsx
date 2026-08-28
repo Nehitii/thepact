@@ -2,7 +2,7 @@ import { Play, Pause, SkipForward, Square } from "lucide-react";
 import { FocusDistractionButton } from "./FocusDistractionButton";
 import { useTranslation } from "react-i18next";
 import type { PomodoroPhase } from "@/domaines/focus/hooks/usePomodoro";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface FocusControlsProps {
   phase: PomodoroPhase;

@@ -7,7 +7,7 @@ import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/domaines/objecti
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { useGoalSteps } from "@/domaines/objectifs/hooks/useGoalSteps";
 import { useTranslation } from "react-i18next";
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 /* REGISTRE — la vue liste
  *

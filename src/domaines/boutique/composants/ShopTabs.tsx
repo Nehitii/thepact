@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Puzzle, Heart, History } from "lucide-react";
-import { BondIcon } from "@/components/ui/bond-icon";
-import { cn } from "@/lib/utils";
+import { BondIcon } from "@/socle/ui/bond-icon";
+import { cn } from "@/socle/outils/utils";
 
 export type ShopTab = "cosmetics" | "modules" | "bonds" | "wishlist" | "history";
 

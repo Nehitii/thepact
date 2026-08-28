@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { User, ShieldCheck, IdCard, Target, Gauge, SlidersHorizontal, Bell, Shield, Database, HeartPulse } from "lucide-react";
-import { DSPageShell, DSBackground } from "@/components/ds";
-import "@/components/ds/reglages.css";
+import { DSPageShell, DSBackground } from "@/socle/ds";
+import "@/socle/ds/reglages.css";
 
 /* LA CONSOLE DE REGLAGES.
  *

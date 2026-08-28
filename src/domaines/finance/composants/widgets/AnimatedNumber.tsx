@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { formatCurrency } from '@/lib/currency';
+import { formatCurrency } from '@/socle/outils/currency';
 
 interface AnimatedNumberProps {
   value: number;

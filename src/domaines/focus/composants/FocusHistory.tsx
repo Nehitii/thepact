@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown, Check, X, Clock, Target, ListTodo, History } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/socle/ui/collapsible";
 import type { PomodoroSession } from "@/domaines/focus/hooks/usePomodoro";
 import type { Goal } from "@/domaines/objectifs";
 import type { TodoTask } from "@/domaines/taches";

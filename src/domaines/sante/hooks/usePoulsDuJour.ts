@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 
 /**
  * Le pouls des cinq systèmes actifs, pour la barre de fréquence.

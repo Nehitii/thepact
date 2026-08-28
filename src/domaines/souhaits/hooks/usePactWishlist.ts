@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { TablesUpdate } from "@/integrations/supabase/types";
+import { supabase } from "@/socle/supabase/client";
+import type { TablesUpdate } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18next from "i18next";
 export type PactWishlistItemType = "required" | "optional";

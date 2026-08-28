@@ -2,8 +2,8 @@ import { useMemo, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Landmark, PackageCheck, Hourglass } from "lucide-react";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/socle/contextes/CurrencyContext";
+import { formatCurrency } from "@/socle/outils/currency";
 import { AnimatedNumber } from "@/domaines/finance/composants/widgets";
 import type { ComptePacte } from "@/domaines/finance/logique/comptePacte";
 

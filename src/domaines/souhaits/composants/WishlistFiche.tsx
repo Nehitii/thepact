@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, ExternalLink, ImagePlus, Link2, Pencil, Target, Trash2 } from "lucide-react";
 import { ChampSurPlace } from "@/domaines/souhaits/composants/ChampSurPlace";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency } from "@/socle/outils/currency";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
 

@@ -31,7 +31,7 @@ import type { ReactNode } from "react";
 const listFactors = vi.fn();
 const getAal = vi.fn();
 
-vi.mock("@/integrations/supabase/client", () => ({
+vi.mock("@/socle/supabase/client", () => ({
   supabase: {
     auth: {
       mfa: {
@@ -43,7 +43,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 let session: { access_token: string } | null;
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/socle/contextes/AuthContext", () => ({
   useAuth: () => ({ user: { id: "u-1" }, session }),
 }));
 

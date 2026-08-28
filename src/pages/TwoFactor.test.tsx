@@ -44,8 +44,14 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const verifier = vi.fn();
 let etatMfa: Record<string, unknown>;
 
-vi.mock("@/domaines/profil", () => ({ useMfa: () => etatMfa }));
-vi.mock("@/hooks/useCodesDeSecours", () => ({
+/* UNE SEULE SIMULATION, PARCE QU IL N Y A PLUS QU UNE PORTE.
+   Ce fichier en avait deux : la porte du profil pour `useMfa`, et le
+   chemin interne `hooks/useCodesDeSecours` pour le reste. En rangeant
+   le socle, la garde des domaines a signale l entree par la fenetre ;
+   la page passe desormais par la porte, et la simulation doit donc
+   fournir les trois exports au meme endroit. */
+vi.mock("@/domaines/profil", () => ({
+  useMfa: () => etatMfa,
   useCodesDeSecours: () => ({ utiliser: vi.fn() }),
   motifLisible: (m: string) => m,
 }));

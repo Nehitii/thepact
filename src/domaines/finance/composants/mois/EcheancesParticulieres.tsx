@@ -38,13 +38,13 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { CalendarClock, LayoutGrid, CalendarRange, Plus, PiggyBank } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency } from '@/socle/outils/currency';
 import type { FinancialItem } from '@/domaines/finance/types';
 import { PlancheDesCreanciers } from './PlancheDesCreanciers';
 import { AnneeDesEcheances } from './AnneeDesEcheances';
 import { provisionMensuelle, totalDuMois } from '@/domaines/finance/logique/cadence';
-import { PREF } from "@/lib/preferencesAffichage";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 
 interface Props {
   items: FinancialItem[];

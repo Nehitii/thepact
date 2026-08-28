@@ -2,7 +2,7 @@ import { Outlet, useSearchParams } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
-import { useChromeFlottant } from "@/lib/chromeFlottant";
+import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
 import { useFuseauDuProfil } from "@/domaines/profil";
 import { useMessagesEnDirect } from "@/domaines/social";
 import { Suspense, useEffect, useState } from "react";
@@ -10,7 +10,7 @@ import { ReseauMia, MiaConsole, type EtatMia } from "@/domaines/mia";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { prefetchAllRoutes } from "@/app/prefetchRoutes";
 import { prefetchCoreData } from "@/app/prefetchData";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function AppLayout() {

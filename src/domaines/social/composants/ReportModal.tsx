@@ -5,13 +5,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/socle/ui/dialog";
+import { Button } from "@/socle/ui/button";
+import { Label } from "@/socle/ui/label";
+import { Textarea } from "@/socle/ui/textarea";
 import { useReportContent } from "@/domaines/social/hooks/useCommunity";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface ReportModalProps {
   isOpen: boolean;

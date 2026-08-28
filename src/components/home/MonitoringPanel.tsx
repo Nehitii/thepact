@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from "react";
-import { PREF } from "@/lib/preferencesAffichage";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
-import { selonTheme } from "@/lib/encrePapier";
+import { PREF } from "@/socle/outils/preferencesAffichage";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
+import { selonTheme } from "@/socle/outils/encrePapier";
 
 interface MonitoringData {
   goalsCompleted: number;

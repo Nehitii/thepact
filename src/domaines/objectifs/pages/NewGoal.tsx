@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
+import { supabase } from "@/socle/supabase/client";
 import { trackGoalCreated } from "@/domaines/succes";
 import { insertGoalTags } from "@/domaines/objectifs/hooks/useGoalTags";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
@@ -20,13 +20,13 @@ import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRul
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import { z } from "zod";
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { useFeatureFlag } from "@/socle/hooks/useFeatureFlag";
 import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
 import "@/styles/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
-import { messageDErreur } from "@/lib/erreurs";
-import type { Json } from "@/integrations/supabase/types";
+import { messageDErreur } from "@/socle/outils/erreurs";
+import type { Json } from "@/socle/supabase/types";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({

@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Coins, Gift, Plus, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import { AdminDeleteConfirm } from "@/domaines/administration/composants/AdminDeleteConfirm";
 import { logAdminAction } from "@/domaines/administration/hooks/useAdminAudit";

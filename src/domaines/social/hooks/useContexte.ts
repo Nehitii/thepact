@@ -1,8 +1,8 @@
 /* CE QUI ENTOURE LE FIL : les objectifs qu on peut y rattacher, et
    les chiffres de la communaute. */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import type { CommunityPost, CompletedGoal, UserGoal } from "@/domaines/social/types";
 
 // Get user's completed goals (FIX: query through pacts, not user_id)

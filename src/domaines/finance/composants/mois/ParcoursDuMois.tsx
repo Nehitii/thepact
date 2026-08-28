@@ -37,9 +37,9 @@ import {
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
+import { useAuth } from '@/socle/contextes/AuthContext';
+import { useCurrency } from '@/socle/contextes/CurrencyContext';
+import { formatCurrency, getCurrencySymbol } from '@/socle/outils/currency';
 import {
   useRecurringExpenses, useRecurringIncome,
   useUpdateRecurringExpense, useUpdateRecurringIncome,
@@ -50,7 +50,7 @@ import { usePointages, useEcrirePointage, useEffacerPointage } from '@/domaines/
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
+import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 import type { FinancialItem } from '@/domaines/finance/types';
 
 type Etape = 'expense' | 'income' | 'bilan';

@@ -3,7 +3,7 @@ import {
   FlaskConical, Puzzle, Palette, Image as ImageIcon, RefreshCw, Zap,
   AlertTriangle, ChevronDown, TrendingUp, Phone, BookOpen, ListTodo, Heart,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import {
   useShopModules, useUserModulePurchases, useShopFrames, useShopBanners, useUserCosmetics,
@@ -16,7 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/socle/ui/alert-dialog";
 
 /**
  * LE BANC D'ESSAI.

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Bouton } from "@/components/ds/console-ui";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { DataPanel, SettingRow } from "@/components/ds/settings-ui";
-import { supabase } from "@/integrations/supabase/client";
+import { Bouton } from "@/socle/ds/console-ui";
+import { Input } from "@/socle/ui/input";
+import { Switch } from "@/socle/ui/switch";
+import { DataPanel, SettingRow } from "@/socle/ds/settings-ui";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Zap, Palette, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/socle/outils/utils";
 
 interface CustomDifficultyCardProps {
   userId: string;

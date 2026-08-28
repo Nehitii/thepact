@@ -8,8 +8,8 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/socle/supabase/client";
+import { useAuth } from "@/socle/contextes/AuthContext";
 import { toast } from "sonner";
 
 export interface FilMia {

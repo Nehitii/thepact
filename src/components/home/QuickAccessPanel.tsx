@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
-import { useThemeSombre } from "@/hooks/useThemeSombre";
-import { selonTheme } from "@/lib/encrePapier";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
+import { selonTheme } from "@/socle/outils/encrePapier";
 
 interface QuickAccessPanelProps {
   ownedModules: {

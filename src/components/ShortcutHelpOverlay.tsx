@@ -1,5 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { DSPanel } from "@/components/ds";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/socle/ui/dialog";
+import { DSPanel } from "@/socle/ds";
 import { Keyboard } from "lucide-react";
 
 interface Shortcut {

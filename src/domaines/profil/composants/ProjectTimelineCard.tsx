@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Bouton } from "@/components/ds/console-ui";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DataPanel } from "@/components/ds/settings-ui";
-import { supabase } from "@/integrations/supabase/client";
+import { Bouton } from "@/socle/ds/console-ui";
+import { Button } from "@/socle/ui/button";
+import { Calendar } from "@/socle/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
+import { DataPanel } from "@/socle/ds/settings-ui";
+import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
-import { cn } from "@/lib/utils";
+import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
+import { cn } from "@/socle/outils/utils";
 
 interface ProjectTimelineCardProps {
   pactId: string | null;

@@ -10,14 +10,14 @@ import {
   EyeOff,
   Crosshair,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/socle/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/socle/ui/select";
 import { estTriDeFront } from "@/domaines/objectifs/hooks/useEtapes";
 import type {
   SortOption,

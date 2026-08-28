@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, Film, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/socle/supabase/client";
 
 /**
  * LE CHOIX D'UN GIF.
