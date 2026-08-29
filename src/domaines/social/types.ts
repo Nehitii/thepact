@@ -1,3 +1,4 @@
+import type { Json } from "@/socle/supabase/types";
 /* LES FORMES QUE COMMUNITY MANIPULE.
  *
  * Elles vivaient en tete d un fichier de 961 lignes qui portait aussi
@@ -121,3 +122,91 @@ export const METRIQUES = ["etapes", "objectifs", "taches", "journal"] as const;
 export type Metrique = (typeof METRIQUES)[number];
 
 export type Compte = Record<Metrique, number>;
+
+/* CE QUE « useGuilds.ts » DECLARAIT EN PLUS DE CALCULER.
+ * Un type est inerte : il n a pas a vivre dans un fichier qui traine
+ * React Query et Supabase derriere lui. Le fichier d origine les
+ * REEXPORTE, parce que ses appelants les importaient depuis lui. */
+export interface Guild {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  owner_id: string;
+  created_at: string | null;
+  max_members: number;
+  is_public: boolean;
+  banner_url: string | null;
+  /* Deux colonnes que la base porte depuis toujours et que cette
+     interface passait sous silence : le mot du jour n etait donc
+     affiche nulle part, et l embleme depose non plus. */
+  emblem_url: string | null;
+  motd: string | null;
+  /* Comment l embleme se pose sur la banniere, et ce qu il y a
+     derriere lui quand il est detoure. */
+  blason_pose: string;
+  emblem_bg: string | null;
+  total_xp: number;
+  updated_at?: string | null;
+  member_count?: number;
+}
+
+export interface GuildMember {
+  id: string;
+  guild_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string | null;
+  rank_id?: string | null;
+  display_name?: string;
+  avatar_url?: string | null;
+}
+
+export interface GuildInvite {
+  id: string;
+  guild_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: string;
+  created_at: string | null;
+  guild_name?: string;
+  guild_color?: string | null;
+  inviter_name?: string | null;
+}
+
+export interface GuildAnnouncement {
+  id: string;
+  guild_id: string;
+  author_id: string;
+  content: string;
+  pinned: boolean;
+  created_at: string;
+  author_name?: string | null;
+  author_avatar?: string | null;
+}
+
+export interface GuildInviteCode {
+  id: string;
+  guild_id: string;
+  code: string;
+  created_by: string;
+  max_uses: number | null;
+  current_uses: number;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface GuildActivity {
+  id: string;
+  guild_id: string;
+  user_id: string | null;
+  action_type: string;
+  /* La colonne est de type json : elle peut valoir null, une valeur
+     scalaire ou un objet. « Record<string, unknown> » en excluait les
+     deux premiers cas. */
+  metadata: Json;
+  created_at: string;
+  display_name?: string | null;
+}

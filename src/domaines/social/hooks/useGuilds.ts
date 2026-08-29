@@ -3,6 +3,14 @@ import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import type { Json } from "@/socle/supabase/types";
 import { trackGuildJoined } from "@/domaines/succes";
+import type {
+  Guild, GuildMember, GuildInvite, GuildAnnouncement, GuildInviteCode, GuildActivity,
+} from "@/domaines/social/types";
+import { useGuildMembers, useAnnouncements, useGuildActivity, useInviteCodes } from "@/domaines/social/hooks/useGuildeLecture";
+/* Reexportes : les appelants importaient ces formes depuis ce fichier. */
+export type {
+  Guild, GuildMember, GuildInvite, GuildAnnouncement, GuildInviteCode, GuildActivity,
+};
 
 /* CE QUE RENDENT LES TROIS FONCTIONS EN BASE.
    create_guild_with_owner, join_guild_via_code et respond_to_invite
@@ -29,89 +37,6 @@ function lireReponse(data: Json): ReponseRpc {
    de la paresse : ils ETEIGNAIENT cet ecart. Une fois retires, le
    compilateur a designe les sept endroits ou la declaration mentait.
    On corrige la declaration, pas la verification. */
-export interface Guild {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  color: string | null;
-  owner_id: string;
-  created_at: string | null;
-  max_members: number;
-  is_public: boolean;
-  banner_url: string | null;
-  /* Deux colonnes que la base porte depuis toujours et que cette
-     interface passait sous silence : le mot du jour n etait donc
-     affiche nulle part, et l embleme depose non plus. */
-  emblem_url: string | null;
-  motd: string | null;
-  /* Comment l embleme se pose sur la banniere, et ce qu il y a
-     derriere lui quand il est detoure. */
-  blason_pose: string;
-  emblem_bg: string | null;
-  total_xp: number;
-  updated_at?: string | null;
-  member_count?: number;
-}
-
-export interface GuildMember {
-  id: string;
-  guild_id: string;
-  user_id: string;
-  role: string;
-  joined_at: string | null;
-  rank_id?: string | null;
-  display_name?: string;
-  avatar_url?: string | null;
-}
-
-export interface GuildInvite {
-  id: string;
-  guild_id: string;
-  inviter_id: string;
-  invitee_id: string;
-  status: string;
-  created_at: string | null;
-  guild_name?: string;
-  guild_color?: string | null;
-  inviter_name?: string | null;
-}
-
-export interface GuildAnnouncement {
-  id: string;
-  guild_id: string;
-  author_id: string;
-  content: string;
-  pinned: boolean;
-  created_at: string;
-  author_name?: string | null;
-  author_avatar?: string | null;
-}
-
-export interface GuildInviteCode {
-  id: string;
-  guild_id: string;
-  code: string;
-  created_by: string;
-  max_uses: number | null;
-  current_uses: number;
-  expires_at: string | null;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface GuildActivity {
-  id: string;
-  guild_id: string;
-  user_id: string | null;
-  action_type: string;
-  /* La colonne est de type json : elle peut valoir null, une valeur
-     scalaire ou un objet. « Record<string, unknown> » en excluait les
-     deux premiers cas. */
-  metadata: Json;
-  created_at: string;
-  display_name?: string | null;
-}
 
 /* LES CINQ REQUETES PAR GUILDE, HISSEES.
  *
@@ -124,128 +49,6 @@ export interface GuildActivity {
  * Au niveau du module, ce sont des hooks ordinaires, verifiables, et
  * un composant qui n a besoin que des membres n abonne plus son
  * lecteur aux guildes publiques et aux invitations. */
-
-export const useGuildMembers = (guildId: string) =>
-  useQuery({
-    queryKey: ["guild-members", guildId],
-    queryFn: async (): Promise<GuildMember[]> => {
-      const { data: members, error } = await supabase
-        .from("guild_members")
-        .select("*")
-        .eq("guild_id", guildId);
-      if (error) throw error;
-      if (!members?.length) return [];
-
-      const userIds = members.map((m) => m.user_id);
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .in("id", userIds);
-
-      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
-      return members.map((m) => ({
-        ...m,
-        display_name: profileMap.get(m.user_id)?.display_name || "Unknown",
-        avatar_url: profileMap.get(m.user_id)?.avatar_url,
-      }));
-    },
-    enabled: !!guildId,
-  });
-
-// ── Announcements ──
-export const useAnnouncements = (guildId: string) =>
-  useQuery({
-    queryKey: ["guild-announcements", guildId],
-    queryFn: async (): Promise<GuildAnnouncement[]> => {
-      const { data, error } = await supabase
-        .from("guild_announcements")
-        .select("*")
-        .eq("guild_id", guildId)
-        .order("pinned", { ascending: false })
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      if (!data?.length) return [];
-      const authorIds = [...new Set(data.map((a) => a.author_id))];
-      const { data: profiles } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", authorIds);
-      const pm = new Map(profiles?.map((p) => [p.id, p]) || []);
-      return data.map((a) => ({ ...a, author_name: pm.get(a.author_id)?.display_name, author_avatar: pm.get(a.author_id)?.avatar_url }));
-    },
-    enabled: !!guildId,
-  });
-
-// ── Activity Feed ──
-export const useGuildActivity = (guildId: string) =>
-  useQuery({
-    queryKey: ["guild-activity", guildId],
-    queryFn: async (): Promise<GuildActivity[]> => {
-      const { data, error } = await supabase
-        .from("guild_activity_log")
-        .select("*")
-        .eq("guild_id", guildId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      if (!data?.length) return [];
-      /* filter() ne retire pas « null » du TYPE : sans predicat de
-         garde, la liste reste (string | null)[] et .in() la refuse. */
-      const userIds = [...new Set(data.map((a) => a.user_id).filter((i): i is string => !!i))];
-      if (!userIds.length) return data as GuildActivity[];
-      const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
-      const pm = new Map(profiles?.map((p) => [p.id, p]) || []);
-      return data.map((a) => ({ ...a, display_name: a.user_id ? pm.get(a.user_id)?.display_name : null }));
-    },
-    enabled: !!guildId,
-  });
-
-// ── Invite Codes ──
-export const useInviteCodes = (guildId: string) =>
-  useQuery({
-    queryKey: ["guild-invite-codes", guildId],
-    queryFn: async (): Promise<GuildInviteCode[]> => {
-      const { data, error } = await supabase
-        .from("guild_invite_codes")
-        .select("*")
-        .eq("guild_id", guildId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data || []) as GuildInviteCode[];
-    },
-    enabled: !!guildId,
-  });
-
-/* UNE GUILDE PAR SON IDENTIFIANT.
- *
- * La page de guilde la cherchait dans « mes guildes » :
- *   const guild = guilds.find((g) => g.id === id)
- * Ouvrir une guilde trouvee par la decouverte affichait donc
- * « introuvable » — on pouvait la voir dans la liste, pas la
- * consulter. Ici on la demande a la base, et RLS decide : une guilde
- * publique s ouvre, une guilde privee dont on n est pas membre ne
- * s ouvre pas.
- */
-export function useGuild(guildId: string | undefined) {
-  return useQuery({
-    queryKey: ["guild", guildId],
-    enabled: !!guildId,
-    staleTime: 30_000,
-    queryFn: async (): Promise<Guild | null> => {
-      const { data, error } = await supabase
-        .from("guilds")
-        .select("*")
-        .eq("id", guildId!)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-
-      const { count } = await supabase
-        .from("guild_members")
-        .select("id", { count: "exact", head: true })
-        .eq("guild_id", guildId!);
-
-      return { ...data, member_count: count || 0 } as Guild;
-    },
-  });
-}
 
 export function useGuilds() {
   const { user } = useAuth();
@@ -342,10 +145,6 @@ export function useGuilds() {
     enabled: !!user,
     staleTime: 30_000,
   });
-
-
-
-
 
   // ── Mutations ──
 
@@ -581,3 +380,6 @@ export function useGuilds() {
     deactivateInviteCode,
   };
 }
+/* Reexportes : les appelants importaient ces lectures depuis ce fichier. */
+export { useGuild } from "@/domaines/social/hooks/useGuildeLecture";
+export { useGuildMembers, useAnnouncements, useGuildActivity, useInviteCodes };
