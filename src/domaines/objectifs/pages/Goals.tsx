@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import "@/styles/cyberpunk.css";
+import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goals.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";

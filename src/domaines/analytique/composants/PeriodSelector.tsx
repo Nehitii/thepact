@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/socle/outils/utils";
 
-export type AnalyticsPeriod = "30d" | "90d" | "6m" | "all";
+import type { AnalyticsPeriod } from "@/domaines/analytique/types";
+export type { AnalyticsPeriod };
 
 interface PeriodSelectorProps {
   value: AnalyticsPeriod;

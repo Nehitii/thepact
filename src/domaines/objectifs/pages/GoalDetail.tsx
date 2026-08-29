@@ -50,7 +50,7 @@ import {
   DossierBandeau, DossierEtapes, DossierRegistre, DossierHabitude,
   DossierCourbe, DossierMembres, DossierPli,
 } from "@/domaines/objectifs/composants/detail/dossier";
-import "@/styles/cyberpunk.css";
+import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 
 import type { GoalDetailData as Goal } from "@/domaines/objectifs/hooks/useGoalDetail";

@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { subDays, subMonths, format, parseISO, differenceInDays } from "date-fns";
-import type { AnalyticsPeriod } from "@/components/analytics/PeriodSelector";
+import type { AnalyticsPeriod } from "@/domaines/analytique/types";
 
 export interface GoalsByDifficulty {
   difficulty: string;

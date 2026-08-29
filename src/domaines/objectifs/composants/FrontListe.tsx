@@ -29,7 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { Check, ChevronRight, Crosshair, Star } from "lucide-react";
 import type { Etape } from "@/domaines/objectifs/hooks/useEtapes";
 import type { GoalTab } from "@/domaines/objectifs/hooks/useGoalFilters";
-import "@/styles/front.css";
+import "@/domaines/objectifs/front.css";
 
 interface Props {
   /** Deja classees : filtrees par l onglet et la brigade, et triees. */

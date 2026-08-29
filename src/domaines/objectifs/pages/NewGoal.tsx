@@ -22,7 +22,7 @@ import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import { z } from "zod";
 import { useFeatureFlag } from "@/socle/hooks/useFeatureFlag";
 import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
-import "@/styles/cyberpunk.css";
+import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
 import { messageDErreur } from "@/socle/outils/erreurs";

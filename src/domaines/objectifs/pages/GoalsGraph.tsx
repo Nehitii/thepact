@@ -10,8 +10,8 @@ import ReactFlow, {
   type Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import "@/styles/cyberpunk.css";
-import "@/styles/graph.css";
+import "@/socle/ds/cyberpunk.css";
+import "@/domaines/objectifs/graph.css";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";

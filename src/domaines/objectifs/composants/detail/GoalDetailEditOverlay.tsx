@@ -37,7 +37,7 @@ import {
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import type { GoalDetailData } from "@/domaines/objectifs/hooks/useGoalDetail";
-import "@/styles/cyberpunk.css";
+import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
 

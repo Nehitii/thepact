@@ -170,8 +170,6 @@ const TOLERE = new Map([
      choisir un objectif a partager, le profil pour la carte
      d identite. */
 
-  ["hooks/useAnalytics.ts",  "etape 3 — importe PeriodSelector pour son type de periode"],
-  ["hooks/useAnalyticsState.ts", "etape 3 — idem"],
   /* `hooks/useCalendarEvents.ts` importait `components/calendar/temps`.
      Les deux sont entres dans `domaines/agenda` en le rangeant (28/08) :
      le hook chez lui, `temps.ts` dans `logique/`. Ce n etait pas une

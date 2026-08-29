@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
-import "@/styles/cyberpunk.css";
-import "@/styles/analytics.css";
+import "@/socle/ds/cyberpunk.css";
+import "@/domaines/analytique/analytique.css";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 import {
@@ -12,14 +12,14 @@ import {
 import { DSPageShell } from "@/socle/ds";
 import { Skeleton } from "@/socle/ui/skeleton";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
-import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
-import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
-import { GoalContrats } from "@/components/analytics/GoalContrats";
+import { CleanPeriodSelector } from "@/domaines/analytique/composants/clean/CleanPeriodSelector";
+import { CleanTooltip } from "@/domaines/analytique/composants/clean/CleanTooltip";
+import { GoalContrats } from "@/domaines/analytique/composants/GoalContrats";
 import { Telemetrie } from "@/socle/ds/Telemetrie";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
-import { glisse, useBarreCollee, useSommaire } from "@/hooks/useBarreAnalytics";
-import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
+import { useAnalytics } from "@/domaines/analytique/hooks/useAnalytics";
+import { glisse, useBarreCollee, useSommaire } from "@/domaines/analytique/hooks/useBarreAnalytics";
+import { useAnalyticsState, type PrismSection } from "@/domaines/analytique/hooks/useAnalyticsState";
 import { useHealthHistory } from "@/domaines/sante";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { useCurrency } from "@/socle/contextes/CurrencyContext";

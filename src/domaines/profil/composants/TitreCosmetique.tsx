@@ -1,4 +1,4 @@
-import "@/styles/titre-cosmetique.css";
+import "@/domaines/profil/titre-cosmetique.css";
 
 /* LE TITRE COSMETIQUE, A UN SEUL ENDROIT.
  *

@@ -1,4 +1,4 @@
-import type { AnalyticsPeriod } from "../PeriodSelector";
+import type { AnalyticsPeriod } from "@/domaines/analytique/composants/PeriodSelector";
 
 /* Selecteur de periode.
  *

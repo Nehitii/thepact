@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { DSPageLoader } from "@/socle/ds";
-import "@/styles/cyberpunk.css";
+import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
 
