@@ -15,7 +15,6 @@
   "src/domaines/onboarding/pages/Onboarding.tsx": 523,
   "src/domaines/profil/composants/ProfileBoundedProfile.tsx": 641,
   "src/domaines/profil/composants/ProfileDevilNote.tsx": 414,
-  "src/domaines/profil/pages/DataPortability.tsx": 559,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/souhaits/pages/Wishlist.tsx": 716,
   "src/domaines/taches/hooks/useTodoList.ts": 405,
