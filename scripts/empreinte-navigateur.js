@@ -31,6 +31,7 @@ window.empreinte = async function empreinte({
   boutons = [],        // libelles exacts a parcourir dans chaque vue
   reposMax = 12,       // relevés au plus avant d abandonner
   pas = 400,           // millisecondes entre deux relevés
+  masquer = [],        // motifs de ce qui bouge tout seul — voir plus bas
 }) {
   const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
   const racine = () => document.getElementById("root");
@@ -39,12 +40,27 @@ window.empreinte = async function empreinte({
   /* La signature d un ecran : ce qu il AFFICHE, et de quoi c est fait.
      La liste complete des nombres est la partie qui porte la preuve —
      le reste sert a situer un ecart, pas a le detecter. */
+  /* CE QUI BOUGE TOUT SEUL.
+   *
+   * Une page qui affiche l heure differe d elle-meme d une minute sur
+   * l autre : la premiere comparaison sur /calendar a signale
+   * « 17:14 → 18:33 », et c etait l horloge. Sans de quoi le nommer,
+   * la regle devient inutilisable sur tout ecran qui en porte une.
+   *
+   * Masquer est dangereux — ca peut cacher un vrai changement. D ou
+   * deux regles : on ne masque QUE ce que l appelant nomme, et le
+   * masque est INSCRIT dans l empreinte, donc visible a la relecture.
+   * Un masque silencieux serait pire que pas de regle du tout. */
+  const masques = masquer.map((m) => (m instanceof RegExp ? m : new RegExp(m, "g")));
+  const masquerLe = (s) => masques.reduce((t, m) => t.replace(m, "▒"), s);
+
   function signature() {
     const r = racine();
     if (!r) throw new Error("pas de #root");
     const n = (s) => r.querySelectorAll(s).length;
-    const texte = r.innerText;
+    const texte = masquerLe(r.innerText);
     return {
+      masques: masques.map(String),
       texte,
       nombres: (texte.match(/-?\d[\d   .,]*/g) || []).map((s) => s.trim()).filter(Boolean),
       titres: [...r.querySelectorAll("h1,h2,h3,h4")].map((h) => h.textContent.trim()),
@@ -152,6 +168,9 @@ window.comparerEmpreinte = async function comparerEmpreinte(nom, options) {
     const b = apres.vues[cle];
     if (!b) continue;
     const dits = [];
+    /* Comparer deux releves masques differemment ne compare rien. */
+    if (String(a.masques ?? []) !== String(b.masques ?? []))
+      dits.push(`MASQUES DIFFERENTS : « ${a.masques ?? []} » puis « ${b.masques ?? []} » — cette comparaison ne vaut rien`);
     if (JSON.stringify(a.nombres) !== JSON.stringify(b.nombres)) {
       const n = Math.max(a.nombres.length, b.nombres.length), ch = [];
       for (let i = 0; i < n && ch.length < 6; i++)

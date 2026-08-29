@@ -12,30 +12,10 @@ import {
 } from "date-fns";
 import { trackCalendarEventCreated } from "@/domaines/succes";
 import { natureDe, estRendezVous } from "@/domaines/taches";
-import { composerInstant } from "@/domaines/agenda/logique/temps";
-
-/**
- * Le moment complet d un rendez-vous : le JOUR de son echeance, a
- * l HEURE saisie.
- *
- * `deadline` est un timestamptz, `appointment_time` une heure seule.
- * Le jour se lit en LOCAL, pas en tranchant la chaine ISO : une
- * echeance a 2026-08-25T22:00:00Z tombe deja le 26 a Paris, et la
- * decouper donnerait le 25 — le rendez-vous glisserait d un jour
- * pour tout le monde a l est de Greenwich.
- *
- * Sans duree saisie, une heure : c est la longueur qu on prete a un
- * rendez-vous quand on n en sait rien, et un evenement de duree nulle
- * ne se voit pas sur une grille horaire.
- */
-function momentDuJour(echeance: string, heure: string): { debut: string; fin: string } | null {
-  const jour = new Date(echeance);
-  if (Number.isNaN(jour.getTime())) return null;
-  /* « 14:30:00 » -> « 14:30 » : composerInstant attend hh:mm. */
-  const debut = composerInstant(formaterDate(jour, "yyyy-MM-dd"), heure.slice(0, 5));
-  if (!debut) return null;
-  return { debut: debut.toISOString(), fin: addHours(debut, 1).toISOString() };
-}
+import {
+  evenementDeTache, evenementDObjectif, evenementDEtape, fusionnerLesSources,
+  type LigneTache, type LigneObjectif, type LigneEtape,
+} from "@/domaines/agenda/logique/projections";
 
 // ─── Types — voir `../types.ts`, reexportes ici ─────────────
 import type { RecurrenceRule, CalendarSourceType, CalendarEvent, CalendarEventInsert } from "@/domaines/agenda/types";
@@ -174,63 +154,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .gte("deadline", bornes.debut)
         .lte("deadline", bornes.fin);
       if (error) throw error;
-      /* La requete nomme ses six colonnes : le type les nomme aussi,
-         plutot que de tout abandonner a `any`. */
-      type LigneTache = {
-        id: string;
-        name: string;
-        deadline: string;
-        category: string | null;
-        location: string | null;
-        task_type: string | null;
-        appointment_time: string | null;
-      };
-      return ((data ?? []) as LigneTache[]).map((t): CalendarEvent => {
-        /* UN RENDEZ-VOUS N EST PAS UNE TACHE POSEE SUR LA JOURNEE.
-
-           Toute tache importee arrivait en journee entiere, teintee
-           d orange, avec l icone de case a cocher. Un rendez-vous
-           saisi a 14 h perdait donc son heure — la seule chose qui en
-           fait un rendez-vous — et se rangeait avec les taches du
-           jour, ou personne ne le cherche.
-
-           `appointment_time` est une heure seule (« 14:30 ») : elle se
-           colle a la date d echeance pour redonner le moment complet.
-           Sans heure saisie, on ne devine pas — la tache reste sur la
-           journee, ce qui est honnete. */
-        const nature = natureDe(t.task_type);
-        const heure = estRendezVous(t.task_type) ? t.appointment_time : null;
-        const place = heure ? momentDuJour(t.deadline, heure) : null;
-
-        return {
-        id: `todo_${t.id}`,
-        user_id: user.id,
-        title: t.name,
-        description: null,
-        location: t.location || null,
-        start_time: place ? place.debut : t.deadline,
-        end_time: place ? place.fin : t.deadline,
-        all_day: !place,
-        /* La teinte suit la nature : violet pour un rendez-vous,
-           rouge pour une echeance, ambre pour une attente. */
-        color: nature.couleur,
-        category: "todo",
-        recurrence_rule: null,
-        recurrence_parent_id: null,
-        recurrence_exception: false,
-        reminders: [],
-        is_busy: false,
-        linked_goal_id: null,
-        linked_todo_id: t.id,
-        tags: t.category ? [t.category] : [],
-        created_at: "",
-        updated_at: "",
-        _virtual: true,
-        _source: "todo",
-        _sourceId: t.id,
-        _nature: nature.id,
-        };
-      });
+      return ((data ?? []) as LigneTache[]).map((t) => evenementDeTache(t, user.id));
     },
     enabled: todoEnabled,
   });
@@ -254,31 +178,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       if (error) throw error;
       return (data ?? [])
         .filter((g) => g.pacts?.user_id === user.id)
-        .map((g): CalendarEvent => ({
-          id: `goal_${g.id}`,
-          user_id: user.id,
-          title: `🎯 ${g.name}`,
-          description: null,
-          location: null,
-          start_time: new Date(g.deadline).toISOString(),
-          end_time: new Date(g.deadline).toISOString(),
-          all_day: true,
-          color: "#a855f7",
-          category: "goal-deadline",
-          recurrence_rule: null,
-          recurrence_parent_id: null,
-          recurrence_exception: false,
-          reminders: [],
-          is_busy: false,
-          linked_goal_id: g.id,
-          linked_todo_id: null,
-          tags: [],
-          created_at: "",
-          updated_at: "",
-          _virtual: true,
-          _source: "goal",
-          _sourceId: g.id,
-        }));
+        .map((g) => evenementDObjectif(g as unknown as LigneObjectif, user.id));
     },
     enabled: goalEnabled,
   });
@@ -299,60 +199,19 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .lte("due_date", bornes.fin);
       if (error) throw error;
       return (data ?? [])
-        .filter((s) => s.goals?.pacts?.user_id === user.id)
-        .map((s): CalendarEvent => ({
-          id: `step_${s.id}`,
-          user_id: user.id,
-          title: `📋 ${s.title}`,
-          description: s.goals?.name ? `Goal: ${s.goals.name}` : null,
-          location: null,
-          start_time: new Date(s.due_date).toISOString(),
-          end_time: new Date(s.due_date).toISOString(),
-          all_day: true,
-          color: "#14b8a6",
-          category: "step-due",
-          recurrence_rule: null,
-          recurrence_parent_id: null,
-          recurrence_exception: false,
-          reminders: [],
-          is_busy: false,
-          linked_goal_id: s.goal_id,
-          linked_todo_id: null,
-          tags: [],
-          created_at: "",
-          updated_at: "",
-          _virtual: true,
-          _source: "step",
-          _sourceId: s.id,
-        }));
+        .filter((e) => e.goals?.pacts?.user_id === user.id)
+        .map((e) => evenementDEtape(e as unknown as LigneEtape, user.id));
     },
     enabled: stepEnabled,
   });
 
   // Expand all events with recurrences + merge external
-  const events = useMemo(() => {
-    const base = query.data ?? [];
-    const recurring = recurringQuery.data ?? [];
-    const all = [...base, ...recurring];
-    const expanded: CalendarEvent[] = [];
-    const seen = new Set<string>();
-    for (const ev of all) {
-      if (seen.has(ev.id)) continue;
-      seen.add(ev.id);
-      if (ev.recurrence_rule) {
-        expanded.push(...expandRecurrences(ev, rangeStart, rangeEnd));
-      } else {
-        expanded.push(ev);
-      }
-    }
-
-    // Merge external deadlines (already filtered to active items)
-    const todos = todoQuery.data ?? [];
-    const goals = goalQuery.data ?? [];
-    const steps = stepQuery.data ?? [];
-
-    return [...expanded, ...todos, ...goals, ...steps];
-  }, [query.data, recurringQuery.data, todoQuery.data, goalQuery.data, stepQuery.data, rangeStart, rangeEnd]);
+  const events = useMemo(() => fusionnerLesSources({
+    propres: query.data ?? [],
+    recurrents: recurringQuery.data ?? [],
+    importes: [todoQuery.data ?? [], goalQuery.data ?? [], stepQuery.data ?? []],
+    debut: rangeStart, fin: rangeEnd, deployer: expandRecurrences,
+  }), [query.data, recurringQuery.data, todoQuery.data, goalQuery.data, stepQuery.data, rangeStart, rangeEnd]);
 
   /* Le canal portait un nom constant : deux montages simultanes du
      crochet — le mode strict en developpement en produit un a chaque

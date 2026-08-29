@@ -4,7 +4,6 @@
   "src/domaines/administration/pages/AdminCosmeticsManager.tsx": 812,
   "src/domaines/administration/pages/AdminNotifications.tsx": 420,
   "src/domaines/agenda/composants/EventDetailModal.tsx": 425,
-  "src/domaines/agenda/hooks/useCalendarEvents.ts": 479,
   "src/domaines/appel/composants/CoeurStellaire.tsx": 555,
   "src/domaines/appel/pages/TheCall.tsx": 821,
   "src/domaines/finance/composants/mois/LigneRecurrente.tsx": 526,
