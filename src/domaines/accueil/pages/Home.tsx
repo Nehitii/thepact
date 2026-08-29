@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { composerLeTableauDeBord, type UserState } from "@/domaines/accueil/logique/tableauDeBord";
+import { niveauDuRang } from "@/domaines/succes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { motion } from "framer-motion";
@@ -128,11 +129,9 @@ export default function Home() {
     globalProgress: 0,
   };
 
-  const level = (() => {
-    if (!safeRankData.currentRank || !safeRankData.ranks.length) return 1;
-    const idx = safeRankData.ranks.findIndex((r) => r.id === safeRankData.currentRank!.id);
-    return idx >= 0 ? idx + 1 : 1;
-  })();
+  /* Le niveau EST le rang du palier dans la liste — meme regle que la
+     fiche publique, et desormais la meme fonction. */
+  const level = niveauDuRang(safeRankData);
 
   /* JOURS ACTIFS COMPTAIT DEPUIS LA MAUVAISE DATE.
 

@@ -83,3 +83,7 @@ export const RanksCard = lazy(() =>
 export const DailyQuestsPanel = lazy(() =>
   import("./composants/DailyQuestsPanel").then((m) => ({ default: m.DailyQuestsPanel })),
 );
+
+/* Le niveau est un rang dans une liste : deux domaines le lisent —
+   l accueil pour son bandeau, le profil pour sa fiche publique. */
+export { niveauDuRang } from "@/domaines/succes/logique/rang";

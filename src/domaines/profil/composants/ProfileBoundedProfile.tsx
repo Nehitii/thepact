@@ -1,4 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { niveauDuRang } from "@/domaines/succes";
+import {
+  useCosmetiquesDuProfil,
+  type CosmeticFrame, type CosmeticBanner, type CosmeticTitle,
+} from "@/domaines/profil/hooks/useCosmetiquesDuProfil";
 import { useTranslation } from "react-i18next";
 import { Bouton } from "@/socle/ds/console-ui";
 import { Button } from "@/socle/ui/button";
@@ -14,44 +19,13 @@ import { usePact } from "@/domaines/objectifs";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { Upload, ImageIcon, Crown, Sparkles, Save, Loader2, Trash2, AlertTriangle } from "lucide-react";
-import { CustomizationTrigger, SelectionDialog, InventorySlot } from "@/domaines/profil/composants/InventaireCosmetique";
+import { CustomizationTrigger } from "@/domaines/profil/composants/InventaireCosmetique";
+import { ChoixCosmetiques } from "@/domaines/profil/composants/ChoixCosmetiques";
 import { HolographicCard, CyberText } from "@/domaines/profil/composants/CartePublique";
 import { rarite } from "@/domaines/profil/logique/rarete";
+import { useAvatarDuProfil } from "@/domaines/profil/hooks/useAvatarDuProfil";
 
 // --- TYPES ---
-interface CosmeticFrame {
-  id: string;
-  name: string;
-  rarity: string;
-  border_color: string;
-  glow_color: string;
-  preview_url: string | null;
-  is_default: boolean;
-  frame_scale?: number | null;
-  frame_offset_x?: number | null;
-  frame_offset_y?: number | null;
-  show_border?: boolean | null;
-  avatar_border_color?: string | null;
-}
-
-interface CosmeticBanner {
-  id: string;
-  name: string;
-  rarity: string;
-  gradient_start: string | null;
-  gradient_end: string | null;
-  banner_url: string | null;
-  is_default: boolean;
-}
-
-interface CosmeticTitle {
-  id: string;
-  title_text: string;
-  rarity: string;
-  glow_color: string | null;
-  text_color: string | null;
-  is_default: boolean;
-}
 
 /* QUATRE PROPS SUR HUIT NE SERVAIENT A RIEN.
    `avatarFrame`, `personalQuote`, `displayedBadges` et leurs trois
@@ -82,177 +56,41 @@ export function ProfileBoundedProfile({
   const { data: pact } = usePact(userId);
   const { data: rankData } = useRankXP(userId, pact?.id);
 
-  /* Le niveau est le rang du palier dans la liste, pas une colonne :
-     le hub le calcule de la meme facon. */
-  const niveauDuRang = useMemo(() => {
-    if (!rankData?.currentRank || !rankData.ranks?.length) return 1;
-    const i = rankData.ranks.findIndex((r) => r.id === rankData.currentRank!.id);
-    return i >= 0 ? i + 1 : 1;
-  }, [rankData]);
+  /* Le niveau EST le rang du palier dans la liste — meme regle que le
+     hub, et desormais la meme fonction. */
+  const niveau = niveauDuRang(rankData);
 
   // State
   const [saving, setSaving] = useState(false);
-  const [avatarUrlInput, setAvatarUrlInput] = useState("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [showFrameDialog, setShowFrameDialog] = useState(false);
   const [showBannerDialog, setShowBannerDialog] = useState(false);
   const [showTitleDialog, setShowTitleDialog] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [chargement, setChargement] = useState(true);
-  const [panne, setPanne] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Data State
-  const [frames, setFrames] = useState<CosmeticFrame[]>([]);
-  const [banners, setBanners] = useState<CosmeticBanner[]>([]);
-  const [titles, setTitles] = useState<CosmeticTitle[]>([]);
-
-  const [ownedFrameIds, setOwnedFrameIds] = useState<Set<string>>(new Set());
-  const [ownedBannerIds, setOwnedBannerIds] = useState<Set<string>>(new Set());
-  const [ownedTitleIds, setOwnedTitleIds] = useState<Set<string>>(new Set());
-
-  const [activeFrameId, setActiveFrameId] = useState<string | null>(null);
-  const [activeBannerId, setActiveBannerId] = useState<string | null>(null);
-  const [activeTitleId, setActiveTitleId] = useState<string | null>(null);
-
-  // Derived
-  const activeFrame = frames.find((f) => f.id === activeFrameId) || frames.find((f) => f.is_default);
-  const activeBanner = banners.find((b) => b.id === activeBannerId) || banners.find((b) => b.is_default);
-  const activeTitle = titles.find((t) => t.id === activeTitleId) || titles.find((t) => t.is_default);
-
-  /* CINQ REQUETES, AUCUNE ERREUR LUE.
-     Un `if (data)` suffisait a tout : une panne de lecture rendait un
-     inventaire vide, impossible a distinguer d un inventaire
-     reellement vide — et l ecran laissait croire que rien n avait ete
-     acquis. On lit desormais l echec, et on le dit. */
-  useEffect(() => {
-    let vivant = true;
-    const loadData = async () => {
-      setChargement(true);
-      try {
-        const [framesRes, bannersRes, titlesRes, ownershipRes, profileRes] = await Promise.all([
-          supabase.from("cosmetic_frames").select("*").eq("is_active", true),
-          supabase.from("cosmetic_banners").select("*").eq("is_active", true),
-          supabase.from("cosmetic_titles").select("*").eq("is_active", true),
-          supabase.from("user_cosmetics").select("cosmetic_type, cosmetic_id").eq("user_id", userId),
-          supabase.from("profiles").select("active_frame_id, active_banner_id, active_title_id").eq("id", userId).single(),
-        ]);
-
-        const echec = [framesRes, bannersRes, titlesRes, ownershipRes, profileRes].find((r) => r.error);
-        if (echec?.error) throw echec.error;
-        if (!vivant) return;
-
-        setFrames(framesRes.data ?? []);
-        setBanners(bannersRes.data ?? []);
-        setTitles(titlesRes.data ?? []);
-
-        const possede = ownershipRes.data ?? [];
-        setOwnedFrameIds(new Set(possede.filter((o) => o.cosmetic_type === "frame").map((o) => o.cosmetic_id)));
-        setOwnedBannerIds(new Set(possede.filter((o) => o.cosmetic_type === "banner").map((o) => o.cosmetic_id)));
-        setOwnedTitleIds(new Set(possede.filter((o) => o.cosmetic_type === "title").map((o) => o.cosmetic_id)));
-
-        setActiveFrameId(profileRes.data?.active_frame_id ?? null);
-        setActiveBannerId(profileRes.data?.active_banner_id ?? null);
-        setActiveTitleId(profileRes.data?.active_title_id ?? null);
-        setPanne(null);
-      } catch (e) {
-        if (!vivant) return;
-        setPanne(e instanceof Error ? e.message : String(e));
-      } finally {
-        if (vivant) setChargement(false);
-      }
-    };
-    loadData();
-    return () => { vivant = false; };
-  }, [userId]);
+  /* Le chargement des cosmetiques et leur etat vivent dans
+     `hooks/useCosmetiquesDuProfil.ts` : cinq requetes, trois
+     ensembles de possession, et le choix actif de chaque famille. */
+  const c = useCosmetiquesDuProfil(userId);
+  const {
+    frames, banners, titles,
+    ownedFrameIds, ownedBannerIds, ownedTitleIds,
+    activeFrameId, setActiveFrameId, activeBannerId, setActiveBannerId,
+    activeTitleId, setActiveTitleId,
+    activeFrame, activeBanner, activeTitle,
+    chargement, panne,
+  } = c;
 
   // Handlers
-  const antiCache = (u: string) => (u.includes("?") ? `${u}&t=${Date.now()}` : `${u}?t=${Date.now()}`);
 
-  const handleSaveAvatar = async () => {
-    const saisie = avatarUrlInput.trim();
-    if (!saisie) return;
-
-    /* Une adresse d image, pas n importe quelle chaine. Un \`javascript:\`
-       ne s execute pas dans un \`src\`, mais rien ne verifiait meme qu il
-       s agissait d une adresse. */
-    try {
-      const adresse = new URL(saisie);
-      if (adresse.protocol !== "https:" && adresse.protocol !== "http:") throw new Error("schéma");
-    } catch {
-      toast.error("Adresse invalide", { description: "Colle une adresse commençant par https://" });
-      return;
-    }
-
-    const { error } = await supabase.from("profiles").update({ avatar_url: saisie }).eq("id", userId);
-    if (error) {
-      toast.error("Erreur", { description: error.message });
-      return;
-    }
-
-    /* Ce qu on AFFICHE porte l anti-cache ; ce qu on STOCKE ne le porte
-       pas. Les deux etaient confondus : \`handleSave\` reecrivait ensuite
-       l adresse horodatee dans la colonne, et le \`?t=…\` y restait. */
-    onAvatarUrlChange(antiCache(saisie));
-    toast.success("Avatar enregistré");
-    setShowAvatarDialog(false);
-    setAvatarUrlInput("");
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
-      toast.error("Format refusé", { description: "JPG, PNG, WEBP ou GIF." });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Fichier trop lourd", { description: "5 Mo au maximum." });
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const { optimizeImage } = await import("@/socle/outils/imageOptimization");
-      const optimized = await optimizeImage(file, "avatar");
-      const fileExt = optimized.type === "image/gif" ? "gif" : "webp";
-      const fileName = `avatar-${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("goal-images")
-        .upload(filePath, optimized, {
-          upsert: true,
-          contentType: optimized.type,
-          cacheControl: "31536000",
-        });
-      if (uploadError) throw uploadError;
-
-      const { data: signedUrlData } = await supabase.storage
-        .from("goal-images")
-        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
-
-      if (!signedUrlData?.signedUrl) throw new Error("L’adresse du fichier n’a pas pu être créée.");
-
-      const { error: majError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: signedUrlData.signedUrl })
-        .eq("id", userId);
-      if (majError) throw majError;
-
-      onAvatarUrlChange(antiCache(signedUrlData.signedUrl));
-      toast.success("Avatar envoyé");
-    } catch (error) {
-      toast.error("Envoi impossible", {
-        description: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      setUploading(false);
-      setShowAvatarDialog(false);
-    }
-  };
-
+  /* Les trois gestes de l avatar vivent dans
+     `hooks/useAvatarDuProfil.ts` : coller une adresse, deposer un
+     fichier, le retirer. */
+  const {
+    avatarUrlInput, setAvatarUrlInput, uploading,
+    handleSaveAvatar, handleFileUpload, retirerAvatar,
+  } = useAvatarDuProfil({ userId, onAvatarUrlChange, fermer: () => setShowAvatarDialog(false) });
   const handleSave = async () => {
     setSaving(true);
     /* \`avatar_url\` n est plus reecrit ici : il est deja enregistre au
@@ -281,17 +119,6 @@ export function ProfileBoundedProfile({
       toast.success("Apparence enregistrée", { description: "Ta carte publique est à jour." });
     }
     setSaving(false);
-  };
-
-  const retirerAvatar = async () => {
-    const { error } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", userId);
-    if (error) {
-      toast.error("Erreur", { description: error.message });
-      return;
-    }
-    onAvatarUrlChange(null);
-    toast.success("Avatar retiré");
-    setShowAvatarDialog(false);
   };
 
   return (
@@ -449,7 +276,7 @@ export function ProfileBoundedProfile({
                   <div className="w-full mt-7 pt-5 border-t border-white/10 flex justify-center">
                     <RankCore
                       taille="carte"
-                      level={niveauDuRang}
+                      level={niveau}
                       rankName={rankData.currentRank.name}
                       logoUrl={rankData.currentRank.logo_url}
                       nextRankName={rankData.nextRank?.name ?? null}
@@ -494,147 +321,32 @@ export function ProfileBoundedProfile({
       </Bouton>
 
       {/* --- DIALOGS (Keep existing implementation) --- */}
-      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="bg-background/95 backdrop-blur-xl border-primary/20">
-          <DialogHeader>
-            <DialogTitle className="font-orbitron text-primary">Changer d’avatar</DialogTitle>
-          </DialogHeader>
-          <Tabs defaultValue="upload" className="w-full">
-            <TabsList className="w-full grid grid-cols-2">
-              <TabsTrigger value="upload">Depuis un fichier</TabsTrigger>
-              <TabsTrigger value="url">Depuis une adresse</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload" className="mt-4">
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-full h-32 border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 flex flex-col gap-2"
-              >
-                {uploading ? <Loader2 className="animate-spin w-8 h-8" /> : <Upload className="w-8 h-8 opacity-50" />}
-                <span className="text-xs uppercase tracking-wider opacity-70">Choisir un fichier</span>
-              </Button>
-            </TabsContent>
-            <TabsContent value="url" className="mt-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="avatar-adresse">Adresse de l’image</Label>
-                <Input
-                  id="avatar-adresse"
-                  type="url"
-                  placeholder="https://…"
-                  value={avatarUrlInput}
-                  onChange={(e) => setAvatarUrlInput(e.target.value)}
-                />
-              </div>
-              <Button onClick={handleSaveAvatar} className="w-full">
-                Utiliser cette image
-              </Button>
-            </TabsContent>
-          </Tabs>
-
-          {/* On pouvait poser un avatar, jamais le retirer. */}
-          {avatarUrl && (
-            <div className="pt-3 mt-1 border-t border-border">
-              <Bouton role="danger" pleine onClick={retirerAvatar}>
-                <Trash2 />
-                Retirer mon avatar
-              </Bouton>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <SelectionDialog open={showFrameDialog} onOpenChange={setShowFrameDialog} title="Choisir un cadre">
-        <div className="grid grid-cols-3 gap-3 p-1">
-          {frames.map((frame) => {
-            const owned = ownedFrameIds.has(frame.id) || frame.is_default;
-            const active = activeFrameId === frame.id || (!activeFrameId && frame.is_default);
-            const rarity = rarite(frame.rarity);
-            return (
-              <InventorySlot
-                key={frame.id}
-                active={active}
-                owned={owned}
-                rarityColor={rarity.border}
-                onClick={() => (owned || frame.is_default) && setActiveFrameId(frame.id)}
-              >
-                <div className="flex justify-center py-2">
-                  <FramePreview
-                    size="sm"
-                    frameImage={frame.preview_url ?? undefined}
-                    borderColor={frame.border_color}
-                    glowColor={frame.glow_color ?? undefined}
-                    frameScale={frame.frame_scale ?? undefined}
-                    frameOffsetX={frame.frame_offset_x ?? undefined}
-                    frameOffsetY={frame.frame_offset_y ?? undefined}
-                  />
-                </div>
-                <div className="ds-t-label text-center truncate px-1 mt-1 opacity-70 font-rajdhani uppercase">
-                  {frame.name}
-                </div>
-              </InventorySlot>
-            );
-          })}
-        </div>
-      </SelectionDialog>
-
-      <SelectionDialog open={showBannerDialog} onOpenChange={setShowBannerDialog} title="Choisir un fond de carte">
-        <div className="grid grid-cols-2 gap-3 p-1">
-          {banners.map((banner) => {
-            const owned = ownedBannerIds.has(banner.id) || banner.is_default;
-            const active = activeBannerId === banner.id || (!activeBannerId && banner.is_default);
-            const rarity = rarite(banner.rarity);
-            return (
-              <InventorySlot
-                key={banner.id}
-                active={active}
-                owned={owned}
-                rarityColor={rarity.border}
-                onClick={() => (owned || banner.is_default) && setActiveBannerId(banner.id)}
-              >
-                <div
-                  className="h-12 w-full mb-2 rounded-sm"
-                  style={{
-                    background: banner.banner_url
-                      ? `url(${banner.banner_url}) center/cover`
-                      : `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`,
-                  }}
-                />
-                <div className="ds-t-label text-center font-rajdhani uppercase">{banner.name}</div>
-              </InventorySlot>
-            );
-          })}
-        </div>
-      </SelectionDialog>
-
-      <SelectionDialog open={showTitleDialog} onOpenChange={setShowTitleDialog} title="Choisir un titre">
-        <div className="grid grid-cols-2 gap-3 p-1">
-          {titles.map((title) => {
-            const owned = ownedTitleIds.has(title.id) || title.is_default;
-            const active = activeTitleId === title.id || (!activeTitleId && title.is_default);
-            const rarity = rarite(title.rarity);
-            return (
-              <InventorySlot
-                key={title.id}
-                active={active}
-                owned={owned}
-                rarityColor={rarity.border}
-                onClick={() => (owned || title.is_default) && setActiveTitleId(title.id)}
-              >
-                <div
-                  className="py-3 px-2 text-center text-sm font-rajdhani font-bold"
-                  style={{
-                    color: title.text_color || "#fff",
-                    textShadow: `0 0 5px ${title.glow_color}`,
-                  }}
-                >
-                  {title.title_text}
-                </div>
-              </InventorySlot>
-            );
-          })}
-        </div>
-      </SelectionDialog>
+      {/* Les quatre choix cosmetiques, sortis ensemble : ce qu on
+          choisit pour sa fiche n est pas le rendu de la fiche. */}
+      <ChoixCosmetiques
+        avatarUrl={avatarUrl}
+        avatarUrlInput={avatarUrlInput}
+        setAvatarUrlInput={setAvatarUrlInput}
+        showAvatarDialog={showAvatarDialog}
+        setShowAvatarDialog={setShowAvatarDialog}
+        uploading={uploading}
+        saving={saving}
+        onFileUpload={handleFileUpload}
+        onSaveAvatar={handleSaveAvatar}
+        onRetirerAvatar={retirerAvatar}
+        showFrameDialog={showFrameDialog}
+        setShowFrameDialog={setShowFrameDialog}
+        showBannerDialog={showBannerDialog}
+        setShowBannerDialog={setShowBannerDialog}
+        showTitleDialog={showTitleDialog}
+        setShowTitleDialog={setShowTitleDialog}
+        frames={frames} banners={banners} titles={titles}
+        ownedFrameIds={ownedFrameIds} ownedBannerIds={ownedBannerIds} ownedTitleIds={ownedTitleIds}
+        activeFrameId={activeFrameId} setActiveFrameId={setActiveFrameId}
+        activeBannerId={activeBannerId} setActiveBannerId={setActiveBannerId}
+        activeTitleId={activeTitleId} setActiveTitleId={setActiveTitleId}
+        onEnregistrer={handleSave}
+      />
     </div>
   );
 }
