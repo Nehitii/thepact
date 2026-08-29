@@ -924,3 +924,61 @@ Aucune règle inexpliquée.
 fichiers, et trois du fond du système de design). `reglages.css` garde 17 173 o
 partagés par quatre routes. Les deux demandent de regarder un écran derrière
 l'authentification — c'est la même limite, nommée trois fois dans le code.
+
+---
+
+## L'étape 5 : ce qui se déplace, et ce qui demanderait de réécrire
+
+**La règle de l'étape : on déplace, on ne réécrit pas.** Le compilateur prouve un
+déplacement ; il ne prouve pas une réécriture, et ces écrans sont derrière
+l'authentification. C'est la même limite qui a arrêté l'étape 4 sur
+`reglages.css`.
+
+### Ce qui a été fait
+
+| | avant | après | ce qui est sorti |
+|---|---|---|---|
+| `Wishlist.tsx` | 1 082 | 910 | le formulaire, la détection de doublon |
+| `MiaConsole.tsx` | 979 | 808 | la bulle et ses actes, les dates |
+| `Analytics.tsx` | 931 | 831 | panneau/relevé/compteur, la palette |
+| `useAnalytics.ts` | 889 | 688 | **vingt** formes de types |
+| `ProfileBoundedProfile.tsx` | 846 | 741 | les trois briques de la vitrine |
+
+Plus **63 imports morts** dans tout le dépôt, dont un antérieur à cette passe.
+
+Le gain qui ne se mesure pas en lignes : `normaliserNom` et `trouverDoublon`
+étaient pures depuis toujours, mais enfermées dans une page de 1 081 lignes —
+les appeler demandait de monter la page, donc Supabase. Sorties, elles ont
+**7 tests**, dont celui qui garde le piège de la règle : deux articles ne font
+doublon que si le nom *et* l'objectif coïncident.
+
+### Le mur, mesuré
+
+Sur les **53 fichiers** encore au-dessus de 400 lignes, soit 29 499 lignes :
+
+| | |
+|---|---|
+| dans **une seule fonction** par fichier | 20 621 lignes — **70 %** |
+| détachable sans rien réécrire | 5 369 lignes — **18 %** |
+| fichiers dont une fonction dépasse 400 lignes à elle seule | **24** |
+
+`Wishlist` est à 910 lignes dont **830 dans un seul composant**. `NewGoal` : 758
+sur 817. `TheCall` : 734 sur 821.
+
+**Le reste de l'étape 5 n'est pas un déplacement, c'est une réécriture** —
+découper un composant de 830 lignes veut dire inventer des frontières de props,
+déplacer de l'état, et vérifier que l'écran se comporte pareil. Sur des pages
+qu'on ne peut pas ouvrir, c'est précisément ce que la règle interdit.
+
+### Trois fautes d'outil, toutes rattrapées par le compilateur
+
+1. Le dossier `logique/` de l'analytique n'existait pas : l'extraction a retiré
+   les constantes de la page **et** n'a pas écrit le fichier.
+2. Les bornes d'un bloc coupaient au mauvais endroit — `ancre`, utilisée par
+   `Panneau`, restait derrière.
+3. Le découpeur comptait `<` et `>` comme des accolades : il a tranché
+   `computeTrend` au premier `<` de comparaison.
+
+Aucune n'a été vue par une garde. C'est la limite du filet : il vérifie ce qui
+est écrit, pas ce que l'outil qui écrit croit faire. Le script d'extraction
+vérifie désormais ses repères avant d'écrire, et refuse plutôt que de mutiler.
