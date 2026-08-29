@@ -37,6 +37,7 @@ import {
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import type { GoalDetailData } from "@/domaines/objectifs/hooks/useGoalDetail";
+import type { AtelierDObjectif } from "@/domaines/objectifs/hooks/useAtelierDObjectif";
 import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
@@ -51,40 +52,18 @@ interface Step {
 }
 
 interface GoalDetailEditOverlayProps {
-  isOpen: boolean;
   goal: GoalDetailData;
   userId: string | undefined;
   steps: Step[];
-  editName: string; setEditName: (v: string) => void;
-  /* Le selecteur ne propose que des paliers valides : le type le dit,
-     au lieu d accepter n importe quelle chaine. */
-  editDifficulty: string; setEditDifficulty: (v: Difficulte) => void;
-  editTags: string[]; toggleEditTag: (tag: string) => void;
-  editNotes: string; setEditNotes: (v: string) => void;
-  editStartDate: string; setEditStartDate: (v: string) => void;
-  editCompletionDate: string; setEditCompletionDate: (v: string) => void;
-  editDeadline: string; setEditDeadline: (v: string) => void;
-  editImage: string; setEditImage: (v: string) => void;
-  editStepItems: EditStepItem[];
-  onStepItemsChange: (items: EditStepItem[]) => void;
-  editCostItems: CostItemData[];
-  setEditCostItems: (items: CostItemData[]) => void;
-  /* La composition d un groupe — ce qu il demande, comme les etapes
-     sont ce que demande un objectif ordinaire. */
+  /* La composition d un groupe se choisit parmi tous les objectifs. */
   allGoals: Goal[];
-  editMembresIds: string[]; setEditMembresIds: (v: string[]) => void;
-  editRegle: SuperGoalRule; setEditRegle: (v: SuperGoalRule) => void;
-  editVivant: boolean; setEditVivant: (v: boolean) => void;
-  editModeGroupe: "manual" | "auto"; setEditModeGroupe: (v: "manual" | "auto") => void;
-  /* La duree d une habitude — ce qu elle demande, comme les etapes
-     pour un objectif ordinaire et les astres pour une constellation. */
-  editDuree: number; setEditDuree: (v: number) => void;
+  /* LES TRENTE CHAMPS DE L ATELIER ETAIENT RECOPIES ICI UN A UN, puis
+     recopies une troisieme fois a l appel. Ils arrivent maintenant
+     tels que le crochet les tient. */
+  atelier: AtelierDObjectif;
   customDifficultyActive: boolean;
   customDifficultyName: string;
   customDifficultyColor: string;
-  saving: boolean;
-  onSave: () => void;
-  onClose: () => void;
   onAddToWishlist?: (item: CostItemData) => void;
 }
 
@@ -93,18 +72,22 @@ const NOTES_MAX = 500;
 export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(props: GoalDetailEditOverlayProps) {
   const { t } = useTranslation();
   const {
-    isOpen, goal, userId, steps,
+    goal, userId, steps, allGoals, atelier,
+    customDifficultyActive, customDifficultyName, customDifficultyColor,
+    onAddToWishlist,
+  } = props;
+  const {
+    editDialogOpen: isOpen, saving,
     editName, setEditName, editDifficulty, setEditDifficulty,
     editTags, toggleEditTag, editNotes, setEditNotes,
     editStartDate, setEditStartDate, editCompletionDate, setEditCompletionDate,
     editDeadline, setEditDeadline, editImage, setEditImage,
-    editStepItems, onStepItemsChange, editCostItems, setEditCostItems,
-    allGoals, editMembresIds, setEditMembresIds, editRegle, setEditRegle,
+    editStepItems, poserLesEtapes: onStepItemsChange, editCostItems, setEditCostItems,
+    editMembresIds, setEditMembresIds, editRegle, setEditRegle,
     editVivant, setEditVivant, editModeGroupe, setEditModeGroupe,
     editDuree, setEditDuree,
-    customDifficultyActive, customDifficultyName, customDifficultyColor,
-    saving, onSave, onClose, onAddToWishlist,
-  } = props;
+    handleEditGoal: onSave, handleCloseEdit: onClose,
+  } = atelier;
 
   /* Echap ferme l atelier — en passant par onClose, qui porte la garde
      des modifications non enregistrees. Et la page dessous cesse de

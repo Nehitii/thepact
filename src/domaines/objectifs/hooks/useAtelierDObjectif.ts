@@ -9,12 +9,12 @@ import {
   getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/domaines/objectifs/logique/goalConstants";
 import { synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
-import type { GoalDetailData } from "@/domaines/objectifs/hooks/useGoalDetail";
-import type { StepData, Difficulte } from "@/domaines/objectifs/hooks/useGoalDetail";
-import type { CostItemData, EditStepItem } from "@/domaines/objectifs/types";
+import type { GoalDetailData, StepData, Difficulte } from "@/domaines/objectifs/hooks/useGoalDetail";
+import {
+  filterGoalsByRule,
+  type CostItemData, type EditStepItem, type Goal, type SuperGoalRule,
+} from "@/domaines/objectifs/types";
 import type { Json, Tables, TablesUpdate } from "@/socle/supabase/types";
-import type { Goal } from "@/domaines/objectifs/types";
-import { filterGoalsByRule, type SuperGoalRule } from "@/domaines/objectifs/types";
 
 /* LES DEUX COLONNES SONT DES ENUMS POSTGRES, PAS DES CHAINES.
    Le « as any » sur le lot de mises a jour laissait passer n importe
@@ -312,6 +312,15 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
       }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
   }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, onObjectifEnregistre, onEtapesEnregistrees, t]);
+  /* editSteps EST LE NOMBRE D editStepItems — deux etats qui doivent
+     s accorder. Ce qui les tenait ensemble etait une fonction anonyme
+     posee en passant dans une prop de la page ; oublier de la cabler
+     laissait le compte mentir sans que rien ne rougisse. */
+  const poserLesEtapes = useCallback((items: EditStepItem[]) => {
+    setEditStepItems(items);
+    setEditSteps(items.length);
+  }, []);
+
   return {
     editDialogOpen, setEditDialogOpen, saving,
     editName, setEditName, editSteps, setEditSteps,
@@ -323,6 +332,10 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
     editMembresIds, setEditMembresIds, editRegle, setEditRegle,
     editVivant, setEditVivant, editModeGroupe, setEditModeGroupe,
     editDuree, setEditDuree,
-    hasUnsavedChanges, handleCloseEdit, handleEditGoal, toggleEditTag,
+    hasUnsavedChanges, handleCloseEdit, handleEditGoal, toggleEditTag, poserLesEtapes,
   };
 }
+
+/** Tout ce que tient l atelier. Une seule declaration : l overlay
+    recopiait ces trente champs dans ses propres props. */
+export type AtelierDObjectif = ReturnType<typeof useAtelierDObjectif>;

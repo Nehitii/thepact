@@ -117,19 +117,7 @@ export default function GoalDetail() {
   /* L atelier d edition vit dans `hooks/useAtelierDObjectif.ts` :
      dix-huit champs, la photographie d ouverture, le garde-fou des
      modifications non enregistrees et la sauvegarde. */
-  const {
-    editDialogOpen, setEditDialogOpen, saving,
-    editName, setEditName, editSteps, setEditSteps,
-    editStartDate, setEditStartDate, editCompletionDate, setEditCompletionDate,
-    editImage, setEditImage, editDifficulty, setEditDifficulty,
-    editTags, setEditTags, editNotes, setEditNotes,
-    editCostItems, setEditCostItems, editStepItems, setEditStepItems,
-    editDeadline, setEditDeadline,
-    editMembresIds, setEditMembresIds, editRegle, setEditRegle,
-    editVivant, setEditVivant, editModeGroupe, setEditModeGroupe,
-    editDuree, setEditDuree,
-    hasUnsavedChanges, handleCloseEdit, handleEditGoal, toggleEditTag,
-  } = useAtelierDObjectif({
+  const atelier = useAtelierDObjectif({
     goal, steps, allGoals, id, goalTagsData, costItems,
     saveCostItems, saveGoalTags, queryClient, customDifficultyName, goalDetailData,
     onObjectifEnregistre: setGoal,
@@ -294,7 +282,7 @@ export default function GoalDetail() {
           auZenith={zenith}
           partageActif={!!social.sharing}
           onRetour={() => navigate("/goals")}
-          onModifier={() => setEditDialogOpen(true)}
+          onModifier={() => atelier.setEditDialogOpen(true)}
           onToutValider={actions.handleFullyComplete}
           onPause={actions.handlePauseGoal}
           onReprendre={actions.handleResumeGoal}
@@ -398,33 +386,14 @@ export default function GoalDetail() {
       </motion.div>
 
       <GoalDetailEditOverlay
-        isOpen={editDialogOpen}
+        atelier={atelier}
         goal={goal}
         userId={user?.id}
         steps={steps}
-        editName={editName} setEditName={setEditName}
-        editDifficulty={editDifficulty} setEditDifficulty={setEditDifficulty}
-        editTags={editTags} toggleEditTag={toggleEditTag}
-        editNotes={editNotes} setEditNotes={setEditNotes}
-        editStartDate={editStartDate} setEditStartDate={setEditStartDate}
-        editCompletionDate={editCompletionDate} setEditCompletionDate={setEditCompletionDate}
-        editDeadline={editDeadline} setEditDeadline={setEditDeadline}
-        editImage={editImage} setEditImage={setEditImage}
-        editStepItems={editStepItems}
-        onStepItemsChange={(items) => { setEditStepItems(items); setEditSteps(items.length); }}
-        editCostItems={editCostItems} setEditCostItems={setEditCostItems}
         allGoals={allGoals}
-        editMembresIds={editMembresIds} setEditMembresIds={setEditMembresIds}
-        editRegle={editRegle} setEditRegle={setEditRegle}
-        editVivant={editVivant} setEditVivant={setEditVivant}
-        editModeGroupe={editModeGroupe} setEditModeGroupe={setEditModeGroupe}
-        editDuree={editDuree} setEditDuree={setEditDuree}
         customDifficultyActive={customDifficultyActive}
         customDifficultyName={customDifficultyName}
         customDifficultyColor={customDifficultyColor}
-        saving={saving}
-        onSave={handleEditGoal}
-        onClose={handleCloseEdit}
         onAddToWishlist={wishlistHandler}
       />
 
