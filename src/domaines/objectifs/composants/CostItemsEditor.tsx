@@ -7,14 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { getCurrencySymbol, formatCurrency } from "@/socle/outils/currency";
 import { COST_ITEM_CATEGORIES } from "@/domaines/objectifs/logique/goalConstants";
+import type { CostItemData } from "@/domaines/objectifs/types";
+/* Reexporte : plusieurs fichiers l importaient d ici. */
+export type { CostItemData };
 
-export interface CostItemData {
-  id?: string;
-  name: string;
-  price: number;
-  category?: string;
-  stepId?: string | null;
-}
 
 interface StepOption {
   id: string;

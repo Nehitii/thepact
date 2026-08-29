@@ -268,3 +268,32 @@ export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
  * Renomme au passage — « Etat » tout court est deja pris deux fois
  * ailleurs, et un nom qui ne dit rien finit dans le mauvais fichier. */
 export type EtatDuNoeud = "acquis" | "encours" | "verrouille";
+
+/* Venues de « CostItemsEditor.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface CostItemData {
+  id?: string;
+  name: string;
+  price: number;
+  category?: string;
+  stepId?: string | null;
+}
+
+/* Venues de « EditStepsList.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface EditStepItem {
+  /** DB id if existing step, undefined if newly added */
+  dbId?: string;
+  name: string;
+  /** Unique key for sortable */
+  key: string;
+  /** If true, this step is excluded from the mission spin/randomizer */
+  excludeFromSpin?: boolean;
+  /**
+   * L etape ultime. Elle ne compte pas dans l avancement — c est ce qui
+   * en fait un bonus et non une etape de plus — et la franchir porte
+   * l objectif au zenith. Il n y en a qu une : la designer libere la
+   * precedente.
+   */
+  estUltime?: boolean;
+}

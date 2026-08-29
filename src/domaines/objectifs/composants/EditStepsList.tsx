@@ -20,23 +20,10 @@ import { Input } from "@/socle/ui/input";
 import { Button } from "@/socle/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/socle/ui/tooltip";
 import { GripVertical, Trash2, Plus, Dices, Sparkle } from "lucide-react";
+import type { EditStepItem } from "@/domaines/objectifs/types";
+/* Reexporte : plusieurs fichiers l importaient d ici. */
+export type { EditStepItem };
 
-export interface EditStepItem {
-  /** DB id if existing step, undefined if newly added */
-  dbId?: string;
-  name: string;
-  /** Unique key for sortable */
-  key: string;
-  /** If true, this step is excluded from the mission spin/randomizer */
-  excludeFromSpin?: boolean;
-  /**
-   * L etape ultime. Elle ne compte pas dans l avancement — c est ce qui
-   * en fait un bonus et non une etape de plus — et la franchir porte
-   * l objectif au zenith. Il n y en a qu une : la designer libere la
-   * precedente.
-   */
-  estUltime?: boolean;
-}
 
 interface EditStepsListProps {
   items: EditStepItem[];
