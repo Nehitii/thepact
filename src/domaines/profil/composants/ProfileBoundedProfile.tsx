@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Bouton } from "@/socle/ds/console-ui";
 import { Button } from "@/socle/ui/button";
@@ -13,9 +13,10 @@ import { useRankXP } from "@/domaines/succes";
 import { usePact } from "@/domaines/objectifs";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Upload, ImageIcon, Crown, Sparkles, Save, Loader2, Trash2, AlertTriangle } from "lucide-react";
 import { CustomizationTrigger, SelectionDialog, InventorySlot } from "@/domaines/profil/composants/InventaireCosmetique";
+import { HolographicCard, CyberText } from "@/domaines/profil/composants/CartePublique";
+import { rarite } from "@/domaines/profil/logique/rarete";
 
 // --- TYPES ---
 interface CosmeticFrame {
@@ -68,107 +69,6 @@ interface ProfileBoundedProfileProps {
 }
 
 // --- SUB-COMPONENTS ---
-
-function HolographicCard({ children }: { children: React.ReactNode }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
-  const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
-
-  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["5deg", "-5deg"]);
-  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-5deg", "5deg"]);
-
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseXFromCenter = e.clientX - rect.left - width / 2;
-    const mouseYFromCenter = e.clientY - rect.top - height / 2;
-    x.set(mouseXFromCenter / width);
-    y.set(mouseYFromCenter / height);
-  }
-
-  function handleMouseLeave() {
-    x.set(0);
-    y.set(0);
-  }
-
-  return (
-    <motion.div
-      style={{
-        perspective: 1200,
-        rotateX,
-        rotateY,
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="relative w-full h-full transition-all duration-200 ease-out"
-    >
-      <div className="relative h-full transform-style-3d shadow-2xl shadow-black/80 rounded-[20px] overflow-hidden bg-[var(--surface-elevated)] border border-border group">
-        {/* Holographic Shine Effect overlay on mouse move */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[60] mix-blend-overlay"
-          style={{
-            background: useTransform(
-              mouseX,
-              [-0.5, 0.5],
-              [
-                "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 55%, transparent 60%)",
-                "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.1) 35%, transparent 40%)",
-              ],
-            ),
-          }}
-        />
-
-        {children}
-
-        {/* Static Noise Grain */}
-        <div className="absolute inset-0 z-[50] pointer-events-none opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-      </div>
-    </motion.div>
-  );
-}
-
-/* Les deux calques colores sont une aberration chromatique au survol.
-   Sans `aria-hidden`, un lecteur d ecran annoncait le pseudo trois fois
-   de suite. */
-const CyberText = ({ text, className }: { text: string; className?: string }) => {
-  return (
-    <div className={`relative group/nom inline-block ${className}`}>
-      <span className="relative z-10">{text}</span>
-      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover/nom:opacity-70 group-hover/nom:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
-        {text}
-      </span>
-      <span aria-hidden="true" className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover/nom:opacity-70 group-hover/nom:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
-        {text}
-      </span>
-    </div>
-  );
-};
-
-/* `rarite(x)` plutot que `rarityColors[x]` : l acces direct sur une
-   rarete absente rend `undefined`, et le `.bg` qui suit fait tomber
-   la page. Les quatre raretes en base correspondent aujourd hui ; une
-   cinquieme suffirait. */
-const rarityColors: Record<string, { bg: string; text: string; glow: string; border: string }> = {
-  common: { bg: "bg-slate-500/10", text: "text-slate-400", glow: "", border: "border-slate-500/30" },
-  rare: { bg: "bg-blue-500/10", text: "text-blue-400", glow: "shadow-blue-500/20", border: "border-blue-500/50" },
-  epic: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
-    glow: "shadow-purple-500/20",
-    border: "border-purple-500/50",
-  },
-  legendary: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    glow: "shadow-amber-500/30",
-    border: "border-amber-500/50",
-  },
-};
-
-const rarite = (r?: string | null) => rarityColors[r ?? ""] ?? rarityColors.common;
 
 // --- MAIN COMPONENT ---
 
