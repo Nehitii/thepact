@@ -7,7 +7,7 @@ import "@/domaines/succes/pantheon.css";
 import "@/domaines/succes/succes.css";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { DSPageShell } from "@/socle/ds";
-import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
+import { DynamicLucideIcon } from "@/domaines/succes/composants/DynamicLucideIcon";
 import {
   RARETES, rangDeRarete, useCoffres, useMarquerVus, useNeufs,
   useReclamerTrophees, useSucces, useTrophees,

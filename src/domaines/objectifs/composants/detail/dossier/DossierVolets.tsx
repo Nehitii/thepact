@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Check, MessageSquare, ListOrdered, ArrowDownWideNarrow, ArrowUpNarrowWide, Sparkle } from "lucide-react";
 import { formatCurrency } from "@/socle/outils/currency";
 import { getCostCategoryLabel } from "@/domaines/objectifs/logique/goalConstants";
-import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
+import { HabitHeatmap } from "@/domaines/objectifs/composants/HabitHeatmap";
 import { BoutonHonneur } from "./BoutonHonneur";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 

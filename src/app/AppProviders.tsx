@@ -8,7 +8,7 @@ import { AuthProvider } from "@/socle/contextes/AuthContext";
 import { CurrencyProvider } from "@/socle/contextes/CurrencyContext";
 import { I18nProvider } from "@/socle/contextes/I18nProvider";
 import { SoundProvider } from "@/socle/contextes/SoundContext";
-import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
+import { SoundSettingsSync } from "@/app/SoundSettingsSync";
 import { ProfilePreferencesSync } from "@/domaines/profil";
 import { AccentColorSync } from "@/domaines/profil";
 import { OnlineStatusPing } from "@/domaines/social";

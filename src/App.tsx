@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
 import { MotionConfig } from "framer-motion";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AppProviders } from "@/components/AppProviders";
+import { AppProviders } from "@/app/AppProviders";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { AppLayout } from "@/app/AppLayout";
 import { AdminRoute } from "@/app/AdminRoute";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorBoundary } from "@/app/ErrorBoundary";
 import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
 import { CONNEXION_ETABLIE } from "@/socle/contextes/AuthContext";
 import { trackLogin, initializeAchievementTracking } from "@/domaines/succes";
@@ -60,7 +60,7 @@ const AdminMoneyManager = lazy(() => import("@/domaines/administration/pages/Adm
 const AdminMode = lazy(() => import("@/domaines/administration/pages/AdminMode"));
 const AdminNotifications = lazy(() => import("@/domaines/administration/pages/AdminNotifications"));
 const AdminPromoManager = lazy(() => import("@/domaines/administration/pages/AdminPromoManager"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const NotFound = lazy(() => import("@/app/NotFound"));
 
 function SocialGate({
   enabled,

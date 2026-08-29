@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ParticleEffect } from "@/components/ParticleEffect";
+import { ParticleEffect } from "@/socle/ds/ParticleEffect";
 import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 
 /**

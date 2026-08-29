@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { AppSidebar } from "@/app/AppSidebar";
-import { CommandPalette } from "@/components/CommandPalette";
+import { CommandPalette } from "@/app/CommandPalette";
 import { MobileBottomNav } from "@/app/MobileBottomNav";
 import { useServerAdminCheck } from "@/domaines/administration";
 import { PorteAdmin } from "@/domaines/administration";

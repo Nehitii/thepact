@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, X, Target, ListTodo, CornerDownLeft, type LucideIcon } from "lucide-react";
 import { classer } from "@/socle/outils/rechercheMots";
-import { useRechercheBarre } from "@/hooks/useRechercheBarre";
+import { useRechercheBarre } from "@/app/useRechercheBarre";
 
 /* ═══════════════════════════════════════════════════════════════
    LA RECHERCHE SE DÉPLIE À CÔTÉ DE LA BARRE

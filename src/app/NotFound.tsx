@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { Home, ArrowLeft } from "lucide-react";
-import "@/styles/introuvable.css";
+import "@/app/introuvable.css";
 
 /**
  * LA PAGE DES CHEMINS QUI N'EXISTENT PAS.

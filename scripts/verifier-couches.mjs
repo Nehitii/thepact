@@ -175,7 +175,12 @@ const TOLERE = new Map([
      le hook chez lui, `temps.ts` dans `logique/`. Ce n etait pas une
      erreur de conception, seulement deux fichiers du meme module ranges
      dans deux couches differentes. */
-  ["socle/hooks/useParticleEffect.tsx", "etape 3 — importe components/ParticleEffect, qui n est pas encore range"],
+  /* `socle/hooks/useParticleEffect` remontait vers `components/` : un
+     hook du socle allait chercher un composant dans le tas commun. La
+     tolerance disait « pas encore range », et c etait exact — le
+     composant est entre dans `socle/ds/` le 29/08, donc au rang 2, et
+     un hook de rang 4 a le droit de l appeler. L inversion n a pas ete
+     resolue, elle a disparu avec le rangement. */
   ["socle/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
   ["socle/ui/dialog.tsx",  "etape 3 — idem"],
   ["socle/ui/switch.tsx",  "etape 3 — idem"],

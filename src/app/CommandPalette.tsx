@@ -16,7 +16,7 @@ import {
   Shield, ShoppingBag, ShoppingCart, Sparkles, Swords, Target, Trophy,
   User, UserCircle, Users, Volume2, Wallet, Zap,
 } from "lucide-react";
-import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
+import { SHORTCUT_HELP_EVENT } from "@/app/ShortcutHelpOverlay";
 import { classer } from "@/socle/outils/rechercheMots";
 
 /**

@@ -1,13 +1,13 @@
 import { Outlet, useSearchParams } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { CommandPalette, OUVRIR_MIA } from "@/components/CommandPalette";
+import { CommandPalette, OUVRIR_MIA } from "@/app/CommandPalette";
 import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
 import { useFuseauDuProfil } from "@/domaines/profil";
 import { useMessagesEnDirect } from "@/domaines/social";
 import { Suspense, useEffect, useState } from "react";
 import { ReseauMia, MiaConsole, type EtatMia } from "@/domaines/mia";
-import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
+import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/app/ShortcutHelpOverlay";
 import { prefetchAllRoutes } from "@/app/prefetchRoutes";
 import { prefetchCoreData } from "@/app/prefetchData";
 import { useAuth } from "@/socle/contextes/AuthContext";
