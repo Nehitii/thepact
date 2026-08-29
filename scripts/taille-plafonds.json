@@ -8,7 +8,6 @@
   "src/domaines/agenda/composants/EventDetailModal.tsx": 425,
   "src/domaines/agenda/hooks/useCalendarEvents.ts": 600,
   "src/domaines/analytique/hooks/useAnalytics.ts": 688,
-  "src/domaines/analytique/pages/Analytics.tsx": 831,
   "src/domaines/appel/composants/CoeurStellaire.tsx": 555,
   "src/domaines/appel/pages/TheCall.tsx": 821,
   "src/domaines/authentification/pages/Auth.tsx": 421,
