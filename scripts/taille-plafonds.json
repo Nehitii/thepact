@@ -13,7 +13,6 @@
   "src/domaines/focus/pages/Focus.tsx": 683,
   "src/domaines/journal/composants/JournalEditor.tsx": 666,
   "src/domaines/journal/composants/JournalNewEntryModal.tsx": 564,
-  "src/domaines/mentions-legales/contenu.ts": 566,
   "src/domaines/mia/composants/MiaConsole.tsx": 808,
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 495,
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 574,

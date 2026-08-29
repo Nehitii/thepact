@@ -5,8 +5,8 @@ import { DSPageShell, DSBackground } from "@/socle/ds";
 import { Panneau, Bouton } from "@/socle/ds/console-ui";
 import {
   SECTIONS, EDITEUR, HEBERGEUR, VERSION, MISE_A_JOUR, PRODUIT, CHAMPS_REQUIS,
-  type Article,
 } from "@/domaines/mentions-legales/contenu";
+import type { Article } from "@/domaines/mentions-legales/types";
 import "@/socle/ds/reglages.css";
 import "@/domaines/mentions-legales/mentions-legales.css";
 

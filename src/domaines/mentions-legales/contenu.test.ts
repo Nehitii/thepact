@@ -20,6 +20,12 @@ import {
    Le second garde-fou vise le jour où l'application encaissera : le
    régime bascule, et cinq champs jusque-là facultatifs redeviennent
    obligatoires. Le test le dit à ce moment-là, pas six mois après.
+
+   Le troisième est né du découpage : les onze articles vivaient dans un
+   seul tableau, leur ordre était la conséquence de l'ordre d'écriture.
+   Répartis dans trois fichiers et recollés par une concaténation, ils
+   peuvent désormais se perdre ou se doubler SANS QUE RIEN NE CASSE —
+   la page s'afficherait simplement avec un article de moins.
    ═══════════════════════════════════════════════════════════════ */
 
 describe("mentions légales", () => {
@@ -69,5 +75,38 @@ describe("mentions légales", () => {
     const texte = (heb!.corps as unknown[]).flat().join(" ");
     expect(texte).toContain(HEBERGEUR_SITE.nom);
     expect(texte).toContain(HEBERGEUR.nom);
+  });
+});
+
+describe("le document recollé", () => {
+  /* L'ordre attendu, écrit une fois. Il n'est plus déductible du code :
+     il naît d'une concaténation de trois tableaux, et se lit ici. */
+  const ATTENDU = [
+    "Éditeur et hébergeur",
+    "Propriété intellectuelle",
+    "Conditions d'utilisation",
+    "Données personnelles",
+    "Où vont ces données",
+    "Sécurité et conservation",
+    "Tes droits",
+    "Suppression du compte",
+    "Entre membres, et responsabilité",
+    "Modifications, droit applicable",
+    "Contact",
+  ];
+
+  it("porte les onze articles, dans l'ordre", () => {
+    expect(SECTIONS.map((s) => s.code)).toEqual(ATTENDU);
+  });
+
+  it("ne double aucun article — une concaténation peut recoller deux fois", () => {
+    expect(new Set(SECTIONS.map((s) => s.code)).size).toBe(SECTIONS.length);
+  });
+
+  it("ne laisse aucun article sans corps : un titre seul a l'air d'une clause", () => {
+    for (const s of SECTIONS) {
+      expect(s.articles.length, s.code).toBeGreaterThan(0);
+      for (const a of s.articles) expect(String(a.corps ?? "").length + (a.corps as unknown[])?.length, s.code).toBeGreaterThan(0);
+    }
   });
 });
