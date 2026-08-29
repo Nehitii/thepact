@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { Panneau, Reglage, Champ, Alerte, Bouton } from "@/socle/ds/console-ui";
+import "@/socle/ds/reglages.css";
 
 const HEURES = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 

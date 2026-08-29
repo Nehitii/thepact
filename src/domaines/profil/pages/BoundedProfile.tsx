@@ -5,6 +5,7 @@ import { ProfileBoundedProfile } from "@/domaines/profil/composants/ProfileBound
 import { useTranslation } from "react-i18next";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { Panneau } from "@/socle/ds/console-ui";
+import "@/socle/ds/reglages.css";
 
 export default function BoundedProfile() {
   const { t } = useTranslation();
@@ -45,7 +46,7 @@ export default function BoundedProfile() {
       <ProfileBoundedProfile
         userId={user.id}
         displayName={displayName}
-        avatarUrl={avatarUrl}
+        avatarUrl={avatarUrl}
         onAvatarUrlChange={setAvatarUrl}
       />
       </Panneau>

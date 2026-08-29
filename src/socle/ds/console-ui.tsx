@@ -1,33 +1,29 @@
 import { ReactNode, ReactElement, cloneElement, forwardRef, isValidElement, useId } from "react";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { cn } from "@/socle/outils/utils";
-/* LA FEUILLE DE CE FICHIER EST DANS LE CHEMIN CRITIQUE, ET ON SAIT
-   MAINTENANT POURQUOI (etape 4, 29/08).
+/* CE FICHIER N IMPORTE PLUS SA FEUILLE, ET C EST DELIBERE.
+   Ce sont les NEUF PAGES qui rendent ces briques qui importent
+   `socle/ds/reglages.css`. Cela a l air moins pratique — c est neuf
+   lignes au lieu d une, et une page qui oublierait l import perdrait
+   son style. C est le prix de 10 947 octets retires du chemin
+   critique, et il est mesure.
 
-   Ce module est partage par la sante, les succes, le profil et les
-   mentions legales — QUATRE ROUTES. C est ce nombre qui compte : Vite
-   hisse dans la feuille d entree toute feuille atteinte depuis plus
-   d un morceau asynchrone, pour n avoir ni doublon ni chargement en
-   retard. 106 des 107 regles construites partaient donc dans l entree,
-   servies a la page de connexion comprise.
+   POURQUOI : Vite hisse dans la feuille d entree toute feuille
+   atteinte depuis un MODULE PARTAGE, pour n avoir ni doublon ni
+   chargement en retard. Ce fichier est partage par quatre domaines ;
+   sa feuille partait donc dans l entree, servie a la page de connexion
+   comprise. Importee directement par des pages, elle obtient son
+   propre morceau — 8 014 o charges seulement par qui en a besoin.
 
-   L HYPOTHESE NATURELLE ETAIT FAUSSE, ET L ESSAI L A DIT. On a cru que
-   le coupable etait le MORCEAU PARTAGE que forme ce fichier, et retire
-   cet import pour le verifier : l entree n a pas bouge d un octet. Ce
-   n est pas le nombre d importateurs, c est le nombre de routes.
+   DEUX ESSAIS L ONT DIT AVANT DE LE FAIRE. Retirer cet import en
+   laissant `ConsoleReglages` l importer n a rien change : ce composant
+   est partage lui aussi. Ce n est ni le nombre d importateurs ni le
+   nombre de routes — c est le fait qu un MODULE PARTAGE soit sur le
+   chemin.
 
-   ON NE PEUT DONC PAS SORTIR CETTE FEUILLE DU CHEMIN CRITIQUE tant que
-   quatre domaines rendent ces briques. On l a RETRECIE : les treize
-   classes que seul le profil ecrivait sont parties dans
-   `domaines/profil/console-reglages.css`, importee par la seule
-   console de reglages — 23 450 o de source ramenes a 17 173.
-
-   Ce qui reste ici est ce que ces briques emettent (23 classes) et ce
-   que deux domaines partagent (5 : la grille et les volets, ecrits par
-   la console ET par les mentions legales). Le retirer demanderait de
-   retirer les briques a l un des quatre domaines, ce qui est un
-   arbitrage de conception, pas de rangement. */
-import "@/socle/ds/reglages.css";
+   La liste des neuf pages se retrouve par la fermeture transitive des
+   imports vers ce fichier ; elle est dans le compte-rendu de l etape 4
+   au cas ou une dixieme apparaisse. */
 
 /* LES BRIQUES DE LA CONSOLE.
  *

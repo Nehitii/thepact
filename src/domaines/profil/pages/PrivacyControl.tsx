@@ -10,6 +10,7 @@ import { supabase } from "@/socle/supabase/client";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { Panneau, Reglage } from "@/socle/ds/console-ui";
 import { BlockedUsersPanel } from "@/domaines/profil/composants/BlockedUsersPanel";
+import "@/socle/ds/reglages.css";
 
 /* Trois cles de plus figuraient ici — share_achievements,
    community_updates_enabled, achievement_celebrations_enabled —

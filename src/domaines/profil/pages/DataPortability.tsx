@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Bouton } from "@/socle/ds/console-ui";
 import { Database, Download, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/socle/contextes/AuthContext";
@@ -17,7 +16,9 @@ import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { ReinitialiserLePacte } from "@/domaines/profil/composants/ReinitialiserLePacte";
 import { oublierLesPreferences, preferencesPosees } from "@/socle/outils/preferencesAffichage";
-import { Panneau } from "@/socle/ds/console-ui";
+import { Bouton, Panneau } from "@/socle/ds/console-ui";
+import "@/socle/ds/reglages.css";
+import { motifDeLEchec, motifLisible } from "@/domaines/profil/logique/erreursPortabilite";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
@@ -27,28 +28,6 @@ type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
    passe de sa propre destruction. */
 const MOT_REINIT = "REINITIALISER";
 const MOT_SUPPRESSION = "SUPPRIMER";
-
-/* La fonction delete-account exige desormais aal2 quand un second
-   facteur est enrole. Son 403 porte un code, pas une phrase — et
-   functions.invoke jette le corps de toute reponse non-2xx. On relit
-   donc la reponse conservee dans context, comme ailleurs dans
-   l application. */
-const motifLisible = (code: string) =>
-  code === "second_facteur_requis"
-    ? "Ton compte est protégé par un second facteur. Reconnecte-toi en le saisissant, puis réessaie."
-    : code;
-
-const motifDeLEchec = async (error: { message: string; context?: unknown }) => {
-  if (error.context instanceof Response) {
-    try {
-      const corps = await error.context.clone().json();
-      if (corps?.error) return motifLisible(corps.error);
-    } catch {
-      /* Corps illisible : on retombe sur le message d origine. */
-    }
-  }
-  return error.message;
-};
 
 export default function DataPortability() {
   const { user, session } = useAuth();

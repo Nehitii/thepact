@@ -7,6 +7,7 @@ import { usePactMutation } from "@/domaines/objectifs";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import "@/socle/ds/reglages.css";
 
 export default function PactSettings() {
   const { t } = useTranslation();

@@ -11,6 +11,7 @@ import {
   type UniteHydratation, CL_PAR_VERRE, uniteValide, quantiteAffichee,
   verresDepuisAffichage, formaterQuantite, pasAffiche, uniteCourte,
 } from "@/domaines/sante/logique/hydratation";
+import "@/socle/ds/reglages.css";
 
 /* ═══════════════════════════════════════════════════════════════
    LE MODULE SANTÉ REJOINT LA CONSOLE

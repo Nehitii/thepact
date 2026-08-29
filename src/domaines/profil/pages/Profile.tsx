@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { dateCivileDepuisTexte } from "@/domaines/profil/logique/dateCivile";
 import { Loader2 } from "lucide-react";
+import "@/socle/ds/reglages.css";
 
 /* LES TROIS ONGLETS SONT DEVENUS DEUX SECTIONS DU RAIL.
  *
