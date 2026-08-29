@@ -3,41 +3,14 @@ import { supabase } from "@/socle/supabase/client";
 import type { TablesUpdate } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18next from "i18next";
-export type PactWishlistItemType = "required" | "optional";
-export type WishlistPriority = "low" | "med" | "high" | "critical";
-
-export interface PactWishlistGoalLink {
-  id: string;
-  name: string;
-  type: string;
-  status: string;
-}
-
-export interface PactWishlistItem {
-  id: string;
-  user_id: string;
-  goal_id: string | null;
-  /* La liste nommee a laquelle appartient l article. Nulle pour les
-     articles rattaches a un objectif du pacte. La requete la
-     ramenait deja par « select("*") » ; seul le type l ignorait. */
-  list_id: string | null;
-  name: string;
-  category: string | null;
-  estimated_cost: number;
-  item_type: PactWishlistItemType;
-  acquired: boolean;
-  acquired_at: string | null;
-  notes: string | null;
-  url: string | null;
-  image_url: string | null;
-  source_type: string;
-  source_goal_cost_id: string | null;
-  priority: WishlistPriority;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-  goal?: PactWishlistGoalLink | null;
-}
+import type {
+  PactWishlistItem, PactWishlistItemType, WishlistPriority, PactWishlistGoalLink,
+} from "@/domaines/souhaits/types";
+/* Reexportes : sept fichiers les importaient deja d ici. Les types
+   descendent au rang zero, les appelants ne bougent pas. */
+export type {
+  PactWishlistItem, PactWishlistItemType, WishlistPriority, PactWishlistGoalLink,
+};
 
 const queryKeys = {
   all: (userId: string | undefined) => ["pact-wishlist", userId] as const,

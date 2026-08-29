@@ -39,6 +39,7 @@ import { PREF } from "@/socle/outils/preferencesAffichage";
 import { FormulaireArticle } from "@/domaines/souhaits/composants/FormulaireArticle";
 import { trouverDoublon } from "@/domaines/souhaits/logique/doublons";
 import type { Vue, Tri } from "@/domaines/souhaits/types";
+import { compterLesArticles, filtrerEtTrier } from "@/domaines/souhaits/logique/inventaire";
 import { BandeauMesures } from "@/domaines/souhaits/composants/BandeauMesures";
 import { BarreListe } from "@/domaines/souhaits/composants/BarreListe";
 
@@ -204,81 +205,15 @@ export default function Wishlist() {
     goalName: string | null; cost: number;
   } | null>(null);
 
-  /* ── LES COMPTES ──
-     Une seule source pour toute la page : chaque chiffre affiche
-     descend de ce bloc, et aucun n est recalcule ailleurs. */
-  const comptes = useMemo(() => {
-    const duPacte = items.filter((i) => i.source_goal_cost_id);
-    const libres = items.filter((i) => !i.source_goal_cost_id);
-    /* Un article sans objectif ET sans liste ne s affiche que dans
-       « Global ». La migration n en a laisse aucun, mais rien
-       n empeche d en creer un : il ne doit pas devenir invisible. */
-    const parListe = new Map<string, PactWishlistItem[]>();
-    for (const i of libres) {
-      const cle = i.list_id ?? "";
-      if (!cle) continue;
-      const p = parListe.get(cle);
-      if (p) p.push(i); else parListe.set(cle, [i]);
-    }
-    const somme = (liste: PactWishlistItem[]) =>
-      liste.reduce((s, i) => s + Number(i.estimated_cost || 0), 0);
+  /* Les comptes et le filtre vivent dans `logique/inventaire.ts` :
+     ce sont des nombres et un ordre, et les deux se trompent sans
+     bruit. */
+  const comptes = useMemo(() => compterLesArticles(items, goals), [items, goals]);
 
-    return {
-      duPacte, libres, parListe,
-      total: somme(items),
-      totalPacte: somme(duPacte),
-      totalLibre: somme(libres),
-      paye: somme(items.filter((i) => i.acquired)),
-      payePacte: somme(duPacte.filter((i) => i.acquired)),
-      payeLibre: somme(libres.filter((i) => i.acquired)),
-      nbPaye: items.filter((i) => i.acquired).length,
-      /* Le cout des objectifs du pacte, pour ce qu il est : une
-         verification. Il doit egaler la somme des pieces. */
-      coutObjectifs: goals.reduce((s, g) => s + Number(g.estimated_cost || 0), 0),
-      nbObjectifs: new Set(duPacte.map((i) => i.goal_id)).size,
-    };
-  }, [items, goals]);
-
-  /* ── LE FILTRE ──
-     La recherche s applique a la vue courante ; elle ne cherche pas
-     ailleurs que ce qu on regarde. */
-  const vus = useMemo(() => {
-    const base = vue === "pacte"
-      ? comptes.duPacte
-      : vue === "tout"
-        ? items
-        : (comptes.parListe.get(vue) ?? []);
-    const mot = recherche.trim().toLowerCase();
-    const filtres = mot
-      ? base.filter((i) =>
-        i.name.toLowerCase().includes(mot)
-        || (i.category ?? "").toLowerCase().includes(mot)
-        || (i.goal?.name ?? "").toLowerCase().includes(mot)
-        || (i.notes ?? "").toLowerCase().includes(mot))
-      : base;
-
-    const recence = (a: PactWishlistItem, b: PactWishlistItem) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-
-    const ordonnes = [...filtres].sort((a, b) => {
-      if (tri === "cher") return Number(b.estimated_cost) - Number(a.estimated_cost);
-      if (tri === "abordable") return Number(a.estimated_cost) - Number(b.estimated_cost);
-      if (tri === "visuel") {
-        /* Une photo achete une case : encore faut-il la voir. Sans
-           ce tri, les quatre articles photographies tombaient a deux
-           mille pixels du haut. */
-        const ecart = Number(Boolean(b.image_url)) - Number(Boolean(a.image_url));
-        return ecart !== 0 ? ecart : recence(a, b);
-      }
-      return recence(a, b);
-    });
-
-    return {
-      tous: ordonnes,
-      actifs: ordonnes.filter((i) => !i.acquired),
-      acquis: ordonnes.filter((i) => i.acquired),
-    };
-  }, [vue, items, comptes.duPacte, comptes.parListe, recherche, tri]);
+  const vus = useMemo(
+    () => filtrerEtTrier({ vue, items, comptes, recherche, tri }),
+    [vue, items, comptes, recherche, tri],
+  );
 
   // ═══ GESTES ═══
 
