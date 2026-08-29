@@ -14,7 +14,6 @@ import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { Panneau, Reglage, Segmente, Jauge } from "@/socle/ds/console-ui";
 import { reagitAuxAbsences, reglerReactionAuxAbsences } from "@/domaines/mia";
 import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
-import { Search } from "lucide-react";
 import { VisageMia } from "@/domaines/mia";
 
 const ACCENTS = [

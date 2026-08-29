@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, List, Zap, CheckCircle2, SearchX, X } from "lucide-react";
-import { Button } from "@/socle/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarViewGoalCard } from "@/domaines/objectifs/composants/BarViewGoalCard";
 import { GridViewGoalCard } from "@/domaines/objectifs/composants/GridViewGoalCard";

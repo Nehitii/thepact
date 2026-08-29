@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Crown, Zap, CheckCircle2, ImageOff } from "lucide-react";
+import { Crown, CheckCircle2, ImageOff } from "lucide-react";
 import { Badge } from "@/socle/ui/badge";
 import { teinteDuPalier } from "@/domaines/objectifs/hooks/useCarteObjectif";
 import { getDifficultyLabel } from "@/domaines/objectifs/logique/goalConstants";

@@ -1,4 +1,4 @@
-import { Crown, Shield, Target } from "lucide-react";
+import { Shield, Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AvatarFrame } from "@/socle/ui/avatar-frame";
 import { nombre, type CarteProfil } from "@/domaines/profil/hooks/useCarteProfil";

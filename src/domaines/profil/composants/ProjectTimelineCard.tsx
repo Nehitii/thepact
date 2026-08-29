@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Bouton } from "@/socle/ds/console-ui";
-import { Button } from "@/socle/ui/button";
 import { Calendar } from "@/socle/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
 import { DataPanel } from "@/socle/ds/settings-ui";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { cn } from "@/socle/outils/utils";

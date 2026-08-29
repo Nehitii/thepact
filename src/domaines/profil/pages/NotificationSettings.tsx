@@ -4,7 +4,6 @@ import { useNotificationSettings } from "@/domaines/social";
 import { usePushNotifications } from "@/domaines/profil/hooks/usePushNotifications";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { supabase } from "@/socle/supabase/client";
-import { Button } from "@/socle/ui/button";
 import { Switch } from "@/socle/ui/switch";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";

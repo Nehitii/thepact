@@ -1,8 +1,7 @@
 import React, { memo, useMemo } from "react";
-import { Crown, Target, CheckCircle2, AlertTriangle, ExternalLink, Clock } from "lucide-react";
+import { Crown, Target, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import { Badge } from "@/socle/ui/badge";
 import { Progress } from "@/socle/ui/progress";
-import { Button } from "@/socle/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/socle/outils/utils";
 import { getDifficultyColor } from "@/socle/outils/utils";

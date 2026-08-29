@@ -4,7 +4,7 @@ import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import { Input } from "@/socle/ui/input";
 import { Badge } from "@/socle/ui/badge";
 import { ScrollArea } from "@/socle/ui/scroll-area";
-import { getDifficultyLabel, getTagLabel, getStatusLabel, DIFFICULTY_OPTIONS, GOAL_TAGS } from "@/domaines/objectifs/logique/goalConstants";
+import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/domaines/objectifs/logique/goalConstants";
 import { getDifficultyColor } from "@/socle/outils/utils";
 import { cn } from "@/socle/outils/utils";
 import { useTranslation } from "react-i18next";

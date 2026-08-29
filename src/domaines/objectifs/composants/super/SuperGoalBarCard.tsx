@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { Crown, Zap } from "lucide-react";
-import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/domaines/objectifs/logique/goalConstants";
+import { getDifficultyIntensity } from "@/domaines/objectifs/logique/goalConstants";
 import { getDifficultyLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { type SuperGoalRule } from "@/domaines/objectifs/types";
 import { useTranslation } from "react-i18next";

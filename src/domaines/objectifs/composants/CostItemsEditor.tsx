@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Receipt, ArrowDownToLine, ShoppingCart, Link2 } from "lucide-react";
 import { Button } from "@/socle/ui/button";

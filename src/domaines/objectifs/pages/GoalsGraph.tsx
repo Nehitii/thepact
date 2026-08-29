@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ReactFlow, {
@@ -15,8 +15,6 @@ import "@/domaines/objectifs/graph.css";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/socle/supabase/client";
 import { DSPageShell, DSPageLoader } from "@/socle/ds";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { filterGoalsByRule, decrireRegle, type SuperGoalRule } from "@/domaines/objectifs/composants/super";

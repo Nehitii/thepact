@@ -26,6 +26,8 @@ import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { formatCurrency } from "@/socle/outils/currency";
 import { getDifficultyLabel, getTagLabel } from "@/domaines/objectifs";
+import { Panneau, Releve, Compteur } from "@/domaines/analytique/composants/PanneauAnalytique";
+import { AXE, TRAIT, ACCENT, AMBRE, VERT, ROUGE, LEGENDE } from "@/domaines/analytique/logique/couleurs";
 
 /* ─────────────────────────────────────────────────────────────
    STATISTIQUES
@@ -51,17 +53,6 @@ import { getDifficultyLabel, getTagLabel } from "@/domaines/objectifs";
    Trois compteurs en tete, fixes d'une vue a l'autre : on ne les
    apprend qu'une fois.
    ───────────────────────────────────────────────────────────── */
-
-const AXE = { fontSize: 11, fill: "var(--nexus-text-dimmer)" } as const;
-const TRAIT = "hsl(var(--primary) / 0.16)";
-const ACCENT = "hsl(var(--primary))";
-const AMBRE = "hsl(var(--signal-ambre))";
-/* Une reference de jeton plutot quune couleur : le JS ne sait pas
-   quel theme est actif, le CSS si. Sur fond clair, #00ff88 tombe a
-   1,22 — le compteur dXP etait illisible. */
-const VERT = "hsl(var(--signal-vert))";
-const ROUGE = "hsl(var(--signal-rouge))";
-const LEGENDE = { fontSize: 11, fontFamily: "'JetBrains Mono', ui-monospace, monospace" } as const;
 
 /* Les libellés des catégories de tâches et des priorités. Ils vivaient
    dans les traductions de Todo ; ici on nomme en clair, parce que la page
@@ -94,97 +85,6 @@ const VUES: { id: PrismSection; nom: string; sous: string }[] = [
   { id: "repartition", nom: "Répartition", sous: "Où va l'effort" },
   { id: "rythme", nom: "Rythme", sous: "À quelle cadence je tiens" },
 ];
-
-/* L'ancre d'un panneau se déduit de son titre : rien à tenir à jour, et
-   deux panneaux ne peuvent pas se disputer la même. */
-const ancre = (titre: string) =>
-  "ana-" + titre.normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-/** Panneau, dans le langage exact du tableau de bord : fond opaque,
- *  bord cyan, coins a 4px, aucun backdrop-filter.
- *
- *  « data-panneau » n'est pas décoratif : c'est lui que lit le sommaire
- *  de la barre. Un panneau ajouté y apparaît sans qu'on touche à rien. */
-function Panneau({
-  titre, droite, children, vide, messageVide,
-}: {
-  titre: string;
-  droite?: string;
-  children?: React.ReactNode;
-  vide?: boolean;
-  messageVide?: string;
-}) {
-  return (
-    <div className="cp-cadre">
-      <section className="cp-fond ana-panneau" id={ancre(titre)} data-panneau={titre}>
-        <span className="cp-equerre cp-equerre-hg" />
-        <span className="cp-equerre cp-equerre-bd" />
-        <header className="ana-panneau-tete">
-          <h2 className="ana-panneau-titre ds-t-label">{titre}</h2>
-          <span className="ana-panneau-fil" />
-          {droite && <span className="ana-panneau-droite ds-t-label">{droite}</span>}
-        </header>
-        {vide
-          ? <p className="ana-vide ds-t-label">{messageVide || "Aucune donnée"}</p>
-          : children}
-      </section>
-    </div>
-  );
-}
-
-/** Releve segmente : etiquette, barre en cellules, valeur — sur une ligne.
- *  Remplace les BarChart horizontaux, ou il fallait suivre une barre
- *  jusqu'a un axe pour lire un nombre qu'on peut simplement ecrire. */
-function Releve({ lignes, teinte = ACCENT, suffixe = "" }: {
-  lignes: { nom: string; valeur: number }[];
-  teinte?: string;
-  suffixe?: string;
-}) {
-  const max = Math.max(1, ...lignes.map((l) => l.valeur));
-  return (
-    <div className="cp-releve">
-      {lignes.map((l) => (
-        <div key={l.nom} className="cp-releve-ligne">
-          <span className="cp-releve-nom" title={l.nom}>{l.nom}</span>
-          <span className="cp-segments cp-releve-barre" style={{ ["--c" as string]: teinte }}>
-            <i style={{ width: `${(l.valeur / max) * 100}%` }} />
-          </span>
-          <span className="cp-releve-val">{l.valeur}{suffixe}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Compteur({ valeur, unite, libelle, teinte, pct }: {
-  valeur: string | number; unite?: string; libelle: string; teinte: string; pct?: number;
-}) {
-  return (
-    <div className="ana-compteur">
-      {pct !== undefined && (
-        <span
-          className="ana-jauge"
-          style={{
-            ["--c" as string]: teinte,
-            ["--p" as string]: `${Math.min(100, Math.max(0, pct))}%`,
-          }}
-        />
-      )}
-      <span className="ana-compteur-txt">
-        <span
-          className="ana-compteur-val font-orbitron"
-          /* Le halo prend la teinte a trente pour cent : concatener « 55 »
-             a une couleur ne marche que sur un hexadecimal. */
-          style={{ color: teinte, textShadow: `0 0 14px color-mix(in srgb, ${teinte} 33%, transparent)` }}
-        >
-          {valeur}{unite && <i className="ana-compteur-unite">{unite}</i>}
-        </span>
-        <span className="ana-compteur-lib ds-t-label">{libelle}</span>
-      </span>
-    </div>
-  );
-}
 
 export default function Analytics() {
   const { t } = useTranslation();

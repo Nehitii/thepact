@@ -1,13 +1,12 @@
 import { useState, useRef } from "react";
 import { Bouton } from "@/socle/ds/console-ui";
-import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
+import { Database, Download, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { differenceInDays, format, parseISO, isValid } from "date-fns";
 import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
 import { supabase } from "@/socle/supabase/client";
-import { Button } from "@/socle/ui/button";
 import { Input } from "@/socle/ui/input";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/socle/ui/radio-group";

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
+import { Eye, Users, Loader2, Share2, Target, Link2 } from "lucide-react";
 import { useProfileSettings } from "@/socle/hooks/useProfileSettings";
 import { Switch } from "@/socle/ui/switch";
 import { toast } from "sonner";

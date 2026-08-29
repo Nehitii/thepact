@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import { Dices, Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw, X } from "lucide-react";
+import { Target, Focus, RotateCcw, Zap, Lock, Crosshair, RotateCw, X } from "lucide-react";
 import { Goal } from "@/domaines/objectifs";
 import { Button } from "@/socle/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/socle/ui/dialog";
@@ -13,7 +13,6 @@ import { useActiveMission, DeadlineType } from "@/domaines/accueil/hooks/useActi
 import { DeadlineSelector } from "@/domaines/accueil/composants/hero/DeadlineSelector";
 import { ActiveMissionCard } from "@/domaines/accueil/composants/hero/ActiveMissionCard";
 import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
-import { getDifficultyColor } from "@/socle/outils/utils";
 
 const ITEM_HEIGHT = 80;
 const SPIN_DURATION = 2.5;

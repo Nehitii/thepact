@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { X, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useAuth } from "@/socle/contextes/AuthContext";

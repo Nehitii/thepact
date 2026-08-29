@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
-import { Bell, MessageSquare, CheckCheck, Trash2, Settings, PenLine, Users } from "lucide-react";
+import { Bell, MessageSquare, CheckCheck, Trash2, Settings, PenLine } from "lucide-react";
 import "@/domaines/social/community.css";
 import "@/domaines/social/inbox.css";
 import { useAuth } from "@/socle/contextes/AuthContext";

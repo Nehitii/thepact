@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/socle/ui/button";
 import { Input } from "@/socle/ui/input";
-import { Label } from "@/socle/ui/label";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";

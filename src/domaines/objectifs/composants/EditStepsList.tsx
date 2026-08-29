@@ -18,7 +18,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/socle/ui/input";
 import { Button } from "@/socle/ui/button";
-import { Checkbox } from "@/socle/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/socle/ui/tooltip";
 import { GripVertical, Trash2, Plus, Dices, Sparkle } from "lucide-react";
 

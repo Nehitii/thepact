@@ -1,7 +1,7 @@
 import React, { useMemo, memo } from "react";
-import { Crown, Zap, ImageOff } from "lucide-react";
+import { Crown, Zap } from "lucide-react";
 import { cn } from "@/socle/outils/utils";
-import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/domaines/objectifs/logique/goalConstants";
+import { getDifficultyLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { type SuperGoalRule } from "@/domaines/objectifs/types";
 import { useTranslation } from "react-i18next";
 import { teinteDuPalier } from "@/domaines/objectifs/hooks/useCarteObjectif";

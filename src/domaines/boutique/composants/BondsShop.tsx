@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Sparkles, Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
+import { Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/domaines/boutique/hooks/useShop";
 import { Button } from "@/socle/ui/button";

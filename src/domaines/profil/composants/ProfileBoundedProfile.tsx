@@ -6,7 +6,7 @@ import { Input } from "@/socle/ui/input";
 import { Label } from "@/socle/ui/label";
 import { AvatarFrame, FramePreview } from "@/socle/ui/avatar-frame";
 import { TitreCosmetique } from "@/domaines/profil/composants/TitreCosmetique";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/socle/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/socle/ui/tabs";
 import { RankCore } from "@/domaines/succes";
 import { useRankXP } from "@/domaines/succes";
@@ -14,7 +14,7 @@ import { usePact } from "@/domaines/objectifs";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield, Trash2, AlertTriangle } from "lucide-react";
+import { Upload, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Trash2, AlertTriangle } from "lucide-react";
 
 // --- TYPES ---
 interface CosmeticFrame {

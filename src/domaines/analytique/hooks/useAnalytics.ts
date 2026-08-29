@@ -3,6 +3,10 @@ import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { subDays, subMonths, format, parseISO, differenceInDays } from "date-fns";
 import type { AnalyticsPeriod } from "@/domaines/analytique/types";
+import type {
+  LigneObjectif, LigneVitrine, LigneEtape, LigneTag, LignePiece, LigneHabitude,
+  LigneTodo, LigneSession, LigneSante, LigneDepense, LigneMois,
+} from "@/domaines/analytique/types";
 
 export interface GoalsByDifficulty {
   difficulty: string;
@@ -38,90 +42,6 @@ export interface TrendData {
    Une interface par `.select()`, avec exactement ses colonnes : demander
    un champ qui n'a pas ete lu devient une erreur de compilation, au lieu
    d'un `undefined` qui traverse tout le calcul et ressort en zero. */
-interface LigneObjectif {
-  id: string;
-  name: string | null;
-  created_at: string;
-  start_date: string | null;
-  status: string | null;
-  completion_date: string | null;
-  difficulty: string | null;
-  estimated_cost: number | null;
-  potential_score: number | null;
-  total_steps: number | null;
-  validated_steps: number | null;
-  goal_type: string | null;
-  habit_duration_days: number | null;
-  habit_checks: boolean[] | null;
-}
-interface LigneVitrine {
-  id: string;
-  name: string | null;
-  image_url: string | null;
-  status: string | null;
-  difficulty: string | null;
-  potential_score: number | null;
-  completion_date: string | null;
-  total_steps: number | null;
-  validated_steps: number | null;
-  goal_type: string | null;
-  habit_duration_days: number | null;
-  habit_checks: boolean[] | null;
-}
-interface LigneEtape {
-  id: string;
-  goal_id: string;
-  status: string | null;
-  validated_at: string | null;
-}
-interface LigneTag {
-  goal_id: string;
-  tag: string;
-}
-interface LignePiece {
-  goal_id: string;
-  price: number | null;
-  step_id: string | null;
-}
-interface LigneHabitude {
-  log_date: string;
-  completed: boolean | null;
-}
-interface LigneTodo {
-  completed_at: string | null;
-  task_name: string | null;
-  priority: string | null;
-  category: string | null;
-  postpone_count: number | null;
-  was_urgent: boolean | null;
-}
-interface LigneSession {
-  duration_minutes: number | null;
-  completed_at: string | null;
-  started_at: string | null;
-  linked_goal_id: string | null;
-}
-interface LigneSante {
-  entry_date: string;
-  sleep_hours: number | null;
-  energy_morning: number | null;
-  energy_afternoon: number | null;
-  energy_evening: number | null;
-}
-interface LigneDepense {
-  amount: number | null;
-  montant_total: number | null;
-  periode_mois: number | null;
-  mois_ancre: string | null;
-  decalage_mois: number | null;
-}
-interface LigneMois {
-  month: string;
-  actual_total_income: number | null;
-  actual_total_expenses: number | null;
-  unplanned_income: number | null;
-  unplanned_expenses: number | null;
-}
 
 /** Combien de fois une chose a été repoussée avant d'être faite. */
 export interface Reports {

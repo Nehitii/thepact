@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Bouton } from "@/socle/ds/console-ui";
-import { Sparkles, Save, Loader2, Type, Wand2 } from "lucide-react";
+import { Save, Loader2, Type, Wand2 } from "lucide-react";
 import { DataPanel } from "@/socle/ds/settings-ui";
 import { Input } from "@/socle/ui/input";
 import { Textarea } from "@/socle/ui/textarea";

@@ -9,7 +9,6 @@ export type { Goal };
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
-import type { SuperGoalRule } from "@/domaines/objectifs/types";
 import type { Tables } from "@/socle/supabase/types";
 
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, ArrowUpDown, Eye, EyeOff, X } from "lucide-react";
@@ -233,4 +232,3 @@ export function ShopFilters({
 }
 
 // Helper function to apply filters
-

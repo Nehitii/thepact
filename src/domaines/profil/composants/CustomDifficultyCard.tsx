@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Bouton } from "@/socle/ds/console-ui";
 import { Input } from "@/socle/ui/input";
-import { Switch } from "@/socle/ui/switch";
 import { DataPanel, SettingRow } from "@/socle/ds/settings-ui";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
