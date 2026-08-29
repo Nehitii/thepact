@@ -78,3 +78,28 @@ export interface Achievement {
   bond_reward?: number;
   points?: number;
 }
+
+/* Venues de « useSucces.ts », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface Succes {
+  cle: string;
+  nom: string;
+  categorie: string;
+  rarete: string;
+  description: string | null;
+  saveur: string | null;
+  icone: string | null;
+  cache: boolean;
+  points: number;
+  bonds: number;
+  mesure: string | null;
+  seuil: number | null;
+  valeur: number | null;
+  obtenu: boolean;
+  obtenu_le: string | null;
+  avancement: number;
+  /* Pourquoi il ne bouge pas, quand la raison n est pas « vous n avez
+     pas encore commence » : module manquant, personne autour, ou une
+     partie du produit ou rien n a jamais ete enregistre. */
+  sommeil: "module" | "personne" | "inactif" | null;
+}

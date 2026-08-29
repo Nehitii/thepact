@@ -13,6 +13,9 @@ import {
   useReclamerTrophees, useSucces, useTrophees,
   type Succes,
 } from "@/domaines/succes/hooks/useSucces";
+import {
+  ordonnerLesSucces, compterLePantheon, plusHauteRareteObtenue, chroniqueParMois, lesPlusProches, TOUT,
+} from "@/domaines/succes/logique/pantheon";
 import { Carte, MomentDeGloire } from "@/domaines/succes/composants/CarteSucces";
 import { Trophee } from "@/domaines/succes/composants/Trophee";
 
@@ -34,7 +37,6 @@ import { Trophee } from "@/domaines/succes/composants/Trophee";
  * sol qui fuit vers l horizon — et la couche fonctionnelle reparee
  * vient vivre dedans. */
 
-const TOUT = "__tout__";
 
 export default function Achievements() {
   const { t } = useTranslation();
@@ -118,65 +120,16 @@ export default function Achievements() {
   const libelleCategorie = (c: string) => t(`achievements.category.${c}`, c);
   const libelleRarete = (r: string) => t(`achievements.rarity.${r}`, r);
 
-  const listee = useMemo(() => {
-    return succes
-      .filter((s) => categorie === TOUT || s.categorie === categorie)
-      .filter((s) => !cacherObtenus || !s.obtenu)
-      .sort((a, b) =>
-        Number(neufs?.has(b.cle) ?? false) - Number(neufs?.has(a.cle) ?? false)
-        || Number(a.obtenu) - Number(b.obtenu)
-        || b.avancement - a.avancement
-        || rangDeRarete(b.rarete) - rangDeRarete(a.rarete));
-  }, [succes, categorie, cacherObtenus, neufs]);
-
-  const obtenus = succes.filter((s) => s.obtenu).length;
-  const points = succes.filter((s) => s.obtenu).reduce((n, s) => n + s.points, 0);
-  const trophees = coffres.filter((c) => c.complet).length;
-  const part = succes.length ? Math.round((obtenus / succes.length) * 100) : 0;
-
-  /* Le rang affichait « Élite » en dur, quel que soit l avancement :
-     une statistique fictive posee entre deux vraies. On montre la
-     rarete la plus haute effectivement obtenue — un fait verifiable a
-     l ecran. */
-  const plusHauteRarete = useMemo(() => {
-    for (let i = RARETES.length - 1; i >= 0; i--) {
-      if (succes.some((s) => s.obtenu && s.rarete === RARETES[i])) return RARETES[i];
-    }
-    return null;
-  }, [succes]);
-
-  /* 5 · LES DATES EXISTENT, LA PAGE NE LES MONTRAIT NULLE PART.
-     Rangees par mois, elles racontent l annee — et un pantheon est
-     d abord un recit. */
-  const chronique = useMemo(() => {
-    const par = new Map<string, { titre: string; quand: Date; succes: Succes[] }>();
-    for (const x of succes) {
-      if (!x.obtenu || !x.obtenu_le) continue;
-      const d = new Date(x.obtenu_le);
-      const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      const groupe = par.get(cle) ?? {
-        titre: format(d, "LLLL yyyy", { locale }),
-        quand: new Date(d.getFullYear(), d.getMonth(), 1),
-        succes: [],
-      };
-      groupe.succes.push(x);
-      par.set(cle, groupe);
-    }
-    return [...par.values()]
-      .map((g) => ({
-        ...g,
-        succes: g.succes.sort((a, b) => rangDeRarete(b.rarete) - rangDeRarete(a.rarete)),
-      }))
-      .sort((a, b) => b.quand.getTime() - a.quand.getTime());
-  }, [succes, locale]);
-
-  const proches = useMemo(
-    () => succes
-      .filter((s) => !s.obtenu && !s.cache && s.avancement > 0)
-      .sort((a, b) => b.avancement - a.avancement)
-      .slice(0, 3),
-    [succes],
+  /* Le classement, les comptes et la chronique vivent dans
+     `logique/pantheon.ts` : cinq facons de se tromper sans bruit. */
+  const listee = useMemo(
+    () => ordonnerLesSucces({ succes, categorie, cacherObtenus, neufs }),
+    [succes, categorie, cacherObtenus, neufs],
   );
+  const { obtenus, points, trophees, part } = compterLePantheon(succes, coffres);
+  const plusHauteRarete = useMemo(() => plusHauteRareteObtenue(succes), [succes]);
+  const chronique = useMemo(() => chroniqueParMois(succes, locale), [succes, locale]);
+  const proches = useMemo(() => lesPlusProches(succes), [succes]);
 
   return (
     <DSPageShell

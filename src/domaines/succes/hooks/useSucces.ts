@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
+import { RARETES, rangDeRarete, type Rarete } from "@/domaines/succes/logique/rarete";
+import type { Succes } from "@/domaines/succes/types";
+/* Reexportes : la page et cinq composants les importaient d ici. */
+export { RARETES, rangDeRarete };
+export type { Succes };
+export type { Rarete };
 
 /* LES SUCCES.
  *
@@ -20,28 +26,6 @@ import { supabase } from "@/socle/supabase/client";
  * verrouille sans jauge ne dit pas s il est a portee ou hors
  * d atteinte, et c est pourtant la seule chose qui donne envie. */
 
-export interface Succes {
-  cle: string;
-  nom: string;
-  categorie: string;
-  rarete: string;
-  description: string | null;
-  saveur: string | null;
-  icone: string | null;
-  cache: boolean;
-  points: number;
-  bonds: number;
-  mesure: string | null;
-  seuil: number | null;
-  valeur: number | null;
-  obtenu: boolean;
-  obtenu_le: string | null;
-  avancement: number;
-  /* Pourquoi il ne bouge pas, quand la raison n est pas « vous n avez
-     pas encore commence » : module manquant, personne autour, ou une
-     partie du produit ou rien n a jamais ete enregistre. */
-  sommeil: "module" | "personne" | "inactif" | null;
-}
 
 export interface Coffre {
   categorie: string;
@@ -51,17 +35,6 @@ export interface Coffre {
   /* Une categorie entierement franchie vaut un trophee. C est ce qui
      transforme une liste de cent cases a cocher en une collection. */
   complet: boolean;
-}
-
-/* L ordre des raretes, du plus commun au plus rare. La base les rend
-   en desordre alphabetique, ce qui ferait passer « common » avant
-   « rare » mais aussi « epic » avant « legendary ». */
-export const RARETES = ["common", "uncommon", "rare", "epic", "mythic", "legendary"] as const;
-export type Rarete = (typeof RARETES)[number];
-
-export function rangDeRarete(r: string): number {
-  const i = RARETES.indexOf(r as Rarete);
-  return i < 0 ? 0 : i;
 }
 
 export function useSucces(userId: string | undefined) {
