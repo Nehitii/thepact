@@ -7,24 +7,16 @@ import type {
   LigneObjectif, LigneVitrine, LigneEtape, LigneTag, LignePiece, LigneHabitude,
   LigneTodo, LigneSession, LigneSante, LigneDepense, LigneMois,
 } from "@/domaines/analytique/types";
+import type {
+  GoalsByDifficulty, GoalsByTag, TrendData, Reports, FocusParObjectif, HeureDOuvrage, PrevuReel, AnalyticsData, AvancementLisible,
+} from "@/domaines/analytique/types";
+/* Reexportes : les appelants importaient ces formes depuis ce hook. */
+export type {
+  GoalsByDifficulty, GoalsByTag, TrendData, Reports, FocusParObjectif, HeureDOuvrage, PrevuReel, AnalyticsData, AvancementLisible,
+};
 
-export interface GoalsByDifficulty {
-  difficulty: string;
-  count: number;
-  color: string;
-}
 
-export interface GoalsByTag {
-  tag: string;
-  count: number;
-  color: string;
-}
 
-export interface TrendData {
-  current: number;
-  previous: number;
-  percentChange: number;
-}
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -43,110 +35,10 @@ export interface TrendData {
    un champ qui n'a pas ete lu devient une erreur de compilation, au lieu
    d'un `undefined` qui traverse tout le calcul et ressort en zero. */
 
-/** Combien de fois une chose a été repoussée avant d'être faite. */
-export interface Reports {
-  reports: number;
-  faites: number;
-}
 
-/** Où le temps de focus est réellement allé. */
-export interface FocusParObjectif {
-  id: string;
-  nom: string;
-  minutes: number;
-  sessions: number;
-}
 
-/** L'heure à laquelle on est à l'ouvrage. */
-export interface HeureDOuvrage {
-  heure: number;
-  taches: number;
-  focus: number;
-}
 
-/** Un mois financier : ce qui était prévu, ce qui est tombé. */
-export interface PrevuReel {
-  month: string;
-  reelDepenses: number;
-  imprevuDepenses: number;
-  reelRevenus: number;
-  imprevuRevenus: number;
-}
 
-export interface AnalyticsData {
-  goalsOverTime: { month: string; created: number; completed: number }[];
-  healthTrend: { date: string; score: number }[];
-  financeTrend: { month: string; income: number; expenses: number; savings: number }[];
-  habitStreak: { date: string; completed: number; total: number }[];
-  todoStats: { month: string; completed: number }[];
-  goalsByDifficulty: GoalsByDifficulty[];
-  goalsByTag: GoalsByTag[];
-  pomodoroTrend: { date: string; minutes: number }[];
-  goalVelocity: { month: string; avgDays: number }[];
-  goalShowcase: {
-    id: string;
-    name: string;
-    image_url: string | null;
-    status: string;
-    difficulty: string;
-    potential_score: number;
-    completion_date: string | null;
-    progress: number;
-  }[];
-  topGoals: {
-    id: string;
-    name: string;
-    image_url: string | null;
-    difficulty: string;
-    potential_score: number;
-    completion_date: string | null;
-  }[];
-  summary: {
-    totalGoals: number;
-    completedGoals: number;
-    totalSteps: number;
-    completedSteps: number;
-    avgHealthScore: number;
-    totalSaved: number;
-    currentStreak: number;
-    pomodoroMinutes: number;
-    totalCost: number;
-    paidCost: number;
-    remainingCost: number;
-    activeGoals: number;
-    totalXP: number;
-    monthlyBurnRate: number;
-  };
-  trends: {
-    goalsCompleted: TrendData;
-    stepsCompleted: TrendData;
-    healthScore: TrendData;
-    focusMinutes: TrendData;
-  };
-
-  /* ── ce que la collecte élargie permet ── */
-  reports: Reports[];
-  focusParObjectif: FocusParObjectif[];
-  tachesParCategorie: { categorie: string; n: number }[];
-  tachesParDifficulte: { niveau: string; n: number }[];
-  anneeQuiPreleve: { mois: number; montant: number; lignes: number }[];
-  heureDOuvrage: HeureDOuvrage[];
-  serieTaches: { date: string; n: number }[];
-  /** Ce qui tombe à date, mois par mois, toutes sources confondues. */
-  cequiTombe: { mois: string; evenements: number; echeances: number; jours: number }[];
-  sommeil: { date: string; heures: number }[];
-  energieTroisTemps: { date: string; matin: number | null; apresMidi: number | null; soir: number | null }[];
-  prevuReel: PrevuReel[];
-  /* Ce qui manque pour que les panneaux maigres deviennent lisibles.
-     Un panneau qui dit ce qu'il attend vaut mieux qu'un panneau vide. */
-  matiere: {
-    relevesSante: number;
-    relevesEnergie: number;
-    nuitsMesurees: number;
-    moisValides: number;
-    sessionsLiees: number;
-  };
-}
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   easy: "hsl(142, 70%, 50%)",
@@ -200,19 +92,6 @@ function computeTrend(current: number, previous: number): TrendData {
   return { current, previous, percentChange };
 }
 
-/**
- * Avancement brut d'un objectif, en tenant compte de son type.
- *
- * Un objectif de type "habit" n'a aucune ligne dans la table steps : son
- * total_steps recopie ses habit_duration_days. Le lire comme des etapes fait
- * deux degats — il compte des jours de suivi parmi les etapes, alors qu'ils
- * sont deja comptes en habitudes, et il affiche l'habitude a 0 % quel que
- * soit le nombre de jours reellement tenus.
- */
-type AvancementLisible = Pick<
-  LigneObjectif,
-  "goal_type" | "habit_duration_days" | "habit_checks" | "total_steps" | "validated_steps"
->;
 
 function avancementBrut(g: AvancementLisible): { total: number; completed: number } {
   if (g?.goal_type === "habit") {
