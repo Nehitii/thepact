@@ -19,6 +19,7 @@ import { DSPageShell, DSPageLoader } from "@/socle/ds";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { filterGoalsByRule, decrireRegle, type SuperGoalRule } from "@/domaines/objectifs/composants/super";
 import { ArrowLeft, Plus } from "lucide-react";
+import { PALIER, NOM_PALIER, JAUNE, avancement, etatDe } from "@/domaines/objectifs/logique/grapheCouleurs";
 
 /* ─────────────────────────────────────────────────────────────
    CONSTELLATION
@@ -50,63 +51,11 @@ import { ArrowLeft, Plus } from "lucide-react";
       2,2px.
    ───────────────────────────────────────────────────────────── */
 
-/* Couleur = DIFFICULTE, pas statut.
- *
- * La version precedente colorait par statut, ce qui repondait a une
- * question que la liste traite deja mieux. Dans un arbre de competences
- * la couleur dit la NATURE du noeud — ici son palier — et son etat se lit
- * a autre chose : un noeud acquis brille, un noeud verrouille est eteint.
- * On code donc deux informations sans les faire se disputer le meme canal.
- *
- * La palette est celle des cartes de la vue grille, a l identique : le
- * meme objectif ne peut pas changer de couleur selon l ecran ou on le
- * regarde. */
-const PALIER: Record<string, string> = {
-  easy: "#4ade80",
-  medium: "#facc15",
-  hard: "#fb923c",
-  extreme: "#f87171",
-  impossible: "#c084fc",
-  custom: "#a855f7",
-};
-
-const NOM_PALIER: Record<string, string> = {
-  easy: "FACILE", medium: "MOYEN", hard: "DIFFICILE",
-  extreme: "EXTREME", impossible: "IMPOSSIBLE", custom: "CUSTOM",
-};
-
-type Etat = "acquis" | "encours" | "verrouille";
-
-function etatDe(statut: string): Etat {
-  if (statut === "fully_completed" || statut === "validated") return "acquis";
-  if (statut === "in_progress") return "encours";
-  return "verrouille";
-}
 
 /* DEUX FORMES ARRIVENT ICI, et c'est voulu : l'objectif tel que la base
    le rend (total_steps / validated_steps) et l'objectif tel que le graphe
    l'a enrichi (totalStepsCount / completedStepsCount). Les déclarer
    toutes deux vaut mieux que d'éteindre le contrôle pour les accepter. */
-interface ObjectifMesurable {
-  goal_type?: string | null;
-  habit_duration_days?: number | null;
-  habit_checks?: boolean[] | null;
-  total_steps?: number | null;
-  validated_steps?: number | null;
-  totalStepsCount?: number | null;
-  completedStepsCount?: number | null;
-}
-
-function avancement(g: ObjectifMesurable): number {
-  const habit = g.goal_type === "habit";
-  const total = habit ? g.habit_duration_days || 0 : g.totalStepsCount ?? g.total_steps ?? 0;
-  const fait = habit
-    ? (Array.isArray(g.habit_checks) ? g.habit_checks.filter(Boolean).length : 0)
-    : g.completedStepsCount ?? g.validated_steps ?? 0;
-  return total > 0 ? Math.min(100, Math.round((fait / total) * 100)) : 0;
-}
-
-const JAUNE = "#fcee0a";
 
 /* Disposition en amas.
  *

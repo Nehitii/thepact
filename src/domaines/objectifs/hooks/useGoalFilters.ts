@@ -9,8 +9,10 @@ import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { estFranchi } from "@/domaines/objectifs/logique/superGoals";
 import { brigadeDe } from "@/domaines/objectifs/logique/brigade";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import type { GoalTab, SortOption, SortDirection, DisplayMode } from "@/domaines/objectifs/types";
+/* Reexportes : plusieurs composants les importaient depuis ce hook. */
+export type { GoalTab, SortOption, SortDirection, DisplayMode };
 
-export type SortOption = "difficulty" | "points" | "created" | "name" | "status" | "start" | "progression" | "super";
 
 /* Deux tris ont disparu du menu, et un troisieme a fusionne.
  *
@@ -37,9 +39,6 @@ export const triValide = (v: unknown): SortOption =>
   typeof v === "string" && v in TRIS_RETIRES
     ? TRIS_RETIRES[v]
     : ((v as SortOption) || "created");
-export type SortDirection = "asc" | "desc";
-export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
-export type GoalTab = "all" | "active" | "completed";
 
 
 /* OU ON EN ETAIT, PAR OPPOSITION A CE QU ON PREFERE.

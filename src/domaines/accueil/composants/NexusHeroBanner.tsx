@@ -6,6 +6,10 @@ import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { selonTheme } from "@/socle/outils/encrePapier";
+import type { MesureProgression } from "@/domaines/accueil/types";
+import { EFFECT_STYLES, EFFETS_PAPIER, STYLE_LIBELLE } from "@/domaines/accueil/logique/stylesBanniere";
+/* Reexporte : la page Home l importait depuis ce composant. */
+export type { MesureProgression };
 
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",
@@ -13,15 +17,6 @@ const FONT_MAP: Record<string, string> = {
   "share-tech-mono": "'JetBrains Mono', ui-monospace, monospace",
   "space-grotesk": "'Space Grotesk', sans-serif",
   inter: "'Inter', sans-serif",
-};
-
-const EFFECT_STYLES: Record<string, React.CSSProperties> = {
-  none: {},
-  "cyan-glow": { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
-  "fire-glow": { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" },
-  "purple-glow": { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" },
-  "gold-glow": { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" },
-  glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
 };
 
 /* ── LES MEMES EFFETS, SUR DU PAPIER ──
@@ -36,14 +31,6 @@ const EFFECT_STYLES: Record<string, React.CSSProperties> = {
    posee juste sous la lettre — ce que fait une impression appuyee sur
    du papier. Le titre garde sa couleur et sa presence, il les obtient
    autrement. */
-const EFFETS_PAPIER: Record<string, React.CSSProperties> = {
-  none: {},
-  "cyan-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(0,105,127,0.34)" },
-  "fire-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(150,64,0,0.34)" },
-  "purple-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(113,65,163,0.34)" },
-  "gold-glow": { textShadow: "0 1px 0 rgba(255,255,255,0.7), 0 2px 10px rgba(115,90,0,0.34)" },
-  glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
-};
 
 /* ── LE ROULEMENT ──
    La bascule ne change pas une valeur, elle change ce que la valeur
@@ -61,18 +48,6 @@ const STYLE_VALEUR: React.CSSProperties = {
   lineHeight: 1.1,
   whiteSpace: "nowrap",
 };
-
-const STYLE_LIBELLE: React.CSSProperties = {
-  fontSize: "max(11px, 0.6875rem)",
-  letterSpacing: 3,
-  color: "var(--nexus-text-dim)",
-  textTransform: "uppercase",
-  lineHeight: 1.2,
-  whiteSpace: "nowrap",
-};
-
-/** Ce que compte le pourcentage de progression. */
-export type MesureProgression = "goals" | "steps";
 
 /** La cle de retenue, partagee avec la page qui la lit. */
 export const CLE_MESURE = PREF.HUB_MESURE;

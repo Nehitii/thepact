@@ -18,27 +18,9 @@ import { FrontListe } from "@/domaines/objectifs/composants/FrontListe";
 import { useEtapes, classerLeFront, estTriDeFront, type EtatFront } from "@/domaines/objectifs/hooks/useEtapes";
 import { estFranchi, estPretAHonorer } from "@/domaines/objectifs/logique/superGoals";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
-import type { DisplayMode, GoalTab, SortDirection, SortOption } from "@/domaines/objectifs/hooks/useGoalFilters";
+import type { DisplayMode, GoalTab } from "@/domaines/objectifs/hooks/useGoalFilters";
+import type { GoalsListProps } from "@/domaines/objectifs/types";
 
-interface GoalsListProps {
-  allGoals: Goal[];
-  activeTab: GoalTab;
-  handleTabChange: (tab: GoalTab) => void;
-  buckets: { all: Goal[]; active: Goal[]; completed: Goal[] };
-  paginated: Goal[];
-  currentPage: number;
-  totalPages: number;
-  setCurrentPage: (tab: GoalTab, page: number) => void;
-  displayMode: DisplayMode;
-  sortBy: SortOption;
-  sortDirection: SortDirection;
-  customDifficultyName: string;
-  customDifficultyColor: string;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  toggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
-  unlockCode?: string;
-}
 
 /* JAMAIS D OPACITE DANS L ETAT INITIAL.
    Une animation d entree qui part de zero laisse la page vide si

@@ -9,6 +9,7 @@ import {
   rythmeSuggere, partiesDeDuree, type Temps,
 } from "@/domaines/sante/logique/souffle";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import type { Etat } from "@/domaines/sante/types";
 
 /* ═══════════════════════════════════════════════════════════════
    LE PROTOCOLE
@@ -45,7 +46,6 @@ interface Props {
   chargeMentale?: number | null;
 }
 
-type Etat = "repos" | "cours" | "pause" | "fini";
 
 /* Les deux courbes du souffle. L inspiration attaque et s installe ;
    l expiration s amorce doucement et se relache. */

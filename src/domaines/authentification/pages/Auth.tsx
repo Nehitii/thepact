@@ -8,6 +8,7 @@ import { messageDErreur } from "@/socle/outils/erreurs";
 import { consommerErreurOAuth, messageDErreurOAuth } from "@/socle/outils/erreurOAuth";
 import { useFournisseursActifs, type Fournisseur } from "@/domaines/authentification/hooks/useFournisseursActifs";
 import "@/domaines/authentification/authentification.css";
+import type { Mode } from "@/domaines/authentification/types";
 
 /**
  * OVERWRITE — l'écran d'authentification.
@@ -38,7 +39,6 @@ import "@/domaines/authentification/authentification.css";
  *   simplification de dessin.
  */
 
-type Mode = "connexion" | "inscription";
 
 /* Les marques, sorties du corps de l'écran : la liste est décidée par le
    serveur, le dessin de chacune n'a plus à être recopié à côté d'un

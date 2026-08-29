@@ -41,23 +41,8 @@ import { DSPageLoader } from "@/socle/ds";
 import "@/socle/ds/cyberpunk.css";
 import "@/domaines/objectifs/goal-dossier.css";
 import "@/domaines/objectifs/goal-editeur.css";
+import type { Step } from "@/domaines/objectifs/types";
 
-interface Step {
-  id: string;
-  goal_id: string;
-  title: string;
-  description?: string | null;
-  notes?: string | null;
-  order: number;
-  status: string | null;
-  due_date?: string | null;
-  completion_date?: string | null;
-  validated_at?: string | null;
-  exclude_from_spin: boolean;
-  is_ultimate?: boolean;
-  created_at: string | null;
-  updated_at: string | null;
-}
 
 interface ObjectifPorteur {
   id: string;

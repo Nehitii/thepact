@@ -198,3 +198,73 @@ export function decrireRegle(regle: SuperGoalRule | null | undefined): string {
 
   return morceaux.length ? morceaux.join(" · ") : "aucun critère";
 }
+
+/* Venues de « StepDetail.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface Step {
+  id: string;
+  goal_id: string;
+  title: string;
+  description?: string | null;
+  notes?: string | null;
+  order: number;
+  status: string | null;
+  due_date?: string | null;
+  completion_date?: string | null;
+  validated_at?: string | null;
+  exclude_from_spin: boolean;
+  is_ultimate?: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+/* Venues de « GoalsList.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface GoalsListProps {
+  allGoals: Goal[];
+  activeTab: GoalTab;
+  handleTabChange: (tab: GoalTab) => void;
+  buckets: { all: Goal[]; active: Goal[]; completed: Goal[] };
+  paginated: Goal[];
+  currentPage: number;
+  totalPages: number;
+  setCurrentPage: (tab: GoalTab, page: number) => void;
+  displayMode: DisplayMode;
+  sortBy: SortOption;
+  sortDirection: SortDirection;
+  customDifficultyName: string;
+  customDifficultyColor: string;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  toggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
+  unlockCode?: string;
+}
+
+/* Venues de « GoalsGraph.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface ObjectifMesurable {
+  goal_type?: string | null;
+  habit_duration_days?: number | null;
+  habit_checks?: boolean[] | null;
+  total_steps?: number | null;
+  validated_steps?: number | null;
+  totalStepsCount?: number | null;
+  completedStepsCount?: number | null;
+}
+
+/* Venues de « useGoalFilters.ts », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export type GoalTab = "all" | "active" | "completed";
+
+export type SortOption = "difficulty" | "points" | "created" | "name" | "status" | "start" | "progression" | "super";
+
+export type SortDirection = "asc" | "desc";
+
+export type DisplayMode = "bar" | "grid" | "bookmark" | "front";
+
+/* L etat d un noeud du graphe d objectifs.
+ * SEIZIEME FOIS LE MOTIF : en sortant la palette du graphe dans
+ * logique/, ce module s est mis a remonter vers une PAGE pour un type.
+ * Renomme au passage — « Etat » tout court est deja pris deux fois
+ * ailleurs, et un nom qui ne dit rien finit dans le mauvais fichier. */
+export type EtatDuNoeud = "acquis" | "encours" | "verrouille";
