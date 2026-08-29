@@ -1,6 +1,5 @@
 {
   "src/app/AppSidebar.tsx": 604,
-  "src/domaines/accueil/pages/Home.tsx": 457,
   "src/domaines/administration/pages/AdminCosmeticsManager.tsx": 812,
   "src/domaines/administration/pages/AdminNotifications.tsx": 420,
   "src/domaines/agenda/composants/EventDetailModal.tsx": 425,

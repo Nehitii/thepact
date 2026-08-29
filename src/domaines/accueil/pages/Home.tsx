@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { composerLeTableauDeBord, type UserState } from "@/domaines/accueil/logique/tableauDeBord";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { motion } from "framer-motion";
@@ -24,11 +25,8 @@ import { useTodoReminders } from "@/domaines/taches";
 import { usePact, useGoals } from "@/domaines/objectifs";
 import { useProfile } from "@/domaines/profil";
 import { useUserShop } from "@/domaines/boutique";
-import { useFinanceSettings } from "@/domaines/finance";
 import { useRankXP } from "@/domaines/succes";
 import "@/domaines/accueil/accueil.css";
-
-type UserState = "onboarding" | "active" | "advanced";
 
 export default function Home() {
   const { user } = useAuth();
@@ -62,7 +60,6 @@ export default function Home() {
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
-  const { data: financeSettings } = useFinanceSettings(user?.id);
   const { data: rankData } = useRankXP(user?.id, pact?.id);
 
   useTodoReminders();
@@ -70,106 +67,12 @@ export default function Home() {
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
 
-  const { focusGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
-    const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
-    const focusGoals = allGoals.filter((g) => g.goal_type !== "habit" && g.is_focus && g.status !== "fully_completed");
-
-    /* Un objectif de type "habit" recopie ses habit_duration_days dans
-       total_steps : 180 jours de suivi y deviennent 180 "etapes". Ces jours
-       sont deja comptes plus bas en habitudes, donc les additionner aux
-       etapes revient a les compter deux fois — et fausse tout ce qui se
-       calcule en etapes. Un seul objectif du pacte est dans ce cas, mais il
-       pesait a lui seul 180 des 364 etapes annoncees : le palier EXTREME
-       s'affichait a 21 % d'avancement alors qu'il est a 85 %.
-       Les habitudes restent comptees comme objectifs ; seules leurs
-       pseudo-etapes sont exclues. */
-    const goalsAvecEtapes = allGoals.filter((g) => g.goal_type !== "habit");
-
-    const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-    const difficultyProgress = difficulties.map((difficulty) => {
-      const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
-      const diffGoalsAvecEtapes = diffGoals.filter((g) => g.goal_type !== "habit");
-      const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
-      const totalGoals = diffGoals.length;
-      const totalStepsForDiff = diffGoalsAvecEtapes.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-      const completedStepsForDiff = diffGoalsAvecEtapes.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-      return {
-        difficulty,
-        completed: completedGoals,
-        total: totalGoals,
-        percentage: totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0,
-        totalSteps: totalStepsForDiff,
-        completedSteps: completedStepsForDiff,
-        remainingSteps: totalStepsForDiff - completedStepsForDiff,
-      };
-    });
-
-    const totalSteps = goalsAvecEtapes.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-    const totalStepsCompleted = goalsAvecEtapes.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-    const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
-    const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
-    const goalsCompleted = allGoals.filter((g) => g.status === "fully_completed").length;
-    const totalGoalsCount = allGoals.length;
-
-    const statusCounts = {
-      not_started: allGoals.filter((g) => g.status === "not_started").length,
-      in_progress: allGoals.filter((g) => g.status === "in_progress").length,
-      fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
-    };
-
-    const customTarget = Number(financeSettings?.project_funding_target) || 0;
-    const isCustomMode = customTarget > 0;
-    const totalCostEngaged = isCustomMode
-      ? customTarget
-      : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-
-    let totalCostPaid = 0;
-    if (!isCustomMode) {
-      const completedGoalsCost = allGoals
-        .filter((g) => g.status === "completed" || g.status === "fully_completed" || g.status === "validated")
-        .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-      const alreadyFunded = Number(financeSettings?.already_funded) || 0;
-      totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
-    }
-
-    const daysSincePactCreation = pact?.created_at
-      ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
-    let userState: UserState = "active";
-    if (totalGoalsCount <= 1 && daysSincePactCreation < 7) userState = "onboarding";
-    else if (goalsCompleted >= 5) userState = "advanced";
-
-    const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
-    const ownedModules = {
-      "the-call": isModulePurchased?.("the-call") ?? false,
-      finance: isModulePurchased?.("finance") ?? false,
-      "todo-list": isModulePurchased?.("todo-list") ?? false,
-      journal: isModulePurchased?.("journal") ?? false,
-      "track-health": isModulePurchased?.("track-health") ?? false,
-      wishlist: isModulePurchased?.("wishlist") ?? false,
-    };
-    const lockedModules = moduleKeys.filter((key) => !ownedModules[key as keyof typeof ownedModules]);
-
-    return {
-      focusGoals,
-      dashboardData: {
-        difficultyProgress,
-        totalStepsCompleted,
-        totalSteps,
-        totalHabitChecks,
-        completedHabitChecks,
-        totalCostEngaged,
-        totalCostPaid,
-        goalsCompleted,
-        totalGoals: totalGoalsCount,
-        statusCounts,
-        isCustomMode,
-      },
-      userState,
-      ownedModules,
-      lockedModules,
-    };
-  }, [allGoals, financeSettings, pact?.created_at, isModulePurchased]);
+  const { focusGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(
+    () => composerLeTableauDeBord({
+      objectifs: allGoals, pacte: pact, moduleAchete: isModulePurchased,
+    }),
+    [allGoals, pact, isModulePurchased],
+  );
 
   /* ON N'ENVOIE À L'ONBOARDING QUE SUR UNE RÉPONSE, JAMAIS SUR UN VIDE.
      « !pactLoading » ne suffit pas : une requête périmée sert sa donnée
@@ -436,7 +339,6 @@ export default function Home() {
               hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
             />
           )}
-
 
           {/* LOCKED MODULES */}
           {isShopReady && lockedModules.length > 0 && (
