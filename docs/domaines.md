@@ -1056,3 +1056,57 @@ déclarées dans deux feuilles ou dans aucune.
 Le cas du portail était le seul risque théorique du découpage du journal : une
 feuille chargée est globale où qu'elle soit posée. C'est le **chargement** qui
 devait suivre le domaine, pas la portée.
+
+---
+
+## L'étape 5, avec l'écran : le loop, et ce qu'il coûte
+
+La session ouverte, la réécriture devient vérifiable. Le loop, éprouvé sur
+`Wishlist` :
+
+1. **relever l'empreinte** de la page sur l'écran réel — comptes de classes,
+   boutons, champs, texte, styles calculés — et la ranger dans la session du
+   navigateur ;
+2. extraire, en inventant une frontière de props ;
+3. construire, déployer ;
+4. **comparer l'empreinte**, puis **exercer le comportement**.
+
+Sur `Wishlist` (910 → 781, deux sections sorties), la comparaison donne :
+
+| | avant | après |
+|---|---|---|
+| classes distinctes, avec leurs comptes | 193 | **0 différence** |
+| boutons | 234 | 234 |
+| texte de la page | 3 603 car. | **identique au caractère près** |
+| styles calculés (4 sélecteurs) | — | identiques |
+
+Et le comportement, qui n'est pas le rendu : taper « chaise » réduit la page à
+351 caractères et « Lot de 4 chaises » ; effacer restaure 3 603 exactement ;
+« Prix ↓ » réordonne ; « Visuel » remet l'ordre initial.
+
+### Deux props refusées, et un type qui descend
+
+`partPayee` et `partPayeePacte` étaient calculées dans la page pour être passées
+au bandeau : elles se dérivent des comptes, donc le bandeau les recalcule et les
+deux variables disparaissent. `items` devait passer en entier pour un
+`items.length` : c'est `nbArticles` qui passe.
+
+Et **onzième fois le motif du type mal placé**, exigé cette fois par le
+compilateur : `Tri` vivait dans la page, donc la barre extraite ne pouvait typer
+son setter qu'en `string` — c'est-à-dire accepter une faute de frappe.
+
+### Ce que `Analytics` a révélé et qui bloque la même méthode
+
+Ses trois sections de graphiques (175, 130, 196 lignes) ont une frontière
+apparente d'**une seule prop** : `data`. À l'essai, le compilateur en réclame
+**dix-huit** — `summary`, `pomodoroTrend`, `bandeDesJours`, `heurePleine`…
+
+La cause n'est pas la découpe, c'est le fichier : **il mêle une couche de
+préparation de données et une couche de rendu**, la première déclarée avant la
+seconde et consommée uniquement par elle. Sortir les sections demande de sortir
+d'abord la préparation — vers `logique/`, en fonctions pures, ce qui la rendrait
+au passage testable.
+
+C'est le prochain pas sur ce fichier, et il est différent des précédents : on ne
+déplace pas du rendu, on sépare deux responsabilités. L'extraction a été tentée
+puis **annulée** plutôt que menée à moitié.
