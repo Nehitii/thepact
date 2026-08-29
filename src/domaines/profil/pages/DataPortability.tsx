@@ -17,6 +17,9 @@ import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { ReinitialiserLePacte } from "@/domaines/profil/composants/ReinitialiserLePacte";
 import { oublierLesPreferences, preferencesPosees } from "@/socle/outils/preferencesAffichage";
 import { construireExport, csvDeSante, type Lire } from "@/domaines/profil/logique/exportDesDonnees";
+import {
+  preparerLaRestauration, riensARestaurer, bilanDeRestauration, apercuDuFichier,
+} from "@/domaines/profil/logique/importDesDonnees";
 import { Bouton, Panneau } from "@/socle/ds/console-ui";
 import "@/socle/ds/reglages.css";
 import { motifDeLEchec, motifLisible } from "@/domaines/profil/logique/erreursPortabilite";
@@ -188,120 +191,69 @@ export default function DataPortability() {
     if (!file) return;
     setImportFile(file);
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      setImportPreview({ category: parsed.category || "unknown", exportedAt: parsed.exportedAt || "unknown", goals: parsed.goals?.length || 0, steps: parsed.steps?.length || 0, journalEntries: parsed.journalEntries?.length || 0 });
+      setImportPreview(apercuDuFichier(JSON.parse(await file.text())));
     } catch {
       toast.error("Fichier invalide", { description: "Le fichier n'est pas un export JSON valide." });
       setImportFile(null); setImportPreview(null);
     }
   };
 
-  /* L IMPORT NE RESTAURAIT QUE LE JOURNAL.
-     Objectifs et etapes etaient lus dans le fichier, comptes dans
-     l apercu — puis ignores, sous un message annoncant « les donnees
-     ont ete importees avec succes ».
+  /* CE QUI RESTE ICI, C EST L ECRITURE.
+     La preparation des lignes — identifiants neufs, proprietaire
+     reecrit, etapes orphelines ecartees et comptees — vit dans
+     `logique/importDesDonnees.ts`, ou elle s eprouve.
 
-     Ce qu il fallait resoudre pour les restaurer :
-
-     LES IDENTIFIANTS. Une etape pointe son objectif par `goal_id` ;
-     reinserer les objectifs leur donne de nouveaux identifiants. On
-     les tire donc nous-memes avant d ecrire, et l on garde la
-     correspondance ancien → nouveau. Se fier a l ordre de retour d un
-     INSERT aurait marche en pratique, sans etre garanti.
-
-     LE PACTE. Un objectif appartient a un pacte, et celui du fichier
-     peut ne plus exister — ou etre celui d un autre compte. On rattache
-     au pacte actif de qui importe.
-
-     LES DOUBLONS. On insere toujours du neuf, jamais par-dessus :
-     reimporter deux fois cree deux fois, ce qui se corrige a la main.
-     L inverse ecraserait un travail plus recent que la sauvegarde, ce
-     qui ne se corrige pas. L ecran le dit avant. */
+     LES DOUBLONS restent une decision de cet ecran : on insere toujours
+     du neuf, jamais par-dessus. Reimporter deux fois cree deux fois, ce
+     qui se corrige a la main ; l inverse ecraserait un travail plus
+     recent que la sauvegarde, ce qui ne se corrige pas. */
   const handleImport = async () => {
     if (!importFile || !user?.id) return;
     setIsImporting(true);
     try {
-      const text = await importFile.text();
-      const data = JSON.parse(text);
-      const entrees = Array.isArray(data.journalEntries) ? data.journalEntries : [];
-      const objectifs = Array.isArray(data.goals) ? data.goals : [];
-      const etapes = Array.isArray(data.steps) ? data.steps : [];
+      const fichier = JSON.parse(await importFile.text());
 
-      if (!entrees.length && !objectifs.length) {
+      /* Le pacte d accueil se cherche AVANT de preparer : sans lui il
+         n y a nulle part ou poser les objectifs, et mieux vaut le dire
+         avant d avoir ecrit la moindre entree de journal. */
+      let pacteId: string | null = null;
+      if (Array.isArray(fichier?.goals) && fichier.goals.length) {
+        const { data: profil } = await supabase
+          .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
+        pacteId = profil?.active_pact_id ?? null;
+        if (!pacteId) {
+          const { data: dernier } = await supabase
+            .from("pacts").select("id").eq("user_id", user.id)
+            .order("created_at", { ascending: false }).limit(1).maybeSingle();
+          pacteId = dernier?.id ?? null;
+        }
+        if (!pacteId) throw new Error("Aucun pacte pour accueillir ces objectifs. Crée-en un d'abord.");
+      }
+
+      const prete = preparerLaRestauration({
+        fichier, utilisateurId: user.id, pacteId: pacteId ?? "",
+      });
+      if (riensARestaurer(prete)) {
         toast.info("Rien à restaurer", {
           description: "Ce fichier ne contient ni objectif ni entrée de journal.",
         });
         return;
       }
 
-      const fait: string[] = [];
-
-      /* ── LE JOURNAL ── */
-      if (entrees.length) {
-        const lignes = entrees.map((e: Record<string, unknown>) => {
-          const { id: _i, ...reste } = e;
-          return { ...reste, user_id: user.id };
-        });
-        const { error } = await supabase.from("journal_entries").insert(lignes);
-        if (error) throw new Error(`journal : ${error.message}`);
-        fait.push(`${lignes.length} entrée${lignes.length > 1 ? "s" : ""} de journal`);
-      }
-
-      /* ── LES OBJECTIFS, PUIS LEURS ÉTAPES ── */
-      if (objectifs.length) {
-        const { data: profil } = await supabase
-          .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
-        let pactId = profil?.active_pact_id ?? null;
-        if (!pactId) {
-          const { data: dernier } = await supabase
-            .from("pacts").select("id").eq("user_id", user.id)
-            .order("created_at", { ascending: false }).limit(1).maybeSingle();
-          pactId = dernier?.id ?? null;
-        }
-        if (!pactId) {
-          throw new Error("Aucun pacte pour accueillir ces objectifs. Crée-en un d’abord.");
-        }
-
-        const correspondance = new Map<string, string>();
-        const lignesObjectifs = objectifs.map((g: Record<string, unknown>) => {
-          const { id: ancien, created_at: _c, updated_at: _u, pact_id: _p, ...reste } = g;
-          const nouveau = crypto.randomUUID();
-          if (typeof ancien === "string") correspondance.set(ancien, nouveau);
-          return { ...reste, id: nouveau, pact_id: pactId };
-        });
-
-        const { error: erreurObjectifs } = await supabase.from("goals").insert(lignesObjectifs);
-        if (erreurObjectifs) throw new Error(`objectifs : ${erreurObjectifs.message}`);
-        fait.push(`${lignesObjectifs.length} objectif${lignesObjectifs.length > 1 ? "s" : ""}`);
-
-        /* Une etape dont l objectif n est pas du lot n a nulle part ou
-           aller : on la laisse plutot que de l accrocher au hasard. */
-        const lignesEtapes = etapes
-          .filter((s: Record<string, unknown>) => correspondance.has(String(s.goal_id)))
-          .map((s: Record<string, unknown>) => {
-            const { id: _i, created_at: _c, updated_at: _u, goal_id, ...reste } = s;
-            return { ...reste, goal_id: correspondance.get(String(goal_id))! };
-          });
-
-        if (lignesEtapes.length) {
-          const { error: erreurEtapes } = await supabase.from("steps").insert(lignesEtapes);
-          if (erreurEtapes) throw new Error(`étapes : ${erreurEtapes.message}`);
-          fait.push(`${lignesEtapes.length} étape${lignesEtapes.length > 1 ? "s" : ""}`);
-        }
-
-        const orphelines = etapes.length - lignesEtapes.length;
-        if (orphelines > 0) fait.push(`${orphelines} étape${orphelines > 1 ? "s" : ""} sans objectif, ignorée${orphelines > 1 ? "s" : ""}`);
-      }
+      const ecrire = async (table: "journal_entries" | "goals" | "steps", lignes: Record<string, unknown>[], quoi: string) => {
+        if (!lignes.length) return;
+        const { error } = await supabase.from(table).insert(lignes as never);
+        if (error) throw new Error(`${quoi} : ${error.message}`);
+      };
+      await ecrire("journal_entries", prete.journal, "journal");
+      await ecrire("goals", prete.objectifs, "objectifs");
+      await ecrire("steps", prete.etapes, "étapes");
 
       await queryClient.invalidateQueries({ queryKey: ["user-stats", user.id] });
-
-      toast.success("Restauration terminée", { description: `${fait.join(", ")}.` });
+      toast.success("Restauration terminée", { description: `${bilanDeRestauration(prete).join(", ")}.` });
       setImportFile(null); setImportPreview(null);
     } catch (e) {
-      toast.error("Erreur d’import", {
-        description: e instanceof Error ? e.message : String(e),
-      });
+      toast.error("Erreur d'import", { description: e instanceof Error ? e.message : String(e) });
     } finally { setIsImporting(false); }
   };
 
