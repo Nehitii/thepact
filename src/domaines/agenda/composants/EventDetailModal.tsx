@@ -10,7 +10,8 @@ import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";
 import { composerInstant, debutDeJournee, finDeJournee } from "@/domaines/agenda/logique/temps";
 import type { EventDetailModalProps } from "@/domaines/agenda/types";
-import { COLORS, DUREE_DEFAUT } from "@/domaines/agenda/logique/apparenceDEvenement";
+import { COLORS } from "@/domaines/agenda/logique/apparenceDEvenement";
+import { useFormulaireDEvenement } from "@/domaines/agenda/hooks/useFormulaireDEvenement";
 
 /* LE FORMULAIRE D EVENEMENT
  *
@@ -20,7 +21,6 @@ import { COLORS, DUREE_DEFAUT } from "@/domaines/agenda/logique/apparenceDEvenem
  * meme metal : plaque biseautee, rail de coordonnees, champs carres, et
  * des couleurs qui sont des carres comme le reste.
  */
-
 
 export function EventDetailModal({ open, onClose, event, defaultDate, onSave, onDelete }: EventDetailModalProps) {
   const { t } = useTranslation();
@@ -39,32 +39,18 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
      à zéro pendant la frappe. C'est pour ça qu'elles en étaient absentes,
      et c'est pour ça que l'absence était un pansement. Mémorisées, elles
      peuvent y figurer, et l'effet ne repart que quand la date change. */
-  const defaultStart = useMemo(() => defaultDate ?? new Date(), [defaultDate]);
-  const defaultEnd = useMemo(() => new Date(defaultStart.getTime() + DUREE_DEFAUT), [defaultStart]);
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [allDay, setAllDay] = useState(false);
-  const [color, setColor] = useState(COLORS[0].hex);
-  const [category, setCategory] = useState("general");
-  const [isBusy, setIsBusy] = useState(true);
-  const [recurrenceRule, setRecurrenceRule] = useState<RecurrenceRule | null>(null);
-  const [reminders, setReminders] = useState<{ type: string; minutes_before: number }[]>([]);
-
-  /* Les erreurs ne s affichent qu apres une tentative : signaler un titre
-     manquant avant meme que l utilisateur ait eu le temps de le taper
-     serait une reprimande, pas une aide. */
-  const [soumis, setSoumis] = useState(false);
-  const titreRef = useRef<HTMLInputElement>(null);
-
-  /* Ce que l utilisateur a voulu, c est une DUREE — pas un instant de fin
-     fige. On la garde pour la reporter quand il deplace le debut. */
-  const dureeRef = useRef(DUREE_DEFAUT);
+  /* La machine a etats vit dans `hooks/useFormulaireDEvenement.ts`.
+     Ce qui reste ici est du DESSIN : centrer le calque, faire
+     disparaitre un degrade, et rendre les champs. */
+  const f = useFormulaireDEvenement({ event, open, defaultDate, onSave, onClose });
+  const {
+    title, setTitle, description, setDescription, location, setLocation,
+    startDate, startTime, endDate, endTime,
+    allDay, setAllDay, color, setColor, category, setCategory,
+    isBusy, setIsBusy, recurrenceRule, setRecurrenceRule, reminders, setReminders,
+    titreRef, erreurTitre, erreurDates, bornes,
+    deplacerDebut, reglerFin, enregistrer,
+  } = f;
 
   /* LE DIALOGUE SE CENTRE SUR LA ZONE DE CONTENU
      Radix centre sur la fenetre. Avec 280 px de navigation a gauche, le
@@ -91,6 +77,10 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
      il disparait des qu on est arrive en bas. Un observateur de taille ne
      suffit pas : la boite garde sa hauteur maximale pendant que son
      contenu grandit, et ne declenche donc rien. */
+  /* Ce qui change vraiment la hauteur du corps, c est l APPARITION
+     d un message d erreur — pas le fait d avoir soumis. Nomme, pour
+     que le tableau de dependances se verifie tout seul. */
+  const messageAffiche = !!erreurTitre || !!erreurDates;
   const corpsRef = useRef<HTMLDivElement>(null);
   const [entier, setEntier] = useState(true);
   useLayoutEffect(() => {
@@ -111,115 +101,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
       obs.disconnect();
       el.removeEventListener("scroll", mesurer);
     };
-  }, [open, allDay, recurrenceRule, reminders.length, soumis]);
-
-  useEffect(() => {
-    if (event) {
-      const s = parseISO(event.start_time);
-      const e = parseISO(event.end_time);
-      setTitle(event.title);
-      setDescription(event.description ?? "");
-      setLocation(event.location ?? "");
-      setStartDate(format(s, "yyyy-MM-dd"));
-      setStartTime(format(s, "HH:mm"));
-      setEndDate(format(e, "yyyy-MM-dd"));
-      setEndTime(format(e, "HH:mm"));
-      setAllDay(event.all_day);
-      setColor(event.color);
-      setCategory(event.category);
-      setIsBusy(event.is_busy);
-      setRecurrenceRule(event.recurrence_rule);
-      setReminders(event.reminders ?? []);
-      dureeRef.current = Math.max(60000, e.getTime() - s.getTime());
-    } else {
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setStartDate(format(defaultStart, "yyyy-MM-dd"));
-      setStartTime(format(defaultStart, "HH:mm"));
-      setEndDate(format(defaultEnd, "yyyy-MM-dd"));
-      setEndTime(format(defaultEnd, "HH:mm"));
-      setAllDay(false);
-      setColor(COLORS[0].hex);
-      setCategory("general");
-      setIsBusy(true);
-      setRecurrenceRule(null);
-      setReminders([]);
-      dureeRef.current = DUREE_DEFAUT;
-    }
-    setSoumis(false);
-  }, [event, open, defaultStart, defaultEnd]);
-
-  /* Les bornes reelles, en dates locales. Elles ne redeviennent des
-     chaines qu au dernier moment — et avec leur fuseau. */
-  const bornes = useMemo(() => {
-    const debut = allDay ? debutDeJournee(startDate) : composerInstant(startDate, startTime);
-    const fin = allDay ? finDeJournee(endDate || startDate) : composerInstant(endDate || startDate, endTime);
-    return { debut, fin };
-  }, [allDay, startDate, startTime, endDate, endTime]);
-
-  const erreurs = useMemo(() => {
-    const liste: { champ: "titre" | "dates"; texte: string }[] = [];
-    if (!title.trim()) {
-      liste.push({ champ: "titre", texte: t("calendar.errors.titleRequired", "Give the event a title.") });
-    }
-    if (!bornes.debut || !bornes.fin) {
-      liste.push({ champ: "dates", texte: t("calendar.errors.dateRequired", "Start and end dates are required.") });
-    } else if (bornes.fin.getTime() <= bornes.debut.getTime()) {
-      liste.push({ champ: "dates", texte: t("calendar.errors.endBeforeStart", "The end must come after the start.") });
-    }
-    return liste;
-  }, [title, bornes, t]);
-
-  const erreurTitre = soumis ? erreurs.find((e) => e.champ === "titre") : undefined;
-  const erreurDates = soumis ? erreurs.find((e) => e.champ === "dates") : undefined;
-
-  /* Deplacer le debut deplace la fin d autant. Sans cela, avancer un
-     rendez-vous de 21 h a 14 h laissait la fin a 21 h — un evenement de
-     sept heures ; et en le reculant, une fin avant son propre debut. */
-  const deplacerDebut = (date: string, heure: string) => {
-    setStartDate(date);
-    setStartTime(heure);
-    const debut = allDay ? debutDeJournee(date) : composerInstant(date, heure);
-    if (!debut) return;
-    const fin = new Date(debut.getTime() + dureeRef.current);
-    setEndDate(format(fin, "yyyy-MM-dd"));
-    if (!allDay) setEndTime(format(fin, "HH:mm"));
-  };
-
-  const reglerFin = (date: string, heure: string) => {
-    setEndDate(date);
-    setEndTime(heure);
-    const debut = allDay ? debutDeJournee(startDate) : composerInstant(startDate, startTime);
-    const fin = allDay ? finDeJournee(date) : composerInstant(date, heure);
-    if (debut && fin) dureeRef.current = Math.max(60000, fin.getTime() - debut.getTime());
-  };
-
-  /* Le bouton restait actif sur un formulaire vide et ne faisait rien :
-     zero ecriture, zero message, le dialogue ouvert. On clique toujours,
-     mais on obtient desormais une reponse. */
-  const handleSave = () => {
-    setSoumis(true);
-    if (erreurs.length > 0) {
-      if (!title.trim()) titreRef.current?.focus();
-      return;
-    }
-    onSave({
-      title: title.trim(),
-      description: description || null,
-      location: location || null,
-      start_time: bornes.debut!.toISOString(),
-      end_time: bornes.fin!.toISOString(),
-      all_day: allDay,
-      color,
-      category,
-      is_busy: isBusy,
-      recurrence_rule: recurrenceRule,
-      reminders,
-      tags: [],
-    });
-    onClose();
-  };
+  }, [open, allDay, recurrenceRule, reminders.length, messageAffiche]);
 
   const reference = bornes.debut ? format(bornes.debut, "yyyy.MM.dd", { locale }) : "————.——.——";
 
@@ -380,7 +262,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
         {/* Hors du corps qui defile : « Creer » ne doit pas se trouver sous
             le pli d un formulaire qui fait huit cents pixels. */}
         <div className="cal-dlg-actions">
-            <button type="button" onClick={handleSave} className="cal-outil est-primaire est-large">
+            <button type="button" onClick={enregistrer} className="cal-outil est-primaire est-large">
               {isEdit ? t("common.saveChanges") : t("common.create")}
             </button>
             <button type="button" onClick={onClose} className="cal-outil">
