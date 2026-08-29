@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import type { Json } from "@/socle/supabase/types";
+import { METRIQUES, type Metrique, type Compte } from "@/domaines/social/types";
+/* Reexportes : les appelants les importaient depuis ce hook. */
+export { METRIQUES };
+export type { Metrique, Compte };
 
 /* LE RAID.
  *
@@ -20,10 +24,7 @@ import type { Json } from "@/socle/supabase/types";
  * reponse honnete a « pourquoi une guilde plutot que mes propres
  * objectifs ». */
 
-export const METRIQUES = ["etapes", "objectifs", "taches", "journal"] as const;
-export type Metrique = (typeof METRIQUES)[number];
 
-export type Compte = Record<Metrique, number>;
 
 export interface Raid {
   id: string;

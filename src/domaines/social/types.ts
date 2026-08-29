@@ -110,3 +110,14 @@ export interface UserGoal {
 
 export type PostSortOption = 'recent' | 'popular';
 export type PostFilterType = CommunityPost['post_type'] | 'all';
+
+/* LES DEUX FORMES D UN RAID, VENUES DE SON HOOK.
+ *
+ * QUATORZIEME FOIS LE MOTIF. En sortant les quatre canaux du raid dans
+ * `logique/`, ce module s est mis a remonter vers un hook — pour deux
+ * types. La garde des couches l a dit aussitot, comme les treize fois
+ * precedentes. */
+export const METRIQUES = ["etapes", "objectifs", "taches", "journal"] as const;
+export type Metrique = (typeof METRIQUES)[number];
+
+export type Compte = Record<Metrique, number>;
