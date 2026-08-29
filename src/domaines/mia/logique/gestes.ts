@@ -1,4 +1,4 @@
-import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import type { EtatDuJour } from "@/domaines/mia/types";
 import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 import { aplatir } from "./reflexes";
 

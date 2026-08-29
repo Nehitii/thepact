@@ -2,7 +2,7 @@ import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "@/socle/outils/utils";
-import { useSound } from "@/socle/contextes/SoundContext";
+import { jouerSon } from "@/socle/outils/son";
 
 const Tabs = TabsPrimitive.Root;
 
@@ -25,7 +25,6 @@ const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, onClick, ...props }, ref) => {
-  const sound = useSound();
   return (
     <TabsPrimitive.Trigger
       ref={ref}
@@ -36,7 +35,7 @@ const TabsTrigger = React.forwardRef<
       {...props}
       onClick={(e) => {
         if (!props.disabled) {
-          sound.play("ui", "soft");
+          jouerSon("ui", "soft");
         }
         onClick?.(e);
       }}

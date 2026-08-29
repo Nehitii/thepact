@@ -3,7 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/socle/outils/utils";
-import { useSound } from "@/socle/contextes/SoundContext";
+import { jouerSon } from "@/socle/outils/son";
 
 import { buttonVariants } from "./buttonVariants";
 
@@ -15,7 +15,6 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const sound = useSound();
     const Comp = asChild ? Slot : "button";
 
     const onClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -23,7 +22,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       const target = e.currentTarget as HTMLElement;
       const disableSound = target?.getAttribute?.("data-sound") === "off";
       if (!disableSound && !props.disabled) {
-        sound.play("ui", "soft");
+        jouerSon("ui", "soft");
       }
       props.onClick?.(e);
     };

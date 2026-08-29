@@ -23,53 +23,10 @@ import { useAuth } from "@/socle/contextes/AuthContext";
  * ═══════════════════════════════════════════════════════════════
  */
 
-export type PhaseDuPacte = "nominal" | "attention" | "critique" | "inconnue";
-
-export interface OrdreDuJour {
-  titre: string;
-  progression: number;
-  cible: number;
-  reclame: boolean;
-  prime: number;
-}
-
-export interface TacheProche {
-  id: string;
-  nom: string;
-  echeance: string | null;
-  enRetard: boolean;
-}
-
-export interface EtatDuJour {
-  nom: string | null;
-  pacte: {
-    id: string;
-    nom: string;
-    jour: number;
-    total: number;
-    reste: number;
-    pctEcoule: number;
-    fin: string | null;
-  } | null;
-  phase: PhaseDuPacte;
-  /* Jours depuis le dernier pointage. `null` s il n y en a jamais eu :
-     une absence n a de sens que par rapport a une presence. */
-  joursSansPointage: number | null;
-  objectifs: {
-    enCours: number;
-    aVenir: number;
-    finis: number;
-    restantEnCours: number;
-    restantAVenir: number;
-    faites: number;
-    etapes: number;
-    plusGros: { nom: string; reste: number }[];
-  };
-  ordres: OrdreDuJour[];
-  focusMinutes: number;
-  taches: { ouvertes: number; prochaines: TacheProche[] };
-  solde: number | null;
-}
+import type {
+  PhaseDuPacte, OrdreDuJour, TacheProche, EtatDuJour,
+} from "@/domaines/mia/types";
+export type { PhaseDuPacte, OrdreDuJour, TacheProche, EtatDuJour };
 
 const JOUR_MS = 86_400_000;
 

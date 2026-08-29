@@ -76,8 +76,12 @@ const DYNAMIQUE = /import\s*\(\s*["'](@\/[^"']+)["']\s*\)/g;
 const TOLERE = new Map([
   ["domaines/administration/pages/AdminNotifications.tsx|domaines/social/inbox.css",
    "etape 4 — l apercu d avis reecrit a la main le balisage de AvisCarte pour " +
-   "garantir la fidelite ; les dix classes bx-avis-* doivent monter dans ds/, " +
-   "ou l apercu doit rendre le composant"],
+   "garantir la fidelite ; les dix classes bx-avis-* doivent monter dans ds/. " +
+   "L AUTRE SORTIE — rendre le vrai composant — a ete examinee le 29/08 et " +
+   "ECARTEE : AvisCarte appelle useAuth, useNavigate, useQueryClient et le RPC " +
+   "claim_notification_reward. Un apercu qui le rendrait aurait un bouton " +
+   "« reclamer » actif sur un identifiant fictif. La duplication de balisage " +
+   "est le moindre mal tant que le style n est pas monte dans ds/."],
 ]);
 
 const effractions = [];

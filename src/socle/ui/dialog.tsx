@@ -3,7 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/socle/outils/utils";
-import { useSound } from "@/socle/contextes/SoundContext";
+import { jouerSon } from "@/socle/outils/son";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -44,25 +44,29 @@ const DialogContentWithSound = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, onEscapeKeyDown, onPointerDownOutside, ...props }, ref) => {
-  const sound = useSound();
   const hasPlayedCloseSoundRef = React.useRef(false);
 
   // Optimisation : useLayoutEffect joue le son plus tôt (avant le "paint" du navigateur)
   React.useLayoutEffect(() => {
-    sound.play("ui", "soft");
+    jouerSon("ui", "soft");
     hasPlayedCloseSoundRef.current = false;
 
     return () => {
       // Fallback : Si le son de fermeture n'a pas encore été joué (ex: fermeture programmatique), on le joue ici
       if (!hasPlayedCloseSoundRef.current) {
-        sound.play("ui", "soft");
+        jouerSon("ui", "soft");
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    /* La suppression `exhaustive-deps` qui etait ici ne sert plus : elle
+       taisait `sound`, la valeur du contexte, qu il fallait garder hors
+       des dependances sous peine de rejouer l ouverture a chaque
+       changement de reglage. `jouerSon` est un import stable — la regle
+       n a plus rien a redire, et l effet dit enfin la verite sur ce dont
+       il depend : rien. */
   }, []);
 
   const playCloseSound = () => {
-    sound.play("ui", "soft");
+    jouerSon("ui", "soft");
     hasPlayedCloseSoundRef.current = true;
   };
 

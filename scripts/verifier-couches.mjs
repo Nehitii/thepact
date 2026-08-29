@@ -136,18 +136,26 @@ const TOLERE = new Map([
      annoncait. */
 
 
-  /* M.I.A. A DEMENAGE (etape 2, 28/08). Les sept tolerances `lib/mia*`
-     ont disparu avec les fichiers. Quatre reviennent sous leur nouveau
-     chemin : la logique appelle encore un hook React, et c est un vrai
-     defaut de conception, pas un effet du rangement.
+  /* M.I.A. A DEMENAGE (etape 2, 28/08), PUIS SES QUATRE DERNIERES
+     TOLERANCES SONT TOMBEES (etape 3, 29/08) — et elles ne disaient pas
+     la verite.
 
-     Les six autres sont mortes pour de bon — elles ne portaient que
-     `import type { ExpressionMia } from ".../VisageMia"`. Le type est
-     descendu dans `logique/visages.ts`, qui parle deja de visages. */
-  ["domaines/mia/logique/gestes.ts",        "etape 3 — appelle useEtatDuJour ; doit le recevoir en argument"],
-  ["domaines/mia/logique/humeur.ts",        "etape 3 — idem"],
-  ["domaines/mia/logique/reflexes.ts",      "etape 3 — idem"],
-  ["domaines/mia/logique/reflexes.test.ts", "etape 3 — suit reflexes.ts"],
+     Elles annoncaient « la logique appelle encore un hook React, c est
+     un vrai defaut de conception ». En ouvrant les quatre fichiers :
+     AUCUN ne l appelle. Tous prennent `etat: EtatDuJour | undefined` en
+     parametre. Ils n importaient que le TYPE — donc React Query,
+     Supabase et le contexte d authentification, pour connaitre la forme
+     d un objet qu ils recoivent deja.
+
+     Les quatre types sont descendus dans `domaines/mia/types.ts`, au
+     rang 0 ; le hook les reexporte. Dixieme fois le motif, premiere
+     fois qu il vient d un hook et non d un composant.
+
+     LA LECON PORTE SUR LES EXCEPTIONS, PAS SUR M.I.A. : une tolerance
+     qui se decrit elle-meme finit par etre crue sur parole. Celle-ci a
+     survecu a deux passes du plan en annoncant un travail qui n existait
+     plus. Le script sait dire qu une exception ne sert plus ; il ne sait
+     pas dire qu elle se trompe de raison. Cela se verifie en ouvrant. */
 
   /* `lib/todo/natures.ts` allait chercher `TodoTaskType` dans son hook.
      En rangeant les taches (28/08), les NEUF types du domaine sont
@@ -181,10 +189,23 @@ const TOLERE = new Map([
      composant est entre dans `socle/ds/` le 29/08, donc au rang 2, et
      un hook de rang 4 a le droit de l appeler. L inversion n a pas ete
      resolue, elle a disparu avec le rangement. */
-  ["socle/ui/button.tsx",  "etape 3 — SoundContext : arbitrage a rendre, pas un simple deplacement"],
-  ["socle/ui/dialog.tsx",  "etape 3 — idem"],
-  ["socle/ui/switch.tsx",  "etape 3 — idem"],
-  ["socle/ui/tabs.tsx",    "etape 3 — idem"],
+  /* L ARBITRAGE DU SON A ETE RENDU (etape 3, 29/08), ET IL PORTAIT SUR
+     LE SENS DE LA FLECHE, PAS SUR UNE ADRESSE.
+
+     Quatre primitifs — bouton, dialogue, interrupteur, onglets —
+     appelaient `useSound()`, donc un contexte de rang 3 depuis le rang
+     2. On ne pouvait pas descendre `SoundContext` : c est un contexte
+     React, son rang est juste. On a donc inverse — `socle/outils/son.ts`
+     (rang 1) tient une reference publiee par le fournisseur, et les
+     primitifs demandent un son a la cantonade.
+
+     DEUX DEFAUTS REELS SONT TOMBES AVEC, invisibles dans le graphe :
+     `useSound()` LEVE sans fournisseur, donc un bouton ne pouvait pas
+     etre rendu seul ; et `play` dependant de `settings`, bouger la
+     glissiere de volume re-rendait tous les boutons de l arbre.
+
+     C est le seul cas du plan ou l inversion cachait autre chose
+     qu elle-meme. Les autres etaient des types mal places. */
   /* `components/ds/DSBackground.tsx` n est plus une inversion : ses deux
      fonds, `CyberBackground` et `AuraBackground`, l ont rejoint dans
      `ds/` en rangeant la finance (28/08). Il etait leur SEUL lecteur —

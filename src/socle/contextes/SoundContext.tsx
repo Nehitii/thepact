@@ -1,14 +1,14 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-export type SoundCategory = "ui" | "success" | "progress" | "neutral";
-
-export type SoundSettings = {
-  masterEnabled: boolean;
-  volume: number; // 0..1
-  uiEnabled: boolean;
-  successEnabled: boolean;
-  progressEnabled: boolean;
-};
+/* LES DEUX TYPES SONT DESCENDUS AU RANG 1, avec `jouerSon`. Ils sont
+   reexportes ici pour que rien ne change chez les appelants — c est le
+   meme geste que pour `ExpressionMia` et `EtatDuJour` avant eux. */
+import {
+  publierJoueurDeSon,
+  type SoundCategory,
+  type SoundSettings,
+} from "@/socle/outils/son";
+export type { SoundCategory, SoundSettings };
 
 type SoundContextValue = {
   settings: SoundSettings;
@@ -187,6 +187,13 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     },
     [ensureAudio, settings.masterEnabled, settings.progressEnabled, settings.successEnabled, settings.uiEnabled, settings.volume]
   );
+
+  /* LE JOUEUR EST PUBLIE VERS LE BAS, pour les quatre primitifs du
+     systeme de design qui n ont pas a connaitre ce fournisseur.
+     `playTone` change d identite a chaque changement de reglage : la
+     republication est donc voulue, c est ainsi que le rang 1 reste a
+     jour du volume et des interrupteurs. Voir `socle/outils/son.ts`. */
+  useEffect(() => publierJoueurDeSon(playTone), [playTone]);
 
   const value = useMemo<SoundContextValue>(
     () => ({

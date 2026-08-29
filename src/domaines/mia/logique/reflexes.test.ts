@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { chercherReflexe } from "./reflexes";
-import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import type { EtatDuJour } from "@/domaines/mia/types";
 
 /* ═══════════════════════════════════════════════════════════════
    CE QUE CE FICHIER PROTÈGE

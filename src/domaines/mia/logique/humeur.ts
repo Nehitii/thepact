@@ -1,4 +1,4 @@
-import type { EtatDuJour } from "@/domaines/mia/hooks/useEtatDuJour";
+import type { EtatDuJour } from "@/domaines/mia/types";
 import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 

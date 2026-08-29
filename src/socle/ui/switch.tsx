@@ -2,13 +2,12 @@ import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 import { cn } from "@/socle/outils/utils";
-import { useSound } from "@/socle/contextes/SoundContext";
+import { jouerSon } from "@/socle/outils/son";
 
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, onCheckedChange, ...props }, ref) => {
-  const sound = useSound();
   return (
     <SwitchPrimitives.Root
       className={cn(
@@ -19,7 +18,7 @@ const Switch = React.forwardRef<
       ref={ref}
       onCheckedChange={(checked) => {
         if (!props.disabled) {
-          sound.play("ui", "soft");
+          jouerSon("ui", "soft");
         }
         onCheckedChange?.(checked);
       }}

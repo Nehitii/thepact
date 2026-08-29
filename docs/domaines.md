@@ -742,10 +742,11 @@ Chaque domaine est un commit qui se révoque seul.
 |---|---|---|
 | domaines rangés | 0 | **21** |
 | dossiers à la racine de `src/` | 12 | **6** |
-| inversions tolérées | 25 fichiers | **8** |
+| inversions tolérées | 25 fichiers | **0** (étape 3) |
 | gardes | 3 | **7** |
-| paquet d'entrée (JS) | 437 945 o | 438 907 o |
-| feuille d'entrée (CSS) | — | −5 987 o au dernier commit |
+| tests | 81 | **88** |
+| paquet d'entrée (JS) | 437 945 o | 439 026 o |
+| feuille d'entrée (CSS) | — | −5 987 o |
 
 Le paquet d'entrée a bougé de **962 octets** — 0,2 % — sur vingt et un domaines
 rangés. Trois de ces commits l'ont laissé *bit à bit identique* : le déploiement
@@ -756,8 +757,62 @@ qu'on n'a rien cassé.
 
 Ce qui reste, et qui n'est pas de l'étape 2 :
 
-- **étape 3** — les 8 inversions tolérées, dont 4 de la même famille (la logique
-  de M.I.A. appelle `useEtatDuJour` au lieu de le recevoir) ;
+- ~~**étape 3** — les 8 inversions tolérées~~ **faite le 29/08**, voir ci-dessous ;
 - **étape 4** — les feuilles globales de `main.tsx`, dont `singularity.css` à
   couper en trois et `reglages.css` (≈18 Ko) tombée dans le chemin critique ;
 - **étape 5** — les 55 fichiers au-dessus de 400 lignes, tenus par le cliquet.
+
+---
+
+## L'étape 3 : ce que les huit dernières tolérances disaient vraiment
+
+Deux familles, et **une seule des deux était ce qu'elle prétendait être**.
+
+### Les quatre de M.I.A. : une exception qui mentait
+
+La note annonçait « la logique appelle encore un hook React, c'est un vrai défaut
+de conception ». En ouvrant les quatre fichiers : **aucun ne l'appelle**. Tous
+prennent `etat: EtatDuJour | undefined` en paramètre. Ils n'importaient que le
+*type* — et avec lui React Query, Supabase et le contexte d'authentification,
+pour connaître la forme d'un objet qu'ils reçoivent déjà.
+
+Les quatre types sont descendus dans `domaines/mia/types.ts`. **Dixième fois le
+motif**, première fois qu'il vient d'un hook et non d'un composant.
+
+> Une tolérance qui se décrit elle-même finit par être crue sur parole. Celle-ci
+> a survécu à deux passes du plan en annonçant un travail qui n'existait plus.
+> La garde sait dire qu'une exception **ne sert plus** ; elle ne sait pas dire
+> qu'elle **se trompe de raison**. Cela se vérifie en ouvrant.
+
+### Les quatre du son : la seule inversion qui cachait autre chose
+
+Le bouton, le dialogue, l'interrupteur et les onglets appelaient `useSound()` —
+rang 2 vers rang 3. On ne pouvait pas descendre `SoundContext` : c'est un
+contexte React, son rang est juste. C'est la **flèche** qui était à l'envers.
+
+`socle/outils/son.ts` (rang 1) tient une référence que le fournisseur publie ;
+les primitifs demandent un son à la cantonade, et si personne n'écoute, rien ne
+se passe. Deux défauts réels sont tombés avec, **invisibles dans le graphe** :
+
+| | ce qui n'allait pas |
+|---|---|
+| `useSound()` **lève** sans fournisseur | la brique la plus réutilisée de l'application ne pouvait pas être rendue seule — ni en test, ni sur une page qui oublie le fournisseur |
+| `play` dépend de `settings` | bouger la glissière de volume changeait son identité et re-rendait **tous** les boutons, interrupteurs et onglets de l'arbre |
+
+Un `eslint-disable exhaustive-deps` est devenu inutile au passage : il taisait
+`sound` dans les dépendances d'un effet du dialogue. L'effet dit enfin la vérité
+sur ce dont il dépend — rien.
+
+Sept tests neufs verrouillent les deux défauts, et ils ont été **vus échouer** :
+l'ancien câblage remis une minute, cinq des sept tombent sur
+« useSound must be used within SoundProvider ».
+
+### Ce qui reste toléré : une seule ligne, et pas dans les couches
+
+`AdminNotifications` importe `inbox.css` du domaine social. L'aperçu d'avis
+réécrit à la main le balisage d'`AvisCarte` pour être fidèle. La sortie
+« rendre le vrai composant » a été examinée et **écartée** : `AvisCarte` appelle
+`useAuth`, `useNavigate`, `useQueryClient` et le RPC `claim_notification_reward`
+— un aperçu qui le rendrait aurait un bouton « réclamer » actif sur un
+identifiant fictif. La bonne sortie est de monter les dix classes `bx-avis-*`
+dans `ds/`, ce qui est de l'étape 4.
