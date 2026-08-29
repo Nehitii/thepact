@@ -16,6 +16,7 @@ import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { ReinitialiserLePacte } from "@/domaines/profil/composants/ReinitialiserLePacte";
 import { oublierLesPreferences, preferencesPosees } from "@/socle/outils/preferencesAffichage";
+import { construireExport, csvDeSante, type Lire } from "@/domaines/profil/logique/exportDesDonnees";
 import { Bouton, Panneau } from "@/socle/ds/console-ui";
 import "@/socle/ds/reglages.css";
 import { motifDeLEchec, motifLisible } from "@/domaines/profil/logique/erreursPortabilite";
@@ -129,94 +130,51 @@ export default function DataPortability() {
     enabled: !!user?.id,
   });
 
+  /* CE QUE L EXPORT DEMANDE AU MONDE, TRADUIT EN SUPABASE.
+     La construction du fichier vit dans `logique/exportDesDonnees.ts`
+     et ne connait plus la base : c est ce qui la rend eprouvable. */
+  const lire: Lire = async (d) => {
+    let q = supabase.from(d.table).select(d.colonnes ?? "*");
+    for (const [colonne, valeur] of Object.entries(d.ou ?? {})) q = q.eq(colonne, valeur);
+    if (d.parmi) q = q.in(d.parmi[0], d.parmi[1]);
+    if (d.ordre) q = q.order(d.ordre[0], { ascending: d.ordre[1] });
+    if (d.limite) q = q.limit(d.limite);
+    return d.unique ? await q.maybeSingle() : await q;
+  };
+
+  const telecharger = (contenu: string, type: string, nom: string) => {
+    const url = URL.createObjectURL(new Blob([contenu], { type }));
+    const a = document.createElement("a");
+    a.href = url; a.download = nom;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportData = async () => {
     if (!user?.id) return;
     setIsExporting(true);
+    const jour = new Date().toISOString().slice(0, 10);
     try {
-      /* UNE SAUVEGARDE MUETTE N EN EST PAS UNE.
-         Chaque requete de cet export jetait son `error` : une lecture
-         qui echoue produisait `null`, et le fichier partait sans les
-         objectifs — sans un mot. C est le pire defaut possible pour la
-         fonction censee te garantir une copie. `verifier` fait remonter
-         l echec au `catch`, qui annonce deja l export rate. */
-      const verifier = <T,>(r: { data: T; error: { message: string } | null }, quoi: string): T => {
-        if (r.error) throw new Error(`${quoi} : ${r.error.message}`);
-        return r.data;
-      };
-
-      let exportData: Record<string, unknown> = { exportedAt: new Date().toISOString(), category: exportCategory, user: { email: user.email, id: user.id } };
-
-      /* Le pacte actif, et non « le » pacte : `maybeSingle()` supposait
-         qu il n y en ait qu un et echoue des le second. */
-      const { data: profilPacte } = await supabase
-        .from("profiles").select("active_pact_id").eq("id", user.id).maybeSingle();
-      const pactId = profilPacte?.active_pact_id
-        ?? verifier(await supabase.from("pacts").select("id").eq("user_id", user.id)
-              .order("created_at", { ascending: false }).limit(1).maybeSingle(), "pacte")?.id
-        ?? null;
-      const pact = pactId
-        ? verifier(await supabase.from("pacts").select("*").eq("id", pactId).maybeSingle(), "pacte")
-        : null;
-
-      if (exportCategory === "all" || exportCategory === "goals-steps") {
-        const goals = pactId
-          ? verifier(await supabase.from("goals").select("*").eq("pact_id", pactId), "objectifs") ?? []
-          : [];
-        const goalIds = goals.map((g) => g.id);
-        const steps = goalIds.length
-          ? verifier(await supabase.from("steps").select("*").in("goal_id", goalIds), "étapes") ?? []
-          : [];
-        exportData = { ...exportData, goals, steps };
-      }
-      if (exportCategory === "all" || exportCategory === "journal") {
-        const journal = verifier(await supabase.from("journal_entries").select("*").eq("user_id", user.id), "journal");
-        exportData = { ...exportData, journalEntries: journal };
-      }
-      if (exportCategory === "all" || exportCategory === "health") {
-        const { data: healthData, error: healthErr } = await supabase.from("health_data").select("*").eq("user_id", user.id).order("entry_date", { ascending: true });
-        if (!healthErr && healthData && healthData.length > 0) {
-          if (exportCategory === "health") {
-            /* Les seuls mots anglais de la page vivaient dans ce CSV,
-                que personne ne relit avant de l ouvrir dans un tableur. */
-            const headers = ["Date","Heures de sommeil","Qualité du sommeil","Énergie au réveil","Niveau d’activité","Minutes de mouvement","Niveau de stress","Charge mentale","Verres d’eau","Équilibre des repas","Humeur","Énergie matin","Énergie après-midi","Énergie soir","Notes"];
-            const rows = healthData.map((d: Record<string, unknown>) => [d.entry_date, d.sleep_hours ?? "", d.sleep_quality ?? "", d.wake_energy ?? "", d.activity_level ?? "", d.movement_minutes ?? "", d.stress_level ?? "", d.mental_load ?? "", d.hydration_glasses ?? "", d.meal_balance ?? "", d.mood_level ?? "", d.energy_morning ?? "", d.energy_afternoon ?? "", d.energy_evening ?? "", `"${String(d.notes ?? "").replace(/"/g, '""')}"`]);
-            const csv = [headers.join(","), ...rows.map((r: unknown[]) => r.join(","))].join("\n");
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `overwrite-sante-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
-            toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
-            return;
-          }
-          exportData = { ...exportData, healthData };
+      /* La sante seule s exporte en tableur : c est la seule categorie
+         qu on ouvre pour la LIRE, pas pour la remettre. */
+      if (exportCategory === "health") {
+        const r = await lire({ table: "health_data", colonnes: "*",
+          ou: { user_id: user.id }, ordre: ["entry_date", true] });
+        if (r.error) throw new Error(`santé : ${r.error.message}`);
+        const releves = (r.data as Record<string, unknown>[]) ?? [];
+        if (releves.length) {
+          telecharger(csvDeSante(releves), "text/csv;charset=utf-8;", `overwrite-sante-${jour}.csv`);
+          toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
+          return;
         }
       }
-      if (exportCategory === "all" || exportCategory === "finance") {
-        const { data: profileData } = await supabase.from("profiles").select("project_funding_target, project_monthly_allocation, already_funded, salary_payment_day").eq("id", user.id).maybeSingle();
-        const { data: recurringIncome } = await supabase.from("recurring_income").select("*").eq("user_id", user.id);
-        const { data: recurringExpenses } = await supabase.from("recurring_expenses").select("*").eq("user_id", user.id);
-        const { data: financeRecords } = await supabase.from("finance").select("*").eq("user_id", user.id);
-        const { data: monthlyValidations } = await supabase.from("monthly_finance_validations").select("*").eq("user_id", user.id);
-        const { data: pactSpending } = await supabase.from("pact_spending").select("*").eq("user_id", user.id);
-        exportData = { ...exportData, finance: { settings: profileData, recurringIncome, recurringExpenses, monthlyRecords: financeRecords, monthlyValidations, pactSpending } };
-      }
-      if (exportCategory === "all") {
-        /* `select("*")` emportait aussi `goal_unlock_code` — le code a
-           quatre chiffres qui masque le contenu d un objectif — en clair
-           dans un fichier fait pour etre range ailleurs. */
-        const { data: profileComplet } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-        const profileData = profileComplet
-          ? Object.fromEntries(Object.entries(profileComplet).filter(([c]) => c !== "goal_unlock_code"))
-          : null;
-        const { data: achievements } = await supabase.from("user_achievements").select("*").eq("user_id", user.id);
-        exportData = { ...exportData, profile: profileData, pact, achievements, stats };
-      }
-      const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "");
-      /* L application s appelle Overwrite ; « the-pact » est un nom qu elle
-         ne porte plus nulle part ailleurs. */
-      const filename = `overwrite-${exportCategory === "all" ? "tout" : exportCategory}-${dateStr}.json`;
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      const contenu = await construireExport({
+        lire, categorie: exportCategory, utilisateur: { id: user.id, email: user.email }, stats,
+      });
+      /* L application s appelle Overwrite ; « the-pact » est un nom
+         qu elle ne porte plus nulle part ailleurs. */
+      telecharger(JSON.stringify(contenu, null, 2), "application/json",
+        `overwrite-${exportCategory === "all" ? "tout" : exportCategory}-${jour.replace(/-/g, "")}.json`);
       toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
     } catch {
       toast.error(t("profile.data.exportFailed"), { description: t("profile.data.exportError") });
