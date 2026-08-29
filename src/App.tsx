@@ -16,7 +16,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const TwoFactor = lazy(() => import("./pages/TwoFactor"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Home = lazy(routeImports.home);
-const TheCall = lazy(() => import("./pages/TheCall"));
+const TheCall = lazy(() => import("@/domaines/appel/pages/TheCall"));
 const Goals = lazy(routeImports.goals);
 const NewGoal = lazy(routeImports.newGoal);
 const GoalDetail = lazy(routeImports.goalDetail);

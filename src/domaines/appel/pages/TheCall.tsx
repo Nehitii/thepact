@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
-import { useTheCall } from "@/hooks/useTheCall";
-import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/components/thecall/CoeurStellaire";
+import { useTheCall } from "@/domaines/appel/hooks/useTheCall";
+import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/domaines/appel/composants/CoeurStellaire";
 import { DSPageShell } from "@/socle/ds";
 import { cn } from "@/socle/outils/utils";
 
