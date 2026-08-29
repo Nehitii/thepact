@@ -3,6 +3,13 @@ import { NavLink, useLocation } from "react-router-dom";
 import { User, ShieldCheck, IdCard, Target, Gauge, SlidersHorizontal, Bell, Shield, Database, HeartPulse } from "lucide-react";
 import { DSPageShell, DSBackground } from "@/socle/ds";
 import "@/socle/ds/reglages.css";
+/* Ce que la console est SEULE a ecrire — le rail, les onglets, le
+   releve, le sol. Sorti de la feuille partagee du systeme de design le
+   29/08 : ces treize classes n appartiennent pas au socle, elles
+   appartiennent a cet ecran. Voir l en-tete de la feuille pour ce que
+   la mesure a dit du chemin critique — a savoir que ce deplacement n en
+   retire rien. */
+import "@/domaines/profil/console-reglages.css";
 
 /* LA CONSOLE DE REGLAGES.
  *

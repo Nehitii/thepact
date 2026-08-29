@@ -1,19 +1,32 @@
 import { ReactNode, ReactElement, cloneElement, forwardRef, isValidElement, useId } from "react";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "@/socle/ui/select";
 import { cn } from "@/socle/outils/utils";
-/* LA FEUILLE DE CE FICHIER EST DANS LE CHEMIN CRITIQUE, ET C EST UNE
-   DETTE MESUREE, PAS UN OUBLI.
+/* LA FEUILLE DE CE FICHIER EST DANS LE CHEMIN CRITIQUE, ET ON SAIT
+   MAINTENANT POURQUOI (etape 4, 29/08).
 
    Ce module est partage par la sante, les succes, le profil et les
-   mentions legales. Vite remonte le CSS des morceaux partages dans la
-   feuille d entree : `reglages.css` (681 lignes) y a donc atterri —
-   117 selecteurs `.rg-` hors du theme clair, environ 18 Ko.
+   mentions legales — QUATRE ROUTES. C est ce nombre qui compte : Vite
+   hisse dans la feuille d entree toute feuille atteinte depuis plus
+   d un morceau asynchrone, pour n avoir ni doublon ni chargement en
+   retard. 106 des 107 regles construites partaient donc dans l entree,
+   servies a la page de connexion comprise.
 
-   Deux sorties possibles, toutes deux du ressort de l etape 4 du plan
-   de masse : ne garder ici que ce qui est vraiment partage et rendre
-   le reste a la console de reglages, ou accepter la depense en la
-   nommant. L etape 4 a les captures d ecran pour instrument ; ce
-   fichier n en a pas. */
+   L HYPOTHESE NATURELLE ETAIT FAUSSE, ET L ESSAI L A DIT. On a cru que
+   le coupable etait le MORCEAU PARTAGE que forme ce fichier, et retire
+   cet import pour le verifier : l entree n a pas bouge d un octet. Ce
+   n est pas le nombre d importateurs, c est le nombre de routes.
+
+   ON NE PEUT DONC PAS SORTIR CETTE FEUILLE DU CHEMIN CRITIQUE tant que
+   quatre domaines rendent ces briques. On l a RETRECIE : les treize
+   classes que seul le profil ecrivait sont parties dans
+   `domaines/profil/console-reglages.css`, importee par la seule
+   console de reglages — 23 450 o de source ramenes a 17 173.
+
+   Ce qui reste ici est ce que ces briques emettent (23 classes) et ce
+   que deux domaines partagent (5 : la grille et les volets, ecrits par
+   la console ET par les mentions legales). Le retirer demanderait de
+   retirer les briques a l un des quatre domaines, ce qui est un
+   arbitrage de conception, pas de rangement. */
 import "@/socle/ds/reglages.css";
 
 /* LES BRIQUES DE LA CONSOLE.
