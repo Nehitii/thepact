@@ -7,7 +7,7 @@ import { useCodesDeSecours, motifLisible } from "@/domaines/profil";
 import { ShieldCheck, KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { messageDErreur } from "@/socle/outils/erreurs";
-import "@/styles/deuxieme-facteur.css";
+import "@/domaines/authentification/deuxieme-facteur.css";
 
 type FromState = { from?: string };
 
@@ -64,7 +64,7 @@ function Case({ fente }: { fente: Fente }) {
  * bouton plein, champ standard — pendant que l'écran précédent avait le
  * sien. On changeait d'identité au milieu d'une seule action. Le style
  * vit maintenant dans `deuxieme-facteur.css`, qui reprend le vocabulaire
- * de `auth.css`.
+ * de `authentification.css`.
  */
 export default function TwoFactor() {
   const navigate = useNavigate();

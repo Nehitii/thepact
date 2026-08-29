@@ -12,8 +12,8 @@ import { trackLogin, initializeAchievementTracking } from "@/domaines/succes";
 import { routeImports } from "@/app/prefetchRoutes";
 
 // Lazy-loaded pages
-const Auth = lazy(() => import("./pages/Auth"));
-const TwoFactor = lazy(() => import("./pages/TwoFactor"));
+const Auth = lazy(() => import("@/domaines/authentification/pages/Auth"));
+const TwoFactor = lazy(() => import("@/domaines/authentification/pages/TwoFactor"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Home = lazy(routeImports.home);
 const TheCall = lazy(() => import("@/domaines/appel/pages/TheCall"));

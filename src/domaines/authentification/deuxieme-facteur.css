@@ -8,7 +8,7 @@
    pendant que l'écran précédent avait son propre monde. On passait
    d'une identité à une autre au milieu d'une seule action.
 
-   Il reprend donc le vocabulaire de `auth.css` : même fond, même
+   Il reprend donc le vocabulaire de `authentification.css` : même fond, même
    violet, même HUD en Orbitron, même bouton en dégradé.
 
    ═══ MAIS PAS LA MÊME COMPOSITION ═══
@@ -21,9 +21,9 @@
 
    ═══ LES JETONS SONT RECOPIÉS, ET C'EST VOULU ═══
 
-   Les `--au-*` sont définis sur `.auth` dans auth.css. Les importer
+   Les `--au-*` sont définis sur `.auth` dans authentification.css. Les importer
    ici obligerait à emporter aussi sa mise en page en diptyque. On les
-   redéfinit donc — neuf lignes — en sachant que auth.css fait foi :
+   redéfinit donc — neuf lignes — en sachant que authentification.css fait foi :
    si les deux divergent un jour, c'est un défaut, pas une variante.
    ═══════════════════════════════════════════════════════════════ */
 

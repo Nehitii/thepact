@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import { supabase } from "@/socle/supabase/client";
 import { messageDErreur } from "@/socle/outils/erreurs";
 import { consommerErreurOAuth, messageDErreurOAuth } from "@/socle/outils/erreurOAuth";
-import { useFournisseursActifs, type Fournisseur } from "@/hooks/useFournisseursActifs";
-import "@/styles/auth.css";
+import { useFournisseursActifs, type Fournisseur } from "@/domaines/authentification/hooks/useFournisseursActifs";
+import "@/domaines/authentification/authentification.css";
 
 /**
  * OVERWRITE — l'écran d'authentification.
  *
  * Repris du handoff « Overwrite — Sign in ». Ce qui relève du dessin est
- * dans `src/styles/auth.css`, avec les trois écarts assumés et leurs
+ * dans `domaines/authentification/authentification.css`, avec les trois écarts assumés et leurs
  * raisons. Ce fichier ne porte que ce que l'écran FAIT.
  *
  * ═══ CE QU'IL FAIT, ET QUE LA MAQUETTE NE POUVAIT PAS DIRE ═══
