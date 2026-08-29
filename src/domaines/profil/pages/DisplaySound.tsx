@@ -11,6 +11,8 @@ import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
+import { PanneauVisuel } from "@/domaines/profil/composants/reglages/PanneauVisuel";
+import { PanneauAudio } from "@/domaines/profil/composants/reglages/PanneauAudio";
 import { Panneau, Reglage, Segmente, Jauge } from "@/socle/ds/console-ui";
 import { reagitAuxAbsences, reglerReactionAuxAbsences, VisageMia } from "@/domaines/mia";
 import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
@@ -116,175 +118,26 @@ export default function DisplaySound() {
       titre={t("settings.displaySound.title")}
       note={t("settings.displaySound.subtitle")}
     >
-      {/* ── VISUEL ── */}
-      <Panneau
-        code="Affichage"
-        etat={t("settings.console.synced", "synchronisé")}
-        ton="actif"
-        rang="primaire"
-        taille="pleine"
+      <PanneauVisuel
+        profile={profile}
+        updateProfile={updateProfile}
+        setTheme={setTheme}
+        noter={noter}
+        enCours={enCours}
         journal={journaux.visuel ?? null}
-      >
-        <Reglage
-          nom={t("settings.displaySound.theme")}
-          note={t("settings.displaySound.themeDesc")}
-          icone={<Palette />}
-          large
-        >
-          <Segmente
-            aria={t("settings.displaySound.theme")}
-            valeur={(profile?.theme_preference ?? "system") as ThemePreference}
-            onChange={(v) => {
-              setTheme(v);
-              updateProfile.mutate({ theme_preference: v } as never, {
-                onSuccess: () => {
-                  toast.success(t("settings.displaySound.toasts.themeUpdated"));
-                  noter("visuel", `thème → ${v}`);
-                },
-              });
-            }}
-            options={[
-              { valeur: "system" as ThemePreference, libelle: t("settings.displaySound.themeSystem"), icone: <Laptop /> },
-              { valeur: "light" as ThemePreference, libelle: t("settings.displaySound.themeLight"), icone: <Sun /> },
-              { valeur: "dark" as ThemePreference, libelle: t("settings.displaySound.themeDark"), icone: <Moon /> },
-            ]}
-          />
-        </Reglage>
+        police={police}
+        setLocalPolice={setLocalPolice}
+      />
 
-        <Reglage
-          nom={t("settings.displaySound.reduceMotion")}
-          note={t("settings.displaySound.reduceMotionDesc")}
-          icone={<Moon />}
-        >
-          <Switch
-            checked={profile?.reduce_motion ?? false}
-            disabled={enCours}
-            onCheckedChange={(v) =>
-              updateProfile.mutate({ reduce_motion: v } as never, {
-                onSuccess: () => noter("visuel", `animations réduites → ${v ? "oui" : "non"}`),
-              })
-            }
-          />
-        </Reglage>
-
-        <Reglage
-          nom={t("settings.displaySound.fontSize", "Taille de police")}
-          note={t("settings.displaySound.fontSizeDesc", "Ajuste la taille du texte dans toute l’application")}
-          icone={<Type />}
-          large
-        >
-          <Jauge valeur={`${police} px`}>
-            <Slider
-              value={[police]}
-              min={12}
-              max={24}
-              step={1}
-              disabled={enCours}
-              /* APERCU VIVANT.
-                  `AccentColorSync` n applique la taille qu une fois la
-                  valeur enregistree : on deplaçait donc une glissiere
-                  en lisant un nombre, sans voir le texte bouger. On
-                  pose la taille pendant le geste ; la synchro reprend
-                  la main a l enregistrement. */
-              onValueChange={(v) => {
-                const n = v[0] ?? 16;
-                setLocalPolice(n);
-                document.documentElement.style.fontSize = `${n}px`;
-              }}
-              onValueCommit={(v) => {
-                const n = v[0] ?? 16;
-                setLocalPolice(null);
-                updateProfile.mutate({ font_size: n } as never, {
-                  onSuccess: () => noter("visuel", `police → ${n} px`),
-                });
-              }}
-            />
-          </Jauge>
-        </Reglage>
-      </Panneau>
-
-      {/* ── AUDIO ── */}
-      <Panneau
-        code="Son"
-        etat={effective.masterEnabled
-          ? t("settings.console.on", "actif")
-          : t("settings.console.off", "coupé")}
-        ton={effective.masterEnabled ? "actif" : "alerte"}
-        taille="pleine"
+      <PanneauAudio
+        effective={effective}
+        persistSound={persistSound}
+        noter={noter}
         journal={journaux.audio ?? null}
-      >
-        <Reglage
-          nom={t("settings.displaySound.masterSound")}
-          note={t("settings.displaySound.masterSoundDesc")}
-          icone={<Volume2 />}
-        >
-          <Switch
-            checked={!!effective.masterEnabled}
-            onCheckedChange={(v) => {
-              persistSound({ ...effective, masterEnabled: v });
-              noter("audio", `son général → ${v ? "actif" : "coupé"}`, v ? "ok" : "warn");
-            }}
-          />
-        </Reglage>
-
-        <Reglage
-          nom={t("settings.displaySound.volume")}
-          note={t("settings.displaySound.volumeDesc")}
-          icone={<Volume2 />}
-          large
-        >
-          <Jauge valeur={`${Math.round(volume * 100)} %`}>
-            {/* COUPER N EST PAS METTRE A ZERO.
-                 La glissiere etait verrouillee des que le son general
-                 etait coupe : impossible de preparer son niveau avant
-                 de rallumer. Aucun systeme d exploitation ne fait ca. */}
-            <Slider
-              value={[Math.round(volume * 100)]}
-              max={100}
-              step={1}
-              onValueChange={(v) => setLocalVolume((v[0] ?? 0) / 100)}
-              onValueCommit={(v) => {
-                const n = (v[0] ?? 0) / 100;
-                setLocalVolume(null);
-                persistSound({ ...effective, volume: n });
-                noter("audio", `volume → ${Math.round(n * 100)} %`);
-              }}
-            />
-          </Jauge>
-        </Reglage>
-
-        {([
-          ["uiEnabled", "settings.displaySound.uiSounds", "settings.displaySound.uiSoundsDesc"],
-          ["successEnabled", "settings.displaySound.successSounds", "settings.displaySound.successSoundsDesc"],
-          ["progressEnabled", "settings.displaySound.progressSounds", "settings.displaySound.progressSoundsDesc"],
-        ] as const).map(([cle, nomCle, noteCle]) => (
-          <Reglage key={cle} nom={t(nomCle)} note={t(noteCle)} icone={<Volume2 />}>
-            <div className="flex items-center gap-3">
-              {/* L ecoute, elle, reste liee au son general : appuyer
-                   sur « ecouter » et n entendre rien serait pire qu un
-                   bouton eteint. */}
-              <button
-                type="button"
-                onClick={() => ecouter("ui")}
-                disabled={!effective.masterEnabled}
-                title={t("settings.console.listen", "Écouter")}
-                className="rg-bouton !w-9 !px-0"
-              >
-                <Play className="h-3 w-3 text-primary" />
-                <span className="sr-only">{t("settings.console.listen", "Écouter")}</span>
-              </button>
-              <Switch
-                aria-label={t(nomCle)}
-                checked={!!effective[cle]}
-                onCheckedChange={(v) => {
-                  persistSound({ ...effective, [cle]: v });
-                  noter("audio", `${t(nomCle).toLowerCase()} → ${v ? "actif" : "coupé"}`);
-                }}
-              />
-            </div>
-          </Reglage>
-        ))}
-      </Panneau>
+        volume={volume}
+        setLocalVolume={setLocalVolume}
+        ecouter={ecouter}
+      />
 
       {/* ── CE QUI FLOTTE ──
           Il n'en reste qu'un. La barre ⌘K flottante a été retirée : la

@@ -22,7 +22,6 @@
   "src/domaines/profil/composants/ProfileBoundedProfile.tsx": 641,
   "src/domaines/profil/composants/ProfileDevilNote.tsx": 414,
   "src/domaines/profil/pages/DataPortability.tsx": 649,
-  "src/domaines/profil/pages/DisplaySound.tsx": 439,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/souhaits/pages/Wishlist.tsx": 781,
   "src/domaines/succes/pages/Achievements.tsx": 415,
