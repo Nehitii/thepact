@@ -14,7 +14,7 @@ import { routeImports } from "@/app/prefetchRoutes";
 // Lazy-loaded pages
 const Auth = lazy(() => import("@/domaines/authentification/pages/Auth"));
 const TwoFactor = lazy(() => import("@/domaines/authentification/pages/TwoFactor"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Onboarding = lazy(() => import("@/domaines/onboarding/pages/Onboarding"));
 const Home = lazy(routeImports.home);
 const TheCall = lazy(() => import("@/domaines/appel/pages/TheCall"));
 const Goals = lazy(routeImports.goals);
@@ -34,7 +34,7 @@ const HealthSettings = lazy(routeImports.healthSettings);
 const Achievements = lazy(routeImports.achievements);
 const Shop = lazy(routeImports.shop);
 const Community = lazy(() => import("@/domaines/social/pages/Community"));
-const Legal = lazy(() => import("./pages/Legal"));
+const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));

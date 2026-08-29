@@ -6,9 +6,9 @@ import { Panneau, Bouton } from "@/socle/ds/console-ui";
 import {
   SECTIONS, EDITEUR, HEBERGEUR, VERSION, MISE_A_JOUR, PRODUIT, CHAMPS_REQUIS,
   type Article,
-} from "@/content/mentions-legales";
+} from "@/domaines/mentions-legales/contenu";
 import "@/socle/ds/reglages.css";
-import "@/styles/legal.css";
+import "@/domaines/mentions-legales/mentions-legales.css";
 
 /* ═══════════════════════════════════════════════════════════════
    CONDITIONS ET MENTIONS LÉGALES

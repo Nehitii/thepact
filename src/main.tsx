@@ -39,7 +39,6 @@ import "./styles/difficulty.css";
 import "./styles/glassmorphism.css";
 import "./styles/journal.css";
 import "./styles/sidebar.css";
-import "./styles/revue.css";
 // EN DERNIER, ET CE N EST PAS un detail : chaque regle de
 // theme-clair.css est prefixee .light, ce qui lui donne une classe
 // de specificite de plus que la regle qu elle corrige. Le sombre

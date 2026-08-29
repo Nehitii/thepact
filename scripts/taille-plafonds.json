@@ -1,6 +1,5 @@
 {
   "src/app/AppSidebar.tsx": 604,
-  "src/content/mentions-legales.ts": 566,
   "src/domaines/accueil/composants/MonitoringPanel.tsx": 485,
   "src/domaines/accueil/composants/NexusHeroBanner.tsx": 456,
   "src/domaines/accueil/pages/Home.tsx": 457,
@@ -23,6 +22,7 @@
   "src/domaines/focus/pages/Focus.tsx": 683,
   "src/domaines/journal/composants/JournalEditor.tsx": 666,
   "src/domaines/journal/composants/JournalNewEntryModal.tsx": 564,
+  "src/domaines/mentions-legales/contenu.ts": 566,
   "src/domaines/mia/composants/MiaConsole.tsx": 979,
   "src/domaines/mia/hooks/useMia.ts": 419,
   "src/domaines/mia/logique/reflexes.ts": 438,
@@ -36,6 +36,7 @@
   "src/domaines/objectifs/pages/GoalsGraph.tsx": 438,
   "src/domaines/objectifs/pages/NewGoal.tsx": 817,
   "src/domaines/objectifs/pages/StepDetail.tsx": 406,
+  "src/domaines/onboarding/pages/Onboarding.tsx": 523,
   "src/domaines/profil/composants/ProfileAccountSettings.tsx": 547,
   "src/domaines/profil/composants/ProfileBoundedProfile.tsx": 846,
   "src/domaines/profil/composants/ProfileDevilNote.tsx": 414,
@@ -51,7 +52,6 @@
   "src/domaines/succes/pages/Achievements.tsx": 609,
   "src/domaines/taches/hooks/useTodoList.ts": 472,
   "src/domaines/taches/pages/TodoList.tsx": 434,
-  "src/pages/Onboarding.tsx": 523,
   "supabase/functions/ai-mia/index.ts": 1506,
   "supabase/functions/two-factor/index.ts": 614
 }

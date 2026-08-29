@@ -3,8 +3,17 @@ import { useTranslation } from "react-i18next";
 import {
   useCurrentWeekReview, useWeeklyReviews, useGenerateWeeklyReview,
   useSaveWeeklyReflection, type WeeklyReview,
-} from "@/hooks/useWeeklyReview";
+} from "@/domaines/revue/hooks/useWeeklyReview";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
+/* CETTE LIGNE A MANQUE UNE FOIS, ET LA CHAINE EST RESTEE VERTE.
+   `revue.css` etait chargee globalement par main.tsx ; en la faisant
+   descendre dans le domaine on a retire l import global sans en poser
+   un ici. Typecheck, six gardes et 81 tests sont passes — c est le
+   BUILD qui l a dit : plus une seule regle `.rv-` dans dist/. Une
+   feuille que personne n importe ne casse rien de ce qu on sait
+   verifier, elle disparait simplement de l ecran. D ou la garde
+   `orphelines:check`, ecrite le meme jour. */
+import "@/domaines/revue/revue.css";
 import { Sparkles, Loader2, Check, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { toast } from "sonner";
 

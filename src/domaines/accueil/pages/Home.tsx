@@ -17,7 +17,7 @@ import { MissionRandomizer } from "@/domaines/accueil/composants/hero/MissionRan
 import { PassageMia } from "@/domaines/mia";
 import { MonitoringPanel } from "@/domaines/accueil/composants/MonitoringPanel";
 import { DailyQuestsPanel } from "@/domaines/succes";
-import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
+import { WeeklyReviewModal } from "@/domaines/revue";
 
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";

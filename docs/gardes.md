@@ -1,7 +1,7 @@
 # Les gardes
 
-Trois scripts qui **échouent** au lieu de prévenir. Ils existent parce que le
-dépôt va être réorganisé domaine par domaine (voir le plan de masse) et qu'on ne
+Sept scripts qui **échouent** au lieu de prévenir. Ils existent parce que le
+dépôt a été réorganisé domaine par domaine (voir le plan de masse) et qu'on ne
 déplace pas 516 fichiers sans instrument.
 
 ```bash
@@ -9,8 +9,16 @@ npm run verifier
 ```
 
 enchaîne, dans cet ordre : `couches:check`, `taille:check`, `domaines:check`,
-`i18n:check`, `typecheck`, `lint`, `test`. La chaîne s'arrête au premier échec —
-les trois gardes passent en moins d'une seconde, elles sont donc en tête.
+`langue:check`, `chemins:check`, `orphelines:check`, `i18n:check`, `typecheck`,
+`lint`, `test`. La chaîne s'arrête au premier échec — les gardes passent en
+moins d'une seconde, elles sont donc en tête.
+
+**Quatre des sept ont été écrites après le défaut qu'elles auraient empêché**, et
+le dire est le point : `langue` après 182 écarts de vocabulaire, `chemins` après
+que deux gardes eurent perdu leurs fichiers en silence, `orphelines` après la
+deuxième feuille de style disparue de `dist/`. Une garde qu'on écrit d'avance
+protège de ce qu'on imagine ; une garde qu'on écrit après protège de ce qui
+arrive vraiment.
 
 ---
 
@@ -104,6 +112,35 @@ circule chez lui (accepté).
 
 ---
 
+## 7. `npm run orphelines:check` — les feuilles que personne ne lit
+
+**Écrite le 29/08, après le défaut qu'elle aurait empêché.**
+
+Un fichier TypeScript qu'on cesse d'importer fait échouer le typecheck, ou au
+pire le build. **Une feuille de style qu'on cesse d'importer ne fait rien
+échouer du tout** : elle sort du paquet, l'écran perd ses règles, et les six
+autres gardes restent vertes.
+
+C'est arrivé deux fois. `boutique.css`, en rangeant la boutique — orpheline
+pendant toute une chaîne verte, repérée à l'œil. Puis `revue.css` : en la
+faisant descendre de `main.tsx` vers le domaine de la revue, l'import global a
+été retiré sans qu'un import local soit posé. Typecheck, six gardes et 81 tests
+sont passés. C'est le **build** qui a parlé — plus une seule règle `.rv-` dans
+`dist/`, cinquante sélecteurs évaporés.
+
+Deux fois le même défaut, dont une **après l'avoir déjà vu** : ce n'est plus une
+inattention, c'est un angle mort de l'outillage.
+
+La garde vérifie les deux sens :
+
+1. toute feuille de `src/` est citée par au moins un import (TS ou `@import`) ;
+2. tout chemin `.css` cité pointe vers un fichier qui existe.
+
+La deuxième moitié double `chemins:check`, qui ne regarde que les chemins cités
+dans `scripts/` — pas ceux que le code s'adresse à lui-même.
+
+---
+
 ## Ce qui a été fait pour croire ces gardes
 
 Chacune a été **mise en échec sur un cas fabriqué avant d'être déclarée bonne** :
@@ -118,6 +155,9 @@ Chacune a été **mise en échec sur un cas fabriqué avant d'être déclarée b
 | taille | le même fichier ramené à 398 lignes | passage |
 | taille | un plafond désignant un fichier absent | refus |
 | domaines | import par la porte / par la fenêtre / socle / interne | 2 refus, 2 passages |
+| orphelines | l'import de `revue.css` retiré du modal | refus |
+| orphelines | un import vers `inexistante.css` | refus |
+| orphelines | l'état réel du dépôt | passage |
 
 Et la chaîne complète a été vérifiée sur son point le plus fragile : avec une
 inversion introduite exprès, `npm run verifier` s'arrête à la première garde et

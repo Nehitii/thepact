@@ -577,22 +577,81 @@ du ressort de l'étape 4, qui a les captures d'écran pour instrument.
 
 ---
 
-## Ce qui n'est pas encore rangé
+## Les six derniers domaines, et la fin des tas
 
-`src/` contient toujours `components/`, `hooks/`, `lib/`, `pages/`, `styles/`,
-`content/` — et **c'est maintenant lisible comme une liste de travail**, parce
-que tout ce qui était rangeable l'a été. Ce qui reste dessine trois ou quatre
-domaines que le plan n'avait pas vus :
+Le relevé ci-dessus annonçait « trois ou quatre domaines que le plan n'avait pas
+vus ». Il y en avait **six**, et deux ne sont apparus qu'en comptant les
+appelants de ce qui restait :
 
-| | ce qu'on y trouve |
-|---|---|
-| **accueil** | `pages/Home.tsx`, `components/home/` (11), `useActiveMission` |
-| **analytique** | `pages/Analytics.tsx`, `components/analytics/` (4), `useAnalytics*` (3) |
-| **the call** | `pages/TheCall.tsx`, `components/thecall/`, `useTheCall`, `singularity.css` |
-| **authentification** | `pages/Auth.tsx`, `pages/TwoFactor.tsx`, `useFournisseursActifs` |
+| | fichiers | porte | ce qui a tranché |
+|---|---|---|---|
+| **analytique** | 9 | vide | lit tous les autres, lue par personne |
+| **appel** | 3 | vide | rituel quotidien, entrée par la route seule |
+| **accueil** | 14 | vide | affiche un morceau de chaque module |
+| **authentification** | 7 | vide | le sas ; la session vit dans le socle |
+| **revue** | 3 | `WeeklyReviewModal` | possède `weekly_reviews`, que personne d'autre ne touche |
+| **onboarding** | 1 | vide | possède `user_values`, la seule table sans autre lecteur |
+| **mentions-légales** | 4 | vide | du texte qui doit rester exact, avec son test |
 
-Plus les pages sans domaine (`Legal`, `NotFound`, `Onboarding`), sept composants
-racine, et les quatorze feuilles globales que l'étape 4 doit partager.
+**Cinq portes vides sur sept.** Ce n'est pas un échec du découpage, c'est sa
+mesure : un domaine qui n'expose rien est un domaine que personne ne peut
+contourner. On n'y entre que par sa route.
+
+### La règle qui a placé le résidu
+
+Onze fichiers traînaient dans `components/` et `hooks/` sans domaine évident. La
+règle appliquée n'est pas « où est-ce que ça a l'air d'aller » mais **où sont
+ses appelants** :
+
+| | appelants | verdict |
+|---|---|---|
+| `AppProviders`, `ErrorBoundary` | App.tsx | `app/` |
+| `CommandPalette`, `ShortcutHelpOverlay` | `app/` | `app/` |
+| `SoundSettingsSync`, `useRechercheBarre` | `app/` | `app/` |
+| `NotFound` + sa feuille | la route attrape-tout | `app/` |
+| `ParticleEffect` | `socle/hooks/useParticleEffect` | socle |
+| `DynamicLucideIcon` | la page Achievements, seule | **succès** |
+| `HabitHeatmap` | `DossierVolets`, seul | **objectifs** |
+
+Les deux derniers contredisent le plan, qui les envoyait au socle parce qu'ils
+sont *génériques*. Générique ne veut pas dire partagé. Un composant à un seul
+appelant vit chez lui ; s'il en gagne un second dans un autre domaine, il monte
+au socle **à ce moment-là**.
+
+Une seule exception, et elle est explicite : la revue a un appelant unique
+(`pages/Home`) et reste un domaine, **parce qu'elle possède une table**. Une
+donnée dont un seul module connaît la forme ne se dissout pas dans la page qui
+l'affiche aujourd'hui.
+
+À la fin, `src/` ne contient plus que `app/`, `domaines/`, `socle/`, `styles/`
+(les feuilles globales de l'étape 4), `tests/`, `assets/`, et les trois fichiers
+racine. `components/`, `hooks/`, `pages/`, `content/`, `lib/`, `contexts/`,
+`types/`, `integrations/` ont disparu.
+
+---
+
+## Trois fois où la mesure a contredit le nom
+
+Ranger sur la foi d'un nom de fichier s'est trompé trois fois dans ce lot. À
+chaque fois, le comptage a donné l'inverse :
+
+**`singularity.css`.** 615 lignes, chargée globalement, et « singularité » est
+une phase de The Call. On s'apprêtait à la faire descendre dans ce domaine. Le
+comptage de ses trente classes dit que **l'Appel n'en utilise aucune** : neuf
+vont à la bannière de l'accueil, dix au fond stellaire, six au cœur de rang des
+succès, et `.singularity-nebula` ne sert à personne.
+
+**`SpaceBackdrop`.** La carte des imports voyait un seul appelant extérieur à
+l'accueil. La garde des domaines en a trouvé trois de plus au premier passage —
+Analytics, Goals, GoalsGraph. Un fond partagé par quatre pages de trois domaines
+n'appartient à aucun : il est parti au socle, **hors du baril**, comme
+`Telemetrie` — un composant qu'on met dans le baril, tout le monde le traîne.
+
+**`GoalContrats`.** Il porte le nom des objectifs et il est rendu par la seule
+page Analytics, où il compte les contrats sans les gérer. Il est dans
+l'analytique.
+
+Un outil qui ne sert qu'à confirmer ce qu'on croit déjà ne sert à rien.
 
 ---
 
@@ -660,11 +719,45 @@ Du moins cher au plus cher, pour que chaque erreur coûte le moins possible :
 | ✔ | **social** | 58 |
 | ✔ | **objectifs** | 66 |
 | ✔ | **socle** | 79 |
+| ✔ | **analytique** | 9 |
+| ✔ | **appel** | 3 |
+| ✔ | **accueil** | 14 |
+| ✔ | **authentification** | 7 |
+| ✔ | **revue** | 3 |
+| ✔ | **onboarding** | 1 |
+| ✔ | **mentions-légales** | 4 |
 
 Les comptes annoncés au relevé du 28/08 se révèlent souvent trop larges : ils
 étaient faits sur le nom des fichiers, et **trois domaines sur treize** se sont
 scindés une fois le couplage mesuré — pendant qu'un quatorzième, l'administration,
-apparaissait là où le relevé ne voyait rien. Ce qui reste est une estimation, pas
-un engagement.
+apparaissait là où le relevé ne voyait rien.
 
 Chaque domaine est un commit qui se révoque seul.
+
+---
+
+## L'étape 2 est close
+
+| | avant étape 2 | à la fin |
+|---|---|---|
+| domaines rangés | 0 | **21** |
+| dossiers à la racine de `src/` | 12 | **6** |
+| inversions tolérées | 25 fichiers | **8** |
+| gardes | 3 | **7** |
+| paquet d'entrée (JS) | 437 945 o | 438 907 o |
+| feuille d'entrée (CSS) | — | −5 987 o au dernier commit |
+
+Le paquet d'entrée a bougé de **962 octets** — 0,2 % — sur vingt et un domaines
+rangés. Trois de ces commits l'ont laissé *bit à bit identique* : le déploiement
+de l'Appel a répondu « no updated asset files to upload », c'est-à-dire que
+toutes les empreintes de contenu correspondaient déjà à ce qui était en ligne.
+Ranger n'est pas censé se voir à l'exécution ; c'est la seule preuve qui vaille
+qu'on n'a rien cassé.
+
+Ce qui reste, et qui n'est pas de l'étape 2 :
+
+- **étape 3** — les 8 inversions tolérées, dont 4 de la même famille (la logique
+  de M.I.A. appelle `useEtatDuJour` au lieu de le recevoir) ;
+- **étape 4** — les feuilles globales de `main.tsx`, dont `singularity.css` à
+  couper en trois et `reglages.css` (≈18 Ko) tombée dans le chemin critique ;
+- **étape 5** — les 55 fichiers au-dessus de 400 lignes, tenus par le cliquet.

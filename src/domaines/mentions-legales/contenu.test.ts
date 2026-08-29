@@ -6,7 +6,7 @@ import {
   HEBERGEUR,
   HEBERGEUR_SITE,
   SECTIONS,
-} from "./mentions-legales";
+} from "./contenu";
 
 /* ═══════════════════════════════════════════════════════════════
    CE QUE CES TESTS EMPÊCHENT
