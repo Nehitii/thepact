@@ -9,10 +9,10 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/socle/supabase/client";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
-/* L'APERÇU EMPRUNTE LES CLASSES DE LA BOÎTE DE RÉCEPTION.
-   C'est le seul moyen qu'il ressemble vraiment à ce qui sera reçu :
-   recopier son dessin ici le ferait diverger au premier changement. */
-import "@/domaines/social/inbox.css";
+/* L'APERÇU PARTAGE LA CARTE D'AVIS, IL NE L'EMPRUNTE PLUS. Il
+   importait `inbox.css` : l'administration entrait par la fenêtre chez
+   le social. Le pourquoi de la coupe est dans `socle/ds/avis.css`. */
+import "@/socle/ds/avis.css";
 import {
   useAnnuaire, useDiffuser, useJournalAdmin, motDeLErreur,
 } from "@/domaines/administration/hooks/useAdminServeur";

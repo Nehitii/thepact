@@ -74,14 +74,25 @@ const DYNAMIQUE = /import\s*\(\s*["'](@\/[^"']+)["']\s*\)/g;
  * note la paire « qui » → « quoi », pas seulement le fichier : une
  * effraction se juge sur sa destination. */
 const TOLERE = new Map([
-  ["domaines/administration/pages/AdminNotifications.tsx|domaines/social/inbox.css",
-   "etape 4 — l apercu d avis reecrit a la main le balisage de AvisCarte pour " +
-   "garantir la fidelite ; les dix classes bx-avis-* doivent monter dans ds/. " +
-   "L AUTRE SORTIE — rendre le vrai composant — a ete examinee le 29/08 et " +
-   "ECARTEE : AvisCarte appelle useAuth, useNavigate, useQueryClient et le RPC " +
-   "claim_notification_reward. Un apercu qui le rendrait aurait un bouton " +
-   "« reclamer » actif sur un identifiant fictif. La duplication de balisage " +
-   "est le moindre mal tant que le style n est pas monte dans ds/."],
+  /* LA DERNIERE TOLERANCE EST TOMBEE (etape 4, 29/08). L apercu d avis
+     de l administration importait `domaines/social/inbox.css` : entree
+     par la fenetre, toleree parce que l apercu reecrit a la main le
+     balisage de AvisCarte pour rester fidele.
+
+     La mesure a donne la coupe : neuf des trente-cinq classes `.bx-*`
+     sont ecrites par les DEUX domaines, aucune n est propre a
+     l administration, vingt-six restent au social. Les neuf sont
+     montees dans `socle/ds/avis.css`, que les deux importent. Deux
+     blocs `@media` ont ete decoupes plutot que dupliques.
+
+     CE QUI N EST PAS RESOLU, ET QU IL FAUT DIRE : les deux BALISAGES
+     peuvent encore diverger. Seul le style est commun. La vraie sortie
+     serait un composant de presentation pur — sans hook ni requete —
+     que les deux rendraient ; c est un arbitrage de conception, pas de
+     rangement. L autre sortie, rendre AvisCarte tel quel, reste
+     ecartee : il appelle useAuth, useNavigate, useQueryClient et le RPC
+     `claim_notification_reward`, donc un apercu aurait un bouton
+     « reclamer » actif sur un identifiant fictif. */
 ]);
 
 const effractions = [];

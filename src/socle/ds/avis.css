@@ -1,0 +1,125 @@
+/* LA CARTE D AVIS — partagee par la boite de reception et par
+ * l apercu de l administration.
+ *
+ * POURQUOI ELLE EST AU SOCLE, ET PAS CHEZ LE SOCIAL.
+ *
+ * `AdminNotifications` compose un avis et l affiche en apercu avant
+ * envoi. Pour que l apercu soit fidele, il reecrit A LA MAIN le
+ * balisage de `AvisCarte` — il ne peut pas rendre le composant :
+ * celui-ci appelle useAuth, useNavigate, useQueryClient et le RPC
+ * `claim_notification_reward`, ce qui donnerait un bouton
+ * « reclamer » actif sur un identifiant fictif.
+ *
+ * L apercu avait donc besoin du style, et importait `inbox.css` —
+ * l administration entrant par la fenetre chez le social. C etait la
+ * DERNIERE tolerance de la garde des domaines, et la seule qui restait
+ * apres l etape 3.
+ *
+ * Ce que la mesure a donne : neuf classes sur trente-cinq sont ecrites
+ * par les deux domaines, aucune n est propre a l administration, et
+ * vingt-six restent au social. Les neuf sont ici. Deux blocs `@media`
+ * ont ete DECOUPES plutot que dupliques — une declaration qui vit dans
+ * deux fichiers diverge au premier changement.
+ *
+ * Ce qui n a PAS ete resolu, et qui reste vrai : les deux balisages
+ * peuvent encore diverger. Le style est commun, la structure non. La
+ * vraie sortie serait un composant de presentation pur, sans hook ni
+ * requete, que les deux rendraient — c est un arbitrage de conception.
+ */
+
+/* ── Un avis ─────────────────────────────────────────────────── */
+.bx-avis {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 13px 14px 13px 16px;
+  border: 1px solid var(--bx-trait);
+  border-radius: 12px;
+  background: var(--bx-plaque);
+  transition: border-color 180ms var(--bx-e), background 180ms var(--bx-e);
+}
+/* Le rail marque le non-lu. Il remplace l'anneau « ring-1 » posé sur
+   toute la carte, qui rendait la carte plus lourde sans dire où
+   regarder. */
+.bx-avis[data-lu="non"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 11px; bottom: 11px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis[data-lu="non"] { background: var(--bx-creux); }
+.bx-avis[data-agir="oui"] { cursor: pointer; }
+.bx-avis[data-agir="oui"]:hover { border-color: var(--bx-teinte, var(--bx-signal)); }
+.bx-avis:focus-visible { outline: 2px solid var(--bx-signal); outline-offset: 2px; }
+.bx-avis-icone {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bx-teinte, var(--bx-signal)) 15%, transparent);
+  color: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis-icone svg { width: 16px; height: 16px; }
+.bx-avis-corps { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bx-avis-titre {
+  margin: 0;
+  font-size: max(15px, 0.9375rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bx-encre);
+}
+.bx-avis[data-lu="oui"] .bx-avis-titre { font-weight: 500; color: var(--bx-encre-2); }
+.bx-avis-texte {
+  margin: 0;
+  font-size: max(13.5px, 0.84375rem);
+  line-height: 1.45;
+  color: var(--bx-encre-3);
+}
+.bx-avis-pied { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.bx-avis-quand {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  color: var(--bx-encre-3);
+}
+.bx-avis-aller {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: max(12.5px, 0.78125rem);
+  font-weight: 700;
+  color: var(--bx-teinte, var(--bx-signal));
+}
+.bx-avis-aller svg { width: 13px; height: 13px; }
+/* Le récompense se réclame ici. */
+.bx-don {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--bx-veille);
+  border-radius: 7px;
+  background: hsl(var(--ds-accent-warning) / 0.12);
+  color: var(--bx-veille);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.bx-don:hover:not(:disabled) { background: hsl(var(--ds-accent-warning) / 0.2); }
+.bx-don:disabled { opacity: 0.6; cursor: not-allowed; }
+.bx-don svg { width: 12px; height: 12px; }
+
+/* Ce qui vient des deux `@media` de `inbox.css`, ou la carte
+   cohabitait avec le fil et les onglets. */
+@media (max-width: 560px) {
+  .bx-avis { grid-template-columns: auto minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bx-avis { transition: none; }
+}

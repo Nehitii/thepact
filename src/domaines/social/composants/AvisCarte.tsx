@@ -1,4 +1,9 @@
 import { useState } from "react";
+/* La carte est dessinee par une feuille du socle : l apercu de
+   l administration ecrit le meme balisage et a besoin du meme style.
+   Le reste de la boite de reception — le fil, les onglets, les bulles —
+   demeure dans `inbox.css`, que les deux pages du social importent. */
+import "@/socle/ds/avis.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
