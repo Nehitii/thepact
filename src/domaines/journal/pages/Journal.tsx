@@ -18,6 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/socle/ui/alert-dialog";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import "@/domaines/journal/journal.css";
 
 /* LOG.01 — LE DOSSIER
  *

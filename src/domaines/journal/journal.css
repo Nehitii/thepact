@@ -1,76 +1,15 @@
-/* CETTE FEUILLE N EST PAS CELLE DU JOURNAL, MALGRE SON NOM.
+/* LA FEUILLE DU JOURNAL, ENFIN CHEZ LUI.
  *
- * Releve du 28/08/2026, en rangeant le domaine journal. Elle declarait
- * 119 classes, dont 113 en `jr-` ou `journal-` qui sont bien du
- * journal — mais six autres tenaient toute l application. L etape 4
- * (29/08) en a supprime deux et ramene la liste a quatre :
+ * Elle vivait dans `styles/journal.css`, chargee globalement pour
+ * TOUTE page de l application — la connexion comprise. Le releve du
+ * 28/08 l avait deja dit : 113 de ses classes etaient du journal et
+ * six tenaient l application. On ne l avait pas coupee parce que le
+ * verifier demandait d ouvrir l ecran, et que l ecran est derriere
+ * l authentification.
  *
- *   font-orbitron       cite par 64 fichiers, partout
- *   journal-noise       le fond du systeme de design (DSBackground)
- *   journal-grid-bg     idem
- *   journal-scanline    animation, utilisee par DSBackground ET goals.css
- *
- * Les deux disparues — `journal-pulse` et `hud-blink` — n animaient
- * que `DSPageHeader`, un composant qu aucun ecran ne rend plus. Elles
- * ont suivi `journal-rotate-slow` et sa jumelle, supprimees le 28/08
- * pour la meme raison. Deux orbes (`journal-orb-left`/`right`) sont
- * partis avec elles : plus aucun fichier ne les ecrivait.
- *
- * C est pourquoi `main.tsx` la charge globalement, alors que finance,
- * analytics et goals sont co-localisees avec leur page. Ce n est pas un
- * oubli : c est une dette, et la deplacer telle quelle casserait la
- * typographie de 64 fichiers.
- *
- * CE QU IL RESTE A FAIRE, ET CE QU IL FAUT POUR LE FAIRE : sortir les
- * quatre globales dans une feuille du socle et rendre le reste au
- * domaine journal. Cela se verifie a l ecran, en sombre et en clair —
- * or le journal est derriere l authentification. C est la meme raison
- * qui a arrete le decoupage de `reglages.css` : on ne deplace pas du
- * CSS qu on ne peut pas regarder. */
-/* Journal Chronolog animations — extracted from index.css */
-/* ========== JOURNAL CHRONOLOG ANIMATIONS ========== */
-@keyframes journal-scanline {
-  0%   { transform: translateY(-100vh); }
-  100% { transform: translateY(200vh); }
-}
-@keyframes journal-grid-scroll {
-  0%   { background-position: 0 0; }
-  100% { background-position: 0 60px; }
-}
-
-.journal-scanline {
-  pointer-events: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 180px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(0,255,224,0.012) 50%, transparent 100%);
-  animation: journal-scanline 10s linear infinite;
-  z-index: 9000;
-}
-.journal-noise {
-  pointer-events: none;
-  position: fixed; inset: 0;
-  opacity: 0.022;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 150px;
-  z-index: 9001;
-}
-.journal-grid-bg {
-  pointer-events: none;
-  position: fixed; inset: 0;
-  background-image:
-    linear-gradient(rgba(0,255,224,0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,224,0.028) 1px, transparent 1px);
-  background-size: 48px 48px;
-  animation: journal-grid-scroll 4s linear infinite;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
-  z-index: 0;
-}
-
-/* Hide scrollbar utility */
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
+ * Coupee le 29/08, session ouverte. Les huit classes reellement
+ * partagees sont restees au socle (`socle/ds/fond-journal.css`).
+ */
 /* Les styles de la page Achievements ont ete deplaces vers
    src/styles/pantheon.css, importe par la page elle-meme. Ils n'ont
    jamais relevé du journal, et leur structure demandait une refonte :
@@ -133,6 +72,75 @@
   --jr-rouge-encre: #FF2D4E;
   --jr-trait: #2C2822;
 }
+/* ══════════════════════════════════════════════════════════════
+   L EPHEMERIDE
+
+   Trois tentatives avant celle-ci. Un bandeau encadre — la seule boite
+   d une page qui n en contient aucune. Une piece du dossier — si bien
+   integree qu elle disparaissait. Une plaque de verre balayee — le
+   verre etait juste, le balayage non : une decoration qui boucle sans
+   rien dire.
+
+   LA DATE FAIT LE GRAPHISME.
+
+   Un chiffre de soixante pixels a gauche, et « question du jour »
+   cesse d etre une etiquette qu on ecrit : c est la date qui le dit,
+   et l on comprend sans un mot qu elle changera demain.
+
+   DEUX COULEURS, ET LE PARTAGE TIENT TOUT.
+
+   Le bloc est en ENCRE, pas dans le rouge du journal : le rouge sert
+   deja aux numeros de ligne quinze centimetres plus bas, et deux
+   rouges se disputent.
+
+   Le cyan ne sert qu a ce qui PARLE — le canal, la diode, l
+   invitation. C est la couleur dont l app se sert partout pour se
+   designer elle-meme, jamais celle du journal. L encre pour le temps,
+   le cyan pour la voix.
+   ══════════════════════════════════════════════════════════════ */
+
+/* UNE SEULE PAIRE, ET C EST VOULU.
+   J avais donne au signal une valeur par theme, comme aux autres
+   jetons du journal. Erreur : ceux-la changent parce que le PAPIER
+   change, alors que cette plaque est sombre dans les deux cas. En
+   theme clair, le bloc de date se retrouvait donc en encre foncee sur
+   du verre noir — illisible — et le cyan tombait a un bleu-vert trop
+   sourd pour ressortir.
+   Ce qui se pose sur la plaque est donc regle POUR LA PLAQUE, une fois
+   pour toutes. */
+[data-jr] {
+  --jr-signal: #4FEAFF;
+  --jr-halo: 0 229 255;
+  --jr-verre: 5 18 24;
+  --jr-q-encre: #EDE7DA;
+}
+.jr-dlg .font-orbitron { font-family: var(--jr-titre), sans-serif; letter-spacing: 0.02em; }
+
+/* Les encres d etat, une fois pour toutes : le sceau et la legende
+   y puisent. */
+[data-jr] {
+  --jr-etat-flow: #08636D; --jr-etat-tension: #B31036; --jr-etat-static: #7A5B00;
+  --jr-etat-signal: #7A2FB0; --jr-etat-void: #0A5AB8; --jr-etat-surge: #12662C;
+}
+[data-jr="sombre"] {
+  --jr-etat-flow: #00FFE0; --jr-etat-tension: #FF375F; --jr-etat-static: #FFD60A;
+  --jr-etat-signal: #BF5AF2; --jr-etat-void: #4DA3FF; --jr-etat-surge: #30D158;
+}
+
+[data-humeur="flow"]    { --jr-sceau: #08636D; }
+[data-humeur="tension"] { --jr-sceau: #B31036; }
+[data-humeur="static"]  { --jr-sceau: #7A5B00; }
+[data-humeur="signal"]  { --jr-sceau: #7A2FB0; }
+[data-humeur="void"]    { --jr-sceau: #0A5AB8; }
+[data-humeur="surge"]   { --jr-sceau: #12662C; }
+
+[data-jr="sombre"][data-humeur="flow"]    { --jr-sceau: #00FFE0; }
+[data-jr="sombre"][data-humeur="tension"] { --jr-sceau: #FF375F; }
+[data-jr="sombre"][data-humeur="static"]  { --jr-sceau: #FFD60A; }
+[data-jr="sombre"][data-humeur="signal"]  { --jr-sceau: #BF5AF2; }
+[data-jr="sombre"][data-humeur="void"]    { --jr-sceau: #4DA3FF; }
+[data-jr="sombre"][data-humeur="surge"]   { --jr-sceau: #30D158; }
+.jr-at-opt.est-large { justify-content: flex-start; }
 
 /* ── La piece ──────────────────────────────────────────────── */
 .jr {
@@ -275,48 +283,6 @@
   margin: 0 0 10px; font-family: var(--jr-titre); font-weight: 700;
   font-size: clamp(19px, 2.4vw, 25px); line-height: 1.14;
   letter-spacing: 0.01em; color: var(--jr-encre);
-}
-/* ══════════════════════════════════════════════════════════════
-   L EPHEMERIDE
-
-   Trois tentatives avant celle-ci. Un bandeau encadre — la seule boite
-   d une page qui n en contient aucune. Une piece du dossier — si bien
-   integree qu elle disparaissait. Une plaque de verre balayee — le
-   verre etait juste, le balayage non : une decoration qui boucle sans
-   rien dire.
-
-   LA DATE FAIT LE GRAPHISME.
-
-   Un chiffre de soixante pixels a gauche, et « question du jour »
-   cesse d etre une etiquette qu on ecrit : c est la date qui le dit,
-   et l on comprend sans un mot qu elle changera demain.
-
-   DEUX COULEURS, ET LE PARTAGE TIENT TOUT.
-
-   Le bloc est en ENCRE, pas dans le rouge du journal : le rouge sert
-   deja aux numeros de ligne quinze centimetres plus bas, et deux
-   rouges se disputent.
-
-   Le cyan ne sert qu a ce qui PARLE — le canal, la diode, l
-   invitation. C est la couleur dont l app se sert partout pour se
-   designer elle-meme, jamais celle du journal. L encre pour le temps,
-   le cyan pour la voix.
-   ══════════════════════════════════════════════════════════════ */
-
-/* UNE SEULE PAIRE, ET C EST VOULU.
-   J avais donne au signal une valeur par theme, comme aux autres
-   jetons du journal. Erreur : ceux-la changent parce que le PAPIER
-   change, alors que cette plaque est sombre dans les deux cas. En
-   theme clair, le bloc de date se retrouvait donc en encre foncee sur
-   du verre noir — illisible — et le cyan tombait a un bleu-vert trop
-   sourd pour ressortir.
-   Ce qui se pose sur la plaque est donc regle POUR LA PLAQUE, une fois
-   pour toutes. */
-[data-jr] {
-  --jr-signal: #4FEAFF;
-  --jr-halo: 0 229 255;
-  --jr-verre: 5 18 24;
-  --jr-q-encre: #EDE7DA;
 }
 
 .jr-q {
@@ -586,7 +552,6 @@
 [data-jr="sombre"].jr-dlg {
   background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.006) 3px 4px) !important;
 }
-.jr-dlg .font-orbitron { font-family: var(--jr-titre), sans-serif; letter-spacing: 0.02em; }
 
 /* ═══════════════════════════════════════════════════════════
    LE SCEAU PREND L ETAT
@@ -601,31 +566,6 @@
 [data-jr="sombre"] .jr-sceau {
   box-shadow: 0 0 18px color-mix(in oklab, var(--jr-sceau, var(--jr-rouge)) 45%, transparent);
 }
-
-/* Les encres d etat, une fois pour toutes : le sceau et la legende
-   y puisent. */
-[data-jr] {
-  --jr-etat-flow: #08636D; --jr-etat-tension: #B31036; --jr-etat-static: #7A5B00;
-  --jr-etat-signal: #7A2FB0; --jr-etat-void: #0A5AB8; --jr-etat-surge: #12662C;
-}
-[data-jr="sombre"] {
-  --jr-etat-flow: #00FFE0; --jr-etat-tension: #FF375F; --jr-etat-static: #FFD60A;
-  --jr-etat-signal: #BF5AF2; --jr-etat-void: #4DA3FF; --jr-etat-surge: #30D158;
-}
-
-[data-humeur="flow"]    { --jr-sceau: #08636D; }
-[data-humeur="tension"] { --jr-sceau: #B31036; }
-[data-humeur="static"]  { --jr-sceau: #7A5B00; }
-[data-humeur="signal"]  { --jr-sceau: #7A2FB0; }
-[data-humeur="void"]    { --jr-sceau: #0A5AB8; }
-[data-humeur="surge"]   { --jr-sceau: #12662C; }
-
-[data-jr="sombre"][data-humeur="flow"]    { --jr-sceau: #00FFE0; }
-[data-jr="sombre"][data-humeur="tension"] { --jr-sceau: #FF375F; }
-[data-jr="sombre"][data-humeur="static"]  { --jr-sceau: #FFD60A; }
-[data-jr="sombre"][data-humeur="signal"]  { --jr-sceau: #BF5AF2; }
-[data-jr="sombre"][data-humeur="void"]    { --jr-sceau: #4DA3FF; }
-[data-jr="sombre"][data-humeur="surge"]   { --jr-sceau: #30D158; }
 
 /* Le nom de l etat, sous le sceau : on comprend d ou vient la
    couleur sans avoir a la deviner. */
@@ -902,7 +842,6 @@
   letter-spacing: 0.1em; color: var(--jr-encre-2);
   cursor: pointer; transition: border-color 140ms, color 140ms, background 140ms;
 }
-.jr-at-opt.est-large { justify-content: flex-start; }
 .jr-at-opt:hover { border-color: var(--jr-encre-3); color: var(--jr-encre); }
 .jr-at-opt[aria-pressed="true"] {
   border-color: var(--jr-encre); color: var(--jr-encre); background: var(--jr-papier-2);

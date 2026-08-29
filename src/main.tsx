@@ -33,7 +33,7 @@ import "./index.css";
 // n'etaient donc jamais chargees — d'ou le lien "Skip to content" visible sur
 // toutes les pages, qui aurait du rester masque hors focus.
 import "./styles/design-tokens.css";
-import "./styles/journal.css";
+import "./socle/ds/fond-journal.css";
 import "./styles/sidebar.css";
 // EN DERNIER, ET CE N EST PAS un detail : chaque regle de
 // theme-clair.css est prefixee .light, ce qui lui donne une classe

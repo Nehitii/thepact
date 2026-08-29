@@ -1,0 +1,94 @@
+/* CE QUE TOUTE L APPLICATION EMPRUNTAIT A LA FEUILLE DU JOURNAL.
+ *
+ * `styles/journal.css` faisait 59 631 octets, chargee globalement par
+ * main.tsx. Sur ses 125 classes, HUIT seulement etaient ecrites hors du
+ * domaine journal :
+ *
+ *   font-orbitron     cite par 64 fichiers, partout
+ *   journal-noise     le fond du systeme de design (DSBackground)
+ *   journal-grid-bg   idem
+ *   journal-scanline  idem, avec son animation
+ *   hide-scrollbar    la boutique
+ *   est-large         l agenda et l Appel
+ *
+ * Les 117 autres sont parties dans `domaines/journal/journal.css`,
+ * chargee par la seule page du journal. Ce fichier-la reste global,
+ * parce que ces huit-la le sont vraiment.
+ *
+ * Le nom `journal-*` de trois d entre elles est un reste : elles
+ * dessinent le fond de TOUTES les pages depuis que DSBackground les
+ * emploie. Les renommer touche a du CSS lu par le systeme de design —
+ * note, pas fait.
+ */
+/* CETTE FEUILLE N EST PAS CELLE DU JOURNAL, MALGRE SON NOM.
+ *
+ * Releve du 28/08/2026, en rangeant le domaine journal. Elle declarait
+ * 119 classes, dont 113 en `jr-` ou `journal-` qui sont bien du
+ * journal — mais six autres tenaient toute l application. L etape 4
+ * (29/08) en a supprime deux et ramene la liste a quatre :
+ *
+ *   font-orbitron       cite par 64 fichiers, partout
+ *   journal-noise       le fond du systeme de design (DSBackground)
+ *   journal-grid-bg     idem
+ *   journal-scanline    animation, utilisee par DSBackground ET goals.css
+ *
+ * Les deux disparues — `journal-pulse` et `hud-blink` — n animaient
+ * que `DSPageHeader`, un composant qu aucun ecran ne rend plus. Elles
+ * ont suivi `journal-rotate-slow` et sa jumelle, supprimees le 28/08
+ * pour la meme raison. Deux orbes (`journal-orb-left`/`right`) sont
+ * partis avec elles : plus aucun fichier ne les ecrivait.
+ *
+ * C est pourquoi `main.tsx` la charge globalement, alors que finance,
+ * analytics et goals sont co-localisees avec leur page. Ce n est pas un
+ * oubli : c est une dette, et la deplacer telle quelle casserait la
+ * typographie de 64 fichiers.
+ *
+ * CE QU IL RESTE A FAIRE, ET CE QU IL FAUT POUR LE FAIRE : sortir les
+ * quatre globales dans une feuille du socle et rendre le reste au
+ * domaine journal. Cela se verifie a l ecran, en sombre et en clair —
+ * or le journal est derriere l authentification. C est la meme raison
+ * qui a arrete le decoupage de `reglages.css` : on ne deplace pas du
+ * CSS qu on ne peut pas regarder. */
+/* Journal Chronolog animations — extracted from index.css */
+/* ========== JOURNAL CHRONOLOG ANIMATIONS ========== */
+@keyframes journal-scanline {
+  0%   { transform: translateY(-100vh); }
+  100% { transform: translateY(200vh); }
+}
+@keyframes journal-grid-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+.journal-scanline {
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0,255,224,0.012) 50%, transparent 100%);
+  animation: journal-scanline 10s linear infinite;
+  z-index: 9000;
+}
+.journal-noise {
+  pointer-events: none;
+  position: fixed; inset: 0;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 150px;
+  z-index: 9001;
+}
+.journal-grid-bg {
+  pointer-events: none;
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,224,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,224,0.028) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: journal-grid-scroll 4s linear infinite;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+  z-index: 0;
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
