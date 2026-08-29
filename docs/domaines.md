@@ -758,8 +758,8 @@ qu'on n'a rien cassé.
 Ce qui reste, et qui n'est pas de l'étape 2 :
 
 - ~~**étape 3** — les 8 inversions tolérées~~ **faite le 29/08**, voir ci-dessous ;
-- **étape 4** — les feuilles globales de `main.tsx`, dont `singularity.css` à
-  couper en trois et `reglages.css` (≈18 Ko) tombée dans le chemin critique ;
+- ~~**étape 4** — les feuilles globales de `main.tsx`~~ **faite le 29/08**, voir
+  plus bas : −30 544 o sur le chemin critique ;
 - **étape 5** — les 55 fichiers au-dessus de 400 lignes, tenus par le cliquet.
 
 ---
@@ -816,3 +816,111 @@ réécrit à la main le balisage d'`AvisCarte` pour être fidèle. La sortie
 — un aperçu qui le rendrait aurait un bouton « réclamer » actif sur un
 identifiant fictif. La bonne sortie est de monter les dix classes `bx-avis-*`
 dans `ds/`, ce qui est de l'étape 4.
+
+---
+
+## L'étape 4 : le CSS, et ce que la mesure a permis de faire sans regarder
+
+**Feuille d'entrée : 312 352 → 281 808 o. −30 544 o sur le chemin critique**,
+c'est-à-dire retirés de *chaque* chargement de page, la connexion comprise.
+
+### Le problème que le CSS pose et que le TypeScript ne pose pas
+
+Une feuille de style ne se prouve pas au compilateur. Déplacer une règle peut
+changer l'ordre de chargement, donc qui gagne un conflit ; supprimer une classe
+peut casser un écran qu'aucun test ne rend. Et **les écrans concernés sont
+derrière l'authentification** — trois pages seulement sont visibles sans
+session, et ce sont précisément celles qui emploient le moins ces feuilles.
+
+L'étape 4 a donc reposé sur trois instruments, tous en octets :
+
+| instrument | ce qu'il répond |
+|---|---|
+| spécificité comparée | l'ordre de chargement peut-il changer un résultat ? |
+| diff des règles construites | une règle a-t-elle disparu ou changé ? |
+| taille de la feuille d'entrée | combien pèse le chemin critique ? |
+
+### 4a — `singularity.css` coupée en trois
+
+615 lignes globales tenant **trois décors sans rapport** : la bannière de
+l'accueil (9 classes), le fond stellaire du socle (10), le cœur de rang des
+succès (6). Plus `.singularity-nebula`, que personne n'appliquait.
+
+Ce qui a autorisé la coupe : `theme-clair.css` redéfinit vingt-deux de ces
+sélecteurs, et **les vingt-deux sont préfixés `.light`**. (0,2,0) bat (0,1,0) :
+l'ordre ne décide de rien. Zéro sélecteur nu. Sans cette mesure il aurait fallu
+ouvrir la page pour vérifier — impossible ici.
+
+Et zéro bloc mixte : aucun sélecteur ne mélangeait deux familles. La coupe était
+mécanique.
+
+### 4b — `reglages.css` rétrécie de 27 %, pour zéro octet
+
+Treize des quarante et une classes `.rg-*` ne sont écrites que par
+`ConsoleReglages`. Elles sont parties chez le profil. **Gain mesuré : aucun.**
+Feuille d'entrée identique à l'octet, zéro ligne de différence sur les 6 926
+règles construites.
+
+Ce qu'on a appris en essayant de faire mieux :
+
+> La dette annonçait « Vite remonte le CSS des morceaux partagés ». Faux :
+> retirer l'import du module partagé n'a pas déplacé un octet. **Le critère est
+> le nombre de routes** qui atteignent la feuille. Contre-exemple qui valide le
+> modèle : `cyberpunk.css`, importée directement par sept pages, n'est pas dans
+> l'entrée — elle a son propre morceau.
+
+La piste suivante (importer depuis les huit *pages*) est abandonnée pour une
+raison qui n'est pas technique : ces pages sont derrière l'authentification. **On
+ne déplace pas du CSS qu'on ne peut pas regarder.** Le commit garde la propriété
+— le rail et les onglets sont la mise en page d'un écran, pas du système de
+design — et dit qu'il n'achète rien d'autre.
+
+### 4c — la dernière tolérance
+
+`AdminNotifications` importait `inbox.css` du social. Neuf classes sur
+trente-cinq sont écrites par les deux domaines : elles sont montées dans
+`socle/ds/avis.css`. Deux blocs `@media` **découpés, pas dupliqués**.
+
+L'ordre de cascade ne peut rien changer, et c'est vérifié : aucune règle de même
+cible n'est répartie entre les deux fichiers.
+
+### 4d — le CSS que personne n'atteint
+
+Trois feuilles globales **entièrement inatteignables** — `difficulty.css`,
+`glassmorphism.css`, `hero-animations.css` : 0 classe citée par le code sur 26,
+aucune variable, aucun sélecteur d'élément, aucune animation invoquée ailleurs.
+14 495 o chargés à chaque page pour rien.
+
+Plus 51 blocs de classes mortes et 9 animations orphelines.
+
+**Le détecteur s'est trompé trois fois, et c'est l'essai à sec qui l'a dit :**
+
+1. il déclarait mortes les classes que les **bibliothèques** posent
+   (`ProseMirror-*`, `react-flow*`, `rdp-*`, `recharts-*`) — les supprimer
+   cassait l'éditeur du journal, le graphe, le calendrier et les graphiques ;
+2. il exigeait que le préfixe suive le guillemet, et manquait
+   `` `rg-etat rg-etat--${etat}` `` — trois familles vivantes ;
+3. il exigeait un délimiteur après le nom, et manquait
+   `` `gl-seg-icone${apart ? …}` ``.
+
+> Un détecteur qu'on n'a jamais vu se tromper n'est pas un détecteur sûr, c'est
+> un détecteur qu'on n'a pas relu. Les trois erreurs n'ont été vues qu'en lisant
+> la liste avant d'écrire.
+
+### La comptabilité, règle par règle
+
+Sur l'étape 4 entière, comparaison de **toutes** les règles construites :
+
+| | |
+|---|---|
+| retirées | **137** = 1 (`.singularity-nebula`) + 51 (classes mortes) + 74 (les trois feuilles) + 9 (animations) + 2 (les `@media` remplacés) |
+| ajoutées | **4** — les moitiés de ces deux `@media` |
+
+Aucune règle inexpliquée.
+
+### Ce qui reste, et pourquoi
+
+`journal.css` garde quatre classes globales (`font-orbitron`, citée par 64
+fichiers, et trois du fond du système de design). `reglages.css` garde 17 173 o
+partagés par quatre routes. Les deux demandent de regarder un écran derrière
+l'authentification — c'est la même limite, nommée trois fois dans le code.
