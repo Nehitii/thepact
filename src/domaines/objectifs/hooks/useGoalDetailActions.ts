@@ -10,6 +10,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
 import { PLAFOND_BRIGADE, recrutable } from "@/domaines/objectifs/logique/brigade";
+import {
+  basculeDUneEtape, compteDesEtapesTenues, etatDeLHabitude,
+} from "@/domaines/objectifs/logique/basculesDuDossier";
+import {
+  etapesCopiees, objectifCopie, piecesCopiees,
+} from "@/domaines/objectifs/logique/duplication";
 import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/domaines/succes";
 import { toast } from "sonner";
 import type { GoalDetailData, StatutObjectif, StepData } from "@/domaines/objectifs/hooks/useGoalDetail";
@@ -75,7 +81,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     mutationFn: async ({ stepId, currentStatus }: { stepId: string; currentStatus: string }) => {
       const detail = getDetail();
       if (!detail) throw new Error("Goal not loaded");
-      const newStatus = currentStatus === "completed" ? "pending" : "completed";
+      const newStatus = basculeDUneEtape(currentStatus);
       const validatedAt = newStatus === "completed" ? new Date().toISOString() : null;
 
       const { error } = await supabase
@@ -84,12 +90,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         .eq("id", stepId);
       if (error) throw error;
 
-      /* Le compte ignore l etape ultime — y compris quand c est elle
-         qu on vient de cocher : elle ouvre le zenith, elle ne fait pas
-         avancer l objectif. */
-      const newValidatedCount = detail.steps
-        .filter((s) => !s.is_ultimate)
-        .filter((s) => (s.id === stepId ? newStatus : s.status) === "completed").length;
+      const newValidatedCount = compteDesEtapesTenues(detail.steps, stepId, newStatus);
       const { error: goalErr } = await supabase
         .from("goals")
         .update({ validated_steps: newValidatedCount })
@@ -116,8 +117,13 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       await qc.cancelQueries({ queryKey: detailKey });
       const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot) {
-        const newStatus = currentStatus === "completed" ? "pending" : "completed";
+        const newStatus = basculeDUneEtape(currentStatus);
         const newSteps = snapshot.steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s));
+        /* CE COMPTE N EST PAS CELUI QUI SERA ECRIT : il inclut l etape
+           ultime, que compteDesEtapesTenues exclut. Cocher l etape
+           ultime affiche donc aussitot un de trop, jusqu a ce que
+           l invalidation ramene le compte de la base. Constate, non
+           corrige : le corriger change ce que l ecran montre. */
         const validated = newSteps.filter((s) => s.status === "completed").length;
         qc.setQueryData<DetailCache>(detailKey, {
           goal: { ...snapshot.goal, validated_steps: validated },
@@ -191,11 +197,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     mutationFn: async ({ dayIndex, coche }: { dayIndex: number; coche: boolean }) => {
       const detail = getDetail();
       if (!detail || !detail.goal.habit_checks) throw new Error("Habit not loaded");
-      const newChecks = [...detail.goal.habit_checks];
-      newChecks[dayIndex] = coche;
-      const completedCount = newChecks.filter(Boolean).length;
-      const isNowComplete = completedCount === detail.goal.habit_duration_days;
-      const newStatus = isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started";
+      const { coches: newChecks, tenus: completedCount, acheve: isNowComplete, statut: newStatus } =
+        etatDeLHabitude(detail.goal.habit_checks, dayIndex, coche, detail.goal.habit_duration_days);
       const { error } = await supabase
         .from("goals")
         .update({
@@ -212,17 +215,16 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       await qc.cancelQueries({ queryKey: detailKey });
       const snapshot = qc.getQueryData<DetailCache>(detailKey);
       if (snapshot?.goal.habit_checks) {
-        const newChecks = [...snapshot.goal.habit_checks];
-        newChecks[dayIndex] = coche;
-        const completedCount = newChecks.filter(Boolean).length;
-        const isNowComplete = completedCount === snapshot.goal.habit_duration_days;
+        const etat = etatDeLHabitude(
+          snapshot.goal.habit_checks, dayIndex, coche, snapshot.goal.habit_duration_days,
+        );
         qc.setQueryData<DetailCache>(detailKey, {
           ...snapshot,
           goal: {
             ...snapshot.goal,
-            habit_checks: newChecks,
-            validated_steps: completedCount,
-            status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
+            habit_checks: etat.coches,
+            validated_steps: etat.tenus,
+            status: etat.statut,
           },
         });
       }
@@ -414,23 +416,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
       const { data: newGoal, error: goalError } = await supabase
         .from("goals")
-        .insert({
-          pact_id: pactResult.id,
-          name: `${goal.name} (Copy)`,
-          type: goal.type,
-          difficulty: goal.difficulty,
-          estimated_cost: goal.estimated_cost,
-          notes: goal.notes,
-          total_steps: goal.total_steps,
-          potential_score: goal.potential_score,
-          start_date: new Date().toISOString(),
-          status: "not_started",
-          goal_type: goal.goal_type || "normal",
-          habit_duration_days: goal.habit_duration_days,
-          habit_checks: goal.goal_type === "habit" ? Array(goal.habit_duration_days || 7).fill(false) : null,
-          image_url: goal.image_url,
-          deadline: null,
-        })
+        .insert(objectifCopie(goal, pactResult.id, " (Copy)", new Date().toISOString()))
         .select()
         .single();
       if (goalError) throw goalError;
@@ -440,30 +426,11 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         await insertGoalTags(newGoal.id, goalTagsData.map((t) => t.tag));
       }
 
-      if (goal.goal_type !== "habit" && goal.goal_type !== "super" && steps.length > 0) {
-        await supabase.from("steps").insert(
-          steps.map((s, i) => ({
-            goal_id: newGoal.id,
-            title: s.title,
-            order: i + 1,
-            status: "pending" as const,
-            description: "",
-            notes: s.notes || "",
-          })),
-        );
-      }
+      const nouvellesEtapes = etapesCopiees(goal, steps, newGoal.id);
+      if (nouvellesEtapes.length > 0) await supabase.from("steps").insert(nouvellesEtapes);
 
-      if (costItems.length > 0) {
-        await supabase.from("goal_cost_items").insert(
-          costItems.map((ci) => ({
-            goal_id: newGoal.id,
-            name: ci.name,
-            price: ci.price,
-            category: ci.category,
-            step_id: null,
-          })),
-        );
-      }
+      const nouvellesPieces = piecesCopiees(costItems, newGoal.id);
+      if (nouvellesPieces.length > 0) await supabase.from("goal_cost_items").insert(nouvellesPieces);
 
       return newGoal.id as string;
     },
