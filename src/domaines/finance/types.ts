@@ -289,3 +289,51 @@ export interface Pointage {
   montant_reel: number;
   pointe: boolean;
 }
+
+/* Venues de « LigneRecurrente.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface ValeursLigne {
+  name: string;
+  /** Ce qui part a chaque echeance. Pour un echeancier, c est la part. */
+  amount: number;
+  category?: string;
+  iconEmoji?: string;
+  /* NUL EST UNE VALEUR, ET « INDEFINI » N EN EST PAS UNE.
+     Retirer une image ne fonctionnait pas : on envoyait undefined, que
+     le client Supabase OMET de la requete — la colonne n etait donc
+     jamais touchee et l ancien logo restait. Il faut dire null pour
+     effacer, et le type doit le permettre. */
+  iconUrl?: string | null;
+  /* Comment l image se pose. Nul quand rien n a ete regle : ecrire le
+     defaut partout ferait croire a une intention. */
+  iconCadre?: CadreImage | null;
+  /* LA CADENCE. Un abonnement trimestriel et un paiement en plusieurs
+     fois sont la meme mecanique : une charge qui ne tombe pas tous les
+     mois. Voir src/lib/finance/cadence.ts. */
+  periodeMois?: number;
+  moisAncre?: string | null;
+  echeances?: number | null;
+  montantTotal?: number | null;
+  /** Le jour du mois ou l argent bouge, et de combien de mois il suit. */
+  jourEcheance?: number | null;
+  decalageMois?: number;
+}
+
+/* Venues de « cadre.ts », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface CadreImage {
+  ajustement: Ajustement;
+  /** Decalage horizontal, en % de la plaque. Zero est centre. */
+  dx: number;
+  /** Decalage vertical, en % de la plaque. Zero est centre. */
+  dy: number;
+  /** De 100 a 300. */
+  zoom: number;
+  fond: FondDeMarque;
+}
+
+/* Venues de « cadre.ts », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export type Ajustement = 'contenir' | 'remplir' | 'etirer';
+
+export type FondDeMarque = 'clair' | 'sombre' | 'teinte';

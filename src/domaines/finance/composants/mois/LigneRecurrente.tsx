@@ -10,9 +10,13 @@ import { CadreurDImage } from '../CadreurDImage';
 import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from '@/domaines/finance/logique/cadre';
 import { couleurDe } from '@/domaines/finance/logique/marque';
 import { lireNom, lireMontant, direLeRefus, NOM_MAX } from '@/domaines/finance/logique/garde';
+import { useFormulaireDeLigne } from "@/domaines/finance/hooks/useFormulaireDeLigne";
 import { SelecteurDeMois } from './SelecteurDeMois';
 import { moisDeChute, motifDepuisMois } from '@/domaines/finance/logique/cadence';
 import type { FinancialItem } from '@/domaines/finance/types';
+import type { ValeursLigne } from "@/domaines/finance/types";
+/* Reexporte : deux tableaux de bord l importaient d ici. */
+export type { ValeursLigne };
 
 /* UNE LIGNE RECURRENTE
  *
@@ -29,32 +33,6 @@ import type { FinancialItem } from '@/domaines/finance/types';
  * une liste a derouler.
  */
 
-export interface ValeursLigne {
-  name: string;
-  /** Ce qui part a chaque echeance. Pour un echeancier, c est la part. */
-  amount: number;
-  category?: string;
-  iconEmoji?: string;
-  /* NUL EST UNE VALEUR, ET « INDEFINI » N EN EST PAS UNE.
-     Retirer une image ne fonctionnait pas : on envoyait undefined, que
-     le client Supabase OMET de la requete — la colonne n etait donc
-     jamais touchee et l ancien logo restait. Il faut dire null pour
-     effacer, et le type doit le permettre. */
-  iconUrl?: string | null;
-  /* Comment l image se pose. Nul quand rien n a ete regle : ecrire le
-     defaut partout ferait croire a une intention. */
-  iconCadre?: CadreImage | null;
-  /* LA CADENCE. Un abonnement trimestriel et un paiement en plusieurs
-     fois sont la meme mecanique : une charge qui ne tombe pas tous les
-     mois. Voir src/lib/finance/cadence.ts. */
-  periodeMois?: number;
-  moisAncre?: string | null;
-  echeances?: number | null;
-  montantTotal?: number | null;
-  /** Le jour du mois ou l argent bouge, et de combien de mois il suit. */
-  jourEcheance?: number | null;
-  decalageMois?: number;
-}
 
 /* DEUX FACONS DE PAYER, ET UNE SEULE QUESTION A POSER.
  *
@@ -108,129 +86,19 @@ export function LigneRecurrente({
   const { t } = useTranslation();
   const { currency } = useCurrency();
 
-  const [nom, setNom] = useState('');
-  const [montant, setMontant] = useState('');
-  const [categorie, setCategorie] = useState(categories[0]?.value ?? '');
-  const [urlIcone, setUrlIcone] = useState('');
-  const [cadre, setCadre] = useState<CadreImage>(CADRE_PAR_DEFAUT);
-  const [mode, setMode] = useState<Mode>('recurrent');
-  const [moisChoisis, setMoisChoisis] = useState<number[]>([]);
-  const [ancre, setAncre] = useState(moisCourantISO());
-  const [nbEcheances, setNbEcheances] = useState('4');
-  /* LE JOUR OU L ARGENT BOUGE, ET SON DECALAGE.
-     Vide par defaut : la plupart des lignes n ont pas de jour connu, et
-     l exiger serait demander une precision que personne n a. */
-  const [jour, setJour] = useState('');
-  const [decalage, setDecalage] = useState(0);
-
-  useEffect(() => {
-    if (!ouvert) return;
-    setNom(ligne?.name ?? '');
-    setMontant(ligne ? String(ligne.amount) : '');
-    setCategorie(ligne?.category ?? categories[0]?.value ?? '');
-    setUrlIcone(ligne?.icon_url ?? '');
-    /* Le cadre vient dune colonne jsonb : il peut contenir nimporte
-       quoi, et normaliserCadre est le seul point de passage. */
-    setCadre(normaliserCadre(ligne?.icon_cadre));
-
-    /* La cadence se relit de ce qui est enregistre : un echeancier se
-       reconnait a son nombre d echeances, tout le reste revient. Les
-       mois se rallument dans la grille — on retrouve exactement ce
-       qu on avait coche, et non une periode a re-decoder. */
-    const n = ligne?.echeances ?? null;
-    setMode(n != null ? 'echeancier' : 'recurrent');
-    setMoisChoisis(
-      ligne
-        ? moisDeChute({ amount: ligne.amount, is_active: true, periode_mois: ligne.periode_mois, mois_ancre: ligne.mois_ancre })
-        : moisParDefaut,
-    );
-    setAncre(ligne?.mois_ancre ? String(ligne.mois_ancre).slice(0, 7) : moisCourantISO());
-    setNbEcheances(n != null ? String(n) : '4');
-    setJour(ligne?.jour_echeance != null ? String(ligne.jour_echeance) : '');
-    setDecalage(ligne?.decalage_mois ?? 0);
-    /* Pour un echeancier, le champ du montant porte le prix paye et
-       non la part : c est ainsi qu on achete, donc ainsi qu on s en
-       souvient. */
-    if (n != null && ligne?.montant_total != null) setMontant(String(ligne.montant_total));
-  }, [ouvert, ligne, categories, moisParDefaut]);
-
-  const estEcheancier = mode === 'echeancier';
-  const motif = motifDepuisMois(moisChoisis);
-  const nEcheances = Math.max(2, Math.min(60, parseInt(nbEcheances, 10) || 2));
-
-  /* LES MEMES BORNES QUE PARTOUT AILLEURS.
-     Les regles vivaient ici, et avaient donc derive : la correction
-     « Desormais » du parcours ecrivait dans la meme colonne en
-     acceptant zero, et rien ne bornait le haut — une faute de frappe a
-     sept zeros passait, puis faussait l horizon et l historique. Voir
-     lib/finance/garde.ts, et la migration qui pose les memes bornes en
-     base. */
-  const lectureNom = lireNom(nom);
-  const lectureMontant = lireMontant(montant);
-  const valeur = lectureMontant.ok ? lectureMontant.valeur : NaN;
-
-  /* Un motif irregulier ne s enregistre pas non plus : il ne saurait
-     pas se repeter l annee suivante. Le bouton reste bloque, et la
-     grille propose juste au-dessus de quoi le rattraper en un clic. */
-  const valide = lectureNom.ok && lectureMontant.ok && (estEcheancier || motif !== null);
-
-  /* Le refus se dit, il ne se devine pas. Un bouton grise sans raison
-     laisse chercher ce qui cloche. */
-  const refus = !lectureNom.ok ? lectureNom.raison
-    : (!lectureMontant.ok && montant.trim() !== '') ? lectureMontant.raison
-    : null;
-
-  /* L apercu de l echeancier : ce qui sera reellement preleve, mois
-     par mois. Deux cents euros en trois fois ne tombent pas juste — la
-     derniere echeance absorbe le reste, et on le montre plutot que de
-     laisser la surprise au releve bancaire. */
-  const partsEcheancier = (() => {
-    if (!estEcheancier || !Number.isFinite(valeur) || valeur <= 0) return [];
-    const total = Math.round(valeur * 100);
-    const part = Math.floor(total / nEcheances);
-    return Array.from({ length: nEcheances }, (_, i) =>
-      (i < nEcheances - 1 ? part : total - part * (nEcheances - 1)) / 100);
-  })();
-
-  const enregistrer = async () => {
-    if (!valide || enCours || !lectureNom.ok) return;
-    await onEnregistrer({
-      name: lectureNom.ok ? lectureNom.valeur : '',
-      /* Ce qu on enregistre dans « amount », c est toujours ce qui part
-         a une echeance : pour un echeancier, la part et non le total. */
-      amount: estEcheancier ? partsEcheancier[0] : valeur,
-      category: categorie || undefined,
-      iconUrl: urlIcone || null,
-      /* Sans image, le cadre ne cadre rien : linscrire laisserait un
-         reglage orphelin derriere une ligne qui na plus de logo. */
-      iconCadre: urlIcone ? cadreAEnregistrer(cadre) : null,
-      /* Un echeancier se preleve mois apres mois : sa periode vaut un,
-         et c est sa premiere echeance qui le situe. Une charge qui
-         revient tient dans le motif lu sur la grille. */
-      periodeMois: estEcheancier ? 1 : (motif?.periode ?? 1),
-      /* Une cadence mensuelle sans fin n a pas besoin d ancre : elle
-         tombe de toute facon, et l exiger serait demander une
-         information que personne n a envie de saisir. Une cadence plus
-         longue s ancre dans l annee en cours — le motif se repete
-         ensuite indefiniment, l annee de depart n a donc pas a etre
-         choisie. */
-      moisAncre: estEcheancier
-        ? `${ancre}-01`
-        : !motif || motif.periode === 1
-          ? null
-          : `${new Date().getFullYear()}-${String(motif.ancre + 1).padStart(2, '0')}-01`,
-      /* Un jour hors de 1-31 n a pas de sens : on prefere ne rien
-         dire plutot que d ecrire une valeur fausse. */
-      jourEcheance: (() => {
-        const j = parseInt(jour, 10);
-        return Number.isFinite(j) && j >= 1 && j <= 31 ? j : null;
-      })(),
-      decalageMois: decalage,
-      echeances: estEcheancier ? nEcheances : null,
-      montantTotal: estEcheancier ? valeur : null,
-    });
-    onOuvert(false);
-  };
+  /* La machine a etats vit dans `hooks/useFormulaireDeLigne.ts` :
+     onze champs, la relecture de la cadence enregistree, les regles
+     de refus, et l apercu de l echeancier. Ce qui reste ici est le
+     rendu. */
+  const f = useFormulaireDeLigne({ ouvert, ligne, categories, moisParDefaut, onEnregistrer, onOuvert, enCours });
+  const {
+    nom, setNom, montant, setMontant, categorie, setCategorie,
+    urlIcone, setUrlIcone, cadre, setCadre, mode, setMode,
+    moisChoisis, setMoisChoisis, ancre, setAncre, nbEcheances, setNbEcheances,
+    jour, setJour, decalage, setDecalage,
+    estEcheancier, motif, nEcheances, valeur, valide, refus, partsEcheancier,
+    enregistrer,
+  } = f;
 
   return (
     <Dialog open={ouvert} onOpenChange={onOuvert}>

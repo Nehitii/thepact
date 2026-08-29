@@ -41,19 +41,10 @@
  * seul point de passage : tout ce qui entre en ressort utilisable.
  */
 
-export type Ajustement = 'contenir' | 'remplir' | 'etirer';
-export type FondDeMarque = 'clair' | 'sombre' | 'teinte';
-
-export interface CadreImage {
-  ajustement: Ajustement;
-  /** Decalage horizontal, en % de la plaque. Zero est centre. */
-  dx: number;
-  /** Decalage vertical, en % de la plaque. Zero est centre. */
-  dy: number;
-  /** De 100 a 300. */
-  zoom: number;
-  fond: FondDeMarque;
-}
+import type { CadreImage, Ajustement, FondDeMarque } from "@/domaines/finance/types";
+/* Reexportes : sept fichiers les importaient d ici, et les formes
+   descendent au rang zero sans que personne ne bouge. */
+export type { CadreImage, Ajustement, FondDeMarque };
 
 export const DECALAGE_MAX = 50;
 
