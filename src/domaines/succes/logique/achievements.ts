@@ -2,69 +2,17 @@ import { supabase } from "@/socle/supabase/client";
 import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/socle/i18n/i18n";
+import type {
+  AchievementCategory, AchievementRarity, ConditionSucces, Achievement,
+} from "@/domaines/succes/types";
+/* Reexportes : les appelants importaient ces formes depuis ce fichier. */
+export type {
+  AchievementCategory, AchievementRarity, ConditionSucces, Achievement,
+};
 
-export type AchievementCategory =
-  | "Connection"
-  | "GoalsCreation"
-  | "Difficulty"
-  | "Time"
-  | "Pact"
-  | "Finance"
-  | "Hidden"
-  | "Series"
-  | "Todo"
-  | "Focus"
-  | "Journal"
-  | "Social"
-  | "Community"
-  | "Wishlist"
-  | "Calendar"
-  | "Shop"
-  | "ModuleGated"
-  | "Legendary";
 
-export type AchievementRarity =
-  | "common"
-  | "uncommon"
-  | "rare"
-  | "epic"
-  | "legendary"
-  | "mythic";
 
-/**
- * CE QUE PORTE UNE CONDITION DE SUCCES.
- *
- * La colonne est du Json : elle ne peut pas etre typee par la base. Mais
- * le code n en lit que deux champs, et les asserter nommement vaut mieux
- * que de tout rendre opaque avec un « as any » — qui laissait passer
- * n importe quelle faute de frappe sur condition.type.
- */
-export interface ConditionSucces {
-  type: string;
-  value?: number;
-  [autre: string]: unknown;
-}
 
-export interface Achievement {
-  id: string;
-  key: string;
-  name: string;
-  category: AchievementCategory;
-  description: string;
-  flavor_text?: string;
-  rarity: AchievementRarity;
-  icon_key: string;
-  is_hidden: boolean;
-  /* Json en base. La condition n est lue que par ses deux champs
-     ci-dessous — voir ConditionSucces. */
-  conditions: Json;
-  unlocked?: boolean;
-  unlocked_at?: string;
-  progress?: number;
-  required_module?: string | null;
-  bond_reward?: number;
-  points?: number;
-}
 
 export const rarityColors: Record<AchievementRarity, string> = {
   common: "hsl(var(--achievement-common))",

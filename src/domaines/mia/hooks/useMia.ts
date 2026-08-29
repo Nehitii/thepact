@@ -11,51 +11,18 @@ import { useCallback, useState } from "react";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { toast } from "sonner";
+import type {
+  FilMia, MessageMia, SourceMia, ActeMia, MetaMessageMia,
+} from "@/domaines/mia/types";
+/* Reexportes : les appelants importaient ces formes depuis ce fichier. */
+export type {
+  FilMia, MessageMia, SourceMia, ActeMia, MetaMessageMia,
+};
 
-export interface FilMia {
-  id: string;
-  user_id: string;
-  title: string;
-  archived: boolean;
-  last_message_at: string;
-  created_at: string;
-  updated_at: string;
-}
 
-export interface MessageMia {
-  id: string;
-  conversation_id: string;
-  role: "system" | "user" | "assistant" | "tool";
-  content: string;
-  created_at: string;
-  metadata?: MetaMessageMia | null;
-}
 
-export interface SourceMia {
-  source_type: string;
-  source_id: string;
-  snippet: string;
-  similarity?: number;
-}
 
-export interface ActeMia {
-  tool: string;
-  status: "ok" | "error";
-  label: string;
-  ref_id?: string;
-  ref_type?: string;
-  error?: string;
-}
 
-export interface MetaMessageMia {
-  citations?: SourceMia[];
-  actions?: ActeMia[];
-  /* Par quelle couche la réponse est venue. Absent = le modèle a répondu.
-     C'est ce qui permet de retrouver le badge et le visage après un
-     rechargement, au lieu de les perdre avec l'état du composant. */
-  couche?: "reflexe" | "geste";
-  expression?: string;
-}
 
 export function useFilsMia() {
   const { user } = useAuth();
