@@ -12,6 +12,9 @@ import { formatCurrency } from '@/socle/outils/currency';
 import { useMonthlyValidations } from '@/domaines/finance/hooks/useFinance';
 import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 import { totalDuMois, montantDuMois, tombeEn } from '@/domaines/finance/logique/cadence';
+import {
+  moisValides, serieDeMoisTenus, construireLaFrise, CASES,
+} from "@/domaines/finance/logique/frise";
 import { peutPointer, estLeMoisCourant, type EtatDuMois } from '@/domaines/finance/logique/moisAffiche';
 import type { FinancialItem } from '@/domaines/finance/types';
 
@@ -84,12 +87,6 @@ interface MoisPalmaresProps {
   onRevenirAuMoisCourant: () => void;
 }
 
-const CASES = 12;
-
-/** Une charge est « particuliere » des qu elle ne tombe pas chaque mois. */
-const estMensuelle = (l: FinancialItem) =>
-  (l.periode_mois ?? 1) === 1 && l.echeances == null;
-
 export function MoisPalmares({
   netPrevu, restantPacte, expenses, income,
   moisAffiche, etat, onChoisirMois, onPointer, onCorriger, onRevenirAuMoisCourant,
@@ -114,74 +111,16 @@ export function MoisPalmares({
      sinon elle designe une case invisible. */
   useEffect(() => { setAnnee(moisAffiche.getFullYear()); }, [moisAffiche]);
 
-  const valides = useMemo(
-    () => new Set(validations.filter((v) => v.validated_at).map((v) => v.month.slice(0, 7))),
-    [validations],
+  /* La frise vit dans logique/frise.ts : douze cases, une serie, et
+     la regle qui decide ce que chaque case MONTRE. */
+  const valides = useMemo(() => moisValides(validations), [validations]);
+  const serie = useMemo(() => serieDeMoisTenus(valides), [valides]);
+  const bande = useMemo(
+    () => construireLaFrise({
+      annee, validations, depenses: expenses, revenus: income, moisAffiche, locale,
+    }),
+    [annee, validations, expenses, income, moisAffiche, locale],
   );
-
-  const serie = useMemo(() => {
-    let n = 0;
-    let curseur = startOfMonth(new Date());
-    /* Le mois en cours n a pas encore eu lieu : son absence ne compte
-       pas contre la serie. */
-    if (!valides.has(format(curseur, 'yyyy-MM'))) curseur = subMonths(curseur, 1);
-    while (valides.has(format(curseur, 'yyyy-MM'))) {
-      n++;
-      curseur = subMonths(curseur, 1);
-    }
-    return n;
-  }, [valides]);
-
-  /* Les charges qui ne tombent pas chaque mois : ce sont elles qui
-     font les mois lourds, et elles seules meritent l alerte. */
-  const particulieres = useMemo(() => expenses.filter((l) => !estMensuelle(l)), [expenses]);
-
-  const bande = useMemo(() => {
-    const cleCourante = format(startOfMonth(new Date()), 'yyyy-MM');
-    return Array.from({ length: CASES }, (_, i) => {
-      const d = new Date(annee, i, 1);
-      const cle = format(d, 'yyyy-MM');
-      const v = validations.find((x) => x.month.slice(0, 7) === cle);
-      const valide = valides.has(cle);
-      const encours = cle === cleCourante;
-      const choisi = cle === format(moisAffiche, 'yyyy-MM');
-      const passe = cle < cleCourante;
-
-      /* LE REEL D ABORD, LA PREVISION ENSUITE.
-         Un mois valide a un solde CONSTATE : c est celui qu on montre,
-         meme s il s ecarte de ce que la cadence prevoyait — c est
-         justement l ecart qui a de la valeur.
-         Un mois passe sans validation n a rien a dire : on ne va pas
-         lui inventer un resultat apres coup.
-         Le reste — le mois en cours et ceux d apres — se calcule. */
-      const reel = valide && !!v;
-      const solde = reel
-        ? (v.actual_total_income ?? 0) - (v.actual_total_expenses ?? 0)
-        : passe
-          ? null
-          : totalDuMois(income, d) - totalDuMois(expenses, d);
-
-      /* Ce que le mois porte d exceptionnel, et qui le rend lourd. */
-      const surcharge = particulieres
-        .filter((l) => tombeEn(l, d))
-        .reduce((s, l) => s + montantDuMois(l, d), 0);
-
-      return {
-        cle,
-        date: d,
-        premier: format(d, 'yyyy-MM-01'),
-        lettre: format(d, 'MMM', { locale }).slice(0, 1).toUpperCase(),
-        libelle: format(d, 'MMM yyyy', { locale }),
-        solde,
-        reel,
-        valide,
-        encours,
-        choisi,
-        passe,
-        surcharge,
-      };
-    });
-  }, [annee, valides, validations, expenses, income, particulieres, locale, moisAffiche]);
 
   /* LA PHRASE ET SON ICONE, PAR ETAT.
      Chacune dit la situation ET sa consequence : « rien n est
