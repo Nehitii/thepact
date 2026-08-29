@@ -982,3 +982,77 @@ qu'on ne peut pas ouvrir, c'est précisément ce que la règle interdit.
 Aucune n'a été vue par une garde. C'est la limite du filet : il vérifie ce qui
 est écrit, pas ce que l'outil qui écrit croit faire. Le script d'extraction
 vérifie désormais ses repères avant d'écrire, et refuse plutôt que de mutiler.
+
+---
+
+## L'étape 4, reprise : ce que l'accès aux écrans a débloqué
+
+Trois pistes avaient été **ouvertes puis abandonnées le même jour** — non parce
+qu'elles échouaient, mais parce qu'elles n'étaient pas vérifiables : les écrans
+concernés sont derrière l'authentification. La session ouverte, elles se font.
+
+| | feuille d'entrée |
+|---|---|
+| fin de l'étape 4 (première passe) | 281 808 o |
+| `reglages.css` sortie du chemin critique | 270 861 o |
+| `journal.css` rendue à son domaine | 233 023 o |
+| `theme-clair.css` éclatée par domaine | **220 113 o** |
+
+**−92 239 octets depuis 312 352, soit 30 %**, retirés de *chaque* chargement de
+page — la page de connexion comprise.
+
+### Le modèle de Vite, au troisième essai
+
+Trois formulations successives, chacune réfutée par la mesure :
+
+1. « Vite remonte le CSS des morceaux partagés » — vague ;
+2. « c'est le nombre de **routes** qui atteignent la feuille » — faux : poser
+   l'import sur `ConsoleReglages`, rendu par huit pages, n'a rien changé ;
+3. **« c'est qu'un module partagé soit sur le chemin »** — une feuille importée
+   *directement par des pages* obtient son propre morceau ; importée par un
+   module que plusieurs pages partagent, elle est hissée dans l'entrée.
+
+### Ce que la garde a vu et que la mesure ne voyait pas
+
+En posant les imports page par page, `domaines/sante/pages/HealthSettings` s'est
+mis à importer `domaines/profil/console-reglages.css` : une effraction. La
+feuille est donc **revenue** dans le socle, défaisant l'étape 4b.
+
+> **Qui écrit une classe et qui la charge sont deux questions différentes.** La
+> première avait guidé le découpage ; c'est la seconde qui décide de l'adresse.
+
+### Un changement visible, trouvé par comparaison de 82 éléments
+
+`reglages.css` passant *après* l'entrée, elle gagne désormais les conflits
+qu'elle perdait contre les utilitaires Tailwind. Un seul élément est concerné :
+le déclencheur des listes déroulantes de la console.
+
+| | avant | après |
+|---|---|---|
+| hauteur | 41 px | **36 px** |
+| rayon | 11,25 px | 7 px |
+
+Les listes font maintenant la **même hauteur que les champs texte** à côté
+d'elles, au lieu d'être 5 px plus hautes. C'est ce que `.rg-saisie` voulait
+dire ; Tailwind gagnait par accident d'ordre de chargement.
+
+### La règle de destination, affinée
+
+Pour `theme-clair.css`, un premier essai déversait dans la première feuille du
+domaine venue — ce qui aurait mis `.light .rank-core` dans `pantheon.css` alors
+que `.rank-core` est déclarée dans `rang.css`. La bonne règle : **chaque bloc va
+dans la feuille qui déclare sa classe**, et reste global si ses classes sont
+déclarées dans deux feuilles ou dans aucune.
+
+### La vérification, enfin possible
+
+| écran | ce qui a été mesuré |
+|---|---|
+| `/profile`, `/profile/display-sound`, `/profile/health`, `/profile/data`, `/legal` | la feuille est chargée, panneaux et rails présents |
+| `/journal` | son propre morceau de 37 839 o, `[data-jr]` porte ses variables |
+| `/journal` → modal de rédaction | **rendu en portail**, hors du sous-arbre — entièrement stylé |
+| `/achievements`, `/goals`, `/focus` | 300/300 et 200/200 éléments changent entre sombre et clair |
+
+Le cas du portail était le seul risque théorique du découpage du journal : une
+feuille chargée est globale où qu'elle soit posée. C'est le **chargement** qui
+devait suivre le domaine, pas la portée.
