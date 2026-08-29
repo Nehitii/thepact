@@ -18,9 +18,9 @@ import { FrontListe } from "@/domaines/objectifs/composants/FrontListe";
 import { useEtapes, classerLeFront, estTriDeFront, type EtatFront } from "@/domaines/objectifs/hooks/useEtapes";
 import { estFranchi, estPretAHonorer } from "@/domaines/objectifs/logique/superGoals";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
-import type { DisplayMode, GoalTab } from "@/domaines/objectifs/hooks/useGoalFilters";
+import type { DisplayMode, GoalTab } from "@/domaines/objectifs/types";
+import { CLES_FRONT, getGridClass } from "@/domaines/objectifs/logique/dispositionListe";
 import type { GoalsListProps } from "@/domaines/objectifs/types";
-
 
 /* JAMAIS D OPACITE DANS L ETAT INITIAL.
    Une animation d entree qui part de zero laisse la page vide si
@@ -52,21 +52,6 @@ const tabs: { id: GoalTab; cle: string; icon: typeof List }[] = [
    etape n'a que deux etats. « En cours » est un mot d'objectif : une
    etape est faite ou elle ne l'est pas. Les onglets prennent donc le
    vocabulaire de ce qu'ils trient, un total et ses deux moities. */
-const CLES_FRONT: Record<GoalTab, string> = {
-  all: "front.allSteps",
-  active: "front.todo",
-  completed: "front.done",
-};
-
-function getGridClass(displayMode: DisplayMode) {
-  if (displayMode === "grid") {
-    // True responsive CSS grid: 2 cols on phones (avoids stretched giant cards),
-    // 2 / 3 / 4 above. Tighter gaps on small screens.
-    return "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 md:gap-6 w-full";
-  }
-  if (displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
-  return "grid grid-cols-1 gap-4 w-full max-w-4xl mx-auto";
-}
 
 export function GoalsList({
   allGoals,

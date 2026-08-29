@@ -6,77 +6,16 @@ import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { selonTheme } from "@/socle/outils/encrePapier";
-import type { MesureProgression } from "@/domaines/accueil/types";
-import { EFFECT_STYLES, EFFETS_PAPIER, STYLE_LIBELLE } from "@/domaines/accueil/logique/stylesBanniere";
+import type { MesureProgression, NexusHeroBannerProps } from "@/domaines/accueil/types";
+import {
+  EFFECT_STYLES, EFFETS_PAPIER, STYLE_LIBELLE,
+  FONT_MAP, ROULEMENT, STYLE_VALEUR,
+} from "@/domaines/accueil/logique/stylesBanniere";
 /* Reexporte : la page Home l importait depuis ce composant. */
 export type { MesureProgression };
 
-const FONT_MAP: Record<string, string> = {
-  orbitron: "'Orbitron', sans-serif",
-  rajdhani: "'Rajdhani', sans-serif",
-  "share-tech-mono": "'JetBrains Mono', ui-monospace, monospace",
-  "space-grotesk": "'Space Grotesk', sans-serif",
-  inter: "'Inter', sans-serif",
-};
-
-/* ── LES MEMES EFFETS, SUR DU PAPIER ──
-
-   Un halo de 30 px autour d une lettre, c est de la lumiere qui
-   s ajoute au noir. Sur du blanc rien ne s ajoute : le halo ne peut
-   que salir le fond autour du mot, et le titre parait flou au lieu
-   de paraitre allume.
-
-   L effet choisi par l utilisateur n est pas supprime pour autant :
-   il change de nature. Le halo devient une BAVURE D ENCRE, serree et
-   posee juste sous la lettre — ce que fait une impression appuyee sur
-   du papier. Le titre garde sa couleur et sa presence, il les obtient
-   autrement. */
-
-/* ── LE ROULEMENT ──
-   La bascule ne change pas une valeur, elle change ce que la valeur
-   COMPTE. Un fondu dirait « ça se met à jour » ; un roulement dit
-   « on a changé de registre », ce qui est exactement le geste — la
-   sortante monte et s'en va, l'entrante monte à sa place. C'est le
-   mouvement d'un compteur mécanique, et les chiffres sont déjà en
-   chasse fixe pour ça. */
-const ROULEMENT = { duration: 0.34, ease: [0.2, 0.8, 0.2, 1] as const };
-
-const STYLE_VALEUR: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-  fontSize: 24,
-  fontVariantNumeric: "tabular-nums",
-  lineHeight: 1.1,
-  whiteSpace: "nowrap",
-};
-
 /** La cle de retenue, partagee avec la page qui la lit. */
 export const CLE_MESURE = PREF.HUB_MESURE;
-
-interface NexusHeroBannerProps {
-  progression: number;
-  /** Objectifs atteints, ou etapes franchies. */
-  mesure?: MesureProgression;
-  /** Bascule d une mesure a l autre. Absent : la valeur n est pas cliquable. */
-  onChangerMesure?: () => void;
-  level: number;
-  totalMissions: number;
-  activeDays: number;
-  pactName?: string;
-  pactMantra?: string;
-  pactSymbol?: string;
-  titleFont?: string | null;
-  titleEffect?: string | null;
-  /** Rang, integre dans un coin du bandeau plutot que dans un panneau
-   *  separe : il repetait le niveau deja affiche dans les statistiques,
-   *  et son nom trois fois dans ses propres 355px. */
-  rankName?: string;
-  nextRankName?: string | null;
-  rankProgress?: number;
-  rankXP?: number;
-  rankXPTarget?: number;
-  /** Combien d objectifs sont reellement en cours. Le logo bat avec. */
-  enCours?: number;
-}
 
 export function NexusHeroBanner({
   progression,

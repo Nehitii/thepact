@@ -7,9 +7,11 @@ import { useBilanDuSouffle, useEnregistrerSeance } from "@/domaines/sante/hooks/
 import {
   SCHEMAS, CIBLES, CIBLE_PAR_DEFAUT, schemaDe, sequenceDe,
   rythmeSuggere, partiesDeDuree, type Temps,
+  COURBE_INSPIRE, COURBE_EXPIRE, R_PHASE, R_SEANCE, CIRC, HAUTEURS,
 } from "@/domaines/sante/logique/souffle";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import type { Etat } from "@/domaines/sante/types";
+import type { RespirationProps } from "@/domaines/sante/types";
 
 /* ═══════════════════════════════════════════════════════════════
    LE PROTOCOLE
@@ -40,30 +42,11 @@ import type { Etat } from "@/domaines/sante/types";
    quatre-vingt-seize du prochain titre.
    ═══════════════════════════════════════════════════════════════ */
 
-interface Props {
-  /** Le stress du dernier releve, pour suggerer un rythme. */
-  stress?: number | null;
-  chargeMentale?: number | null;
-}
-
 
 /* Les deux courbes du souffle. L inspiration attaque et s installe ;
    l expiration s amorce doucement et se relache. */
-const COURBE_INSPIRE = "cubic-bezier(0.16, 0.85, 0.4, 1)";
-const COURBE_EXPIRE = "cubic-bezier(0.45, 0, 0.7, 0.35)";
 
-/* Rayons des deux anneaux, sur une boite de 100. */
-const R_PHASE = 48;
-const R_SEANCE = 43;
-const CIRC = (r: number) => 2 * Math.PI * r;
-
-/* Le repere sonore : grave et bref, jamais une alarme. */
-const HAUTEURS: Record<Temps, number> = {
-  inspire: 528, retiens: 440, expire: 396, pause: 396,
-};
-
-
-export function Respiration({ stress, chargeMentale }: Props) {
+export function Respiration({ stress, chargeMentale }: RespirationProps) {
   const { t } = useTranslation();
   const sobre = useReducedMotion();
   const { user } = useAuth();

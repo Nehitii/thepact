@@ -98,3 +98,24 @@ export function partiesDeDuree(secondes: number): { heures: number; minutes: num
   const total = Math.max(0, Math.round(secondes / 60));
   return { heures: Math.floor(total / 60), minutes: total % 60 };
 }
+
+
+/* LES REGLAGES DU DESSIN DU SOUFFLE, VENUS DE « Respiration.tsx ».
+   Deux courbes, deux rayons, une gamme : rien que l ecran ne calcule,
+   tout ce qu il applique. Ils vivent aupres des schemas de rythme —
+   c est le meme sujet vu du cote du trait. */
+export const COURBE_INSPIRE = "cubic-bezier(0.16, 0.85, 0.4, 1)";
+
+export const COURBE_EXPIRE = "cubic-bezier(0.45, 0, 0.7, 0.35)";
+
+/* Rayons des deux anneaux, sur une boite de 100. */
+export const R_PHASE = 48;
+
+export const R_SEANCE = 43;
+
+export const CIRC = (r: number) => 2 * Math.PI * r;
+
+/* Le repere sonore : grave et bref, jamais une alarme. */
+export const HAUTEURS: Record<Temps, number> = {
+  inspire: 528, retiens: 440, expire: 396, pause: 396,
+};

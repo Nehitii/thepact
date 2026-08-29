@@ -7,6 +7,7 @@ import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { formatCurrency, getCurrencySymbol } from "@/socle/outils/currency";
 import { usePactCostItems, useAcquerirPieces, type CostItem } from "@/domaines/objectifs";
 import type { Goal } from "@/domaines/objectifs";
+import type { ArbitragePanelProps, Lot } from "@/domaines/finance/types";
 
 /* L ARBITRAGE
  *
@@ -20,19 +21,7 @@ import type { Goal } from "@/domaines/objectifs";
  * mieux qu une grosse piece qui n en termine aucun.
  */
 
-interface ArbitragePanelProps {
-  goals: Goal[];
-  /** Ce qui reste chaque mois, propose comme premiere mise. */
-  netMensuel: number;
-  /** Ce qui est deja mis de cote. */
-  dejaFinance: number;
-}
 
-type Lot = {
-  goal: Goal;
-  pieces: CostItem[];
-  reste: number;
-};
 
 export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePanelProps) {
   const { t } = useTranslation();

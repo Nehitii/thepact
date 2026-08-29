@@ -1,3 +1,7 @@
+/* Le pacte et ses pieces chiffrees, par la porte du domaine : c est
+   l arbitrage qui les met en face d une somme. */
+import type { Goal, CostItem } from "@/domaines/objectifs";
+
 /** Une categorie de depense ou de revenu.
  *
  * Elle etait declaree dans `logique/categories.ts`, au milieu des
@@ -240,3 +244,19 @@ export interface BankTransaction {
   source: 'manual' | 'csv_import';
   created_at: string;
 }
+
+/* Venues de « ArbitragePanel.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface ArbitragePanelProps {
+  goals: Goal[];
+  /** Ce qui reste chaque mois, propose comme premiere mise. */
+  netMensuel: number;
+  /** Ce qui est deja mis de cote. */
+  dejaFinance: number;
+}
+
+export type Lot = {
+  goal: Goal;
+  pieces: CostItem[];
+  reste: number;
+};

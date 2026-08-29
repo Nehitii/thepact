@@ -5,10 +5,12 @@ import {
   defaultDropAnimationSideEffects,
   type DragEndEvent, type DragStartEvent, type DropAnimation,
 } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { TodoLigne } from "@/domaines/taches/composants/TodoLigne";
+import { LigneTriable } from "@/domaines/taches/composants/LigneTriable";
+import { VUES, vueInitiale, type Vue } from "@/domaines/taches/logique/vueDeLaListe";
 import { useTodoList, TodoTask } from '@/domaines/taches/hooks/useTodoList';
 import { DSPageShell, DSBackground, DSPageLoader } from '@/socle/ds';
-import { TodoLigne } from '@/domaines/taches/composants/TodoLigne';
 import { TodoCartouche } from '@/domaines/taches/composants/TodoCartouche';
 import { TodoGamifiedCreateForm } from '@/domaines/taches/composants/TodoGamifiedCreateForm';
 import { TodoHistoryPanel } from '@/domaines/taches/composants/TodoHistoryPanel';
@@ -42,54 +44,11 @@ import { PREF } from "@/socle/outils/preferencesAffichage";
  * contenu s arrete. Cent cinquante pixels avant la premiere tache.
  */
 
-/* LA VUE « STATS » EST PARTIE DANS ANALYTICS.
-   Elle portait quatre compteurs et huit blocs — série, activité sur
-   trente jours, complétions par mois, jours productifs, difficulté,
-   catégorie, productivité par heure. C'était une page d'analyse cachée
-   dans un outil de saisie, et son voisinage la rendait introuvable.
-
-   Tout y est repris, éclaté par question au lieu d'être empilé par
-   source : les catégories et les difficultés en Répartition, les heures,
-   les jours de semaine et les ruptures de série en Rythme, les reports
-   en Trajectoire. Les compteurs de série restent ici, sur le cartouche —
-   ce sont des jauges de jeu, pas des statistiques. */
-type Vue = 'liste' | 'detaillee' | 'calendrier' | 'historique';
-const VUES: Vue[] = ['liste', 'detaillee', 'calendrier', 'historique'];
-
 const ANIMATION_DEPOT: DropAnimation = {
   duration: 220,
   easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
   sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.35' } } }),
 };
-
-function vueInitiale(): Vue {
-  try {
-    const v = localStorage.getItem(PREF.TODO_VUE) as Vue | null;
-    if (v && VUES.includes(v)) return v;
-  } catch { /* stockage indisponible */ }
-  return 'liste';
-}
-
-type LigneTriableProps = {
-  task: TodoTask;
-  variant: 'liste' | 'detaillee';
-  onComplete: () => void;
-  onPostpone: (d: string) => void;
-  onDelete: () => void;
-  onEdit: () => void;
-  onFocus: () => void;
-};
-
-function LigneTriable({ task, ...reste }: LigneTriableProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id: task.id });
-  /* La carte entiere portait la poignee, et devenait un role="button"
-     contenant cinq boutons. La poignee descend dans la ligne. */
-  return (
-    <div ref={setNodeRef}>
-      <TodoLigne {...reste} task={task} isDragging={isDragging} poignee={{ ...attributes, ...listeners }} />
-    </div>
-  );
-}
 
 export default function TodoList() {
   const { t } = useTranslation();
