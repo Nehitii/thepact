@@ -225,3 +225,19 @@
   border-color: color-mix(in srgb, var(--fr-or) 60%, transparent);
   background: color-mix(in srgb, var(--fr-or) 12%, transparent);
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* Idem cote front.css. */
+:root.light .fr.fr {
+  --fr-encre:   #14181A;
+  --fr-encre-2: #3C4448;
+  --fr-encre-3: #6C7176;
+}

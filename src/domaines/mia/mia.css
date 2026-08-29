@@ -985,3 +985,31 @@ body[data-mia-ouverte] [data-chrome="palette"] {
   .mia-passage-fermer { position: absolute; top: 8px; right: 8px; }
   .mia-passage .mia-visage { width: 72px !important; height: 72px !important; }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ═══════════════════════════════════════════════════════════════
+   LE CHAMP DE M.I.A AU REPOS
+
+   Mesure : son contour tombait a 2,20:1 en clair — sous le seuil de
+   3:1 des composants non textuels. Or le contour d un champ de saisie
+   est precisement ce que ce seuil protege : c est lui qui dit ou l on
+   ecrit. Au focus il remonte deja (teinte primaire + halo de 3 px) ;
+   c est l etat de REPOS qui ne se voyait pas.
+
+   Corrige ici et non sur « --nexus-border », qui habille des dizaines
+   de surfaces ailleurs : un champ a besoin d un bord franc, un panneau
+   n en a pas besoin, et une meme valeur ne peut pas servir les deux.
+
+   0,42 → 0,62 d opacite, soit 3,5:1. Verifie a l ecran.
+   ═══════════════════════════════════════════════════════════════ */
+.light .mia-champ {
+  border-color: hsla(200, 20%, 22%, 0.62);
+}

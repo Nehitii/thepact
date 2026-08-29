@@ -300,3 +300,143 @@
 @media (prefers-reduced-motion: reduce) {
   .singularity-influx { animation: none; opacity: 0.35; transform: scale(0.55); }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ── LA SINGULARITÉ, EN ENCRE ──────────────────────────────────────
+   « Le rond central n'est pas fou non plus. » Il ne l'était pas :
+   la première passe s'était contentée d'un opacity: 0.35 sur les
+   couches, ce qui donne exactement ce qu'on voyait — une tache bleue
+   délavée au milieu d'une carte blanche.
+
+   Le problème n'était pas le réglage, c'était le principe. Cet objet
+   est fait de LUMIÈRE : chacune de ses couches est un hsl à 62, 72,
+   96 % de clarté, posé sur du quasi-noir. Sur du papier, une couche
+   plus claire que le fond n'existe pas — le noyau, à 96 %, était
+   littéralement invisible, et le reste ne pouvait que griser.
+
+   L'inversion juste n'est pas d'assombrir les couches une à une :
+   c'est de changer ce qui fait la masse. Sur du noir, la matière se
+   voit parce qu'elle RAYONNE ; sur du papier, parce qu'elle est
+   DENSE. La singularité devient une goutte d'encre — le pigment
+   s'accumule vers le centre au lieu que la lumière en jaillisse.
+
+   Une chose est conservée telle quelle : la densité reste pilotée par
+   --sing-lum, donc par la progression réelle du pacte. Un pacte qui
+   démarre reste pâle, un pacte avancé est dense. L'objet garde son
+   sens, il change de matière.
+
+   Et le centre reste CLAIR : le symbole du pacte s'y tient, encré en
+   sombre. Le pigment s'accumule en couronne autour de lui — ce qui est
+   d'ailleurs plus juste, la masse d'un disque d'accrétion étant dans
+   le disque et non au centre. */
+
+/* La couronne : une diffusion, plus un rayonnement. Moins de flou —
+   une encre qui se répand garde un bord, une lumière n'en a pas. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 72% 42% / calc(0.3 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 78% 36% / calc(0.16 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+  filter: blur(9px);
+}
+
+/* Le noyau : une couronne de pigment autour d'une clairière. */
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 80% 38% / calc(0.34 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 84% 32% / calc(0.2 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+  box-shadow: none;
+}
+
+/* Les éjections et la chute : à 0,09 d'alpha sur du blanc, il n'en
+   restait rien. Même dessin, encre lisible. */
+.light .singularity-flare {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(var(--ds-accent-hue, 200) 76% 40% / calc(0.3 * var(--sing-lum, 1))) 12deg,
+    transparent 34deg,
+    transparent 96deg,
+    hsl(calc(var(--ds-accent-hue, 200) + 30) 74% 42% / calc(0.22 * var(--sing-lum, 1))) 122deg,
+    transparent 148deg,
+    transparent 214deg,
+    hsl(var(--ds-accent-hue, 200) 76% 44% / calc(0.18 * var(--sing-lum, 1))) 238deg,
+    transparent 266deg,
+    transparent 360deg);
+}
+.light .singularity-influx {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 7deg,
+    hsl(var(--ds-accent-hue, 200) 78% 40% / calc(0.1 * var(--sing-lum, 1))) 8deg,
+    transparent 9deg,
+    transparent 16deg);
+}
+
+/* L'anneau d'accrétion EST la jauge de progression : c'est la seule
+   couche qui porte une information, donc la seule qui doit être
+   franche. Opaque, et sans la lueur qui l'aurait floutée. */
+.light .singularity-ring {
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--ds-accent-hue, 200) 88% 34%) 0%,
+    hsl(var(--ds-accent-hue, 200) 88% 34%) var(--sing-progress, 0%),
+    transparent var(--sing-progress, 0%));
+  filter: none;
+}
+
+/* Le champ d'étoiles est fait de points BLANCS. L'inversion ne touche
+   pas la transparence : les points deviennent sombres, le vide reste
+   vide. Le ciel devient le grain du papier. */
+.light .singularity-field,
+.light .singularity-field::after {
+  filter: invert(1);
+  opacity: 0.45;
+}
+
+/* Ce que le cœur jette sur la page : une lumière en haut du tableau
+   de bord. Sur du papier, une teinte d'encre très diluée. */
+.light .singularity-cast {
+  background: radial-gradient(ellipse 90% 42% at 50% 0%,
+    hsl(var(--ds-accent-hue, 200) 70% 38% / calc(0.07 * var(--sing-lum, 1))) 0%,
+    transparent 70%);
+}
+
+/* ── LA SINGULARITÉ, PLUS DENSE ────────────────────────────────────
+   Sur un support de béton et non de blanc pur, les densités du premier
+   réglage retombaient dans le pâle. L'encre se charge. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 82% 34% / calc(0.42 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 86% 28% / calc(0.22 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+}
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 88% 30% / calc(0.46 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 92% 24% / calc(0.28 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+}
+.light .singularity-ring {
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--ds-accent-hue, 200) 100% 26%) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 26%) var(--sing-progress, 0%),
+    transparent var(--sing-progress, 0%));
+}
+.light .singularity-field,
+.light .singularity-field::after { opacity: 0.55; }

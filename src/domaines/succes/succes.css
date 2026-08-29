@@ -1014,3 +1014,180 @@
   .su-gloire-carte,
   .su-gloire-icone { animation: none; }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ── LE RELEVÉ ──
+   Deux familles portaient toute la page : un bleu de projecteur
+   (214 90–100 % / 62–72 %) et une encre pâle (215 16–25 % / 50–76 %).
+   Les deux sont faites pour un fond de nuit. Elles deviennent le bleu
+   du crayon et le toner du relevé. */
+.light .su-hero-titre span,
+.light .su-hero-coupe svg,
+.light .su-monument-quoi,
+.light .su-portee-titre,
+.light .su-mois-titre { color: hsl(214 100% 26%); }
+.light .su-hero-titre span,
+.light .su-hero-coupe svg,
+.light .su-trophee-part { text-shadow: none; filter: none; }
+.light .su-hero-coupe::before {
+  background: radial-gradient(circle, hsl(214 70% 40% / 0.12), transparent 68%);
+}
+.light .su-hero-devise { color: hsl(200 12% 34%); }
+
+/* Les traits : de vraies règles, pas des reflets. */
+.light .su-trophee,
+.light .su-proche,
+.light .su-filtre,
+.light .su-carte,
+.light .su-os { border-color: hsl(214 30% 30% / 0.28); }
+.light .su-vide { border-color: hsl(214 30% 30% / 0.34); }
+.light .su-trophee { background: linear-gradient(to bottom, hsl(214 40% 34% / 0.06), transparent); }
+.light .su-trophee:hover,
+.light .su-filtre:hover { border-color: hsl(214 100% 30% / 0.6); }
+.light .su-trophee[aria-pressed="true"],
+.light .su-filtre[aria-pressed="true"] { border-color: hsl(214 100% 28%); }
+.light .su-trophee[aria-pressed="true"] { background: linear-gradient(to bottom, hsl(214 100% 32% / 0.12), transparent); }
+.light .su-filtre[aria-pressed="true"] { background: hsl(214 100% 32% / 0.12); }
+.light .su-filtre:hover { color: hsl(200 22% 12%); }
+.light .su-trophee-fond { stroke: hsl(214 40% 34% / 0.2); }
+.light .su-trophee-part { stroke: hsl(214 100% 28%); }
+.light .su-jauge { background: hsl(40 10% 80%); }
+.light .su-jauge i { box-shadow: none; }
+.light .su-vide svg { color: hsl(214 70% 32% / 0.5); }
+.light .su-mois-titre::after {
+  background: linear-gradient(to right, hsl(214 40% 32% / 0.34), transparent);
+}
+.light .su-mois-titre span {
+  color: hsl(200 10% 36%);
+  background: hsl(214 40% 34% / 0.09);
+}
+
+/* Le toner du relevé. Trois niveaux, comme les trois graisses d'une
+   légende de plan. */
+.light .su-trophee-signe,
+.light .su-vide h3,
+.light .su-gloire-nom,
+.light .su-gloire-fermer,
+.light .su-trace-nom { color: hsl(200 22% 13%); }
+.light .su-trophee-nom,
+.light .su-monument-sous,
+.light .su-proche-quoi,
+.light .su-quoi,
+.light .su-filtre,
+.light .su-gloire-saveur,
+.light .su-carte:not([data-obtenu]) .su-nom,
+.light .su-vide p { color: hsl(202 11% 30%); }
+/* Le compte d un coffre est assis sur son propre lavis, pas sur
+   la page : il lui faut un cran de plus que les autres discrets. */
+.light .su-trophee-compte { color: hsl(200 12% 30%); }
+.light .su-proche-reste,
+.light .su-compte,
+.light .su-chiffres,
+.light .su-points,
+.light .su-trace-jour { color: hsl(200 8% 40%); }
+/* Le sommeil portait un ambre pâle prévu pour la nuit. */
+.light .su-sommeil { color: #8B5A00; }
+
+/* ── LE RESTE DE LA PLANCHE ────────────────────────────────────────
+   Deux familles restaient, et la première expliquait presque tout :
+   `.su-hall` pose `color: #E2E8F0` sur toute la page, et chaque
+   libellé qui ne redéclare rien en HÉRITE. Un titre blanc sur du
+   papier blanc, ce n'est pas un contraste faible — c'est un titre
+   absent. La seconde famille, ce sont les fonds : les panneaux sont
+   des vitres teintées de nuit (hsl(220 60% 6%)), ce qui sur du papier
+   donne des blocs gris posés au milieu du relevé. */
+.light .su-hall { color: hsl(202 11% 24%); }
+.light .su-hero-titre,
+.light .su-monument-valeur,
+.light .su-gloire-nom,
+.light .su-filtre[aria-pressed="true"] { color: hsl(200 24% 12%); }
+
+/* Les vitres deviennent des feuillets. */
+.light .su-proche,
+.light .su-filtre,
+.light .su-carte,
+.light .su-vide { background: hsl(44 24% 97% / 0.88); }
+.light .su-carte[data-obtenu] {
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--su-teinte) 9%, hsl(44 24% 97%)),
+    hsl(44 22% 96% / 0.9));
+}
+.light .su-os { background: linear-gradient(90deg, hsl(42 14% 93% / 0.7), hsl(214 24% 90% / 0.6), hsl(42 14% 93% / 0.7)); }
+.light .su-gloire { background: hsl(40 12% 88% / 0.82); }
+.light .su-gloire-carte {
+  background: linear-gradient(165deg,
+    color-mix(in srgb, var(--su-teinte) 12%, hsl(44 24% 97%)), hsl(44 20% 95%) 62%);
+  box-shadow: 0 30px 60px -30px hsl(38 30% 30% / 0.4);
+}
+.light .su-gloire-suite { color: hsl(44 24% 97%); }
+.light .su-trace-point { box-shadow: 0 0 0 3px hsl(44 24% 97%); }
+
+/* ── LES LUEURS DE LA PLANCHE ──
+   Un halo de 22 px autour du mot « Mythique » le transformait en
+   autocollant fluorescent posé sur la feuille. Une rareté s'imprime :
+   elle tient à sa couleur et à sa graisse, pas à son irradiation. */
+.light .su-monument .su-monument-rarete,
+.light .su-rarete { text-shadow: none; }
+.light .su-jauge i,
+.light .su-neuf { box-shadow: none; }
+.light .su-icone { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 55%, transparent); }
+.light .su-carte[data-obtenu] .su-icone {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--su-teinte) 78%, transparent);
+}
+.light .su-carte[data-neuf] .su-icone { animation: none; }
+
+/* Le trophée gagné garde son or : c'est le seul endroit franchement
+   décoratif de la page, et il a été mérité. Mais un or de néon sur du
+   papier ne se voit pas — c'est une dorure, pas une lampe. */
+.light .su-trophee[data-complet] {
+  border-color: hsl(38 90% 32% / 0.6);
+  background: linear-gradient(160deg, hsl(43 90% 45% / 0.16), transparent 64%);
+  box-shadow: none;
+}
+.light .su-trophee[data-complet] .su-trophee-part { filter: none; }
+.light .su-sommeil {
+  background: hsl(38 88% 42% / 0.14);
+  box-shadow: inset 0 0 0 1px hsl(38 88% 34% / 0.4);
+}
+
+/* Deux encres claires écrites en dur échappaient encore à l'héritage :
+   le nom d'un succès à portée, et celui d'un trophée gagné, doré à
+   #FDE68A pour se détacher de la nuit. */
+.light .su-proche-nom { color: hsl(200 24% 13%); }
+.light .su-trophee[data-complet] .su-trophee-nom { color: #6B4400; }
+.light .su-trophee[data-complet] .su-trophee-signe { filter: none; }
+/* Le reflet qui balaie un trophée gagné est une lumière rasante :
+   sur du papier il ne fait que blanchir la dorure. */
+.light .su-trophee[data-complet]::after {
+  background: linear-gradient(105deg, transparent 40%, hsl(43 90% 60% / 0.22) 50%, transparent 60%);
+}
+
+/* `.su-nom` était #F1F5F9 — un blanc cassé. Sur une carte de papier,
+   le nom du succès valait exactement 1,00:1 : le même ton que son
+   support, donc rien du tout. C'est le libellé le plus répété de la
+   page, présent sur les quatre-vingt-dix-sept cartes. */
+.light .su-nom { color: hsl(200 24% 13%); }
+.light .su-carte:not([data-obtenu]) .su-nom { color: hsl(202 9% 38%); }
+
+/* LE JOURNAL N EST PAS TOUCHÉ, ET C EST UNE CORRECTION.
+   J avais descendu son halo cyan, en croyant appliquer la règle
+   habituelle : une encre diluée à 0,42 qui disparaît sur du papier.
+   Mesure après coup : 3,04 devenu 1,27 — j avais empiré la chose.
+   La carte de question porte un fond de NUIT même en thème clair
+   (rgba(5,18,24,0.93)), donc le halo lumineux y était juste. La page
+   était déjà bonne ; la seule bonne action était de ne rien faire. */
+
+/* La saveur d'un succès mêle sa rareté à une encre grise :
+   color-mix(… var(--su-teinte) 62%, hsl(215 16% 58%)). Le gris d'appoint
+   est celui du thème sombre, et il tire l'ensemble vers le haut —
+   4,47:1, à trois centièmes du seuil. Même mélange, encre d'appoint du
+   thème clair. */
+.light .su-saveur { color: color-mix(in srgb, var(--su-teinte) 62%, hsl(202 11% 30%)); }

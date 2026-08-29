@@ -1009,3 +1009,49 @@
 @media (prefers-reduced-motion: reduce) {
   .cal *, .cal *::before, .cal *::after { transition: none !important; animation: none !important; }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ═══════════════════════════════════════════════════════════════
+   12. CALENDAR — LE RUBAN
+   ───────────────────────────────────────────────────────────────
+   « Pas mal, mais manque de contraste, certains éléments paraissent
+   délavés. » Le diagnostic était exact et tenait à UN jeton.
+
+   `--cal-faible` vaut l'encre discrète DILUÉE à 0,8 d'alpha. Sur du
+   noir, diluer une encre claire la fait reculer sans la faire
+   disparaître ; sur du papier, ça la fait remonter vers le support et
+   elle tombe à 3,3:1. Trente et un libellés de jour, quatre boutons
+   de vue et six numéros en dépendaient — soit les trois quarts des
+   défauts de la page.
+
+   Les jetons sont déclarés sur `.cal`, pas sur la racine : une
+   propriété posée sur un descendant gagne sur celle qui descend de la
+   racine, quelle que soit la spécificité en haut. Il faut donc les
+   reposer au même endroit.
+   ═══════════════════════════════════════════════════════════════ */
+.light .cal {
+  --cal-faible: hsl(200 12% 29%);
+  --cal-doux:   hsl(202 12% 26%);
+  --cal-trait:      hsl(var(--ds-border-default) / 0.26);
+  --cal-trait-fort: hsl(var(--ds-border-default) / 0.46);
+}
+
+/* Le titre du calendrier est peint par un dégradé découpé dans le
+   texte : sa couleur est `transparent`, ce que l'auditeur lit comme un
+   contraste de 1,00 alors que le mot s'imprime très bien. Rien à
+   corriger là — sauf la lueur de 16 px, qui sur du papier ne fait que
+   le rendre flou. */
+.light .cal-entete-titre em { filter: none; }
+
+/* Les heures du ruban : encore une encre discrète diluée, à 0,88 cette
+   fois. Sur du papier, 4,44:1 — la dilution reste le motif le plus
+   fréquent de tout cet audit. */
+.light .cal-rb-heure { color: hsl(200 12% 31%); }

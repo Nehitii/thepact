@@ -2321,3 +2321,168 @@
   text-shadow: 0 0 8px color-mix(in srgb, var(--or-zenith) 70%, transparent);
   pointer-events: none;
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+.light .cyber-grid { filter: invert(1) hue-rotate(180deg); opacity: 0.14; }
+.light .gl-btn-primaire:hover {
+  color: hsl(44 24% 97%);
+  background: #93700A;
+  border-color: #93700A;
+}
+.light .eclat-groupe-tag--dyn,
+.light .verre-groupe-tag--dyn {
+  color: #6B5200;
+  background: transparent;
+  border-color: #6B5200;
+}
+/* Le glitch du bouton : deux calques décalés en rouge et cyan néon.
+   Sur du papier c'est un défaut de repérage — un tirage mal calé.
+   L'idée fonctionne, les couleurs descendent. */
+.light .gl-glitch::before { color: #A80017; }
+.light .gl-glitch::after { color: #005FAD; }
+
+/* ── L'ONGLET ACTIF ──
+   Il posait un dégradé partant de rgb(24 28 22) — une amorce de nuit
+   écrite en dur — sous une encre jaune. Sur du papier, l'onglet
+   devient un intercalaire : plaque claire, tranche d'encre à gauche,
+   libellé au toner. */
+.light .gl-onglet[data-actif="true"] .gl-onglet-in {
+  color: hsl(200 24% 12%);
+  background:
+    linear-gradient(90deg, #7A5C00 0 3px, transparent 3px),
+    linear-gradient(100deg, hsl(44 26% 98%) 0%, hsl(42 16% 95%) 52%);
+}
+.light .gl-onglet[data-actif="true"] .gl-onglet-nb { color: #6B5200; opacity: 1; }
+
+/* ── LE RELEVÉ D'ÉCLAT ──
+   `var(--accent)` est un triplet HSL nu : `color: var(--accent)` est
+   une déclaration invalide, donc ignorée, et le libellé HÉRITE. Sur
+   du noir l'héritage donnait un bleu pâle qui passait ; sur du papier
+   il donne 1,8:1. On pose une vraie couleur au lieu de dépendre d'un
+   héritage. */
+.light .eclat-palier,
+.light .eclat-chiffre { color: hsl(191 100% 22%); text-shadow: none; }
+.light .eclat-fraction { color: hsl(200 12% 32%); opacity: 1; }
+
+/* Les vitres de nuit et les pistes en blanc translucide. */
+.light .eclat-focus { background: hsl(44 24% 97% / 0.9); }
+.light .eclat-focus:hover { background: hsl(44 24% 97%); }
+
+/* ── LE DÉCROCHAGE DU BOUTON ──
+   Deux copies décalées du libellé, en rouge et cyan, posées SUR le
+   fond du bouton pour masquer l'original. Elles lisent `--cp-jaune`
+   comme fond — donc l'olive du thème clair, alors que la plaque est
+   maintenant en ocre : les fantômes ne masquaient plus rien et le
+   libellé devenait illisible sous trois calques empilés.
+
+   L'effet n'est pas supprimé, il change de nom. Sur un écran c'est un
+   décrochage de synchro ; sur un imprimé c'est un HORS-REPÉRAGE — la
+   même image, tirée deux fois avec un film décalé. Les fantômes
+   prennent donc les deux couleurs de la quadrichromie, éclaircies
+   pour se lire sur l'aplat au lieu de le trouer. */
+.light .gl-glitch::before,
+.light .gl-glitch::after { background: #7A5C00; }
+.light .gl-glitch::before { color: #F4A9C0; }
+.light .gl-glitch::after { color: #9FD8EA; }
+.light .gl-btn-primaire:hover .gl-glitch::before,
+.light .gl-btn-primaire:hover .gl-glitch::after { background: #93700A; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LA CARTE DE GRILLE, SUR DU PAPIER
+
+   Le socle descendait à rgb(4 7 13) — presque noir — et le voile posé
+   sur l'image l'assombrissait jusqu'à 0,8 d'opacité. C'était juste : la
+   carte a été dessinée pour du noir.
+
+   Mais le TEXTE, lui, a suivi le thème. « .verre-nom » lit
+   « --encre-titre-douce », un jeton qui bascule : encre claire sur fond
+   sombre, encre sombre sur fond clair. En thème clair, le jeton est donc
+   passé au gris ardoise — et il s'est retrouvé posé sur le socle resté
+   noir. Mesuré : 1,89 pour le nom de l'objectif, 2,22 pour son état. Le
+   seuil est 4,5. Le nom n'était plus lisible du tout.
+
+   LE JETON AVAIT RAISON, C'EST LA SURFACE QUI AVAIT TORT. On éclaircit
+   donc le socle plutôt que de forcer l'encre — une tuile presque noire
+   au milieu d'une page blanche ne se justifie pas davantage par sa
+   lisibilité que par son allure.
+
+   Le néon suit la même règle que partout ailleurs dans ce fichier : il
+   est fait pour briller sur du noir, sur du papier il s'évapore. Les
+   lueurs partent, les teintes de palier descendent assez pour porter.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Le voile ne noircit plus l'image : il la fond vers le papier. */
+.light .verre-voile {
+  background: linear-gradient(180deg,
+    rgb(251 250 247 / 0) 18%,
+    rgb(251 250 247 / .42) 50%,
+    rgb(251 250 247 / .88) 72%);
+}
+
+/* Le socle devient une tuile de papier, teintée par le palier. */
+.light .verre-socle {
+  background:
+    linear-gradient(152deg,
+      color-mix(in srgb, var(--accent) 16%, transparent) 0%,
+      transparent 54%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 9%, #F7F6F2) 0%,
+      #FBFAF7 74%);
+}
+
+/* Le flanc garde sa teinte et perd sa lueur : un halo sur du blanc
+   déborde en bavure au lieu de rayonner. */
+.light .verre-flanc {
+  background: color-mix(in srgb, var(--accent) 62%, #000);
+  box-shadow: none;
+}
+
+/* La bordure de la tuile : le néon pur disparaît sur du blanc. */
+.light .verre-in {
+  border-color: color-mix(in srgb, var(--accent) 42%, #FFF);
+}
+
+/* La lettre du palier, en filigrane derrière le nom. Sur du noir elle
+   vivait à l'opacité près ; sur du papier il lui faut une encre. */
+.light .verre-lettre { color: color-mix(in srgb, var(--accent) 34%, #FFF); }
+
+/* Les cellules de la jauge étaient du blanc à 13 % : invisibles sur du
+   papier. Elles deviennent une encre légère. */
+.light .verre-seg u { background: rgb(20 30 40 / .13); }
+
+/* Le pourcentage et la bande portaient la teinte brute du palier. */
+.light .verre-pct { color: color-mix(in srgb, var(--accent) 58%, #000); }
+.light .verre-bande {
+  background: linear-gradient(96deg,
+    color-mix(in srgb, var(--accent) 74%, #000) 0%,
+    color-mix(in srgb, var(--accent) 58%, #000) 62%,
+    color-mix(in srgb, var(--accent) 78%, #000) 100%);
+  color: #FBFAF7;
+  box-shadow: 0 2px 8px -5px rgb(0 0 0 / .5);
+}
+
+/* Le sceau d'honneur : même traitement que la bande. */
+.light .verre-honore {
+  color: #FBFAF7;
+  background: color-mix(in srgb, var(--accent) 66%, #000);
+}
+
+/* Le point qui précède l'état prenait la teinte brute. */
+.light .verre-etat::before { background: color-mix(in srgb, var(--accent) 62%, #000); }
+
+/* Le fond de remplacement quand il n'y a pas d'image : les rayures
+   étaient blanches sur noir. */
+.light .verre-vide {
+  color: color-mix(in srgb, var(--accent) 55%, #000);
+  background:
+    repeating-linear-gradient(-45deg, rgb(20 30 40 / .05) 0 9px, transparent 9px 18px),
+    var(--nexus-bg);
+}

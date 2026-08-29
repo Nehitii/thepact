@@ -264,3 +264,69 @@
     animation: none;
   }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ═══════════════════════════════════════════════════════════════
+   9. LE HALL DE L'ÉTERNITÉ — LA PLANCHE
+   ───────────────────────────────────────────────────────────────
+   Cette page ne se contentait pas d'ignorer le thème : elle peint sa
+   propre nuit. Un fond #04050a, un ciel étoilé, une lumière céleste,
+   un sol en perspective et une vignette. En thème clair, elle restait
+   un îlot de nuit au milieu du reste.
+
+   Sa scène a pourtant un jumeau de jour exact. Le hall se tient sur
+   une grille en fuite, sous un ciel, éclairé d'en haut : c'est une
+   ÉLÉVATION D'ARCHITECTE. Sur une planche à dessin, le sol devient une
+   grille au crayon bleu, le ciel devient le papier, les étoiles
+   deviennent des points d'encre, et la lumière céleste devient la
+   lampe posée au-dessus du plan.
+
+   Rien ne change de place ni de proportion. Le monument reste un
+   monument ; il est relevé au lieu d'être photographié.
+   ═══════════════════════════════════════════════════════════════ */
+
+.light .pantheon-backdrop {
+  background:
+    radial-gradient(ellipse 90% 50% at 50% -10%, hsl(214 60% 34% / 0.09), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 105%, hsl(214 50% 30% / 0.07), transparent 70%),
+    hsl(42 14% 91%);
+}
+
+/* La lampe au-dessus de la planche. Une lumière qui tombe se voit sur
+   du papier par ce qu'elle ÉCLAIRCIT, pas par ce qu'elle ajoute. */
+.light .celestial-light {
+  background: radial-gradient(circle at 50% 0%,
+    hsl(44 60% 99% / 0.85) 0%,
+    hsl(44 40% 98% / 0.45) 38%,
+    transparent 72%);
+}
+
+/* Les étoiles : des points d'encre. L'inversion garde la transparence
+   intacte, donc seuls les points changent de valeur. */
+.light .pantheon-stars { filter: invert(1); opacity: 0.5; }
+
+/* Le sol en fuite devient la grille au crayon bleu — le seul endroit
+   de l'application où le bleu de calque a le droit d'être franc. */
+.light .ground-grid {
+  background-image:
+    linear-gradient(to right,  hsl(214 62% 34% / 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(214 62% 34% / 0.28) 1px, transparent 1px);
+}
+
+/* La chute de lumière au bord de la planche. */
+.light .pantheon-vignette {
+  background: radial-gradient(ellipse 75% 65% at 50% 45%,
+    transparent 40%, hsl(40 16% 62% / 0.3) 100%);
+}
+.light .stat-monument {
+  background: linear-gradient(to bottom,
+    hsl(214 40% 34% / 0.09), hsl(214 40% 34% / 0.02) 55%, transparent);
+}

@@ -1388,3 +1388,130 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 @media (prefers-reduced-motion: reduce) {
   .sc-composeur { transition: none; }
 }
+
+/* ── LE THEME CLAIR DE CE DOMAINE ─────────────────────────────
+   Ces regles vivaient dans `styles/theme-clair.css`, chargee
+   globalement. Elles ne visent que des classes de ce domaine :
+   elles suivent sa feuille, et ne pesent plus sur les autres pages.
+
+   L ORDRE NE DECIDE DE RIEN, et c est ce qui rend la coupe sure :
+   ces selecteurs sont prefixes `.light`, donc (0,2,0) contre
+   (0,1,0) pour la regle qu ils corrigent. Ils gagnent qu ils soient
+   charges avant ou apres. */
+/* ═══════════════════════════════════════════════════════════════════
+   5. FOCUS — LA SCÈNE DE JOUR
+   ───────────────────────────────────────────────────────────────────
+   « Pas de mode clair, tout est ultra foncé. » C'était vrai au sens
+   littéral : la page entière est peinte en dur, et son fond est un
+   CANEVAS dessiné en JavaScript — hors de portée de toute feuille de
+   style.
+
+   Trois niveaux de surface portent presque tout : --n0, --n1, --n2,
+   déclarés sur `.sc, .md, .sc-bandeau, .cyb`. Les basculer suffit à
+   retourner la scène. Ce sont des descendants : il faut les reposer
+   au même endroit, pas à la racine.
+
+   Le parti pris tient : la nuit devient du jour, pas un gris. La
+   plaque est du papier, les arêtes sont des traits, l'or reste de
+   l'or mais assez profond pour se poser dessus.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.light .sc,
+.light .md,
+.light .sc-bandeau,
+.light .cyb {
+  --n0: #FBFAF7;
+  --n1: #F2F0EB;
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  /* L'or à #fcee0a est un néon : sur du papier il devient illisible.
+     Même teinte, descendue jusqu'à porter sur du blanc. */
+  --or: #7A5C00;
+}
+
+/* Les surfaces peintes en rgba(4, 6, 10, …) : le noir translucide de
+   la scène de nuit. */
+.light .sc-tele div,
+.light .md { background: rgba(255, 255, 255, 0.94); }
+.light .md-cadre { background: #F2F0EB; }
+
+/* Le chrono était blanc pur sur du noir. */
+.light .sc-temps { color: #14181A; }
+.light .cyb:hover { color: #14181A; }
+.light .md-champ button.md-ok { color: #00693A; }
+
+/* Le grain et les scanlines sont tracés en blanc translucide : sur du
+   papier ils éclaircissent au lieu de texturer. Ils passent en encre. */
+.light .sc-grain,
+.light .sc-vignette::before { filter: invert(1); opacity: 0.5; }
+
+/* L'IMMERSION RESTE NOIRE, ET C'EST VOLONTAIRE.
+   Elle éteint l'interface pour ne laisser que le compte à rebours :
+   c'est un geste, pas un thème. La rendre blanche en ferait une page
+   de plus. */
+
+/* Le composeur REDÉCLARE ses trois niveaux sur lui-même — même piège
+   que `.hlt` : la valeur posée sur l'élément gagne sur l'héritée. */
+.light .sc-composeur {
+  --n0: rgba(255, 255, 255, 0.92);
+  --n1: rgba(244, 247, 251, 0.96);
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  --or: #7A5C00;
+}
+
+/* ── L'ENCRE AFFAIBLIE ──
+   Quatre libellés d'onglet et deux références passaient l'accent à
+   0,8–0,92 d'alpha : suffisant sur du noir, sous le seuil sur du
+   papier. En clair l'accent porte déjà, il n'a pas besoin d'être
+   dilué. */
+.light .sc-panneaux .cyb,
+.light .sc-bandeau-ref,
+.light .sc-immersion { opacity: 1; }
+.light .sc-bandeau-ref { color: hsl(var(--primary)); }
+.light .sc-immersion { color: hsl(var(--primary)); }
+.light .cyb-select:hover { border-color: hsl(var(--primary) / 0.45); }
+
+/* ── LES DEUX PLAQUES OUBLIÉES ──
+   « Immersion » et le billet de destination écrivent aussi leur fond
+   en dur. Leur encre était devenue lisible, leur support non : de
+   l'accent profond sur une plaque de nuit, 2,0:1. */
+.light .sc-immersion {
+  background: linear-gradient(180deg, #FBFAF7, #F2F0EB);
+  border-color: hsl(var(--primary) / 0.38);
+}
+.light .sc-immersion:hover {
+  color: #5A4400;
+  border-color: #B39400;
+  background: rgba(252, 238, 10, 0.22);
+}
+.light .dst-billet {
+  background: linear-gradient(180deg, #FBFAF7, #F2F0EB);
+  box-shadow: 0 18px 46px -14px rgba(26, 24, 20, 0.28), 0 0 0 1px hsl(var(--primary) / 0.1);
+  --n0: #FBFAF7;
+  --n1: #F2F0EB;
+  --n2: #E3E0D9;
+  --bord: hsl(200 14% 22% / 0.26);
+  --bord-vif: hsl(var(--primary) / 0.85);
+  --or: #7A5C00;
+}
+
+/* ── L'OR SUR DU PAPIER ──
+   Le jaune néon reste le signal du départ : sur fond, avec une encre
+   noire, il porte à 17:1 et fait sur la page ce qu'un surligneur fait
+   sur une feuille. C'est en ENCRE qu'il disparaissait — du #fcee0a sur
+   du blanc ne se lit pas. Au repos, l'or descend donc jusqu'à porter ;
+   au survol, il reprend sa pleine intensité derrière l'encre noire. */
+.light .sc-depart,
+.light .cyb--or {
+  color: #5A4400;
+  border-color: #C2A000;
+  background: linear-gradient(180deg, rgba(252, 238, 10, 0.34), rgba(252, 238, 10, 0.14));
+}
+.light .sc-depart:hover,
+.light .cyb--or:hover {
+  color: #05070b;
+  box-shadow: 0 0 0 1px #C2A000, 0 10px 28px -10px rgba(184, 155, 0, 0.55);
+}
