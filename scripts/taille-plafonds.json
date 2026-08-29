@@ -21,11 +21,11 @@
   "src/domaines/onboarding/pages/Onboarding.tsx": 523,
   "src/domaines/profil/composants/ProfileBoundedProfile.tsx": 641,
   "src/domaines/profil/composants/ProfileDevilNote.tsx": 414,
-  "src/domaines/profil/pages/DataPortability.tsx": 649,
+  "src/domaines/profil/pages/DataPortability.tsx": 559,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/souhaits/pages/Wishlist.tsx": 781,
   "src/domaines/succes/pages/Achievements.tsx": 415,
-  "src/domaines/taches/hooks/useTodoList.ts": 472,
+  "src/domaines/taches/hooks/useTodoList.ts": 418,
   "supabase/functions/ai-mia/index.ts": 1506,
   "supabase/functions/two-factor/index.ts": 614
 }

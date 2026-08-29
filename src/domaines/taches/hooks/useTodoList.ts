@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { genererAnalyses } from "@/domaines/taches/logique/analyses";
+import { avancerLaSerie, cleDuJour } from "@/domaines/taches/logique/serie";
 import { supabase } from '@/socle/supabase/client';
 import { useAuth } from '@/socle/contextes/AuthContext';
 import { toast } from 'sonner';
@@ -32,13 +34,6 @@ export type {
 };
 
 const MAX_ACTIVE_TASKS = 30;
-
-/* « Aujourd hui » se lit dans le fuseau de l utilisateur, pas a
-   Greenwich. toISOString() renvoie la date UTC : une tache terminee a
-   00 h 30 a Paris comptait pour la veille, et cassait une serie qui
-   aurait du tenir. */
-const cleDuJour = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 // Reusable fetcher — used by useTodoList and by background prefetch.
 export async function fetchTodoTasks(userId: string | undefined): Promise<TodoTask[]> {
@@ -202,41 +197,21 @@ export function useTodoList() {
         throw historyError;
       }
 
-      // Update stats
+      /* La serie et les compteurs se calculent dans
+         `logique/serie.ts` : ils ne dependent que des compteurs d hier
+         et de l heure qu il est, et une serie fausse affiche un nombre
+         plausible. */
       if (stats) {
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
-
-        let newMonthCount = stats.tasks_completed_month;
-        let newYearCount = stats.tasks_completed_year;
-
-        if (stats.current_month !== currentMonth) newMonthCount = 0;
-        if (stats.current_year !== currentYear) newYearCount = 0;
-
-        let newStreak = stats.current_streak;
-        const lastDate = stats.last_completion_date;
-
-        if (!lastDate || lastDate !== today) {
-          const hier = new Date(now);
-          hier.setDate(hier.getDate() - 1);
-          if (lastDate === cleDuJour(hier)) {
-            newStreak = stats.current_streak + 1;
-          } else {
-            newStreak = 1;
-          }
-        }
-
-        const newLongestStreak = Math.max(stats.longest_streak, newStreak);
-
+        const a = avancerLaSerie(stats, now);
         const { error: statsError } = await supabase.rpc('record_todo_completion', {
           p_score_increment: 10,
-          p_new_streak: newStreak,
-          p_longest_streak: newLongestStreak,
-          p_completion_date: today,
-          p_month_count: newMonthCount + 1,
-          p_year_count: newYearCount + 1,
-          p_current_month: currentMonth,
-          p_current_year: currentYear,
+          p_new_streak: a.serie,
+          p_longest_streak: a.plusLongueSerie,
+          p_completion_date: a.jour,
+          p_month_count: a.compteDuMois,
+          p_year_count: a.compteDeLAnnee,
+          p_current_month: a.mois,
+          p_current_year: a.annee,
         });
 
         if (statsError) throw statsError;
@@ -440,32 +415,3 @@ export function useTodoList() {
 
 /* Les analyses rendaient des phrases anglaises toutes faites. Elles
    rendent maintenant des cles : c est la page qui les traduit. */
-function genererAnalyses(history: TodoHistory[], activeTasks: TodoTask[]): TodoInsight[] {
-  const analyses: TodoInsight[] = [];
-
-  if (history.length < 5) return analyses;
-
-  const heures = history.map((h) => new Date(h.completed_at).getHours());
-  const matin = heures.filter((h) => h >= 6 && h < 12).length;
-  const apresMidi = heures.filter((h) => h >= 12 && h < 18).length;
-  const soir = heures.filter((h) => h >= 18 || h < 6).length;
-
-  const total = matin + apresMidi + soir;
-  if (total > 0) {
-    if (matin / total > 0.5) analyses.push({ cle: 'todo.insights.morning' });
-    else if (apresMidi / total > 0.5) analyses.push({ cle: 'todo.insights.afternoon' });
-    else if (soir / total > 0.5) analyses.push({ cle: 'todo.insights.evening' });
-  }
-
-  const souventReportees = activeTasks.filter((t) => t.postpone_count >= 3);
-  if (souventReportees.length > 0) {
-    analyses.push({ cle: 'todo.insights.postponed', params: { count: souventReportees.length } });
-  }
-
-  const hautesTerminees = history.filter((h) => h.priority === 'high').length;
-  if (hautesTerminees > 0 && history.length > 10 && hautesTerminees / history.length < 0.2) {
-    analyses.push({ cle: 'todo.insights.fewHighPriority' });
-  }
-
-  return analyses.slice(0, 3);
-}
