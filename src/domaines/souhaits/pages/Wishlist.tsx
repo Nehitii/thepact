@@ -2,14 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/socle/ds";
 import { useAuth } from "@/socle/contextes/AuthContext";
-import { Input } from "@/socle/ui/input";
 import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { formatCurrency } from "@/socle/outils/currency";
 import { toast } from "sonner";
 import { format, startOfMonth } from "date-fns";
 import { fr as dateFr } from "date-fns/locale";
 import { useEcrirePointage, useEffacerPointage } from "@/domaines/finance";
-import { Globe, Grid2X2, Plus, Rows3, Search } from "lucide-react";
+import { Globe, Plus } from "lucide-react";
 import {
   PactWishlistItemType,
   WishlistPriority,
@@ -35,11 +34,13 @@ import { WishlistRegistre } from "@/domaines/souhaits/composants/WishlistRegistr
 import { GestionDesListes } from "@/domaines/souhaits/composants/GestionDesListes";
 import { useListesWishlist } from "@/domaines/souhaits/hooks/useWishlistLists";
 import { WishlistArchive } from "@/domaines/souhaits/composants/WishlistArchive";
-import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
 import "@/domaines/souhaits/souhaits.css";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import { FormulaireArticle } from "@/domaines/souhaits/composants/FormulaireArticle";
 import { trouverDoublon } from "@/domaines/souhaits/logique/doublons";
+import type { Vue, Tri } from "@/domaines/souhaits/types";
+import { BandeauMesures } from "@/domaines/souhaits/composants/BandeauMesures";
+import { BarreListe } from "@/domaines/souhaits/composants/BarreListe";
 
 /* ═══════════════════════════════════════════════════════════════
    LE BORDEREAU
@@ -76,8 +77,6 @@ import { trouverDoublon } from "@/domaines/souhaits/logique/doublons";
    trainaient ont ete rattaches par migration, sans qu aucun ne
    bouge. Une vue vaut donc « tout », « pacte », ou l identifiant
    d une liste. */
-type Vue = "tout" | "pacte" | (string & {});
-type Tri = "visuel" | "recent" | "cher" | "abordable";
 
 export default function Wishlist() {
   const { t } = useTranslation();
@@ -561,8 +560,6 @@ export default function Wishlist() {
     if (!listesWishlist.some((l) => l.id === vue)) setVue("tout");
   }, [vue, listesWishlist]);
 
-  const partPayee = comptes.total > 0 ? comptes.paye / comptes.total : 0;
-  const partPayeePacte = comptes.totalPacte > 0 ? comptes.payePacte / comptes.totalPacte : 0;
 
   /* LE SHOWROOM EST ALLUME. La page pose son propre sol clair dans
      l emplacement de fond, par-dessus le fond sombre de
@@ -684,134 +681,8 @@ export default function Wishlist() {
             ))}
           </div>
 
-          {/* ── Le bandeau de mesures ──
-              Chaque vue montre ses propres comptes. Aucun chiffre ne
-              parle d autre chose que de ce qu on regarde. */}
-          {vue === "tout" && (
-            <div className="wl-bandeau">
-              <div className="wl-mesure" data-veine="du">
-                <u>{t("wishlist.mesure.reste", "Reste à acquérir")}</u>
-                <b>{formatCurrency(comptes.total - comptes.paye, currency)}</b>
-              </div>
-              <div className="wl-mesure" data-veine="acquis">
-                <u>{t("wishlist.mesure.paye", "Déjà payé")}</u>
-                <b>{formatCurrency(comptes.paye, currency)}</b>
-              </div>
-              <div className="wl-mesure">
-                <u>{t("wishlist.mesure.articles", "Articles")}</u>
-                <b>{items.length - comptes.nbPaye}<s>/{items.length}</s></b>
-              </div>
-              <div className="wl-jauge">
-                <div className="wl-mesure">
-                  <u>
-                    {t("wishlist.mesure.repartition", "Pacte {{pacte}} · libre {{libre}}", {
-                      pacte: formatCurrency(comptes.totalPacte, currency),
-                      libre: formatCurrency(comptes.totalLibre, currency),
-                    })}
-                  </u>
-                </div>
-                <WishlistRail className="wl-rail" part={partPayee} />
-              </div>
-            </div>
-          )}
-
-          {vue === "pacte" && (
-            <div className="wl-bandeau">
-              <div className="wl-mesure" data-veine="du">
-                <u>{t("wishlist.mesure.restePacte", "Reste à financer")}</u>
-                <b>{formatCurrency(comptes.totalPacte - comptes.payePacte, currency)}</b>
-              </div>
-              <div className="wl-mesure" data-veine="acquis">
-                <u>{t("wishlist.mesure.paye", "Déjà payé")}</u>
-                <b>{formatCurrency(comptes.payePacte, currency)}</b>
-              </div>
-              <div className="wl-mesure">
-                <u>{t("wishlist.mesure.objectifs", "Objectifs concernés")}</u>
-                <b>{comptes.nbObjectifs}</b>
-              </div>
-              <div className="wl-jauge">
-                <div className="wl-mesure">
-                  {/* Le cout des objectifs du pacte, nomme pour ce
-                      qu il est. Il doit egaler la somme des pieces —
-                      s il en differe, une piece manque quelque part. */}
-                  <u>
-                    {t("wishlist.mesure.coutObjectifs", "Coût des objectifs du pacte : {{montant}}", {
-                      montant: formatCurrency(comptes.coutObjectifs, currency),
-                    })}
-                  </u>
-                </div>
-                <WishlistRail className="wl-rail" part={partPayeePacte} />
-              </div>
-            </div>
-          )}
-
-          {vue === "libre" && (
-            <div className="wl-bandeau">
-              <div className="wl-mesure" data-veine="libre">
-                <u>{t("wishlist.mesure.total", "Total")}</u>
-                <b>{formatCurrency(comptes.totalLibre, currency)}</b>
-              </div>
-              <div className="wl-mesure" data-veine="acquis">
-                <u>{t("wishlist.mesure.paye", "Déjà payé")}</u>
-                <b>{formatCurrency(comptes.payeLibre, currency)}</b>
-              </div>
-              <div className="wl-mesure">
-                <u>{t("wishlist.mesure.articles", "Articles")}</u>
-                <b>{comptes.libres.length}</b>
-              </div>
-            </div>
-          )}
-
-          {/* ── Recherche et tri ── */}
-          <div className="wl-barre">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-              <Input
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                placeholder={t("wishlist.barre.chercher", "Chercher un article, un objectif, une note…")}
-                className="pl-9 bg-transparent border-[var(--wl-trait)] font-rajdhani"
-              />
-            </div>
-            {vue !== "pacte" && (
-              <>
-                <button type="button" className="wl-tri" aria-pressed={tri === "visuel"} onClick={() => setTri("visuel")}>
-                  {t("wishlist.tri.visuel", "Visuel")}
-                </button>
-                <button type="button" className="wl-tri" aria-pressed={tri === "recent"} onClick={() => setTri("recent")}>
-                  {t("wishlist.tri.recent", "Récent")}
-                </button>
-                <button type="button" className="wl-tri" aria-pressed={tri === "cher"} onClick={() => setTri("cher")}>
-                  {t("wishlist.tri.cher", "Prix ↓")}
-                </button>
-                <button type="button" className="wl-tri" aria-pressed={tri === "abordable"} onClick={() => setTri("abordable")}>
-                  {t("wishlist.tri.abordable", "Prix ↑")}
-                </button>
-
-                {/* La bascule d affichage se tient a part des tris :
-                    trier change l ORDRE, celle-ci change la FORME. Les
-                    melanger ferait croire a un cinquieme tri. */}
-                <div className="wl-formes" role="group" aria-label={t("wishlist.forme.aria", "Forme de la liste")}>
-                  {([
-                    ["vitrine", Grid2X2, t("wishlist.forme.vitrine", "Vitrine")],
-                    ["registre", Rows3, t("wishlist.forme.registre", "Registre")],
-                  ] as const).map(([id, Icone, libelle]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      className="wl-forme"
-                      aria-pressed={affichage === id}
-                      onClick={() => setAffichage(id)}
-                      title={libelle}
-                    >
-                      <Icone aria-hidden="true" />
-                      <span className="sr-only">{libelle}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          <BandeauMesures vue={vue} comptes={comptes} currency={currency} nbArticles={items.length} />
+          <BarreListe vue={vue} recherche={recherche} setRecherche={setRecherche} tri={tri} setTri={setTri} affichage={affichage} setAffichage={setAffichage} />
 
           {/* LES LISTES NE CONCERNENT PAS LE PACTE.
               Un poste rattaché à un objectif est financé par le pacte et
