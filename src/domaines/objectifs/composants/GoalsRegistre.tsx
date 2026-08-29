@@ -1,13 +1,14 @@
 import React, { memo, useMemo, useState } from "react";
 import { ChevronRight, Crown, Lock, Star } from "lucide-react";
-import type { TFunction } from "i18next";
 import { getStatusLabel, getDifficultyLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { teinteDuPalier } from "@/domaines/objectifs/hooks/useCarteObjectif";
-import { membresDuGroupe, estFranchi, estPretAHonorer } from "@/domaines/objectifs/logique/superGoals";
+import { membresDuGroupe, estPretAHonorer } from "@/domaines/objectifs/logique/superGoals";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
 import { useGoalSteps } from "@/domaines/objectifs/hooks/useGoalSteps";
 import { useTranslation } from "react-i18next";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import { MembresDuGroupe, EtapesDeLObjectif } from "@/domaines/objectifs/composants/VoletsDuRegistre";
+import { teinte, libellePalier, avancement } from "@/domaines/objectifs/logique/ligneDuRegistre";
 
 /* REGISTRE — la vue liste
  *
@@ -39,40 +40,6 @@ import { PREF } from "@/socle/outils/preferencesAffichage";
    traduire son palier. getDifficultyLabel s en charge ; la majuscule
    reste, c est le parti typographique de la vue. */
 
-function teinte(g: Goal, couleurCustom: string): string {
-  return teinteDuPalier(g.difficulty, couleurCustom).couleur;
-}
-
-function libellePalier(g: Goal, nomCustom: string, t: TFunction): string {
-  return getDifficultyLabel(g.difficulty || "", t, nomCustom).toUpperCase();
-}
-
-/** Avancement d'un objectif, quel que soit son type.
- *
- * Trois mecaniques coexistent et se lisent a des endroits differents :
- * un objectif ordinaire compte ses etapes, une habitude compte ses jours
- * coches, et un groupe compte ses objectifs membres. Les lire tous dans
- * total_steps donnerait 0/0 pour les deux derniers — c'est ce que le
- * registre affichait pour les groupes.
- */
-function avancement(g: Goal, membres?: Goal[]): { faits: number; total: number; pct: number } {
-  let total: number;
-  let faits: number;
-
-  if (g.goal_type === "super") {
-    total = membres?.length ?? 0;
-    faits = (membres || []).filter(estFranchi).length;
-  } else if (g.goal_type === "habit") {
-    total = g.habit_duration_days || 0;
-    faits = Array.isArray(g.habit_checks) ? g.habit_checks.filter(Boolean).length : 0;
-  } else {
-    total = g.totalStepsCount ?? g.total_steps ?? 0;
-    faits = g.completedStepsCount ?? g.validated_steps ?? 0;
-  }
-
-  return { faits, total, pct: total > 0 ? Math.min(100, Math.round((faits / total) * 100)) : 0 };
-}
-
 /* Quatre etats, et non trois.
  *
  * Un groupe dont tous les membres sont franchis n'est pas « en
@@ -103,7 +70,6 @@ interface Props {
   onNavigate: (id: string) => void;
   onToggleFocus: (id: string, focus: boolean, e: React.MouseEvent) => void;
 }
-
 
 export const GoalsRegistre = memo(function GoalsRegistre({
   goals,
@@ -426,58 +392,8 @@ export const GoalsRegistre = memo(function GoalsRegistre({
 
 /* Membres d un groupe, dans le volet. Volontairement plus sobres que les
    lignes principales : ce sont des enfants, pas des pairs. */
-function MembresDuGroupe({ membres, onNavigate, customDifficultyName, customDifficultyColor }: {
-  membres: Goal[];
-  onNavigate: (id: string) => void;
-  customDifficultyName: string;
-  customDifficultyColor: string;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="rg-membres">
-      {membres.map((m) => {
-        const av = avancement(m);
-        return (
-          <button key={m.id} type="button" className="rg-membre"
-            style={{ ["--t" as string]: teinte(m, customDifficultyColor) }}
-            onClick={(e) => { e.stopPropagation(); onNavigate(m.id); }}>
-            <span className="rg-membre-p">{libellePalier(m, customDifficultyName, t)}</span>
-            <span className="rg-membre-n">{m.name}</span>
-            <span className="rg-membre-j" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, i) => (
-                <u key={i} className={i < Math.round((av.pct / 100) * 10) ? "on" : ""} />
-              ))}
-            </span>
-            <span className="rg-membre-c">{av.faits}/{av.total}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /* Etapes d un objectif. Elles ne sont demandees qu a l ouverture — voir
    useGoalSteps. */
-function EtapesDeLObjectif({ goalId }: { goalId: string }) {
-  const { data: etapes = [], isLoading } = useGoalSteps(goalId);
-
-  if (isLoading) return <p className="rg-attente">Chargement…</p>;
-  if (etapes.length === 0) return <p className="rg-attente">Aucune étape.</p>;
-
-  return (
-    <ol className="rg-etapes-liste">
-      {etapes.map((e, i) => {
-        const faite = e.status === "completed" || e.status === "validated";
-        return (
-          <li key={e.id} className={faite ? "faite" : ""}>
-            <span className="rg-etape-n">{String(i + 1).padStart(2, "0")}</span>
-            <span className="rg-etape-coche" aria-hidden="true">{faite ? "✓" : ""}</span>
-            <span className="rg-etape-t">{e.title || "Sans titre"}</span>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
 
 export default GoalsRegistre;

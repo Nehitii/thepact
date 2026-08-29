@@ -21,7 +21,6 @@
   "src/domaines/mia/composants/MiaConsole.tsx": 808,
   "src/domaines/mia/logique/reflexes.ts": 438,
   "src/domaines/objectifs/composants/GoalsList.tsx": 419,
-  "src/domaines/objectifs/composants/GoalsRegistre.tsx": 484,
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 495,
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 574,
   "src/domaines/objectifs/pages/GoalDetail.tsx": 741,
