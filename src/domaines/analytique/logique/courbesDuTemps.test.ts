@@ -161,7 +161,7 @@ describe("le focus et les tâches", () => {
     ]);
   });
 
-  it("compte les tâches par mois d'accomplissement et laisse les inachevées dehors", () => {
+  it("compte les tâches par mois où elles ont été faites, et laisse les autres dehors", () => {
     const { todoStats } = avec({
       taches: [
         { completed_at: "2025-08-03T09:00:00" },

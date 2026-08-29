@@ -2,6 +2,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { subDays, subMonths, format, parseISO, differenceInDays } from "date-fns";
+import { comparerALaPeriodePrecedente, getPeriodDates } from "@/domaines/analytique/logique/tendances";
+import { etatDuPacte } from "@/domaines/analytique/logique/etatDuPacte";
 import { courbesDuTemps } from "@/domaines/analytique/logique/courbesDuTemps";
 import { lecturesElargies } from "@/domaines/analytique/logique/lecturesElargies";
 import type { AnalyticsPeriod } from "@/domaines/analytique/types";
@@ -16,9 +18,6 @@ import type {
 export type {
   GoalsByDifficulty, GoalsByTag, TrendData, Reports, FocusParObjectif, HeureDOuvrage, PrevuReel, AnalyticsData, AvancementLisible,
 };
-
-
-
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -36,64 +35,6 @@ export type {
    Une interface par `.select()`, avec exactement ses colonnes : demander
    un champ qui n'a pas ete lu devient une erreur de compilation, au lieu
    d'un `undefined` qui traverse tout le calcul et ressort en zero. */
-
-
-
-
-
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "hsl(142, 70%, 50%)",
-  medium: "hsl(45, 95%, 55%)",
-  hard: "hsl(25, 100%, 60%)",
-  extreme: "hsl(0, 90%, 65%)",
-  impossible: "hsl(280, 75%, 45%)",
-  custom: "hsl(320, 70%, 55%)",
-};
-
-const TAG_COLORS: Record<string, string> = {
-  arts: "hsl(320, 70%, 55%)",
-  buying_selling: "hsl(30, 85%, 55%)",
-  community: "hsl(190, 75%, 50%)",
-  creative: "hsl(280, 75%, 55%)",
-  diy: "hsl(175, 70%, 45%)",
-  financial: "hsl(212, 90%, 55%)",
-  health: "hsl(142, 70%, 50%)",
-  learning: "hsl(25, 100%, 60%)",
-  lifestyle: "hsl(350, 65%, 55%)",
-  nature: "hsl(120, 60%, 45%)",
-  personal: "hsl(200, 100%, 67%)",
-  professional: "hsl(45, 95%, 55%)",
-  relationship: "hsl(340, 75%, 55%)",
-  spiritual: "hsl(260, 65%, 60%)",
-  tech: "hsl(195, 85%, 50%)",
-  travel: "hsl(165, 70%, 50%)",
-  work: "hsl(15, 80%, 55%)",
-  other: "hsl(210, 30%, 50%)",
-};
-
-function getPeriodDates(period: AnalyticsPeriod): { start: Date; mid: Date } {
-  const now = new Date();
-  switch (period) {
-    case "30d":
-      return { start: subDays(now, 30), mid: subDays(now, 60) };
-    case "90d":
-      return { start: subDays(now, 90), mid: subDays(now, 180) };
-    case "6m":
-      return { start: subMonths(now, 6), mid: subMonths(now, 12) };
-    case "all":
-    default:
-      return { start: new Date(2020, 0, 1), mid: new Date(2020, 0, 1) };
-  }
-}
-
-function computeTrend(current: number, previous: number): TrendData {
-  const percentChange = previous === 0 
-    ? (current > 0 ? 100 : 0)
-    : Math.round(((current - previous) / previous) * 100);
-  return { current, previous, percentChange };
-}
-
 
 function avancementBrut(g: AvancementLisible): { total: number; completed: number } {
   if (g?.goal_type === "habit") {
@@ -221,78 +162,15 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       
       const alreadyFunded = financeSettingsRes.data?.already_funded ?? 0;
 
-      // Goals over time (by month)
-      const goalsByMonth = new Map<string, { created: number; completed: number }>();
-      goals.forEach((g) => {
-        const m = g.created_at?.slice(0, 7);
-        if (m) {
-          const entry = goalsByMonth.get(m) || { created: 0, completed: 0 };
-          entry.created++;
-          goalsByMonth.set(m, entry);
-        }
-        if (g.completion_date) {
-          const cm = g.completion_date.slice(0, 7);
-          const entry = goalsByMonth.get(cm) || { created: 0, completed: 0 };
-          entry.completed++;
-          goalsByMonth.set(cm, entry);
-        }
+      /* L ETAT DU PACTE, sorti dans `logique/etatDuPacte.ts` avec ses
+         deux tables de couleurs. */
+      const {
+        goalsOverTime, goalsByDifficulty, goalsByTag, totalSteps, completedSteps,
+        totalCost, paidCost, remainingCost, activeGoals, monthlyBurnRate,
+      } = etatDuPacte({
+        objectifs: goals, tousLesObjectifs: allGoals, etapes: steps,
+        etiquettes: tags, dejaFinance: alreadyFunded,
       });
-
-      // Goals by difficulty
-      const difficultyCount = new Map<string, number>();
-      goals.forEach((g) => {
-        const d = g.difficulty || "easy";
-        difficultyCount.set(d, (difficultyCount.get(d) || 0) + 1);
-      });
-      const goalsByDifficulty = Array.from(difficultyCount.entries()).map(([difficulty, count]) => ({
-        difficulty,
-        count,
-        color: DIFFICULTY_COLORS[difficulty] || "hsl(210, 30%, 50%)",
-      }));
-
-      // Goals by tag (count unique goals per tag)
-      const tagCount = new Map<string, number>();
-      const filteredTags = tags.filter((t) => goalIds.includes(t.goal_id));
-      filteredTags.forEach((t) => {
-        tagCount.set(t.tag, (tagCount.get(t.tag) || 0) + 1);
-      });
-      const goalsByTag = Array.from(tagCount.entries()).map(([tag, count]) => ({
-        tag,
-        count,
-        color: TAG_COLORS[tag] || "hsl(210, 30%, 50%)",
-      }));
-
-      // Steps statistics
-      const totalSteps = steps.length;
-      const completedSteps = steps.filter((s) => s.status === "completed").length;
-
-      // Cost calculations (use all goals for total cost)
-      const completedGoalIds = new Set(
-        allGoals
-          .filter((g) => ["completed", "fully_completed", "validated"].includes(g.status ?? ""))
-          .map((g) => g.id)
-      );
-
-      const totalCost = allGoals.reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
-      
-      // Paid = completed goals' costs + already_funded
-      const completedGoalsCost = allGoals
-        .filter((g) => completedGoalIds.has(g.id))
-        .reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
-      
-      const paidCost = Math.min(completedGoalsCost + alreadyFunded, totalCost);
-      const remainingCost = Math.max(totalCost - paidCost, 0);
-
-      // Active goals
-      const activeGoals = allGoals.filter((g) => 
-        g.status === "in_progress" || g.status === "not_started"
-      ).length;
-
-      // Monthly burn rate calculation
-      const monthsWithExpenses = allGoals.filter((g) => g.completion_date).length;
-      const monthlyBurnRate = monthsWithExpenses > 0 
-        ? Math.round(completedGoalsCost / Math.max(monthsWithExpenses, 1))
-        : 0;
 
       /* LES SIX COURBES DU TEMPS, sorties dans `logique/courbesDuTemps.ts`. */
       const { healthTrend, financeTrend, goalVelocity, pomodoroTrend, habitStreak, todoStats } =
@@ -306,36 +184,17 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       const totalSaved = financeTrend.reduce((a, f) => a + f.savings, 0);
       const pomodoroMinutes = pomodoros.reduce((a, p) => a + (p.duration_minutes || 0), 0);
 
-      // Compute trends (current period vs previous period)
-      const prevGoals = period === "all" ? allGoals : allGoals.filter((g) => {
-        const date = new Date(g.created_at);
-        return date >= mid && date < start;
+      /* LA COMPARAISON A LA PERIODE PRECEDENTE, sortie dans
+         `logique/tendances.ts` avec les deux bornes et `computeTrend`. */
+      const tendancesDeLaPeriode = comparerALaPeriodePrecedente({
+        periode: period, debut: start, milieu: mid,
+        tousLesObjectifs: allGoals, toutesLesEtapes: allSteps,
+        tousLesReleves: allHealth, toutesLesSessions: allPomodoros,
+        objectifsFranchis: completedGoals,
+        etapesValidees: completedSteps,
+        scoreSante: Math.round(avgHealth),
+        minutesDeFocus: pomodoroMinutes,
       });
-      const prevCompletedGoals = prevGoals.filter((g) => g.status === "fully_completed").length;
-      
-      const prevHealth = period === "all" ? [] : allHealth.filter((h) => {
-        const date = new Date(h.entry_date);
-        return date >= mid && date < start;
-      });
-      const prevAvgHealth = prevHealth.length 
-        ? prevHealth.map((h) => {
-            const metrics = [h.sleep_quality, h.mood_level, h.activity_level].filter(Boolean) as number[];
-            return metrics.length ? metrics.reduce((a, b) => a + b, 0) / metrics.length * 20 : 0;
-          }).reduce((a, b) => a + b, 0) / prevHealth.length
-        : 0;
-
-      const prevPomodoros = period === "all" ? [] : allPomodoros.filter((p) => {
-        const date = new Date(p.completed_at || p.started_at);
-        return date >= mid && date < start;
-      });
-      const prevPomodoroMinutes = prevPomodoros.reduce((a, p) => a + (p.duration_minutes || 0), 0);
-
-      const prevSteps = period === "all" ? [] : allSteps.filter((s) => {
-        if (!s.validated_at) return false;
-        const date = new Date(s.validated_at);
-        return date >= mid && date < start;
-      });
-      const prevCompletedSteps = prevSteps.length;
 
       /* LES LECTURES ELARGIES, DOUZE COMPTAGES, TOUS PURS.
          Le hook dit maintenant ce qu il leur donne — c est la seule
@@ -368,7 +227,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         energieTroisTemps,
         prevuReel,
         matiere,
-        goalsOverTime: Array.from(goalsByMonth.entries()).map(([month, d]) => ({ month, ...d })).sort((a, b) => a.month.localeCompare(b.month)),
+        goalsOverTime,
         healthTrend,
         financeTrend,
         habitStreak,
@@ -393,12 +252,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           totalXP,
           monthlyBurnRate,
         },
-        trends: {
-          goalsCompleted: computeTrend(completedGoals, prevCompletedGoals),
-          stepsCompleted: computeTrend(completedSteps, prevCompletedSteps),
-          healthScore: computeTrend(Math.round(avgHealth), Math.round(prevAvgHealth)),
-          focusMinutes: computeTrend(pomodoroMinutes, prevPomodoroMinutes),
-        },
+        trends: tendancesDeLaPeriode,
         goalShowcase: showcaseGoals.map((g) => ({
           id: g.id,
           name: g.name || "Sans nom",

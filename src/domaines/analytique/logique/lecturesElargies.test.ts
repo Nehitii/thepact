@@ -76,7 +76,7 @@ describe("l'année qui prélève", () => {
 });
 
 describe("l'heure d'ouvrage", () => {
-  it("range les tâches à leur heure d'accomplissement et les sessions à leur départ", () => {
+  it("range les tâches à l'heure où elles ont été faites, et les sessions à leur départ", () => {
     const { heureDOuvrage } = avec({
       taches: [tache({ completed_at: "2025-03-04T09:30:00" }), tache({ completed_at: null })],
       sessions: [session({ started_at: "2025-03-04T14:05:00" })],
