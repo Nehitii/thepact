@@ -9,10 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { selonTheme } from "@/socle/outils/encrePapier";
 import { supabase } from "@/socle/supabase/client";
-import { useActiveMission, DeadlineType } from "@/hooks/useActiveMission";
-import { DeadlineSelector } from "./DeadlineSelector";
-import { ActiveMissionCard } from "./ActiveMissionCard";
-import { CornerBrackets } from "@/components/home/CornerBrackets";
+import { useActiveMission, DeadlineType } from "@/domaines/accueil/hooks/useActiveMission";
+import { DeadlineSelector } from "@/domaines/accueil/composants/hero/DeadlineSelector";
+import { ActiveMissionCard } from "@/domaines/accueil/composants/hero/ActiveMissionCard";
+import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
 import { getDifficultyColor } from "@/socle/outils/utils";
 
 const ITEM_HEIGHT = 80;

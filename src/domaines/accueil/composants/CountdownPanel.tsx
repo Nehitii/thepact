@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { CornerBrackets } from "./CornerBrackets";
+import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
 import { useVisibleInterval } from "@/socle/hooks/useVisibleInterval";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 

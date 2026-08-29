@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Target, Clock, AlertTriangle, Check, Flag, ChevronRight } from 'lucide-react';
 import { Button } from '@/socle/ui/button';
 import { cn } from '@/socle/outils/utils';
-import { ActiveMission } from '@/hooks/useActiveMission';
+import { ActiveMission } from '@/domaines/accueil/hooks/useActiveMission';
 import { useNavigate } from 'react-router-dom';
 import { useVisibleInterval } from '@/socle/hooks/useVisibleInterval';
 import {

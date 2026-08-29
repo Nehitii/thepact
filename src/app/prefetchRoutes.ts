@@ -2,7 +2,7 @@
 // by AppSidebar (hover prefetch) and by AppLayout (idle background prefetch).
 
 export const routeImports = {
-  home: () => import("@/pages/Home"),
+  home: () => import("@/domaines/accueil/pages/Home"),
   goals: () => import("@/domaines/objectifs/pages/Goals"),
   newGoal: () => import("@/domaines/objectifs/pages/NewGoal"),
   goalDetail: () => import("@/domaines/objectifs/pages/GoalDetail"),

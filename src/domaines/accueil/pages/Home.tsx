@@ -6,16 +6,16 @@ import { DSPageShell } from "@/socle/ds";
 import { Skeleton } from "@/socle/ui/skeleton";
 
 // Components
-import { GettingStartedCard } from "@/components/home/GettingStartedCard";
-import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
-import { NeuralBar } from "@/components/home/NeuralBar";
-import { NexusHeroBanner, CLE_MESURE, type MesureProgression } from "@/components/home/NexusHeroBanner";
-import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
-import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
-import { CountdownPanel } from "@/components/home/CountdownPanel";
-import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
+import { GettingStartedCard } from "@/domaines/accueil/composants/GettingStartedCard";
+import { LockedModulesTeaser } from "@/domaines/accueil/composants/LockedModulesTeaser";
+import { NeuralBar } from "@/domaines/accueil/composants/NeuralBar";
+import { NexusHeroBanner, CLE_MESURE, type MesureProgression } from "@/domaines/accueil/composants/NexusHeroBanner";
+import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
+import { QuickAccessPanel } from "@/domaines/accueil/composants/QuickAccessPanel";
+import { CountdownPanel } from "@/domaines/accueil/composants/CountdownPanel";
+import { MissionRandomizer } from "@/domaines/accueil/composants/hero/MissionRandomizer";
 import { PassageMia } from "@/domaines/mia";
-import { MonitoringPanel } from "@/components/home/MonitoringPanel";
+import { MonitoringPanel } from "@/domaines/accueil/composants/MonitoringPanel";
 import { DailyQuestsPanel } from "@/domaines/succes";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 

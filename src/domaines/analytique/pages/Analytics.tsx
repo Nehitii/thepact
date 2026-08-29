@@ -11,7 +11,7 @@ import {
 
 import { DSPageShell } from "@/socle/ds";
 import { Skeleton } from "@/socle/ui/skeleton";
-import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
+import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { CleanPeriodSelector } from "@/domaines/analytique/composants/clean/CleanPeriodSelector";
 import { CleanTooltip } from "@/domaines/analytique/composants/clean/CleanTooltip";
 import { GoalContrats } from "@/domaines/analytique/composants/GoalContrats";

@@ -18,7 +18,7 @@ import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { DSPageShell, DSPageLoader } from "@/socle/ds";
-import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
+import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { filterGoalsByRule, decrireRegle, type SuperGoalRule } from "@/domaines/objectifs/composants/super";
 import { ArrowLeft, Plus } from "lucide-react";
 

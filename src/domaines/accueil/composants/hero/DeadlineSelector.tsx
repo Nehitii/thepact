@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Clock, Zap, Calendar, CalendarDays, CalendarRange } from 'lucide-react';
 import { Button } from '@/socle/ui/button';
 import { cn } from '@/socle/outils/utils';
-import { DeadlineType } from '@/hooks/useActiveMission';
+import { DeadlineType } from '@/domaines/accueil/hooks/useActiveMission';
 
 interface DeadlineSelectorProps {
   onSelect: (deadline: DeadlineType) => void;

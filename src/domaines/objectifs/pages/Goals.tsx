@@ -9,7 +9,7 @@ import { useAuth } from "@/socle/contextes/AuthContext";
 import { supabase } from "@/socle/supabase/client";
 import { Plus } from "lucide-react";
 import { DSPageShell } from "@/socle/ds";
-import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
+import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { useParticleEffect } from "@/socle/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/socle/outils/utils";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CornerBrackets } from "./CornerBrackets";
+import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
 import { PactVisual } from "@/domaines/objectifs";
 import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/socle/outils/preferencesAffichage";
