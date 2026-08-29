@@ -33,7 +33,7 @@ import {
   getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/domaines/objectifs/logique/goalConstants";
 import {
-  computeSuperGoalProgress, filterGoalsByRule,
+  filterGoalsByRule,
   type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/domaines/objectifs/composants/super";
 import { membresDuGroupe, estFranchi, estPretAHonorer, synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
@@ -42,6 +42,7 @@ import {
 } from "@/domaines/objectifs/logique/detailDuPacte";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
+import { avancementDeLObjectif } from "@/domaines/objectifs/logique/avancement";
 import { useVoisinsDObjectif } from "@/domaines/objectifs/hooks/useVoisinsDObjectif";
 import { DossierNavigation } from "@/domaines/objectifs/composants/DossierNavigation";
 import { useGoalDetailActions } from "@/domaines/objectifs/hooks/useGoalDetailActions";
@@ -189,7 +190,6 @@ export default function GoalDetail() {
     [goal, allGoals, t],
   );
 
-  // Handle super goal save
 
   // Loading / Not found
   if (loading) {
@@ -211,21 +211,9 @@ export default function GoalDetail() {
   const isHabitGoal = goal.goal_type === "habit";
   const isSuperGoal = goal.goal_type === "super";
 
-  let completedStepsCount: number;
-  let totalStepsCount: number;
-  let progress: number;
-  if (isSuperGoal) {
-    const sp = computeSuperGoalProgress(childGoalsInfo);
-    completedStepsCount = sp.completedCount; totalStepsCount = sp.totalCount; progress = sp.percentage;
-  } else if (isHabitGoal) {
-    completedStepsCount = goal.habit_checks?.filter(Boolean).length || 0;
-    totalStepsCount = goal.habit_duration_days || 1;
-    progress = (completedStepsCount / totalStepsCount) * 100;
-  } else {
-    completedStepsCount = steps.filter((s) => s.status === "completed").length;
-    totalStepsCount = steps.length || 1;
-    progress = (completedStepsCount / totalStepsCount) * 100;
-  }
+  /* Le comptage et son unite sortent de la meme decision : voir
+     logique/avancement.ts. */
+  const avancement = avancementDeLObjectif(goal, steps, childGoalsInfo);
 
   const difficultyColor = getDifficultyColor(goal.difficulty ?? "medium");
   const isCompleted = goal.status === "fully_completed";
@@ -256,11 +244,12 @@ export default function GoalDetail() {
     actions.handleToggleStep(stepId, statut);
   };
 
-  const uniteAvancement = isSuperGoal
-    ? t("goals.detail.unitGoals", "objectifs")
-    : isHabitGoal
-      ? t("goals.detail.unitDays", "jours")
-      : t("goals.detail.unitSteps", "étapes");
+  const uniteAvancement =
+    avancement.unite === "membres"
+      ? t("goals.detail.unitGoals", "objectifs")
+      : avancement.unite === "jours"
+        ? t("goals.detail.unitDays", "jours")
+        : t("goals.detail.unitSteps", "étapes");
 
   return (
     <DSPageShell
@@ -287,9 +276,9 @@ export default function GoalDetail() {
         <DossierBandeau
           goal={goal}
           teinte={difficultyColor}
-          progression={progress}
-          faites={completedStepsCount}
-          total={totalStepsCount}
+          progression={avancement.pourcentage}
+          faites={avancement.faites}
+          total={avancement.total}
           uniteAvancement={uniteAvancement}
           libellePalier={getDifficultyLabel(goal.difficulty ?? "medium")}
           /* Un groupe au seuil n'est pas « en cours » : tout est fait,
@@ -335,7 +324,7 @@ export default function GoalDetail() {
               teintePar={getDifficultyColor}
               dynamique={!!goal.is_dynamic_super}
               onOuvrir={(childId) => navigate(`/goals/${childId}`)}
-              auSeuil={totalStepsCount > 0 && completedStepsCount >= totalStepsCount && !isCompleted}
+              auSeuil={avancement.total > 0 && avancement.faites >= avancement.total && !isCompleted}
               onHonorer={actions.handleFullyComplete}
               onEclat={triggerParticles}
             />
