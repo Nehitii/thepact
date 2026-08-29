@@ -190,7 +190,6 @@ export default function GoalDetail() {
     [goal, allGoals, t],
   );
 
-
   // Loading / Not found
   if (loading) {
     return <DSPageLoader />;
@@ -200,8 +199,8 @@ export default function GoalDetail() {
       <DSPageShell width="sm" background={<DSBackground variant="cyber" />}>
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="text-center">
-            <p className="text-muted-foreground font-rajdhani">Goal not found</p>
-            <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">Back to Goals</Button>
+            <p className="text-muted-foreground font-rajdhani">{t("goals.detail.notFound", "Objectif introuvable")}</p>
+            <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">{t("goals.detail.backToGoals", "Retour aux objectifs")}</Button>
           </div>
         </div>
       </DSPageShell>
@@ -215,8 +214,12 @@ export default function GoalDetail() {
      logique/avancement.ts. */
   const avancement = avancementDeLObjectif(goal, steps, childGoalsInfo);
 
+  /* UNE SEULE REPONSE A « CET OBJECTIF EST-IL HONORE ? » — la fiche
+     en tenait deux, et la seconde ignorait « validated ».
+     Cocher est sans consequence ; decocher un objectif deja honore le
+     defait, et defait le compte des groupes qui le portent. */
+  const honore = estHonore(goal);
   const difficultyColor = getDifficultyColor(goal.difficulty ?? "medium");
-  const isCompleted = goal.status === "fully_completed";
   const displayTags = goalTagsData.length > 0 ? goalTagsData.map((t) => t.tag) : goal.type ? [mapToValidTag(goal.type)] : [];
 
   const coutParEtape = coutsParEtape(costItems);
@@ -225,14 +228,11 @@ export default function GoalDetail() {
     ? (item: CostItemData) => {
         if (!user?.id) return;
         const name = (item.name || "").trim();
-        if (!name) { toast.error("Name required", { description: "Give this cost item a name first." }); return; }
+        if (!name) { toast.error(t("goals.detail.nameRequiredTitle", "Nom manquant"), { description: t("goals.detail.nameRequiredBody", "Donnez d'abord un nom à cette pièce chiffrée.") }); return; }
         createWishlistItem.mutate({ userId: user.id, name, estimatedCost: Number(item.price) || 0, itemType: "required", category: item.category ?? goal.type ?? null, goalId: goal.id });
       }
     : undefined;
 
-  /* Cocher est sans consequence ; decocher un objectif deja honore le
-     defait, et defait le compte des groupes qui le portent. */
-  const honore = estHonore(goal);
   const zenith = auZenith(steps);
   const porteurs = groupesPorteurs(goal.id, allGoals);
 
@@ -290,7 +290,7 @@ export default function GoalDetail() {
               : getStatusLabel(goal.status ?? "not_started")
           }
           etiquettes={displayTags}
-          estHonore={isCompleted}
+          estHonore={honore}
           auZenith={zenith}
           partageActif={!!social.sharing}
           onRetour={() => navigate("/goals")}
@@ -324,7 +324,7 @@ export default function GoalDetail() {
               teintePar={getDifficultyColor}
               dynamique={!!goal.is_dynamic_super}
               onOuvrir={(childId) => navigate(`/goals/${childId}`)}
-              auSeuil={avancement.total > 0 && avancement.faites >= avancement.total && !isCompleted}
+              auSeuil={avancement.total > 0 && avancement.faites >= avancement.total && !honore}
               onHonorer={actions.handleFullyComplete}
               onEclat={triggerParticles}
             />

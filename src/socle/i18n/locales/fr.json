@@ -744,7 +744,17 @@
       "paidByStep": "Payé par la validation de l’étape",
       "buy": "Marquer acheté",
       "unbuy": "Marquer non acheté",
-      "paidByGoal": "Payé — l’objectif est terminé"
+      "paidByGoal": "Payé — l’objectif est terminé",
+      "unsavedLeave": "Des modifications ne sont pas enregistrées. Voulez-vous vraiment quitter ?",
+      "notFound": "Objectif introuvable",
+      "backToGoals": "Retour aux objectifs",
+      "nameRequiredTitle": "Nom manquant",
+      "nameRequiredBody": "Donnez d'abord un nom à cette pièce chiffrée.",
+      "saveErrorTitle": "Échec",
+      "costItemsFailed": "Les pièces chiffrées n'ont pas pu être enregistrées.",
+      "tagsFailed": "Les étiquettes n'ont pas pu être enregistrées.",
+      "savedTitle": "Objectif mis à jour",
+      "savedBody": "Les modifications sont enregistrées."
     },
     "views": {
       "grid": "Grille",

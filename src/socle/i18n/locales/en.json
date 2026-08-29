@@ -744,7 +744,17 @@
       "paidByStep": "Paid by validating the step",
       "buy": "Mark as bought",
       "unbuy": "Mark as not bought",
-      "paidByGoal": "Paid — the goal is complete"
+      "paidByGoal": "Paid — the goal is complete",
+      "unsavedLeave": "You have unsaved changes. Are you sure you want to leave?",
+      "notFound": "Goal not found",
+      "backToGoals": "Back to Goals",
+      "nameRequiredTitle": "Name required",
+      "nameRequiredBody": "Give this cost item a name first.",
+      "saveErrorTitle": "Error",
+      "costItemsFailed": "Failed to save cost items",
+      "tagsFailed": "Failed to save tags",
+      "savedTitle": "Goal Updated",
+      "savedBody": "Changes saved successfully"
     },
     "views": {
       "grid": "Grid",

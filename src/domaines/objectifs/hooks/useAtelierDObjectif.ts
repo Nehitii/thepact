@@ -182,9 +182,9 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
   }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editDuree]);
 
   const handleCloseEdit = useCallback(() => {
-    if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) return;
+    if (hasUnsavedChanges() && !window.confirm(t("goals.detail.unsavedLeave", "Des modifications ne sont pas enregistrées. Voulez-vous vraiment quitter ?"))) return;
     setEditDialogOpen(false);
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, t]);
 
   const toggleEditTag = useCallback((tagValue: string) => {
     setEditTags((prev) => (prev.includes(tagValue) ? prev.filter((t) => t !== tagValue) : [...prev, tagValue]));
@@ -258,8 +258,8 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
       }
 
       if (id) {
-        try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast.error("Error", { description: "Failed to save cost items" }); }
-        try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast.error("Error", { description: "Failed to save tags" }); }
+        try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast.error(t("goals.detail.saveErrorTitle", "Échec"), { description: t("goals.detail.costItemsFailed", "Les pièces chiffrées n'ont pas pu être enregistrées.") }); }
+        try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast.error(t("goals.detail.saveErrorTitle", "Échec"), { description: t("goals.detail.tagsFailed", "Les étiquettes n'ont pas pu être enregistrées.") }); }
       }
 
       handleUpdateGoal(goal.id, goal.total_steps ?? 0, updates, async () => {
@@ -308,10 +308,10 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
         queryClient.invalidateQueries({ queryKey: ["calendar-steps"] });
         setEditDialogOpen(false);
         setSaving(false);
-        toast.success("Goal Updated", { description: "Changes saved successfully" });
+        toast.success(t("goals.detail.savedTitle", "Objectif mis à jour"), { description: t("goals.detail.savedBody", "Les modifications sont enregistrées.") });
       }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
-  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, onObjectifEnregistre, onEtapesEnregistrees]);
+  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, editMembresIds, editRegle, editVivant, editModeGroupe, editDuree, allGoals, id, steps, saveCostItems, saveGoalTags, queryClient, onObjectifEnregistre, onEtapesEnregistrees, t]);
   return {
     editDialogOpen, setEditDialogOpen, saving,
     editName, setEditName, editSteps, setEditSteps,
