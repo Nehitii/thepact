@@ -21,12 +21,12 @@ import { WeeklyReviewModal } from "@/domaines/revue";
 
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";
-import { usePact } from "@/domaines/objectifs";
+import { usePact, useGoals } from "@/domaines/objectifs";
 import { useProfile } from "@/domaines/profil";
-import { useGoals } from "@/domaines/objectifs";
 import { useUserShop } from "@/domaines/boutique";
 import { useFinanceSettings } from "@/domaines/finance";
 import { useRankXP } from "@/domaines/succes";
+import "@/domaines/accueil/accueil.css";
 
 type UserState = "onboarding" | "active" | "advanced";
 

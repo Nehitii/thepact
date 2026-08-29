@@ -1,3 +1,9 @@
+/* Ce composant n avait aucun import : il ne dessine qu avec des
+   classes, et ses classes vivaient dans une feuille globale portant le
+   nom d un autre decor. Elles sont ici desormais, et elles arrivent
+   avec lui. */
+import "@/domaines/succes/rang.css";
+
 interface RankCoreProps {
   level: number;
   rankName: string;

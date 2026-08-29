@@ -854,7 +854,7 @@ All colors MUST be HSL.
    pourcentage reel, masque en couronne — a l'echelle d'une pastille.
    closest-side est indispensable : sans lui le masque se calerait
    sur le coin de la boite et non sur son bord, ce qui laisse un
-   cercle dur (voir singularity.css). */
+   cercle dur (voir domaines/accueil/accueil.css). */
 @layer utilities {
   .quest-ring {
     position: relative;
@@ -1167,7 +1167,7 @@ All colors MUST be HSL.
    pourcentage reel, masque en couronne — a l'echelle d'une pastille.
    closest-side est indispensable : sans lui le masque se calerait
    sur le coin de la boite et non sur son bord, ce qui laisse un
-   cercle dur (voir singularity.css). */
+   cercle dur (voir domaines/accueil/accueil.css). */
 @layer utilities {
   .quest-ring {
     position: relative;

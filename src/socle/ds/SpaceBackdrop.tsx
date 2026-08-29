@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import "@/socle/ds/fond-stellaire.css";
 
 /**
  * Le fond spatial du tableau de bord.
