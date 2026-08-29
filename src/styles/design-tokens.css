@@ -118,12 +118,6 @@
   .ds-skeleton-sweep { animation: none !important; }
 }
 
-/* ────── DS utility primitives ────── */
-/* Surface helpers — use as Tailwind-like additions */
-.ds-surface-1 { background: hsl(var(--ds-surface-1) / 0.55); }
-.ds-surface-2 { background: hsl(var(--ds-surface-2) / 0.65); }
-.ds-surface-3 { background: hsl(var(--ds-surface-3) / 0.85); }
-
 /* Corner brackets — promoted to global utility */
 .ds-corner-bracket {
     position: absolute;
@@ -170,32 +164,6 @@
 
 .ds-flicker { animation: ds-flicker 8s infinite; }
 
-/* ════════════════════════════════════════════════════════════
-   Pacte OS — Typographic 4-role system (Sprint 2)
-   Use these classes instead of ad-hoc font/size combos.
-   ──────────────────────────────────────────────────────────── */
-
-/* DISPLAY — module heroes (page-level title, 1 per view) */
-.ds-text-display {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 300;
-  font-size: clamp(1.875rem, 2.5vw, 2.5rem); /* 30→40px */
-  letter-spacing: 0.16em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: hsl(var(--ds-text-primary));
-}
-
-/* METRIC — KPI numbers, counters, signature values */
-.ds-text-metric {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 300;
-  font-size: 1.75rem; /* 28px */
-  letter-spacing: 0.04em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
 /* LABEL — mono uppercase HUD tags, IDs, panel headers */
 .ds-text-label {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
@@ -205,16 +173,6 @@
   line-height: 1.2;
   text-transform: uppercase;
   color: hsl(var(--ds-text-muted));
-}
-
-/* BODY — paragraphs, descriptions, list rows */
-.ds-text-body {
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 400;
-  font-size: 0.875rem; /* 14px */
-  letter-spacing: 0.01em;
-  line-height: 1.5;
-  color: hsl(var(--ds-text-secondary));
 }
 
 /* ────── Accent rail (formalized for DSPanel) ────── */
@@ -257,27 +215,6 @@
 .ds-skip-link:focus {
   top: 0.5rem;
 }
-
-/* ════════════════════════════════════════════════════════════
-   Pacte OS — Spacing rhythm utilities (Sprint 3)
-   Use these instead of ad-hoc `space-y-*` / `p-*` combos so
-   vertical rhythm and inner padding stay synchronized.
-   ──────────────────────────────────────────────────────────── */
-
-/* Vertical stack spacing (children separated by gap) */
-.ds-stack-tight > * + * { margin-top: 0.5rem; }   /*  8px */
-.ds-stack-cozy  > * + * { margin-top: 0.75rem; }  /* 12px */
-.ds-stack-loose > * + * { margin-top: 1rem; }     /* 16px */
-
-/* Inner padding scale (matches DSPanel tier system) */
-.ds-pad-tight { padding: var(--ds-pad-tight); }   /* 12px */
-.ds-pad-cozy  { padding: var(--ds-pad-cozy); }    /* 16px */
-.ds-pad-loose { padding: var(--ds-pad-loose); }   /* 20px */
-
-/* Horizontal inline spacing (icon + text rows) */
-.ds-inline-tight { display: inline-flex; align-items: center; gap: 0.375rem; }
-.ds-inline-cozy  { display: inline-flex; align-items: center; gap: 0.5rem; }
-.ds-inline-loose { display: inline-flex; align-items: center; gap: 0.75rem; }
 
 /* Strengthen reduced-motion contract: also kill pulse-dot, ring rotation */
 @media (prefers-reduced-motion: reduce) {

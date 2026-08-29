@@ -400,13 +400,6 @@
    une vue de la meme page — mais il cesse d'appartenir a la meme
    serie. C'est le minimum qui se voit sans se remarquer. */
 .cp-periode-seg.gl-seg-apart { margin-left: 9px; }
-
-/* ── Archive des objectifs ── */
-.cp-archive {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 10px;
-}
 .cp-fiche {
   --cp-chanfrein: 12px;
   text-align: left;
@@ -415,13 +408,6 @@
 }
 .cp-fiche:hover { transform: translateY(-2px); }
 .cp-fiche:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
-.cp-fiche-in {
-  display: block;
-  position: relative;
-  overflow: hidden;
-  height: 158px;
-  padding: 9px 11px;
-}
 .cp-fiche-img {
   position: absolute;
   inset: 0;
@@ -432,16 +418,6 @@
   transition: opacity 220ms ease, transform 400ms ease;
 }
 .cp-fiche:hover .cp-fiche-img { opacity: 0.46; transform: scale(1.04); }
-/* Le voile garantit la lisibilite quelle que soit l'image : plus dense en
-   bas, ou se trouve le texte. */
-.cp-fiche-voile {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg,
-    rgb(7 12 23 / 0.55) 0%,
-    rgb(7 12 23 / 0.72) 45%,
-    rgb(7 12 23 / 0.94) 100%);
-}
 /* La couleur de difficulte tient lieu d'etiquette : bande sur le flanc,
    reprise dans la barre. Elle n'est jamais ecrite deux fois. */
 .cp-fiche-flanc {
@@ -450,13 +426,6 @@
   width: 3px;
   background: var(--t);
   box-shadow: 0 0 12px var(--t);
-}
-.cp-fiche-haut {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
 }
 .cp-fiche-etat {
   padding: 1px 6px;
@@ -468,21 +437,6 @@
 .cp-etat-ok      { color: #0a0a00; background: #00ff88; }
 .cp-etat-actif   { color: #0a0a00; background: var(--cp-jaune); }
 .cp-etat-attente { color: var(--nexus-text-dimmer); border: 1px solid var(--nexus-border); }
-.cp-fiche-score {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 1.2px;
-  color: var(--cp-cyan);
-  text-shadow: 0 0 8px hsl(var(--primary) / 0.6);
-  font-variant-numeric: tabular-nums;
-}
-.cp-fiche-bas {
-  position: absolute;
-  inset: auto 11px 9px 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 .cp-fiche-palier {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: max(11px, 0.6875rem);
@@ -490,27 +444,7 @@
   color: var(--t);
   text-shadow: 0 0 10px var(--t);
 }
-.cp-fiche-nom {
-  font-family: 'Rajdhani', 'Orbitron', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: 0.4px;
-  color: hsl(var(--encre-titre));
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .cp-fiche-barre { --c: var(--t); height: 9px; margin-top: 2px; }
-.cp-fiche-pct {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 1.4px;
-  color: var(--nexus-text-dim);
-  font-variant-numeric: tabular-nums;
-}
 
 /* ── Le bandeau et sa rayure de danger ── */
 /* La reserve doit depasser la hauteur du bandeau de telemetrie

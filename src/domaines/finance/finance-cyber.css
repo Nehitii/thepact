@@ -1271,8 +1271,6 @@
 }
 @media (pointer: coarse) { .cy-ajouter { min-height: 48px; } }
 
-.cy-lignes { padding: 0 6px 8px; }
-
 /* Le bouton qui detruit ne porte pas le vert de ce qui valide. */
 .cy-valider.est-rouge {
   background: var(--cy-rouge); color: #180205;
@@ -1528,34 +1526,6 @@
   font-variant-numeric: tabular-nums;
 }
 .cy-echeancier-apercu u { margin-left: 6px; color: var(--cy-encre-3); text-decoration: none; }
-
-/* ── LA CADENCE SUR UNE LIGNE ──
-   Une charge qui ne tombe pas tous les mois doit le dire : sans cela,
-   son montant se lit comme une charge mensuelle. Le mot est petit et
-   se pose apres le nom, la ou l oeil le trouve sans le chercher. */
-.cy-ligne-cadence {
-  margin-left: 7px;
-  padding: 1px 5px;
-  font-family: var(--cy-mono);
-  font-size: max(9px, 0.5625rem);
-  font-weight: 400;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--cy-encre-3);
-  border: 1px solid hsl(var(--primary) / 0.24);
-  vertical-align: 1px;
-}
-/* Le mois ou elle ne tombe pas, la ligne reste visible mais ne compte
-   pas. Elle annonce quand elle revient : la voir venir vaut mieux que
-   la voir disparaitre. */
-.cy-ligne-veille {
-  font-style: normal;
-  font-family: var(--cy-mono);
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.6px;
-  text-transform: none;
-  color: var(--cy-encre-3);
-}
 
 /* ── LES DEUX EN-TETES A LA MEME HAUTEUR ──
    Les blocs des depenses et des revenus se font face. « Dépenses

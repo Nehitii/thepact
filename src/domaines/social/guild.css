@@ -57,34 +57,6 @@
   color: var(--co-texte);
 }
 
-/* ── LA JAUGE D'EXPÉRIENCE ──
-   Elle vaut zéro aujourd'hui, et c'est une information : la guilde
-   n'a pas encore avancé. Un « Lv.0 / 0-100 XP » en police d'affichage
-   la présentait comme un tableau de bord de jeu vidéo. */
-.gu-xp {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px var(--co-gouttiere) 12px;
-  border-bottom: 1px solid var(--co-filet);
-}
-.gu-xp-niveau {
-  font-family: var(--co-fonte-ui);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--co-texte-2);
-  white-space: nowrap;
-}
-.gu-xp-chiffre {
-  font-family: var(--co-fonte-chiffre);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--co-texte-3);
-  white-space: nowrap;
-}
-
 /* ── LA BARRE DE SECTIONS ──
    Horizontale, elle défile si elle déborde — et le fondu ne masque
    plus une commande, faute qu'il y en ait au bout. */
@@ -308,14 +280,6 @@
   align-items: baseline;
   gap: 10px;
 }
-.gu-objectif-compte {
-  margin-left: auto;
-  font-family: var(--co-fonte-chiffre);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--co-texte-2);
-  white-space: nowrap;
-}
 
 .gu-contribuer {
   display: flex;
@@ -361,8 +325,6 @@
   color: var(--co-texte);
   margin: 0 0 7px;
 }
-
-.gu-couleurs { display: flex; gap: 8px; flex-wrap: wrap; }
 .gu-couleur {
   width: 30px;
   height: 30px;

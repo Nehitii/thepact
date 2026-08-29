@@ -175,14 +175,6 @@
 }
 .fr-guilde-blason svg { width: 18px; height: 18px; stroke-width: 1.9; color: var(--co-texte-2); }
 
-.fr-guilde-mot {
-  margin: 3px 0 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--co-texte-2);
-  overflow-wrap: anywhere;
-}
-
 @media (max-width: 640px) {
   .fr-ligne { grid-template-columns: 40px 1fr; }
   .fr-actions { grid-column: 1 / -1; margin-top: 8px; }

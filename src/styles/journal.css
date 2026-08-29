@@ -1,42 +1,37 @@
-/* Journal Chronolog animations — extracted from index.css */
-/* ========== JOURNAL CHRONOLOG ANIMATIONS ========== */
-@keyframes journal-scanline {
-  0%   { transform: translateY(-100vh); }
-  100% { transform: translateY(200vh); }
-}
-@keyframes journal-pulse {
-  0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor, 0 0 20px currentColor; }
-  50%     { opacity: 0.7; box-shadow: 0 0 12px currentColor, 0 0 40px currentColor; }
-}
 /* CETTE FEUILLE N EST PAS CELLE DU JOURNAL, MALGRE SON NOM.
  *
- * Releve du 28/08/2026, en rangeant le domaine journal. Elle declare
+ * Releve du 28/08/2026, en rangeant le domaine journal. Elle declarait
  * 119 classes, dont 113 en `jr-` ou `journal-` qui sont bien du
- * journal — mais les six autres tiennent toute l application :
+ * journal — mais six autres tenaient toute l application. L etape 4
+ * (29/08) en a supprime deux et ramene la liste a quatre :
  *
  *   font-orbitron       cite par 64 fichiers, partout
  *   journal-noise       le fond du systeme de design (DSBackground)
  *   journal-grid-bg     idem
  *   journal-scanline    animation, utilisee par DSBackground ET goals.css
- *   journal-pulse       animation, utilisee par DSPageHeader
- *   hud-blink           animation
+ *
+ * Les deux disparues — `journal-pulse` et `hud-blink` — n animaient
+ * que `DSPageHeader`, un composant qu aucun ecran ne rend plus. Elles
+ * ont suivi `journal-rotate-slow` et sa jumelle, supprimees le 28/08
+ * pour la meme raison. Deux orbes (`journal-orb-left`/`right`) sont
+ * partis avec elles : plus aucun fichier ne les ecrivait.
  *
  * C est pourquoi `main.tsx` la charge globalement, alors que finance,
  * analytics et goals sont co-localisees avec leur page. Ce n est pas un
  * oubli : c est une dette, et la deplacer telle quelle casserait la
  * typographie de 64 fichiers.
  *
- * ELLE RESTE DONC ICI JUSQU A L ETAPE 4 du plan de masse, qui separera
- * les six globales du reste — avec captures d ecran avant/apres, en
- * thème sombre et en thème clair, parce que le CSS ne se prouve pas au
- * compilateur.
- *
- * `journal-rotate-slow` et sa jumelle inverse ont ete supprimees le
- * meme jour : elles n animaient qu un anneau de `DSPageHeader`, un
- * composant qu aucun ecran ne rendait plus. */
-@keyframes hud-blink {
-  0%,90%,100% { opacity: 1; }
-  95%         { opacity: 0.2; }
+ * CE QU IL RESTE A FAIRE, ET CE QU IL FAUT POUR LE FAIRE : sortir les
+ * quatre globales dans une feuille du socle et rendre le reste au
+ * domaine journal. Cela se verifie a l ecran, en sombre et en clair —
+ * or le journal est derriere l authentification. C est la meme raison
+ * qui a arrete le decoupage de `reglages.css` : on ne deplace pas du
+ * CSS qu on ne peut pas regarder. */
+/* Journal Chronolog animations — extracted from index.css */
+/* ========== JOURNAL CHRONOLOG ANIMATIONS ========== */
+@keyframes journal-scanline {
+  0%   { transform: translateY(-100vh); }
+  100% { transform: translateY(200vh); }
 }
 @keyframes journal-grid-scroll {
   0%   { background-position: 0 0; }
@@ -71,22 +66,6 @@
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
   z-index: 0;
 }
-.journal-orb-left {
-  pointer-events: none;
-  position: fixed;
-  left: -200px; top: 20%;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(0,255,224,0.07) 0%, transparent 65%);
-  z-index: 0;
-}
-.journal-orb-right {
-  pointer-events: none;
-  position: fixed;
-  right: -200px; top: 50%;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(191,90,242,0.06) 0%, transparent 65%);
-  z-index: 0;
-}
 
 /* Hide scrollbar utility */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -97,7 +76,6 @@
    jamais relevé du journal, et leur structure demandait une refonte :
    le fond etait pose sur le <main> centre au lieu de la fenetre, et la
    grille au sol perdait sa perspective. */
-
 
 /* ═══════════════════════════════════════════════════════════
    LOG.01 — ARASAKA

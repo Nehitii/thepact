@@ -1,35 +1,3 @@
-/* ── FOCUS : LE SCELLÉ ─────────────────────────────────────────
- *
- * L application s appelle Overwrite. Une session n etait pourtant qu un
- * minuteur anonyme : un anneau de progression, le meme que dans n importe
- * quelle application de pomodoro, pose au milieu d un cadre vide qui
- * occupait les deux tiers de la hauteur sans rien dire.
- *
- * Ici, une session est l EXECUTION D UNE CLAUSE. La page est un document :
- * l engagement est enonce en haut, le sceau se grave pendant que le temps
- * passe, la ligne de signature compte ce qui a ete honore.
- *
- * Ce qui distingue un sceau d une barre de progression ronde, ce n est pas
- * le trace — c est le SUBSTRAT GRAVE, present des la premiere seconde :
- * denture, cercles concentriques, equerres. A zero pour cent, il y a deja
- * un objet a regarder.
- * ────────────────────────────────────────────────────────────── */
-
-/* La rotation de l anneau etait posee en style en ligne, hors de portee
-   de toute requete media : elle tournait donc aussi pour qui demande a
-   ne pas voir de mouvement. Une classe permet de la conditionner.
-
-   La regle est ecrite a l endroit : on N ACTIVE la rotation que si
-   l utilisateur n a rien demande de contraire. Une regle inverse, qui la
-   couperait sous prefers-reduced-motion, laisserait passer tout style en
-   ligne pose plus tard. */
-@media (prefers-reduced-motion: no-preference) {
-  .focus-anneau--tourne {
-    animation: spin 60s linear infinite;
-    will-change: transform;
-  }
-}
-
 /* ── Le document ─────────────────────────────────────────────── */
 
 /* ── Le systeme ──────────────────────────────────────────────────
@@ -356,7 +324,6 @@
   .sc-sceau::before, .sc-sceau::after { display: none; }
 }
 
-
 /* ── Le bandeau de document ──────────────────────────────────────
  *
  * L ancien en-tete etait celui de toutes les pages : un grand titre
@@ -540,7 +507,6 @@ html[data-immersion] body { background: #030407; }
 html[data-immersion] .sc { gap: clamp(20px, 4vw, 38px); }
 html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74vh); }
 
-
 /* ── Le lien audio ───────────────────────────────────────────────
  *
  * Le lecteur precedent n acceptait que Spotify, et surtout replier le
@@ -670,7 +636,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 }
 .md-erreur { color: hsl(var(--destructive)); }
 .md-aide { color: var(--cp-texte-doux, #7089a0); }
-
 
 /* ── Un seul systeme de boutons ──────────────────────────────────
  *
@@ -907,7 +872,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   background: radial-gradient(circle, hsl(var(--primary) / 0.17) 0%, hsl(var(--primary) / 0.05) 42%, transparent 68%);
 }
 
-
 /* Le panneau des commandes : une plaque, pas un contour. */
 .sc-commandes {
   background: linear-gradient(180deg, var(--n1), var(--n0));
@@ -919,12 +883,10 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   --bord: hsl(var(--primary) / 0.34);
 }
 
-
 /* La regle de defilement du panneau vit soixante-dix lignes plus
    bas : celle qui etait ici, en 46vh, etait integralement ecrasee
    par elle — meme selecteur, memes proprietes, aucune condition
    entre les deux. */
-
 
 /* ── Le composeur de clause ──────────────────────────────────────
  *
@@ -1126,7 +1088,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   .sc-dialogue-pied .cyb { flex: 0 0 auto; min-width: 168px; }
 }
 
-
 /* ── La piste de panneaux ────────────────────────────────────────
  *
  * Le fondu croise montait les deux panneaux dans un conteneur en
@@ -1153,36 +1114,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 @media (prefers-reduced-motion: reduce) {
   .sc-diapo, .sc-diapo-piste { transition: none; }
 }
-
-/* La plaque commune aux quatre panneaux. */
-.sc-plaque {
-  position: relative;
-  background: linear-gradient(180deg, var(--n1, rgba(15, 25, 37, 0.92)), var(--n0, rgba(8, 13, 20, 0.88)));
-  border: 1px solid var(--bord, hsl(var(--primary) / 0.34));
-  padding: 10px;
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  --n0: rgba(8, 13, 20, 0.88);
-  --n1: rgba(15, 25, 37, 0.92);
-  --n2: rgba(24, 39, 56, 0.95);
-  --bord: hsl(var(--primary) / 0.34);
-  --bord-vif: hsl(var(--primary) / 0.72);
-  --or: var(--cp-jaune, #fcee0a);
-}
-.sc-plaque-tete {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid hsl(var(--primary) / 0.2);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: hsl(var(--primary));
-}
-.sc-plaque-marque { width: 4px; height: 12px; background: var(--or); flex-shrink: 0; }
-
 
 /* ── Le champ qui porte la clause ────────────────────────────────
  *
@@ -1228,7 +1159,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   0%, 100% { box-shadow: 0 0 6px rgba(252, 238, 10, 0.5); }
   50% { box-shadow: 0 0 16px rgba(252, 238, 10, 0.95); }
 }
-
 
 /* ── L apercu du fond ────────────────────────────────────────────
    Le fond ne tourne pas au repos : sans apercu, on choisit un nom sans
@@ -1292,7 +1222,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 .sc-apercu::before { top: 6px; left: 6px; border-top: 1px solid; border-left: 1px solid; }
 .sc-apercu::after { bottom: 6px; right: 6px; border-bottom: 1px solid; border-right: 1px solid; }
 
-
 /* Le carnet portait une icone de cerveau et rien d autre : personne ne
    pouvait deviner a quoi elle sert. Un libelle des qu il y a la place. */
 .dst-bouton { gap: 7px; }
@@ -1305,7 +1234,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   letter-spacing: 0.06em;
   color: var(--cp-texte-doux, #7089a0);
 }
-
 
 /* ── Le carnet de distractions ───────────────────────────────────
  *
@@ -1438,7 +1366,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 @media (max-width: 380px) {
   .dst-rapides { grid-template-columns: 1fr; }
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    LA PLAQUE S OUVRE PLUS GRAND POUR LES REGLAGES

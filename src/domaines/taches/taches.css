@@ -562,11 +562,6 @@
   border-bottom: 1px solid var(--tsk-trait);
   background: hsl(210 80% 4% / 0.35);
 }
-
-/* ═══════════════════════════════════════════════════════════
-   LA TELEMETRIE
-   ═══════════════════════════════════════════════════════════ */
-.tsk-tel { display: flex; flex-direction: column; gap: 8px; }
 .tsk-bloc {
   --tsk-biseau: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
   background: var(--tsk-plaque);
@@ -689,11 +684,6 @@
 .tsk-form input:focus-visible, .tsk-form textarea:focus-visible, .tsk-form button[role="combobox"]:focus-visible {
   outline: none; border-color: var(--tsk-signal);
   box-shadow: 0 0 0 1px hsl(var(--ds-accent-primary) / 0.35);
-}
-.tsk-etiq {
-  display: block; margin-bottom: 5px;
-  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
-  letter-spacing: 0.2em; text-transform: uppercase; color: var(--tsk-faible);
 }
 
 /* ═══════════════════════════════════════════════════════════

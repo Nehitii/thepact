@@ -1278,7 +1278,6 @@
   .wl-fiche:hover .wl-prix { transform: rotate(-2.2deg); }
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    LE SHOWROOM DE NUIT
 
@@ -1529,14 +1528,6 @@
   flex-wrap: wrap;
   gap: 8px;
   margin: 0 0 14px;
-}
-.wl-listes-nom {
-  font-family: var(--wl-mono);
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--wl-encre-3, hsl(var(--muted-foreground)));
-  padding-right: 2px;
 }
 .wl-etiquette,
 .wl-etiquette-edition {

@@ -326,13 +326,6 @@
 /* Le libelle de la bascule tient sur deux lignes : le nom du groupe, puis
    ce que la regle capte. */
 .gr-bascule .gl-bascule-txt { flex-direction: column; align-items: flex-start; gap: 1px; }
-.gr-bascule-note {
-  font-style: normal;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 1.2px;
-  opacity: 0.65;
-  text-transform: none;
-}
 
 /* ── Marque d'objectif honoré ──
  *

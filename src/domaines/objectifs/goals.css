@@ -146,12 +146,6 @@
   animation: tcg-foil-shift 6s linear infinite;
 }
 
-/* ═══ Health Module — VITA CORE animations ═══ */
-@keyframes health-ecg-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
 /* ═══ Global prefers-reduced-motion ═══ */
 @media (prefers-reduced-motion: reduce) {
 

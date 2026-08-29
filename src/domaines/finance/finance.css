@@ -12,34 +12,13 @@
     --neu-shadow-glow-primary: 0 0 40px hsla(200 100% 67% / 0.15);
   }
 
-  /* Neumorphic animations */
-  @keyframes neu-pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
-
-  @keyframes neu-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-  }
-
   @keyframes neu-count-up {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  @keyframes neu-shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-
   @keyframes neu-ring-progress {
     from { stroke-dashoffset: 283; }
-  }
-
-  @keyframes timeline-connect {
-    from { height: 0; }
-    to { height: 100%; }
   }
 
   /* Neumorphic Base Card */
