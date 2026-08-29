@@ -9,6 +9,8 @@ import type { CalendarEvent, CalendarEventInsert, RecurrenceRule } from "@/domai
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";
 import { composerInstant, debutDeJournee, finDeJournee } from "@/domaines/agenda/logique/temps";
+import type { EventDetailModalProps } from "@/domaines/agenda/types";
+import { COLORS, DUREE_DEFAUT } from "@/domaines/agenda/logique/apparenceDEvenement";
 
 /* LE FORMULAIRE D EVENEMENT
  *
@@ -19,29 +21,6 @@ import { composerInstant, debutDeJournee, finDeJournee } from "@/domaines/agenda
  * des couleurs qui sont des carres comme le reste.
  */
 
-const COLORS: { hex: string; key: string }[] = [
-  { hex: "#3b82f6", key: "blue" },
-  { hex: "#ef4444", key: "red" },
-  { hex: "#22c55e", key: "green" },
-  { hex: "#f59e0b", key: "amber" },
-  { hex: "#8b5cf6", key: "violet" },
-  { hex: "#ec4899", key: "pink" },
-  { hex: "#06b6d4", key: "cyan" },
-  { hex: "#f97316", key: "orange" },
-  { hex: "#14b8a6", key: "teal" },
-  { hex: "#6366f1", key: "indigo" },
-];
-
-const DUREE_DEFAUT = 3600000;
-
-interface EventDetailModalProps {
-  open: boolean;
-  onClose: () => void;
-  event?: CalendarEvent | null;
-  defaultDate?: Date;
-  onSave: (data: Partial<CalendarEventInsert>) => void;
-  onDelete?: (id: string) => void;
-}
 
 export function EventDetailModal({ open, onClose, event, defaultDate, onSave, onDelete }: EventDetailModalProps) {
   const { t } = useTranslation();

@@ -67,3 +67,14 @@ export type CalendarEventInsert = Omit<
   CalendarEvent,
   "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId" | "_nature"
 >;
+
+/* Venues de « EventDetailModal.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface EventDetailModalProps {
+  open: boolean;
+  onClose: () => void;
+  event?: CalendarEvent | null;
+  defaultDate?: Date;
+  onSave: (data: Partial<CalendarEventInsert>) => void;
+  onDelete?: (id: string) => void;
+}

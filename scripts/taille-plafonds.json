@@ -1,8 +1,7 @@
 {
   "src/app/AppSidebar.tsx": 604,
   "src/domaines/administration/pages/AdminCosmeticsManager.tsx": 812,
-  "src/domaines/administration/pages/AdminNotifications.tsx": 420,
-  "src/domaines/agenda/composants/EventDetailModal.tsx": 425,
+  "src/domaines/agenda/composants/EventDetailModal.tsx": 404,
   "src/domaines/appel/composants/CoeurStellaire.tsx": 555,
   "src/domaines/appel/pages/TheCall.tsx": 821,
   "src/domaines/finance/composants/mois/LigneRecurrente.tsx": 526,
@@ -21,7 +20,7 @@
   "src/domaines/profil/pages/DataPortability.tsx": 559,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/souhaits/pages/Wishlist.tsx": 716,
-  "src/domaines/taches/hooks/useTodoList.ts": 418,
+  "src/domaines/taches/hooks/useTodoList.ts": 405,
   "supabase/functions/ai-mia/index.ts": 1506,
   "supabase/functions/two-factor/index.ts": 614
 }

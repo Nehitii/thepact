@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchTodoTasks, MAX_TACHES_ACTIVES } from "@/domaines/taches/logique/lectureDesTaches";
 import { genererAnalyses } from "@/domaines/taches/logique/analyses";
 import { avancerLaSerie, cleDuJour } from "@/domaines/taches/logique/serie";
 import { supabase } from '@/socle/supabase/client';
@@ -7,6 +8,18 @@ import { useAuth } from '@/socle/contextes/AuthContext';
 import { toast } from 'sonner';
 import i18n from '@/socle/i18n/i18n';
 import { trackTodoCompleted } from '@/domaines/succes';
+
+// Types — voir `../types.ts`. Reexportes ici : quarante fichiers les
+// importaient deja depuis ce hook, et les renommer tous n aurait rien
+// rendu plus clair.
+import type {
+  TodoPriority, TodoStatus, TodoTaskType, ReminderFrequency,
+  TodoTask, TodoStats, TodoHistory, CreateTaskInput, TodoInsight,
+} from "@/domaines/taches/types";
+export type {
+  TodoPriority, TodoStatus, TodoTaskType, ReminderFrequency,
+  TodoTask, TodoStats, TodoHistory, CreateTaskInput, TodoInsight,
+};
 
 /* CE CROCHET NE PARLAIT QU ANGLAIS
  *
@@ -21,33 +34,7 @@ import { trackTodoCompleted } from '@/domaines/succes';
  */
 const tr = (cle: string, params?: Record<string, unknown>) => i18n.t(cle, params) as string;
 
-// Types — voir `../types.ts`. Reexportes ici : quarante fichiers les
-// importaient deja depuis ce hook, et les renommer tous n aurait rien
-// rendu plus clair.
-import type {
-  TodoPriority, TodoStatus, TodoTaskType, ReminderFrequency,
-  TodoTask, TodoStats, TodoHistory, CreateTaskInput, TodoInsight,
-} from "@/domaines/taches/types";
-export type {
-  TodoPriority, TodoStatus, TodoTaskType, ReminderFrequency,
-  TodoTask, TodoStats, TodoHistory, CreateTaskInput, TodoInsight,
-};
-
-const MAX_ACTIVE_TASKS = 30;
-
-// Reusable fetcher — used by useTodoList and by background prefetch.
-export async function fetchTodoTasks(userId: string | undefined): Promise<TodoTask[]> {
-  if (!userId) return [];
-  const { data, error } = await supabase
-    .from('todo_tasks')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('position', { ascending: true })
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return (data || []) as TodoTask[];
-}
+export { fetchTodoTasks };
 
 export function useTodoList() {
   const { user } = useAuth();
@@ -114,7 +101,7 @@ export function useTodoList() {
     mutationFn: async (input: CreateTaskInput) => {
       if (!userId) throw new Error('Not authenticated');
 
-      if (tasks.length >= MAX_ACTIVE_TASKS) {
+      if (tasks.length >= MAX_TACHES_ACTIVES) {
         throw new Error('LIMIT_REACHED');
       }
 
@@ -401,8 +388,8 @@ export function useTodoList() {
     isLoading: tasksLoading || statsLoading,
     historyLoading,
     activeTaskCount: tasks.length,
-    maxTasks: MAX_ACTIVE_TASKS,
-    canAddTask: tasks.length < MAX_ACTIVE_TASKS,
+    maxTasks: MAX_TACHES_ACTIVES,
+    canAddTask: tasks.length < MAX_TACHES_ACTIVES,
     createTask,
     completeTask,
     postponeTask,

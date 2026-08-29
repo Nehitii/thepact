@@ -6,6 +6,10 @@ import {
   Bell, Send, Gift, Loader2, Star, Trophy, Zap, Heart, Info,
   AlertTriangle, History, Megaphone, MessageSquare, ArrowRight,
 } from "lucide-react";
+import {
+  ICONES, CATEGORIES, PRIORITES, TEINTES,
+  type Categorie, type Priorite, type Recompense,
+} from "@/domaines/administration/logique/vocabulaireDesAvis";
 import { toast } from "sonner";
 import { supabase } from "@/socle/supabase/client";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
@@ -48,39 +52,6 @@ import {
  *   autre chose. Il reprend maintenant ses classes.
  * ═══════════════════════════════════════════════════════════════
  */
-
-type Categorie = "system" | "progress" | "social" | "marketing";
-type Priorite = "critical" | "important" | "informational" | "social" | "silent";
-type Recompense = "bonds" | "frame" | "banner" | "title";
-
-const ICONES: Record<string, React.ComponentType<{ className?: string }>> = {
-  bell: Bell, gift: Gift, star: Star, trophy: Trophy, zap: Zap,
-  heart: Heart, info: Info, warning: AlertTriangle, announcement: Megaphone,
-  message: MessageSquare,
-};
-
-const CATEGORIES: { v: Categorie; mot: string; quoi: string }[] = [
-  { v: "system", mot: "Système", quoi: "Ce que l'application doit dire, toujours reçu" },
-  { v: "progress", mot: "Progression", quoi: "Rappels et jalons" },
-  { v: "social", mot: "Social", quoi: "Ce qui vient d'autres personnes" },
-  { v: "marketing", mot: "Annonce", quoi: "Offres et nouveautés" },
-];
-
-const PRIORITES: { v: Priorite; mot: string }[] = [
-  { v: "critical", mot: "Critique" },
-  { v: "important", mot: "Important" },
-  { v: "informational", mot: "Information" },
-  { v: "social", mot: "Social" },
-  { v: "silent", mot: "Discret" },
-];
-
-const TEINTES: Record<string, string> = {
-  critical: "var(--ad-alerte)",
-  important: "var(--ad-veille)",
-  social: "hsl(var(--ds-accent-special))",
-  informational: "var(--ad-signal)",
-  silent: "var(--ad-encre-3)",
-};
 
 export default function AdminNotifications() {
   const queryClient = useQueryClient();
