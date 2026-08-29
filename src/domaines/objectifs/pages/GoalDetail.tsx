@@ -36,6 +36,9 @@ import {
   type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/domaines/objectifs/composants/super";
 import { membresDuGroupe, estFranchi, estPretAHonorer, synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
+import {
+  membresEtLiensCasses, coutParEtape as coutsParEtape, estHonore, auZenith, groupesPorteurs,
+} from "@/domaines/objectifs/logique/detailDuPacte";
 import { usePact } from "@/domaines/objectifs/hooks/usePact";
 import { useGoals } from "@/domaines/objectifs/hooks/useGoals";
 import { useVoisinsDObjectif } from "@/domaines/objectifs/hooks/useVoisinsDObjectif";
@@ -221,35 +224,11 @@ export default function GoalDetail() {
     if (!goalDetailLoading && !goalDetailData) setLoading(false);
   }, [goalDetailLoading, goalDetailData]);
 
-  /* Membres d un groupe. La composition suit la regle partagee ; ne
-     restent ici que les identifiants declares qui ne designent plus
-     rien — un objectif supprime laisse un lien casse, et mieux vaut le
-     montrer que le faire disparaitre. Ils ne comptent dans aucun
-     total. */
-  const childGoalsInfo: SuperGoalChildInfo[] = useMemo(() => {
-    if (!goal || goal.goal_type !== "super") return [];
-    const membres = membresDuGroupe(goal, allGoals);
-    const casses = goal.is_dynamic_super
-      ? []
-      : (goal.child_goal_ids || []).filter((cid) => !allGoals.some((g) => g.id === cid));
+  const childGoalsInfo = useMemo(
+    () => membresEtLiensCasses(goal, allGoals, t("goals.detail.missingGoal", "Objectif introuvable")),
+    [goal, allGoals, t],
+  );
 
-    return [
-      ...membres.map((m) => {
-        const total = m.totalStepsCount ?? m.total_steps ?? 0;
-        const faits = m.completedStepsCount ?? m.validated_steps ?? 0;
-        return {
-          id: m.id, name: m.name, difficulty: m.difficulty, status: m.status,
-          progress: total > 0 ? Math.round((faits / total) * 100) : 0,
-          isCompleted: estFranchi(m), isMissing: false,
-        };
-      }),
-      ...casses.map((cid) => ({
-        id: cid, name: t("goals.detail.missingGoal", "Objectif introuvable"),
-        difficulty: "medium", status: "not_started", progress: 0,
-        isCompleted: false, isMissing: true,
-      })),
-    ];
-  }, [goal, allGoals, t]);
 
   // Sync tags
   useEffect(() => {
@@ -467,14 +446,7 @@ export default function GoalDetail() {
   const isCompleted = goal.status === "fully_completed";
   const displayTags = goalTagsData.length > 0 ? goalTagsData.map((t) => t.tag) : goal.type ? [mapToValidTag(goal.type)] : [];
 
-  /* Le montant qu une etape traine derriere elle : le rail l affiche
-     en bout de ligne, ce qui evite d aller le chercher dans le
-     registre d en face. */
-  const coutParEtape = new Map<string, number>();
-  for (const poste of costItems) {
-    if (!poste.step_id) continue;
-    coutParEtape.set(poste.step_id, (coutParEtape.get(poste.step_id) ?? 0) + Number(poste.price || 0));
-  }
+  const coutParEtape = coutsParEtape(costItems);
 
   const wishlistHandler = isModulePurchased("wishlist")
     ? (item: CostItemData) => {
@@ -486,20 +458,13 @@ export default function GoalDetail() {
     : undefined;
 
   /* Cocher est sans consequence ; decocher un objectif deja honore le
-     defait, et defait le compte des groupes qui le portent. On ne
-     retient que ce geste-la. */
-  const estHonore = goal.status === "fully_completed" || goal.status === "validated";
-  /* Le zenith se deduit : c est le fait que l etape ultime soit
-     franchie. Aucune colonne a tenir d accord avec elle. */
-  const auZenith = steps.some((e) => e.is_ultimate && e.status === "completed");
-
-  const groupesPorteurs = allGoals
-    .filter((g) => g.goal_type === "super")
-    .filter((g) => membresDuGroupe(g, allGoals).some((m) => m.id === goal.id))
-    .map((g) => g.name);
+     defait, et defait le compte des groupes qui le portent. */
+  const honore = estHonore(goal);
+  const zenith = auZenith(steps);
+  const porteurs = groupesPorteurs(goal.id, allGoals);
 
   const demanderBascule = (stepId: string, statut: string) => {
-    if (statut === "completed" && estHonore) {
+    if (statut === "completed" && honore) {
       setEtapeADefaire({ id: stepId, titre: steps.find((e) => e.id === stepId)?.title ?? "" });
       return;
     }
@@ -552,7 +517,7 @@ export default function GoalDetail() {
           }
           etiquettes={displayTags}
           estHonore={isCompleted}
-          auZenith={auZenith}
+          auZenith={zenith}
           partageActif={!!social.sharing}
           onRetour={() => navigate("/goals")}
           onModifier={() => setEditDialogOpen(true)}
@@ -702,12 +667,12 @@ export default function GoalDetail() {
                   "« {{etape}} » est décochée, et cet objectif honoré retombe en cours.",
                 etape: etapeADefaire?.titre ?? "",
               })}
-              {groupesPorteurs.length > 0 && (
+              {porteurs.length > 0 && (
                 <>
                   {" "}
                   {t("goals.detail.undoGroups", {
                     defaultValue: "Le compte de {{groupes}} suivra.",
-                    groupes: groupesPorteurs.join(", "),
+                    groupes: porteurs.join(", "),
                   })}
                 </>
               )}

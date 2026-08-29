@@ -13,7 +13,7 @@
   "src/domaines/mia/composants/MiaConsole.tsx": 808,
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 495,
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 574,
-  "src/domaines/objectifs/pages/GoalDetail.tsx": 741,
+  "src/domaines/objectifs/pages/GoalDetail.tsx": 706,
   "src/domaines/objectifs/pages/NewGoal.tsx": 817,
   "src/domaines/onboarding/pages/Onboarding.tsx": 523,
   "src/domaines/profil/composants/ProfileBoundedProfile.tsx": 641,
