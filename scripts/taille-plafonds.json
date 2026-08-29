@@ -7,7 +7,7 @@
   "src/domaines/appel/pages/TheCall.tsx": 821,
   "src/domaines/finance/composants/mois/LigneRecurrente.tsx": 526,
   "src/domaines/finance/composants/mois/MoisPalmares.tsx": 443,
-  "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 646,
+  "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 609,
   "src/domaines/focus/pages/Focus.tsx": 683,
   "src/domaines/journal/composants/JournalEditor.tsx": 666,
   "src/domaines/journal/composants/JournalNewEntryModal.tsx": 564,

@@ -47,11 +47,15 @@ import {
   useMonthlyValidation, useUpsertMonthlyValidation,
 } from '@/domaines/finance/hooks/useFinance';
 import { usePointages, useEcrirePointage, useEffacerPointage } from '@/domaines/finance/hooks/usePointages';
+import {
+  construireLesRangs, totalReel, totalPointe, aVenir, oubliees, restant,
+} from "@/domaines/finance/logique/pointage";
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
 import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 import type { FinancialItem } from '@/domaines/finance/types';
+import type { Rang } from "@/domaines/finance/types";
 
 type Etape = 'expense' | 'income' | 'bilan';
 const ETAPES: Etape[] = ['expense', 'income', 'bilan'];
@@ -63,18 +67,6 @@ interface Props {
   onFermer: () => void;
 }
 
-/** Une ligne telle qu elle se presente au pointage. */
-interface Rang {
-  item: FinancialItem;
-  prevu: number;
-  reel: number;
-  pointe: boolean;
-  /* LA DATE OU L ARGENT BOUGE, ET S IL A DEJA BOUGE.
-     Nulles quand la ligne ne dit pas son jour : on ne peut alors ni
-     l affirmer ni le nier, et se taire vaut mieux que supposer. */
-  quand: Date | null;
-  passe: boolean | null;
-}
 
 export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   const { t, i18n } = useTranslation();
@@ -115,29 +107,15 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     return (d: Date) => f.format(d).replace('.', '');
   }, [i18n.language]);
 
-  /* CE QU ON POINTE : CE QUI TOMBE CE MOIS-LA.
-     Une charge trimestrielle n a rien a faire dans la liste d aout si
-     elle tombe en octobre — la cocher n aurait aucun sens, et la
-     laisser non cochee ferait croire a un oubli. */
-  const rangs = useMemo(() => {
-    const parLigne = new Map(pointages.filter((p) => p.ligne_id).map((p) => [p.ligne_id!, p]));
-    const construire = (items: FinancialItem[]): Rang[] => items
-      .filter((i) => i.is_active && tombeEn(i, dateMois))
-      .map((item) => {
-        const p = parLigne.get(item.id);
-        const prevu = montantDuMois(item, dateMois);
-        return {
-          item, prevu, reel: p ? p.montant_reel : prevu, pointe: !!p?.pointe,
-          quand: dateDeMouvement(item, dateMois),
-          passe: dejaPasse(item, dateMois),
-        };
-      });
-    return { expense: construire(depenses), income: construire(revenus) };
-  }, [depenses, revenus, pointages, dateMois]);
+  /* Le pointage vit dans logique/pointage.ts : des sommes d argent,
+     et la distinction qui decide si l application te reproche un
+     retard. */
+  const rangs = useMemo(
+    () => construireLesRangs({ depenses, revenus, pointages, dateMois }),
+    [depenses, revenus, pointages, dateMois],
+  );
 
   const courant = etape === 'income' ? rangs.income : rangs.expense;
-  const totalReel = (rs: Rang[]) => Math.round(rs.reduce((s, r) => s + r.reel * 100, 0)) / 100;
-  const totalPointe = (rs: Rang[]) => Math.round(rs.filter((r) => r.pointe).reduce((s, r) => s + r.reel * 100, 0)) / 100;
 
   const basculer = async (r: Rang, genre: Etape) => {
     if (genre === 'bilan') return;
@@ -258,23 +236,8 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     setNomAjout(''); setMontantAjout(''); setAjout(null);
   };
 
-  /* CE QUI RESTE N EST PAS CE QUI MANQUE.
-   *
-   * Une ligne non pointee dont l argent n a pas encore bouge n est pas
-   * un oubli : le loyer d aout encaisse le 3 septembre ne peut pas
-   * etre coche le 21 aout. Les compter ensemble faisait reprocher un
-   * retard a qui n avait rien oublie — et poussait a cocher pour faire
-   * taire le compteur, ce qui est exactement ce qu un pointage ne doit
-   * pas encourager.
-   *
-   * On les separe donc : « a venir » d un cote, « oubliees » de
-   * l autre, et seules les secondes appellent une action. */
-  const aVenir = (rs: Rang[]) => rs.filter((r) => !r.pointe && r.passe === false);
-  const oubliees = (rs: Rang[]) => rs.filter((r) => !r.pointe && r.passe !== false);
-
   const reelDepenses = totalPointe(rangs.expense);
   const reelRevenus = totalPointe(rangs.income);
-  const restant = (rs: Rang[]) => oubliees(rs).length;
 
   const conclure = async () => {
     try {

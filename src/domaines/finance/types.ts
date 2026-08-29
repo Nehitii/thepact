@@ -260,3 +260,32 @@ export type Lot = {
   pieces: CostItem[];
   reste: number;
 };
+
+/* Venues de « ParcoursDuMois.tsx », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+/** Une ligne telle qu elle se presente au pointage. */
+export interface Rang {
+  item: FinancialItem;
+  prevu: number;
+  reel: number;
+  pointe: boolean;
+  /* LA DATE OU L ARGENT BOUGE, ET S IL A DEJA BOUGE.
+     Nulles quand la ligne ne dit pas son jour : on ne peut alors ni
+     l affirmer ni le nier, et se taire vaut mieux que supposer. */
+  quand: Date | null;
+  passe: boolean | null;
+}
+
+/* Venues de « usePointages.ts », qui les declarait sans les exporter :
+ * un type inerte n a pas a vivre dans le fichier qui le rend. */
+export interface Pointage {
+  id: string;
+  user_id: string;
+  mois: string;
+  ligne_id: string | null;
+  genre: 'expense' | 'income';
+  nom: string;
+  montant_prevu: number;
+  montant_reel: number;
+  pointe: boolean;
+}

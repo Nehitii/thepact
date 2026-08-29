@@ -14,18 +14,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/socle/supabase/client';
 import { useAuth } from '@/socle/contextes/AuthContext';
+import type { Pointage } from "@/domaines/finance/types";
 
-export interface Pointage {
-  id: string;
-  user_id: string;
-  mois: string;
-  ligne_id: string | null;
-  genre: 'expense' | 'income';
-  nom: string;
-  montant_prevu: number;
-  montant_reel: number;
-  pointe: boolean;
-}
 
 /* Les montants reviennent de Postgres en chaines : numeric n a pas de
    correspondance sure en JavaScript, le pilote prefere donc ne rien
