@@ -1,12 +1,13 @@
 /* LES PUBLICATIONS : le fil, les reponses, les reactions, les
    signalements, et l abonnement au direct. */
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { chargerProfilsPublics } from "@/domaines/profil";
 import { trackCommunityPost } from "@/domaines/succes";
-import type { CommunityPost, CommunityReply, VictoryReel, PostFilterType, PostSortOption } from "@/domaines/social/types";
+import type { CommunityPost, PostFilterType, PostSortOption } from "@/domaines/social/types";
+import { TypeDeReaction, retoucherLesVideos } from "@/domaines/social/hooks/useReactions";
 
 const PAGE_SIZE = 20;
 
@@ -168,34 +169,6 @@ export function useFilEnDirect() {
   }, [queryClient]);
 }
 
-// Fetch replies for a specific post
-export function usePostReplies(postId: string | undefined) {
-  return useQuery({
-    queryKey: ["post-replies", postId],
-    queryFn: async () => {
-      if (!postId) return [];
-
-      const { data: replies, error } = await (supabase
-        .from("community_replies")
-        .select("*")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true }));
-
-      if (error) throw error;
-      if (!replies || replies.length === 0) return [];
-
-      const userIds = [...new Set(replies.map((r) => r.user_id))] as string[];
-      const profilesMap = await chargerProfilsPublics(userIds);
-
-      return replies.map((reply) => ({
-        ...reply,
-        profile: profilesMap.get(reply.user_id)
-      })) as CommunityReply[];
-    },
-    enabled: !!postId,
-  });
-}
-
 // Create a new post (with denormalized goal_name)
 export function useCreatePost() {
   const queryClient = useQueryClient();
@@ -311,8 +284,7 @@ export function useDeletePost() {
    au tri populaire. Les laisser diverger ferait remonter une
    publication dans le classement sans que son chiffre bouge. */
 
-type CibleReaction = { post_id?: string; reel_id?: string; reaction_type: TypeDeReaction };
-type TypeDeReaction = 'support' | 'respect' | 'inspired';
+export type CibleReaction = { post_id?: string; reel_id?: string; reaction_type: TypeDeReaction };
 
 /** Applique un delta a une publication dans toutes les pages en cache. */
 function retoucherLeFil(
@@ -348,33 +320,8 @@ function retoucherLeFil(
   );
 }
 
-/** Le meme geste, sur une video. */
-function retoucherLesVideos(
-  queryClient: ReturnType<typeof useQueryClient>,
-  reelId: string,
-  type: TypeDeReaction,
-  delta: 1 | -1,
-) {
-  queryClient.setQueriesData<VictoryReel[]>({ queryKey: ["victory-reels"] }, (ancien) => {
-    if (!ancien) return ancien;
-    return ancien.map((r) => {
-      if (r.id !== reelId) return r;
-      const compte = { ...(r.reactions_count ?? { support: 0, respect: 0, inspired: 0 }) };
-      compte[type] = Math.max(0, (compte[type] ?? 0) + delta);
-      return {
-        ...r,
-        [`${type}_count`]: compte[type],
-        reactions_count: compte,
-        user_reactions: delta === 1
-          ? [...(r.user_reactions ?? []), type]
-          : (r.user_reactions ?? []).filter((x) => x !== type),
-      } as VictoryReel;
-    });
-  });
-}
-
 /** Pose le delta et rend de quoi revenir en arriere si l ecriture echoue. */
-async function poserEnAvance(
+export async function poserEnAvance(
   queryClient: ReturnType<typeof useQueryClient>,
   cible: CibleReaction,
   delta: 1 | -1,
@@ -389,125 +336,11 @@ async function poserEnAvance(
   return { avant };
 }
 
-function remettreCommeAvant(
+export function remettreCommeAvant(
   queryClient: ReturnType<typeof useQueryClient>,
   contexte: { avant: [readonly unknown[], unknown][] } | undefined,
 ) {
   contexte?.avant.forEach(([cle, valeur]) => queryClient.setQueryData(cle, valeur));
-}
-
-// Add a reaction
-export function useAddReaction() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (data: CibleReaction) => {
-      if (!user) throw new Error("Must be logged in");
-
-      const { error } = await (supabase
-        .from("community_reactions")
-        .insert({
-          user_id: user.id,
-          post_id: data.post_id || null,
-          reel_id: data.reel_id || null,
-          reaction_type: data.reaction_type
-        }));
-
-      if (error) throw error;
-    },
-    onMutate: (data) => poserEnAvance(queryClient, data, 1),
-    onError: (_e, _v, contexte) => remettreCommeAvant(queryClient, contexte),
-  });
-}
-
-// Remove a reaction
-export function useRemoveReaction() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (data: CibleReaction) => {
-      if (!user) throw new Error("Must be logged in");
-      /* Une reaction porte un post OU une video, jamais ni l un ni
-         l autre : sans ce garde-fou, la suppression n aurait porte que
-         sur l utilisateur et le type, et aurait efface toutes ses
-         reactions de ce type. La base l interdit deja par
-         chk_post_or_reel ; on ne compte pas dessus pour un DELETE. */
-      if (!data.post_id && !data.reel_id) throw new Error("post_id ou reel_id requis");
-
-      let query = supabase
-        .from("community_reactions")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("reaction_type", data.reaction_type);
-
-      if (data.post_id) {
-        query = query.eq("post_id", data.post_id);
-      }
-      if (data.reel_id) {
-        query = query.eq("reel_id", data.reel_id);
-      }
-
-      const { error } = await query;
-      if (error) throw error;
-    },
-    onMutate: (data) => poserEnAvance(queryClient, data, -1),
-    onError: (_e, _v, contexte) => remettreCommeAvant(queryClient, contexte),
-  });
-}
-
-// Add a reply
-export function useAddReply() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (data: { post_id: string; content: string }) => {
-      if (!user) throw new Error("Must be logged in");
-
-      const { data: reply, error } = await (supabase
-        .from("community_replies")
-        .insert({
-          user_id: user.id,
-          post_id: data.post_id,
-          content: data.content
-        })
-        .select()
-        .single());
-
-      if (error) throw error;
-      return reply;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["post-replies", variables.post_id] });
-      queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-    }
-  });
-}
-
-// Delete a reply
-export function useDeleteReply() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (data: { replyId: string; postId: string }) => {
-      if (!user) throw new Error("Must be logged in");
-
-      const { error } = await (supabase
-        .from("community_replies")
-        .delete()
-        .eq("id", data.replyId)
-        .eq("user_id", user.id));
-
-      if (error) throw error;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["post-replies", variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-    }
-  });
 }
 
 // Report content
@@ -536,3 +369,6 @@ export function useReportContent() {
     }
   });
 }
+/* Reexportes : les appelants importaient ces hooks depuis ce fichier. */
+export { useAddReaction, useRemoveReaction } from "@/domaines/social/hooks/useReactions";
+export { usePostReplies, useAddReply, useDeleteReply } from "@/domaines/social/hooks/useReponses";

@@ -39,7 +39,6 @@
   "src/domaines/social/composants/GuildRaidsPanel.tsx": 437,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/social/hooks/useGuilds.ts": 584,
-  "src/domaines/social/hooks/usePublications.ts": 539,
   "src/domaines/souhaits/pages/Wishlist.tsx": 781,
   "src/domaines/succes/pages/Achievements.tsx": 609,
   "src/domaines/taches/hooks/useTodoList.ts": 472,
