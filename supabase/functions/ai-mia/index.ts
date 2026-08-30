@@ -19,8 +19,9 @@ import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage }
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 import { bornesDeLEvenement, choixOuDefaut, drapeau, valeurOuNulle } from "./charges.ts";
 import { PLAFOND_EVENEMENTS, fenetreAutour, fenetreEnArriere, resumeDuFocus } from "./resumes.ts";
+import { listeRendue, pourSonder } from "./listes.ts";
 import {
-  AVEU_SANS_TEXTE, aveuDInterruption, estLeDernierTour, metadonneesDuMessage,
+  AVEU_SANS_TEXTE, aveuDInterruption, echecDeLOutil, estLeDernierTour, metadonneesDuMessage,
   raisonDeLInterruption, type Action, type Citation,
 } from "./echange.ts";
 
@@ -159,12 +160,14 @@ async function runTool(
         .eq("id", userId)
         .maybeSingle();
       const activePactId = profile?.active_pact_id ?? null;
+      /* UNE LIGNE DE PLUS QUE LE PLAFOND : voir listes.ts. */
+      const plafond = limiteDemandee(args?.limit, 20);
       const { data } = await supabase
         .from("goals")
         .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus,pact_id")
         .in("pact_id", ids)
         .in("status", ["in_progress", "not_started"])
-        .limit(limiteDemandee(args?.limit, 20));
+        .limit(pourSonder(plafond));
       const enriched = (data ?? [])
         .map((g) => ({ ...g, is_active_pact: g.pact_id === activePactId }))
         .sort((a, b) => {
@@ -173,9 +176,10 @@ async function runTool(
           if (a.status !== b.status) return a.status === "in_progress" ? -1 : 1;
           return 0;
         });
-      return JSON.stringify(enriched);
+      return JSON.stringify(listeRendue(enriched, plafond));
     }
     if (name === "list_recent_journal") {
+      const plafond = limiteDemandee(args?.limit, 10);
       const { data } = await supabase
         .from("journal_entries")
         .select("title,mood,content,created_at")
@@ -183,13 +187,13 @@ async function runTool(
         .order("created_at", { ascending: false })
         /* Le modele peut rendre « 10 » en chaine : .limit() attend un
            nombre, et une chaine partait telle quelle dans l'URL. */
-        .limit(limiteDemandee(args?.limit, 10))
+        .limit(pourSonder(plafond))
         .returns<LigneJournal[]>();
       const trimmed = (data ?? []).map((e) => ({
         ...e,
         content: texteBorne(e.content, LONGUEUR_EXTRAIT_JOURNAL),
       }));
-      return JSON.stringify(trimmed);
+      return JSON.stringify(listeRendue(trimmed, plafond));
     }
     if (name === "list_user_values") {
       const [{ data: values }, { data: areas }] = await Promise.all([
@@ -246,10 +250,8 @@ async function runTool(
         life_area_id: valeurOuNulle(args?.life_area_id),
       };
       const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
-      if (error) {
-        receipts.action = { tool: "create_goal", status: "error", label: nm, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "create_goal", nm, error.message);
       receipts.action = { tool: "create_goal", status: "ok", label: data.name, ref_id: data.id, ref_type: "goal" };
       return JSON.stringify({ ok: true, goal: data });
     }
@@ -271,10 +273,8 @@ async function runTool(
         life_area_id: valeurOuNulle(args?.life_area_id),
       };
       const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
-      if (error) {
-        receipts.action = { tool: "create_habit_goal", status: "error", label: nm, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "create_habit_goal", nm, error.message);
       receipts.action = { tool: "create_habit_goal", status: "ok", label: data.name, ref_id: data.id, ref_type: "goal" };
       return JSON.stringify({ ok: true, habit: data });
     }
@@ -290,10 +290,8 @@ async function runTool(
         category: choixOuDefaut(args?.category, "general"),
         task_type: "flexible",
       }).select("id,name").single();
-      if (error) {
-        receipts.action = { tool: "create_todo", status: "error", label: nm, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "create_todo", nm, error.message);
       receipts.action = { tool: "create_todo", status: "ok", label: data.name, ref_id: data.id, ref_type: "todo" };
       return JSON.stringify({ ok: true, todo: data });
     }
@@ -304,10 +302,8 @@ async function runTool(
       const payload: Record<string, unknown> = { user_id: userId, title, content };
       if (typeof args?.mood === "string" && args.mood.trim()) payload.mood = args.mood.trim();
       const { data, error } = await supabase.from("journal_entries").insert(payload).select("id,title").single();
-      if (error) {
-        receipts.action = { tool: "create_journal_entry", status: "error", label: title, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "create_journal_entry", title, error.message);
       receipts.action = { tool: "create_journal_entry", status: "ok", label: data.title, ref_id: data.id, ref_type: "journal" };
       return JSON.stringify({ ok: true, entry: data });
     }
@@ -328,17 +324,18 @@ async function runTool(
       const parId = new Map((buts ?? []).map((g: { id: string; name: string }) => [g.id, g.name]));
       const idsButs = args?.goal_id ? [args.goal_id] : [...parId.keys()];
       if (!idsButs.length) return JSON.stringify([]);
+      const plafond = limiteDemandee(args?.limit, 40);
       let q = supabase
         .from("steps")
         .select("id,goal_id,title,status,due_date,order")
         .in("goal_id", idsButs)
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(limiteDemandee(args?.limit, 40));
+        .limit(pourSonder(plafond));
       if (args?.only_pending !== false) q = q.eq("status", "pending");
       const { data } = await q;
-      return JSON.stringify(
-        (data ?? []).map((s: Record<string, unknown>) => ({ ...s, objectif: parId.get(s.goal_id as string) })),
-      );
+      const nommees = (data ?? [])
+        .map((s: Record<string, unknown>) => ({ ...s, objectif: parId.get(s.goal_id as string) }));
+      return JSON.stringify(listeRendue(nommees, plafond));
     }
 
     if (name === "complete_step") {
@@ -348,10 +345,8 @@ async function runTool(
         .eq("id", args?.step_id)
         .select("id,title")
         .maybeSingle();
-      if (error || !data) {
-        receipts.action = { tool: "complete_step", status: "error", label: String(args?.step_id ?? ""), error: error?.message ?? "étape introuvable" };
-        return JSON.stringify({ error: error?.message ?? "not_found" });
-      }
+      if (error || !data)
+        return echecDeLOutil(receipts, "complete_step", String(args?.step_id ?? ""), error?.message ?? "étape introuvable", error?.message ?? "not_found");
       receipts.action = { tool: "complete_step", status: "ok", label: data.title, ref_id: data.id, ref_type: "step" };
       return JSON.stringify({ ok: true, step: data });
     }
@@ -370,10 +365,8 @@ async function runTool(
         .insert({ goal_id: args?.goal_id, title: titre, status: "pending", order: rang, due_date: args?.due_date ?? null })
         .select("id,title")
         .single();
-      if (error) {
-        receipts.action = { tool: "add_step", status: "error", label: titre, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "add_step", titre, error.message);
       receipts.action = { tool: "add_step", status: "ok", label: data.title, ref_id: data.id, ref_type: "step" };
       return JSON.stringify({ ok: true, step: data });
     }
@@ -385,24 +378,23 @@ async function runTool(
         .eq("id", args?.step_id)
         .select("id,title,due_date")
         .maybeSingle();
-      if (error || !data) {
-        receipts.action = { tool: "reschedule_step", status: "error", label: String(args?.step_id ?? ""), error: error?.message ?? "étape introuvable" };
-        return JSON.stringify({ error: error?.message ?? "not_found" });
-      }
+      if (error || !data)
+        return echecDeLOutil(receipts, "reschedule_step", String(args?.step_id ?? ""), error?.message ?? "étape introuvable", error?.message ?? "not_found");
       receipts.action = { tool: "reschedule_step", status: "ok", label: `${data.title} → ${data.due_date ?? "sans échéance"}`, ref_id: data.id, ref_type: "step" };
       return JSON.stringify({ ok: true, step: data });
     }
 
     if (name === "list_todos") {
+      const plafond = limiteDemandee(args?.limit, 30);
       let q = supabase
         .from("todo_tasks")
         .select("id,name,deadline,priority,is_urgent,status,category,appointment_time")
         .eq("user_id", userId)
         .order("deadline", { ascending: true, nullsFirst: false })
-        .limit(limiteDemandee(args?.limit, 30));
+        .limit(pourSonder(plafond));
       if (!args?.include_done) q = q.eq("status", "active");
       const { data } = await q;
-      return JSON.stringify(data ?? []);
+      return JSON.stringify(listeRendue(data, plafond));
     }
 
     if (name === "complete_todo") {
@@ -413,10 +405,8 @@ async function runTool(
         .eq("user_id", userId)
         .select("id,name")
         .maybeSingle();
-      if (error || !data) {
-        receipts.action = { tool: "complete_todo", status: "error", label: String(args?.todo_id ?? ""), error: error?.message ?? "tâche introuvable" };
-        return JSON.stringify({ error: error?.message ?? "not_found" });
-      }
+      if (error || !data)
+        return echecDeLOutil(receipts, "complete_todo", String(args?.todo_id ?? ""), error?.message ?? "tâche introuvable", error?.message ?? "not_found");
       receipts.action = { tool: "complete_todo", status: "ok", label: data.name, ref_id: data.id, ref_type: "todo" };
       return JSON.stringify({ ok: true, todo: data });
     }
@@ -429,10 +419,8 @@ async function runTool(
         .eq("user_id", userId)
         .select("id,name,deadline")
         .maybeSingle();
-      if (error || !data) {
-        receipts.action = { tool: "reschedule_todo", status: "error", label: String(args?.todo_id ?? ""), error: error?.message ?? "tâche introuvable" };
-        return JSON.stringify({ error: error?.message ?? "not_found" });
-      }
+      if (error || !data)
+        return echecDeLOutil(receipts, "reschedule_todo", String(args?.todo_id ?? ""), error?.message ?? "tâche introuvable", error?.message ?? "not_found");
       receipts.action = { tool: "reschedule_todo", status: "ok", label: `${data.name} → ${data.deadline ?? "sans échéance"}`, ref_id: data.id, ref_type: "todo" };
       return JSON.stringify({ ok: true, todo: data });
     }
@@ -501,23 +489,22 @@ async function runTool(
         })
         .select("id,title,start_time")
         .single();
-      if (error) {
-        receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "create_calendar_event", titre, error.message);
       receipts.action = { tool: "create_calendar_event", status: "ok", label: data.title, ref_id: data.id, ref_type: "event" };
       return JSON.stringify({ ok: true, event: data });
     }
 
     if (name === "list_wishlist") {
+      const plafond = limiteDemandee(args?.limit, 30);
       const { data } = await supabase
         .from("wishlist_items")
         .select("id,name,category,estimated_cost,acquired,priority,url")
         .eq("user_id", userId)
         .order("acquired", { ascending: true })
         .order("priority", { ascending: false, nullsFirst: false })
-        .limit(limiteDemandee(args?.limit, 30));
-      return JSON.stringify(data ?? []);
+        .limit(pourSonder(plafond));
+      return JSON.stringify(listeRendue(data, plafond));
     }
 
     if (name === "add_wishlist_item") {
@@ -533,10 +520,8 @@ async function runTool(
         })
         .select("id,name")
         .single();
-      if (error) {
-        receipts.action = { tool: "add_wishlist_item", status: "error", label: nm, error: error.message };
-        return JSON.stringify({ error: error.message });
-      }
+      if (error)
+        return echecDeLOutil(receipts, "add_wishlist_item", nm, error.message);
       receipts.action = { tool: "add_wishlist_item", status: "ok", label: data.name, ref_id: data.id, ref_type: "wishlist" };
       return JSON.stringify({ ok: true, item: data });
     }

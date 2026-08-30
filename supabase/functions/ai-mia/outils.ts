@@ -5,12 +5,27 @@
  * De quel COTE chacun tombe — lecture ou ecriture — se decide dans
  * `classement.ts`, parce que ce n est pas la meme question. */
 
+const FORME = "Rend {lignes, coupe, plafond} : si coupe vaut true, il existe d'autres lignes — redemander avec un limit plus grand.";
+
+/* ═══ CINQ LISTES DISENT DESORMAIS QU ELLES SONT COUPEES ═══
+
+   Elles rendaient un tableau nu. Le modele recevait trente lignes
+   sans aucun moyen de savoir s il y en avait trente ou trois cents,
+   et repondait sur ce qu il voyait. Mesure le 30/08/2026, sonde tiree
+   sur la vraie base : deux listes coupaient — trente souhaits sur
+   quatre-vingt-trois, vingt objectifs sur vingt-quatre.
+
+   Elles rendent maintenant {lignes, coupe, plafond}. La description
+   de chacune le dit, parce qu un drapeau que rien n explique est un
+   champ de plus a ignorer. Voir listes.ts pour la sonde. */
 export const TOOLS = [
   {
     type: "function",
     function: {
       name: "list_active_goals",
-      description: "Liste les goals en cours et à démarrer du user (max 20, triés in_progress puis not_started, focus en tête). Retourne id, nom, difficulté, progression, pact_id, is_active_pact.",
+      description:
+        "Liste les goals en cours et à démarrer du user (triés in_progress puis not_started, focus en tête). "
+        + "Chaque ligne porte id, nom, difficulté, progression, pact_id, is_active_pact. " + FORME,
       parameters: { type: "object", properties: { limit: { type: "number", default: 20 } } },
     },
   },
@@ -18,7 +33,7 @@ export const TOOLS = [
     type: "function",
     function: {
       name: "list_recent_journal",
-      description: "Liste les 10 dernières entrées de journal (titre, mood, extrait).",
+      description: "Liste les dernières entrées de journal (titre, mood, extrait). " + FORME,
       parameters: { type: "object", properties: { limit: { type: "number", default: 10 } } },
     },
   },
@@ -149,7 +164,8 @@ export const TOOLS = [
     function: {
       name: "list_steps",
       description:
-        "Liste les étapes d'un objectif, ou toutes les étapes en attente si aucun objectif n'est précisé. Retourne id, titre, statut, échéance, nom de l'objectif.",
+        "Liste les étapes d'un objectif, ou toutes les étapes en attente si aucun objectif n'est précisé. "
+        + "Chaque ligne porte id, titre, statut, échéance, nom de l'objectif. " + FORME,
       parameters: {
         type: "object",
         properties: {
@@ -210,7 +226,7 @@ export const TOOLS = [
     type: "function",
     function: {
       name: "list_todos",
-      description: "Liste les tâches ouvertes de l'utilisateur, échéance la plus proche en tête.",
+      description: "Liste les tâches ouvertes de l'utilisateur, échéance la plus proche en tête. " + FORME,
       parameters: {
         type: "object",
         properties: {
@@ -309,7 +325,7 @@ export const TOOLS = [
     type: "function",
     function: {
       name: "list_wishlist",
-      description: "Liste des souhaits, non acquis d'abord, avec coût estimé et priorité.",
+      description: "Liste des souhaits, non acquis d'abord, avec coût estimé et priorité. " + FORME,
       parameters: { type: "object", properties: { limit: { type: "number", default: 30 } } },
     },
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  BORNES, ilYAJours, jourDe, joursEcoules, joursRestants, limiteDemandee,
+  BORNES, ilYAJours, LIMITE_MAX, LIMITE_MIN, jourDe, joursEcoules, joursRestants, limiteDemandee,
   LONGUEUR_EXTRAIT_JOURNAL, LONGUEUR_EXTRAIT_MEMOIRE, LONGUEUR_NOM, MS_PAR_JOUR,
   nombreBorne, nomBorne, texteBorne,
 } from "./bornes";
@@ -103,7 +103,18 @@ describe("BORNES — les sept jeux, cote a cote", () => {
 
    Ces tests constatent le trou, ils ne l approuvent pas.
    ═══════════════════════════════════════════════════════════════ */
-describe("limiteDemandee — le seul argument non borne", () => {
+describe("limiteDemandee — le dernier argument a avoir ete borne", () => {
+  /* CE BLOC EPINGLAIT LE TROU ; il epingle maintenant sa fermeture.
+
+     Il tenait quatre faits, tous vrais jusqu au 30/08/2026 : aucun
+     plafond, aucun plancher, NaN qui partait dans l URL, et l ecart
+     avec `nombreBorne` qui bornait tous les AUTRES arguments du
+     fichier. Les quatre sont tombes le jour ou la limite a ete
+     bornee — c est ce qu on attend d un test qui epingle un defaut.
+
+     Le detail des regles vit dans listes.test.ts, a cote de la sonde
+     qui dit si la liste est coupee. Ici on garde ce qui compte pour
+     ce fichier-ci : la limite se comporte enfin comme ses voisines. */
   it("prend le defaut quand rien n est demande", () => {
     expect(limiteDemandee(undefined, 20)).toBe(20);
     expect(limiteDemandee(null, 20)).toBe(20);
@@ -113,31 +124,24 @@ describe("limiteDemandee — le seul argument non borne", () => {
     expect(limiteDemandee("15", 20)).toBe(15);
   });
 
-  /* AUCUN PLAFOND : un modele qui demande cent mille lignes en
-     obtient cent mille. Tous les autres arguments numeriques de ce
-     fichier sont ecretes ; celui-la, non. */
-  it("n a pas de plafond", () => {
-    expect(limiteDemandee(100000, 20)).toBe(100000);
-    expect(limiteDemandee(1e9, 20)).toBe(1e9);
+  /* ELLE SE COMPORTE DESORMAIS COMME `nombreBorne` : le meme brut,
+     borne des deux cotes. C est la comparaison qui comptait, et elle
+     ne montre plus d ecart. */
+  it("borne comme nombreBorne borne les autres", () => {
+    const b = { defaut: 20, min: LIMITE_MIN, max: LIMITE_MAX };
+    for (const brut of [100000, 1e9, -1, 0, 7, 200, 201]) {
+      expect(limiteDemandee(brut, 20), String(brut)).toBe(nombreBorne(brut, b));
+    }
   });
 
-  it("n a pas de plancher non plus", () => {
-    expect(limiteDemandee(-1, 20)).toBe(-1);
-    expect(limiteDemandee(0, 20)).toBe(0);
-  });
-
-  /* UN NOMBRE ILLISIBLE DONNE NaN, et la requete part avec
-     « limit=NaN ». */
-  it("laisse passer NaN pour une valeur illisible", () => {
-    expect(Number.isNaN(limiteDemandee("vingt", 20))).toBe(true);
-  });
-
-  /* CE QUI SUIT EST LA COMPARAISON QUI COMPTE : le meme brut, borne
-     et non borne. */
-  it("s ecarte de ce que nombreBorne aurait rendu", () => {
-    const b = { defaut: 20, min: 1, max: 100 };
-    expect(limiteDemandee(100000, 20)).toBe(100000);
-    expect(nombreBorne(100000, b)).toBe(100);
+  /* SAUF SUR UN POINT, ET C EST VOULU : `nombreBorne` ecrete une
+     valeur illisible au defaut lui aussi, mais la limite refuse en
+     plus les objets et la chaine vide, que `Number` lirait comme
+     zero — donc comme UNE ligne. */
+  it("refuse ce que Number lirait comme zero", () => {
+    expect(limiteDemandee("", 20)).toBe(20);
+    expect(limiteDemandee([], 20)).toBe(20);
+    expect(Number("")).toBe(0);
   });
 });
 

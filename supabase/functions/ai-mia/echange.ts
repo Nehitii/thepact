@@ -125,3 +125,33 @@ export function metadonneesDuMessage(
   if (!uniques.length && !actions.length) return null;
   return { citations: uniques, actions: [...actions] };
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CE QU UN OUTIL REND QUAND IL ECHOUE, ET LA TRACE QU IL LAISSE.
+
+   Onze outils d ecriture repetaient les memes quatre lignes : poser le
+   recu en erreur, puis rendre le message au modele. Quarante-quatre
+   lignes pour une seule decision.
+
+   ET LES DEUX NE DISENT PAS TOUJOURS LA MEME CHOSE. Sur les quatre
+   outils qui cherchent une ligne avant de l ecrire — cocher une etape,
+   la replanifier, et les deux memes gestes sur une tache — le recu
+   porte une PHRASE (« etape introuvable ») quand la reponse porte un
+   CODE (« not_found »). Ce n est pas un oubli : le recu est ce que
+   l ecran affiche, la reponse est ce que le modele lit, et un code
+   stable se reconnait mieux qu une phrase traduisible.
+
+   La difference passe donc par un argument, ou elle se voit, plutot
+   que par une copie ou elle se perdrait. Sans lui, les deux messages
+   sont le meme — c est le cas des sept autres. */
+export function echecDeLOutil(
+  recu: { action?: Action },
+  outil: string,
+  intitule: string,
+  message: string,
+  /** Ce que le MODELE lit, quand ce n est pas ce que l ecran affiche. */
+  reponse: string = message,
+): string {
+  recu.action = { tool: outil, status: "error", label: intitule, error: message };
+  return JSON.stringify({ error: reponse });
+}

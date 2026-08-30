@@ -51,19 +51,44 @@ export const BORNES: Record<string, Bornes> = {
 
 /* ── COMBIEN DE LIGNES LIRE ──────────────────────────────────── */
 
-/* CINQ OUTILS LAISSENT LE MODELE CHOISIR, SANS AUCUNE BORNE.
+/* ═══ CINQ OUTILS LAISSAIENT LE MODELE CHOISIR, SANS AUCUNE BORNE ═══
  *
- * `Number(args?.limit ?? 20)` : c est tout. Un modele qui demande
- * cent mille lignes en obtient cent mille ; un modele qui repond
- * « vingt » en toutes lettres produit NaN, et la requete part avec
- * `limit=NaN`. Tous les AUTRES arguments numeriques de ce fichier
- * sont ecretes — celui-la, non.
+ * C etait `Number(args?.limit ?? 20)`, et rien d autre. Un modele qui
+ * demandait cent mille lignes en obtenait cent mille ; un modele qui
+ * repondait « vingt » en toutes lettres produisait NaN, et la requete
+ * partait avec `limit=NaN` ; un `limit` a zero rendait une liste vide
+ * qui se lisait comme « tu n as rien ». Tous les AUTRES arguments
+ * numeriques de ce fichier etaient ecretes — celui-la, non.
  *
- * Cette fonction reproduit le comportement actuel, sans le corriger :
- * lui donner un plafond changerait ce que M.I.A peut lire. Elle
- * existe pour que le trou ait un nom et un test. */
+ * IL L EST DESORMAIS, comme les autres, et par les memes trois regles :
+ * ce qui ne se lit pas comme un nombre retombe sur le defaut, le reste
+ * est ramene entre les bornes.
+ *
+ * LE PLAFOND N EST PAS LA POUR ECONOMISER LA BASE mais le contexte du
+ * modele : deux cents lignes d une liste de souhaits pesent deja plus
+ * que la question posee. Deux cents couvre largement les comptes
+ * releves — le plus fourni porte quatre-vingt-trois articles — sans
+ * laisser passer un ordre de grandeur de plus.
+ *
+ * ET UN PLAFOND ATTEINT SE DIT : voir listes.ts, qui sonde une ligne
+ * au-dela pour savoir s il en reste. */
+export const LIMITE_MIN = 1;
+export const LIMITE_MAX = 200;
+
 export function limiteDemandee(brut: unknown, defaut: number): number {
-  return Number(brut ?? defaut);
+  /* SEULS UN NOMBRE OU UNE CHAINE QUI SE LIT COMME UN NOMBRE SONT
+     ACCEPTES. `Number("")` et `Number([])` valent ZERO, pas NaN : sans
+     ce filtre, une limite vide ou un tableau vide seraient remontes au
+     minimum, c est-a-dire UNE ligne. Or une chaine vide ne dit pas
+     « une seule », elle dit « je n ai pas su remplir » — et la reponse
+     a cela est le defaut. */
+  if (brut === null || brut === undefined || brut === "" || typeof brut === "object") return defaut;
+  /* `Math.floor` et non `Math.round` : demander 2,7 lignes en donne
+     deux, jamais trois. Une limite fractionnaire partait telle quelle
+     dans l URL. */
+  const n = Math.floor(Number(brut));
+  if (!Number.isFinite(n)) return defaut;
+  return Math.min(Math.max(n, LIMITE_MIN), LIMITE_MAX);
 }
 
 /* ── LES TEXTES ──────────────────────────────────────────────── */
