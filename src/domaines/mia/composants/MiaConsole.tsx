@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  accorde, hauteurDuChamp, largeurDepuisLePointeur, largeurRetenue,
+  LARGEUR_DEFAUT, partEcoulee, pluriel, titreDuFil,
+} from "@/domaines/mia/logique/console";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -79,10 +83,6 @@ const PHASE_DITE: Record<string, string> = {
   critique: "phase critique",
 };
 
-const LARGEUR_DEFAUT = 560;
-const LARGEUR_MIN = 380;
-const LARGEUR_MAX = 900;
-
 export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   const { conversations, create, archive, renommer } = useFilsMia();
   const [filActif, setFilActif] = useState<string | null>(null);
@@ -118,8 +118,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
      lecture, pas un réglage de compte. */
   const [largeur, setLargeur] = useState(() => {
     try {
-      const v = Number(localStorage.getItem(PREF.MIA_LARGEUR));
-      return Number.isFinite(v) && v >= LARGEUR_MIN && v <= LARGEUR_MAX ? v : LARGEUR_DEFAUT;
+      return largeurRetenue(localStorage.getItem(PREF.MIA_LARGEUR));
     } catch {
       return LARGEUR_DEFAUT;
     }
@@ -199,9 +198,9 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
        en cours : 59. Le bandeau dit ce qu'il reste à faire, pas la taille
        du projet. */
     const reste = o?.restantEnCours ?? 0;
-    if (reste) morceaux.push({ rang: 2, texte: `${reste} étape${reste > 1 ? "s" : ""} restante${reste > 1 ? "s" : ""}` });
+    if (reste) morceaux.push({ rang: 2, texte: `${accorde(reste, "étape")} restante${pluriel(reste)}` });
     const ouvertes = etatDuJour?.taches.ouvertes ?? 0;
-    if (ouvertes) morceaux.push({ rang: 3, texte: `${ouvertes} tâche${ouvertes > 1 ? "s" : ""}` });
+    if (ouvertes) morceaux.push({ rang: 3, texte: accorde(ouvertes, "tâche") });
 
     return {
       teinte,
@@ -209,8 +208,8 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
          c'est une lumière, pas une pastille de couleur. */
       halo: teinte ? ({ "--mia-halo": `${teinte}${sombre ? "26" : "1A"}` } as CSSProperties) : {},
       ligne: PHASE_DITE[phase] ?? "mysterious intelligence array",
-      grand: p ? `${p.reste} jour${p.reste > 1 ? "s" : ""}` : null,
-      pct: p ? Math.min(100, Math.max(0, p.pctEcoule)) : 0,
+      grand: p ? accorde(p.reste, "jour") : null,
+      pct: partEcoulee(p?.pctEcoule),
       detail: morceaux.length ? morceaux : [{ rang: 1, texte: "aucun pacte en cours" }],
     };
   }, [etatDuJour, sombre]);
@@ -249,7 +248,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
   useEffect(() => {
     if (!redim) return;
     const bouger = (e: PointerEvent) => {
-      const l = Math.min(LARGEUR_MAX, Math.max(LARGEUR_MIN, window.innerWidth - e.clientX));
+      const l = largeurDepuisLePointeur(window.innerWidth, e.clientX);
       setLargeur(l);
     };
     const lacher = () => {
@@ -355,7 +354,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
        composant, elles pouvaient se passer de conversation. Maintenant
        qu'elles écrivent, il leur faut un endroit où écrire. */
     if ((reflexe || geste) && !filActif) {
-      const fil = await create(texte.slice(0, 60));
+      const fil = await create(titreDuFil(texte));
       setFilActif(fil.id);
       const libre = reflexe ?? geste!;
       await ecrireEchange(fil.id, {
@@ -390,7 +389,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
          `if (!conversationId) return`. On pose le message en attente et
          on l'envoie quand `send` pointe bien sur le nouveau fil. */
       enAttente.current = texte;
-      const fil = await create(texte.slice(0, 60));
+      const fil = await create(titreDuFil(texte));
       setFilActif(fil.id);
       return;
     }
@@ -429,10 +428,9 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     const el = champRef.current;
     if (!el) return;
     el.style.height = "auto";
-    const plafond = 168;
-    const voulue = Math.min(plafond, el.scrollHeight);
-    el.style.height = `${voulue}px`;
-    if (el.scrollHeight > plafond) el.dataset.plein = "";
+    const { hauteur, plein } = hauteurDuChamp(el.scrollHeight);
+    el.style.height = `${hauteur}px`;
+    if (plein) el.dataset.plein = "";
     else delete el.dataset.plein;
   }, []);
 
@@ -546,7 +544,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
               <ChevronDown className="h-3 w-3" />
               <span className="mia-fil-titre">{titreCourant}</span>
               <span className="mia-fil-compte">
-                {conversations.length} fil{conversations.length > 1 ? "s" : ""}
+                {accorde(conversations.length, "fil")}
               </span>
             </button>
 
