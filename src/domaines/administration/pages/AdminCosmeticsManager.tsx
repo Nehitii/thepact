@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import {
+  decalageAjuste, filtrerLesArticles, PRIX_PAR_DEFAUT, prixAffiche,
+  prixSaisi, RARETE_PAR_DEFAUT,
+} from "@/domaines/administration/logique/cosmetiques";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { supabase } from "@/socle/supabase/client";
 import { Button } from "@/socle/ui/button";
@@ -111,13 +115,13 @@ export default function AdminCosmeticsManager() {
     if (!editingFrame?.name) return;
     const frameData = {
       name: editingFrame.name,
-      rarity: editingFrame.rarity || "common",
+      rarity: editingFrame.rarity || RARETE_PAR_DEFAUT,
       preview_url: editingFrame.preview_url || null,
       border_color: editingFrame.border_color || "#5bb4ff",
       glow_color: editingFrame.glow_color || "rgba(91,180,255,0.5)",
       is_active: editingFrame.is_active ?? true,
       is_default: editingFrame.is_default ?? false,
-      price: editingFrame.price || 450,
+      price: prixAffiche(editingFrame.price, PRIX_PAR_DEFAUT.cadre),
       frame_scale: editingFrame.frame_scale ?? 1.0,
       frame_offset_x: editingFrame.frame_offset_x ?? 0,
       frame_offset_y: editingFrame.frame_offset_y ?? 0,
@@ -156,14 +160,14 @@ export default function AdminCosmeticsManager() {
     if (!editingBanner?.name) return;
     const bannerData = {
       name: editingBanner.name,
-      rarity: editingBanner.rarity || "common",
+      rarity: editingBanner.rarity || RARETE_PAR_DEFAUT,
       preview_url: editingBanner.preview_url || null,
       banner_url: bannerCreationMode === "image" ? editingBanner.banner_url : null,
       gradient_start: bannerCreationMode === "classic" ? (editingBanner.gradient_start || "#0a0a12") : null,
       gradient_end: bannerCreationMode === "classic" ? (editingBanner.gradient_end || "#1a1a2e") : null,
       is_active: editingBanner.is_active ?? true,
       is_default: editingBanner.is_default ?? false,
-      price: editingBanner.price || 650,
+      price: prixAffiche(editingBanner.price, PRIX_PAR_DEFAUT.banniere),
     };
     if (editingBanner.id) {
       await supabase.from("cosmetic_banners").update(bannerData).eq("id", editingBanner.id);
@@ -197,12 +201,12 @@ export default function AdminCosmeticsManager() {
     if (!editingTitle?.title_text) return;
     const titleData = {
       title_text: editingTitle.title_text,
-      rarity: editingTitle.rarity || "common",
+      rarity: editingTitle.rarity || RARETE_PAR_DEFAUT,
       glow_color: editingTitle.glow_color || "rgba(91,180,255,0.5)",
       text_color: editingTitle.text_color || "#5bb4ff",
       is_active: editingTitle.is_active ?? true,
       is_default: editingTitle.is_default ?? false,
-      price: editingTitle.price || 450,
+      price: prixAffiche(editingTitle.price, PRIX_PAR_DEFAUT.titre),
     };
     if (editingTitle.id) {
       await supabase.from("cosmetic_titles").update(titleData).eq("id", editingTitle.id);
@@ -231,14 +235,8 @@ export default function AdminCosmeticsManager() {
     loadAllCosmetics();
   };
 
-  const filterItems = <T extends { name?: string; title_text?: string }>(items: T[]) => {
-    if (!searchQuery) return items;
-    const q = searchQuery.toLowerCase();
-    return items.filter(item => 
-      (item.name?.toLowerCase().includes(q)) || 
-      (item.title_text?.toLowerCase().includes(q))
-    );
-  };
+  const filterItems = <T extends { name?: string; title_text?: string }>(items: T[]) =>
+    filtrerLesArticles(items, searchQuery);
 
   return (
     <AdminPageShell titre="Cosmétiques" sous="Cadres, bannières et titres portés par les profils" icone={<Palette aria-hidden="true" />}>
@@ -484,13 +482,13 @@ export default function AdminCosmeticsManager() {
                             <Label className="text-xs text-primary/60">Décalage horizontal (%)</Label>
                             <div className="flex items-center gap-2">
                               <Button type="button" size="icon" variant="ghost"
-                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: Math.round(((editingFrame.frame_offset_x ?? 0) - 1) * 10) / 10 })}
+                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: decalageAjuste(editingFrame.frame_offset_x, -1) })}
                                 className="h-6 w-6 text-primary/60 hover:text-primary">-</Button>
                               <Input type="number" step="0.5" value={editingFrame.frame_offset_x ?? 0}
                                 onChange={(e) => setEditingFrame({ ...editingFrame, frame_offset_x: parseFloat(e.target.value) || 0 })}
                                 className="bg-card/50 border-primary/30 text-primary text-center h-8 text-xs" />
                               <Button type="button" size="icon" variant="ghost"
-                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: Math.round(((editingFrame.frame_offset_x ?? 0) + 1) * 10) / 10 })}
+                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_x: decalageAjuste(editingFrame.frame_offset_x, +1) })}
                                 className="h-6 w-6 text-primary/60 hover:text-primary">+</Button>
                             </div>
                           </div>
@@ -498,13 +496,13 @@ export default function AdminCosmeticsManager() {
                             <Label className="text-xs text-primary/60">Décalage vertical (%)</Label>
                             <div className="flex items-center gap-2">
                               <Button type="button" size="icon" variant="ghost"
-                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_y: Math.round(((editingFrame.frame_offset_y ?? 0) - 1) * 10) / 10 })}
+                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_y: decalageAjuste(editingFrame.frame_offset_y, -1) })}
                                 className="h-6 w-6 text-primary/60 hover:text-primary">-</Button>
                               <Input type="number" step="0.5" value={editingFrame.frame_offset_y ?? 0}
                                 onChange={(e) => setEditingFrame({ ...editingFrame, frame_offset_y: parseFloat(e.target.value) || 0 })}
                                 className="bg-card/50 border-primary/30 text-primary text-center h-8 text-xs" />
                               <Button type="button" size="icon" variant="ghost"
-                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_y: Math.round(((editingFrame.frame_offset_y ?? 0) + 1) * 10) / 10 })}
+                                onClick={() => setEditingFrame({ ...editingFrame, frame_offset_y: decalageAjuste(editingFrame.frame_offset_y, +1) })}
                                 className="h-6 w-6 text-primary/60 hover:text-primary">+</Button>
                             </div>
                           </div>
@@ -540,7 +538,7 @@ export default function AdminCosmeticsManager() {
 
                 <div>
                   <Label className="text-primary/80">Prix en Bonds</Label>
-                  <Input type="number" value={editingFrame?.price || 450} onChange={(e) => setEditingFrame({ ...editingFrame, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
+                  <Input type="number" value={prixAffiche(editingFrame?.price, PRIX_PAR_DEFAUT.cadre)} onChange={(e) => setEditingFrame({ ...editingFrame, price: prixSaisi(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -667,7 +665,7 @@ export default function AdminCosmeticsManager() {
 
                 <div>
                   <Label className="text-primary/80">Prix en Bonds</Label>
-                  <Input type="number" value={editingBanner?.price || 650} onChange={(e) => setEditingBanner({ ...editingBanner, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
+                  <Input type="number" value={prixAffiche(editingBanner?.price, PRIX_PAR_DEFAUT.banniere)} onChange={(e) => setEditingBanner({ ...editingBanner, price: prixSaisi(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-primary/80">En boutique</Label>
@@ -756,7 +754,7 @@ export default function AdminCosmeticsManager() {
                 </div>
                 <div>
                   <Label className="text-primary/80">Prix en Bonds</Label>
-                  <Input type="number" value={editingTitle?.price || 450} onChange={(e) => setEditingTitle({ ...editingTitle, price: parseInt(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
+                  <Input type="number" value={prixAffiche(editingTitle?.price, PRIX_PAR_DEFAUT.titre)} onChange={(e) => setEditingTitle({ ...editingTitle, price: prixSaisi(e.target.value) })} className="bg-card/50 border-primary/30 text-primary" />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-primary/80">En boutique</Label>
