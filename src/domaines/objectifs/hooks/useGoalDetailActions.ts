@@ -414,7 +414,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
       const { data: newGoal, error: goalError } = await supabase
         .from("goals")
-        .insert(objectifCopie(goal, pactResult.id, t("goals.detail.toasts.copySuffix"), new Date().toISOString()))
+        .insert(objectifCopie(goal, pactResult.id, t("goals.detail.toasts.copySuffix")))
         .select()
         .single();
       if (goalError) throw goalError;

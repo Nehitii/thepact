@@ -49,7 +49,6 @@ export function objectifCopie(
   goal: ObjectifACopier,
   pactId: string,
   suffixe: string,
-  maintenant: string,
 ): TablesInsert<"goals"> {
   return {
     pact_id: pactId,
@@ -60,11 +59,24 @@ export function objectifCopie(
     notes: goal.notes,
     total_steps: goal.total_steps,
     potential_score: goal.potential_score,
-    /* LA COPIE NAIT AUJOURD HUI ET N EST PAS COMMENCEE. Recopier la
-       date de depart, le statut ou la date d echeance ferait naitre
-       un objectif deja en retard sur un parcours qui n est pas le
-       sien. */
-    start_date: maintenant,
+    /* ═══ UNE COPIE NE PORTE AUCUNE DATE ═══
+
+       Le statut et l echeance ne suivaient deja pas : les recopier
+       ferait naitre un objectif deja en retard sur un parcours qui
+       n est pas le sien.
+
+       LE DEPART NON PLUS, DESORMAIS. Il valait « maintenant » — la
+       copie naissait donc commencee le jour ou on la faisait, ce que
+       personne n avait declare. C etait le dernier endroit ou
+       l application posait une date de depart a la place de
+       quelqu un ; la case « je sais quand j ai commence » a retire
+       les autres.
+
+       Une copie sans depart ne compte aucune duree, et ne peut donc
+       gagner aucune des quatre distinctions de temps — voir
+       succes/logique/honneurDuTemps.ts. C est ce qu on veut : la
+       copie n a rien vecu. */
+    start_date: null,
     status: "not_started" as const,
     deadline: null,
     goal_type: goal.goal_type || "normal",

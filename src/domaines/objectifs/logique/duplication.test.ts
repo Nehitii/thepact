@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { etapesCopiees, objectifCopie, piecesCopiees, SEMAINE } from "./duplication";
 import type { ObjectifACopier } from "./duplication";
 
-const MAINTENANT = "2026-08-29T10:00:00.000Z";
 
 const OBJECTIF: ObjectifACopier = {
   name: "Apprendre le piano",
@@ -19,7 +18,7 @@ const OBJECTIF: ObjectifACopier = {
 
 describe("objectifCopie — ce qui suit l objectif", () => {
   it("emporte le nom suffixe, le palier, le cout, les notes et l image", () => {
-    const c = objectifCopie(OBJECTIF, "pacte-1", " (Copie)", MAINTENANT);
+    const c = objectifCopie(OBJECTIF, "pacte-1", " (Copie)");
     expect(c.name).toBe("Apprendre le piano (Copie)");
     expect(c.difficulty).toBe("hard");
     expect(c.estimated_cost).toBe(240);
@@ -32,23 +31,45 @@ describe("objectifCopie — ce qui suit l objectif", () => {
 });
 
 describe("objectifCopie — ce qui NE suit PAS", () => {
-  /* LA COPIE NAIT AUJOURD HUI ET N EST PAS COMMENCEE. Recopier le
-     statut ou l echeance ferait naitre un objectif deja en retard sur
-     un parcours qui n est pas le sien. */
+  /* ═══ UNE COPIE NE PORTE AUCUNE DATE ═══
+     Le depart valait « maintenant » : la copie naissait commencee le
+     jour ou on la faisait, ce que personne n avait declare. C etait
+     le dernier endroit ou l application posait une date de depart a
+     la place de quelqu un. */
   it("ne nait ni commencee, ni datee, ni en retard", () => {
-    const c = objectifCopie(OBJECTIF, "p", " (Copie)", MAINTENANT);
+    const c = objectifCopie(OBJECTIF, "p", " (Copie)");
     expect(c.status).toBe("not_started");
-    expect(c.start_date).toBe(MAINTENANT);
+    expect(c.start_date).toBeNull();
     expect(c.deadline).toBeNull();
   });
 
+  /* ET LA COLONNE EST BIEN ENVOYEE, A NULL. L omettre laisserait le
+     defaut `now()` de la base poser le jour courant — exactement ce
+     qu on retire ici. */
+  it("envoie le depart, et l envoie nul", () => {
+    const c = objectifCopie(OBJECTIF, "p", " (Copie)");
+    expect("start_date" in c).toBe(true);
+    expect(c.start_date).toBeNull();
+  });
+
+  /* SANS DEPART, AUCUNE DISTINCTION DE TEMPS. Une copie n a rien vecu ;
+     elle ne doit rien gagner sur la duree. Le lien s ecrit ici et ne
+     s importe pas : honneursDuTemps rend une liste vide pour une duree
+     inconnue — c est son propre test qui le tient, et croiser les deux
+     domaines pour le redire coupleraient objectifs a succes. */
+  it("ne laisse aucune duree a mesurer", () => {
+    const c = objectifCopie({ ...OBJECTIF, difficulty: "impossible" }, "p", " (C)");
+    expect(c.start_date).toBeNull();
+    expect(c.completion_date).toBeUndefined();
+  });
+
   it("ne recopie pas la date d achevement", () => {
-    const c = objectifCopie(OBJECTIF, "p", " (Copie)", MAINTENANT);
+    const c = objectifCopie(OBJECTIF, "p", " (Copie)");
     expect(c.completion_date).toBeUndefined();
   });
 
   it("ne recopie pas les etapes deja tenues", () => {
-    const c = objectifCopie(OBJECTIF, "p", " (Copie)", MAINTENANT);
+    const c = objectifCopie(OBJECTIF, "p", " (Copie)");
     expect(c.validated_steps).toBeUndefined();
   });
 });
@@ -59,13 +80,13 @@ describe("objectifCopie — les habitudes", () => {
   /* LES JOURS COCHES NE SUIVENT PAS : un tableau neuf, de la meme
      longueur. Les recopier ferait naitre une habitude a moitie tenue. */
   it("rend un tableau de jours neuf, de la longueur voulue", () => {
-    const c = objectifCopie(habitude, "p", " (Copie)", MAINTENANT);
+    const c = objectifCopie(habitude, "p", " (Copie)");
     expect(c.habit_checks).toHaveLength(30);
     expect(c.habit_checks?.every((j) => j === false)).toBe(true);
   });
 
   it("copie une habitude sans duree sur une semaine", () => {
-    const c = objectifCopie({ ...habitude, habit_duration_days: null }, "p", " (C)", MAINTENANT);
+    const c = objectifCopie({ ...habitude, habit_duration_days: null }, "p", " (C)");
     expect(c.habit_checks).toHaveLength(SEMAINE);
   });
 
@@ -79,17 +100,17 @@ describe("objectifCopie — les habitudes", () => {
      deliberement voulu : zero jour se copie sur une semaine, comme
      une duree absente. */
   it("copie une duree de zero — inatteignable — sur une semaine", () => {
-    const c = objectifCopie({ ...habitude, habit_duration_days: 0 }, "p", " (C)", MAINTENANT);
+    const c = objectifCopie({ ...habitude, habit_duration_days: 0 }, "p", " (C)");
     expect(c.habit_checks).toHaveLength(SEMAINE);
   });
 
   it("ne donne pas de jours a ce qui n est pas une habitude", () => {
-    expect(objectifCopie(OBJECTIF, "p", " (C)", MAINTENANT).habit_checks).toBeNull();
+    expect(objectifCopie(OBJECTIF, "p", " (C)").habit_checks).toBeNull();
   });
 
   /* UN OBJECTIF SANS TYPE EST UN OBJECTIF ORDINAIRE. */
   it.each([null, undefined, ""])("traite un type absent (%s) comme « normal »", (t) => {
-    const c = objectifCopie({ ...OBJECTIF, goal_type: t as never }, "p", " (C)", MAINTENANT);
+    const c = objectifCopie({ ...OBJECTIF, goal_type: t as never }, "p", " (C)");
     expect(c.goal_type).toBe("normal");
   });
 });
