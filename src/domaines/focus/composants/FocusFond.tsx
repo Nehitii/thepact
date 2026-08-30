@@ -14,8 +14,11 @@ import { useReducedMotion } from "framer-motion";
  */
 
 import type { VarianteFond } from "@/domaines/focus/logique/variantesFond";
-import { peindreMycelium, peindreMaillage, peindreMaree, peindreAurores, jetonEnRvb, initMycelium, initMaree } from "@/domaines/focus/logique/peintures";
-import { palette } from "@/domaines/focus/logique/peintures";
+import {
+  peindreMycelium, peindreMaillage, peindreMaree, peindreAurores,
+  initMycelium, initAurores, initMaillage, initMaree,
+  jetonEnRvb, palette,
+} from "@/domaines/focus/logique/peintures";
 import type { Etat } from "@/domaines/focus/types";
 export type { VarianteFond };
 
@@ -80,19 +83,9 @@ interface FocusFondProps {
    qui existe deja. C est ce qui rend ce fond huit fois moins cher que
    les autres, et le seul dont l ecran garde une memoire de la seance. */
 
-/* ═══ B — AURORES ═══ */
-function initAurores(e: Etat) {
-  e.ctx.fillStyle = palette().fond;
-  e.ctx.fillRect(0, 0, e.w, e.h);
-  e.parts = [];
-  for (let i = 0; i < 620; i++) {
-    e.parts.push({ x: Math.random() * e.w, y: Math.random() * e.h, vie: Math.random() * 260 });
-  }
-  e.temps = 0;
-}
-
-/* ═══ C — MAILLAGE ═══ */
-function initMaillage(e: Etat) { e.temps = 0; e.impulsion = 0; }
+/* Les inits des quatre scenes sont dans `peintures.ts`, avec les
+   peintres qu elles preparent : B et C vivaient ici, loin des nombres
+   auxquels les leurs doivent repondre. */
 
 const SCENES: Record<Exclude<VarianteFond, "aucun">, {
   init: (e: Etat) => void;

@@ -341,6 +341,25 @@ export function placeLibre(e: Etat): { x: number; y: number } {
   return mieux;
 }
 
+/* ═══ B — AURORES ═══ */
+export function initAurores(e: Etat) {
+  e.ctx.fillStyle = palette().fond;
+  e.ctx.fillRect(0, 0, e.w, e.h);
+  e.parts = [];
+  /* SIX CENT VINGT PARTICULES, ET UNE PREMIERE VIE PLUS COURTE QUE LES
+     SUIVANTES. Le recyclage de `peindreAurores` redonne 160 a 380
+     images ; ici c est 0 a 260, pour que la premiere generation ne
+     s eteigne pas d un bloc. Ces deux nombres doivent se tenir — et ils
+     vivaient jusqu ici dans deux fichiers differents. */
+  for (let i = 0; i < 620; i++) {
+    e.parts.push({ x: Math.random() * e.w, y: Math.random() * e.h, vie: Math.random() * 260 });
+  }
+  e.temps = 0;
+}
+
+/* ═══ C — MAILLAGE ═══ */
+export function initMaillage(e: Etat) { e.temps = 0; e.impulsion = 0; }
+
 /* ═══ D — MAREE ═══ */
 export function initMaree(e: Etat) {
   e.cols = [];
