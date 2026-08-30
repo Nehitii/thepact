@@ -4534,42 +4534,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_2fa_settings: {
-        Row: {
-          created_at: string
-          email_2fa_enabled: boolean
-          email_code: string | null
-          email_code_attempts: number
-          email_code_expires_at: string | null
-          totp_enabled: boolean
-          totp_secret: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email_2fa_enabled?: boolean
-          email_code?: string | null
-          email_code_attempts?: number
-          email_code_expires_at?: string | null
-          totp_enabled?: boolean
-          totp_secret?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email_2fa_enabled?: boolean
-          email_code?: string | null
-          email_code_attempts?: number
-          email_code_expires_at?: string | null
-          totp_enabled?: boolean
-          totp_secret?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -4730,30 +4694,6 @@ export type Database = {
           },
         ]
       }
-      user_recovery_codes: {
-        Row: {
-          code_hash: string
-          created_at: string
-          id: string
-          used_at: string | null
-          user_id: string
-        }
-        Insert: {
-          code_hash: string
-          created_at?: string
-          id?: string
-          used_at?: string | null
-          user_id: string
-        }
-        Update: {
-          code_hash?: string
-          created_at?: string
-          id?: string
-          used_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -4771,36 +4711,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_trusted_devices: {
-        Row: {
-          created_at: string
-          device_label: string | null
-          expires_at: string
-          id: string
-          last_used_at: string | null
-          token_hash: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          device_label?: string | null
-          expires_at: string
-          id?: string
-          last_used_at?: string | null
-          token_hash: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          device_label?: string | null
-          expires_at?: string
-          id?: string
-          last_used_at?: string | null
-          token_hash?: string
           user_id?: string
         }
         Relationships: []
@@ -5299,16 +5209,6 @@ export type Database = {
         Args: { p_other_id: string; p_user_id: string }
         Returns: number
       }
-      get_own_2fa_status: {
-        Args: never
-        Returns: {
-          created_at: string
-          email_2fa_enabled: boolean
-          totp_enabled: boolean
-          updated_at: string
-          user_id: string
-        }[]
-      }
       get_public_leaderboard: {
         Args: { p_limit?: number }
         Returns: {
@@ -5321,15 +5221,6 @@ export type Database = {
         }[]
       }
       get_streak_freeze_price: { Args: never; Returns: number }
-      get_user_2fa_status: {
-        Args: { p_user_id: string }
-        Returns: {
-          created_at: string
-          email_2fa_enabled: boolean
-          totp_enabled: boolean
-          updated_at: string
-        }[]
-      }
       grant_achievement: {
         Args: { p_achievement_key: string }
         Returns: boolean
