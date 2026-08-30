@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import {
+  avancementDuRituel, chargeEnPourcent, palierDe, resteEnSecondes, teinteDe,
+} from "@/domaines/appel/logique/rituel";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
@@ -28,31 +31,16 @@ import { cn } from "@/socle/outils/utils";
  * est maintenant peinte en imperatif, React ne voit que les paliers.
  */
 
-const DUREE = 20000;
 const NB_PARTICULES = 16;
 
 /* Les trois couleurs de la montee. Ce sont des etapes d une jauge, pas
    des couleurs d interface : elles restent nommees ici. */
-const FROID = [6, 182, 212] as const;
-const CHAUD = [139, 92, 246] as const;
-const BLANC = [255, 255, 255] as const;
 
 type Phase =
   | "attente" | "montee" | "critique"
   | "implosion" | "singularite" | "explosion" | "revelation" | "verrouille";
 
-const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
-const easeInExpo = (x: number) => (x === 0 ? 0 : Math.pow(2, 10 * x - 10));
 const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const melange = (a: readonly number[], b: readonly number[], t: number) =>
-  `rgb(${Math.round(lerp(a[0], b[0], t))}, ${Math.round(lerp(a[1], b[1], t))}, ${Math.round(lerp(a[2], b[2], t))})`;
-
-const teinteDe = (p: number) =>
-  p < 0.5 ? melange(FROID, CHAUD, p * 2)
-    : p < 0.85 ? melange(CHAUD, [255, 0, 255], (p - 0.5) / 0.35)
-      : melange([255, 0, 255], BLANC, (p - 0.85) / 0.15);
 
 /* Le reglage etait lu une fois et jamais ecoute : le changer en cours
    de session ne changeait rien. */
@@ -152,10 +140,10 @@ export default function TheCall() {
       r.style.setProperty("--rit-teinte", teinteDe(p));
     }
     if (compteRef.current) {
-      compteRef.current.textContent = p > 0 ? `${(20 - p * 20).toFixed(1)}s` : "";
+      compteRef.current.textContent = p > 0 ? resteEnSecondes(p) : "";
     }
     if (chargeRef.current) {
-      chargeRef.current.textContent = `${Math.round(p * 100)}%`;
+      chargeRef.current.textContent = chargeEnPourcent(p);
     }
   }, []);
 
@@ -209,13 +197,13 @@ export default function TheCall() {
 
   const boucle = useCallback(() => {
     if (!tientRef.current || finiRef.current) return;
-    const p = clamp(((performance.now() - departRef.current) * vitesseRef.current) / DUREE, 0, 1);
+    const p = avancementDuRituel(performance.now(), departRef.current, vitesseRef.current);
     progresRef.current = p;
     peindre(p);
 
     /* React ne voit que les paliers : trois rendus au lieu de mille
        deux cents. */
-    const palier: Phase = p >= 0.85 ? "critique" : p > 0 ? "montee" : "attente";
+    const palier: Phase = palierDe(p);
     if (palierRef.current !== palier) { palierRef.current = palier; setPhase(palier); }
 
     if (p >= 1) conclure();
