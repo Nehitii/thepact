@@ -128,21 +128,30 @@ describe("etapesCopiees", () => {
     expect(etapesCopiees(OBJECTIF, [], "neuf")).toEqual([]);
   });
 
-  /* L ETAPE ULTIME PERD SON RANG D ETAPE ULTIME.
-     La copie recoit donc une etape ordinaire de plus que l original,
-     alors que total_steps — qui exclut l etape ultime — est recopie
-     tel quel. Le compte de la copie ne peut plus atteindre son total :
-     trois etapes ordinaires pour un total de deux. Ce test fixe le
-     defaut pour qu il ne passe pas inapercu, il ne l approuve pas. */
-  it("perd le rang d etape ultime, et desaccorde le compte de la copie", () => {
+  /* LE RANG D ETAPE ULTIME SUIT LA COPIE. Il ne suivait pas, alors
+     que total_steps — qui exclut l etape ultime — est recopie tel
+     quel : la copie recevait trois etapes ordinaires pour un total de
+     deux, et son compte ne pouvait plus l atteindre. */
+  it("emporte le rang d etape ultime", () => {
     const c = etapesCopiees(OBJECTIF, etapes, "neuf");
-    expect(c).toHaveLength(3);
-    expect(c.some((e) => "is_ultimate" in e)).toBe(false);
-    /* L original : deux etapes ordinaires, total_steps = 2. */
-    const ordinairesDOrigine = etapes.filter((e) => !e.is_ultimate).length;
-    expect(ordinairesDOrigine).toBe(2);
-    /* La copie : trois etapes ordinaires, pour le meme total. */
-    expect(c.length).toBeGreaterThan(ordinairesDOrigine);
+    expect(c.map((e) => e.is_ultimate)).toEqual([false, false, true]);
+  });
+
+  /* LA COPIE COMPTE COMME L ORIGINAL. C est la seule chose qui
+     importe : autant d etapes ordinaires de part et d autre, donc le
+     meme total_steps, donc un compte qui peut atteindre son total. */
+  it("garde le meme nombre d etapes ordinaires que l original", () => {
+    const c = etapesCopiees(OBJECTIF, etapes, "neuf");
+    expect(c.filter((e) => !e.is_ultimate)).toHaveLength(
+      etapes.filter((e) => !e.is_ultimate).length,
+    );
+  });
+
+  /* UNE ETAPE SANS DRAPEAU N EST PAS ULTIME : la colonne n est pas
+     nullable en base, il faut donc poser « faux » et non « rien ». */
+  it("pose faux, et non rien, pour une etape ordinaire", () => {
+    const c = etapesCopiees(OBJECTIF, [{ title: "Gammes" }], "neuf");
+    expect(c[0].is_ultimate).toBe(false);
   });
 });
 

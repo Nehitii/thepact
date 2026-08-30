@@ -119,12 +119,11 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (snapshot) {
         const newStatus = basculeDUneEtape(currentStatus);
         const newSteps = snapshot.steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s));
-        /* CE COMPTE N EST PAS CELUI QUI SERA ECRIT : il inclut l etape
-           ultime, que compteDesEtapesTenues exclut. Cocher l etape
-           ultime affiche donc aussitot un de trop, jusqu a ce que
-           l invalidation ramene le compte de la base. Constate, non
-           corrige : le corriger change ce que l ecran montre. */
-        const validated = newSteps.filter((s) => s.status === "completed").length;
+        /* LE MEME COMPTE QUE CELUI QUI SERA ECRIT. Il en existait un
+           second ici, qui incluait l etape ultime : cocher l etape
+           ultime affichait aussitot un de trop, jusqu a ce que
+           l invalidation ramene le compte de la base. */
+        const validated = compteDesEtapesTenues(snapshot.steps, stepId, newStatus);
         qc.setQueryData<DetailCache>(detailKey, {
           goal: { ...snapshot.goal, validated_steps: validated },
           steps: newSteps,

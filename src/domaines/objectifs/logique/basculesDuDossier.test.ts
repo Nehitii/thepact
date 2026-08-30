@@ -50,19 +50,19 @@ describe("compteDesEtapesTenues", () => {
     expect(compteDesEtapesTenues([e("a", null)], "b", "completed")).toBe(0);
   });
 
-  /* CE QUE L ECRAN AFFICHE AUSSITOT N EST PAS CE COMPTE.
-     onMutate, dans useGoalDetailActions, compte SANS exclure l etape
-     ultime. Cocher l etape ultime montre donc un de trop jusqu a ce
-     que l invalidation ramene le compte de la base. Ce test fixe
-     l ecart pour qu il ne passe pas inapercu, il ne l approuve pas. */
-  it("s ecarte de ce que l ecran montre aussitot, quand l etape ultime est cochee", () => {
+  /* CE COMPTE EST DESORMAIS CELUI QUE L ECRAN MONTRE AUSSITOT.
+     onMutate, dans useGoalDetailActions, en tenait un second qui
+     n excluait pas l etape ultime : cocher l etape ultime montrait un
+     de trop jusqu a ce que l invalidation ramene le compte de la
+     base. Ce test garde la trace du calcul qui a ete retire — si
+     quelqu un le reintroduit, il verra ici pourquoi il avait tort. */
+  it("ne compte pas comme le faisait l ancien calcul de l affichage", () => {
     const etapes = [e("a", "completed"), e("z", "pending", true)];
-    const ecrit = compteDesEtapesTenues(etapes, "z", "completed");
-    const affiche = etapes
+    const ancienAffichage = etapes
       .map((s) => (s.id === "z" ? { ...s, status: "completed" } : s))
       .filter((s) => s.status === "completed").length;
-    expect(ecrit).toBe(1);
-    expect(affiche).toBe(2);
+    expect(ancienAffichage).toBe(2);
+    expect(compteDesEtapesTenues(etapes, "z", "completed")).toBe(1);
   });
 });
 

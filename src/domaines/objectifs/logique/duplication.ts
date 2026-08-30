@@ -91,6 +91,11 @@ export function etapesCopiees(
   return etapes.map((e, i) => ({
     goal_id: nouvelObjectifId,
     title: e.title,
+    /* LE RANG D ETAPE ULTIME SUIT LA COPIE. Il ne suivait pas, alors
+       que total_steps — qui exclut l etape ultime — etait recopie tel
+       quel : la copie recevait une etape ordinaire de plus que son
+       total, et son compte ne pouvait plus l atteindre. */
+    is_ultimate: e.is_ultimate ?? false,
     /* Le rang est refait de un a n : les rangs d origine peuvent avoir
        des trous, une etape ayant pu etre supprimee. */
     order: i + 1,
