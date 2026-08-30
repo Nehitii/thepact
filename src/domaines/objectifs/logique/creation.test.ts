@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  etapesACreer, joursNeufs, piecesACreer, POTENTIEL_PAR_DEFAUT, POTENTIELS,
-  potentielDuPalier, PREFIXE_RANG, rienDeSaisi, totalChiffre, totalDesEtapes,
+  ETAPES_AU_DEPART, ETAPES_MAX, ETAPES_MIN, JOURS_MAX, JOURS_MIN, etapesACreer,
+  etapesSuggereesRetenues, joursDHabitudeBornes, joursNeufs, piecesACreer,
+  POTENTIEL_PAR_DEFAUT, POTENTIELS, potentielDuPalier, PREFIXE_RANG, rienDeSaisi,
+  titreParDefautDUneEtape, totalChiffre, totalDesEtapes,
 } from "./creation";
 import type { CostItemData, EditStepItem } from "@/domaines/objectifs/types";
 
@@ -190,5 +192,137 @@ describe("rienDeSaisi — Echap ne ferme que tant que rien n a ete saisi", () =>
   /* DES BLANCS NE SONT PAS UNE SAISIE. */
   it("ne retient pas sur des espaces seuls", () => {
     expect(rienDeSaisi({ ...vide, nom: "   ", notes: "  " })).toBe(true);
+  });
+});
+
+describe("les bornes du formulaire de creation", () => {
+  it("porte les quatre nombres, une seule fois", () => {
+    expect(ETAPES_MIN).toBe(1);
+    expect(ETAPES_MAX).toBe(20);
+    expect(JOURS_MIN).toBe(1);
+    expect(JOURS_MAX).toBe(365);
+    expect(ETAPES_AU_DEPART).toBe(5);
+  });
+
+  it("laisse les cinq etapes du depart sous le plafond", () => {
+    expect(ETAPES_AU_DEPART).toBeLessThanOrEqual(ETAPES_MAX);
+    expect(ETAPES_AU_DEPART).toBeGreaterThanOrEqual(ETAPES_MIN);
+  });
+});
+
+describe("borner les jours d une habitude", () => {
+  it("garde une saisie qui tient dans l annee", () => {
+    expect(joursDHabitudeBornes("7")).toBe(7);
+    expect(joursDHabitudeBornes("365")).toBe(365);
+    expect(joursDHabitudeBornes("1")).toBe(1);
+  });
+
+  it("ramene ce qui depasse", () => {
+    expect(joursDHabitudeBornes("400")).toBe(365);
+    expect(joursDHabitudeBornes("-5")).toBe(1);
+  });
+
+  /* LE ZERO N ARRIVE JAMAIS JUSQU A LA BORNE : `parseInt("0")` rend
+     zero, que le repli remplace par un avant meme le `Math.max`. Les
+     deux gardes donnent le meme resultat ; c est le premier qui agit. */
+  it("remplace le zero avant meme de le borner", () => {
+    expect(parseInt("0")).toBe(0);
+    expect(joursDHabitudeBornes("0")).toBe(1);
+  });
+
+  it("retombe sur un jour devant une saisie illisible", () => {
+    expect(joursDHabitudeBornes("")).toBe(1);
+    expect(joursDHabitudeBornes("beaucoup")).toBe(1);
+  });
+
+  /* `parseInt` COUPE A LA VIRGULE : « 7.9 » vaut sept jours, pas huit.
+     Le champ est un « number » a pas entier, donc la virgule n arrive
+     pas de l ecran — mais elle arriverait d un collage. */
+  it("coupe une saisie decimale au lieu de l arrondir", () => {
+    expect(joursDHabitudeBornes("7.9")).toBe(7);
+  });
+});
+
+describe("la decoupe proposee", () => {
+  const vingtCinq = Array.from({ length: 25 }, (_, i) => ({ title: `E${i}` }));
+
+  /* VINGT AU PLUS, ET RIEN NE LE DIT. Si le modele en rend vingt-cinq,
+     les cinq dernieres disparaissent sans un mot — ni a l ecran, ni
+     dans la console. Constate, non corrige. */
+  it("coupe a vingt sans le dire", () => {
+    expect(etapesSuggereesRetenues(vingtCinq)).toHaveLength(ETAPES_MAX);
+    expect(etapesSuggereesRetenues(vingtCinq).at(-1)).toEqual({ title: "E19" });
+  });
+
+  it("laisse passer ce qui tient", () => {
+    const cinq = vingtCinq.slice(0, 5);
+    expect(etapesSuggereesRetenues(cinq)).toEqual(cinq);
+    expect(etapesSuggereesRetenues([])).toEqual([]);
+  });
+
+  it("garde l ordre du modele", () => {
+    expect(etapesSuggereesRetenues(vingtCinq)[0]).toEqual({ title: "E0" });
+  });
+});
+
+describe("le titre par defaut d une etape", () => {
+  /* IL EST EN ANGLAIS, ET IL PART EN BASE : les objectifs deja crees en
+     portent. Le traduire changerait ce que l ecran affiche ET
+     desaccorderait les anciens des neufs. Constate, non corrige. */
+  it("numerote a partir de un, en anglais", () => {
+    expect(titreParDefautDUneEtape(1)).toBe("Step 1");
+    expect(titreParDefautDUneEtape(20)).toBe("Step 20");
+  });
+
+  it("est celui que l insertion pose sur une etape sans nom", () => {
+    const posees = etapesACreer(
+      [{ key: "a", name: "  " }, { key: "b", name: "Vrai titre" }],
+      "g1", titreParDefautDUneEtape,
+    );
+    expect(posees[0].title).toBe("Step 1");
+    expect(posees[1].title).toBe("Vrai titre");
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   LES DEUX SOMMES DU COUT SONT LA MEME SOMME.
+
+   La page additionnait `totalChiffre(pieces)` avant d ecrire, puis
+   resommait `piecesACreer(pieces).price` apres, et corrigeait si les
+   deux differaient. Elles ne peuvent pas differer : memes termes —
+   `p.price || 0` — dans le meme ordre, donc bit pour bit le meme
+   nombre. La correction ne pouvait jamais se declencher.
+   ═══════════════════════════════════════════════════════════════ */
+describe("les deux facons de totaliser un cout", () => {
+  const cas: CostItemData[][] = [
+    [],
+    [{ name: "a", price: 10 }],
+    [{ name: "a", price: 0.1 }, { name: "b", price: 0.2 }],
+    [{ name: "a", price: 0 }, { name: "b", price: null as unknown as number }],
+    /* NaN EST CE QUE LE REPLI GARDE : les deux cotes ecrivent
+       `p.price || 0`, donc les deux le ramenent a zero. Remplacer UN
+       seul des deux par `??` laisserait NaN d un cote et zero de
+       l autre — et la somme ne serait plus la meme. */
+    [{ name: "a", price: NaN }, { name: "b", price: 5 }],
+    [{ name: "a", price: "" as unknown as number }],
+    [{ name: "a", price: 1e15 }, { name: "b", price: 0.000001 }],
+    Array.from({ length: 40 }, (_, i) => ({ name: `p${i}`, price: i * 0.7 })),
+  ];
+
+  it("donnent exactement le meme nombre", () => {
+    for (const pieces of cas) {
+      const avant = totalChiffre(pieces);
+      const apres = piecesACreer(pieces, "g1", []).reduce((s, p) => s + p.price, 0);
+      expect(Object.is(avant, apres)).toBe(true);
+    }
+  });
+
+  /* Y COMPRIS LA OU L ADDITION FLOTTANTE DERIVE : 0,1 + 0,2 ne fait pas
+     0,3, et les deux sommes derivent de la meme facon. */
+  it("derivent de la meme facon", () => {
+    const pieces = [{ name: "a", price: 0.1 }, { name: "b", price: 0.2 }];
+    expect(totalChiffre(pieces)).toBe(0.30000000000000004);
+    expect(piecesACreer(pieces, "g1", []).reduce((s, p) => s + p.price, 0))
+      .toBe(0.30000000000000004);
   });
 });

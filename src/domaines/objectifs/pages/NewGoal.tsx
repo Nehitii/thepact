@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  etapesACreer, joursNeufs, piecesACreer, potentielDuPalier,
+  ETAPES_AU_DEPART, ETAPES_MAX, ETAPES_MIN, JOURS_MAX, JOURS_MIN, etapesACreer, etapesSuggereesRetenues,
+  joursDHabitudeBornes, joursNeufs, piecesACreer, potentielDuPalier, titreParDefautDUneEtape,
   rienDeSaisi, totalChiffre, totalDesEtapes,
 } from "@/domaines/objectifs/logique/creation";
 import { typeALaCreation } from "@/domaines/objectifs/logique/typeDObjectif";
@@ -46,17 +47,18 @@ const goalSchema = z.object({
      jusqu'au refus de Postgres. */
   difficulty: z.enum(["easy", "medium", "hard", "extreme", "impossible", "custom"]),
   goalType: z.enum(["normal", "habit", "super"]),
+  /* Bornes partagees : elles etaient ecrites trois fois chacune. */
   stepCount: z
     .number()
     .int()
-    .min(1, { message: "Must have at least 1 step" })
-    .max(20, { message: "Cannot have more than 20 steps" })
+    .min(ETAPES_MIN, { message: "Must have at least 1 step" })
+    .max(ETAPES_MAX, { message: "Cannot have more than 20 steps" })
     .optional(),
   habitDurationDays: z
     .number()
     .int()
-    .min(1, { message: "Must be at least 1 day" })
-    .max(365, { message: "Cannot exceed 365 days" })
+    .min(JOURS_MIN, { message: "Must be at least 1 day" })
+    .max(JOURS_MAX, { message: "Cannot exceed 365 days" })
     .optional(),
   notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional(),
 });
@@ -85,7 +87,8 @@ export default function NewGoal() {
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [deadline, setDeadline] = useState("");
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
-    Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` })),
+    Array.from({ length: ETAPES_AU_DEPART }, (_, i) =>
+      ({ name: titreParDefautDUneEtape(i + 1), key: `init-${i}` })),
   );
 
   // Super Goal specific state
@@ -113,7 +116,7 @@ export default function NewGoal() {
       if (error) throw error;
       const steps = (data?.steps ?? []) as Array<{ title: string }>;
       if (!steps.length) throw new Error("Aucune étape suggérée");
-      const items: EditStepItem[] = steps.slice(0, 20).map((s, i) => ({
+      const items: EditStepItem[] = etapesSuggereesRetenues(steps).map((s, i) => ({
         key: `ai-${Date.now()}-${i}`,
         name: s.title,
       }));
@@ -295,7 +298,7 @@ export default function NewGoal() {
 
       let createdSteps: { id: string; order: number }[] = [];
       if (goalType === "normal" && stepItems.length > 0) {
-        const stepsToInsert = etapesACreer(stepItems, goalData.id, (rang) => `Step ${rang}`);
+        const stepsToInsert = etapesACreer(stepItems, goalData.id, titreParDefautDUneEtape);
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")
           .insert(stepsToInsert)
@@ -307,12 +310,9 @@ export default function NewGoal() {
       if (costItems.length > 0) {
         const costItemsData = piecesACreer(costItems, goalData.id, createdSteps);
         await supabase.from("goal_cost_items").insert(costItemsData);
-
-        // Recalculate estimated_cost from actual inserted items to guarantee sync
-        const recalculatedCost = costItemsData.reduce((sum, item) => sum + item.price, 0);
-        if (recalculatedCost !== totalEstimatedCost) {
-          await supabase.from("goals").update({ estimated_cost: recalculatedCost }).eq("id", goalData.id);
-        }
+        /* Une reconciliation vivait ici sans pouvoir se declencher :
+           deux sommes des memes termes, dans le meme ordre. Un vrai
+           controle relirait les lignes inserees. */
       }
 
       setTimeout(() => {
@@ -654,11 +654,11 @@ export default function NewGoal() {
                     <input
                       id="ge-jours"
                       type="number"
-                      min={1}
-                      max={365}
+                      min={JOURS_MIN}
+                      max={JOURS_MAX}
                       value={habitDurationDays}
                       onChange={(e) =>
-                        setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))
+                        setHabitDurationDays(joursDHabitudeBornes(e.target.value))
                       }
                       autoComplete="off"
                     />

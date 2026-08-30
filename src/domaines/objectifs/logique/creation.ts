@@ -115,3 +115,44 @@ export function rienDeSaisi(f: {
     f.pieces.length === 0 && f.membres.length === 0
   );
 }
+
+/* ── LES BORNES DU FORMULAIRE ────────────────────────────────── */
+
+/* CES QUATRE NOMBRES ETAIENT ECRITS TROIS FOIS CHACUN : dans le schema
+ * de validation, dans les attributs `min` et `max` du champ, et dans le
+ * calcul qui borne la saisie. Trois copies d une meme borne, et rien
+ * qui les tienne ensemble : en changer une laissait les deux autres
+ * mentir.
+ *
+ * VINGT ETAPES, TROIS CENT SOIXANTE-CINQ JOURS. La premiere borne est
+ * un choix d ecran — au-dela, la liste ne se relit plus ; la seconde
+ * est une annee. */
+export const ETAPES_MIN = 1;
+export const ETAPES_MAX = 20;
+export const JOURS_MIN = 1;
+export const JOURS_MAX = 365;
+
+/** Cinq etapes sont posees d avance, avant toute saisie. */
+export const ETAPES_AU_DEPART = 5;
+
+/* LE ZERO N ARRIVE JAMAIS JUSQU AU MINIMUM : `parseInt("0")` rend zero,
+   que le `|| JOURS_MIN` remplace avant meme la borne. Les deux gardes
+   donnent le meme resultat ici, et c est le premier qui agit. */
+export function joursDHabitudeBornes(saisie: string): number {
+  return Math.max(JOURS_MIN, Math.min(JOURS_MAX, parseInt(saisie) || JOURS_MIN));
+}
+
+/* LA DECOUPE PROPOSEE EST COUPEE A VINGT, SANS UN MOT. Si le modele en
+   rend vingt-cinq, les cinq dernieres disparaissent et rien ne le dit —
+   ni a l ecran, ni dans la console. Constate, non corrige : le dire
+   changerait ce que l ecran affiche. */
+export function etapesSuggereesRetenues<T>(etapes: T[]): T[] {
+  return etapes.slice(0, ETAPES_MAX);
+}
+
+/* LE TITRE D UNE ETAPE SANS NOM. Il est en anglais, et il part EN BASE :
+   les objectifs deja crees en portent. Le traduire changerait ce que
+   l ecran affiche et desaccorderait les anciens des neufs. */
+export function titreParDefautDUneEtape(rang: number): string {
+  return `Step ${rang}`;
+}
