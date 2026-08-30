@@ -25,11 +25,22 @@
  * renvoyée telle quelle : les fonds sombres (#0c1a4f, #002b1a)
  * traversent sans être touchés.
  *
- * MESURE sur les vingt néons du projet : contrastes de 6,1 à 7,2 sur
- * du blanc, là où les originaux allaient de 1,3 à 3,1. L'écart résiduel
- * n'est pas du bruit — c'est l'effet Helmholtz-Kohlrausch : à clarté
- * perçue égale, un rouge saturé porte plus de contraste mesuré qu'un
- * vert, parce que l'œil le voit déjà plus clair que sa luminance.
+ * MESURE DU 30/08/2026, sur les vingt couleurs qui passent réellement
+ * par ici — douze écrites dans le code (raccourcis de l'accueil, barre
+ * neurale, cinq difficultés du tirage) et huit venues de la BASE
+ * (cadres de rang, accent de profil, difficulté sur mesure) :
+ *
+ *   avant  1,34 à 4,47 sur du blanc — aucune ne passe le seuil
+ *   après  6,69 à 7,96
+ *
+ * L'écart résiduel n'est pas du bruit — c'est l'effet
+ * Helmholtz-Kohlrausch : à clarté perçue égale, un rouge saturé porte
+ * plus de contraste mesuré qu'un vert, parce que l'œil le voit déjà
+ * plus clair que sa luminance.
+ *
+ * Le fichier de tests refait ces mesures et les tient : la garantie de
+ * 4,5 est vérifiée sur toute une grille du cube sRVB, pas seulement
+ * sur les vingt.
  * ═══════════════════════════════════════════════════════════════
  */
 
