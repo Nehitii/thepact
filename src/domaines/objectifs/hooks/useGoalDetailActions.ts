@@ -13,6 +13,7 @@ import { PLAFOND_BRIGADE, recrutable } from "@/domaines/objectifs/logique/brigad
 import {
   basculeDUneEtape, compteDesEtapesTenues, etatDeLHabitude,
 } from "@/domaines/objectifs/logique/basculesDuDossier";
+import { statutDeLaReprise, statutDuRetour } from "@/domaines/objectifs/logique/statutDuGeste";
 import {
   etapesCopiees, objectifCopie, piecesCopiees,
 } from "@/domaines/objectifs/logique/duplication";
@@ -61,6 +62,17 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
   const repercuterSurGroupes = async () => {
     const pactId = getDetail()?.goal.pact_id;
     if (pactId) await synchroniserGroupes(pactId);
+  };
+
+  /* CE QU IL FAUT RELIRE APRES UN GESTE. Les groupes d abord — leur
+     compte depend de ce qu on vient de changer — puis les listes.
+     Cinq mutations en avaient chacune leur copie, et les copies ne
+     disaient pas la meme chose : la bascule d etape rafraichit aussi
+     la liste de souhaits, l etoile ne rafraichit PAS la fiche. Ces
+     differences sont maintenant a l appel, ou elles se lisent. */
+  const rafraichir = (...clefs: readonly (readonly unknown[])[]) => async () => {
+    await repercuterSurGroupes();
+    for (const clef of clefs) qc.invalidateQueries({ queryKey: clef });
   };
 
   /* L eclat partait du centre de la fenetre, quel que soit le geste.
@@ -137,12 +149,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.stepFailed") });
     },
-    onSettled: async () => {
-      await repercuterSurGroupes();
-      qc.invalidateQueries({ queryKey: ["goals"] });
-      qc.invalidateQueries({ queryKey: detailKey });
-      qc.invalidateQueries({ queryKey: ["pact-wishlist"] });
-    },
+    onSettled: rafraichir(["goals"], detailKey, ["pact-wishlist"]),
   });
 
   const handleToggleStep = (stepId: string, currentStatus: string) => {
@@ -235,11 +242,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.habitFailed") });
     },
-    onSettled: async () => {
-      await repercuterSurGroupes();
-      qc.invalidateQueries({ queryKey: ["goals"] });
-      qc.invalidateQueries({ queryKey: detailKey });
-    },
+    onSettled: rafraichir(["goals"], detailKey),
   });
 
   /* La valeur voulue se lit ici, avant toute mutation : c est le seul
@@ -323,11 +326,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       toast.success(t("goals.detail.toasts.goalDone"), { description: t("goals.detail.toasts.goalDoneBody") });
     },
     onError: (err) => toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.completeFailed") }),
-    onSettled: async () => {
-      await repercuterSurGroupes();
-      qc.invalidateQueries({ queryKey: ["goals"] });
-      qc.invalidateQueries({ queryKey: detailKey });
-    },
+    onSettled: rafraichir(["goals"], detailKey),
   });
 
   // ---------- Status changes (pause/resume/archive) ----------
@@ -351,54 +350,55 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
       toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.statusFailed") });
     },
-    onSettled: async () => {
-      await repercuterSurGroupes();
-      qc.invalidateQueries({ queryKey: ["goals"] });
-      qc.invalidateQueries({ queryKey: detailKey });
-    },
+    onSettled: rafraichir(["goals"], detailKey),
   });
 
-  const handlePauseGoal = () => {
-    const detail = getDetail();
-    const previousStatus = detail?.goal.status;
-    updateStatus.mutate("paused", {
-      onSuccess: () =>
-        toast.success(t("goals.detail.toasts.paused"), {
-          description: t("goals.detail.toasts.pausedBody"),
-          action: previousStatus
-            ? { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus) }
+  /* PAUSER, REPRENDRE, ARCHIVER : le meme geste sous trois noms. Il
+     pose un statut et propose de revenir a celui d avant. Les trois
+     copies ne differaient que par deux mots — et par ce qu elles font
+     quand le statut d avant est INCONNU : la pause et l archivage
+     n offrent alors pas de retour, la reprise en offre un vers
+     « non commence ». Cette difference passe desormais par
+     l argument, ou elle se voit. Voir logique/statutDuGeste.ts.
+
+     Le message reste calcule A LA REUSSITE et non au clic : « t » lit
+     la langue courante quand on l appelle, et la traduire d avance
+     figerait la langue d avant pour un changement en vol. */
+  const poserStatut = (
+    nouveau: StatutObjectif,
+    dire: () => { titre: string; corps: string },
+    retour: StatutObjectif | undefined,
+  ) => {
+    updateStatus.mutate(nouveau, {
+      onSuccess: () => {
+        const { titre, corps } = dire();
+        toast.success(titre, {
+          description: corps,
+          action: retour
+            ? { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(retour) }
             : undefined,
-        }),
+        });
+      },
     });
   };
+
+  const handlePauseGoal = () =>
+    poserStatut("paused",
+      () => ({ titre: t("goals.detail.toasts.paused"), corps: t("goals.detail.toasts.pausedBody") }),
+      getDetail()?.goal.status ?? undefined);
 
   const handleResumeGoal = () => {
     const detail = getDetail();
     if (!detail) return;
-    const previousStatus = detail.goal.status;
-    const newStatus = (detail.goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
-    updateStatus.mutate(newStatus, {
-      onSuccess: () =>
-        toast.success(t("goals.detail.toasts.resumed"), {
-          description: t("goals.detail.toasts.resumedBody"),
-          action: { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus ?? "not_started") },
-        }),
-    });
+    poserStatut(statutDeLaReprise(detail.goal.validated_steps),
+      () => ({ titre: t("goals.detail.toasts.resumed"), corps: t("goals.detail.toasts.resumedBody") }),
+      statutDuRetour(detail.goal.status));
   };
 
-  const handleArchiveGoal = () => {
-    const detail = getDetail();
-    const previousStatus = detail?.goal.status;
-    updateStatus.mutate("archived", {
-      onSuccess: () =>
-        toast.success(t("goals.detail.toasts.archived"), {
-          description: t("goals.detail.toasts.archivedBody"),
-          action: previousStatus
-            ? { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus) }
-            : undefined,
-        }),
-    });
-  };
+  const handleArchiveGoal = () =>
+    poserStatut("archived",
+      () => ({ titre: t("goals.detail.toasts.archived"), corps: t("goals.detail.toasts.archivedBody") }),
+      getDetail()?.goal.status ?? undefined);
 
   // ---------- Duplicate ----------
   const duplicateGoal = useMutation({
@@ -507,10 +507,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         toast.error(t("goals.detail.toasts.brigadeOnlyNormal"));
       }
     },
-    onSettled: async () => {
-      await repercuterSurGroupes();
-      qc.invalidateQueries({ queryKey: ["goals"] });
-    },
+    onSettled: rafraichir(["goals"]),
   });
 
   const toggleFocus = (e: React.MouseEvent) => {

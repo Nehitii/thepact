@@ -9,6 +9,7 @@
  * Elles n avaient aucun moyen de rester d accord, et pour la bascule
  * d etape elles ne le sont deja plus : voir compteDesEtapesTenues.
  */
+import { statutDUnAvancement, type StatutDeduit } from "@/domaines/objectifs/logique/statutDuGeste";
 
 /** Cocher decoche, decocher coche. */
 export function basculeDUneEtape(statutActuel: string): "completed" | "pending" {
@@ -40,7 +41,9 @@ export interface EtatDeLHabitude {
   coches: boolean[];
   tenus: number;
   acheve: boolean;
-  statut: "fully_completed" | "in_progress" | "not_started";
+  /* LA MEME REGLE QUE LA REPRISE, qui elle s interdit « acheve » :
+     voir statutDuGeste.ts. */
+  statut: StatutDeduit;
 }
 
 /* UNE HABITUDE N A PAS D ETAPES : ses jours coches en tiennent lieu,
@@ -63,6 +66,6 @@ export function etatDeLHabitude(
     coches,
     tenus,
     acheve,
-    statut: acheve ? "fully_completed" : tenus > 0 ? "in_progress" : "not_started",
+    statut: statutDUnAvancement(tenus, acheve),
   };
 }
