@@ -1,4 +1,9 @@
 import { useState, useEffect } from "react";
+import {
+  etapesACreer, joursNeufs, piecesACreer, potentielDuPalier,
+  rienDeSaisi, totalChiffre, totalDesEtapes,
+} from "@/domaines/objectifs/logique/creation";
+import { typeALaCreation } from "@/domaines/objectifs/logique/typeDObjectif";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -160,9 +165,10 @@ export default function NewGoal() {
    * enregistrees. Les etapes par defaut ne comptent pas comme une
    * saisie : elles sont la avant qu on ait touche a quoi que ce soit.
    */
-  const rienSaisi =
-    !name.trim() && !notes.trim() && !imageUrl &&
-    costItems.length === 0 && selectedChildGoalIds.length === 0;
+  const rienSaisi = rienDeSaisi({
+    nom: name, notes, image: imageUrl,
+    pieces: costItems, membres: selectedChildGoalIds,
+  });
 
   useEffect(() => {
     const defilementInitial = document.body.style.overflow;
@@ -231,37 +237,14 @@ export default function NewGoal() {
         return;
       }
 
-      const scoreMap = { easy: 10, medium: 25, hard: 50, extreme: 100, impossible: 200, custom: 500 };
-      const potentialScore = scoreMap[difficulty as keyof typeof scoreMap] || 25;
-      const habitChecks = goalType === "habit" ? Array(habitDurationDays).fill(false) : null;
-      const totalEstimatedCost = costItems.reduce((sum, item) => sum + (item.price || 0), 0);
+      const potentialScore = potentielDuPalier(difficulty);
+      const habitChecks = joursNeufs(goalType, habitDurationDays);
+      const totalEstimatedCost = totalChiffre(costItems);
 
-      /* ═══════════════════════════════════════════════════════════
-         UNE ÉTIQUETTE N'EST PAS UN TYPE, ET LA BASE LE SAIT.
-
-         `goals.type` est un enum à neuf valeurs. GOAL_TAGS en propose
-         dix-huit, dont NEUF que l'enum refuse — arts, tech, travel,
-         work, community, nature, spiritual, lifestyle, buying_selling.
-         Vérifié en base : `select 'arts'::goal_type` échoue.
-
-         Choisir « Arts » en PREMIÈRE étiquette faisait donc échouer la
-         création de l'objectif, avec pour seul message « Failed to
-         create goal ». Le `as any` sur l'insert rendait ce chemin muet
-         à la compilation ; c'est l'utilisateur qui le découvrait.
-
-         Les étiquettes sont de toute façon enregistrées à part, par
-         `insertGoalTags` : rien n'est perdu à retomber sur « other ».
-         ═══════════════════════════════════════════════════════════ */
-      const TYPES_EN_BASE = [
-        "personal", "professional", "health", "creative",
-        "financial", "learning", "relationship", "diy", "other",
-      ] as const;
-      type TypeObjectif = (typeof TYPES_EN_BASE)[number];
-      const estTypeDeBase = (v: string): v is TypeObjectif =>
-        (TYPES_EN_BASE as readonly string[]).includes(v);
-
-      const premiere = selectedTags[0] || "personal";
-      const primaryType: TypeObjectif = estTypeDeBase(premiere) ? premiere : "other";
+      /* Une etiquette n est pas un type : voir logique/typeDObjectif.ts,
+         qui porte la liste des neuf valeurs de l enum et les deux
+         reponses — repli ici, abstention a la modification. */
+      const primaryType = typeALaCreation(selectedTags);
 
       /* La regle d'un groupe est une colonne jsonb : le type applicatif
          est plus etroit que Json, et la conversion a lieu ici, une fois. */
@@ -292,11 +275,7 @@ export default function NewGoal() {
           difficulty: validatedData.difficulty,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
-          /* L etape ultime est un bonus : elle n entre pas dans le
-             total qui sert d avancement. */
-          total_steps: goalType === "normal"
-            ? stepItems.filter((i) => !i.estUltime).length
-            : goalType === "habit" ? habitDurationDays : 0,
+          total_steps: totalDesEtapes(goalType, stepItems, habitDurationDays),
           potential_score: potentialScore,
           start_date: new Date(startDate).toISOString(),
           status: "not_started",
@@ -316,15 +295,7 @@ export default function NewGoal() {
 
       let createdSteps: { id: string; order: number }[] = [];
       if (goalType === "normal" && stepItems.length > 0) {
-        const stepsToInsert = stepItems.map((item, i) => ({
-          goal_id: goalData.id,
-          title: item.name?.trim() || `Step ${i + 1}`,
-          description: "",
-          notes: "",
-          order: i + 1,
-          exclude_from_spin: item.excludeFromSpin ?? false,
-          is_ultimate: item.estUltime ?? false,
-        }));
+        const stepsToInsert = etapesACreer(stepItems, goalData.id, (rang) => `Step ${rang}`);
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")
           .insert(stepsToInsert)
@@ -334,14 +305,7 @@ export default function NewGoal() {
       }
 
       if (costItems.length > 0) {
-        const stepIndexToId = new Map(createdSteps.map((s) => [`step-index-${s.order - 1}`, s.id]));
-        const costItemsData = costItems.map((item) => ({
-          goal_id: goalData.id,
-          name: item.name,
-          price: item.price || 0,
-          category: item.category || null,
-          step_id: item.stepId ? stepIndexToId.get(item.stepId) || null : null,
-        }));
+        const costItemsData = piecesACreer(costItems, goalData.id, createdSteps);
         await supabase.from("goal_cost_items").insert(costItemsData);
 
         // Recalculate estimated_cost from actual inserted items to guarantee sync

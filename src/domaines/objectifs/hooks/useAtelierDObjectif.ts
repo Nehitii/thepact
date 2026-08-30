@@ -9,6 +9,7 @@ import {
   getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/domaines/objectifs/logique/goalConstants";
 import { synchroniserGroupes } from "@/domaines/objectifs/logique/superGoals";
+import { typeALaModification } from "@/domaines/objectifs/logique/typeDObjectif";
 import type { GoalDetailData, StepData, Difficulte } from "@/domaines/objectifs/hooks/useGoalDetail";
 import {
   filterGoalsByRule,
@@ -22,16 +23,6 @@ import type { Json, Tables, TablesUpdate } from "@/socle/supabase/types";
    TAG de l objectif — du texte saisi par l utilisateur. Une valeur hors
    liste etait refusee par la base a l execution, sans que rien ne
    l annonce. Les valeurs viennent de pg_enum. */
-type TypeObjectif = NonNullable<TablesUpdate<"goals">["type"]>;
-
-const TYPES_OBJECTIF = [
-  "personal", "professional", "health", "creative",
-  "financial", "learning", "other", "relationship", "diy",
-] as const satisfies readonly TypeObjectif[];
-
-const estTypeObjectif = (t: string): t is TypeObjectif =>
-  (TYPES_OBJECTIF as readonly string[]).includes(t);
-
 /** Ce que l atelier recoit de la page : les donnees deja lues, et de
  *  quoi ecrire. Il ne les relit pas — la page les a. */
 export interface AtelierContexte {
@@ -207,10 +198,11 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
         updates.total_steps = editSteps;
       }
       if (editDifficulty && editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
-      const primaryTag = editTags[0] || "personal";
       /* Un tag qui ne correspond a aucun type connu n est pas ecrit :
-         la base le refuserait de toute facon. */
-      if (primaryTag !== goal.type && estTypeObjectif(primaryTag)) updates.type = primaryTag;
+         la base le refuserait, et la colonne porte deja une valeur
+         valide. Voir logique/typeDObjectif.ts. */
+      const typeAEcrire = typeALaModification(editTags, goal.type);
+      if (typeAEcrire) updates.type = typeAEcrire;
       if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
       if (editStartDate && editStartDate !== goal.start_date?.split("T")[0]) updates.start_date = new Date(editStartDate).toISOString();
       if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0]) updates.completion_date = new Date(editCompletionDate).toISOString();
