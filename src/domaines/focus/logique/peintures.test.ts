@@ -27,39 +27,40 @@ beforeEach(() => { document.documentElement.classList.add("dark"); });
 afterEach(() => { document.documentElement.classList.remove("dark"); vi.restoreAllMocks(); });
 
 /* ═══════════════════════════════════════════════════════════════
-   LE CHAMP DE BRUIT N OCCUPE QUE LA MOITIE BASSE DE SON INTERVALLE.
+   LE CHAMP DE BRUIT DOIT OCCUPER TOUT SON INTERVALLE.
 
-   `alea` finit par `(n ^ (n >> 16)) >>> 0` divise par 2^32 - 1. Le
-   decalage est SIGNE : quand le bit 31 de `n` vaut un, JavaScript lit
-   `n` comme un entier negatif et `>> 16` recopie ce bit sur les seize
-   positions de tete. Le XOR l efface donc a tous les coups, et le
-   resultat ne peut pas atteindre la moitie.
+   Il n en occupait que la moitie basse. `alea` finissait par
+   `(n ^ (n >> 16)) >>> 0` : le decalage etait SIGNE, donc des que le
+   bit de tete de `n` valait un, JavaScript lisait `n` comme un entier
+   negatif, `>> 16` recopiait ce bit sur les seize positions hautes, et
+   le XOR l effacait a tous les coups. Le champ ne pouvait pas
+   atteindre 0,5.
 
-   MESURE LE 30/08/2026 : sur 121 121 points, `alea` va de 0,000000 a
-   0,499997, de moyenne 0,2499 ; le bit 31 n est pose AUCUNE fois sur
-   20 000 tirages. La meme fonction avec `>>>` va de 0 a 0,999991, de
-   moyenne 0,4988.
+   MESURE DU 30/08/2026, LES DEUX COTES :
 
-   CE QUE CA CHANGE A L ECRAN, MESURE AUSSI :
+     champ     avant  0,0006 .. 0,4984, moyenne 0,2506
+               apres  0,0011 .. 0,9994, moyenne 0,4971
 
-     LE MYCELIUM NE TOURNE QUE D UN COTE. Son virage vaut
-     `(bruit - 0.5) * 0.055` — avec un bruit toujours sous 0,5, il est
-     TOUJOURS NEGATIF. Sur 5 000 images : 5 000 virages a gauche, zero
-     a droite, cumul -68 radians, pres de onze tours. Le peintre dit
-     en commentaire que les hyphes « s incurvent ensemble » ; en fait
-     elles s enroulent toutes dans le meme sens.
+     virage    avant  5 000 a gauche, 0 a droite, cumul -68,39 rad
+               apres  2 573 a gauche, 2 427 a droite, cumul -0,52 rad
 
-     LES AURORES NE FONT QU UN TOUR SUR LES DEUX DEMANDES. Leur angle
-     est `bruit * 12.566`, soit quatre pi, soit deux tours. Mesure :
-     0 a 6,258 radians. Un seul.
+     aurores   avant  0 .. 6,26 rad, un tour
+               apres  0 .. 12,53 rad, deux tours
 
-   CES TESTS EPINGLENT CE QUE LE CODE FAIT AUJOURD HUI. Passer a `>>>`
-   changerait ce que l ecran affiche : ce n est pas une decision de
-   rangement, et elle n a pas ete prise ici. Le jour ou elle le sera,
-   ce bloc tombera — et il dira quoi regarder.
+   LE MYCELIUM S ENROULAIT AU LIEU DE SERPENTER. Son virage vaut
+   `(bruit - 0.5) * 0.055` : un bruit borne a la moitie le rendait
+   toujours negatif — pres de onze tours cumules sur cinq mille images,
+   toujours dans le meme sens. L amplitude du virage ne change pas ;
+   c est son CENTRE qui passe de -0,0137 a zero.
+
+   ET LES AURORES NE FAISAIENT QU UN TOUR SUR LES DEUX que leur
+   constante `12.566` — quatre pi — demande.
+
+   Ces tests epinglent desormais l intervalle entier. Repasser a `>>`
+   les fait tomber.
    ═══════════════════════════════════════════════════════════════ */
 describe("le bruit de valeur", () => {
-  it("ne depasse jamais la moitie, sur cent mille points", () => {
+  it("couvre tout son intervalle, sur cent mille points", () => {
     let mini = 2, maxi = -1, somme = 0, n = 0, infinis = 0;
     for (let x = -500; x <= 500; x++) {
       for (let y = -60; y <= 60; y++) {
@@ -70,14 +71,21 @@ describe("le bruit de valeur", () => {
     }
     expect([n, infinis]).toEqual([121121, 0]);
     expect(mini).toBeGreaterThanOrEqual(0);
-    expect(maxi).toBeLessThan(0.5);
-    expect(somme / n).toBeCloseTo(0.25, 2);
+    expect(mini).toBeLessThan(0.001);
+    expect(maxi).toBeGreaterThan(0.999);
+    expect(maxi).toBeLessThanOrEqual(1);
+    /* La moyenne est le detecteur : un decalage signe la ramenerait a
+       un quart sans jamais rien faire echouer d autre. */
+    expect(somme / n).toBeCloseTo(0.5, 2);
   });
 
-  it("laisse le bit de tete toujours a zero", () => {
+  /* LE BIT DE TETE DOIT ETRE POSE UNE FOIS SUR DEUX. C est exactement
+     ce que le decalage signe interdisait : il ne l etait JAMAIS. */
+  it("pose le bit de tete une fois sur deux", () => {
     let poses = 0;
     for (let x = 0; x < 20000; x++) if (alea(x, 7) * 4294967295 >= 2 ** 31) poses++;
-    expect(poses).toBe(0);
+    expect(poses).toBeGreaterThan(9000);
+    expect(poses).toBeLessThan(11000);
   });
 
   it("rend deux fois la meme valeur pour le meme point", () => {
@@ -107,7 +115,7 @@ describe("le champ interpole", () => {
     }
   });
 
-  it("herite du plafond de moitie, y compris en coordonnees negatives", () => {
+  it("reste entre zero et un, y compris en coordonnees negatives", () => {
     let mini = 2, maxi = -1;
     for (let x = -50; x <= 50; x += 0.37) {
       for (let y = -50; y <= 50; y += 0.53) {
@@ -116,7 +124,10 @@ describe("le champ interpole", () => {
       }
     }
     expect(mini).toBeGreaterThanOrEqual(0);
-    expect(maxi).toBeLessThan(0.5);
+    expect(maxi).toBeLessThanOrEqual(1);
+    /* Et il monte VRAIMENT dans la moitie haute : un champ qui plafonne
+       a 0,5 passerait les deux bornes ci-dessus sans broncher. */
+    expect(maxi).toBeGreaterThan(0.9);
   });
 
   /* LE CHAMP EST CONTINU, ET C EST TOUT SON INTERET : deux hyphes
@@ -128,7 +139,11 @@ describe("le champ interpole", () => {
       const x = i * 0.01;
       saut = Math.max(saut, Math.abs(bruit(x + 0.01, 3.3) - bruit(x, 3.3)));
     }
-    expect(saut).toBeLessThan(0.01);
+    /* Mesure : 0,0095 au pire. Le seuil est a deux fois cela, et non au
+       ras : un champ DISCONTINU sauterait d un demi, pas d un
+       centieme — c est cet ordre de grandeur que le test separe, pas la
+       troisieme decimale. */
+    expect(saut).toBeLessThan(0.02);
   });
 
   /* ═══ LE LISSAGE S APLATIT AUX COINS DE MAILLE ═══
@@ -335,25 +350,38 @@ describe("le jeton de theme converti en canaux", () => {
 });
 
 /* ═══════════════════════════════════════════════════════════════
-   DEUX MUTATIONS QUE CES TESTS N ATTRAPENT PAS, ET POURQUOI.
+   TROIS MUTATIONS QUE CES TESTS N ATTRAPENT PAS, ET POURQUOI.
 
-   Balayage du 30/08/2026 : cinquante-six mutations, cinquante-quatre
+   Balayage du 30/08/2026 : cinquante-quatre mutations, cinquante et une
    attrapees.
 
    1. `n >> 13` DEVENU `n >>> 13`, au milieu du hachage. Toutes les
       valeurs du champ changent, et AUCUNE propriete testee ne bouge :
-      le plafond de moitie tient (c est le decalage FINAL qui l impose),
-      la continuite tient, les coins de maille tiennent. C est un autre
-      champ de bruit, pas un champ faux — et donc un autre fond, pas un
-      fond casse. Epingler les valeurs exactes ferait de ces tests un
-      detecteur de changement sur un choix de dessin ; on epingle les
-      proprietes, pas les nombres. Rien a corriger, et rien a tester de
-      plus.
+      l intervalle tient, la moyenne tient, la continuite tient, les
+      coins de maille tiennent. C est un autre champ de bruit, pas un
+      champ faux — donc un autre fond, pas un fond casse. Epingler les
+      valeurs exactes ferait de ces tests un detecteur de changement sur
+      un choix de dessin ; on epingle les proprietes, pas les nombres.
+      (Le decalage FINAL, lui, n est pas dans ce cas : il decidait de
+      l intervalle, et il est teste.)
 
-   2. LE RACCOURCI DU GRIS EST EXACTEMENT EQUIVALENT. Quand la
-      saturation est nulle, le chemin general donne deja le meme
-      resultat : `q` vaut `l` dans ses deux branches, `p = 2l - q`
-      vaut `l`, et les quatre retours de `f` valent tous `l`. Le
-      raccourci evite de faire tourner la roue pour rien ; il ne
-      change pas une seule couleur.
+   2. LE RACCOURCI DU GRIS EST EXACTEMENT EQUIVALENT. A saturation
+      nulle, le chemin general donne deja le meme resultat : `q` vaut
+      `l` dans ses deux branches, `p = 2l - q` vaut `l`, et les quatre
+      retours de `f` valent tous `l`. Le raccourci evite de faire
+      tourner la roue pour rien ; il ne change pas une couleur.
+
+   3. LE REPLI A DEUX CHEMINS, ET ON NE PEUT PAS LES DISTINGUER.
+      Retirer `if (!m) return repli;` ne fait pas revenir NaN : la ligne
+      suivante lit `m[1]` sur un `null`, ce qui leve — et le `try/catch`
+      qui enveloppe toute la fonction rend le MEME repli. La garde
+      explicite dit l intention au lieu de compter sur une exception ;
+      le resultat observable est identique, et aucun test ne peut donc
+      les separer.
+
+   UN BALAYAGE QUI LIT LE CODE DE SORTIE SE TROMPE. Deux tours de ce
+   meme balayage ont d abord annonce la 2 comme attrapee : un `npx` qui
+   ne demarre pas sort en erreur, et l erreur se lit comme un test qui
+   tombe. Le balayage lit desormais la ligne de resume de vitest, et
+   redemande un tour quand elle manque.
    ═══════════════════════════════════════════════════════════════ */

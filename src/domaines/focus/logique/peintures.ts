@@ -15,11 +15,26 @@ export const PALETTE = {
   clair:  { fond: "#E7E5E0", dissipe: "rgba(231,229,224,", or: [122, 92, 0] as [number, number, number] },
 };
 
-/* ── Bruit de valeur : bon marche, et suffisant pour un fond ── */
+/* ── Bruit de valeur : bon marche, et suffisant pour un fond ──
+ *
+ * LE DERNIER DECALAGE EST NON SIGNE, ET IL DOIT L ETRE. Avec `>>`,
+ * JavaScript lit `n` comme un entier de 32 bits SIGNE : des que le bit
+ * de tete vaut un, le decalage le recopie sur les seize positions
+ * hautes et le XOR l efface a tous les coups. Le champ ne pouvait
+ * alors pas depasser 0,5 — il allait de 0,0006 a 0,4984, de moyenne
+ * 0,2506 au lieu de 0,4971.
+ *
+ * CE QUE CA FAISAIT AU FOND. Le virage du mycelium vaut
+ * `(bruit - 0.5) * 0.055` : un bruit borne a la moitie le rendait
+ * TOUJOURS NEGATIF. Sur cinq mille images, cinq mille virages a
+ * gauche et zero a droite — les hyphes s enroulaient au lieu de
+ * serpenter. Et l angle des aurores, `bruit * 12.566`, ne couvrait
+ * qu un tour sur les deux que sa constante demande.
+ */
 export function alea(x: number, y: number) {
   let n = (x * 374761393 + y * 668265263) >>> 0;
   n = ((n ^ (n >> 13)) * 1274126177) >>> 0;
-  return ((n ^ (n >> 16)) >>> 0) / 4294967295;
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 }
 
 export function palette() {

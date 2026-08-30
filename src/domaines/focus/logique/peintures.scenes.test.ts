@@ -21,10 +21,7 @@ function toile() {
     beginPath() {}, stroke() {}, fill() {},
     fillRect: n, moveTo: n, lineTo: n, arc: n,
     fillText(txt: string, x: number, y: number) { t.textes.push(txt); n(x, y); },
-    createLinearGradient(...v: number[]) {
-      n(...v);
-      return { addColorStop(o: number, c: string) { n(o); s(c); } };
-    },
+    createLinearGradient(...v: number[]) { n(...v); return { addColorStop(o: number, c: string) { n(o); s(c); } }; },
     get fillStyle(): unknown { return couleur; },
     set fillStyle(v: unknown) { couleur = v; s(v); },
     get strokeStyle(): unknown { return couleur; },
@@ -39,22 +36,15 @@ function toile() {
 
 function scene(p: Partial<Etat> = {}) {
   const { ctx, t } = toile();
-  const e: Etat = {
-    w: 800, h: 600, dpr: 1, ctx,
-    teinte: [92, 182, 255], or: [252, 238, 10],
-    temps: 0, dissipe: 0, impulsion: 0,
-    ...p,
-  };
+  const e: Etat = { w: 800, h: 600, dpr: 1, ctx, teinte: [92, 182, 255], or: [252, 238, 10],
+    temps: 0, dissipe: 0, impulsion: 0, ...p };
   return { e, t };
 }
 
 /** Un tirage reproductible, pour que « il choisit le plus loin » veuille dire quelque chose. */
 function hasard(graine: number) {
   let s = graine >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 4294967296;
-  };
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
 beforeEach(() => { document.documentElement.classList.add("dark"); });
@@ -238,6 +228,28 @@ describe("le mycelium", () => {
      C est ce qui rend ce fond huit fois moins cher que les autres, et
      le seul dont l ecran garde une memoire de la seance. Un voile ne
      passe qu une fois toutes les neuf cents millisecondes. */
+  /* ═══ CINQ GENERATIONS, PAS UNE DE PLUS ═══
+     L epaisseur vient de la GENERATION : `0.62^gen`, plafonnee par le
+     bas a 0,4 pixel. A la sixieme, le trait ne s affine plus — diviser
+     encore n ajouterait que des fils identiques, et la hierarchie qu on
+     lit comme « vivant » se perdrait dans le bruit.
+
+     On pose huit pointes a bout de segment pour qu elles soient toutes
+     candidates a la division, et assez nombreuses pour que la relance
+     d une colonie ne vienne pas brouiller le compte. */
+  it("cesse de diviser a la cinquieme generation, et pas a la quatrieme", () => {
+    const aBoutDeSegment = (gen: number) => Array.from({ length: 8 }, (_, i) =>
+      ({ x: 300 + i * 10, y: 300, a: i, v: 1, vie: 0, gen, reste: 500, seg: -1 }));
+    const unTour = (gen: number) => {
+      const { e } = scene({ pointes: aBoutDeSegment(gen), germes: [{ x: 0, y: 0 }] });
+      peindreMycelium(e, 16.7, 1, 0.5);
+      return e.pointes!;
+    };
+    expect(unTour(5)).toHaveLength(8);
+    expect(unTour(4).length).toBeGreaterThan(8);
+    expect(unTour(4).every((p) => p.gen <= 5)).toBe(true);
+  });
+
   it("ne dissipe qu une fois toutes les neuf cents millisecondes", () => {
     const { e, t } = scene({ pointes: [], germes: [] });
     for (let i = 0; i < 53; i++) peindreMycelium(e, 16.7, 0, 0);
@@ -307,10 +319,18 @@ describe("ce que les quatre peintres posent sur la toile", () => {
       s.init(e);
       t.nombres.length = 0;
       s.peindre(e, 16.7, 0.019, 1);
-      const endormi = t.nombres.length;
+      /* AU PLUS UN `fillRect` — le sol, et rien d autre. Se contenter
+         de « moins qu eveille » laisserait passer un peintre qui
+         dessine dejà : les aurores, par exemple, ont un rayon
+         proportionnel a l eveil, donc a deux pour cent elles peindraient
+         quand meme les quelques particules du centre. */
+      expect(t.nombres.length, s.nom).toBeLessThanOrEqual(4);
       t.nombres.length = 0;
       s.peindre(e, 16.7, 1, 1);
-      expect(t.nombres.length).toBeGreaterThan(endormi);
+      /* Eveille, il pose STRICTEMENT plus que le sol. C est peu — une
+         scene qui vient de s installer n a pas encore grand-chose a
+         montrer — mais c est la difference que le seuil produit. */
+      expect(t.nombres.length, s.nom).toBeGreaterThan(4);
     });
   }
 
@@ -338,13 +358,22 @@ describe("ce que les quatre peintres posent sur la toile", () => {
        entreraient alors toutes ensemble, en rideau. */
     const ys = e.cols!.map((c) => c.y);
     expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(e.h / 2);
-    for (let i = 0; i < 600; i++) peindreMaree(e, 16.7, 1, 0.5);
+    /* Huit cents images a pleine vitesse : de quoi vider le cadre deux
+       fois. Tirage fixe pour que « il en reste » ne soit pas un coup de
+       chance. */
+    vi.spyOn(Math, "random").mockImplementation(hasard(11));
+    for (let i = 0; i < 800; i++) peindreMaree(e, 50, 1, 1);
     for (const c of e.cols!) {
       /* Sous ce seuil, la colonne est entierement sortie par le haut et
          doit avoir ete relancee. */
       expect(c.y, `y=${c.y}`).toBeGreaterThanOrEqual(-c.lg * 20);
       expect(c.y).toBeLessThanOrEqual(2 * e.h);
     }
+    /* ET IL EN EST VRAIMENT REVENU. Une colonne ne remonte jamais toute
+       seule : en trouver une SOUS le bas du cadre apres huit cents
+       images de descente, c est la preuve que la relance a joue. Sans
+       elle, elles seraient toutes sorties par le haut. */
+    expect(Math.max(...e.cols!.map((c) => c.y))).toBeGreaterThan(e.h);
   });
 
   it("la maree ne peint que des signes de sa table, meme avec un temps negatif", () => {
