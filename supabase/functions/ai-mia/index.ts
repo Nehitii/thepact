@@ -3,9 +3,8 @@
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import {
-  BORNES, ilYAJours, jourDe, joursEcoules, joursRestants, limiteDemandee,
-  LONGUEUR_EXTRAIT_JOURNAL, LONGUEUR_EXTRAIT_MEMOIRE, nombreBorne, nomBorne,
-  texteBorne,
+  BORNES, ilYAJours, limiteDemandee, LONGUEUR_EXTRAIT_JOURNAL,
+  LONGUEUR_EXTRAIT_MEMOIRE, nombreBorne, nomBorne, texteBorne,
 } from "./bornes.ts";
 import {
   brigadeDe, butsDesPactes, comptesDesObjectifs, dureeDuPacte, etapesRestantes,
@@ -19,6 +18,7 @@ import {
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 import { bornesDeLEvenement, choixOuDefaut, drapeau, valeurOuNulle } from "./charges.ts";
+import { PLAFOND_EVENEMENTS, fenetreAutour, fenetreEnArriere, resumeDuFocus } from "./resumes.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -435,7 +435,7 @@ async function runTool(
 
     if (name === "focus_summary") {
       const jours = nombreBorne(args?.days, BORNES.focus_days);
-      const depuis = new Date(Date.now() - jours * 86400000).toISOString();
+      const depuis = fenetreEnArriere(jours, Date.now());
       const { data } = await supabase
         .from("pomodoro_sessions")
         .select("duration_minutes,started_at,linked_goal_id")
@@ -443,15 +443,7 @@ async function runTool(
         .eq("completed", true)
         .gte("started_at", depuis)
         .order("started_at", { ascending: false });
-      const seances = data ?? [];
-      const parJour: Record<string, number> = {};
-      let minutes = 0;
-      for (const s of seances as { duration_minutes: number; started_at: string }[]) {
-        minutes += s.duration_minutes ?? 0;
-        const j = jourDe(String(s.started_at));
-        parJour[j] = (parJour[j] ?? 0) + (s.duration_minutes ?? 0);
-      }
-      return JSON.stringify({ jours, seances: seances.length, minutes, par_jour: parJour });
+      return JSON.stringify({ jours, ...resumeDuFocus(data ?? []) });
     }
 
     if (name === "health_summary") {
@@ -474,8 +466,7 @@ async function runTool(
     if (name === "list_calendar_events") {
       const avant = nombreBorne(args?.days_back, BORNES.days_back);
       const apres = nombreBorne(args?.days_ahead, BORNES.days_ahead);
-      const debut = new Date(Date.now() - avant * 86400000).toISOString();
-      const fin = new Date(Date.now() + apres * 86400000).toISOString();
+      const { debut, fin } = fenetreAutour(avant, apres, Date.now());
       const { data } = await supabase
         .from("calendar_events")
         .select("id,title,start_time,end_time,all_day,location,category")
@@ -483,7 +474,7 @@ async function runTool(
         .gte("start_time", debut)
         .lte("start_time", fin)
         .order("start_time", { ascending: true })
-        .limit(60);
+        .limit(PLAFOND_EVENEMENTS);
       return JSON.stringify(data ?? []);
     }
 
