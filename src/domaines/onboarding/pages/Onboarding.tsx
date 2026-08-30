@@ -8,13 +8,15 @@ import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLe
 import { Compass } from "lucide-react";
 import { trackPactCreated } from "@/domaines/succes";
 import { supabase } from "@/socle/supabase/client";
+import {
+  objectifDuGabarit, objectifSurMesure,
+} from "@/domaines/onboarding/logique/premierObjectif";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/socle/ds";
 import { cn } from "@/socle/outils/utils";
 import { messageDErreur } from "@/socle/outils/erreurs";
-import type { TablesInsert } from "@/socle/supabase/types";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
@@ -47,6 +49,9 @@ type GoalTemplate = {
   steps: number;
 };
 
+/* Le nombre annonce sur la carte et le total ecrit en base sont DEUX
+   champs distincts qui portent le meme nombre : « steps » s affiche,
+   « total_steps » s enregistre. Rien ne les tient d accord. */
 const GOAL_TEMPLATES: GoalTemplate[] = [
   {
     id: "30day-habit",
@@ -176,29 +181,13 @@ export default function Onboarding() {
         );
       }
       // Create first goal
-      if (firstGoal.id !== "custom") {
-        const tpl = firstGoal as GoalTemplate;
-        const goalPayload: TablesInsert<"goals"> = {
-          pact_id: pact.id,
-          name: tpl.placeholder,
-          difficulty: tpl.difficulty,
-          goal_type: tpl.goal_type,
-          total_steps: tpl.total_steps ?? tpl.habit_duration_days ?? 0,
-        };
-        if (tpl.goal_type === "habit" && tpl.habit_duration_days) {
-          goalPayload.habit_duration_days = tpl.habit_duration_days;
-          goalPayload.habit_checks = Array(tpl.habit_duration_days).fill(false);
-        }
-        await supabase.from("goals").insert(goalPayload);
-      } else {
-        await supabase.from("goals").insert({
-          pact_id: pact.id,
-          name: customGoalName.trim(),
-          difficulty: "medium",
-          goal_type: "normal",
-          total_steps: 5,
-        });
-      }
+      /* Ce qui est ecrit, et surtout ce qui ne l est pas : voir
+         logique/premierObjectif.ts. */
+      await supabase.from("goals").insert(
+        firstGoal.id !== "custom"
+          ? objectifDuGabarit(firstGoal as GoalTemplate, pact.id)
+          : objectifSurMesure(customGoalName, pact.id),
+      );
       // Let the sealing animation breathe before navigating
       await new Promise((r) => setTimeout(r, 1600));
       toast.success(t("onboarding.welcomeToast"), { description: t("onboarding.pactSealed") });

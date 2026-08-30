@@ -12,7 +12,7 @@
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 540,
   "src/domaines/objectifs/pages/GoalDetail.tsx": 448,
   "src/domaines/objectifs/pages/NewGoal.tsx": 781,
-  "src/domaines/onboarding/pages/Onboarding.tsx": 523,
+  "src/domaines/onboarding/pages/Onboarding.tsx": 512,
   "src/domaines/profil/composants/ProfileDevilNote.tsx": 414,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
   "src/domaines/souhaits/pages/Wishlist.tsx": 708,
