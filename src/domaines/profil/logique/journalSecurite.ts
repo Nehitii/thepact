@@ -9,7 +9,8 @@ import type { Json } from "@/socle/supabase/types";
  * ecrivain etait la fonction edge `two-factor`, le 2FA maison remplace
  * depuis par le MFA de Supabase. Plus rien ne l appelait : la table
  * etait vide, et le panneau affichait « aucune activite recente » a
- * perpetuite.
+ * perpetuite. Cette fonction a ete retiree du depot le 30/08/2026 ;
+ * ne la cherchez pas, elle n existe plus.
  *
  * On ne peut pas enregistrer les *connexions* depuis le navigateur :
  * une session qui demarre ailleurs ne passe pas par ici, et un client

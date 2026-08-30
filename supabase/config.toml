@@ -15,9 +15,6 @@ verify_jwt = true
 [functions.delete-account]
 verify_jwt = true
 
-[functions.two-factor]
-verify_jwt = true
-
 [functions.ai-mia]
 verify_jwt = true
 
