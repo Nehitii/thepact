@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  fusionDeDeuxArticles, prixCorrige, prixDuFormulaire,
+} from "@/domaines/souhaits/logique/prix";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/socle/ds";
 import { useAuth } from "@/socle/contextes/AuthContext";
@@ -238,8 +241,8 @@ export default function Wishlist() {
   const corriger = (id: string, champ: "prix" | "lien", valeur: string) => {
     if (!user) return;
     if (champ === "prix") {
-      const nombre = Number(valeur.replace(",", ".").trim());
-      if (!Number.isFinite(nombre) || nombre < 0) return;
+      const nombre = prixCorrige(valeur);
+      if (nombre === null) return;
       updateItem.mutate({ userId: user.id, id, patch: { estimated_cost: nombre } });
       return;
     }
@@ -322,7 +325,7 @@ export default function Wishlist() {
     if (!user) return;
     const nom = newName.trim();
     if (!nom) return;
-    const prix = Number((newCost || "0").replace(",", "."));
+    const prix = prixDuFormulaire(newCost);
     const objectif = newGoalId === "none" ? null : newGoalId;
 
     if (!opts?.skipDuplicateCheck) {
@@ -341,7 +344,7 @@ export default function Wishlist() {
           name: nom, goalId: objectif,
           goalName: objectif ? goals.find((g) => g.id === objectif)?.name ?? null : null,
           category: newCategory.trim() || null,
-          estimatedCost: Number.isFinite(prix) ? prix : 0, itemType: newType, notes: null,
+          estimatedCost: prix, itemType: newType, notes: null,
         });
         setMergeOpen(true);
         return;
@@ -351,7 +354,7 @@ export default function Wishlist() {
     try {
       await createItem.mutateAsync({
         userId: user.id, name: nom,
-        estimatedCost: Number.isFinite(prix) ? prix : 0,
+        estimatedCost: prix,
         itemType: newType, category: newCategory.trim() || null,
         goalId: objectif,
         listId: newListId === "none" ? null : newListId,
@@ -370,7 +373,7 @@ export default function Wishlist() {
     if (!user || !editId) return;
     const nom = editName.trim();
     if (!nom) return;
-    const prix = Number((editCost || "0").replace(",", "."));
+    const prix = prixDuFormulaire(editCost);
     const objectif = editGoalId === "none" ? null : editGoalId;
 
     if (!opts?.skipDuplicateCheck) {
@@ -389,7 +392,7 @@ export default function Wishlist() {
           name: nom, goalId: objectif,
           goalName: objectif ? goals.find((g) => g.id === objectif)?.name ?? null : null,
           category: editCategory.trim() || null,
-          estimatedCost: Number.isFinite(prix) ? prix : 0,
+          estimatedCost: prix,
           itemType: editType, notes: editNotes.trim() || null,
         });
         setMergeOpen(true);
@@ -402,7 +405,7 @@ export default function Wishlist() {
         userId: user.id, id: editId,
         patch: {
           name: nom, category: editCategory.trim() || null,
-          estimated_cost: Number.isFinite(prix) ? prix : 0,
+          estimated_cost: prix,
           item_type: editType, notes: editNotes.trim() || null,
           goal_id: objectif,
           /* Exclusif par contrainte de table : un objectif chasse la
@@ -424,20 +427,9 @@ export default function Wishlist() {
       setMergeBusy(true);
       const garde = items.find((i) => i.id === mergeDuplicateId);
       const courant = editId ? items.find((i) => i.id === editId) : null;
-      const coutFusionne = Number(garde?.estimated_cost ?? 0) + Number(mergeIncomingPreview.estimatedCost ?? 0);
-      const typeFusionne: PactWishlistItemType =
-        (garde?.item_type === "required" || mergeIncomingPreview.itemType === "required") ? "required" : "optional";
-      const categorieFusionnee = (garde?.category ?? "").trim() || (mergeIncomingPreview.category ?? "").trim() || null;
-      const notesFusionnees = [garde?.notes?.trim(), mergeIncomingPreview.notes?.trim()].filter(Boolean).join("\n\n") || null;
-
       await updateItem.mutateAsync({
         userId: user.id, id: mergeDuplicateId,
-        patch: {
-          name: garde?.name ?? mergeIncomingPreview.name,
-          goal_id: garde?.goal_id ?? mergeIncomingPreview.goalId ?? null,
-          estimated_cost: coutFusionne, item_type: typeFusionne,
-          category: categorieFusionnee, notes: notesFusionnees,
-        },
+        patch: fusionDeDeuxArticles(garde, mergeIncomingPreview),
       });
 
       if (mergeMode === "edit" && courant && courant.id !== mergeDuplicateId) {
