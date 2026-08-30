@@ -1,4 +1,8 @@
 import { useState, memo, useCallback, useMemo, useRef, useEffect } from "react";
+import {
+  CLE_REPLI, debordDe, estRepliee, marqueDeRepli, memeDebord,
+  pageSocialeOuverte, pastilleDe,
+} from "@/socle/outils/barreLaterale";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
@@ -106,8 +110,6 @@ const REGLAGES = [
   { to: "/profile/data", icone: Database, cle: "donnees" },
 ];
 
-const CLE_REPLI = "overwrite-barre-repliee";
-
 /* ── Une entree ───────────────────────────────────────────────
    Memoisee, et elle ne recoit que des valeurs simples. L ancienne
    version passait l objet « location » a chacune des dix-huit :
@@ -163,7 +165,7 @@ export const AppSidebar = memo(function AppSidebar() {
   /* L etat replie est RETENU, et lu des le premier rendu : le lire
      dans un effet ferait battre la barre a chaque chargement. */
   const [replie, setReplie] = useState(() => {
-    try { return localStorage.getItem(CLE_REPLI) === "oui"; } catch { return false; }
+    try { return estRepliee(localStorage.getItem(CLE_REPLI)); } catch { return false; }
   });
   const [mobileOuvert, setMobileOuvert] = useState(false);
   const [chercheOuverte, setChercheOuverte] = useState(false);
@@ -197,33 +199,30 @@ export const AppSidebar = memo(function AppSidebar() {
   const basculerRepli = useCallback(() => {
     setReplie((v) => {
       const suivant = !v;
-      try { localStorage.setItem(CLE_REPLI, suivant ? "oui" : "non"); } catch { /* navigation privee */ }
+      try { localStorage.setItem(CLE_REPLI, marqueDeRepli(suivant)); } catch { /* navigation privee */ }
       return suivant;
     });
   }, []);
 
   const mini = replie && !isMobile;
 
-  const compte = useCallback((e: Entree) => {
-    let n = 0;
-    if (e.badge === "friends") n += demandesAllies;
-    if (e.badge === "messages") n += messagesNonLus;
-    if (e.badge === "inbox") n += messagesNonLus + unreadCount;
-    if (e.module && unreadByModule[e.module]) n += unreadByModule[e.module];
-    return n;
-  }, [demandesAllies, messagesNonLus, unreadCount, unreadByModule]);
+  const compte = useCallback(
+    (e: Entree) => pastilleDe(e, {
+      demandesAllies, messagesNonLus,
+      boiteDeReception: unreadCount, parModule: unreadByModule,
+    }),
+    [demandesAllies, messagesNonLus, unreadCount, unreadByModule],
+  );
 
   const categories = useMemo(() => {
     const c: Record<Categorie, Entree[]> = {
       overview: [...BASE.overview],
       operations: [...BASE.operations],
       lifeSystems: [...BASE.lifeSystems],
-      network: BASE.network.filter((e) => {
-        if (e.to === "/community") return social.community;
-        if (e.to === "/friends") return social.friends;
-        if (e.to === "/leaderboard") return social.leaderboard;
-        return true;
-      }),
+      /* Les trois drapeaux, pas l objet : « social » est recree a chaque rendu. */
+      network: BASE.network.filter((e) => pageSocialeOuverte(e.to, {
+        community: social.community, friends: social.friends, leaderboard: social.leaderboard,
+      })),
       system: [...BASE.system],
     };
     for (const [cle, conf] of Object.entries(MODULES)) {
@@ -283,12 +282,8 @@ export const AppSidebar = memo(function AppSidebar() {
     const el = zone.current;
     if (!el) return;
     const relire = () => {
-      const reste = el.scrollHeight - el.clientHeight - el.scrollTop;
-      const haut = el.scrollTop > 2;
-      const bas = reste > 2;
-      /* On ne repose l etat que s il change : ce lecteur tourne a
-         chaque pixel de defilement. */
-      setDebord((p) => (p.haut === haut && p.bas === bas ? p : { haut, bas }));
+      const suivant = debordDe(el.scrollTop, el.scrollHeight, el.clientHeight);
+      setDebord((p) => (memeDebord(p, suivant) ? p : suivant));
     };
     relire();
     el.addEventListener("scroll", relire, { passive: true });
