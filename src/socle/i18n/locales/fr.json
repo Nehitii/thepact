@@ -650,7 +650,8 @@
       "paused": "En pause",
       "active": "Actif",
       "completed": "Terminé",
-      "cancelled": "Annulé"
+      "cancelled": "Annulé",
+      "archived": "Archivé"
     },
     "steps": {
       "title": "Étapes",
