@@ -1,4 +1,9 @@
 import type { CostItemData, EditStepItem } from "@/domaines/objectifs/types";
+import type { Json, Tables, TablesInsert } from "@/socle/supabase/types";
+import type { TypeObjectif } from "@/domaines/objectifs/logique/typeDObjectif";
+
+/** Le palier tel que la colonne le nomme : un enum, pas une chaine. */
+export type Palier = NonNullable<Tables<"goals">["difficulty"]>;
 
 /* CE QU ON ECRIT QUAND ON CREE UN OBJECTIF.
  *
@@ -155,4 +160,148 @@ export function etapesSuggereesRetenues<T>(etapes: T[]): T[] {
    l ecran affiche et desaccorderait les anciens des neufs. */
 export function titreParDefautDUneEtape(rang: number): string {
   return `Step ${rang}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LE JOUR CHOISI DEVIENT MINUIT UTC, PAS MINUIT CHEZ SOI.
+
+   Le champ de date rend « 2026-08-30 ». `new Date("2026-08-30")` lit
+   cette forme comme une date UTC — c est la specification, et c est
+   l inverse de `new Date("2026/08/30")`, qui la lirait en heure
+   locale. L instant enregistre est donc minuit UTC.
+
+   MESURE LE 30/08/2026 : les 38 objectifs du compte portent tous
+   exactement « 00:00:00+00 ». En France, un objectif qui « commence le
+   15 fevrier » commence donc a 01h00 le 15 fevrier — deux heures en
+   ete. Ce decalage se retrouve dans toute duree comptee depuis
+   `start_date`, dont les honneurs de temps.
+
+   ET LE DEFAUT DU CHAMP A LE MEME BIAIS, dans l autre sens : il vaut
+   `new Date().toISOString().split("T")[0]`, c est-a-dire LE JOUR UTC.
+   Entre minuit et deux heures du matin en France, le champ propose
+   DONC LA VEILLE. Aucun des 38 objectifs n a ete cree dans cette
+   fenetre — le plus tot l a ete a 13h48 — le defaut n a donc jamais
+   menti sur ce compte.
+
+   CONSTATE, NON CORRIGE : lire le jour en heure locale changerait
+   l instant enregistre pour tout objectif cree ensuite, et la date
+   proposee par le champ entre minuit et deux heures.
+   ═══════════════════════════════════════════════════════════════ */
+export function instantDuDepart(jour: string): string {
+  return new Date(jour).toISOString();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LES ENFANTS D UN GROUPE, CALCULES UNE FOIS.
+
+   Ils l etaient DEUX FOIS : une fois pour refuser un groupe vide, une
+   fois pour ecrire la colonne. Deux appels au meme filtre sur la meme
+   liste — d accord aujourd hui parce que rien ne bouge entre les deux,
+   mais rien ne le garantissait.
+   ═══════════════════════════════════════════════════════════════ */
+/* « auto » ET NON « rule » : c est le nom que porte l etat de la
+   page, et le renommer ici obligerait a traduire a chaque appel. */
+export type ModeDeGroupe = "manual" | "auto";
+
+export function enfantsDuGroupe(
+  mode: ModeDeGroupe,
+  selection: string[],
+  parLaRegle: string[],
+): string[] {
+  return mode === "manual" ? selection : parLaRegle;
+}
+
+/* CE QU UN GROUPE ECRIT DANS SES TROIS COLONNES.
+ *
+ * UN GROUPE DYNAMIQUE NE GARDE PAS SA LISTE : `child_goal_ids` vaut
+ * NULL, et c est la regle qui fait foi a chaque lecture. Y ecrire les
+ * identifiants du moment ferait croire a une liste figee, que plus
+ * rien ne mettrait a jour.
+ *
+ * ET UN GROUPE MANUEL N ECRIT PAS DE REGLE — pas meme nulle : la clef
+ * est absente, donc la colonne garde son defaut. */
+export interface ColonnesDuGroupe {
+  child_goal_ids?: string[] | null;
+  /* La regle est une colonne jsonb : le type applicatif est plus
+     etroit que Json, et la conversion a lieu chez l appelant. */
+  super_goal_rule?: Json;
+  is_dynamic_super?: boolean;
+}
+
+export function colonnesDuGroupe(
+  genre: GenreDObjectif,
+  mode: ModeDeGroupe,
+  selection: string[],
+  parLaRegle: string[],
+  regle: Json,
+  dynamique: boolean,
+): ColonnesDuGroupe {
+  if (genre !== "super") return {};
+  if (mode === "manual") return { child_goal_ids: selection, is_dynamic_super: false };
+  return {
+    child_goal_ids: dynamique ? null : parLaRegle,
+    super_goal_rule: regle,
+    is_dynamic_super: dynamique,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LA LIGNE D UN OBJECTIF NEUF.
+
+   Seize colonnes, dont cinq calculees et six qui choisissent entre une
+   valeur et NULL. Elles etaient posees au milieu de l ecriture
+   Supabase, ou aucune ne pouvait etre relue seule.
+
+   TROIS COLONNES NE VALENT QUE POUR UNE HABITUDE — la duree, les jours
+   coches — ou QUE POUR UN GROUPE. Les poser quand meme rendrait un
+   objectif ordinaire porteur d une duree d habitude, que rien
+   n afficherait mais que tout compte lirait.
+
+   ET LE VIDE DEVIENT NULL, PAS LA CHAINE VIDE : une note vide, une
+   image absente, une echeance non fixee. Une chaine vide en base se
+   lit comme une valeur posee ; NULL se lit comme « rien ».
+   ═══════════════════════════════════════════════════════════════ */
+export interface SaisieDUnObjectif {
+  pacteId: string;
+  nom: string;
+  /* Un enum lui aussi : logique/typeDObjectif.ts porte les neuf
+     valeurs et le repli. */
+  type: TypeObjectif;
+  /* UN ENUM POSTGRES, PAS UNE CHAINE. Le declarer « string » compile
+     ici et casse a l insertion — la lecon etait deja ecrite dans
+     logique/duplication.ts. */
+  palier: Palier;
+  genre: GenreDObjectif;
+  notes: string;
+  etapes: EditStepItem[];
+  joursDHabitude: number;
+  pieces: CostItemData[];
+  jourDeDepart: string;
+  echeance: string;
+  image: string;
+  groupe: ColonnesDuGroupe;
+}
+
+/* LE TYPE DE LA TABLE, ET NON UN OBJET LIBRE. C est lui qui verifie
+   que « status » et « difficulty » sont des enums, que « type » existe,
+   et qu aucune colonne inventee ne descend jusqu a Postgres. */
+export function objectifACreer(s: SaisieDUnObjectif): TablesInsert<"goals"> {
+  return {
+    pact_id: s.pacteId,
+    name: s.nom,
+    type: s.type,
+    difficulty: s.palier,
+    estimated_cost: totalChiffre(s.pieces),
+    notes: s.notes || null,
+    total_steps: totalDesEtapes(s.genre, s.etapes, s.joursDHabitude),
+    potential_score: potentielDuPalier(s.palier),
+    start_date: instantDuDepart(s.jourDeDepart),
+    status: "not_started",
+    goal_type: s.genre,
+    habit_duration_days: s.genre === "habit" ? s.joursDHabitude : null,
+    habit_checks: joursNeufs(s.genre, s.joursDHabitude),
+    image_url: s.image || null,
+    ...s.groupe,
+    deadline: s.echeance || null,
+  };
 }

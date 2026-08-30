@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-  ETAPES_AU_DEPART, ETAPES_MAX, ETAPES_MIN, JOURS_MAX, JOURS_MIN, etapesACreer, etapesSuggereesRetenues,
-  joursDHabitudeBornes, joursNeufs, piecesACreer, potentielDuPalier, titreParDefautDUneEtape,
-  rienDeSaisi, totalChiffre, totalDesEtapes,
+  ETAPES_AU_DEPART, ETAPES_MAX, ETAPES_MIN, JOURS_MAX, JOURS_MIN, colonnesDuGroupe,
+  enfantsDuGroupe, etapesACreer, etapesSuggereesRetenues, joursDHabitudeBornes, objectifACreer,
+  piecesACreer, rienDeSaisi, titreParDefautDUneEtape,
 } from "@/domaines/objectifs/logique/creation";
 import { typeALaCreation } from "@/domaines/objectifs/logique/typeDObjectif";
 import { createPortal } from "react-dom";
@@ -207,17 +207,17 @@ export default function NewGoal() {
       return;
     }
 
-    // Validate super goal has child goals
-    if (goalType === "super") {
-      const childIds =
-        superBuildMode === "manual"
-          ? selectedChildGoalIds
-          : filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
-
-      if (childIds.length === 0) {
-        toast.error("Error", { description: "Super Goal must contain at least one child goal" });
-        return;
-      }
+    /* LE FILTRE NE TOURNE QU UNE FOIS. Il tournait deux fois — ici
+       pour refuser un groupe vide, et plus bas pour ecrire la
+       colonne — sur la meme liste, sans rien qui garantisse que les
+       deux passages voient la meme chose. */
+    const parLaRegle = goalType === "super"
+      ? filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id)
+      : [];
+    if (goalType === "super"
+      && enfantsDuGroupe(superBuildMode, selectedChildGoalIds, parLaRegle).length === 0) {
+      toast.error("Error", { description: "Super Goal must contain at least one child goal" });
+      return;
     }
 
     try {
@@ -240,55 +240,34 @@ export default function NewGoal() {
         return;
       }
 
-      const potentialScore = potentielDuPalier(difficulty);
-      const habitChecks = joursNeufs(goalType, habitDurationDays);
-      const totalEstimatedCost = totalChiffre(costItems);
-
-      /* Une etiquette n est pas un type : voir logique/typeDObjectif.ts,
-         qui porte la liste des neuf valeurs de l enum et les deux
-         reponses — repli ici, abstention a la modification. */
-      const primaryType = typeALaCreation(selectedTags);
-
-      /* La regle d'un groupe est une colonne jsonb : le type applicatif
-         est plus etroit que Json, et la conversion a lieu ici, une fois. */
-      let superGoalData: { child_goal_ids?: string[] | null; super_goal_rule?: Json; is_dynamic_super?: boolean } =
-        {};
-      if (goalType === "super") {
-        if (superBuildMode === "manual") {
-          superGoalData = {
-            child_goal_ids: selectedChildGoalIds,
-            is_dynamic_super: false,
-          };
-        } else {
-          const matchedIds = filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
-          superGoalData = {
-            child_goal_ids: isDynamicSuper ? null : matchedIds,
-            super_goal_rule: superGoalRule as unknown as Json,
-            is_dynamic_super: isDynamicSuper,
-          };
-        }
-      }
+      /* Seize colonnes, cinq calculs et six choix entre une valeur et
+         NULL : logique/creation.ts, avec ce que la mesure a montre du
+         jour de depart. Une etiquette n est pas un type — voir
+         logique/typeDObjectif.ts. */
+      const ligne = objectifACreer({
+        pacteId: pactResult.id,
+        nom: validatedData.name,
+        type: typeALaCreation(selectedTags),
+        palier: validatedData.difficulty,
+        genre: goalType,
+        /* Le schema rend les notes optionnelles ; la ligne veut une
+           chaine, et c est elle qui decide que le vide vaut NULL. */
+        notes: validatedData.notes ?? "",
+        etapes: stepItems,
+        joursDHabitude: habitDurationDays,
+        pieces: costItems,
+        jourDeDepart: startDate,
+        echeance: deadline,
+        image: imageUrl,
+        groupe: colonnesDuGroupe(
+          goalType, superBuildMode, selectedChildGoalIds, parLaRegle,
+          superGoalRule as unknown as Json, isDynamicSuper,
+        ),
+      });
 
       const { data: goalData, error: goalError } = await supabase
         .from("goals")
-        .insert({
-          pact_id: pactResult.id,
-          name: validatedData.name,
-          type: primaryType,
-          difficulty: validatedData.difficulty,
-          estimated_cost: totalEstimatedCost,
-          notes: validatedData.notes || null,
-          total_steps: totalDesEtapes(goalType, stepItems, habitDurationDays),
-          potential_score: potentialScore,
-          start_date: new Date(startDate).toISOString(),
-          status: "not_started",
-          goal_type: goalType,
-          habit_duration_days: goalType === "habit" ? habitDurationDays : null,
-          habit_checks: habitChecks,
-          image_url: imageUrl || null,
-          ...superGoalData,
-          deadline: deadline || null,
-        })
+        .insert(ligne)
         .select()
         .single();
 
