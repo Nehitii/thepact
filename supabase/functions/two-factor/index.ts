@@ -4,6 +4,11 @@ import {
   generateDeviceToken, generateRecoveryCodes, sha256Hex, totpVerify,
   peutRedemanderUnCode, tropDeTentatives,
 } from "./totp.ts";
+import {
+  appareilEncoreValide, etiquetteDuCorps, expirationDeLAppareil,
+  texteCoupeDuCorps, texteDuCorps,
+} from "./requete.ts";
+import { corpsDuCourriel, expediteur, sujetDuCourriel } from "./courriel.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,21 +56,7 @@ async function sendEmailViaResend(to: string, code: string): Promise<boolean> {
     return false;
   }
 
-  const html = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-      <div style="text-align: center; margin-bottom: 32px;">
-        <h1 style="color: #1a1a2e; font-size: 24px; margin: 0;">Pacte</h1>
-        <p style="color: #666; font-size: 14px; margin-top: 8px;">Two-Factor Authentication</p>
-      </div>
-      <div style="background: #f8f9fa; border-radius: 12px; padding: 32px; text-align: center;">
-        <p style="color: #333; font-size: 16px; margin: 0 0 24px;">Your verification code is:</p>
-        <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #1a1a2e; font-family: monospace; background: white; border-radius: 8px; padding: 16px; border: 2px solid #e2e8f0;">
-          ${code}
-        </div>
-        <p style="color: #888; font-size: 13px; margin-top: 24px;">This code expires in 5 minutes.<br/>If you didn't request this, you can safely ignore it.</p>
-      </div>
-    </div>
-  `;
+  const html = corpsDuCourriel(code);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -75,9 +66,9 @@ async function sendEmailViaResend(to: string, code: string): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: Deno.env.get("RESEND_FROM_EMAIL") || "Pacte <onboarding@resend.dev>",
+        from: expediteur(Deno.env.get("RESEND_FROM_EMAIL")),
         to: [to],
-        subject: `${code} — Your Pacte verification code`,
+        subject: sujetDuCourriel(code),
         html,
       }),
     });
@@ -176,7 +167,7 @@ Deno.serve(async (req) => {
     // ── STATUS ──
     if (action === "status") {
       const settings = await getSettings();
-      const deviceToken = typeof body.deviceToken === "string" ? body.deviceToken : "";
+      const deviceToken = texteDuCorps(body.deviceToken);
       let trusted = false;
 
       const anyEnabled = settings.enabled || settings.emailEnabled;
@@ -191,7 +182,7 @@ Deno.serve(async (req) => {
           .limit(1)
           .maybeSingle();
 
-        if (data?.id && data.expires_at && new Date(data.expires_at).getTime() > Date.now()) {
+        if (appareilEncoreValide(data, Date.now())) {
           trusted = true;
           await supabaseClient
             .from("user_trusted_devices")
@@ -250,11 +241,11 @@ Deno.serve(async (req) => {
       const settings = await getSettings();
       if (!settings.enabled && !settings.emailEnabled) return jsonResponse({ error: "2FA not enabled" }, 400);
 
-      const totpCode = typeof body.code === "string" ? body.code : "";
-      const emailCode = typeof body.emailCode === "string" ? body.emailCode : "";
-      const recoveryCode = typeof body.recoveryCode === "string" ? body.recoveryCode : "";
+      const totpCode = texteDuCorps(body.code);
+      const emailCode = texteDuCorps(body.emailCode);
+      const recoveryCode = texteDuCorps(body.recoveryCode);
       const trustDevice = !!body.trustDevice;
-      const deviceLabel = typeof body.deviceLabel === "string" ? body.deviceLabel.slice(0, 200) : null;
+      const deviceLabel = etiquetteDuCorps(body.deviceLabel);
 
       let ok = false;
       let usedRecovery = false;
@@ -322,7 +313,7 @@ Deno.serve(async (req) => {
       if (trustDevice) {
         const token = generateDeviceToken();
         const tokenHash = await sha256Hex(token);
-        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const expires = expirationDeLAppareil(Date.now());
 
         await supabaseClient.from("user_trusted_devices").insert({
           user_id: user.id,
@@ -377,7 +368,7 @@ Deno.serve(async (req) => {
     // ── CONFIRM EMAIL 2FA ──
     if (action === "confirm_email_2fa") {
       const settings = await getSettings();
-      const emailCode = typeof body.code === "string" ? body.code.trim() : "";
+      const emailCode = texteCoupeDuCorps(body.code);
 
       if (!emailCode) return jsonResponse({ error: "Missing code" }, 400);
       if (tropDeTentatives(settings.emailCodeAttempts)) return jsonResponse({ error: "Too many attempts" }, 429);
