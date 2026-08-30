@@ -3,6 +3,7 @@ import { Compass, Crown, KeyRound, Plus, Shield, Users } from "lucide-react";
 import { BlasonGuilde } from "@/domaines/social/composants/BlasonGuilde";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { partRemplie, plafondAffiche } from "@/domaines/social/logique/guilde";
 import { toast } from "sonner";
 import { GuildCreateModal } from "@/domaines/social/composants/GuildCreateModal";
 import { useGuilds } from "@/domaines/social/hooks/useGuilds";
@@ -30,8 +31,8 @@ import type { Guild } from "@/domaines/social/hooks/useGuilds";
 function CarteGuilde({ guilde, estFondateur, onOuvrir }: { guilde: Guild; estFondateur: boolean; onOuvrir: () => void }) {
   const { t } = useTranslation();
   const membres = guilde.member_count ?? 0;
-  const max = guilde.max_members || 25;
-  const part = Math.min(100, Math.round((membres / max) * 100));
+  const max = plafondAffiche(guilde.max_members);
+  const part = partRemplie(membres, guilde.max_members);
 
   return (
     <div className="fr-guilde" role="button" tabIndex={0}

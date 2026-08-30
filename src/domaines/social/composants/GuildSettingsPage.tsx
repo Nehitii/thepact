@@ -1,4 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import {
+  champsAEnregistrer, peutDetruire, plafondAffiche, signatureDeGuilde,
+} from "@/domaines/social/logique/guilde";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useGuilds, type Guild } from "@/domaines/social/hooks/useGuilds";
@@ -45,7 +48,7 @@ export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
   const [pose, setPose] = useState(guild.blason_pose || "coin");
   const [fondEmbleme, setFondEmbleme] = useState(guild.emblem_bg || "");
   const [isPublic, setIsPublic] = useState(guild.is_public);
-  const [maxMembers, setMaxMembers] = useState(String(guild.max_members || 25));
+  const [maxMembers, setMaxMembers] = useState(String(plafondAffiche(guild.max_members)));
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [vue, setVue] = useState<"identite" | "general" | "codes" | "danger">("identite");
   const [transferTarget, setTransferTarget] = useState("");
@@ -68,11 +71,7 @@ export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
    * si la donnee changeait dessous. C est le bon arbitrage — ecrire une
    * valeur perimee par-dessus une valeur fraiche est pire, et silencieux.
    */
-  const signature = [
-    guild.name, guild.description, guild.icon, guild.color,
-    guild.banner_url, guild.emblem_url, guild.motd,
-    guild.blason_pose, guild.emblem_bg, guild.is_public, guild.max_members,
-  ].join("\u0000");
+  const signature = signatureDeGuilde(guild);
 
   useEffect(() => {
     setName(guild.name);
@@ -85,7 +84,7 @@ export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
     setPose(guild.blason_pose || "coin");
     setFondEmbleme(guild.emblem_bg || "");
     setIsPublic(guild.is_public);
-    setMaxMembers(String(guild.max_members || 25));
+    setMaxMembers(String(plafondAffiche(guild.max_members)));
     /* On depend de la signature, pas de l objet : « guild » est recree a
        chaque lecture et relancerait l effet sans que rien ait change. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,18 +95,11 @@ export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
     try {
       await updateGuild.mutateAsync({
         guildId: guild.id,
-        updates: {
-          name: name.trim(),
-          description: description.trim() || null,
-          icon, color,
-          banner_url: banniere,
-          emblem_url: embleme,
-          motd: motd.trim() || null,
-          blason_pose: pose,
-          emblem_bg: fondEmbleme || null,
-          is_public: isPublic,
-          max_members: parseInt(maxMembers) || 25,
-        },
+        updates: champsAEnregistrer({
+          name, description, icon, color,
+          banniere, embleme, motd, pose, fondEmbleme,
+          isPublic, maxMembres: maxMembers,
+        }),
       });
       toast.success(t("common.updated"));
       onFini?.();
@@ -117,7 +109,7 @@ export function GuildSettingsPage({ guild, userId, isOwner, onFini }: Props) {
   };
 
   const handleDelete = async () => {
-    if (deleteConfirm !== guild.name) return;
+    if (!peutDetruire(deleteConfirm, guild.name)) return;
     try {
       await deleteGuild.mutateAsync(guild.id);
       toast.success(t("friends.guildDeleted"));

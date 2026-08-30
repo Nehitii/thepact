@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { nombreDeMembresMax } from "@/domaines/social/logique/guilde";
 import { Switch } from "@/socle/ui/switch";
 import {
   CLES_EMBLEMES, EMBLEMES, TEINTES, TEINTE_PAR_DEFAUT, emblemeDe, estUneTeinte,
@@ -57,7 +58,7 @@ export function GuildCreateModal({ open, onClose, onCreate, loading }: Props) {
       icon,
       color,
       is_public: isPublic,
-      max_members: parseInt(maxMembers, 10) || 25,
+      max_members: nombreDeMembresMax(maxMembers),
     });
     setName("");
     setDescription("");

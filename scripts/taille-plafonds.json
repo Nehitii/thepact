@@ -13,7 +13,7 @@
   "src/domaines/objectifs/pages/GoalDetail.tsx": 448,
   "src/domaines/objectifs/pages/NewGoal.tsx": 781,
   "src/domaines/onboarding/pages/Onboarding.tsx": 512,
-  "src/domaines/social/composants/GuildSettingsPage.tsx": 522,
+  "src/domaines/social/composants/GuildSettingsPage.tsx": 514,
   "src/domaines/souhaits/pages/Wishlist.tsx": 708,
   "supabase/functions/ai-mia/index.ts": 1138,
   "supabase/functions/two-factor/index.ts": 503

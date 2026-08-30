@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { plafondAffiche } from "@/domaines/social/logique/guilde";
 import {
   ArrowLeft, CalendarDays, Crown, Home, LogOut,
   MessageSquare, Settings, Shield, Swords, Users,
@@ -125,7 +126,7 @@ export default function GuildPage() {
   ];
   const sections = TOUTES.filter((s) => !s.officier || estOfficier);
 
-  const max = guilde.max_members || 25;
+  const max = plafondAffiche(guilde.max_members);
   /* L embleme et la teinte servent au mot du jour ; le niveau, lui,
      vit dans le rail, qui le tire de la meme colonne. */
   const Embleme = emblemeDe(guilde.icon);

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
+import { plafondAffiche } from "@/domaines/social/logique/guilde";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import type { Json } from "@/socle/supabase/types";
 import { trackGuildJoined } from "@/domaines/succes";
@@ -158,7 +159,7 @@ export function useGuilds() {
         p_icon: icon || "shield",
         p_color: color || "violet",
         p_is_public: is_public || false,
-        p_max_members: max_members || 25,
+        p_max_members: plafondAffiche(max_members),
       });
       if (error) throw error;
       return lireReponse(data);
