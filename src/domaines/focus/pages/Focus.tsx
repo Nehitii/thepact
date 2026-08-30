@@ -1,6 +1,9 @@
 import type { ObjetClause } from "@/domaines/focus/types";
 export type { ObjetClause };
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import {
+  annonceDuCadran, assezEspacee, avancementParPas, clefDeNotification, referenceDuRegistre,
+} from "@/domaines/focus/logique/cadran";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Maximize, Minimize, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -286,20 +289,16 @@ export default function Focus() {
       if (!mouvementReduit) setShowFlash(true);
       const timeout = setTimeout(() => setShowFlash(false), 500);
 
-      // Deuxieme filet : deux notifications a moins de dix secondes
-      // d intervalle n apportent rien, elles s empilent.
+      /* Deuxieme filet : voir assezEspacee dans logique/cadran.ts. */
       const maintenant = Date.now();
       if (
         "Notification" in window &&
         Notification.permission === "granted" &&
-        maintenant - derniereNotif.current > 10_000
+        assezEspacee(maintenant, derniereNotif.current)
       ) {
         derniereNotif.current = maintenant;
         new Notification("THE PACT // Focus System", {
-          body:
-            timer.phase === "break"
-              ? t("focus.notification.breakStart")
-              : t("focus.notification.workResume"),
+          body: t(clefDeNotification(timer.phase)),
           icon: "/favicon.ico",
           // Une seule notification a l ecran : la suivante remplace la
           // precedente au lieu de s ajouter a la pile.
@@ -386,37 +385,14 @@ export default function Focus() {
   const linkedName = linkedGoal?.name ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
   const linkedImageUrl = linkedGoal?.image_url ?? null;
 
-  /* Region vocale : trois annonces par phase, pas une par minute.
-     Une region qui se met a jour chaque minute diffuse encore le temps,
-     et une session de vingt-cinq minutes produirait vingt-cinq
-     interruptions. On annonce l entree dans la phase, puis les deux
-     seuls seuils qui changent une decision : cinq minutes, une minute.
-     Le temps restant exact, lui, est expose sur la barre de progression
-     et se lit a la demande. */
-  const annonce = (() => {
-    if (timer.phase === "idle") return "";
-    if (timer.isPaused) return t("focus.announce.paused");
-    const minutes = Math.ceil(timer.secondsLeft / 60);
-    const seuil = minutes <= 1 ? 1 : minutes <= 5 ? 5 : null;
-    if (seuil === null) {
-      return timer.phase === "break"
-        ? t("focus.announce.breakStarted")
-        : t("focus.announce.workStarted");
-    }
-    return timer.phase === "break"
-      ? t("focus.announce.break", { count: seuil })
-      : t("focus.announce.work", { count: seuil });
-  })();
+  /* Ce que la region vocale dit, et quand : voir logique/cadran.ts. */
+  const dire = annonceDuCadran(timer.phase, timer.isPaused, timer.secondsLeft);
+  const annonce = dire ? t(dire.cle, dire.valeurs) : "";
 
-  /* Reference du registre : la date du jour et le rang de la clause.
-     Pas un numero decoratif — il se lit et il est vrai. */
-  const reference = useMemo(() => {
-    const d = new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const jj = String(d.getDate()).padStart(2, "0");
-    const rang = String((timer.sessionsCompleted % 4) + 1).padStart(2, "0");
-    return `VW·${mm}${jj}·${rang}`;
-  }, [timer.sessionsCompleted]);
+  const reference = useMemo(
+    () => referenceDuRegistre(timer.sessionsCompleted, new Date()),
+    [timer.sessionsCompleted],
+  );
 
   /* Les quatre vues, dans l ordre des onglets : c est cet ordre qui donne
      le sens du glissement. */
@@ -511,7 +487,7 @@ export default function Focus() {
               et le flou ne sont donc rasterises que vingt fois par
               session, pas mille cinq cents. */}
           <FocusAmbientEffects
-            progress={timer.isRunning ? Math.round(timer.progress * 20) / 20 : 0}
+            progress={timer.isRunning ? avancementParPas(timer.progress) : 0}
             isBreak={isBreak}
             statique={!timer.isRunning}
             sansParticules={fond !== "aucun"}
@@ -519,7 +495,7 @@ export default function Focus() {
           <FocusFond
             variante={fond}
             actif={timer.isRunning}
-            progress={Math.round(timer.progress * 20) / 20}
+            progress={avancementParPas(timer.progress)}
             isBreak={isBreak}
           />
         </>

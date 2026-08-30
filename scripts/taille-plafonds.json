@@ -4,7 +4,7 @@
   "src/domaines/appel/composants/CoeurStellaire.tsx": 555,
   "src/domaines/appel/pages/TheCall.tsx": 821,
   "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 606,
-  "src/domaines/focus/pages/Focus.tsx": 683,
+  "src/domaines/focus/pages/Focus.tsx": 659,
   "src/domaines/journal/composants/JournalEditor.tsx": 666,
   "src/domaines/journal/composants/JournalNewEntryModal.tsx": 564,
   "src/domaines/mia/composants/MiaConsole.tsx": 808,
