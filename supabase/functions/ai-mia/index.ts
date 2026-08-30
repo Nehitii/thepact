@@ -19,6 +19,10 @@ import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage }
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 import { bornesDeLEvenement, choixOuDefaut, drapeau, valeurOuNulle } from "./charges.ts";
 import { PLAFOND_EVENEMENTS, fenetreAutour, fenetreEnArriere, resumeDuFocus } from "./resumes.ts";
+import {
+  AVEU_SANS_TEXTE, aveuDInterruption, estLeDernierTour, metadonneesDuMessage,
+  raisonDeLInterruption, type Action, type Citation,
+} from "./echange.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -126,8 +130,8 @@ interface LigneJournal { title: string | null; mood: string | null; content: str
 interface LigneMemoire { source_type: string; source_id: string; content: string | null; similarity?: number }
 
 interface ToolReceipt {
-  citations?: Array<{ source_type: string; source_id: string; snippet: string; similarity?: number }>;
-  action?: { tool: string; status: "ok" | "error"; label: string; ref_id?: string; ref_type?: string; error?: string };
+  citations?: Citation[];
+  action?: Action;
 }
 
 async function runTool(
@@ -773,7 +777,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const TOURS_MAX = 4;
     const citations: ToolReceipt["citations"] = [];
     const actions: NonNullable<ToolReceipt["action"]>[] = [];
 
@@ -825,28 +828,16 @@ Deno.serve(async (req) => {
             /* Au dernier tour on rappelle SANS outils : le modèle n'a plus
                le choix, il répond. Sans cela une boucle d'outils pourrait
                se terminer sur un silence. */
-            const dernier = tour >= TOURS_MAX - 1;
+            const dernier = estLeDernierTour(tour);
             const suite = await appeler(workMessages, !dernier);
             if (!suite.ok || !suite.body) {
               /* UN ÉCHEC EN COURS DE ROUTE N'EST PLUS UN SILENCE.
                  Quand un tour d'outil échouait — quota atteint, requête
                  refusée — la boucle sortait sans rien avoir écrit et
                  l'utilisateur voyait une bulle vide. */
-              /* UN 5xx NE DIT PLUS « le modèle a refusé ».
-                 Il ne refuse rien : il est saturé. Et depuis que
-                 `chatCompletion` réessaie et relaie (voir
-                 _shared/relais.ts), un 5xx qui arrive jusqu'ici veut
-                 dire que TOUS les modèles de la chaîne ont échoué —
-                 ce qui n'appelle pas la même phrase qu'un refus. */
-              const raison =
-                suite.status === 429
-                  ? "j'ai atteint le quota du modèle. Réessaie dans une minute."
-                  : suite.status === 402
-                    ? "le crédit du modèle est épuisé."
-                    : suite.status >= 500
-                      ? "les modèles sont saturés — j'ai réessayé sans succès. Retente dans un instant."
-                      : `le modèle a refusé la suite (${suite.status}).`;
-              const aveu = texteTotal ? `\n\n_(interrompue : ${raison})_` : `Je n'ai pas pu terminer : ${raison}`;
+              /* La phrase, et ce qui la distingue de celle du premier
+                 appel, sont dans echange.ts. */
+              const aveu = aveuDInterruption(texteTotal, raisonDeLInterruption(suite.status));
               texteTotal += aveu;
               controller.enqueue(encoder.encode(trame(aveu)));
               break;
@@ -855,28 +846,13 @@ Deno.serve(async (req) => {
           }
 
           if (!texteTotal.trim()) {
-            /* Aucun texte du tout : plutôt qu'une bulle vide, on le dit.
-               C'était le symptôme visible de trois bugs successifs — la
-               signature de pensée perdue, le nom d'outil manquant, le
-               quota atteint. */
-            const aveu = "Je n'ai rien pu produire sur ce tour. Reformule ou réessaie.";
-            texteTotal = aveu;
-            controller.enqueue(encoder.encode(trame(aveu)));
+            texteTotal = AVEU_SANS_TEXTE;
+            controller.enqueue(encoder.encode(trame(AVEU_SANS_TEXTE)));
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
 
-          const vus = new Set<string>();
-          const citationsUniques = citations.filter((c) => {
-            const cle = `${c.source_type}:${c.source_id}`;
-            if (vus.has(cle)) return false;
-            vus.add(cle);
-            return true;
-          });
-          const metadata =
-            citationsUniques.length || actions.length
-              ? { citations: citationsUniques, actions }
-              : null;
+          const metadata = metadonneesDuMessage(citations, actions);
 
           await supabase.from("mia_messages").insert({
             conversation_id: body.conversation_id,
