@@ -844,6 +844,8 @@
       "dates": "Calendrier",
       "deadline": "Échéance",
       "deadlineHint": "Une échéance allume le compte à rebours sur la carte de l'objectif.",
+      "departConnu": "Je sais quand j'ai commencé",
+      "departHint": "Sans date de départ, l'objectif ne compte aucune durée — et ne peut gagner aucune distinction de temps.",
       "notesPlaceholder": "Ce qu'il faut se rappeler à propos de cet objectif…",
       "typeFixed": "fixé à la création",
       "typeNormal": "Objectif ordinaire",

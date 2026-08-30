@@ -114,17 +114,14 @@ export async function trackGoalCreated(userId: string, _difficulty?: string) {
 }
 
 // Track goal completion
-/* LA MESURE ENTIERE, ET NON CINQ ARGUMENTS. Elle porte trois instants
-   — le depart, la creation, l achevement — et une difficulte ; les
-   deplier obligeait l appelant a les remettre dans le bon ordre, et
-   `depuis` et `cree` sont deux `string | null` que rien ne distingue
-   a l appel. Les seuils, l ordre des deblocages et la raison des DEUX
-   horloges vivent dans logique/honneurDuTemps.ts. */
+/* LA MESURE ENTIERE, ET NON QUATRE ARGUMENTS. Elle porte le depart,
+   l achevement et la difficulte ; les deplier obligeait l appelant a
+   les remettre dans le bon ordre. Les seuils, l ordre des deblocages
+   et la raison de l horloge unique vivent dans
+   logique/honneurDuTemps.ts. */
 export async function trackGoalCompleted(userId: string, m: MesureDeLHonneur) {
   await supabase.rpc('resynchroniser_compteurs_succes');
-  for (const succes of honneursDuTemps(
-    m.difficulte, dureeEnHeures(m.depuis, m.jusqua), dureeEnHeures(m.cree, m.jusqua),
-  )) {
+  for (const succes of honneursDuTemps(m.difficulte, dureeEnHeures(m.depuis, m.jusqua))) {
     await unlockAchievement(userId, succes);
   }
 

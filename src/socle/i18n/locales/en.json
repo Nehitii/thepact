@@ -844,6 +844,8 @@
       "dates": "Scheduling",
       "deadline": "Deadline",
       "deadlineHint": "A deadline turns on the countdown on the goal card.",
+      "departConnu": "I know when I started",
+      "departHint": "Without a start date, the goal measures no duration — and can earn no time-based distinction.",
       "notesPlaceholder": "What to remember about this goal…",
       "typeFixed": "set at creation",
       "typeNormal": "Ordinary goal",

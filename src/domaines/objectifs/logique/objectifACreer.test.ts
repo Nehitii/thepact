@@ -20,12 +20,29 @@ describe("le jour choisi devient un instant", () => {
      `start_date` herite de ce decalage. Constate, non corrige : le
      lire en heure locale changerait l instant enregistre. */
   it("decale d une heure ou deux vu de Paris", () => {
-    const depart = new Date(instantDuDepart("2026-02-15"));
-    expect(depart.toLocaleString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", hour12: false }))
-      .toContain("01");
-    const ete = new Date(instantDuDepart("2026-08-30"));
-    expect(ete.toLocaleString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", hour12: false }))
-      .toContain("02");
+    const heureAParis = (jour: string) => {
+      const iso = instantDuDepart(jour);
+      expect(iso).not.toBeNull();
+      return new Date(iso as string)
+        .toLocaleString("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", hour12: false });
+    };
+    expect(heureAParis("2026-02-15")).toContain("01");
+    expect(heureAParis("2026-08-30")).toContain("02");
+  });
+
+  /* ═══ PAS DE DATE EST UNE REPONSE, PAS UN OUBLI ═══
+   *
+   * La case « je sais quand j ai commence » decochee laisse la colonne
+   * a NULL. C est ce qui distingue un depart qu on ignore d un depart
+   * qu on a pose : un champ pre-rempli faisait des deux la meme chose,
+   * et seize des trente-huit objectifs du compte portaient ainsi le
+   * jour de leur import.
+   *
+   * Rien de ce qui se compte depuis le depart ne se declenche alors —
+   * voir succes/logique/honneurDuTemps.ts. */
+  it("rend null quand aucun jour n a ete declare", () => {
+    expect(instantDuDepart(null)).toBeNull();
+    expect(instantDuDepart("")).toBeNull();
   });
 
   /* ET LA FORME AVEC DES BARRES SE LIRAIT EN HEURE LOCALE — c est le
@@ -138,5 +155,15 @@ describe("la ligne d un objectif neuf", () => {
 
   it("pose le depart a minuit UTC du jour choisi", () => {
     expect(objectifACreer(base).start_date).toBe("2026-08-30T00:00:00.000Z");
+  });
+
+  /* LA LIGNE PART SANS DEPART QUAND ON N EN A PAS DECLARE. La colonne
+     porte un defaut `now()` en base : il ne se declenche que si la
+     colonne est OMISE de l insertion. En envoyant NULL explicitement,
+     c est NULL qui est ecrit. */
+  it("ecrit un depart nul, et non le jour courant", () => {
+    const l = objectifACreer({ ...base, jourDeDepart: null });
+    expect(l.start_date).toBeNull();
+    expect("start_date" in l).toBe(true);
   });
 });

@@ -558,3 +558,32 @@
 }
 .ge-releve svg { flex-shrink: 0; }
 .ge-releve b { color: var(--gd-encre-2); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* ── LA CASE QUI DECIDE S IL Y A UNE DATE ──
+   Elle prend la place de l etiquette au-dessus du champ de depart : ce
+   n est pas un reglage de plus a cote, c est ce qui dit si le champ a
+   un sens. Decochee, le champ est desactive et la colonne reste nulle. */
+.ge-bascule {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--gd-mono);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--gd-encre-3);
+  cursor: pointer;
+  user-select: none;
+}
+.ge-bascule input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--cp-cyan, currentColor);
+  cursor: pointer;
+}
+.ge-bascule:has(input:checked) { color: var(--gd-encre-1); }
+/* UN CHAMP DESACTIVE DOIT SE VOIR DESACTIVE : sans cela, il ressemble a
+   un champ vide qu on aurait oublie de remplir. */
+.ge-champ input:disabled { opacity: 0.4; cursor: not-allowed; }

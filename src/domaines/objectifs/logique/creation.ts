@@ -176,19 +176,22 @@ export function titreParDefautDUneEtape(rang: number): string {
    ete. Ce decalage se retrouve dans toute duree comptee depuis
    `start_date`, dont les honneurs de temps.
 
-   ET LE DEFAUT DU CHAMP A LE MEME BIAIS, dans l autre sens : il vaut
-   `new Date().toISOString().split("T")[0]`, c est-a-dire LE JOUR UTC.
-   Entre minuit et deux heures du matin en France, le champ propose
-   DONC LA VEILLE. Aucun des 38 objectifs n a ete cree dans cette
-   fenetre — le plus tot l a ete a 13h48 — le defaut n a donc jamais
-   menti sur ce compte.
+   LE CHAMP N EST PLUS PRE-REMPLI. Il l etait avec le JOUR UTC, ce qui
+   proposait la veille entre minuit et deux heures du matin en France.
+   Surtout, un champ pre-rempli fait d une date acceptee sans y penser
+   une date declaree : seize des trente-huit objectifs du compte
+   portaient ainsi le jour de leur import. La case decide desormais
+   s il y a une date, et la personne la pose.
 
    CONSTATE, NON CORRIGE : lire le jour en heure locale changerait
    l instant enregistre pour tout objectif cree ensuite, et la date
    proposee par le champ entre minuit et deux heures.
    ═══════════════════════════════════════════════════════════════ */
-export function instantDuDepart(jour: string): string {
-  return new Date(jour).toISOString();
+export function instantDuDepart(jour: string | null): string | null {
+  /* PAS DE DATE EST UNE REPONSE, PAS UN OUBLI. La case « je sais
+     quand j ai commence » decoche laisse la colonne a NULL, et rien
+     de ce qui se compte depuis le depart ne se declenche. */
+  return jour ? new Date(jour).toISOString() : null;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -276,7 +279,8 @@ export interface SaisieDUnObjectif {
   etapes: EditStepItem[];
   joursDHabitude: number;
   pieces: CostItemData[];
-  jourDeDepart: string;
+  /** `null` quand la case n a pas ete cochee. */
+  jourDeDepart: string | null;
   echeance: string;
   image: string;
   groupe: ColonnesDuGroupe;

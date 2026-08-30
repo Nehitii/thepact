@@ -204,7 +204,14 @@ export function useAtelierDObjectif(ctx: AtelierContexte) {
       const typeAEcrire = typeALaModification(editTags, goal.type);
       if (typeAEcrire) updates.type = typeAEcrire;
       if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
-      if (editStartDate && editStartDate !== goal.start_date?.split("T")[0]) updates.start_date = new Date(editStartDate).toISOString();
+      /* VIDER LE CHAMP RETIRE LA DATE. La garde `editStartDate &&`
+         l interdisait : on pouvait poser un depart, jamais le
+         reprendre. Depuis que la creation sait n en poser aucun, les
+         deux formulaires doivent savoir dire la meme chose. */
+      const departActuel = goal.start_date?.split("T")[0] ?? "";
+      if (editStartDate !== departActuel) {
+        updates.start_date = editStartDate ? new Date(editStartDate).toISOString() : null;
+      }
       if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0]) updates.completion_date = new Date(editCompletionDate).toISOString();
       if (editImage !== goal.image_url) updates.image_url = editImage;
       const currentDeadline = goal.deadline || "";

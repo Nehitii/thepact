@@ -11,7 +11,7 @@
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 478,
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 536,
   "src/domaines/objectifs/pages/GoalDetail.tsx": 448,
-  "src/domaines/objectifs/pages/NewGoal.tsx": 760,
+  "src/domaines/objectifs/pages/NewGoal.tsx": 737,
   "src/domaines/onboarding/pages/Onboarding.tsx": 512,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 514,
   "src/domaines/souhaits/pages/Wishlist.tsx": 686,

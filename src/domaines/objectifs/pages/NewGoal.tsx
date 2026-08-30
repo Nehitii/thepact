@@ -21,6 +21,7 @@ import {
 import { EditStepsList, EditStepItem } from "@/domaines/objectifs/composants/EditStepsList";
 import { toast } from "sonner";
 import { GoalImageUpload } from "@/domaines/objectifs/composants/GoalImageUpload";
+import { VoletDesDates } from "@/domaines/objectifs/composants/VoletDesDates";
 import { CostItemsEditor, CostItemData } from "@/domaines/objectifs/composants/CostItemsEditor";
 import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRule } from "@/domaines/objectifs/composants/super";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel } from "@/domaines/objectifs/logique/goalConstants";
@@ -84,7 +85,10 @@ export default function NewGoal() {
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
-  const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  /* La date de depart se declare : voir composants/VoletDesDates.tsx.
+     Sans la case, la colonne reste nulle. */
+  const [departConnu, setDepartConnu] = useState(false);
+  const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
     Array.from({ length: ETAPES_AU_DEPART }, (_, i) =>
@@ -256,7 +260,7 @@ export default function NewGoal() {
         etapes: stepItems,
         joursDHabitude: habitDurationDays,
         pieces: costItems,
-        jourDeDepart: startDate,
+        jourDeDepart: departConnu && startDate ? startDate : null,
         echeance: deadline,
         image: imageUrl,
         groupe: colonnesDuGroupe(
@@ -526,41 +530,14 @@ export default function NewGoal() {
               </div>
             </section>
 
-            <section className="ge-volet">
-              <header className="ge-tete">
-                <Calendar size={12} aria-hidden="true" />
-                {t("goals.edit.dates", "Calendrier")}
-              </header>
-              <div className="ge-corps-volet">
-                <div className="ge-duo">
-                  <div className="ge-champ">
-                    <label className="ge-etiquette" htmlFor="ge-debut">
-                      {t("goals.detail.startDate", "Début")}
-                    </label>
-                    <input
-                      id="ge-debut"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="ge-champ">
-                    <label className="ge-etiquette" htmlFor="ge-echeance">
-                      {t("goals.edit.deadline", "Échéance")}
-                    </label>
-                    <input
-                      id="ge-echeance"
-                      type="date"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <p className="ge-aide">
-                  {t("goals.edit.deadlineHint", "Une échéance allume le compte à rebours sur la carte de l'objectif.")}
-                </p>
-              </div>
-            </section>
+            <VoletDesDates
+              departConnu={departConnu}
+              onDepartConnu={setDepartConnu}
+              depart={startDate}
+              onDepart={setStartDate}
+              echeance={deadline}
+              onEcheance={setDeadline}
+            />
 
             <section className="ge-volet">
               <header className="ge-tete">
