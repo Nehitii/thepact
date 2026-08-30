@@ -57,15 +57,27 @@ export function expirationDeLAppareil(maintenant: number): Date {
   return new Date(maintenant + DUREE_DE_CONFIANCE_MS);
 }
 
+export interface LigneAppareil {
+  id?: string | null;
+  expires_at?: string | null;
+}
+
 /* TROIS CONDITIONS, COMME POUR UN CODE PAR COURRIEL : il faut que la
-   ligne existe, qu elle porte une expiration, et que celle-ci ne soit
-   pas passee. Retirer la troisieme rendrait un appareil de confiance
-   valable pour toujours — et un appareil vole ne perdrait jamais son
-   acces. */
+ * ligne existe, qu elle porte une expiration, et que celle-ci ne soit
+ * pas passee. Retirer la troisieme rendrait un appareil de confiance
+ * valable pour toujours — et un appareil vole ne perdrait jamais son
+ * acces.
+ *
+ * LA GARDE NE DIT PAS SEULEMENT OUI : ELLE DIT CE QU ELLE A ETABLI.
+ * L appelant enchaine sur un `update().eq("id", ligne.id)`. Ecrite en
+ * `boolean`, cette fonction lui faisait perdre le retrecissement que
+ * le `data?.id &&` en ligne lui donnait, et `deno check` refusait le
+ * fichier — a raison : rien ne disait plus que l identifiant existe.
+ * Le predicat le redit. */
 export function appareilEncoreValide(
-  ligne: { id?: string | null; expires_at?: string | null } | null | undefined,
+  ligne: LigneAppareil | null | undefined,
   maintenant: number,
-): boolean {
+): ligne is LigneAppareil & { id: string } {
   if (!ligne?.id) return false;
   if (!ligne.expires_at) return false;
   return new Date(ligne.expires_at).getTime() > maintenant;

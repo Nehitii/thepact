@@ -11,6 +11,7 @@ import {
   brigadeDe, butsDesPactes, comptesDesObjectifs, dureeDuPacte, etapesRestantes,
   minutesDeFocus, pacteActif, plusGrosRestes, primeDesOrdres, zoneHoraireValide,
 } from "./etatDuPacte.ts";
+import { jourCivil, lignesDeLEtat } from "./etatDuJour.ts";
 import {
   absorberLaLigne, decouperLesLignes, trame,
   type AppelOutil, type FragmentAppelOutil,
@@ -111,9 +112,9 @@ interface MessageIA {
 
 /* ── Les lignes lues en base, une par `select` ── */
 interface LigneIdent { id: string }
-interface LignePacte { id: string; name: string | null; project_start_date: string | null; project_end_date: string | null }
+interface LignePacte { id: string; name: string; project_start_date: string | null; project_end_date: string | null }
 interface LigneBut {
-  id: string; name: string | null; status: string | null;
+  id: string; name: string; status: string | null;
   validated_steps: number | null; total_steps: number | null;
   pact_id: string | null; is_focus: boolean | null; deadline: string | null;
 }
@@ -566,54 +567,13 @@ async function runTool(
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   L'ÉTAT DU JOUR, DONNÉ AVANT QU'ON LE DEMANDE
-
-   L'ancien prompt ordonnait d'appeler un outil AVANT TOUTE QUESTION
-   FACTUELLE. « Où j'en suis ? » coûtait donc un tour d'outil complet :
-   une génération pour décider d'appeler, une requête, une génération
-   pour répondre.
-
-   Ces quelques lignes, calculées en une salve de requêtes parallèles,
-   répondent à la moitié des questions sans un seul outil. Elles
-   coûtent une centaine de tokens et une trentaine de millisecondes.
-   ═══════════════════════════════════════════════════════════════ */
-/**
- * ═══════════════════════════════════════════════════════════════
- * CETTE FONCTION TOURNE EN UTC, L'UTILISATEUR NON.
- *
- * Un rendez-vous saisi pour le 27 est enregistré à minuit heure locale —
- * soit 22 h UTC le 26. Daté ici avec un simple toLocaleDateString(), il
- * ressortait « 26/08 », et M.I.A annonçait au matin du 26 un rendez-vous
- * qui « attend aujourd'hui ». Ce n'était pas un cas limite de minuit :
- * TOUTE échéance datée se décalait d'un jour, à toute heure, pour tout
- * utilisateur à l'est de Greenwich.
- *
- * La colonne « profiles.timezone » existait déjà — et valait « UTC » pour
- * tout le monde, personne ne l'ayant jamais renseignée. Le fuseau vient
- * donc du navigateur, avec la question. La colonne sert de second recours.
- * ═══════════════════════════════════════════════════════════════
- */
+/* LE FUSEAU VOYAGE AVEC LA QUESTION, ET LE TEXTE EST ASSEMBLE
+   AILLEURS. Le pourquoi de l un et de l autre est dans
+   `etatDuJour.ts` ; ici ne restent que les requetes. */
 async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: string): Promise<string> {
   const maintenant = new Date();
-
-  /* Un fuseau inventé ferait lever Intl : on vérifie avant de s'en
-     servir, et on retombe sur UTC plutôt que de rendre une erreur. */
   const zone = zoneHoraireValide(fuseau, maintenant);
-
-  /** Le jour calendaire d'un instant, DANS LE FUSEAU DE L'UTILISATEUR. */
-  const jourDe = (d: Date): string =>
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit",
-    }).format(d);
-  /** La même date, écrite pour être lue. */
-  const dateLisible = (d: Date, long = false): string =>
-    new Intl.DateTimeFormat("fr-FR", long
-      ? { timeZone: zone, weekday: "long", day: "numeric", month: "long", year: "numeric" }
-      : { timeZone: zone, day: "2-digit", month: "2-digit", year: "numeric" },
-    ).format(d);
-
-  const jour = jourDe(maintenant);
+  const jour = jourCivil(maintenant, zone);
 
   const [profil, pacts, objectifs, ordres, focus, taches, bonds] = await Promise.all([
     supabase.from("profiles").select("active_pact_id, display_name, timezone").eq("id", userId).maybeSingle(),
@@ -628,115 +588,18 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
     supabase.from("bond_balance").select("balance").eq("user_id", userId).maybeSingle(),
   ]);
 
-  const lignes: string[] = [
-    `ÉTAT DU JOUR — ${dateLisible(maintenant, true)}.`,
-    `Cette donnée est fraîche : n'appelle pas d'outil pour la retrouver.`,
-  ];
-
-  /* Sans le nom, M.I.A repondait « ton nom est Inconnu car je n ai pas
-     cette donnee » a qui lui demandait comment il s appelait. */
-  const nom = profil?.data?.display_name;
-  if (nom) lignes.push(`Ton interlocuteur s appelle ${nom}.`);
-
-  const actifId = profil?.data?.active_pact_id ?? null;
-  const listePacts = pacts?.data ?? [];
-  const pacte = pacteActif(actifId, listePacts);
-
-  if (pacte) {
-    const debut = pacte.project_start_date ? new Date(pacte.project_start_date).getTime() : null;
-    const fin = pacte.project_end_date ? new Date(pacte.project_end_date).getTime() : null;
-    const duree = dureeDuPacte(debut, fin, Date.now());
-    if (duree) {
-      lignes.push(
-        `Pacte actif : ${pacte.name} — jour ${duree.ecoule} / ${duree.total}, ` +
-          `${duree.reste} jours restants, fin le ${dateLisible(new Date(fin as number))}.`,
-      );
-    } else {
-      lignes.push(`Pacte actif : ${pacte.name} (pas de dates posées).`);
-    }
-    if (listePacts.length > 1) {
-      lignes.push(`Autres pactes : ${listePacts.filter((p) => p.id !== pacte.id).map((p) => p.name).join(", ")}.`);
-    }
-  } else {
-    lignes.push("Aucun pacte enregistré.");
-  }
-
-  const buts = butsDesPactes(objectifs?.data ?? [], listePacts);
-  if (buts.length) {
-    const comptes = comptesDesObjectifs(buts);
-    /* ON DONNE LES TOTAUX DÉJÀ FAITS, PAS LEURS INGRÉDIENTS.
-
-       Premier essai, l'état annonçait « 14 en cours, 11 non commencés,
-       étapes 142/423 » et laissait le modèle en déduire ce qu'on lui
-       demandait. Réponse obtenue : « 48 étapes sur 11 objectifs en
-       cours, 276 au total ». Trois chiffres, trois faux — la vérité
-       était 59 sur 14, et 281 au total.
-
-       Un modèle ne somme pas quatorze lignes de tête. Chaque nombre
-       qu'on risque de lui demander est donc calculé ici, en Postgres,
-       et il n'a plus qu'à le lire. */
-    lignes.push(
-      `Objectifs : ${comptes.enCours} en cours (${etapesRestantes(buts, "in_progress")} étapes restantes), ` +
-        `${comptes.aVenir} non commencés (${etapesRestantes(buts, "not_started")} étapes restantes), ` +
-        `${comptes.finis} terminés.`,
-    );
-    lignes.push(
-      `Étapes, toutes catégories : ${comptes.faites} faites sur ${comptes.etapes}, ` +
-        `${comptes.restantes} restantes.`,
-    );
-
-    const plusGros = plusGrosRestes(buts);
-    if (plusGros.length) {
-      lignes.push(
-        `Plus gros restes en cours : ${plusGros.map((g) => `${g.nom} (${g.reste})`).join(", ")}.`,
-      );
-    }
-    const brigade = brigadeDe(buts);
-    if (brigade.length) lignes.push(`Brigade (objectifs épinglés) : ${brigade.join(", ")}.`);
-  }
-
-  const listeOrdres = ordres?.data ?? [];
-  if (listeOrdres.length) {
-    const { acquise, totale: prime } = primeDesOrdres(listeOrdres);
-    lignes.push(
-      `Ordres du jour : ` +
-        listeOrdres.map((q) => `${q.title} ${q.progress}/${q.target}`).join(" · ") +
-        ` — prime ${acquise}/${prime} bonds.`,
-    );
-  }
-
-  const minutes = minutesDeFocus(focus?.data ?? []);
-  lignes.push(`Focus aujourd'hui : ${minutes} minute${minutes > 1 ? "s" : ""}.`);
-
-  const listeTaches = taches?.data ?? [];
-  if (listeTaches.length) {
-    const prochaines = listeTaches
-      /* Un predicat de type, et non un simple filtre : sans lui,
-         TypeScript ne relie pas ce test au .map() qui suit, et
-         new Date(null) rendrait une date invalide sans un mot. */
-      .filter((t): t is LigneTache & { deadline: string } => Boolean(t.deadline))
-      .sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))
-      .slice(0, 4)
-      .map((t) => {
-        /* « Aujourd'hui » et « demain » plutôt qu'une date : c'est ce
-           qu'on dit en parlant, et c'est ce que le modèle recopiera. */
-        const d = new Date(t.deadline);
-        const j = jourDe(d);
-        const demain = jourDe(new Date(maintenant.getTime() + 86_400_000));
-        const quand = j === jour ? "aujourd'hui" : j === demain ? "demain" : dateLisible(d);
-        return `${t.name} (${quand})`;
-      });
-    lignes.push(
-      `Tâches ouvertes : ${listeTaches.length}` +
-        (prochaines.length ? `. Prochaines échéances : ${prochaines.join(", ")}.` : "."),
-    );
-  } else {
-    lignes.push("Tâches ouvertes : aucune.");
-  }
-
-  if (bonds?.data?.balance != null) lignes.push(`Solde : ${bonds.data.balance} bonds.`);
-
-  return lignes.join("\n");
+  return lignesDeLEtat({
+    maintenant,
+    zone,
+    nom: profil?.data?.display_name,
+    actifId: profil?.data?.active_pact_id ?? null,
+    pactes: pacts?.data ?? [],
+    objectifs: objectifs?.data ?? [],
+    ordres: ordres?.data ?? [],
+    focus: focus?.data ?? [],
+    taches: taches?.data ?? [],
+    solde: bonds?.data?.balance ?? null,
+  }).join("\n");
 }
 
 /** Une trame SSE au format que le client sait déjà lire. */

@@ -36,6 +36,16 @@ const cibles = fs
       .map((f) => path.posix.join(RACINE, "_shared", f)),
   );
 
+/* DENO ABSENT SE DIT EN UNE LIGNE, PAS EN VINGT-CINQ ECHECS. Sans ce
+   controle, chaque `deno check` echouait avec un ENOENT et la chaine
+   annoncait vingt-cinq fonctions cassees pour un outil manquant. */
+try {
+  execFileSync("deno", ["--version"], { stdio: "ignore" });
+} catch {
+  console.error("deno introuvable : installe-le (https://deno.com) — c'est lui qui vérifie les fonctions edge.");
+  process.exit(1);
+}
+
 let echecs = 0;
 
 for (const cible of cibles) {

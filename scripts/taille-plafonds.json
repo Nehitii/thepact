@@ -15,6 +15,6 @@
   "src/domaines/onboarding/pages/Onboarding.tsx": 512,
   "src/domaines/social/composants/GuildSettingsPage.tsx": 514,
   "src/domaines/souhaits/pages/Wishlist.tsx": 708,
-  "supabase/functions/ai-mia/index.ts": 1058,
+  "supabase/functions/ai-mia/index.ts": 921,
   "supabase/functions/two-factor/index.ts": 494
 }
