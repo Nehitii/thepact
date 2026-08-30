@@ -66,11 +66,9 @@ export interface CarteProfil {
   rangSuivant: { nom: string | null; seuil: number | null } | null;
 }
 
-/** Les mesures d un cadre sont stockees en texte (« 1.15 »). */
-export const nombre = (v: number | string | null | undefined, defaut: number): number => {
-  const n = typeof v === "number" ? v : parseFloat(v ?? "");
-  return Number.isFinite(n) ? n : defaut;
-};
+/* Les mesures d un cadre sont lues par le socle : trois domaines les
+   affichent, et la fonction etait ecrite deux fois. */
+export { nombre } from "@/socle/outils/nombre";
 
 export function useCarteProfil(userId: string | undefined, actif: boolean) {
   return useQuery({

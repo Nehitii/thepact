@@ -28,6 +28,7 @@ import { prefetchRoute } from "@/app/prefetchRoutes";
 import { raccourciPalette } from "@/socle/outils/toucheRaccourci";
 import { AvatarFrame } from "@/socle/ui/avatar-frame";
 import { useCarteProfil } from "@/domaines/profil";
+import { nombre } from "@/socle/outils/nombre";
 import { RechercheBarre, type EntreeCherchable } from "./RechercheBarre";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -348,6 +349,24 @@ export const AppSidebar = memo(function AppSidebar() {
   const themeCourant = (reglages?.theme_preference ?? "system") as ThemePreference;
   const initiale = profil?.display_name?.[0]?.toUpperCase() ?? "?";
 
+  /* LES MEMES HUIT PROPRIETES ETAIENT ECRITES DEUX FOIS, a la taille
+     pres — une pour le bouton du bas, une pour le panneau qu il
+     ouvre. Et les trois mesures y etaient lues par `Number(v) || d`,
+     la seule des quatre lectures de l application qui remplace un
+     zero : `nombre` garde le zero, comme la carte publique et comme
+     la formule du socle. */
+  const cadreDuProfil = {
+    avatarUrl: profil?.avatar_url ?? null,
+    fallback: initiale,
+    frameImage: cadre?.image ?? undefined,
+    borderColor: cadre?.bordure ?? "transparent",
+    glowColor: cadre?.lueur ?? "transparent",
+    frameScale: nombre(cadre?.echelle, 1),
+    frameOffsetX: nombre(cadre?.decalageX, 0),
+    frameOffsetY: nombre(cadre?.decalageY, 0),
+    showBorder: cadre?.montrerBordure !== false,
+  };
+
   return (
     <TooltipProvider delayDuration={120}>
       {isMobile && !mobileOuvert && (
@@ -488,18 +507,7 @@ export const AppSidebar = memo(function AppSidebar() {
             <DropdownMenuTrigger asChild>
               <button type="button" className="sb-profil" aria-label={t("nav.options", "Compte et réglages")}>
                 <span className="sb-av-boite">
-                  <AvatarFrame
-                    avatarUrl={profil?.avatar_url ?? null}
-                    fallback={initiale}
-                    size="sm"
-                    frameImage={cadre?.image ?? undefined}
-                    borderColor={cadre?.bordure ?? "transparent"}
-                    glowColor={cadre?.lueur ?? "transparent"}
-                    frameScale={Number(cadre?.echelle) || 1}
-                    frameOffsetX={Number(cadre?.decalageX) || 0}
-                    frameOffsetY={Number(cadre?.decalageY) || 0}
-                    showBorder={cadre?.montrerBordure !== false}
-                  />
+                  <AvatarFrame {...cadreDuProfil} size="sm" />
                   {totalNonLus > 0 && <span className="sb-point" aria-hidden />}
                 </span>
                 {!mini && (
@@ -517,18 +525,7 @@ export const AppSidebar = memo(function AppSidebar() {
             <DropdownMenuContent side="right" align="end" sideOffset={12} className="sb-panneau">
               <div className="sb-pan-tete">
                 <span className="sb-pan-av-boite">
-                  <AvatarFrame
-                    avatarUrl={profil?.avatar_url ?? null}
-                    fallback={initiale}
-                    size="md"
-                    frameImage={cadre?.image ?? undefined}
-                    borderColor={cadre?.bordure ?? "transparent"}
-                    glowColor={cadre?.lueur ?? "transparent"}
-                    frameScale={Number(cadre?.echelle) || 1}
-                    frameOffsetX={Number(cadre?.decalageX) || 0}
-                    frameOffsetY={Number(cadre?.decalageY) || 0}
-                    showBorder={cadre?.montrerBordure !== false}
-                  />
+                  <AvatarFrame {...cadreDuProfil} size="md" />
                 </span>
                 <span className="sb-pan-id">
                   <b>{profil?.display_name ?? "—"}</b>

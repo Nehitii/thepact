@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
+import { nombre } from "@/socle/outils/nombre";
 
 /* LES CADRES D AVATAR.
  *
@@ -35,10 +36,6 @@ export interface Cadre {
   decalageY: number;
 }
 
-const nombre = (v: string | number | null | undefined, defaut: number): number => {
-  const n = typeof v === "number" ? v : parseFloat(v ?? "");
-  return Number.isFinite(n) ? n : defaut;
-};
 
 export function useCadres(identifiants: (string | null | undefined)[]) {
   /* La cle est triee et dedoublonnee : deux rendus qui voient les
