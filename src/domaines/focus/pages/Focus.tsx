@@ -42,47 +42,21 @@ import {
   type FocusPanel,
 } from "@/domaines/focus/composants/index";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import {
+  REGLAGES_PAR_DEFAUT, colonnesDeLObjet, objetDeLaClause, reglagesLus,
+} from "@/domaines/focus/logique/preferences";
 
 /* Reglages et objectif lie survivent au demontage, comme la session
    elle-meme : revenir sur la page avec un minuteur de 45 minutes remis a
    25 serait aussi surprenant que de perdre le compte a rebours. */
 
-/* L OBJET DE LA CLAUSE
- *
- * Une clause porte UN objet : un objectif, ou une tache, jamais les deux.
- * C etait deja le comportement a l ecran, mais il reposait sur une
- * convention — deux etats separes, et chaque gestionnaire qui pense a
- * vider l autre. Une troisieme voie d ecriture, ou un enregistrement
- * bricole dans le stockage, suffisait a poser les deux : verifie, rien
- * ne refusait { goal, todo } tous deux remplis.
- *
- * Un seul emplacement rend la chose impossible par construction, au lieu
- * de la rendre seulement improbable. Les deux colonnes de la base sont
- * derivees au moment de l ecriture, la ou elles existent vraiment. */
-
-
-function lireObjet(): ObjetClause {
-  try {
-    const brut = localStorage.getItem(PREF.FOCUS_LIEN);
-    if (!brut) return null;
-    const o = JSON.parse(brut);
-    if (o && (o.type === "goal" || o.type === "todo") && typeof o.id === "string") return o;
-    // Ancien format { goal, todo } : on le replie sur un seul emplacement.
-    if (o && typeof o.goal === "string") return { type: "goal", id: o.goal };
-    if (o && typeof o.todo === "string") return { type: "todo", id: o.todo };
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function lire<T>(cle: string, defaut: T): T {
-  try {
-    const brut = localStorage.getItem(cle);
-    return brut ? ({ ...defaut, ...(JSON.parse(brut) as object) } as T) : defaut;
-  } catch {
-    return defaut;
-  }
+/* `getItem` peut LEVER — navigation privee, stockage coupe. Les deux
+   lectures d avant enfermaient l appel dans leur propre `try` ; il est
+   ici, une fois, pour que les fonctions de lecture n aient plus qu a
+   interpreter du texte. */
+function lu(cle: string): string | null {
+  try { return localStorage.getItem(cle); }
+  catch { return null; }
 }
 
 function ecrire(cle: string, valeur: unknown) {
@@ -100,8 +74,8 @@ export default function Focus() {
   const isMobile = useIsMobile();
   const mouvementReduit = useReducedMotion();
 
-  const config0 = useRef(lire(PREF.FOCUS_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
-  const objet0 = useRef(lireObjet()).current;
+  const config0 = useRef(reglagesLus(localStorage.getItem(PREF.FOCUS_CONFIG))).current;
+  const objet0 = useRef(objetDeLaClause(localStorage.getItem(PREF.FOCUS_LIEN))).current;
 
   const [workMin, setWorkMin] = useState(config0.work);
   const [breakMin, setBreakMin] = useState(config0.pause);
@@ -112,8 +86,7 @@ export default function Focus() {
   /* Ce que le CSS ne peut pas atteindre : le sol anime de la page. */
   const sombre = useThemeSombre();
 
-  const linkedGoalId = objet?.type === "goal" ? objet.id : null;
-  const linkedTodoId = objet?.type === "todo" ? objet.id : null;
+  const { linked_goal_id: linkedGoalId, linked_todo_id: linkedTodoId } = colonnesDeLObjet(objet);
   /* Le fond vivant, choisi par l utilisateur et retenu. Quatre scenes plus
      « aucune » : imposer une ambiance a quelqu un qui vient chercher le
      calme serait exactement le contraire du but de la page. */
