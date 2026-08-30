@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  apresUneOuverture, apresUneTape, estNuitProfonde, MS_POUR_UN_APPUI_LONG,
+  natureDeLAppui, OUBLI_DES_TAPES, souffle,
+} from "@/domaines/profil/logique/noteDuDiable";
 import { DevilNoteModal } from "@/domaines/profil/composants/DevilNoteModal";
 
 interface ProfileDevilNoteProps {
@@ -30,8 +34,7 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
   
   useEffect(() => {
     const checkTime = () => {
-      const hour = new Date().getHours();
-      setIsLateNight(hour >= 23 || hour < 4);
+      setIsLateNight(estNuitProfonde(new Date().getHours()));
     };
     checkTime();
     const interval = setInterval(checkTime, 60000);
@@ -54,9 +57,7 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
     
     const animate = () => {
       const elapsed = (Date.now() - startTime) / 1000;
-      // Very slow breathing: 8 second cycle
-      const breath = Math.sin(elapsed * Math.PI / 4) * 0.5 + 0.5;
-      setBreathingIntensity(breath * 0.15); // Very subtle
+      setBreathingIntensity(souffle(elapsed));
       frame = requestAnimationFrame(animate);
     };
     
@@ -67,50 +68,32 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
   // Handle tap counting for hidden interaction (7 taps)
   const handleTap = useCallback(() => {
     setTapCount(prev => {
-      const newCount = prev + 1;
-      
-      // After 7 taps, trigger the hidden effect
-      if (newCount >= 7) {
+      const suite = apresUneTape(prev);
+      if (suite.revele) {
         setTextFlicker(true);
         setShowSymbol(true);
         setTimeout(() => {
           setTextFlicker(false);
           setShowSymbol(false);
         }, 150);
-        return 0; // Reset count
       }
-      
-      return newCount;
+      return suite.compte;
     });
 
-    // Reset tap count after 2 seconds of no tapping
     if (tapResetTimerRef.current) {
       clearTimeout(tapResetTimerRef.current);
     }
     tapResetTimerRef.current = setTimeout(() => {
       setTapCount(0);
-    }, 2000);
+    }, OUBLI_DES_TAPES);
   }, []);
 
   // Track modal opens for the 3-consecutive secret
   const handleModalOpen = useCallback(() => {
-    const now = Date.now();
-    
-    // Filter out timestamps older than 60 seconds
-    const recentOpens = openTimestampsRef.current.filter(t => now - t < 60000);
-    recentOpens.push(now);
-    openTimestampsRef.current = recentOpens;
-    
-    // Check if we have 3 opens in 60 seconds
-    if (recentOpens.length >= 3) {
-      setShowSecretSymbolInModal(true);
-      // Reset after triggering
-      openTimestampsRef.current = [];
-    } else {
-      setShowSecretSymbolInModal(false);
-    }
-    
-    setOpenCount(recentOpens.length);
+    const suite = apresUneOuverture(openTimestampsRef.current, Date.now());
+    openTimestampsRef.current = suite.horodatages;
+    setShowSecretSymbolInModal(suite.revele);
+    setOpenCount(suite.horodatages.length);
     setModalOpen(true);
   }, []);
 
@@ -129,7 +112,7 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
           setLongPressActive(false);
         }, 800);
       }
-    }, 6000);
+    }, MS_POUR_UN_APPUI_LONG);
   }, []);
 
   const handlePressEnd = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -146,17 +129,9 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
     
     if (!wasPressed) return;
     
-    const pressDuration = Date.now() - longPressStartRef.current;
-    
-    // If it was a quick tap, increment tap count
-    if (pressDuration < 300) {
-      handleTap();
-    }
-    
-    // If not a long hold (less than 6 seconds), open the modal
-    if (pressDuration < 6000) {
-      handleModalOpen();
-    }
+    const nature = natureDeLAppui(Date.now() - longPressStartRef.current);
+    if (nature.compteCommeTape) handleTap();
+    if (nature.ouvreLaFiche) handleModalOpen();
   }, [handleTap, handleModalOpen]);
 
   const handlePressCancel = useCallback(() => {
