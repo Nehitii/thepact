@@ -2,12 +2,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 import {
   base32Encode, codeParCourrielValide, expirationDuCode, generate6DigitCode,
   generateDeviceToken, generateRecoveryCodes, sha256Hex, totpVerify,
-  peutRedemanderUnCode, tropDeTentatives,
+  peutRedemanderUnCode, tropDeTentatives, CODES_DE_SECOURS,
 } from "./totp.ts";
 import {
   appareilEncoreValide, etiquetteDuCorps, expirationDeLAppareil,
   texteCoupeDuCorps, texteDuCorps,
 } from "./requete.ts";
+import { OCTETS_DU_SECRET, libelleDuCompte, uriDInscription } from "./enrolement.ts";
 import { corpsDuCourriel, expediteur, sujetDuCourriel } from "./courriel.ts";
 
 const corsHeaders = {
@@ -196,17 +197,14 @@ Deno.serve(async (req) => {
 
     // ── BEGIN ENROLL (TOTP) ──
     if (action === "begin_enroll") {
-      const bytes = crypto.getRandomValues(new Uint8Array(20));
+      const bytes = crypto.getRandomValues(new Uint8Array(OCTETS_DU_SECRET));
       const secret = base32Encode(bytes);
 
       await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: secret }, { onConflict: "user_id" });
 
-      const issuer = "Pacte";
-      const account = user.email ?? user.id;
-      const label = encodeURIComponent(`${issuer}:${account}`);
-      const uri = `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
+      const uri = uriDInscription(secret, libelleDuCompte(user.email, user.id));
       await logEvent("2fa_enroll_started");
       return jsonResponse({ secret, uri });
     }
@@ -215,7 +213,7 @@ Deno.serve(async (req) => {
     if (action === "confirm_enroll") {
       const { secret } = await getSettings();
       if (!secret) return jsonResponse({ error: "Enrollment not started" }, 400);
-      const ok = await totpVerify(secret, body.code ?? "", { window: 1 });
+      const ok = await totpVerify(secret, body.code ?? "");
       if (!ok) {
         await logEvent("2fa_enroll_failed");
         return jsonResponse({ error: "Invalid code" }, 400);
@@ -225,7 +223,7 @@ Deno.serve(async (req) => {
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: true, totp_secret: secret }, { onConflict: "user_id" });
 
-      const codes = generateRecoveryCodes(10);
+      const codes = generateRecoveryCodes(CODES_DE_SECOURS);
       const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
 
       await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
