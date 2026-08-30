@@ -1,4 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from "react";
+import {
+  cleDuBrouillon, DELAI_BROUILLON, empreinteDesValeurs, estSale,
+  faudraEcrireLeBrouillon, valeursDeLEntree, valeursNeuves, valeursRestaurees,
+} from "@/domaines/journal/logique/brouillon";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { PanelRightClose, PanelRightOpen, SpellCheck, X } from "lucide-react";
@@ -64,8 +68,6 @@ function Bascule({ valeur, onChange, label }: { valeur: boolean; onChange: (v: b
   );
 }
 
-const CLE_BROUILLON = (id?: string) => `journal-draft-${id ?? "new"}`;
-
 function lireDrapeau(cle: string, defaut: boolean): boolean {
   try {
     const v = localStorage.getItem(cle);
@@ -120,14 +122,14 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
   const mots = useMemo(() => compterMots(contenuNet), [contenuNet]);
   const canSave = !!title.trim() && !!texteNu(contenuNet);
 
-  const cleBrouillon = CLE_BROUILLON(editingEntry?.id);
+  const cleBrouillon = cleDuBrouillon(editingEntry?.id);
   const initialRef = useRef<string>("");
 
   const valeurs = useMemo(
     () => ({ title, content: contenuNet, lifeContext, valence, energy, linkedGoalId, tags, accentId, moodId, fontId, sizeId, alignId, lineNums }),
     [title, contenuNet, lifeContext, valence, energy, linkedGoalId, tags, accentId, moodId, fontId, sizeId, alignId, lineNums],
   );
-  const sale = initialRef.current !== "" && JSON.stringify(valeurs) !== initialRef.current;
+  const sale = estSale(initialRef.current, valeurs);
 
   // ── Ouverture : entree, puis brouillon s il y en a un ──────
   useEffect(() => {
@@ -135,45 +137,31 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
     setBrouillonRestaure(false);
 
     const depart = editingEntry
-      ? {
-        title: editingEntry.title, content: sansParagrapheFinal(editingEntry.content),
-        lifeContext: editingEntry.life_context || "", valence: editingEntry.valence_level ?? 5,
-        energy: editingEntry.energy_level ?? 5, linkedGoalId: editingEntry.linked_goal_id,
-        tags: editingEntry.tags ?? [], accentId: editingEntry.accent_color ?? "cyan",
-        moodId: editingEntry.mood ?? "flow", fontId: editingEntry.font_id ?? "mono",
-        sizeId: editingEntry.size_id ?? "md", alignId: editingEntry.align_id ?? "left",
-        lineNums: editingEntry.line_numbers ?? false,
-      }
-      : {
-        title: "", content: amorce ? `<p>${amorce}</p>` : "", lifeContext: "",
-        valence: 5, energy: 5, linkedGoalId: null as string | null, tags: [] as string[],
-        accentId: "cyan", moodId: "flow", fontId: "mono", sizeId: "md", alignId: "left", lineNums: false,
-      };
+      ? valeursDeLEntree(editingEntry, sansParagrapheFinal)
+      : valeursNeuves(amorce);
 
     /* Ce qui a ete tape et jamais enregistre revient. */
     let restaure: typeof depart | null = null;
     try {
-      const brut = localStorage.getItem(CLE_BROUILLON(editingEntry?.id));
-      if (brut) restaure = { ...depart, ...JSON.parse(brut) };
-    } catch { /* brouillon illisible : on l ignore */ }
+      restaure = valeursRestaurees(depart, localStorage.getItem(cleDuBrouillon(editingEntry?.id)));
+    } catch { /* stockage indisponible : on part du depart */ }
 
     const v = restaure ?? depart;
     setTitle(v.title); setContent(v.content); setLifeContext(v.lifeContext);
     setValence(v.valence); setEnergy(v.energy); setLinkedGoalId(v.linkedGoalId);
     setTags(v.tags); setTagInput(""); setAccentId(v.accentId); setMoodId(v.moodId);
     setFontId(v.fontId); setSizeId(v.sizeId); setAlignId(v.alignId); setLineNums(v.lineNums);
-    initialRef.current = JSON.stringify(depart);
+    initialRef.current = empreinteDesValeurs(depart);
     setBrouillonRestaure(!!restaure);
   }, [open, editingEntry, amorce]);
 
   // ── Le brouillon suit la frappe ────────────────────────────
   useEffect(() => {
-    if (!open || initialRef.current === "") return;
-    const courant = JSON.stringify(valeurs);
-    if (courant === initialRef.current) return;
+    if (!open || !faudraEcrireLeBrouillon(initialRef.current, valeurs)) return;
+    const courant = empreinteDesValeurs(valeurs);
     const id = setTimeout(() => {
       try { localStorage.setItem(cleBrouillon, courant); } catch { /* stockage plein */ }
-    }, 400);
+    }, DELAI_BROUILLON);
     return () => clearTimeout(id);
   }, [open, valeurs, cleBrouillon]);
 
