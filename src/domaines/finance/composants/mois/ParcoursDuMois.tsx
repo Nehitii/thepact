@@ -56,6 +56,7 @@ import {
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
+import { useCalque } from '@/socle/hooks/useCalque';
 import { useDateFnsLocale } from '@/socle/i18n/useDateFnsLocale';
 import type { FinancialItem } from '@/domaines/finance/types';
 import type { Rang } from "@/domaines/finance/types";
@@ -256,66 +257,11 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     }
   };
 
-  /* ═══════════════════════════════════════════════════════════
-     UN CALQUE QUI SE DIT MODAL DOIT L ETRE
-
-     Il portait deja role="dialog" et aria-modal="true" — une promesse
-     que rien ne tenait. Trois manques, tous du meme ordre :
-
-       LE FOND DEFILAIT. Un calque plein ecran par-dessus une page qui
-       continue de rouler donne l impression que le clic a rate. On
-       verrouille le corps, en compensant la largeur de la barre de
-       defilement : sans cette compensation, toute la page saute de
-       quinze pixels a l ouverture.
-
-       ECHAP NE FERMAIT PAS, et rien non plus au clic sur les marges.
-       Ce sont les deux sorties qu on essaie d instinct devant un
-       calque, et leur absence donne le sentiment d etre coince.
-
-       LE FOCUS S ECHAPPAIT. Trois tabulations et l on pilotait la page
-       de dessous, invisible. Pour un lecteur d ecran, aria-modal
-       promettait exactement le contraire.
-
-     Et l on rend le focus a ce qui a ouvert le parcours : revenir
-     ailleurs qu au bouton qu on vient de quitter desoriente.
-     ═══════════════════════════════════════════════════════════ */
+  /* Le calque modal — echap, clic sur le fond, piege du focus et
+     retour du focus — vit dans socle/hooks/useCalque.ts, avec ce que
+     la mesure a appris sur la compensation qu il ne fait plus. */
   const calque = useRef<HTMLDivElement | null>(null);
-  const departHorsPanneau = useRef(false);
-
-  useEffect(() => {
-    if (!ouvert) return;
-    const rendreLeFocusA = document.activeElement as HTMLElement | null;
-
-    const debordement = document.body.style.overflow;
-    const compensation = document.body.style.paddingRight;
-    const largeurBarre = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if (largeurBarre > 0) document.body.style.paddingRight = `${largeurBarre}px`;
-
-    const auClavier = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onFermer(); return; }
-      if (e.key !== 'Tab' || !calque.current) return;
-      /* Le piege : on ramene la tabulation au premier element quand
-         elle sort par la fin, et au dernier quand elle sort par le
-         debut. */
-      const cibles = calque.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (!cibles.length) return;
-      const premier = cibles[0];
-      const dernier = cibles[cibles.length - 1];
-      if (e.shiftKey && document.activeElement === premier) { e.preventDefault(); dernier.focus(); }
-      else if (!e.shiftKey && document.activeElement === dernier) { e.preventDefault(); premier.focus(); }
-    };
-    document.addEventListener('keydown', auClavier, true);
-
-    return () => {
-      document.body.style.overflow = debordement;
-      document.body.style.paddingRight = compensation;
-      document.removeEventListener('keydown', auClavier, true);
-      rendreLeFocusA?.focus?.();
-    };
-  }, [ouvert, onFermer]);
+  const { auPointerDown, auClick } = useCalque(ouvert, onFermer, calque);
 
   if (!ouvert) return null;
 
@@ -326,10 +272,8 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     <motion.div
       ref={calque}
       className="cy-parc"
-      onPointerDown={(e) => { departHorsPanneau.current = e.target === e.currentTarget; }}
-      onClick={(e) => {
-        if (departHorsPanneau.current && e.target === e.currentTarget) onFermer();
-      }}
+      onPointerDown={auPointerDown}
+      onClick={auClick}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
