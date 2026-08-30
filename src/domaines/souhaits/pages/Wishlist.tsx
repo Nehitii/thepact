@@ -8,7 +8,8 @@ import { useAuth } from "@/socle/contextes/AuthContext";
 import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { formatCurrency } from "@/socle/outils/currency";
 import { toast } from "sonner";
-import { format, startOfMonth } from "date-fns";
+import { format } from "date-fns";
+import { depenseDUnAchat, moisDeLAchat } from "@/domaines/souhaits/logique/acquisition";
 import { fr as dateFr } from "date-fns/locale";
 import { useEcrirePointage, useEffacerPointage } from "@/domaines/finance";
 import { Globe, Plus } from "lucide-react";
@@ -255,30 +256,17 @@ export default function Wishlist() {
     if (!user) return;
     updateItem.mutate({ userId: user.id, id, patch: { acquired } });
 
-    const item = items.find((i) => i.id === id);
-    /* Seulement hors pacte, et seulement si le montant existe : une
-       depense a zero euro n apprend rien au mois. */
-    if (!item || item.source_goal_cost_id) return;
-    const montant = Number(item.estimated_cost || 0);
-    if (!(montant > 0)) return;
+    /* Les trois refus silencieux — hors pacte, montant lisible et non
+       nul — vivent dans logique/acquisition.ts, avec leur pourquoi. */
+    const issue = depenseDUnAchat(items.find((i) => i.id === id));
+    if ("refus" in issue) return;
+    const montant = issue.ligne.montant_reel;
 
-    const mois = format(startOfMonth(new Date()), "yyyy-MM-dd");
-    const moisLisible = format(startOfMonth(new Date()), "MMMM yyyy", { locale: dateFr });
+    const { debut, cle: mois } = moisDeLAchat(new Date());
+    const moisLisible = format(debut, "MMMM yyyy", { locale: dateFr });
 
     if (acquired) {
-      ecrirePointage.mutate({
-        mois,
-        /* L identifiant de l article sert de cle : repointer corrige
-           au lieu d empiler, et decocher retrouve la bonne ligne. */
-        ligne_id: id,
-        genre: "expense",
-        /* La contrainte de la table refuse un nom vide et coupe a
-           cent vingt caracteres. */
-        nom: (item.name.trim() || "Achat").slice(0, 120),
-        montant_prevu: montant,
-        montant_reel: montant,
-        pointe: true,
-      }, {
+      ecrirePointage.mutate({ mois, ...issue.ligne }, {
         onSuccess: () => toast.success(
           t("wishlist.finance.ajoute", "Ajouté aux dépenses de {{mois}}", { mois: moisLisible }),
           { description: formatCurrency(montant, currency) },
