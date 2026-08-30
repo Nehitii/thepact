@@ -73,9 +73,10 @@ describe("les quatre seuils", () => {
 
   /* ═══ UNE DUREE NULLE PASSE SOUS LES QUATRE SEUILS D UN COUP ═══
    *
-   * C est ce qui rend le repli sur l instant present dangereux : un
-   * objectif « impossible » sans date de depart repartirait avec les
-   * quatre distinctions. */
+   * C est ce qui rendait le repli sur l instant present dangereux : un
+   * objectif « impossible » sans date de depart repartait avec deux
+   * distinctions. Le repli est retire ; la regle, elle, reste — un
+   * achevement VRAIMENT instantane gagne toujours autant. */
   it("donne tout a un objectif impossible acheve en zero temps", () => {
     expect(honneursDuTemps("impossible", 0)).toEqual(["cut_through_time", "echo_breaker"]);
     expect(honneursDuTemps("extreme", 0))
@@ -127,25 +128,46 @@ describe("d ou part la mesure", () => {
     expect(honneursDuTemps("", 1000)).toEqual(honneursDuTemps(DIFFICULTE_PAR_DEFAUT, 1000));
   });
 
-  /* ═══ UN DEPART MANQUANT DEVIENT L INSTANT MEME ═══
+  /* ═══ UN DEPART MANQUANT NE SE FABRIQUE PAS ═══
    *
-   * La duree vaut alors exactement zero — pas « presque zero » : les
-   * deux bornes sortent d UNE SEULE lecture d horloge. Le code d avant
-   * en faisait deux a la suite, et la duree pouvait valoir une
-   * milliseconde. Zero comme une milliseconde passent sous les quatre
-   * seuils ; ce qui change, c est qu on peut maintenant l ecrire. */
-  it("pose le depart a l instant present quand il manque, et la duree a zero", () => {
+   * L appelant passait `goal.start_date || maintenant` : la duree valait
+   * alors ZERO, et zero passe sous les quatre seuils d un coup. Un
+   * objectif « impossible » sans date de depart repartait avec deux
+   * distinctions, un « extreme » avec trois.
+   *
+   * Le repli est retire : un depart inconnu rend `null`, et ce qui ne
+   * se mesure pas ne se gagne pas. */
+  it("rend un depart nul quand l objectif n en a pas", () => {
     for (const but of [{ start_date: null }, { start_date: undefined }, { start_date: "" }, {}]) {
       const m = mesureDeLHonneur(but, maintenant);
-      expect(m.depuis).toBe(m.jusqua);
-      expect(dureeEnHeures(m.depuis, m.jusqua)).toBe(0);
+      expect(m.depuis).toBeNull();
+      expect(m.jusqua).toBe("2026-09-15T12:00:00.000Z");
+      expect(dureeEnHeures(m.depuis, m.jusqua)).toBeNull();
     }
   });
 
-  it("donne alors ses quatre distinctions au premier achevement venu", () => {
-    const m = mesureDeLHonneur({ difficulty: "impossible" }, maintenant);
-    expect(honneursDuTemps(m.difficulte, dureeEnHeures(m.depuis, m.jusqua)))
-      .toEqual(["cut_through_time", "echo_breaker"]);
+  it("ne donne plus rien a un achevement dont on ignore le depart", () => {
+    for (const difficulte of ["impossible", "extreme", "medium"]) {
+      const m = mesureDeLHonneur({ difficulty: difficulte }, maintenant);
+      expect(honneursDuTemps(m.difficulte, dureeEnHeures(m.depuis, m.jusqua))).toEqual([]);
+    }
+  });
+
+  /* CE QUE CELA DONNAIT AVANT, pour que le changement reste lisible :
+     une duree de zero — ce que le repli fabriquait — gagne toujours
+     autant. C est la duree INCONNUE qui ne gagne plus rien, pas la
+     duree nulle. */
+  it("distingue une duree nulle d une duree inconnue", () => {
+    expect(honneursDuTemps("impossible", 0)).toEqual(["cut_through_time", "echo_breaker"]);
+    expect(honneursDuTemps("impossible", null)).toEqual([]);
+  });
+
+  /* UNE DATE DE DEPART ILLISIBLE TOMBE AU MEME ENDROIT : elle donnerait
+     NaN heures, et NaN n est pas une mesure. */
+  it("traite une date de depart illisible comme un depart inconnu", () => {
+    expect(dureeEnHeures("pas une date", "2026-09-15T12:00:00Z")).toBeNull();
+    expect(honneursDuTemps("extreme", dureeEnHeures("pas une date", "2026-09-15T12:00:00Z")))
+      .toEqual([]);
   });
 
   /* CE REPLI EST DOMINE PAR LA BASE, AUJOURD HUI. Releve le 30/08/2026

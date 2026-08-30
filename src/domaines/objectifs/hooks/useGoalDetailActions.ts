@@ -18,6 +18,7 @@ import {
 } from "@/domaines/objectifs/logique/duplication";
 import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs, mesureDeLHonneur } from "@/domaines/succes";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { GoalDetailData, StatutObjectif, StepData } from "@/domaines/objectifs/hooks/useGoalDetail";
 
 interface CostItem {
@@ -41,6 +42,7 @@ interface Options {
 }
 
 export function useGoalDetailActions({ goalId, userId, getDifficultyColor, triggerParticles }: Options) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const detailKey = ["goal-detail", goalId] as const;
@@ -133,7 +135,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onError: (err, _vars, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
-      toast.error("Error", { description: err?.message ?? "Failed to update step" });
+      toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.stepFailed") });
     },
     onSettled: async () => {
       await repercuterSurGroupes();
@@ -155,10 +157,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         onSuccess: ({ newStatus }) => {
           if (newStatus === "completed" && userId) {
             setTimeout(() => trackStepCompleted(userId), 0);
-            toast.success("Step Completed", {
-              description: "You're making progress!",
+            toast.success(t("goals.detail.toasts.stepDone"), {
+              description: t("goals.detail.toasts.stepDoneBody"),
               action: {
-                label: "Undo",
+                label: t("goals.detail.toasts.undo"),
                 onClick: () => toggleStep.mutate({ stepId, currentStatus: "completed" }),
               },
             });
@@ -231,7 +233,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onError: (err, _v, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
-      toast.error("Error", { description: err?.message ?? "Failed to update habit" });
+      toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.habitFailed") });
     },
     onSettled: async () => {
       await repercuterSurGroupes();
@@ -254,12 +256,12 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         onSuccess: ({ completedCount, isNowComplete, newChecks }) => {
           if (newChecks[dayIndex] && userId) {
             setTimeout(() => trackStepCompleted(userId), 0);
-            toast.success(`Day ${dayIndex + 1} Complete!`, {
+            toast.success(t("goals.detail.toasts.dayDone", { jour: dayIndex + 1 }), {
               description: isNowComplete
-                ? "Congratulations! Habit completed!"
-                : `${completedCount}/${detail.goal.habit_duration_days} days done`,
+                ? t("goals.detail.toasts.habitDone")
+                : t("goals.detail.toasts.habitProgress", { faits: completedCount, total: detail.goal.habit_duration_days }),
               action: {
-                label: "Undo",
+                label: t("goals.detail.toasts.undo"),
                 onClick: () => toggleHabit.mutate({ dayIndex, coche: false }),
               },
             });
@@ -309,7 +311,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onSuccess: ({ skipped, goal }) => {
       if (skipped) {
-        toast.success("Already Completed", { description: "This goal is already fully completed." });
+        toast.success(t("goals.detail.toasts.alreadyDone"), { description: t("goals.detail.toasts.alreadyDoneBody") });
         return;
       }
       if (userId) {
@@ -318,9 +320,9 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         const mesure = mesureDeLHonneur(goal, new Date());
         setTimeout(() => trackGoalCompleted(userId, mesure.difficulte, mesure.depuis, mesure.jusqua), 0);
       }
-      toast.success("Goal Completed! 🎉", { description: "All steps have been marked as complete" });
+      toast.success(t("goals.detail.toasts.goalDone"), { description: t("goals.detail.toasts.goalDoneBody") });
     },
-    onError: (err) => toast.error("Error", { description: err?.message ?? "Failed to complete goal" }),
+    onError: (err) => toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.completeFailed") }),
     onSettled: async () => {
       await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
@@ -347,7 +349,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onError: (err, _v, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(detailKey, ctx.snapshot);
-      toast.error("Error", { description: err?.message ?? "Failed to update status" });
+      toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.statusFailed") });
     },
     onSettled: async () => {
       await repercuterSurGroupes();
@@ -361,10 +363,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     const previousStatus = detail?.goal.status;
     updateStatus.mutate("paused", {
       onSuccess: () =>
-        toast.success("Goal Paused", {
-          description: "This goal has been paused.",
+        toast.success(t("goals.detail.toasts.paused"), {
+          description: t("goals.detail.toasts.pausedBody"),
           action: previousStatus
-            ? { label: "Undo", onClick: () => updateStatus.mutate(previousStatus) }
+            ? { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus) }
             : undefined,
         }),
     });
@@ -377,12 +379,9 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     const newStatus = (detail.goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
     updateStatus.mutate(newStatus, {
       onSuccess: () =>
-        toast.success("Goal Resumed", {
-          description: "This goal is now active again.",
-          action: {
-            label: "Undo",
-            onClick: () => updateStatus.mutate(previousStatus ?? "not_started"),
-          },
+        toast.success(t("goals.detail.toasts.resumed"), {
+          description: t("goals.detail.toasts.resumedBody"),
+          action: { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus ?? "not_started") },
         }),
     });
   };
@@ -392,10 +391,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     const previousStatus = detail?.goal.status;
     updateStatus.mutate("archived", {
       onSuccess: () =>
-        toast.success("Goal Archived", {
-          description: "This goal has been archived.",
+        toast.success(t("goals.detail.toasts.archived"), {
+          description: t("goals.detail.toasts.archivedBody"),
           action: previousStatus
-            ? { label: "Undo", onClick: () => updateStatus.mutate(previousStatus) }
+            ? { label: t("goals.detail.toasts.undo"), onClick: () => updateStatus.mutate(previousStatus) }
             : undefined,
         }),
     });
@@ -415,7 +414,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
       const { data: newGoal, error: goalError } = await supabase
         .from("goals")
-        .insert(objectifCopie(goal, pactResult.id, " (Copy)", new Date().toISOString()))
+        .insert(objectifCopie(goal, pactResult.id, t("goals.detail.toasts.copySuffix"), new Date().toISOString()))
         .select()
         .single();
       if (goalError) throw goalError;
@@ -436,10 +435,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     onSuccess: async (newId) => {
       await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
-      toast.success("Goal Duplicated", { description: "A copy of this goal has been created." });
+      toast.success(t("goals.detail.toasts.duplicated"), { description: t("goals.detail.toasts.duplicatedBody") });
       navigate(`/goals/${newId}`);
     },
-    onError: (err) => toast.error("Error", { description: err?.message ?? "Failed to duplicate goal" }),
+    onError: (err) => toast.error(t("common.error"), { description: err?.message ?? t("goals.detail.toasts.duplicateFailed") }),
   });
 
   // ---------- Delete ----------
@@ -456,10 +455,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["goals"] });
-      toast.success("Goal Deleted", { description: "This evolution has been removed from your Pact" });
+      toast.success(t("goals.detail.toasts.deleted"), { description: t("goals.detail.toasts.deletedBody") });
       navigate("/goals");
     },
-    onError: (err) => toast.error("Error", { description: err?.message }),
+    onError: (err) => toast.error(t("common.error"), { description: err?.message }),
   });
 
   // ---------- Toggle Focus ----------
@@ -503,9 +502,9 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       /* Une etoile qui ne s allume pas sans un mot passe pour une
          panne : le refus se dit. */
       if (e?.message === "BRIGADE_PLEINE") {
-        toast.error(`La brigade est au complet — relache un objectif d'abord (${PLAFOND_BRIGADE} places).`);
+        toast.error(t("goals.detail.toasts.brigadeFull", { places: PLAFOND_BRIGADE }));
       } else if (e?.message === "BRIGADE_TYPE") {
-        toast.error("Seuls les objectifs ordinaires rejoignent la brigade.");
+        toast.error(t("goals.detail.toasts.brigadeOnlyNormal"));
       }
     },
     onSettled: async () => {

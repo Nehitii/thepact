@@ -116,7 +116,7 @@ export async function trackGoalCreated(userId: string, _difficulty?: string) {
    l appelant passe `start_date`. Un objectif peut etre cree en janvier
    et commence en mars — les deux dates existent, et c est la seconde
    qui compte ici. Renomme le 30/08/2026, sans rien changer d autre. */
-export async function trackGoalCompleted(userId: string, difficulty: string, depuis: string, jusqua: string) {
+export async function trackGoalCompleted(userId: string, difficulty: string, depuis: string | null, jusqua: string) {
   await supabase.rpc('resynchroniser_compteurs_succes');
 
   /* Ces quatre-la se jugent sur le temps mis, pas sur un decompte :

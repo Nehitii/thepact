@@ -24,13 +24,23 @@ export const HEURES_ECHO = 0.05;
 export const MS_PAR_HEURE = 1000 * 60 * 60;
 export const MS_PAR_JOUR = MS_PAR_HEURE * 24;
 
-export function dureeEnHeures(depuis: string, jusqua: string): number {
-  return (new Date(jusqua).getTime() - new Date(depuis).getTime()) / MS_PAR_HEURE;
+/* UNE DUREE INCONNUE N EST PAS UNE DUREE NULLE.
+ *
+ * Sans depart, on ne sait pas combien de temps l objectif a pris — et
+ * `null` le dit, la ou zero pretendrait le contraire. Une date de
+ * depart illisible tombe au meme endroit : ce qui ne se mesure pas
+ * n est pas une performance. */
+export function dureeEnHeures(depuis: string | null | undefined, jusqua: string): number | null {
+  if (!depuis) return null;
+  const heures = (new Date(jusqua).getTime() - new Date(depuis).getTime()) / MS_PAR_HEURE;
+  return Number.isNaN(heures) ? null : heures;
 }
 
 /* L ORDRE DE LA LISTE EST L ORDRE DES DEBLOCAGES. Il etait celui des
    quatre `if` ; le changer changerait l ordre des notifications. */
-export function honneursDuTemps(difficulte: string, heures: number): string[] {
+export function honneursDuTemps(difficulte: string, heures: number | null): string[] {
+  /* CE QUI NE SE MESURE PAS NE SE GAGNE PAS. */
+  if (heures === null) return [];
   const gagnes: string[] = [];
   if (difficulte === "impossible" && heures / 24 < JOURS_HORS_DU_TEMPS) gagnes.push("cut_through_time");
   if (difficulte === "extreme" && heures < HEURES_CHEMIN_COURBE) gagnes.push("warping_path");
@@ -43,20 +53,23 @@ export function honneursDuTemps(difficulte: string, heures: number): string[] {
    D OU PART LA MESURE, ET CE QUE VAUT UN DEPART MANQUANT.
 
    L appelant passait `goal.start_date || maintenant` : un objectif SANS
-   date de depart est donc traite comme commencant a l instant meme ou
-   on l acheve. La duree vaut alors ZERO, et zero passe SOUS LES QUATRE
+   date de depart etait donc traite comme commencant a l instant meme
+   ou on l acheve. La duree valait ZERO, et zero passe SOUS LES QUATRE
    SEUILS d un coup — « echo_breaker » toujours, et les trois autres si
-   la difficulte s y prete.
+   la difficulte s y pretait.
 
-   CE REPLI EST AUJOURD HUI DOMINE PAR LA BASE. Releve le 30/08/2026 sur
-   le compte : 38 objectifs, AUCUN sans date de depart, et la colonne
-   `goals.start_date` porte une valeur par defaut. Le repli ne se
-   declenche donc jamais.
+   CE REPLI ETAIT DOMINE PAR LA BASE, ET NE L EST PAS PAR CONSTRUCTION.
+   Releve le 30/08/2026 sur le compte : 38 objectifs, AUCUN sans date de
+   depart, et la colonne `goals.start_date` porte une valeur par
+   defaut — mais elle reste NULLABLE. Une insertion posant
+   explicitement `start_date: null` aurait donne ses quatre
+   distinctions au premier achevement venu.
 
-   CE QUI LE RENDRAIT VIVANT : la colonne reste NULLABLE. Une insertion
-   qui pose explicitement `start_date: null` — un import, une migration,
-   un outil de M.I.A — donnerait ses quatre distinctions au premier
-   achevement venu.
+   LE REPLI EST RETIRE. Un depart inconnu rend `null`, et une duree
+   inconnue ne gagne rien : ce qui ne se mesure pas n est pas une
+   performance. Le changement est INVISIBLE aujourd hui — aucun
+   objectif n a de depart manquant — et il ferme la porte pour la
+   suite.
 
    ET LE NOM NE DIT PAS CE QUE C EST. La fonction en aval appelle son
    parametre `createdAt` ; ce qu on lui passe est `start_date`. Les deux
@@ -70,7 +83,8 @@ export interface ButAHonorer {
 
 export interface MesureDeLHonneur {
   difficulte: string;
-  depuis: string;
+  /** `null` quand l objectif n a pas de date de depart. */
+  depuis: string | null;
   jusqua: string;
 }
 
@@ -79,13 +93,13 @@ export const DIFFICULTE_PAR_DEFAUT = "medium";
 
 /* UNE SEULE LECTURE D HORLOGE. L appelant en faisait deux, a la suite,
    pour le depart de secours et pour l achevement — deux sources pour un
-   seul instant, et un ecart possible d une milliseconde entre le debut
-   et la fin d une duree censee etre nulle. */
+   seul instant. */
 export function mesureDeLHonneur(but: ButAHonorer, maintenant: Date): MesureDeLHonneur {
-  const instant = maintenant.toISOString();
   return {
     difficulte: but.difficulty ?? DIFFICULTE_PAR_DEFAUT,
-    depuis: but.start_date || instant,
-    jusqua: instant,
+    /* Le OU logique, et non `??` : une date de depart vide vaut une
+       date de depart absente. */
+    depuis: but.start_date || null,
+    jusqua: maintenant.toISOString(),
   };
 }
