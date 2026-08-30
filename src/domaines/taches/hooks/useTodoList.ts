@@ -3,6 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTodoTasks, MAX_TACHES_ACTIVES } from "@/domaines/taches/logique/lectureDesTaches";
 import { genererAnalyses } from "@/domaines/taches/logique/analyses";
 import { avancerLaSerie, cleDuJour } from "@/domaines/taches/logique/serie";
+import {
+  ligneDeTacheNeuve, ligneDHistorique, lignesDeRangement, rangDeTete, reordonner,
+} from "@/domaines/taches/logique/rangement";
 import { supabase } from '@/socle/supabase/client';
 import { useAuth } from '@/socle/contextes/AuthContext';
 import { toast } from 'sonner';
@@ -107,22 +110,7 @@ export function useTodoList() {
 
       const { data, error } = await supabase
         .from('todo_tasks')
-        .insert({
-          user_id: userId,
-          name: input.name,
-          deadline: input.deadline || null,
-          priority: input.priority,
-          is_urgent: input.is_urgent,
-          category: input.category || 'general',
-          task_type: input.task_type || 'flexible',
-          reminder_enabled: input.reminder_enabled || false,
-          reminder_frequency: input.reminder_frequency || null,
-          location: input.location || null,
-          appointment_time: input.appointment_time || null,
-          /* Une tache nouvelle se pose en tete du rangement manuel, pas
-             au fond d une liste ou personne ne la verra. */
-          position: tasks.reduce((min, t) => Math.min(min, t.position ?? 0), 0) - 1,
-        })
+        .insert(ligneDeTacheNeuve(input, userId, rangDeTete(tasks)))
         .select()
         .single();
 
@@ -163,17 +151,7 @@ export function useTodoList() {
          defait ce qu on vient de faire. */
       const { error: historyError } = await supabase
         .from('todo_history')
-        .insert({
-          user_id: userId,
-          task_name: task.name,
-          priority: task.priority,
-          was_urgent: task.is_urgent,
-          postpone_count: task.postpone_count,
-          category: task.category || 'general',
-          task_type: task.task_type || 'flexible',
-          reminder_frequency: task.reminder_frequency,
-          location: task.location,
-        });
+        .insert(ligneDHistorique(task, userId));
 
       if (historyError) {
         await supabase
@@ -339,14 +317,7 @@ export function useTodoList() {
       /* Une requete par tache — trente pour un seul geste — et pas une
          seule dont on regardait le resultat : la mutation se declarait
          reussie meme si tout avait echoue. Un seul appel, verifie. */
-      const parId = new Map(tasks.map((t) => [t.id, t]));
-      const lignes = orderedIds
-        .map((id, index) => {
-          const t = parId.get(id);
-          return t ? { id, user_id: userId, name: t.name, position: index } : null;
-        })
-        .filter(Boolean) as { id: string; user_id: string; name: string; position: number }[];
-
+      const lignes = lignesDeRangement(tasks, orderedIds, userId);
       if (lignes.length === 0) return;
 
       const { error } = await supabase.from('todo_tasks').upsert(lignes, { onConflict: 'id' });
@@ -356,13 +327,7 @@ export function useTodoList() {
       await queryClient.cancelQueries({ queryKey: ['todo-tasks', userId] });
       const previous = queryClient.getQueryData<TodoTask[]>(['todo-tasks', userId]);
       if (previous) {
-        const ordered = orderedIds
-          .map((id, i) => {
-            const task = previous.find((t) => t.id === id);
-            return task ? { ...task, position: i } : null;
-          })
-          .filter(Boolean) as TodoTask[];
-        queryClient.setQueryData(['todo-tasks', userId], ordered);
+        queryClient.setQueryData(['todo-tasks', userId], reordonner(previous, orderedIds));
       }
       return { previous };
     },
