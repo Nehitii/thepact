@@ -16,7 +16,7 @@
     "pourQui": "Pour moi d'abord — un seul compte l'utilise vraiment — et, à terme, pour des milliers d'inconnus qui manquent de cadre ou d'élan. Rien dans le code ne suppose un utilisateur unique : les deux langues, l'onboarding et les fonctions sociales sont déjà là, fermés par drapeau plutôt qu'absents.",
     "intention": "Donner un visuel concret sur tout ce qu'on veut faire de sa vie, et le sceller par un engagement profond envers soi-même : un pacte. Pas une liste de tâches — un tableau de bord où la progression se voit, où l'effort répété se mesure, et où l'engagement a une échéance. Ce qui doit motiver, c'est de voir avancer quelque chose qu'on a soi-même déclaré.\n\nC'EST UN PARCOURS INITIATIQUE, et l'ordre des mots compte. Le quotidien doit accrocher — on doit avoir envie d'y revenir, presque névrotiquement — parce que c'est cette régularité-là qui fait avancer. Mais l'accroche est le MOYEN, pas la fin : on s'en détache quand on a assez avancé et qu'on est prêt. L'application a rempli son rôle aussi quand quelqu'un règle quelques points, se sent relancé, et n'en a plus besoin.\n\nCela donne un critère, et c'est là son utilité pratique : une mécanique nouvelle se juge à ce qu'elle fait AVANCER, pas seulement à ce qu'elle fait revenir. Retenir quelqu'un qui n'avance plus, ce serait avoir gardé le moyen en ayant perdu la fin.\n\nM.I.A DOIT DEVENIR LE CŒUR. Aujourd'hui elle répond ; à terme elle porte l'application — un lore, une histoire, des évènements, un visage et une voix, jusqu'à un compte où elle présente elle-même ce qui se construit. Dans l'application, elle apparaît aux endroits qui comptent : l'onboarding qu'elle explique en bulles, The Call, la porte du second facteur, la page des chemins qui n'existent pas, quelques trouvailles cachées. Ce qu'on lui demande n'est pas d'être utile : c'est d'être une épaule.",
     "_etat": "DÉDUIT DE MESURES, à corriger. Relevé le 28/08/2026 : 46 écrans ; 4 comptes en base dont un seul actif ; 59 tests automatisés (52 côté application, 7 côté fonctions Edge) là où il n'y en avait aucun la veille ; 10 drapeaux de fonctionnalité dont 2 fermés (goal_contracts, social.sharing).",
-    "etat": "Utilisable de bout en bout par une personne, et une seule l'utilise vraiment. Les vingt derniers jours ont été consacrés à reprendre les écrans un par un plutôt qu'à en ajouter. Le filet qui manquait avant un deuxième utilisateur commence à exister : 59 tests couvrent désormais la porte du second facteur, les réflexes de M.I.A et le relais entre modèles — les trois endroits où des défauts sont réellement passés en production. Restent fermés par drapeau les contrats d'objectif et le partage social."
+    "etat": "Utilisable de bout en bout par une personne, et une seule l'utilise vraiment. Les écrans ont d'abord été repris un par un plutôt qu'augmentés ; la campagne en cours SORT LE CALCUL de ces écrans pour pouvoir le mettre à l'épreuve — un fichier par tour, en préférant ceux qui portent des nombres pouvant être faux en silence. Le filet a changé d'ordre de grandeur : 1 461 tests sur 66 fichiers, et 110 modules de logique pure sous `domaines/*/logique`. Les trois endroits où des défauts sont réellement passés en production — la porte du second facteur, les réflexes de M.I.A, le relais entre modèles — sont désormais couverts, et chaque module extrait est passé au balayage de mutations. Restent fermés par drapeau les contrats d'objectif et le partage social."
   },
   "_modules": [
     "CRITÈRE RETENU POUR LES STATUTS, à corriger sans scrupule :",
@@ -469,7 +469,10 @@
     "Un commentaire dit POURQUOI, jamais QUOI. Il porte le relevé qui a motivé le choix, pour que le prochain lecteur puisse le contredire avec des chiffres.",
     "Chaque migration porte un en-tête qui explique ce qui était faux, ce qui a été mesuré, et comment annuler.",
     "On n'énumère jamais les utilisateurs depuis le client : `profiles` ne rend qu'une ligne. Ce qui touche plusieurs personnes passe par une fonction serveur.",
-    "Toute fonction SECURITY DEFINER fige son search_path. C'est le premier vecteur d'escalade de PostgreSQL, et il est fermé partout dans ce dépôt."
+    "Toute fonction SECURITY DEFINER fige son search_path. C'est le premier vecteur d'escalade de PostgreSQL, et il est fermé partout dans ce dépôt.",
+    "La chaîne de vérification est une porte, pas un rapport : `npm run verifier` enchaîne onze contrôles — sept gardes de structure (couches, taille, domaines, langue, chemins, orphelines, i18n), le typecheck de l'application, `deno check` sur les vingt-cinq fonctions Edge, le lint, les tests — et s'arrête au premier rouge.",
+    "Aucun fichier neuf ne dépasse 400 lignes ; les dix-huit qui les dépassent déjà sont inscrits avec leur taille du jour, et cette taille est un plafond. Le seuil n'est pas un objectif de style : c'est un indicateur. Une coupe se justifie quand elle NOMME quelque chose, pas quand elle raccourcit.",
+    "Un module extrait passe au balayage de mutations. Une mutation que rien n'attrape veut dire soit un trou dans les tests, soit du code que rien ne peut atteindre : on tranche, et on écrit la réponse dans le test. Un défaut constaté mais non corrigé est épinglé de la même façon, avec ce qui le rendrait vivant."
   ],
   "ouTrouverQuoi": [
     {
@@ -514,6 +517,12 @@
     }
   ],
   "decisions": [
+    {
+      "titre": "Une garde qui ne tourne nulle part ne garde rien — `edge:check` entre dans la chaîne",
+      "date": "2026-08-30",
+      "contexte": "`npm run edge:check` lance `deno check` sur chaque fonction Edge, et son propre en-tête dit qu'il est fait pour servir de garde. Il n'était branché nulle part. Une coupe sur `two-factor` a donc cassé le typage de la fonction sans que rien ne le dise : en déplaçant un contrôle dans une fonction rendant `boolean`, on perdait le rétrécissement qui garantissait l'identifiant du `.eq()` suivant. Le contrôle avait raison — 24/25 avant ce commit, 23/25 après. Deux erreurs de la même famille dormaient en plus dans `ai-mia` depuis toujours : des types de lignes écrits à la main en `string | null` là où le schéma généré les donne NOT NULL. Tout est réparé, la garde est branchée après le typecheck, et elle refuse de démarrer avec un mot clair si Deno manque.",
+      "alternative": "La laisser hors chaîne et la lancer à la main — écarté : c'est exactement ce qui a laissé passer la régression, et personne ne lance à la main une garde dont il ignore l'existence."
+    },
     {
       "_aide": "Les notes de mem/ sont reprises automatiquement, inutile de les recopier. Ajoutez ici ce que vous voulez garder de plus.",
       "titre": "L'administration exige une session élevée, pas seulement le rôle",

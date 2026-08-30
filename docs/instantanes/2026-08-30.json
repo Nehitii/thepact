@@ -1,0 +1,253 @@
+{
+  "date": "2026-08-30",
+  "genere": "2026-08-30T10:44:05.349Z",
+  "fichiers": 1103,
+  "lignes": 196198,
+  "parDossier": [
+    {
+      "dossier": "(racine)",
+      "fichiers": 17,
+      "lignes": 1596,
+      "poids": 69033
+    },
+    {
+      "dossier": "docs",
+      "fichiers": 8,
+      "lignes": 5524,
+      "poids": 308825
+    },
+    {
+      "dossier": "mem/design",
+      "fichiers": 1,
+      "lignes": 14,
+      "poids": 1322
+    },
+    {
+      "dossier": "mem/features",
+      "fichiers": 1,
+      "lignes": 19,
+      "poids": 1244
+    },
+    {
+      "dossier": "mem/monetization",
+      "fichiers": 1,
+      "lignes": 18,
+      "poids": 972
+    },
+    {
+      "dossier": "public/cosmetiques",
+      "fichiers": 27,
+      "lignes": 450,
+      "poids": 87425
+    },
+    {
+      "dossier": "public",
+      "fichiers": 4,
+      "lignes": 86,
+      "poids": 6765
+    },
+    {
+      "dossier": "public/fonts",
+      "fichiers": 10,
+      "lignes": 664,
+      "poids": 161908
+    },
+    {
+      "dossier": "public/marque",
+      "fichiers": 10,
+      "lignes": 9236,
+      "poids": 1589080
+    },
+    {
+      "dossier": "public/mia",
+      "fichiers": 18,
+      "lignes": 6058,
+      "poids": 1569020
+    },
+    {
+      "dossier": "scripts",
+      "fichiers": 15,
+      "lignes": 2572,
+      "poids": 111775
+    },
+    {
+      "dossier": "scripts/tableau-de-bord",
+      "fichiers": 2,
+      "lignes": 1401,
+      "poids": 68757
+    },
+    {
+      "dossier": "src/app",
+      "fichiers": 16,
+      "lignes": 2649,
+      "poids": 105696
+    },
+    {
+      "dossier": "src",
+      "fichiers": 4,
+      "lignes": 2331,
+      "poids": 96043
+    },
+    {
+      "dossier": "src/assets",
+      "fichiers": 1,
+      "lignes": 136,
+      "poids": 32190
+    },
+    {
+      "dossier": "src/domaines",
+      "fichiers": 623,
+      "lignes": 121731,
+      "poids": 4905482
+    },
+    {
+      "dossier": "src/socle",
+      "fichiers": 96,
+      "lignes": 16025,
+      "poids": 615061
+    },
+    {
+      "dossier": "src/styles",
+      "fichiers": 3,
+      "lignes": 1989,
+      "poids": 84441
+    },
+    {
+      "dossier": "src/tests",
+      "fichiers": 1,
+      "lignes": 21,
+      "poids": 1252
+    },
+    {
+      "dossier": "supabase",
+      "fichiers": 1,
+      "lignes": 63,
+      "poids": 1690
+    },
+    {
+      "dossier": "supabase/functions",
+      "fichiers": 48,
+      "lignes": 9130,
+      "poids": 384320
+    },
+    {
+      "dossier": "supabase/migrations",
+      "fichiers": 196,
+      "lignes": 14485,
+      "poids": 615501
+    }
+  ],
+  "parLangage": [
+    {
+      "langage": "EXAMPLE",
+      "fichiers": 1,
+      "lignes": 19,
+      "poids": 668
+    },
+    {
+      "langage": "sans extension",
+      "fichiers": 2,
+      "lignes": 51,
+      "poids": 888
+    },
+    {
+      "langage": "JSON",
+      "fichiers": 10,
+      "lignes": 8695,
+      "poids": 341009
+    },
+    {
+      "langage": "Markdown",
+      "fichiers": 11,
+      "lignes": 2181,
+      "poids": 100297
+    },
+    {
+      "langage": "HTML",
+      "fichiers": 2,
+      "lignes": 3586,
+      "poids": 219353
+    },
+    {
+      "langage": "JavaScript",
+      "fichiers": 17,
+      "lignes": 3607,
+      "poids": 164791
+    },
+    {
+      "langage": "SVG",
+      "fichiers": 32,
+      "lignes": 460,
+      "poids": 122022
+    },
+    {
+      "langage": "ICO",
+      "fichiers": 1,
+      "lignes": 6,
+      "poids": 594
+    },
+    {
+      "langage": "WOFF2",
+      "fichiers": 10,
+      "lignes": 664,
+      "poids": 161908
+    },
+    {
+      "langage": "PNG",
+      "fichiers": 24,
+      "lignes": 15285,
+      "poids": 3126756
+    },
+    {
+      "langage": "TXT",
+      "fichiers": 1,
+      "lignes": 15,
+      "poids": 174
+    },
+    {
+      "langage": "TypeScript",
+      "fichiers": 387,
+      "lignes": 48730,
+      "poids": 1959023
+    },
+    {
+      "langage": "TypeScript (JSX)",
+      "fichiers": 363,
+      "lignes": 65876,
+      "poids": 2730035
+    },
+    {
+      "langage": "CSS",
+      "fichiers": 43,
+      "lignes": 32325,
+      "poids": 1240403
+    },
+    {
+      "langage": "WEBP",
+      "fichiers": 1,
+      "lignes": 136,
+      "poids": 32190
+    },
+    {
+      "langage": "TOML",
+      "fichiers": 1,
+      "lignes": 63,
+      "poids": 1690
+    },
+    {
+      "langage": "SQL",
+      "fichiers": 196,
+      "lignes": 14485,
+      "poids": 615501
+    },
+    {
+      "langage": "JSONC",
+      "fichiers": 1,
+      "lignes": 14,
+      "poids": 500
+    }
+  ],
+  "commits": 3278,
+  "orphelins": 66,
+  "marqueurs": 13
+}
