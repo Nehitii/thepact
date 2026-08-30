@@ -16,7 +16,7 @@ import {
 import {
   etapesCopiees, objectifCopie, piecesCopiees,
 } from "@/domaines/objectifs/logique/duplication";
-import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs } from "@/domaines/succes";
+import { trackStepCompleted, trackGoalCompleted, resynchroniserCompteurs, mesureDeLHonneur } from "@/domaines/succes";
 import { toast } from "sonner";
 import type { GoalDetailData, StatutObjectif, StepData } from "@/domaines/objectifs/hooks/useGoalDetail";
 
@@ -313,10 +313,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         return;
       }
       if (userId) {
-        setTimeout(
-          () => trackGoalCompleted(userId, goal.difficulty ?? "medium", goal.start_date || new Date().toISOString(), new Date().toISOString()),
-          0,
-        );
+        /* Le choix de l instant de depart, et ce que vaut son absence,
+           sont dans logique/honneurDuTemps.ts. */
+        const mesure = mesureDeLHonneur(goal, new Date());
+        setTimeout(() => trackGoalCompleted(userId, mesure.difficulte, mesure.depuis, mesure.jusqua), 0);
       }
       toast.success("Goal Completed! 🎉", { description: "All steps have been marked as complete" });
     },

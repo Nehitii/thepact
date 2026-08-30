@@ -131,8 +131,13 @@ describe("les trois refus", () => {
   it("refuse un montant illisible, ce qu une comparaison simple ne ferait pas", () => {
     expect(depenseDUnAchat(article({ estimated_cost: "cent vingt" })))
       .toEqual({ refus: "montant-nul" });
-    expect(NaN <= 0).toBe(false);
-    expect(!(NaN > 0)).toBe(true);
+    /* Le montant illisible passe par une variable : comparer le
+       litteral `NaN` est refuse par le lint, et c est justement parce
+       que ces comparaisons-la surprennent. */
+    const illisible = Number("cent vingt");
+    expect(Number.isNaN(illisible)).toBe(true);
+    expect(illisible <= 0).toBe(false);
+    expect(!(illisible > 0)).toBe(true);
   });
 
   /* L ORDRE DES TROIS REFUS COMPTE : un article du pacte SANS montant

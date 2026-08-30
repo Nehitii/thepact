@@ -1,69 +1,17 @@
-// Handler functions for GoalDetail - extracted for better code organization
+/* CE FICHIER N EN PORTE PLUS QU UN.
+ *
+ * Il en portait deux, et le second — `handleFullyComplete` — n avait
+ * AUCUN appelant : la page passe par le crochet `useGoalDetailActions`,
+ * qui a sa propre version. Les deux ne faisaient d ailleurs pas la meme
+ * chose. Celle d ici marquait TOUTES les etapes, ultime comprise, la ou
+ * la vivante exclut `is_ultimate` ; et elle lisait l horloge quatre
+ * fois la ou la vivante la lit une. Du code mort qui contredit le code
+ * vivant est pire que pas de code : le prochain lecteur peut le croire.
+ * Retire le 30/08/2026.
+ */
 import { supabase } from "@/socle/supabase/client";
 import type { TablesUpdate } from "@/socle/supabase/types";
-import { trackGoalCompleted } from "@/domaines/succes";
 import { messageDErreur } from "@/socle/outils/erreurs";
-
-export async function handleFullyComplete(
-  goalId: string,
-  totalSteps: number,
-  userId: string,
-  difficulty: string,
-  createdAt: string,
-  onSuccess: () => void,
-  onError: (message: string) => void
-) {
-  try {
-    // Get all steps for this goal
-    const { data: stepsData } = await supabase
-      .from("steps")
-      .select("id")
-      .eq("goal_id", goalId);
-
-    if (!stepsData) {
-      onError("Failed to load steps");
-      return;
-    }
-
-    // Mark all steps as completed
-    const updates = stepsData.map(step => 
-      supabase
-        .from("steps")
-        .update({ 
-          status: "completed", 
-          validated_at: new Date().toISOString(),
-          completion_date: new Date().toISOString()
-        })
-        .eq("id", step.id)
-    );
-
-    await Promise.all(updates);
-
-    // Update goal to fully completed
-    const { error: goalError } = await supabase
-      .from("goals")
-      .update({
-        validated_steps: totalSteps,
-        status: "fully_completed",
-        completion_date: new Date().toISOString()
-      })
-      .eq("id", goalId);
-
-    if (goalError) {
-      onError(goalError.message);
-      return;
-    }
-
-    // Track achievement
-    setTimeout(() => {
-      trackGoalCompleted(userId, difficulty, createdAt, new Date().toISOString());
-    }, 0);
-
-    onSuccess();
-  } catch (error: unknown) {
-    onError(messageDErreur(error, "Failed to complete goal"));
-  }
-}
 
 export async function handleUpdateGoal(
   goalId: string,

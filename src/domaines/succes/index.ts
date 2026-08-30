@@ -87,3 +87,5 @@ export const DailyQuestsPanel = lazy(() =>
 /* Le niveau est un rang dans une liste : deux domaines le lisent —
    l accueil pour son bandeau, le profil pour sa fiche publique. */
 export { niveauDuRang } from "@/domaines/succes/logique/rang";
+
+export { mesureDeLHonneur } from "@/domaines/succes/logique/honneurDuTemps";

@@ -1,4 +1,5 @@
 import { supabase } from "@/socle/supabase/client";
+import { dureeEnHeures, honneursDuTemps } from "@/domaines/succes/logique/honneurDuTemps";
 import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/socle/i18n/i18n";
@@ -111,21 +112,19 @@ export async function trackGoalCreated(userId: string, _difficulty?: string) {
 }
 
 // Track goal completion
-export async function trackGoalCompleted(userId: string, difficulty: string, createdAt: string, completedAt: string) {
-  const created = new Date(createdAt);
-  const completed = new Date(completedAt);
-  const timeDiff = completed.getTime() - created.getTime();
-  const hoursDiff = timeDiff / (1000 * 60 * 60);
-  const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-
+/* LE PREMIER INSTANT S APPELAIT `createdAt`, ET CE N EN EST PAS UN :
+   l appelant passe `start_date`. Un objectif peut etre cree en janvier
+   et commence en mars — les deux dates existent, et c est la seconde
+   qui compte ici. Renomme le 30/08/2026, sans rien changer d autre. */
+export async function trackGoalCompleted(userId: string, difficulty: string, depuis: string, jusqua: string) {
   await supabase.rpc('resynchroniser_compteurs_succes');
 
   /* Ces quatre-la se jugent sur le temps mis, pas sur un decompte :
-     elles restent attachees a l instant du franchissement. */
-  if (difficulty === 'impossible' && daysDiff < 30) await unlockAchievement(userId, 'cut_through_time');
-  if (difficulty === 'extreme' && hoursDiff < 72) await unlockAchievement(userId, 'warping_path');
-  if (difficulty === 'extreme' && hoursDiff < 48) await unlockAchievement(userId, 'blood_of_resolve');
-  if (hoursDiff < 0.05) await unlockAchievement(userId, 'echo_breaker');
+     elles restent attachees a l instant du franchissement. Les seuils
+     et l ordre des deblocages vivent dans logique/honneurDuTemps.ts. */
+  for (const succes of honneursDuTemps(difficulty, dureeEnHeures(depuis, jusqua))) {
+    await unlockAchievement(userId, succes);
+  }
 
   await checkAchievements(userId);
 }
