@@ -7,6 +7,10 @@ import {
   LONGUEUR_EXTRAIT_JOURNAL, LONGUEUR_EXTRAIT_MEMOIRE, nombreBorne, nomBorne,
   texteBorne,
 } from "./bornes.ts";
+import {
+  brigadeDe, butsDesPactes, comptesDesObjectifs, dureeDuPacte, etapesRestantes,
+  minutesDeFocus, pacteActif, plusGrosRestes, primeDesOrdres, zoneHoraireValide,
+} from "./etatDuPacte.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 
@@ -615,18 +619,7 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
 
   /* Un fuseau inventé ferait lever Intl : on vérifie avant de s'en
      servir, et on retombe sur UTC plutôt que de rendre une erreur. */
-  const zone = (() => {
-    for (const z of [fuseau, "UTC"]) {
-      if (!z) continue;
-      try {
-        new Intl.DateTimeFormat("fr-FR", { timeZone: z }).format(maintenant);
-        return z;
-      } catch {
-        /* zone refusée : on essaie la suivante */
-      }
-    }
-    return "UTC";
-  })();
+  const zone = zoneHoraireValide(fuseau, maintenant);
 
   /** Le jour calendaire d'un instant, DANS LE FUSEAU DE L'UTILISATEUR. */
   const jourDe = (d: Date): string =>
@@ -667,18 +660,16 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
 
   const actifId = profil?.data?.active_pact_id ?? null;
   const listePacts = pacts?.data ?? [];
-  const pacte = listePacts.find((p) => p.id === actifId) ?? listePacts[0] ?? null;
+  const pacte = pacteActif(actifId, listePacts);
 
   if (pacte) {
     const debut = pacte.project_start_date ? new Date(pacte.project_start_date).getTime() : null;
     const fin = pacte.project_end_date ? new Date(pacte.project_end_date).getTime() : null;
-    if (debut && fin && fin > debut) {
-      const total = Math.round((fin - debut) / 86_400_000);
-      const ecoule = joursEcoules(debut, Date.now());
-      const reste = joursRestants(fin, Date.now());
+    const duree = dureeDuPacte(debut, fin, Date.now());
+    if (duree) {
       lignes.push(
-        `Pacte actif : ${pacte.name} — jour ${ecoule} / ${total}, ${reste} jours restants, ` +
-          `fin le ${dateLisible(new Date(fin))}.`,
+        `Pacte actif : ${pacte.name} — jour ${duree.ecoule} / ${duree.total}, ` +
+          `${duree.reste} jours restants, fin le ${dateLisible(new Date(fin as number))}.`,
       );
     } else {
       lignes.push(`Pacte actif : ${pacte.name} (pas de dates posées).`);
@@ -690,15 +681,9 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
     lignes.push("Aucun pacte enregistré.");
   }
 
-  const buts = (objectifs?.data ?? []).filter((g) =>
-    listePacts.some((p) => p.id === g.pact_id),
-  );
+  const buts = butsDesPactes(objectifs?.data ?? [], listePacts);
   if (buts.length) {
-    const enCours = buts.filter((g) => g.status === "in_progress").length;
-    const aVenir = buts.filter((g) => g.status === "not_started").length;
-    const finis = buts.filter((g) => g.status === "fully_completed" || g.status === "validated").length;
-    const faites = buts.reduce((s, g) => s + (g.validated_steps ?? 0), 0);
-    const etapes = buts.reduce((s, g) => s + (g.total_steps ?? 0), 0);
+    const comptes = comptesDesObjectifs(buts);
     /* ON DONNE LES TOTAUX DÉJÀ FAITS, PAS LEURS INGRÉDIENTS.
 
        Premier essai, l'état annonçait « 14 en cours, 11 non commencés,
@@ -710,40 +695,29 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
        Un modèle ne somme pas quatorze lignes de tête. Chaque nombre
        qu'on risque de lui demander est donc calculé ici, en Postgres,
        et il n'a plus qu'à le lire. */
-    const restant = (statut: string) =>
-      buts
-        .filter((g) => g.status === statut)
-        .reduce((s, g) => s + Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)), 0);
-
     lignes.push(
-      `Objectifs : ${enCours} en cours (${restant("in_progress")} étapes restantes), ` +
-        `${aVenir} non commencés (${restant("not_started")} étapes restantes), ${finis} terminés.`,
+      `Objectifs : ${comptes.enCours} en cours (${etapesRestantes(buts, "in_progress")} étapes restantes), ` +
+        `${comptes.aVenir} non commencés (${etapesRestantes(buts, "not_started")} étapes restantes), ` +
+        `${comptes.finis} terminés.`,
     );
     lignes.push(
-      `Étapes, toutes catégories : ${faites} faites sur ${etapes}, ${Math.max(0, etapes - faites)} restantes.`,
+      `Étapes, toutes catégories : ${comptes.faites} faites sur ${comptes.etapes}, ` +
+        `${comptes.restantes} restantes.`,
     );
 
-    const plusGros = buts
-      .filter((g) => g.status === "in_progress")
-      .map((g) => ({ nom: g.name, reste: Math.max(0, (g.total_steps ?? 0) - (g.validated_steps ?? 0)) }))
-      .filter((g) => g.reste > 0)
-      .sort((a, b) => b.reste - a.reste)
-      .slice(0, 3);
+    const plusGros = plusGrosRestes(buts);
     if (plusGros.length) {
       lignes.push(
         `Plus gros restes en cours : ${plusGros.map((g) => `${g.nom} (${g.reste})`).join(", ")}.`,
       );
     }
-    const brigade = buts.filter((g) => g.is_focus && g.status !== "fully_completed").map((g) => g.name);
+    const brigade = brigadeDe(buts);
     if (brigade.length) lignes.push(`Brigade (objectifs épinglés) : ${brigade.join(", ")}.`);
   }
 
   const listeOrdres = ordres?.data ?? [];
   if (listeOrdres.length) {
-    const prime = listeOrdres.reduce((s, q) => s + (q.reward_bonds ?? 0), 0);
-    const acquise = listeOrdres
-      .filter((q) => q.status === "claimed")
-      .reduce((s, q) => s + (q.reward_bonds ?? 0), 0);
+    const { acquise, totale: prime } = primeDesOrdres(listeOrdres);
     lignes.push(
       `Ordres du jour : ` +
         listeOrdres.map((q) => `${q.title} ${q.progress}/${q.target}`).join(" · ") +
@@ -751,7 +725,7 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
     );
   }
 
-  const minutes = (focus?.data ?? []).reduce((s, p) => s + (p.duration_minutes ?? 0), 0);
+  const minutes = minutesDeFocus(focus?.data ?? []);
   lignes.push(`Focus aujourd'hui : ${minutes} minute${minutes > 1 ? "s" : ""}.`);
 
   const listeTaches = taches?.data ?? [];
