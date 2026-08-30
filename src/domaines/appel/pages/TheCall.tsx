@@ -7,6 +7,11 @@ import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
 import { useTheCall } from "@/domaines/appel/hooks/useTheCall";
 import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/domaines/appel/composants/CoeurStellaire";
+import {
+  AVANT_ECRITURE, DELAI_DEMONSTRATION, DELAI_FOCUS, DUREE_MESSAGE_RUPTURE, DUREE_SORTIE,
+  apresEcriture, cleDeLAnnonce, cleDuMessage, enSequence, priseTenable, retourDe,
+  ruptureAuRelachement, type Phase,
+} from "@/domaines/appel/logique/sequence";
 import { DSPageShell } from "@/socle/ds";
 import { cn } from "@/socle/outils/utils";
 
@@ -35,10 +40,6 @@ const NB_PARTICULES = 16;
 
 /* Les trois couleurs de la montee. Ce sont des etapes d une jauge, pas
    des couleurs d interface : elles restent nommees ici. */
-
-type Phase =
-  | "attente" | "montee" | "critique"
-  | "implosion" | "singularite" | "explosion" | "revelation" | "verrouille";
 
 const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -111,10 +112,9 @@ export default function TheCall() {
   const vitesseRef = useRef(1);
   const autoRef = useRef(false);
 
-  const enSequence = phase === "implosion" || phase === "singularite"
-    || phase === "explosion" || phase === "revelation";
+  const sequence = enSequence(phase);
   const verrouille = phase === "verrouille";
-  const tenable = pret && !verrouille && !enSequence;
+  const tenable = priseTenable(pret, phase);
 
   useEffect(() => {
     if (dejaFait) { finiRef.current = true; setPhase("verrouille"); }
@@ -161,10 +161,10 @@ export default function TheCall() {
     cancelAnimationFrame(rafRef.current);
     peindre(1);
 
-    setPhase("implosion");
-    await attendre(500);
-    setPhase("singularite");
-    await attendre(200);
+    for (const etape of AVANT_ECRITURE) {
+      setPhase(etape.phase);
+      await attendre(etape.attente);
+    }
 
     /* L ecriture est ATTENDUE, et son echec remonte : la page ne dit
        plus « connecte » avant que la base l ait accepte. En mode
@@ -178,15 +178,14 @@ export default function TheCall() {
         return;
       }
     }
-    if (!vivantRef.current) return;
-
-    setPhase("explosion");
-    await attendre(immobile ? 500 : 100);
-    if (!vivantRef.current) return;
-    /* On s arrete la. La revelation restait trois secondes puis
-       s effacait toute seule : ce qu on vient de gagner ne doit pas etre
-       chasse par une minuterie. C est un bouton qui la quitte. */
-    setPhase("revelation");
+    /* Le controle de vie est en tete de boucle : il tombe donc aux
+       deux memes endroits qu avant — avant le souffle, et avant la
+       revelation. */
+    for (const etape of apresEcriture(immobile)) {
+      if (!vivantRef.current) return;
+      setPhase(etape.phase);
+      if (etape.attente) await attendre(etape.attente);
+    }
   }, [peindre, enregistrer, immobile, rendreLaMain]);
 
   // ── La boucle ───────────────────────────────────────────────
@@ -235,11 +234,11 @@ export default function TheCall() {
     if (finiRef.current) return;
     cancelAnimationFrame(rafRef.current);
 
-    if (progresRef.current > 0.05) {
+    if (ruptureAuRelachement(progresRef.current)) {
       /* Lacher trop tot n est pas neutre : les anneaux se dispersent. */
       evenementsCoeur.current.push("rupture");
       setRelacheTot(true);
-      setTimeout(() => setRelacheTot(false), 2500);
+      setTimeout(() => setRelacheTot(false), DUREE_MESSAGE_RUPTURE);
     }
 
     /* Le retour a zero planifiait sa propre image DANS le calcul d etat
@@ -247,7 +246,7 @@ export default function TheCall() {
        montee — un nouvel appui l annule donc vraiment. */
     const revenir = () => {
       if (tientRef.current || finiRef.current) return;
-      const p = Math.max(0, progresRef.current - 0.05);
+      const p = retourDe(progresRef.current);
       progresRef.current = p;
       peindre(p);
       if (p > 0) rafRef.current = requestAnimationFrame(revenir);
@@ -271,14 +270,14 @@ export default function TheCall() {
       tientRef.current = true; autoRef.current = true; vitesseRef.current = vitesse;
       departRef.current = performance.now();
       planifier();
-    }, 50);
+    }, DELAI_DEMONSTRATION);
   }, [devReset, planifier]);
 
   /* Le clavier doit pouvoir continuer : le bouton prend la main des que
      la revelation s installe. */
   useEffect(() => {
     if (phase !== "revelation") return;
-    const id = setTimeout(() => suiteRef.current?.focus(), 900);
+    const id = setTimeout(() => suiteRef.current?.focus(), DELAI_FOCUS);
     return () => clearTimeout(id);
   }, [phase]);
 
@@ -293,19 +292,13 @@ export default function TheCall() {
       peindre(0);
       setSortieRevelation(false);
       setPhase("verrouille");
-    }, 620);
+    }, DUREE_SORTIE);
   }, [sortieRevelation, peindre]);
 
   // ── Les textes d etat ───────────────────────────────────────
-  const messageEtat = relacheTot ? t("thecall.fading")
-    : phase === "critique" ? t("thecall.critical")
-      : phase === "montee" ? t("thecall.rising")
-        : t("thecall.awaiting");
-
-  const annonce = phase === "critique" ? t("thecall.critical")
-    : phase === "verrouille" ? t("thecall.announceDone")
-      : phase === "montee" ? t("thecall.syncing")
-        : "";
+  const messageEtat = t(cleDuMessage(phase, relacheTot));
+  const cleAnnonce = cleDeLAnnonce(phase);
+  const annonce = cleAnnonce ? t(cleAnnonce) : "";
 
   const total = pacte?.total ?? 0;
   const serie = pacte?.serie ?? 0;
@@ -337,7 +330,7 @@ export default function TheCall() {
         <span className="rit-equerres" aria-hidden="true" />
 
         {/* ── Le rail haut ─────────────────────────────────────── */}
-        <header className={cn("rit-rail", enSequence && "est-efface")}>
+        <header className={cn("rit-rail", sequence && "est-efface")}>
           <button type="button" onClick={() => navigate("/")} className="rit-outil">
             <ArrowLeft className="w-3 h-3" aria-hidden="true" />
             <span className="hidden sm:inline">{t("thecall.back")}</span>
@@ -372,7 +365,7 @@ export default function TheCall() {
         </header>
 
         {/* ── Le titre ─────────────────────────────────────────── */}
-        <div className={cn("rit-titre-bloc", enSequence && "est-efface")}>
+        <div className={cn("rit-titre-bloc", sequence && "est-efface")}>
           {/* L espace compte : sans lui, le nom lu est « THECALL ». */}
           <h1 className="rit-titre">
             THE <em>CALL</em>
@@ -465,7 +458,7 @@ export default function TheCall() {
         </div>
 
         {/* ── Le rail bas ──────────────────────────────────────── */}
-        <footer className={cn("rit-pied", enSequence && "est-efface")}>
+        <footer className={cn("rit-pied", sequence && "est-efface")}>
           {!verrouille && (
             <>
               <p id="rit-etat" className="rit-message">{messageEtat}</p>
