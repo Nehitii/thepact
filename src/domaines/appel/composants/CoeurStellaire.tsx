@@ -1,4 +1,18 @@
 import { useEffect, useRef } from "react";
+import {
+  MAX_FILAMENTS, MAX_ONDES, NB_ANNEAUX, NB_DEBRIS, TAU,
+  avancementDuSouffle, cadenceDesArcs, cadenceDesFilaments, cadenceDesOndes, clamp01,
+  contractionDuCoeur, deplacementParGravite, geometrieDUnAnneau, intensiteDuFond, lerp,
+  lobesDuCoeur, rayonDuCoeur, rayonDuSouffle, renduDe, rgba, separationDesLobes,
+  souffleDuCoeur, teinte, transformationDePhase, tremblement, vitesseDUnAnneau,
+  type PhaseCoeur, type Rendu,
+} from "@/domaines/appel/logique/coeur";
+import {
+  avancerLaMain, avancerLeRecit, mainNeuve, recitNeuf,
+  type EtatDeLaMain, type EtatDuRecit, type EvenementMain,
+} from "@/domaines/appel/logique/coeurRecit";
+
+export type { EvenementMain, PhaseCoeur };
 
 /* LE COEUR
  *
@@ -22,10 +36,6 @@ import { useEffect, useRef } from "react";
  * elle n a pas ete retenue.
  */
 
-export type PhaseCoeur =
-  | "attente" | "montee" | "critique"
-  | "implosion" | "singularite" | "explosion" | "revelation" | "verrouille";
-
 export interface OptionsCoeur {
   recit?: boolean;
   matiere?: boolean;
@@ -34,8 +44,6 @@ export interface OptionsCoeur {
   final?: boolean;
   apres?: boolean;
 }
-
-export type EvenementMain = "appui" | "rupture";
 
 interface CoeurStellaireProps {
   progres: React.MutableRefObject<number>;
@@ -48,68 +56,11 @@ interface CoeurStellaireProps {
   evenements?: React.MutableRefObject<EvenementMain[]>;
 }
 
-const TAU = Math.PI * 2;
-const NB_ANNEAUX = 5;
-const MAX_ONDES = 16;
-const MAX_FILAMENTS = 26;
-const NB_DEBRIS = 22;
-const SEUILS = [0.25, 0.5, 0.75, 0.9];
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
-
-/* Du cyan froid au blanc de fusion, en passant par le violet. */
-/* -- LE MEME COEUR, SUR DU PAPIER --
-
-   Ce canevas ne peint pas des formes : il peint de la LUMIERE. Tous
-   ses traits sont blancs, et le tout se compose en `lighter` — une
-   fusion ADDITIVE, ou chaque calque ajoute son eclat au precedent.
-   C est le bon modele sur du noir : il n y a rien, et on allume.
-
-   Sur du papier, ce modele ne peut RIEN produire. Ajouter de la
-   lumiere a une surface deja blanche ne change rien : c est pour ca
-   que  les cercles sont trop pales et a peine visibles . Baisser une
-   opacite ou forcer une couleur n y change rien non plus — le
-   probleme n est pas le reglage, c est le mode de fusion.
-
-   Le jumeau physique de l addition de lumiere, c est la SOUSTRACTION
-   par l encre : `multiply`. Une encre n ajoute pas, elle absorbe. Le
-   dessin est donc rigoureusement le meme — memes anneaux, memes
-   orbites, memes ondes — mais il s obtient en retirant de la lumiere
-   au papier au lieu d en ajouter au noir.
-
-   Deux consequences directes :
-   — le trait blanc devient un trait d encre. En multiply, du blanc
-     est neutre : il serait litteralement invisible.
-   — l eclair de blanc total qui precede le souffle devient un
-     eclair de NOIR. C est le negatif de la meme image.
-
-   Les valeurs sombres sont recopiees au caractere pres. */
-const RENDU = {
-  sombre: { fusion: "lighter" as GlobalCompositeOperation, trait: [255, 255, 255] as [number, number, number], flash: "#fff" },
-  clair:  { fusion: "multiply" as GlobalCompositeOperation, trait: [16, 22, 26] as [number, number, number], flash: "#12171a" },
-};
-
-function rendu() {
-  if (typeof document === "undefined") return RENDU.sombre;
-  return document.documentElement.classList.contains("dark") ? RENDU.sombre : RENDU.clair;
-}
-
-function teinte(p: number): [number, number, number] {
-  if (p < 0.5) {
-    const t = p * 2;
-    return [lerp(6, 139, t), lerp(182, 92, t), lerp(212, 246, t)];
-  }
-  if (p < 0.85) {
-    const t = (p - 0.5) / 0.35;
-    return [lerp(139, 255, t), lerp(92, 64, t), lerp(246, 255, t)];
-  }
-  const t = (p - 0.85) / 0.15;
-  return [lerp(255, 255, t), lerp(64, 245, t), lerp(255, 255, t)];
-}
-
-const rgba = ([r, g, b]: [number, number, number], a: number) =>
-  `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${a})`;
+/* CE QUE LA TOILE DECIDE VIT DANS `logique/coeur.ts`. Ici ne reste
+   que ce qui touche au contexte 2D : l ordre des calques, les
+   degrades, et la boucle d images. */
+const rendu = (): Rendu =>
+  renduDe(typeof document === "undefined" || document.documentElement.classList.contains("dark"));
 
 interface Onde { r: number; force: number; sens: number }
 interface Filament { angle: number; vie: number; duree: number; longueur: number; sens: number }
@@ -154,9 +105,8 @@ export function CoeurStellaire({
     /* L etat de la scene vit ici, pas dans React. */
     const angles = Array.from({ length: NB_ANNEAUX }, (_, i) => (i / NB_ANNEAUX) * TAU);
     const sens = Array.from({ length: NB_ANNEAUX }, (_, i) => (i % 2 === 0 ? 1 : -1));
-    const inclinaisonsBase = [0.28, 0.55, 0.16, 0.78, 0.42];
-    const inclinaisons = [...inclinaisonsBase];
-    const ecarts = Array.from({ length: NB_ANNEAUX }, () => 0);   // dispersion apres rupture
+    let recit: EtatDuRecit = recitNeuf();
+    let main: EtatDeLaMain = mainNeuve();
     const ondes: Onde[] = [];
     const filaments: Filament[] = [];
     const arcs: Arc[] = [];
@@ -174,16 +124,6 @@ export function CoeurStellaire({
     let vivant = true;
     let boucleId = 0;
 
-    // — Etat du recit —
-    let seuilAtteint = -1;
-    let eclatSeuil = 0;      // eclair court au passage d un seuil
-    let alignement = 0;      // 0 → 1 apres le premier seuil
-    let scission = 0;        // le coeur se dedouble au deuxieme
-    let excentrique = 0;     // orbites decalees au troisieme
-    // — Etat de la main —
-    let impulsion = 0;       // contraction seche a l appui
-    let purge = 0;           // dispersion apres une rupture
-    let dernierP = 0;
 
     const dessiner = (maintenant: number) => {
       if (!vivant) return;
@@ -195,43 +135,11 @@ export function CoeurStellaire({
       const ph = phaseRef.current;
       const depuis = (maintenant - debutPhaseRef.current) / 1000;
 
-      // ── Les evenements de la main ────────────────────────────
-      if (o.main && evenements?.current.length) {
-        for (const e of evenements.current.splice(0)) {
-          if (e === "appui") impulsion = 1;
-          else if (e === "rupture") {
-            purge = 1;
-            for (let i = 0; i < NB_ANNEAUX; i++) ecarts[i] = 0.35 + Math.random() * 0.5;
-          }
-        }
-      }
-      impulsion = Math.max(0, impulsion - dt * 3.4);
-      purge = Math.max(0, purge - dt * 1.5);
-      for (let i = 0; i < NB_ANNEAUX; i++) ecarts[i] = Math.max(0, ecarts[i] - dt * 0.9);
-
-      // ── Le recit : quatre seuils, quatre evenements ──────────
-      if (o.recit) {
-        for (let i = SEUILS.length - 1; i >= 0; i--) {
-          if (p >= SEUILS[i] && seuilAtteint < i) {
-            seuilAtteint = i;
-            eclatSeuil = 1;
-            ondes.push({ r: 0, force: 1.6, sens: 1 });
-            break;
-          }
-        }
-        if (p < 0.02) seuilAtteint = -1;
-        alignement = clamp01(alignement + (seuilAtteint >= 0 ? dt * 1.6 : -dt * 3));
-        scission = seuilAtteint >= 1 ? clamp01(scission + dt * 1.2) : clamp01(scission - dt * 3);
-        excentrique = seuilAtteint >= 2 ? clamp01(excentrique + dt * 1.1) : clamp01(excentrique - dt * 3);
-        for (let i = 0; i < NB_ANNEAUX; i++) {
-          inclinaisons[i] = lerp(inclinaisonsBase[i], 0.42, alignement);
-        }
-      } else {
-        seuilAtteint = -1; alignement = 0; scission = 0; excentrique = 0;
-        for (let i = 0; i < NB_ANNEAUX; i++) inclinaisons[i] = inclinaisonsBase[i];
-      }
-      eclatSeuil = Math.max(0, eclatSeuil - dt * 2.2);
-      dernierP = p;
+      // ── Ce que la main et le recit deviennent ────────────────
+      main = avancerLaMain(main, dt, o.main ? evenements?.current.splice(0) ?? [] : [], !!o.main);
+      const avance = avancerLeRecit(recit, p, dt, !!o.recit);
+      recit = avance.etat;
+      if (avance.onde) ondes.push({ r: 0, force: 1.6, sens: 1 });
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, largeur, hauteur);
@@ -244,43 +152,16 @@ export function CoeurStellaire({
       const base = (boite ? Math.min(boite.width, boite.height) : Math.min(largeur, hauteur) * 0.3) * 0.5;
       const c = teinte(p);
 
-      /* L effondrement : tout rentre dans le point, puis en jaillit. */
-      let echelle = 1;
-      let eclat = 1 + eclatSeuil * 1.4;
-      let calme = 0;      // l astre d apres
-      let naissance = 1;  // sa montee en douceur
-      if (ph === "implosion") {
-        const u = Math.min(depuis / 0.5, 1);
-        echelle = 1 - u * 0.97;
-        eclat = 1 + u * 3;
-      } else if (ph === "singularite") {
-        echelle = 0.03; eclat = 4;
-      } else if (ph === "explosion" || ph === "revelation") {
-        echelle = 0;
-      } else if (ph === "verrouille") {
-        if (o.apres) {
-          /* L astre ne surgit pas : il se leve. La revelation n est plus
-             chassee par une minuterie, c est l utilisateur qui la quitte,
-             et ce qu il retrouve doit arriver doucement. */
-          const u = clamp01(depuis / 1.1);
-          naissance = 1 - Math.pow(1 - u, 3);
-          echelle = 0.42 * naissance; eclat = 0.55 * naissance; calme = 1;
-        } else echelle = 0;
-      }
+      const { echelle, eclat, calme, naissance } =
+        transformationDePhase(ph, depuis, recit.eclatSeuil, !!o.apres);
 
-      const tremble = immobile ? 0 : Math.max(0, p - 0.55) * 26 * (1 + excentrique);
+      const tremble = tremblement(p, immobile, recit.excentrique);
       const ox = (Math.random() - 0.5) * tremble;
       const oy = (Math.random() - 0.5) * tremble;
       ctx.translate(ox, oy);
 
       // ── Le fond ──────────────────────────────────────────────
-      /* Le fond couvre TOUT l ecran : son alpha doit rester borne. Sans
-         cette borne, l eclair du quatrieme seuil le poussait a 0,98 —
-         l ecran virait au blanc complet a 90 %. L eclair reste pour le
-         coeur et les anneaux, il ne prend pas le fond. */
-      const intensiteFond = calme
-        ? 0.12 * naissance
-        : Math.min(0.4, (0.10 + p * 0.3) * (1 + eclatSeuil * 0.35));
+      const intensiteFond = intensiteDuFond(p, recit.eclatSeuil, calme, naissance);
       const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(largeur, hauteur) * 0.8);
       halo.addColorStop(0, rgba(c, intensiteFond));
       halo.addColorStop(0.28, rgba(c, intensiteFond * 0.6));
@@ -292,13 +173,8 @@ export function CoeurStellaire({
       // ── C : la grille courbee ────────────────────────────────
       if (o.gravite && echelle > 0.02) {
         const pas = 46;
-        const force = (0.35 + p * 2.6) * base * base;
-        const deplacer = (x: number, y: number): [number, number] => {
-          const dx = x - cx, dy = y - cy;
-          const d2 = dx * dx + dy * dy + base * base * 0.35;
-          const k = force / d2;
-          return [x - dx * k, y - dy * k];
-        };
+        const deplacer = (x: number, y: number): [number, number] =>
+          deplacementParGravite(x, y, cx, cy, base, p);
         ctx.strokeStyle = rgba(c, 0.05 + p * 0.16);
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -333,7 +209,7 @@ export function CoeurStellaire({
 
       if (echelle > 0.02) {
         // ── Les ondulations ────────────────────────────────────
-        if (!immobile && p > 0 && maintenant - derniereOnde > lerp(1500, 170, p)) {
+        if (!immobile && p > 0 && maintenant - derniereOnde > cadenceDesOndes(p)) {
           derniereOnde = maintenant;
           ondes.push({ r: 0, force: 0.35 + p * 0.65, sens: 1 });
           if (ondes.length > MAX_ONDES) ondes.shift();
@@ -373,17 +249,12 @@ export function CoeurStellaire({
 
         // ── Les anneaux ────────────────────────────────────────
         for (let i = 0; i < NB_ANNEAUX; i++) {
-          const vitesse = (0.12 + Math.pow(p, 2.2) * 7) * sens[i] * (1 + i * 0.13);
-          angles[i] += dt * vitesse * (immobile ? 0.15 : 1);
-          const dispersion = 1 + ecarts[i] * 1.8;
-          const rx = base * (1.35 + i * 0.42) * echelle * dispersion
-            * (1 - Math.max(0, p - 0.85) * 1.4) * (1 - impulsion * 0.12);
-          const ry = rx * inclinaisons[i];
-          const alpha = (0.16 + p * 0.5) * (1 - i * 0.1) * eclat * (1 - purge * 0.75) * (1 - ecarts[i]);
-          /* A : passe le troisieme seuil, les orbites se decentrent. */
-          const dec = excentrique * base * 0.22;
-          const ex = cx + Math.cos(angles[i] * 0.7) * dec;
-          const ey = cy + Math.sin(angles[i] * 0.9) * dec * 0.6;
+          angles[i] += dt * vitesseDUnAnneau(i, p, sens[i]) * (immobile ? 0.15 : 1);
+          const { rx, ry, alpha, ex, ey } = geometrieDUnAnneau(i, {
+            p, base, echelle, eclat, cx, cy, angles,
+            impulsion: main.impulsion, purge: main.purge, ecarts: main.ecarts,
+            excentrique: recit.excentrique, inclinaisons: recit.inclinaisons,
+          });
 
           for (let couche = 0; couche < 3; couche++) {
             ctx.beginPath();
@@ -395,7 +266,7 @@ export function CoeurStellaire({
         }
 
         // ── Les emanations ─────────────────────────────────────
-        if (!immobile && p > 0.08 && maintenant - dernierFilament > lerp(420, 40, p)) {
+        if (!immobile && p > 0.08 && maintenant - dernierFilament > cadenceDesFilaments(p)) {
           dernierFilament = maintenant;
           filaments.push({
             angle: Math.random() * TAU, vie: 0, duree: lerp(900, 260, p),
@@ -412,7 +283,7 @@ export function CoeurStellaire({
           f.angle += dt * f.sens * (0.4 + p * 2);
           const debut = base * echelle * 0.95;
           const fin = debut + base * f.longueur * echelle * (0.35 + u * 1.4);
-          const a = Math.sin(u * Math.PI) * (0.35 + p * 0.55) * (1 - purge);
+          const a = Math.sin(u * Math.PI) * (0.35 + p * 0.55) * (1 - main.purge);
           const g = ctx.createLinearGradient(
             cx + Math.cos(f.angle) * debut, cy + Math.sin(f.angle) * debut,
             cx + Math.cos(f.angle) * fin, cy + Math.sin(f.angle) * fin,
@@ -428,7 +299,7 @@ export function CoeurStellaire({
         }
 
         // ── B : les arcs electriques ───────────────────────────
-        if (o.matiere && !immobile && p > 0.12 && maintenant - dernierArc > lerp(900, 70, p)) {
+        if (o.matiere && !immobile && p > 0.12 && maintenant - dernierArc > cadenceDesArcs(p)) {
           dernierArc = maintenant;
           arcs.push({
             angle: Math.random() * TAU, vie: 0, duree: 90 + Math.random() * 90,
@@ -459,15 +330,11 @@ export function CoeurStellaire({
         }
 
         // ── Le coeur ───────────────────────────────────────────
-        const souffle = immobile ? 1 : 1 + Math.sin(maintenant / 1000 * (2 + p * 14)) * (0.02 + p * 0.07);
-        const contraction = 1 - impulsion * 0.22 + Math.max(0, impulsion - 0.7) * 0.5;
-        const r = base * echelle * souffle * (1 + p * 0.35) * contraction * (calme ? 0.8 : 1);
-
-        /* A : au deuxieme seuil, le coeur se dedouble puis se ressoude. */
-        const separation = Math.sin(scission * Math.PI) * base * 0.22 * echelle;
-        const lobes: [number, number][] = separation > 0.5
-          ? [[cx - separation, cy], [cx + separation, cy]]
-          : [[cx, cy]];
+        const r = rayonDuCoeur(
+          base, echelle, souffleDuCoeur(maintenant, p, immobile), p,
+          contractionDuCoeur(main.impulsion), calme,
+        );
+        const lobes = lobesDuCoeur(cx, cy, separationDesLobes(recit.scission, base, echelle));
 
         for (const [lx, ly] of lobes) {
           const noyau = ctx.createRadialGradient(lx, ly, 0, lx, ly, r * 2.6);
@@ -490,8 +357,7 @@ export function CoeurStellaire({
 
       // ── Ce qui jaillit de l effondrement ─────────────────────
       if (ph === "explosion") {
-        const duree = immobile ? 0.9 : 0.55;
-        const u = Math.min(depuis / duree, 1);
+        const u = avancementDuSouffle(depuis, immobile);
 
         /* E : une image de blanc total avant le souffle. */
         if (o.final && !immobile && depuis < 0.06) {
@@ -502,7 +368,7 @@ export function CoeurStellaire({
         }
 
         const portee = Math.hypot(largeur, hauteur) * 0.75;
-        const rr = portee * (immobile ? u : Math.pow(u, 0.45));
+        const rr = rayonDuSouffle(u, portee, immobile);
         ctx.beginPath();
         ctx.arc(cx, cy, rr, 0, TAU);
         ctx.strokeStyle = rgba(rendu().trait, (1 - u) * 0.9);
@@ -516,7 +382,7 @@ export function CoeurStellaire({
             const ur = clamp01(u - k * 0.06);
             if (ur <= 0) continue;
             ctx.beginPath();
-            ctx.arc(cx, cy, portee * Math.pow(ur, 0.45), 0, TAU);
+            ctx.arc(cx, cy, rayonDuSouffle(ur, portee, false), 0, TAU);
             ctx.strokeStyle = rgba(c, (1 - ur) * 0.28 / k);
             ctx.lineWidth = 2 + (1 - ur) * 30 / k;
             ctx.stroke();
