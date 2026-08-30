@@ -16,10 +16,13 @@
  * - transformOrigin: always "center center"
  */
 
+/* Les trois nombres viennent de colonnes NULLABLES : le type le dit,
+   et le `??` plus bas s en charge deja. Sans cela chaque appelant
+   ecrivait `?? undefined` pour traduire un null en absence. */
 export interface FrameTransformParams {
-  frameScale?: number;
-  frameOffsetX?: number; // Percentage-based (e.g., 5 means 5% of container)
-  frameOffsetY?: number; // Percentage-based
+  frameScale?: number | null;
+  frameOffsetX?: number | null; // Percentage-based (e.g., 5 means 5% of container)
+  frameOffsetY?: number | null; // Percentage-based
 }
 
 export interface ComputedFrameTransform {

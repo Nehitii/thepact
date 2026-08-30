@@ -1,6 +1,6 @@
 {
   "src/app/AppSidebar.tsx": 599,
-  "src/domaines/administration/pages/AdminCosmeticsManager.tsx": 810,
+  "src/domaines/administration/pages/AdminCosmeticsManager.tsx": 807,
   "src/domaines/appel/composants/CoeurStellaire.tsx": 421,
   "src/domaines/appel/pages/TheCall.tsx": 802,
   "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 606,

@@ -17,6 +17,7 @@ import { FramePreview as InlineFramePreview } from "@/socle/ui/avatar-frame";
 import { AdminPageShell } from "@/domaines/administration/composants/AdminPageShell";
 import { AdminDeleteConfirm } from "@/domaines/administration/composants/AdminDeleteConfirm";
 import { logAdminAction } from "@/domaines/administration/hooks/useAdminAudit";
+import { computeFrameTransform } from "@/socle/ui/unified-frame-renderer";
 import { 
   Sparkles, 
   Crown, 
@@ -435,30 +436,19 @@ export default function AdminCosmeticsManager() {
                             Aux trois tailles où il sera porté
                           </div>
                           <div className="flex items-end justify-center gap-4 p-3 rounded-lg bg-card/30 border border-primary/10">
-                            <InlineFramePreview
-                              frameImage={editingFrame.preview_url ?? undefined}
-                              frameScale={editingFrame.frame_scale ?? undefined}
-                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
-                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
-                              glowColor={editingFrame.glow_color ?? undefined}
-                              size="sm"
-                            />
-                            <InlineFramePreview
-                              frameImage={editingFrame.preview_url ?? undefined}
-                              frameScale={editingFrame.frame_scale ?? undefined}
-                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
-                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
-                              glowColor={editingFrame.glow_color ?? undefined}
-                              size="md"
-                            />
-                            <InlineFramePreview
-                              frameImage={editingFrame.preview_url ?? undefined}
-                              frameScale={editingFrame.frame_scale ?? undefined}
-                              frameOffsetX={editingFrame.frame_offset_x ?? undefined}
-                              frameOffsetY={editingFrame.frame_offset_y ?? undefined}
-                              glowColor={editingFrame.glow_color ?? undefined}
-                              size="2xl"
-                            />
+                            {/* Les trois tailles s ecrivaient trois fois,
+                                a six proprietes identiques pres. */}
+                            {(["sm", "md", "2xl"] as const).map((taille) => (
+                              <InlineFramePreview
+                                key={taille}
+                                frameImage={editingFrame.preview_url ?? undefined}
+                                frameScale={editingFrame.frame_scale}
+                                frameOffsetX={editingFrame.frame_offset_x}
+                                frameOffsetY={editingFrame.frame_offset_y}
+                                glowColor={editingFrame.glow_color ?? undefined}
+                                size={taille}
+                              />
+                            ))}
                           </div>
                         </div>
                         
@@ -560,7 +550,14 @@ export default function AdminCosmeticsManager() {
                   {frame.preview_url ? (
                     <img
                       src={frame.preview_url} alt="" loading="lazy" decoding="async"
-                      style={{ transform: `scale(${frame.frame_scale || 1}) translate(${frame.frame_offset_x || 0}px, ${frame.frame_offset_y || 0}px)` }}
+                      /* LA MEME FORMULE QUE PARTOUT AILLEURS : cette
+                         vignette ecrivait la sienne, en PIXELS, quand
+                         tout le reste lit ces nombres en POUR CENT. */
+                      style={computeFrameTransform({
+                        frameScale: frame.frame_scale,
+                        frameOffsetX: frame.frame_offset_x,
+                        frameOffsetY: frame.frame_offset_y,
+                      })}
                     />
                   ) : (
                     <span style={{

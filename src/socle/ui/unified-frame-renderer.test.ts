@@ -89,6 +89,17 @@ describe("la transformation d un cadre", () => {
     expect(t.indexOf("scale(")).toBeLessThan(t.indexOf("translate("));
   });
 
+  /* LES TROIS NOMBRES VIENNENT DE COLONNES NULLABLES, et un `null` doit
+     valoir absence — donc 1 pour l echelle, pas 0. Les types
+     l acceptent desormais, ce qui evite a chaque appelant d ecrire
+     `?? undefined` pour traduire un null en absence ; ce test dit ce
+     que le repli en fait. */
+  it("traite un null comme une absence", () => {
+    expect(computeFrameTransform({ frameScale: null, frameOffsetX: null, frameOffsetY: null }))
+      .toEqual(computeFrameTransform({}));
+    expect(computeFrameTransform({ frameScale: null }).transform).toContain("scale(1)");
+  });
+
   /* LE POINT D ANCRAGE NE CHANGE JAMAIS. Un cadre qui tournerait autour
      d un coin se decalerait a chaque changement d echelle. */
   it("ancre toujours au centre", () => {

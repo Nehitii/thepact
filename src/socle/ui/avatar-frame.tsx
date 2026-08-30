@@ -10,9 +10,11 @@ interface AvatarFrameProps {
   borderColor?: string;
   glowColor?: string;
   className?: string;
-  frameScale?: number;
-  frameOffsetX?: number;
-  frameOffsetY?: number;
+  /* Nullables, comme les colonnes d ou ils viennent : le repli est
+     fait par computeFrameTransform. */
+  frameScale?: number | null;
+  frameOffsetX?: number | null;
+  frameOffsetY?: number | null;
   showBorder?: boolean;
 }
 
