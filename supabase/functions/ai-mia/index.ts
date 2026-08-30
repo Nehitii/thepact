@@ -11,6 +11,10 @@ import {
   brigadeDe, butsDesPactes, comptesDesObjectifs, dureeDuPacte, etapesRestantes,
   minutesDeFocus, pacteActif, plusGrosRestes, primeDesOrdres, zoneHoraireValide,
 } from "./etatDuPacte.ts";
+import {
+  absorberLaLigne, decouperLesLignes, trame,
+  type AppelOutil, type FragmentAppelOutil,
+} from "./flux.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 
@@ -96,25 +100,6 @@ type ClientSupabase = SupabaseClient;
 /** Les arguments d'un outil viennent du modele, en JSON : rien n'est sur. */
 type ArgsOutil = Record<string, unknown>;
 
-/** Un appel d'outil tel qu'il ARRIVE : en morceaux, tout est optionnel. */
-interface FragmentAppelOutil {
-  id?: string;
-  index?: number;
-  type?: string;
-  function?: { name?: string; arguments?: string };
-  /* Gemini 3 joint ici sa signature de pensee. On ne la lit jamais : on
-     la transporte, parce qu'il refuse le tour suivant sans elle. */
-  extra_content?: Record<string, unknown>;
-}
-
-/** Un appel d'outil RECOLLE : tous ses morceaux sont arrives. */
-interface AppelOutil {
-  id: string;
-  type: string;
-  function: { name: string; arguments: string };
-  extra_content?: Record<string, unknown>;
-}
-
 /** Un message de la conversation envoyee au modele. */
 interface MessageIA {
   role: string;
@@ -122,11 +107,6 @@ interface MessageIA {
   tool_calls?: AppelOutil[];
   tool_call_id?: string;
   name?: string;
-}
-
-/** Un fragment du flux SSE renvoye par le fournisseur. */
-interface FragmentFlux {
-  choices?: Array<{ delta?: { content?: string; tool_calls?: FragmentAppelOutil[] } }>;
 }
 
 /* ── Les lignes lues en base, une par `select` ── */
@@ -760,9 +740,6 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
 }
 
 /** Une trame SSE au format que le client sait déjà lire. */
-function trame(contenu: string): string {
-  return `data: ${JSON.stringify({ choices: [{ delta: { content: contenu } }] })}\n\n`;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    POMPER UN TOUR : DIFFUSER LE TEXTE, RECOLLER LES OUTILS
@@ -795,45 +772,14 @@ async function pomperUnTour(
   while (true) {
     const { value, done } = await lecteur.read();
     if (done) break;
-    const morceau = reste + decodeur.decode(value, { stream: true });
-    const lignes = morceau.split("\n");
-    reste = lignes.pop() ?? "";
+    const decoupe = decouperLesLignes(reste, decodeur.decode(value, { stream: true }));
+    reste = decoupe.reste;
+    const lignes = decoupe.lignes;
     for (const ligne of lignes) {
-      if (!ligne.startsWith("data: ")) continue;
-      const charge = ligne.slice(6).trim();
-      if (!charge || charge === "[DONE]") continue;
-      let json: FragmentFlux;
-      try {
-        json = JSON.parse(charge);
-      } catch (_) {
-        continue;
-      }
-      const delta = json?.choices?.[0]?.delta;
-      if (!delta) continue;
-      if (delta.content) {
-        texte += delta.content;
-        controller.enqueue(encoder.encode(trame(delta.content)));
-      }
-      for (const appel of delta.tool_calls ?? []) {
-        const i = appel.index ?? 0;
-        if (!outils[i]) outils[i] = { id: "", type: "function", function: { name: "", arguments: "" } };
-        if (appel.id) outils[i].id = appel.id;
-        if (appel.function?.name) outils[i].function.name = appel.function.name;
-        if (appel.function?.arguments) outils[i].function.arguments += appel.function.arguments;
-        /* LA SIGNATURE DE PENSEE VOYAGE AVEC L APPEL, ET DOIT REVENIR AVEC LUI.
-
-           Gemini 3 joint a chaque appel d outil un `extra_content.google.
-           thought_signature`, et REFUSE le tour suivant si on ne le lui
-           rend pas : 400 INVALID_ARGUMENT, « Function call is missing a
-           thought_signature in functionCall parts ».
-
-           L ancienne boucle ne diffusait pas : elle repassait l objet
-           `tool_calls` du modele tel quel, donc la signature suivait sans
-           qu on ait a y penser. En recollant les morceaux du flux, on
-           reconstruit l objet — et il faut donc la recopier a la main. */
-        if (appel.extra_content) {
-          outils[i].extra_content = { ...(outils[i].extra_content ?? {}), ...appel.extra_content };
-        }
+      const absorbe = absorberLaLigne(ligne, { texte, outils });
+      texte = absorbe.tour.texte;
+      if (absorbe.aDiffuser) {
+        controller.enqueue(encoder.encode(trame(absorbe.aDiffuser)));
       }
     }
   }
