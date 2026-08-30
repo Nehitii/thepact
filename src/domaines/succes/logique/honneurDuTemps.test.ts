@@ -4,6 +4,14 @@ import {
   JOURS_HORS_DU_TEMPS, dureeEnHeures, honneursDuTemps, mesureDeLHonneur,
 } from "./honneurDuTemps";
 
+/* Les trois premieres distinctions se comptent depuis le DEPART, la
+   quatrieme depuis la CREATION. Ces deux raccourcis disent lequel des
+   deux un test fait varier. */
+const depuisLeDepart = (difficulte: string, heures: number | null) =>
+  honneursDuTemps(difficulte, heures, null);
+const depuisLaCreation = (difficulte: string, heures: number | null) =>
+  honneursDuTemps(difficulte, null, heures);
+
 describe("la duree mesuree", () => {
   it("compte les heures entre deux instants", () => {
     expect(dureeEnHeures("2026-09-15T10:00:00Z", "2026-09-15T13:30:00Z")).toBe(3.5);
@@ -33,72 +41,114 @@ describe("les quatre seuils", () => {
   });
 
   it("ne donne rien a un objectif ordinaire mene normalement", () => {
-    expect(honneursDuTemps("medium", 200)).toEqual([]);
-    expect(honneursDuTemps("hard", 10)).toEqual([]);
+    expect(honneursDuTemps("medium", 200, 200)).toEqual([]);
+    expect(honneursDuTemps("hard", 10, 10)).toEqual([]);
   });
 
   it("reserve le premier aux impossibles, sous un mois", () => {
-    expect(honneursDuTemps("impossible", 29 * 24)).toEqual(["cut_through_time"]);
-    expect(honneursDuTemps("impossible", 31 * 24)).toEqual([]);
-    expect(honneursDuTemps("extreme", 29 * 24)).toEqual([]);
+    expect(depuisLeDepart("impossible", 29 * 24)).toEqual(["cut_through_time"]);
+    expect(depuisLeDepart("impossible", 31 * 24)).toEqual([]);
+    expect(depuisLeDepart("extreme", 29 * 24)).toEqual([]);
   });
 
   /* LES DEUX SEUILS EXTREMES S EMBOITENT : sous 48 heures on gagne les
      deux, entre 48 et 72 on n en gagne qu un. Il n existe aucune duree
      qui donne « blood_of_resolve » sans « warping_path ». */
   it("emboite les deux extremes", () => {
-    expect(honneursDuTemps("extreme", 47)).toEqual(["warping_path", "blood_of_resolve"]);
-    expect(honneursDuTemps("extreme", 50)).toEqual(["warping_path"]);
-    expect(honneursDuTemps("extreme", 71)).toEqual(["warping_path"]);
-    expect(honneursDuTemps("extreme", 100)).toEqual([]);
+    expect(depuisLeDepart("extreme", 47)).toEqual(["warping_path", "blood_of_resolve"]);
+    expect(depuisLeDepart("extreme", 50)).toEqual(["warping_path"]);
+    expect(depuisLeDepart("extreme", 71)).toEqual(["warping_path"]);
+    expect(depuisLeDepart("extreme", 100)).toEqual([]);
     expect(HEURES_SANG_RESOLU).toBeLessThan(HEURES_CHEMIN_COURBE);
   });
 
   /* LES SEUILS SONT STRICTS : a l heure pile, le succes n est pas
      donne. Une seconde de moins, il l est. */
   it("refuse la valeur exacte du seuil", () => {
-    expect(honneursDuTemps("extreme", HEURES_SANG_RESOLU)).toEqual(["warping_path"]);
-    expect(honneursDuTemps("extreme", HEURES_SANG_RESOLU - 0.001))
+    expect(depuisLeDepart("extreme", HEURES_SANG_RESOLU)).toEqual(["warping_path"]);
+    expect(depuisLeDepart("extreme", HEURES_SANG_RESOLU - 0.001))
       .toEqual(["warping_path", "blood_of_resolve"]);
-    expect(honneursDuTemps("impossible", JOURS_HORS_DU_TEMPS * 24)).toEqual([]);
-    expect(honneursDuTemps("medium", HEURES_ECHO)).toEqual([]);
+    expect(depuisLeDepart("impossible", JOURS_HORS_DU_TEMPS * 24)).toEqual([]);
+    expect(depuisLaCreation("medium", HEURES_ECHO)).toEqual([]);
+    expect(depuisLaCreation("medium", HEURES_ECHO - 0.001)).toEqual(["echo_breaker"]);
   });
 
   /* L ORDRE EST CELUI DES QUATRE `if` D ORIGINE, et c est l ordre des
      notifications qui s empilent a l ecran. */
   it("garde l ordre des deblocages", () => {
-    expect(honneursDuTemps("extreme", 0))
+    expect(honneursDuTemps("extreme", 0, 0))
       .toEqual(["warping_path", "blood_of_resolve", "echo_breaker"]);
   });
 
-  /* ═══ UNE DUREE NULLE PASSE SOUS LES QUATRE SEUILS D UN COUP ═══
-   *
-   * C est ce qui rendait le repli sur l instant present dangereux : un
-   * objectif « impossible » sans date de depart repartait avec deux
-   * distinctions. Le repli est retire ; la regle, elle, reste — un
-   * achevement VRAIMENT instantane gagne toujours autant. */
   it("donne tout a un objectif impossible acheve en zero temps", () => {
-    expect(honneursDuTemps("impossible", 0)).toEqual(["cut_through_time", "echo_breaker"]);
-    expect(honneursDuTemps("extreme", 0))
+    expect(honneursDuTemps("impossible", 0, 0)).toEqual(["cut_through_time", "echo_breaker"]);
+    expect(honneursDuTemps("extreme", 0, 0))
       .toEqual(["warping_path", "blood_of_resolve", "echo_breaker"]);
-    expect(honneursDuTemps("medium", 0)).toEqual(["echo_breaker"]);
+    expect(honneursDuTemps("medium", 0, 0)).toEqual(["echo_breaker"]);
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   DEUX HORLOGES, ET ELLES NE DISENT PAS LA MEME CHOSE.
+
+   « Briseur d echo » se compte depuis la CREATION de la ligne — sa
+   definition en base le dit mot pour mot. Les trois autres se comptent
+   depuis le DEPART, qui se choisit a la main.
+
+   MESURE LE 30/08/2026, sur les 14 objectifs honores du compte :
+   depuis le depart, AUCUN ne passait sous les trois minutes ; depuis la
+   creation, DIX y passent.
+   ═══════════════════════════════════════════════════════════════ */
+describe("les deux horloges", () => {
+  /* Un objectif commence il y a des mois, mais cree et franchi dans le
+     meme geste : c est exactement ce que « briseur d echo » nomme. */
+  it("donne la signature a un objectif cree et franchi d un geste", () => {
+    expect(honneursDuTemps("medium", 5000, 0.01)).toEqual(["echo_breaker"]);
   });
 
-  it("donne aussi tout pour une duree negative", () => {
-    expect(honneursDuTemps("impossible", -100)).toEqual(["cut_through_time", "echo_breaker"]);
+  /* L inverse : une ligne ecrite il y a longtemps, dont le depart est
+     tout recent. Le travail a bien dure trois minutes — mais ce n est
+     pas ce que la distinction recompense. */
+  it("refuse la signature a un objectif ancien franchi vite", () => {
+    expect(honneursDuTemps("extreme", 0.01, 5000))
+      .toEqual(["warping_path", "blood_of_resolve"]);
+  });
+
+  /* CHAQUE HORLOGE SE TAIT SEPAREMENT. Un depart manquant n empeche pas
+     la signature ; une creation manquante n empeche pas le reste. */
+  it("laisse chaque horloge decider de son cote", () => {
+    expect(honneursDuTemps("extreme", null, 0.01)).toEqual(["echo_breaker"]);
+    expect(honneursDuTemps("extreme", 10, null)).toEqual(["warping_path", "blood_of_resolve"]);
+    expect(honneursDuTemps("extreme", null, null)).toEqual([]);
+  });
+
+  /* ═══ UN ECART NEGATIF PASSE ENCORE ═══
+     Un objectif acheve AVANT d avoir ete cree n est pas une performance
+     de trois minutes ; c est une ligne retrodatee. La comparaison ne le
+     distingue pas de zero. MESURE : sur les 14 objectifs honores, UN
+     porte un achevement anterieur a sa creation, de 3 161 heures.
+     Constate, non corrige. */
+  it("donne encore la signature a un achevement anterieur a la creation", () => {
+    expect(depuisLaCreation("medium", -3161)).toEqual(["echo_breaker"]);
+    expect(honneursDuTemps("impossible", -100, -100))
+      .toEqual(["cut_through_time", "echo_breaker"]);
   });
 });
 
 describe("d ou part la mesure", () => {
   const maintenant = new Date("2026-09-15T12:00:00Z");
 
-  it("part de la date de depart de l objectif", () => {
-    expect(mesureDeLHonneur({ difficulty: "extreme", start_date: "2026-09-10T08:00:00Z" }, maintenant))
-      .toEqual({
-        difficulte: "extreme",
-        depuis: "2026-09-10T08:00:00Z",
-        jusqua: "2026-09-15T12:00:00.000Z",
-      });
+  it("porte les deux instants et celui de l achevement", () => {
+    expect(mesureDeLHonneur({
+      difficulty: "extreme",
+      start_date: "2026-09-10T08:00:00Z",
+      created_at: "2026-09-01T06:00:00Z",
+    }, maintenant)).toEqual({
+      difficulte: "extreme",
+      depuis: "2026-09-10T08:00:00Z",
+      cree: "2026-09-01T06:00:00Z",
+      jusqua: "2026-09-15T12:00:00.000Z",
+    });
   });
 
   it("retombe sur « medium » quand la difficulte manque", () => {
@@ -114,71 +164,78 @@ describe("d ou part la mesure", () => {
    * garde, `||` la remplace par « medium ». Le balayage de mutations a
    * survecu a l echange, et la base explique pourquoi —
    * `goals.difficulty` est une ENUMERATION Postgres (`goal_difficulty`),
-   * qui refuse la chaine vide : la requete qui a tente de la comparer a
-   * ete rejetee avec « invalid input value for enum ». La divergence
-   * n est donc pas atteignable.
+   * qui refuse la chaine vide.
    *
    * ET MEME SI ELLE L ETAIT, elle ne changerait aucun succes : une
    * difficulte vide n est ni « impossible » ni « extreme », donc elle se
-   * comporte exactement comme « medium » pour les quatre regles. Le
-   * test epingle le choix, pas son effet. */
+   * comporte exactement comme « medium » pour les quatre regles. */
   it("garde une difficulte vide, que la base ne peut de toute facon pas produire", () => {
     expect(mesureDeLHonneur({ difficulty: "" }, maintenant).difficulte).toBe("");
-    expect(honneursDuTemps("", 0)).toEqual(honneursDuTemps(DIFFICULTE_PAR_DEFAUT, 0));
-    expect(honneursDuTemps("", 1000)).toEqual(honneursDuTemps(DIFFICULTE_PAR_DEFAUT, 1000));
+    expect(honneursDuTemps("", 0, 0)).toEqual(honneursDuTemps(DIFFICULTE_PAR_DEFAUT, 0, 0));
+    expect(honneursDuTemps("", 1000, 1000)).toEqual(honneursDuTemps(DIFFICULTE_PAR_DEFAUT, 1000, 1000));
   });
 
-  /* ═══ UN DEPART MANQUANT NE SE FABRIQUE PAS ═══
+  /* ═══ UN INSTANT MANQUANT NE SE FABRIQUE PAS ═══
    *
    * L appelant passait `goal.start_date || maintenant` : la duree valait
-   * alors ZERO, et zero passe sous les quatre seuils d un coup. Un
-   * objectif « impossible » sans date de depart repartait avec deux
-   * distinctions, un « extreme » avec trois.
-   *
-   * Le repli est retire : un depart inconnu rend `null`, et ce qui ne
-   * se mesure pas ne se gagne pas. */
-  it("rend un depart nul quand l objectif n en a pas", () => {
-    for (const but of [{ start_date: null }, { start_date: undefined }, { start_date: "" }, {}]) {
+   * alors ZERO, et zero passe sous les seuils. Le repli est retire — ce
+   * qui ne se mesure pas ne se gagne pas — et les deux colonnes se
+   * lisent de la meme facon. */
+  it("rend nuls les deux instants quand l objectif ne les porte pas", () => {
+    for (const but of [
+      { start_date: null, created_at: null },
+      { start_date: undefined, created_at: undefined },
+      { start_date: "", created_at: "" },
+      {},
+    ]) {
       const m = mesureDeLHonneur(but, maintenant);
       expect(m.depuis).toBeNull();
+      expect(m.cree).toBeNull();
       expect(m.jusqua).toBe("2026-09-15T12:00:00.000Z");
       expect(dureeEnHeures(m.depuis, m.jusqua)).toBeNull();
+      expect(dureeEnHeures(m.cree, m.jusqua)).toBeNull();
     }
   });
 
-  it("ne donne plus rien a un achevement dont on ignore le depart", () => {
+  it("ne donne plus rien a un achevement dont on ignore les deux instants", () => {
     for (const difficulte of ["impossible", "extreme", "medium"]) {
       const m = mesureDeLHonneur({ difficulty: difficulte }, maintenant);
-      expect(honneursDuTemps(m.difficulte, dureeEnHeures(m.depuis, m.jusqua))).toEqual([]);
+      expect(honneursDuTemps(
+        m.difficulte, dureeEnHeures(m.depuis, m.jusqua), dureeEnHeures(m.cree, m.jusqua),
+      )).toEqual([]);
     }
   });
 
-  /* CE QUE CELA DONNAIT AVANT, pour que le changement reste lisible :
-     une duree de zero — ce que le repli fabriquait — gagne toujours
-     autant. C est la duree INCONNUE qui ne gagne plus rien, pas la
-     duree nulle. */
   it("distingue une duree nulle d une duree inconnue", () => {
-    expect(honneursDuTemps("impossible", 0)).toEqual(["cut_through_time", "echo_breaker"]);
-    expect(honneursDuTemps("impossible", null)).toEqual([]);
+    expect(honneursDuTemps("impossible", 0, 0)).toEqual(["cut_through_time", "echo_breaker"]);
+    expect(honneursDuTemps("impossible", null, null)).toEqual([]);
   });
 
-  /* UNE DATE DE DEPART ILLISIBLE TOMBE AU MEME ENDROIT : elle donnerait
-     NaN heures, et NaN n est pas une mesure. */
-  it("traite une date de depart illisible comme un depart inconnu", () => {
+  /* UNE DATE ILLISIBLE TOMBE AU MEME ENDROIT : elle donnerait NaN
+     heures, et NaN n est pas une mesure. */
+  it("traite une date illisible comme un instant inconnu", () => {
     expect(dureeEnHeures("pas une date", "2026-09-15T12:00:00Z")).toBeNull();
-    expect(honneursDuTemps("extreme", dureeEnHeures("pas une date", "2026-09-15T12:00:00Z")))
-      .toEqual([]);
+    expect(honneursDuTemps(
+      "extreme",
+      dureeEnHeures("pas une date", "2026-09-15T12:00:00Z"),
+      dureeEnHeures("pas une date", "2026-09-15T12:00:00Z"),
+    )).toEqual([]);
   });
 
   /* CE REPLI EST DOMINE PAR LA BASE, AUJOURD HUI. Releve le 30/08/2026
      sur le compte : 38 objectifs, AUCUN sans date de depart, et la
-     colonne porte une valeur par defaut. Ce qui le rendrait vivant :
-     la colonne reste NULLABLE — une insertion qui pose explicitement
-     `start_date: null` suffirait. */
+     colonne `created_at` porte une valeur par defaut. Ce qui le rendrait
+     vivant : `start_date` reste NULLABLE. */
   it("ne se declenche pas quand la base a fait son travail", () => {
-    const m = mesureDeLHonneur({ difficulty: "impossible", start_date: "2026-01-01T00:00:00Z" }, maintenant);
+    const m = mesureDeLHonneur({
+      difficulty: "impossible",
+      start_date: "2026-01-01T00:00:00Z",
+      created_at: "2026-01-01T00:00:00Z",
+    }, maintenant);
     expect(m.depuis).not.toBe(m.jusqua);
     expect(dureeEnHeures(m.depuis, m.jusqua)).toBeGreaterThan(JOURS_HORS_DU_TEMPS * 24);
-    expect(honneursDuTemps(m.difficulte, dureeEnHeures(m.depuis, m.jusqua))).toEqual([]);
+    expect(honneursDuTemps(
+      m.difficulte, dureeEnHeures(m.depuis, m.jusqua), dureeEnHeures(m.cree, m.jusqua),
+    )).toEqual([]);
   });
 });

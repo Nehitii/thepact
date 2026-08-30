@@ -1,5 +1,7 @@
 import { supabase } from "@/socle/supabase/client";
-import { dureeEnHeures, honneursDuTemps } from "@/domaines/succes/logique/honneurDuTemps";
+import {
+  dureeEnHeures, honneursDuTemps, type MesureDeLHonneur,
+} from "@/domaines/succes/logique/honneurDuTemps";
 import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/socle/i18n/i18n";
@@ -112,17 +114,17 @@ export async function trackGoalCreated(userId: string, _difficulty?: string) {
 }
 
 // Track goal completion
-/* LE PREMIER INSTANT S APPELAIT `createdAt`, ET CE N EN EST PAS UN :
-   l appelant passe `start_date`. Un objectif peut etre cree en janvier
-   et commence en mars — les deux dates existent, et c est la seconde
-   qui compte ici. Renomme le 30/08/2026, sans rien changer d autre. */
-export async function trackGoalCompleted(userId: string, difficulty: string, depuis: string | null, jusqua: string) {
+/* LA MESURE ENTIERE, ET NON CINQ ARGUMENTS. Elle porte trois instants
+   — le depart, la creation, l achevement — et une difficulte ; les
+   deplier obligeait l appelant a les remettre dans le bon ordre, et
+   `depuis` et `cree` sont deux `string | null` que rien ne distingue
+   a l appel. Les seuils, l ordre des deblocages et la raison des DEUX
+   horloges vivent dans logique/honneurDuTemps.ts. */
+export async function trackGoalCompleted(userId: string, m: MesureDeLHonneur) {
   await supabase.rpc('resynchroniser_compteurs_succes');
-
-  /* Ces quatre-la se jugent sur le temps mis, pas sur un decompte :
-     elles restent attachees a l instant du franchissement. Les seuils
-     et l ordre des deblocages vivent dans logique/honneurDuTemps.ts. */
-  for (const succes of honneursDuTemps(difficulty, dureeEnHeures(depuis, jusqua))) {
+  for (const succes of honneursDuTemps(
+    m.difficulte, dureeEnHeures(m.depuis, m.jusqua), dureeEnHeures(m.cree, m.jusqua),
+  )) {
     await unlockAchievement(userId, succes);
   }
 

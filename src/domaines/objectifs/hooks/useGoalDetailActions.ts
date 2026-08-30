@@ -321,7 +321,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         /* Le choix de l instant de depart, et ce que vaut son absence,
            sont dans logique/honneurDuTemps.ts. */
         const mesure = mesureDeLHonneur(goal, new Date());
-        setTimeout(() => trackGoalCompleted(userId, mesure.difficulte, mesure.depuis, mesure.jusqua), 0);
+        setTimeout(() => trackGoalCompleted(userId, mesure), 0);
       }
       toast.success(t("goals.detail.toasts.goalDone"), { description: t("goals.detail.toasts.goalDoneBody") });
     },

@@ -36,16 +36,52 @@ export function dureeEnHeures(depuis: string | null | undefined, jusqua: string)
   return Number.isNaN(heures) ? null : heures;
 }
 
-/* L ORDRE DE LA LISTE EST L ORDRE DES DEBLOCAGES. Il etait celui des
-   quatre `if` ; le changer changerait l ordre des notifications. */
-export function honneursDuTemps(difficulte: string, heures: number | null): string[] {
-  /* CE QUI NE SE MESURE PAS NE SE GAGNE PAS. */
-  if (heures === null) return [];
+/* ═══════════════════════════════════════════════════════════════
+   DEUX DUREES, PAS UNE — ET C EST LA BASE QUI LE DIT.
+
+   Les trois premieres distinctions parlent du TEMPS MIS : « franchir
+   un objectif extreme en 48 heures » se compte depuis son depart.
+
+   « Briseur d echo » ne dit pas cela. Sa definition, mot pour mot
+   dans `achievement_definitions` : « Franchissez un objectif dans
+   les 3 minutes suivant SA CREATION ». Ce n est pas une duree de
+   travail, c est une signature : creer et franchir d un seul geste.
+
+   Les deux instants ne sont pas le meme. Un objectif peut etre cree
+   en janvier et commence en mars — la colonne `start_date` se
+   choisit a la main, `created_at` non.
+
+   MESURE LE 30/08/2026, sur les 14 objectifs honores du compte :
+   depuis le depart, AUCUN ne passait sous les trois minutes ; depuis
+   la creation, DIX y passent. La distinction n etait pas dure a
+   obtenir, elle etait mesuree sur la mauvaise horloge.
+
+   L ORDRE DE LA LISTE EST L ORDRE DES DEBLOCAGES. Il etait celui des
+   quatre `if` ; le changer changerait l ordre des notifications.
+   ═══════════════════════════════════════════════════════════════ */
+export function honneursDuTemps(
+  difficulte: string,
+  heuresDepuisLeDepart: number | null,
+  heuresDepuisLaCreation: number | null,
+): string[] {
   const gagnes: string[] = [];
-  if (difficulte === "impossible" && heures / 24 < JOURS_HORS_DU_TEMPS) gagnes.push("cut_through_time");
-  if (difficulte === "extreme" && heures < HEURES_CHEMIN_COURBE) gagnes.push("warping_path");
-  if (difficulte === "extreme" && heures < HEURES_SANG_RESOLU) gagnes.push("blood_of_resolve");
-  if (heures < HEURES_ECHO) gagnes.push("echo_breaker");
+  /* CE QUI NE SE MESURE PAS NE SE GAGNE PAS — et les deux horloges
+     se taisent separement : un depart manquant n empeche pas la
+     signature, une creation manquante n empeche pas le reste. */
+  if (heuresDepuisLeDepart !== null) {
+    if (difficulte === "impossible" && heuresDepuisLeDepart / 24 < JOURS_HORS_DU_TEMPS) gagnes.push("cut_through_time");
+    if (difficulte === "extreme" && heuresDepuisLeDepart < HEURES_CHEMIN_COURBE) gagnes.push("warping_path");
+    if (difficulte === "extreme" && heuresDepuisLeDepart < HEURES_SANG_RESOLU) gagnes.push("blood_of_resolve");
+  }
+  /* ═══ UN ECART NEGATIF PASSE ENCORE ═══
+     Un objectif achevé AVANT d avoir ete cree n est pas une
+     performance de trois minutes ; c est une ligne retrodatee. La
+     comparaison ne le distingue pas de zero.
+
+     MESURE : sur les 14 objectifs honores, UN porte un achevement
+     anterieur a sa creation — de 3 161 heures. Constate, non
+     corrige : exiger un ecart positif est une seconde decision. */
+  if (heuresDepuisLaCreation !== null && heuresDepuisLaCreation < HEURES_ECHO) gagnes.push("echo_breaker");
   return gagnes;
 }
 
@@ -79,12 +115,16 @@ export function honneursDuTemps(difficulte: string, heures: number | null): stri
 export interface ButAHonorer {
   difficulty?: string | null;
   start_date?: string | null;
+  /* L instant ou la LIGNE a ete ecrite, que personne ne choisit. */
+  created_at?: string | null;
 }
 
 export interface MesureDeLHonneur {
   difficulte: string;
   /** `null` quand l objectif n a pas de date de depart. */
   depuis: string | null;
+  /** `null` quand la ligne ne porte pas sa date d ecriture. */
+  cree: string | null;
   jusqua: string;
 }
 
@@ -97,9 +137,10 @@ export const DIFFICULTE_PAR_DEFAUT = "medium";
 export function mesureDeLHonneur(but: ButAHonorer, maintenant: Date): MesureDeLHonneur {
   return {
     difficulte: but.difficulty ?? DIFFICULTE_PAR_DEFAUT,
-    /* Le OU logique, et non `??` : une date de depart vide vaut une
-       date de depart absente. */
+    /* Le OU logique, et non `??` : une date vide vaut une date
+       absente. Les deux se lisent pareil. */
     depuis: but.start_date || null,
+    cree: but.created_at || null,
     jusqua: maintenant.toISOString(),
   };
 }
