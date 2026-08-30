@@ -18,6 +18,7 @@ import {
 } from "./flux.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 import { drapeauOuvert } from "../_shared/drapeau.ts";
+import { bornesDeLEvenement, choixOuDefaut, drapeau, valeurOuNulle } from "./charges.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -233,12 +234,12 @@ async function runTool(
       const payload: Record<string, unknown> = {
         pact_id,
         name: nm,
-        difficulty: args?.difficulty ?? "medium",
+        difficulty: choixOuDefaut(args?.difficulty, "medium"),
         goal_type: "normal",
         total_steps: totalSteps,
-        notes: args?.notes ?? null,
-        deadline: args?.deadline ?? null,
-        life_area_id: args?.life_area_id ?? null,
+        notes: valeurOuNulle(args?.notes),
+        deadline: valeurOuNulle(args?.deadline),
+        life_area_id: valeurOuNulle(args?.life_area_id),
       };
       const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
       if (error) {
@@ -259,11 +260,11 @@ async function runTool(
         pact_id,
         name: nm,
         goal_type: "habit",
-        difficulty: args?.difficulty ?? "medium",
+        difficulty: choixOuDefaut(args?.difficulty, "medium"),
         habit_duration_days: days,
         habit_checks: Array(days).fill(false),
         total_steps: days,
-        life_area_id: args?.life_area_id ?? null,
+        life_area_id: valeurOuNulle(args?.life_area_id),
       };
       const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
       if (error) {
@@ -279,10 +280,10 @@ async function runTool(
       const { data, error } = await supabase.from("todo_tasks").insert({
         user_id: userId,
         name: nm,
-        deadline: args?.deadline ?? null,
-        priority: args?.priority ?? "medium",
-        is_urgent: !!args?.is_urgent,
-        category: args?.category ?? "general",
+        deadline: valeurOuNulle(args?.deadline),
+        priority: choixOuDefaut(args?.priority, "medium"),
+        is_urgent: drapeau(args?.is_urgent),
+        category: choixOuDefaut(args?.category, "general"),
         task_type: "flexible",
       }).select("id,name").single();
       if (error) {
@@ -488,21 +489,20 @@ async function runTool(
 
     if (name === "create_calendar_event") {
       const titre = texteBorne(args?.title);
-      const debut = args?.start_time ? new Date(String(args.start_time)) : null;
-      if (!debut || Number.isNaN(debut.getTime())) {
+      const bornes = bornesDeLEvenement(args?.start_time, args?.end_time);
+      if (!bornes) {
         receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: "début illisible" };
         return JSON.stringify({ error: "start_time invalide" });
       }
-      const fin = args?.end_time ? new Date(String(args.end_time)) : new Date(debut.getTime() + 3600000);
       const { data, error } = await supabase
         .from("calendar_events")
         .insert({
           user_id: userId,
           title: titre,
-          start_time: debut.toISOString(),
-          end_time: fin.toISOString(),
-          all_day: !!args?.all_day,
-          location: args?.location ?? null,
+          start_time: bornes.debut.toISOString(),
+          end_time: bornes.fin.toISOString(),
+          all_day: drapeau(args?.all_day),
+          location: valeurOuNulle(args?.location),
         })
         .select("id,title,start_time")
         .single();
@@ -534,7 +534,7 @@ async function runTool(
           name: nm,
           estimated_cost: args?.estimated_cost ?? null,
           category: args?.category ?? null,
-          url: args?.url ?? null,
+          url: valeurOuNulle(args?.url),
         })
         .select("id,name")
         .single();
