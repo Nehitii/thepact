@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+  commandesFiltrees, indexBorne, indexSuivant, placementDuMenu,
+  requeteOblique, versLeHaut,
+} from "@/domaines/journal/logique/menuOblique";
 import { useEditor, useEditorState, EditorContent } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -67,8 +71,6 @@ type EtatSlash = {
   requete: string; depuis: number; jusqu: number;
   x: number; y: number; versLeHaut: boolean;
 };
-
-const HAUTEUR_SLASH = 264;
 
 /* ── Un outil de la barre ──────────────────────────────────── */
 function Outil({
@@ -267,26 +269,26 @@ export function JournalEditor({
         return;
       }
       const avant = $from.parent.textBetween(0, $from.parentOffset, "\n", "￼");
-      const trouve = /^\/([\p{L}\p{N}]*)$/u.exec(avant);
+      const trouve = requeteOblique(avant);
       if (!trouve) {
         ecarte.current = null;
         setSlash(null);
         return;
       }
-      const depuis = $from.pos - trouve[0].length;
+      const depuis = $from.pos - trouve.longueur;
       if (ecarte.current === depuis) {
         setSlash(null);
         return;
       }
       const boite = editor.view.coordsAtPos(depuis);
-      const versLeHaut = boite.bottom + HAUTEUR_SLASH > window.innerHeight;
+      const haut = versLeHaut(boite.bottom, window.innerHeight);
       setSlash({
-        requete: trouve[1],
+        requete: trouve.requete,
         depuis,
         jusqu: $from.pos,
         x: boite.left,
-        y: versLeHaut ? boite.top : boite.bottom,
-        versLeHaut,
+        y: haut ? boite.top : boite.bottom,
+        versLeHaut: haut,
       });
       setSlashIdx(0);
     };
@@ -301,12 +303,10 @@ export function JournalEditor({
 
   const items = useMemo(() => {
     if (!slash) return [];
-    const q = slash.requete.toLowerCase();
-    if (!q) return COMMANDES;
-    return COMMANDES.filter((c) => `${t(`journal.ed.${c.id}`)} ${c.cles}`.toLowerCase().includes(q));
+    return commandesFiltrees(COMMANDES, slash.requete, (c) => t(`journal.ed.${c.id}`));
   }, [slash, COMMANDES, t]);
 
-  const idx = items.length ? Math.min(slashIdx, items.length - 1) : 0;
+  const idx = indexBorne(slashIdx, items.length);
 
   const choisir = useCallback((i: number) => {
     if (!editor || !slash) return;
@@ -326,11 +326,7 @@ export function JournalEditor({
 
   clavier.current = {
     slashOuvert: !!slash && items.length > 0,
-    bouger: (d) => setSlashIdx((v) => {
-      const n = items.length;
-      if (!n) return 0;
-      return (Math.min(v, n - 1) + d + n) % n;
-    }),
+    bouger: (d) => setSlashIdx((v) => indexSuivant(v, d, items.length)),
     valider: () => choisir(idx),
     fermer: () => { ecarte.current = slash?.depuis ?? null; setSlash(null); },
     lien: ouvrirLien,
@@ -631,11 +627,10 @@ export function JournalEditor({
           className="jr-slash"
           role="listbox"
           aria-label={t("journal.ed.inserer")}
-          style={{
-            left: Math.max(8, Math.min(slash.x, window.innerWidth - 268)),
-            top: slash.versLeHaut ? undefined : slash.y + 6,
-            bottom: slash.versLeHaut ? window.innerHeight - slash.y + 6 : undefined,
-          }}
+          style={placementDuMenu(slash, {
+            largeur: window.innerWidth,
+            hauteur: window.innerHeight,
+          })}
         >
           <div className="jr-slash-tete">{t("journal.ed.inserer")}</div>
           {items.map((c, i) => {

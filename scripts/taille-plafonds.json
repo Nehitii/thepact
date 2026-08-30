@@ -5,7 +5,7 @@
   "src/domaines/appel/pages/TheCall.tsx": 809,
   "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 606,
   "src/domaines/focus/pages/Focus.tsx": 659,
-  "src/domaines/journal/composants/JournalEditor.tsx": 666,
+  "src/domaines/journal/composants/JournalEditor.tsx": 661,
   "src/domaines/journal/composants/JournalNewEntryModal.tsx": 564,
   "src/domaines/mia/composants/MiaConsole.tsx": 806,
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 478,
