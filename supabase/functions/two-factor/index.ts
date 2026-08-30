@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
+import {
+  base32Encode, codeParCourrielValide, expirationDuCode, generate6DigitCode,
+  generateDeviceToken, generateRecoveryCodes, sha256Hex, totpVerify,
+  peutRedemanderUnCode, tropDeTentatives,
+} from "./totp.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,131 +35,14 @@ function jsonResponse(body: Json, status = 200) {
   });
 }
 
-function base32Alphabet() {
-  return "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-}
-
-function base32Encode(bytes: Uint8Array): string {
-  const alphabet = base32Alphabet();
-  let bits = 0;
-  let value = 0;
-  let output = "";
-
-  for (const b of bytes) {
-    value = (value << 8) | b;
-    bits += 8;
-    while (bits >= 5) {
-      output += alphabet[(value >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) output += alphabet[(value << (5 - bits)) & 31];
-  return output;
-}
-
-function base32Decode(input: string): Uint8Array {
-  const alphabet = base32Alphabet();
-  const clean = input.toUpperCase().replace(/=+$/g, "").replace(/\s+/g, "");
-
-  let bits = 0;
-  let value = 0;
-  const out: number[] = [];
-  for (const ch of clean) {
-    const idx = alphabet.indexOf(ch);
-    if (idx === -1) continue;
-    value = (value << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      out.push((value >>> (bits - 8)) & 255);
-      bits -= 8;
-    }
-  }
-  return new Uint8Array(out);
-}
-
-async function sha256Hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function toBigEndianCounter(counter: number): Uint8Array {
-  const buf = new ArrayBuffer(8);
-  const view = new DataView(buf);
-  const hi = Math.floor(counter / 0x100000000);
-  const lo = counter >>> 0;
-  view.setUint32(0, hi);
-  view.setUint32(4, lo);
-  return new Uint8Array(buf);
-}
-
-async function hotp(secretB32: string, counter: number, digits = 6): Promise<string> {
-  const keyBytes = base32Decode(secretB32);
-  const keyBuf = new ArrayBuffer(keyBytes.length);
-  new Uint8Array(keyBuf).set(keyBytes);
-
-  const counterBytes = toBigEndianCounter(counter);
-  const counterBuf = new ArrayBuffer(counterBytes.length);
-  new Uint8Array(counterBuf).set(counterBytes);
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBuf,
-    { name: "HMAC", hash: "SHA-1" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, counterBuf);
-  const hmac = new Uint8Array(sig);
-  const offset = hmac[hmac.length - 1] & 0x0f;
-  const binCode =
-    ((hmac[offset] & 0x7f) << 24) |
-    ((hmac[offset + 1] & 0xff) << 16) |
-    ((hmac[offset + 2] & 0xff) << 8) |
-    (hmac[offset + 3] & 0xff);
-  return (binCode % 10 ** digits).toString().padStart(digits, "0");
-}
-
-async function totpVerify(secretB32: string, code: string, opts?: { step?: number; window?: number }) {
-  const step = opts?.step ?? 30;
-  const window = opts?.window ?? 1;
-  const normalized = code.replace(/\s+/g, "");
-  if (!/^\d{6}$/.test(normalized)) return false;
-
-  const now = Math.floor(Date.now() / 1000);
-  const counter = Math.floor(now / step);
-  for (let w = -window; w <= window; w++) {
-    const expected = await hotp(secretB32, counter + w, 6);
-    if (expected === normalized) return true;
-  }
-  return false;
-}
-
-function generateRecoveryCodes(count = 10): string[] {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const codes: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const bytes = crypto.getRandomValues(new Uint8Array(10));
-    let raw = "";
-    for (const b of bytes) raw += alphabet[b % alphabet.length];
-    codes.push(`${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 10)}`);
-  }
-  return codes;
-}
-
-function generateDeviceToken(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function generate6DigitCode(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(4));
-  const num = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
-  return (num % 1000000).toString().padStart(6, "0");
-}
+/* LE CŒUR PUR DU SECOND FACTEUR VIT DANS `totp.ts`.
+ *
+ * Base32, HOTP, TOTP et les quatre generateurs en sont sortis pour
+ * une seule raison : ce fichier-ci est INTESTABLE — il importe
+ * depuis esm.sh et lit Deno.env des sa premiere ligne — tandis que
+ * ce qu il en reste peut etre confronte aux vecteurs officiels de
+ * la RFC 4226. Ce sont les fonctions qui decident si quelqu un
+ * entre : elles meritaient de pouvoir etre relues. */
 
 async function sendEmailViaResend(to: string, code: string): Promise<boolean> {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -378,14 +266,17 @@ Deno.serve(async (req) => {
 
       // Try Email code
       if (!ok && emailCode && settings.emailEnabled) {
-        if (settings.emailCodeAttempts >= 5) {
+        if (tropDeTentatives(settings.emailCodeAttempts)) {
           return jsonResponse({ error: "Too many attempts. Request a new code." }, 429);
         }
 
+        /* LES TROIS MEMES CONDITIONS QU AU CHEMIN « confirm_email_2fa »,
+           mais sur une saisie DEBARRASSEE DE SES BLANCS — la, elle ne
+           l est pas. Un code colle avec une espace passe donc ici et
+           pas la-bas. Constate, non corrige : voir totp.ts. */
         const codeHash = await sha256Hex(emailCode.trim());
-        const expiresAt = settings.emailCodeExpiresAt ? new Date(settings.emailCodeExpiresAt).getTime() : 0;
 
-        if (settings.emailCode && codeHash === settings.emailCode && expiresAt > Date.now()) {
+        if (codeParCourrielValide(codeHash, settings.emailCode, settings.emailCodeExpiresAt, Date.now())) {
           ok = true;
           // Clear the used code
           await supabaseAdmin
@@ -466,7 +357,7 @@ Deno.serve(async (req) => {
 
       const code = generate6DigitCode();
       const codeHash = await sha256Hex(code);
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      const expiresAt = expirationDuCode(Date.now());
 
       // Store hashed code
       await supabaseAdmin
@@ -489,12 +380,12 @@ Deno.serve(async (req) => {
       const emailCode = typeof body.code === "string" ? body.code.trim() : "";
 
       if (!emailCode) return jsonResponse({ error: "Missing code" }, 400);
-      if (settings.emailCodeAttempts >= 5) return jsonResponse({ error: "Too many attempts" }, 429);
+      if (tropDeTentatives(settings.emailCodeAttempts)) return jsonResponse({ error: "Too many attempts" }, 429);
 
+      /* SANS `.trim()`, contrairement au chemin « verify ». */
       const codeHash = await sha256Hex(emailCode);
-      const expiresAt = settings.emailCodeExpiresAt ? new Date(settings.emailCodeExpiresAt).getTime() : 0;
 
-      if (!settings.emailCode || codeHash !== settings.emailCode || expiresAt <= Date.now()) {
+      if (!codeParCourrielValide(codeHash, settings.emailCode, settings.emailCodeExpiresAt, Date.now())) {
         await supabaseAdmin
           .from("user_2fa_settings")
           .update({ email_code_attempts: settings.emailCodeAttempts + 1 })
@@ -530,17 +421,15 @@ Deno.serve(async (req) => {
       const settings = await getSettings();
       if (!settings.emailEnabled) return jsonResponse({ error: "Email 2FA not enabled" }, 400);
 
-      // Rate limit: check if last code was sent < 60s ago
-      if (settings.emailCodeExpiresAt) {
-        const lastSentAt = new Date(settings.emailCodeExpiresAt).getTime() - 5 * 60 * 1000; // sent = expires - 5min
-        if (Date.now() - lastSentAt < 60 * 1000) {
-          return jsonResponse({ error: "Please wait before requesting another code" }, 429);
-        }
+      /* Un code par minute : voir peutRedemanderUnCode dans totp.ts,
+         qui porte aussi la deduction de l heure d envoi. */
+      if (!peutRedemanderUnCode(settings.emailCodeExpiresAt, Date.now())) {
+        return jsonResponse({ error: "Please wait before requesting another code" }, 429);
       }
 
       const code = generate6DigitCode();
       const codeHash = await sha256Hex(code);
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      const expiresAt = expirationDuCode(Date.now());
 
       await supabaseAdmin
         .from("user_2fa_settings")

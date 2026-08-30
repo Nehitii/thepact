@@ -25,7 +25,14 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    include: ["src/**/*.test.{ts,tsx}"],
+    /* LES FONCTIONS EDGE ETAIENT HORS DE PORTEE DES TESTS.
+       Ce motif ne couvrait que `src/`, et les deux fonctions de
+       `supabase/functions` — deux mille cent lignes, dont tout le
+       second facteur — n avaient donc aucun filet possible : y ecrire
+       un test n aurait rien execute. Leur cœur pur vit maintenant a
+       cote de leur `index.ts`, qui, lui, reste intestable (il importe
+       depuis esm.sh et lit Deno.env). */
+    include: ["src/**/*.test.{ts,tsx}", "supabase/functions/**/*.test.ts"],
     /* Les feuilles de style importées par les composants ne sont pas
        traitées : on teste du comportement, pas du rendu visuel — et
        celui-ci se mesure dans le navigateur, pas ici. */
