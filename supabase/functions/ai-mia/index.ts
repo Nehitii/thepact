@@ -2,6 +2,11 @@
 // Persists user + assistant messages in mia_messages, supports tool calls.
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import {
+  BORNES, ilYAJours, jourDe, joursEcoules, joursRestants, limiteDemandee,
+  LONGUEUR_EXTRAIT_JOURNAL, LONGUEUR_EXTRAIT_MEMOIRE, nombreBorne, nomBorne,
+  texteBorne,
+} from "./bornes.ts";
 import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 import { drapeauOuvert } from "../_shared/drapeau.ts";
 
@@ -64,387 +69,14 @@ Pas de conseil médical, légal ou financier réglementé sans un rappel de prud
 const RAPPEL_VOIX =
   "Rappel : tu tutoies (jamais « vous »), et tu réponds en deux à quatre phrases sans liste à puces, sauf si la réponse est vraiment une liste.";
 
-const TOOLS = [
-  {
-    type: "function",
-    function: {
-      name: "list_active_goals",
-      description: "Liste les goals en cours et à démarrer du user (max 20, triés in_progress puis not_started, focus en tête). Retourne id, nom, difficulté, progression, pact_id, is_active_pact.",
-      parameters: { type: "object", properties: { limit: { type: "number", default: 20 } } },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_recent_journal",
-      description: "Liste les 10 dernières entrées de journal (titre, mood, extrait).",
-      parameters: { type: "object", properties: { limit: { type: "number", default: 10 } } },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_user_values",
-      description: "Récupère les valeurs et domaines de vie de l'utilisateur.",
-      parameters: { type: "object", properties: {} },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "search_memory",
-      description: "Recherche sémantique dans la mémoire long-terme du user (journal, reviews, decisions indexés).",
-      parameters: {
-        type: "object",
-        properties: { query: { type: "string" } },
-        required: ["query"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_todo",
-      description: "Crée une tâche todo pour l'utilisateur. Utiliser uniquement si le user demande explicitement d'ajouter une tâche.",
-      parameters: {
-        type: "object",
-        properties: {
-          name: { type: "string", description: "Intitulé de la tâche (max 200 chars)" },
-          deadline: { type: "string", description: "Date ISO (YYYY-MM-DD) optionnelle" },
-          priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" },
-          is_urgent: { type: "boolean", default: false },
-          category: { type: "string", default: "general" },
-        },
-        required: ["name"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_journal_entry",
-      description: "Ajoute une entrée de journal. Réservé aux moments où le user demande explicitement de noter une réflexion.",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          content: { type: "string" },
-          mood: { type: "string", description: "ex: reflective, joyful, anxious, focused" },
-        },
-        required: ["title", "content"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "list_pacts",
-      description: "Liste les pactes du user (id, nom, mantra, couleur). Utile avant create_goal pour choisir le pact_id.",
-      parameters: { type: "object", properties: {} },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_goal",
-      description: "Crée un nouveau goal (mission classique, pas une habitude). Demande pact_id (via list_pacts si inconnu).",
-      parameters: {
-        type: "object",
-        properties: {
-          pact_id: { type: "string", description: "UUID du pacte parent" },
-          name: { type: "string", description: "Nom du goal (max 200 chars)" },
-          difficulty: { type: "string", enum: ["easy", "medium", "hard", "extreme", "epic", "ultimate"], default: "medium" },
-          total_steps: { type: "number", description: "Nombre d'étapes prévues (>= 1)", default: 1 },
-          deadline: { type: "string", description: "Date ISO YYYY-MM-DD optionnelle" },
-          notes: { type: "string", description: "Description / contexte optionnel" },
-          life_area_id: { type: "string", description: "UUID du domaine de vie optionnel" },
-        },
-        required: ["pact_id", "name"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_habit_goal",
-      description: "Crée une habitude (goal de type 'habit') avec une durée en jours. Demande pact_id (via list_pacts).",
-      parameters: {
-        type: "object",
-        properties: {
-          pact_id: { type: "string" },
-          name: { type: "string" },
-          habit_duration_days: { type: "number", description: "Durée en jours (7-365)", default: 21 },
-          difficulty: { type: "string", enum: ["easy", "medium", "hard", "extreme", "epic", "ultimate"], default: "medium" },
-          life_area_id: { type: "string" },
-        },
-        required: ["pact_id", "name"],
-      },
-    },
-  },
-  /* ═════════════ LES MAINS ═════════════
-     M.I.A avait treize outils, dont QUATRE MORTS :
+import { TOOLS } from "./outils.ts";
+import {
+  OUTILS_LECTURE_SEULE, OUTILS_QUI_ECRIVENT, verifierLaClassification,
+} from "./classement.ts";
 
-       list_recent_habits      habit_logs : 0 ligne
-       list_life_areas         life_areas : 0 ligne
-       create_decision         decisions  : 0 ligne
-       list_recent_transactions  bank_transactions N'EXISTE PAS —
-                               la requête échouait en silence et
-                               renvoyait [] depuis toujours
-
-     Et ses cinq outils d'écriture commençaient TOUS par `create` :
-     elle savait ajouter une tâche, elle ne savait pas en cocher une.
-
-     ELLE ÉCRIT, ELLE NE DÉTRUIT PAS. Aucun outil de suppression ni
-     d'archivage n'existe ici, et c'est la garantie : ce qui n'est pas
-     outillé ne peut pas arriver. Tout ce qu'elle fait se défait à la
-     main en un geste — décocher, replanifier, supprimer une ligne.
-
-     Chaque outil passe par le client `supabase` de l'utilisateur, celui
-     qui porte son jeton : les politiques RLS gardent le dernier mot. */
-
-  /* ── ÉTAPES ── */
-  {
-    type: "function",
-    function: {
-      name: "list_steps",
-      description:
-        "Liste les étapes d'un objectif, ou toutes les étapes en attente si aucun objectif n'est précisé. Retourne id, titre, statut, échéance, nom de l'objectif.",
-      parameters: {
-        type: "object",
-        properties: {
-          goal_id: { type: "string", description: "UUID de l'objectif. Omettre pour toutes les étapes en attente." },
-          only_pending: { type: "boolean", default: true },
-          limit: { type: "number", default: 40 },
-        },
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "complete_step",
-      description:
-        "Coche une étape comme faite. Demander l'identifiant via list_steps avant, jamais deviner.",
-      parameters: {
-        type: "object",
-        properties: { step_id: { type: "string" } },
-        required: ["step_id"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "add_step",
-      description: "Ajoute une étape à un objectif existant, en fin de liste.",
-      parameters: {
-        type: "object",
-        properties: {
-          goal_id: { type: "string" },
-          title: { type: "string", description: "Intitulé (max 200 caractères)" },
-          due_date: { type: "string", description: "Échéance ISO (YYYY-MM-DD), facultative" },
-        },
-        required: ["goal_id", "title"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "reschedule_step",
-      description: "Déplace l'échéance d'une étape.",
-      parameters: {
-        type: "object",
-        properties: {
-          step_id: { type: "string" },
-          due_date: { type: "string", description: "Nouvelle échéance ISO (YYYY-MM-DD), ou null pour l'enlever" },
-        },
-        required: ["step_id"],
-      },
-    },
-  },
-
-  /* ── TÂCHES ── */
-  {
-    type: "function",
-    function: {
-      name: "list_todos",
-      description: "Liste les tâches ouvertes de l'utilisateur, échéance la plus proche en tête.",
-      parameters: {
-        type: "object",
-        properties: {
-          include_done: { type: "boolean", default: false },
-          limit: { type: "number", default: 30 },
-        },
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "complete_todo",
-      description: "Coche une tâche comme faite. Demander l'identifiant via list_todos avant.",
-      parameters: {
-        type: "object",
-        properties: { todo_id: { type: "string" } },
-        required: ["todo_id"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "reschedule_todo",
-      description: "Déplace l'échéance d'une tâche.",
-      parameters: {
-        type: "object",
-        properties: {
-          todo_id: { type: "string" },
-          deadline: { type: "string", description: "Nouvelle échéance ISO (YYYY-MM-DD), ou null pour l'enlever" },
-        },
-        required: ["todo_id"],
-      },
-    },
-  },
-
-  /* ── FOCUS ── */
-  {
-    type: "function",
-    function: {
-      name: "focus_summary",
-      description:
-        "Séances de concentration terminées sur les N derniers jours : total de minutes, nombre de séances, répartition par jour.",
-      parameters: { type: "object", properties: { days: { type: "number", default: 7 } } },
-    },
-  },
-
-  /* ── SANTÉ ── */
-  {
-    type: "function",
-    function: {
-      name: "health_summary",
-      description:
-        "Relevés de santé des N derniers jours : sommeil, énergie, stress, hydratation, mouvement, humeur, plus la série de pointages.",
-      parameters: { type: "object", properties: { days: { type: "number", default: 14 } } },
-    },
-  },
-
-  /* ── AGENDA ── */
-  {
-    type: "function",
-    function: {
-      name: "list_calendar_events",
-      description: "Évènements de l'agenda sur une fenêtre de jours autour d'aujourd'hui.",
-      parameters: {
-        type: "object",
-        properties: {
-          days_ahead: { type: "number", default: 14 },
-          days_back: { type: "number", default: 0 },
-        },
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_calendar_event",
-      description: "Pose un évènement dans l'agenda.",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          start_time: { type: "string", description: "Début, ISO 8601 complet" },
-          end_time: { type: "string", description: "Fin, ISO 8601 complet. Par défaut une heure après le début." },
-          all_day: { type: "boolean", default: false },
-          location: { type: "string" },
-        },
-        required: ["title", "start_time"],
-      },
-    },
-  },
-
-  /* ── SOUHAITS ── */
-  {
-    type: "function",
-    function: {
-      name: "list_wishlist",
-      description: "Liste des souhaits, non acquis d'abord, avec coût estimé et priorité.",
-      parameters: { type: "object", properties: { limit: { type: "number", default: 30 } } },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "add_wishlist_item",
-      description: "Ajoute un souhait à la liste.",
-      parameters: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          estimated_cost: { type: "number" },
-          category: { type: "string" },
-          url: { type: "string" },
-        },
-        required: ["name"],
-      },
-    },
-  },
-
-  /* ── FINANCE ──
-     Remplace list_recent_transactions, qui interrogeait une table
-     inexistante. Ce que la base contient vraiment : un bilan mensuel et
-     des récurrents. */
-  {
-    type: "function",
-    function: {
-      name: "finance_summary",
-      description:
-        "Bilan financier : le mois courant (revenus, charges fixes et variables, épargne, reste) et les récurrents actifs.",
-      parameters: { type: "object", properties: { months: { type: "number", default: 3 } } },
-    },
-  },
-];
-
-/* ═══ CE QUI ÉCRIT, ET CE QUI SE CONTENTE DE LIRE ═══
-
-   Le drapeau `mia_write_tools` (`coach_write_tools` jusqu'au 27/08)
-   existe depuis mai et disait « Permet au coach IA de créer
-   todos/journal/decisions ». Personne ne le lisait :
-   M.I.A écrivait quoi qu'il arrive, y compris quand le réglage disait non.
-   Un interrupteur qui ne coupe rien est pire que pas d'interrupteur — on
-   croit la porte fermée.
-
-   Les outils qui écrivent sont NOMMÉS UN PAR UN. Une règle par préfixe
-   serait plus courte et moins sûre : le jour où quelqu'un ajoute
-   `set_…` ou `archive_…`, elle le rangerait en lecture sans un mot. Le
-   contrôle juste en dessous refuse de démarrer si un outil échappe aux
-   deux colonnes — c'est la seule façon qu'un ajout ne passe pas en
-   silence du mauvais côté. */
-const OUTILS_QUI_ECRIVENT = new Set([
-  "create_todo", "create_journal_entry", "create_goal", "create_habit_goal",
-  "create_calendar_event", "add_step", "add_wishlist_item",
-  "complete_step", "complete_todo", "reschedule_step", "reschedule_todo",
-]);
-
-const OUTILS_QUI_LISENT = new Set([
-  "list_active_goals", "list_recent_journal", "list_user_values", "search_memory",
-  "list_pacts", "list_steps", "list_todos", "list_calendar_events", "list_wishlist",
-  "focus_summary", "health_summary", "finance_summary",
-]);
-
-{
-  const inconnus = TOOLS
-    .map((o) => o.function.name)
-    .filter((n) => !OUTILS_QUI_ECRIVENT.has(n) && !OUTILS_QUI_LISENT.has(n));
-  if (inconnus.length) {
-    throw new Error(
-      `Outils non classés (lecture ou écriture ?) : ${inconnus.join(", ")}. ` +
-      "Ajoute-les à OUTILS_QUI_ECRIVENT ou OUTILS_QUI_LISENT.",
-    );
-  }
-}
-
-const OUTILS_LECTURE_SEULE = TOOLS.filter((o) => !OUTILS_QUI_ECRIVENT.has(o.function.name));
+/* Le controle refuse de demarrer si un outil echappe aux deux
+   colonnes. Il vit dans `outils.ts`, ou un test l execute aussi. */
+verifierLaClassification();
 
 /* ═══ LES FORMES QUI TRAVERSENT CE FICHIER ═══
 
@@ -542,7 +174,7 @@ async function runTool(
         .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus,pact_id")
         .in("pact_id", ids)
         .in("status", ["in_progress", "not_started"])
-        .limit(Number(args?.limit ?? 20));
+        .limit(limiteDemandee(args?.limit, 20));
       const enriched = (data ?? [])
         .map((g) => ({ ...g, is_active_pact: g.pact_id === activePactId }))
         .sort((a, b) => {
@@ -561,11 +193,11 @@ async function runTool(
         .order("created_at", { ascending: false })
         /* Le modele peut rendre « 10 » en chaine : .limit() attend un
            nombre, et une chaine partait telle quelle dans l'URL. */
-        .limit(Number(args?.limit ?? 10))
+        .limit(limiteDemandee(args?.limit, 10))
         .returns<LigneJournal[]>();
       const trimmed = (data ?? []).map((e) => ({
         ...e,
-        content: (e.content ?? "").slice(0, 400),
+        content: texteBorne(e.content, LONGUEUR_EXTRAIT_JOURNAL),
       }));
       return JSON.stringify(trimmed);
     }
@@ -591,7 +223,7 @@ async function runTool(
         rows.map((r) => ({
           source_type: r.source_type,
           source_id: r.source_id,
-          snippet: String(r.content ?? "").slice(0, 220),
+          snippet: texteBorne(r.content, LONGUEUR_EXTRAIT_MEMOIRE),
           similarity: typeof r.similarity === "number" ? r.similarity : undefined,
         })),
       );
@@ -607,12 +239,12 @@ async function runTool(
     }
     if (name === "create_goal") {
       const pact_id = String(args?.pact_id ?? "").trim();
-      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      const nm = nomBorne(args?.name);
       if (!pact_id || !nm) return JSON.stringify({ error: "pact_id_and_name_required" });
       // Verify pact belongs to user
       const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
       if (!pact) return JSON.stringify({ error: "pact_not_found" });
-      const totalSteps = Math.max(1, Math.min(50, Number(args?.total_steps ?? 1)));
+      const totalSteps = nombreBorne(args?.total_steps, BORNES.total_steps);
       const payload: Record<string, unknown> = {
         pact_id,
         name: nm,
@@ -633,11 +265,11 @@ async function runTool(
     }
     if (name === "create_habit_goal") {
       const pact_id = String(args?.pact_id ?? "").trim();
-      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      const nm = nomBorne(args?.name);
       if (!pact_id || !nm) return JSON.stringify({ error: "pact_id_and_name_required" });
       const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
       if (!pact) return JSON.stringify({ error: "pact_not_found" });
-      const days = Math.max(7, Math.min(365, Number(args?.habit_duration_days ?? 21)));
+      const days = nombreBorne(args?.habit_duration_days, BORNES.habit_duration_days);
       const payload: Record<string, unknown> = {
         pact_id,
         name: nm,
@@ -657,7 +289,7 @@ async function runTool(
       return JSON.stringify({ ok: true, habit: data });
     }
     if (name === "create_todo") {
-      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      const nm = nomBorne(args?.name);
       if (!nm) return JSON.stringify({ error: "name_required" });
       const { data, error } = await supabase.from("todo_tasks").insert({
         user_id: userId,
@@ -676,7 +308,7 @@ async function runTool(
       return JSON.stringify({ ok: true, todo: data });
     }
     if (name === "create_journal_entry") {
-      const title = String(args?.title ?? "").trim().slice(0, 200);
+      const title = nomBorne(args?.title);
       const content = String(args?.content ?? "").trim();
       if (!title || !content) return JSON.stringify({ error: "title_and_content_required" });
       const payload: Record<string, unknown> = { user_id: userId, title, content };
@@ -711,7 +343,7 @@ async function runTool(
         .select("id,goal_id,title,status,due_date,order")
         .in("goal_id", idsButs)
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(Number(args?.limit ?? 40));
+        .limit(limiteDemandee(args?.limit, 40));
       if (args?.only_pending !== false) q = q.eq("status", "pending");
       const { data } = await q;
       return JSON.stringify(
@@ -735,7 +367,7 @@ async function runTool(
     }
 
     if (name === "add_step") {
-      const titre = String(args?.title ?? "").slice(0, 200);
+      const titre = texteBorne(args?.title);
       const { data: dernieres } = await supabase
         .from("steps")
         .select("order")
@@ -777,7 +409,7 @@ async function runTool(
         .select("id,name,deadline,priority,is_urgent,status,category,appointment_time")
         .eq("user_id", userId)
         .order("deadline", { ascending: true, nullsFirst: false })
-        .limit(Number(args?.limit ?? 30));
+        .limit(limiteDemandee(args?.limit, 30));
       if (!args?.include_done) q = q.eq("status", "active");
       const { data } = await q;
       return JSON.stringify(data ?? []);
@@ -816,7 +448,7 @@ async function runTool(
     }
 
     if (name === "focus_summary") {
-      const jours = Math.min(90, Math.max(1, Number(args?.days ?? 7)));
+      const jours = nombreBorne(args?.days, BORNES.focus_days);
       const depuis = new Date(Date.now() - jours * 86400000).toISOString();
       const { data } = await supabase
         .from("pomodoro_sessions")
@@ -830,15 +462,15 @@ async function runTool(
       let minutes = 0;
       for (const s of seances as { duration_minutes: number; started_at: string }[]) {
         minutes += s.duration_minutes ?? 0;
-        const j = String(s.started_at).slice(0, 10);
+        const j = jourDe(String(s.started_at));
         parJour[j] = (parJour[j] ?? 0) + (s.duration_minutes ?? 0);
       }
       return JSON.stringify({ jours, seances: seances.length, minutes, par_jour: parJour });
     }
 
     if (name === "health_summary") {
-      const jours = Math.min(120, Math.max(1, Number(args?.days ?? 14)));
-      const depuis = new Date(Date.now() - jours * 86400000).toISOString().slice(0, 10);
+      const jours = nombreBorne(args?.days, BORNES.health_days);
+      const depuis = ilYAJours(jours, Date.now());
       const [{ data: releves }, { data: serie }] = await Promise.all([
         supabase
           .from("health_data")
@@ -854,8 +486,8 @@ async function runTool(
     }
 
     if (name === "list_calendar_events") {
-      const avant = Math.min(90, Math.max(0, Number(args?.days_back ?? 0)));
-      const apres = Math.min(180, Math.max(1, Number(args?.days_ahead ?? 14)));
+      const avant = nombreBorne(args?.days_back, BORNES.days_back);
+      const apres = nombreBorne(args?.days_ahead, BORNES.days_ahead);
       const debut = new Date(Date.now() - avant * 86400000).toISOString();
       const fin = new Date(Date.now() + apres * 86400000).toISOString();
       const { data } = await supabase
@@ -870,7 +502,7 @@ async function runTool(
     }
 
     if (name === "create_calendar_event") {
-      const titre = String(args?.title ?? "").slice(0, 200);
+      const titre = texteBorne(args?.title);
       const debut = args?.start_time ? new Date(String(args.start_time)) : null;
       if (!debut || Number.isNaN(debut.getTime())) {
         receipts.action = { tool: "create_calendar_event", status: "error", label: titre, error: "début illisible" };
@@ -904,12 +536,12 @@ async function runTool(
         .eq("user_id", userId)
         .order("acquired", { ascending: true })
         .order("priority", { ascending: false, nullsFirst: false })
-        .limit(Number(args?.limit ?? 30));
+        .limit(limiteDemandee(args?.limit, 30));
       return JSON.stringify(data ?? []);
     }
 
     if (name === "add_wishlist_item") {
-      const nm = String(args?.name ?? "").slice(0, 200);
+      const nm = texteBorne(args?.name);
       const { data, error } = await supabase
         .from("wishlist_items")
         .insert({
@@ -930,7 +562,7 @@ async function runTool(
     }
 
     if (name === "finance_summary") {
-      const mois = Math.min(12, Math.max(1, Number(args?.months ?? 3)));
+      const mois = nombreBorne(args?.months, BORNES.months);
       const [{ data: bilans }, { data: charges }, { data: revenus }] = await Promise.all([
         supabase
           .from("finance")
@@ -1042,8 +674,8 @@ async function etatDuJour(supabase: ClientSupabase, userId: string, fuseau?: str
     const fin = pacte.project_end_date ? new Date(pacte.project_end_date).getTime() : null;
     if (debut && fin && fin > debut) {
       const total = Math.round((fin - debut) / 86_400_000);
-      const ecoule = Math.max(0, Math.floor((Date.now() - debut) / 86_400_000));
-      const reste = Math.max(0, Math.ceil((fin - Date.now()) / 86_400_000));
+      const ecoule = joursEcoules(debut, Date.now());
+      const reste = joursRestants(fin, Date.now());
       lignes.push(
         `Pacte actif : ${pacte.name} — jour ${ecoule} / ${total}, ${reste} jours restants, ` +
           `fin le ${dateLisible(new Date(fin))}.`,
