@@ -50,6 +50,9 @@ import { usePointages, useEcrirePointage, useEffacerPointage } from '@/domaines/
 import {
   construireLesRangs, totalReel, totalPointe, aVenir, oubliees, restant,
 } from "@/domaines/finance/logique/pointage";
+import {
+  avancementDuPointage, bilanDuMois, estCorrige, nonCochees, soldeDuMois,
+} from "@/domaines/finance/logique/bilan";
 import { montantDuMois, tombeEn, dateDeMouvement, dejaPasse } from '@/domaines/finance/logique/cadence';
 import { lireNom, lireMontant, placeDisponible, direLeRefus } from '@/domaines/finance/logique/garde';
 import { MarqueCreancier } from './MarqueCreancier';
@@ -116,6 +119,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
   );
 
   const courant = etape === 'income' ? rangs.income : rangs.expense;
+  const avance = avancementDuPointage(courant);
 
   const basculer = async (r: Rang, genre: Etape) => {
     if (genre === 'bilan') return;
@@ -236,19 +240,13 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
     setNomAjout(''); setMontantAjout(''); setAjout(null);
   };
 
-  const reelDepenses = totalPointe(rangs.expense);
-  const reelRevenus = totalPointe(rangs.income);
+  const solde = soldeDuMois(rangs);
 
   const conclure = async () => {
     try {
       await valider.mutateAsync({
         month: mois,
-        confirmed_expenses: restant(rangs.expense) === 0,
-        confirmed_income: restant(rangs.income) === 0,
-        unplanned_expenses: 0,
-        unplanned_income: 0,
-        actual_total_income: reelRevenus,
-        actual_total_expenses: reelDepenses,
+        ...bilanDuMois(rangs),
         validated_at: new Date().toISOString(),
       });
       toast.success(t('finance.monthly.monthValidated'));
@@ -366,9 +364,8 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
               </p>
               <span className="cy-parc-compte">
                 {t('finance.parcours.pointees', {
-                  faits: courant.filter((r) => r.pointe).length,
-                  total: courant.length,
-                  defaultValue: `${courant.filter((r) => r.pointe).length} / ${courant.length}`,
+                  ...avance,
+                  defaultValue: `${avance.faits} / ${avance.total}`,
                 })}
               </span>
               {aVenir(courant).length > 0 && (
@@ -390,7 +387,7 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
 
             <ul className="cy-parc-liste">
               {courant.map((r) => {
-                const corrige = Math.abs(r.reel - r.prevu) >= 0.005;
+                const corrige = estCorrige(r);
                 const enCours = enCorrection === r.item.id;
                 return (
                   <li
@@ -530,18 +527,18 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
             <dl className="cy-parc-comptes">
               <div>
                 <dt>{t('finance.monthly.income', 'Revenus')}</dt>
-                <dd data-signe="plus">{formatCurrency(reelRevenus, currency)}</dd>
+                <dd data-signe="plus">{formatCurrency(solde.revenus, currency)}</dd>
                 <u>{t('finance.parcours.surN', { n: rangs.income.length, defaultValue: `sur ${rangs.income.length}` })}</u>
               </div>
               <div>
                 <dt>{t('finance.monthly.expenses', 'Dépenses')}</dt>
-                <dd data-signe="moins">{formatCurrency(reelDepenses, currency)}</dd>
+                <dd data-signe="moins">{formatCurrency(solde.depenses, currency)}</dd>
                 <u>{t('finance.parcours.surN', { n: rangs.expense.length, defaultValue: `sur ${rangs.expense.length}` })}</u>
               </div>
               <div className="cy-parc-solde">
                 <dt>{t('finance.monthly.monthlyBalance', 'Solde du mois')}</dt>
-                <dd data-signe={reelRevenus - reelDepenses >= 0 ? 'plus' : 'moins'}>
-                  {formatCurrency(reelRevenus - reelDepenses, currency)}
+                <dd data-signe={solde.signe}>
+                  {formatCurrency(solde.solde, currency)}
                 </dd>
               </div>
             </dl>
@@ -553,8 +550,8 @@ export function ParcoursDuMois({ mois, ouvert, onFermer }: Props) {
             {(restant(rangs.expense) > 0 || restant(rangs.income) > 0) && (
               <p className="cy-parc-reserve">
                 {t('finance.parcours.reste', {
-                  n: restant(rangs.expense) + restant(rangs.income),
-                  defaultValue: `${restant(rangs.expense) + restant(rangs.income)} ligne(s) non cochée(s) — elles ne comptent pas dans le total.`,
+                  n: nonCochees(rangs),
+                  defaultValue: `${nonCochees(rangs)} ligne(s) non cochée(s) — elles ne comptent pas dans le total.`,
                 })}
               </p>
             )}
