@@ -6,6 +6,7 @@ import { Check, ExternalLink, Pencil, Trash2, Undo2 } from "lucide-react";
 import { formatCurrency } from "@/socle/outils/currency";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 /* ═══════════════════════════════════════════════════════════════
    UNE LIGNE DE REGISTRE
@@ -84,7 +85,7 @@ export function WishlistPoste({
       </span>
 
       <span className="wl-poste-prix">
-        {formatCurrency(Number(item.estimated_cost || 0), currency)}
+        {formatCurrency(prixEnregistre(item.estimated_cost), currency)}
       </span>
 
       <span className="wl-outils">

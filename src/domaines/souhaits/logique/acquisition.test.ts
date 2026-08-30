@@ -73,32 +73,34 @@ describe("le montant lu sur l article", () => {
     expect(montantDeLArticle({ estimated_cost: 0 })).toBe(0);
   });
 
-  /* UN TEXTE ILLISIBLE DONNE NaN, ET C EST LE REFUS SUIVANT QUI LE
-     RATTRAPE — pas celui-ci. */
-  it("rend NaN pour un texte illisible", () => {
-    expect(montantDeLArticle({ estimated_cost: "cent vingt" })).toBeNaN();
+  /* ═══ UN TEXTE ILLISIBLE DONNAIT NaN. IL DONNE ZERO. ═══
+   *
+   * Cette lecture passait par `Number(x || 0)` : sur « cent vingt »
+   * elle rendait NaN, et c est le refus suivant qui le rattrapait.
+   * Elle passe desormais par `prixEnregistre`, le lecteur unique du
+   * domaine, qui refuse aussi bien NaN que les infinis.
+   *
+   * CE QUE L ECRAN VOIT NE CHANGE PAS : `!(montant > 0)` refusait NaN,
+   * il refuse zero de la meme facon, et la reponse reste
+   * « montant-nul ». Ce qui change est plus haut — un montant infini
+   * ne peut plus devenir une ligne de depense. */
+  it("ramene un texte illisible a zero", () => {
+    expect(montantDeLArticle({ estimated_cost: "cent vingt" })).toBe(0);
+    expect(depenseDUnAchat({ id: "a1", name: "x", estimated_cost: "cent vingt" }))
+      .toEqual({ refus: "montant-nul" });
   });
 
-  /* ═══ `||` ET NON `??`, ET LA DIFFERENCE TIENT A UN SEUL CAS ═══
-   *
-   * Les deux formes s accordent sur tout ce qui vient de la base : un
-   * nombre, un texte, `null`, une chaine vide, zero — `Number` les
-   * ramene au meme resultat. Elles ne divergent que sur le NOMBRE NaN
-   * lui-meme : `||` le remplace par zero, `??` le laisse passer.
-   *
-   * Le balayage de mutations a survecu a l echange tant que ce test
-   * n existait pas, ET IL AURAIT SURVECU MEME AVEC : au niveau de
-   * `depenseDUnAchat`, les deux finissent en « montant-nul », parce que
-   * le troisieme refus rattrape aussi bien zero que NaN. La difference
-   * n existe donc qu ici, sur cette fonction-ci — et elle n est de
-   * toute facon pas atteignable depuis la base, ou une colonne
-   * numerique ne porte jamais NaN. On epingle le choix, pas son
-   * effet. */
-  it("ramene le nombre NaN a zero, la ou `??` le laisserait passer", () => {
+  /* NaN ET LES INFINIS TOMBENT A ZERO. Le premier tombait deja, par le
+     `||` ; le second NON — `Number("Infinity")` vaut l infini, qui est
+     strictement positif, et serait donc passe jusque dans la ligne du
+     mois. Aucune colonne numerique ne produit cela ; un montant
+     d argent ne doit pas dependre de ce que la base ne fait pas. */
+  it("ramene NaN et les infinis a zero", () => {
     expect(montantDeLArticle({ estimated_cost: NaN })).toBe(0);
-    expect(Number(NaN ?? 0)).toBeNaN();
-    /* Et le refus final ne fait pas la difference entre les deux. */
+    expect(montantDeLArticle({ estimated_cost: "Infinity" })).toBe(0);
     expect(depenseDUnAchat({ id: "a1", name: "x", estimated_cost: NaN }))
+      .toEqual({ refus: "montant-nul" });
+    expect(depenseDUnAchat({ id: "a1", name: "x", estimated_cost: "Infinity" }))
       .toEqual({ refus: "montant-nul" });
   });
 });
@@ -127,7 +129,15 @@ describe("les trois refus", () => {
    * Les deux disent la meme chose pour tout nombre, mais PAS pour NaN :
    * `NaN <= 0` est FAUX, donc la seconde forme laisserait passer un
    * montant illisible jusque dans la ligne du mois — un « NaN € » dans
-   * les depenses, que rien ensuite ne saurait additionner. */
+   * les depenses, que rien ensuite ne saurait additionner.
+   *
+   * DEPUIS QUE LA LECTURE PASSE PAR `prixEnregistre`, NaN N ARRIVE PLUS
+   * PAR CE CHEMIN : il est deja ramene a zero en amont. La forme reste
+   * pourtant celle-ci, et le test avec — `montant` est un `number`
+   * ordinaire, rien dans sa signature n interdit a un futur appelant
+   * de lui tendre un NaN, et c est la derniere garde avant l ecriture.
+   * Les trois assertions du bas fixent le fait de JavaScript qui rend
+   * cette forme necessaire, independamment de qui appelle. */
   it("refuse un montant illisible, ce qu une comparaison simple ne ferait pas", () => {
     expect(depenseDUnAchat(article({ estimated_cost: "cent vingt" })))
       .toEqual({ refus: "montant-nul" });

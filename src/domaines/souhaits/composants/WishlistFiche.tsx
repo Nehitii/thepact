@@ -6,6 +6,7 @@ import { ChampSurPlace } from "@/domaines/souhaits/composants/ChampSurPlace";
 import { formatCurrency } from "@/socle/outils/currency";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 interface WishlistFicheProps {
   item: PactWishlistItem;
@@ -160,7 +161,7 @@ export function WishlistFiche({
           desactive={!onCorriger}
           onValider={(v) => onCorriger?.(item.id, "prix", v)}
         >
-          {formatCurrency(Number(item.estimated_cost || 0), currency)}
+          {formatCurrency(prixEnregistre(item.estimated_cost), currency)}
         </ChampSurPlace>
       </div>
 

@@ -6,6 +6,7 @@ import { formatCurrency } from "@/socle/outils/currency";
 import { WishlistPoste } from "@/domaines/souhaits/composants/WishlistPoste";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 interface WishlistArchiveProps {
   items: PactWishlistItem[];
@@ -51,7 +52,7 @@ export function WishlistArchive({
       const db = b.acquired_at ? new Date(b.acquired_at).getTime() : 0;
       return db - da;
     });
-    return { total: items.reduce((s, i) => s + Number(i.estimated_cost || 0), 0), liste };
+    return { total: items.reduce((s, i) => s + prixEnregistre(i.estimated_cost), 0), liste };
   }, [items]);
 
   if (items.length === 0) return null;

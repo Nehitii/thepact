@@ -7,6 +7,7 @@ import { formatCurrency } from "@/socle/outils/currency";
 import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 interface WishlistRegistreProps {
   items: PactWishlistItem[];
@@ -83,7 +84,7 @@ export function WishlistRegistre({
         };
         parObjectif.set(cle, g);
       }
-      const prix = Number(item.estimated_cost || 0);
+      const prix = prixEnregistre(item.estimated_cost);
       g.postes.push(item);
       g.total += prix;
       if (item.acquired) { g.acquis += prix; g.nbAcquis += 1; }
@@ -97,7 +98,9 @@ export function WishlistRegistre({
         ...g,
         postes: [...g.postes].sort(
           (a, b) => Number(a.acquired) - Number(b.acquired)
-            || Number(b.estimated_cost) - Number(a.estimated_cost),
+            /* SANS REPLI, ce comparateur rendait NaN sur un prix
+               illisible, et l ordre passait a la discretion du moteur. */
+            || prixEnregistre(b.estimated_cost) - prixEnregistre(a.estimated_cost),
         ),
       }))
       /* Les listes personnelles passent devant : elles sont le seul
@@ -308,7 +311,7 @@ export function WishlistRegistre({
                         </span>
 
                         <span className="wl-poste-prix">
-                          {formatCurrency(Number(item.estimated_cost || 0), currency)}
+                          {formatCurrency(prixEnregistre(item.estimated_cost), currency)}
                         </span>
 
                         <span className="wl-outils">

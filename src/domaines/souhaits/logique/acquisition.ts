@@ -9,6 +9,7 @@
  * juste, et personne ne saura d ou venaient les euros en trop.
  */
 import { format, startOfMonth } from "date-fns";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 export interface ArticleAcquis {
   id: string;
@@ -69,7 +70,7 @@ export function nomDeLaDepense(nom: string): string {
 export type RefusDAcquisition = "sans-article" | "compte-dans-le-pacte" | "montant-nul";
 
 export function montantDeLArticle(article: Pick<ArticleAcquis, "estimated_cost">): number {
-  return Number(article.estimated_cost || 0);
+  return prixEnregistre(article.estimated_cost);
 }
 
 export interface LigneDeDepense {

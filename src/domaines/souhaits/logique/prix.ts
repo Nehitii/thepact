@@ -1,3 +1,4 @@
+import { nombre } from "@/socle/outils/nombre";
 import type { PactWishlistItem, PactWishlistItemType } from "@/domaines/souhaits/types";
 
 /* LIRE UN PRIX TAPE A LA MAIN, ET FUSIONNER DEUX ARTICLES.
@@ -97,5 +98,73 @@ export function fusionDeDeuxArticles(
     /* LES DEUX NOTES SONT GARDEES, l une sous l autre : perdre ce qui
        a ete ecrit sur un article est irrattrapable. */
     notes: [garde?.notes?.trim(), entrant.notes?.trim()].filter(Boolean).join("\n\n") || null,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIRE UN PRIX DEJA ENREGISTRE — SIX ECRITURES POUR UNE COLONNE.
+
+   `wishlist_items.estimated_cost` est un `numeric` NON NUL. Le domaine
+   le relisait de six facons differentes :
+
+     Number(x || 0)        l archive, la fiche, le poste, le registre,
+                           et `montantDeLArticle`
+     Number(x ?? 0)        les deux apercus de doublon
+     Number(x)             le tri par prix du registre — SANS repli
+     Number(x) || 0        les deux tris de l inventaire
+     nombre(x)             une fonction locale a l inventaire, qui est
+                           exactement `Number(x) || 0`
+     String(x ?? 0)        la fiche, pour amorcer le champ de saisie
+
+   ELLES NE DIVERGENT QUE SUR CE QUE LA BASE NE PRODUIT PAS : une
+   valeur illisible. `Number(x || 0)` rend alors NaN — NaN est truthy,
+   il traverse le `||` — et UN SEUL NaN contamine toute une somme, qui
+   s affiche « NaN € ». Le `Number(x)` nu du tri est pire : un
+   comparateur qui rend NaN laisse l ordre a la discretion du moteur.
+
+   MESURE LE 30/08/2026 : 83 lignes, aucune nulle (la colonne est NOT
+   NULL), aucune a zero, aucune negative, de 7 a 4 199, total
+   30 678,34 — et c est exactement ce que la page affiche. Les six
+   ecritures s accordent donc sur la totalite des donnees reelles :
+   les unifier ne change rien aujourd hui, et ferme le jour ou.
+
+   `nombre` du socle plutot qu un `|| 0` : il garde le zero, refuse NaN
+   et les infinis, et lit un nombre qui commence une chaine. */
+export function prixEnregistre(valeur: number | string | null | undefined): number {
+  return nombre(valeur, 0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CE QUE LA FENETRE DE DOUBLON MONTRE DE L ARTICLE DEJA LA.
+
+   Huit lignes, ecrites DEUX FOIS mot pour mot — a la creation et a
+   l edition. Elles decident surtout des replis : le nom du doublon
+   quand la ligne complete manque, « optionnel » quand le type manque,
+   zero quand le prix manque.
+
+   L ENTRANT, LUI, N EST PAS PARTAGE, et c est voulu : le formulaire de
+   creation n a pas de champ notes — il passe donc `null` — la ou celui
+   d edition transmet ce qui est ecrit. Les fondre masquerait cette
+   difference au lieu de la dire. */
+export interface ApercuDArticle extends ArticleAFusionner {
+  /* LA FUSION TOLERE UN PRIX ABSENT, L APERCU NON : la fenetre montre
+     toujours un montant, et « rien » ne s affiche pas. */
+  estimatedCost: number;
+  /** Pour l afficher seulement : la fusion ne s en sert pas. */
+  goalName?: string | null;
+}
+
+export function apercuDeLExistant(
+  complet: PactWishlistItem | undefined,
+  doublon: { name: string },
+): ApercuDArticle {
+  return {
+    name: complet?.name ?? doublon.name,
+    goalId: complet?.goal_id ?? null,
+    goalName: complet?.goal?.name ?? null,
+    category: complet?.category ?? null,
+    estimatedCost: prixEnregistre(complet?.estimated_cost),
+    itemType: complet?.item_type ?? "optional",
+    notes: complet?.notes ?? null,
   };
 }

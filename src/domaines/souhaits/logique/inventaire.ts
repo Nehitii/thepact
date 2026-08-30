@@ -1,5 +1,6 @@
 import type { PactWishlistItem } from "@/domaines/souhaits/types";
 import type { Goal } from "@/domaines/objectifs";
+import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
 
 /* L INVENTAIRE : CE QU IL Y A, ET CE QU ON EN MONTRE.
  *
@@ -34,9 +35,8 @@ export function compterLesArticles(items: PactWishlistItem[], goals: Goal[]) {
      Trouve par un test qui echouait — la base ne devrait pas produire
      un cout illisible, mais un total d argent ne doit pas dependre
      de ce qu elle ne devrait pas faire. */
-  const nombre = (x: unknown) => Number(x) || 0;
   const somme = (liste: PactWishlistItem[]) =>
-      liste.reduce((s, i) => s + nombre(i.estimated_cost), 0);
+      liste.reduce((s, i) => s + prixEnregistre(i.estimated_cost), 0);
 
     return {
       duPacte, libres, parListe,
@@ -49,7 +49,7 @@ export function compterLesArticles(items: PactWishlistItem[], goals: Goal[]) {
       nbPaye: items.filter((i) => i.acquired).length,
       /* Le cout des objectifs du pacte, pour ce qu il est : une
          verification. Il doit egaler la somme des pieces. */
-      coutObjectifs: goals.reduce((s, g) => s + nombre(g.estimated_cost), 0),
+      coutObjectifs: goals.reduce((s, g) => s + prixEnregistre(g.estimated_cost), 0),
       nbObjectifs: new Set(duPacte.map((i) => i.goal_id)).size,
     };
 }
@@ -90,8 +90,8 @@ export function filtrerEtTrier({
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
 
     const ordonnes = [...filtres].sort((a, b) => {
-      if (tri === "cher") return (Number(b.estimated_cost) || 0) - (Number(a.estimated_cost) || 0);
-      if (tri === "abordable") return (Number(a.estimated_cost) || 0) - (Number(b.estimated_cost) || 0);
+      if (tri === "cher") return prixEnregistre(b.estimated_cost) - prixEnregistre(a.estimated_cost);
+      if (tri === "abordable") return prixEnregistre(a.estimated_cost) - prixEnregistre(b.estimated_cost);
       if (tri === "visuel") {
         /* Une photo achete une case : encore faut-il la voir. Sans
            ce tri, les quatre articles photographies tombaient a deux

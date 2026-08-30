@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  fusionDeDeuxArticles, prixCorrige, prixDuFormulaire,
+  apercuDeLExistant, fusionDeDeuxArticles, prixCorrige, prixDuFormulaire, prixEnregistre,
 } from "@/domaines/souhaits/logique/prix";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/socle/ds";
@@ -292,7 +292,7 @@ export default function Wishlist() {
       sourceGoalCostId: pieceLiee,
       goalId: item.goal_id ?? null,
       goalName: pieceLiee ? item.goal?.name ?? null : null,
-      cost: Number(item.estimated_cost || 0),
+      cost: prixEnregistre(item.estimated_cost),
     });
     setDeleteConfirmOpen(true);
   };
@@ -322,12 +322,7 @@ export default function Wishlist() {
         const complet = items.find((i) => i.id === doublon.id);
         setMergeMode("create");
         setMergeDuplicateId(doublon.id);
-        setMergeExistingPreview({
-          name: complet?.name ?? doublon.name, goalId: complet?.goal_id ?? null,
-          goalName: complet?.goal?.name ?? null, category: complet?.category ?? null,
-          estimatedCost: Number(complet?.estimated_cost ?? 0),
-          itemType: complet?.item_type ?? "optional", notes: complet?.notes ?? null,
-        });
+        setMergeExistingPreview(apercuDeLExistant(complet, doublon));
         setMergeIncomingPreview({
           name: nom, goalId: objectif,
           goalName: objectif ? goals.find((g) => g.id === objectif)?.name ?? null : null,
@@ -370,12 +365,7 @@ export default function Wishlist() {
         const complet = items.find((i) => i.id === doublon.id);
         setMergeMode("edit");
         setMergeDuplicateId(doublon.id);
-        setMergeExistingPreview({
-          name: complet?.name ?? doublon.name, goalId: complet?.goal_id ?? null,
-          goalName: complet?.goal?.name ?? null, category: complet?.category ?? null,
-          estimatedCost: Number(complet?.estimated_cost ?? 0),
-          itemType: complet?.item_type ?? "optional", notes: complet?.notes ?? null,
-        });
+        setMergeExistingPreview(apercuDeLExistant(complet, doublon));
         setMergeIncomingPreview({
           name: nom, goalId: objectif,
           goalName: objectif ? goals.find((g) => g.id === objectif)?.name ?? null : null,
