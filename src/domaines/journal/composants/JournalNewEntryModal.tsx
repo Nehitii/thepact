@@ -26,6 +26,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/socle/ui/alert-dialog";
 import { PREF } from "@/socle/outils/preferencesAffichage";
+import { drapeauEcrit, drapeauLu, railParDefaut } from "@/domaines/journal/logique/reglagesDeLAtelier";
 
 /* L ATELIER
  *
@@ -68,13 +69,11 @@ function Bascule({ valeur, onChange, label }: { valeur: boolean; onChange: (v: b
   );
 }
 
+/* `getItem` peut LEVER — navigation privee, stockage coupe. Ce qui se
+   decide ensuite est dans logique/reglagesDeLAtelier.ts. */
 function lireDrapeau(cle: string, defaut: boolean): boolean {
-  try {
-    const v = localStorage.getItem(cle);
-    return v === null ? defaut : v === "1";
-  } catch {
-    return defaut;
-  }
+  try { return drapeauLu(localStorage.getItem(cle), defaut); }
+  catch { return defaut; }
 }
 
 export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry, amorce, theme = "sombre" }: JournalNewEntryModalProps) {
@@ -100,11 +99,11 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
      entree pleine de noms propres. */
   const [correcteur, setCorrecteur] = useState(() => lireDrapeau(PREF.JOURNAL_CORRECTEUR, true));
   const [rail, setRail] = useState(() =>
-    lireDrapeau(PREF.JOURNAL_RAIL, typeof window === "undefined" ? true : window.innerWidth >= 1100),
+    lireDrapeau(PREF.JOURNAL_RAIL, typeof window === "undefined" ? true : railParDefaut(window.innerWidth)),
   );
 
-  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_CORRECTEUR, correcteur ? "1" : "0"); } catch { /* sans consequence */ } }, [correcteur]);
-  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_RAIL, rail ? "1" : "0"); } catch { /* sans consequence */ } }, [rail]);
+  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_CORRECTEUR, drapeauEcrit(correcteur)); } catch { /* sans consequence */ } }, [correcteur]);
+  useEffect(() => { try { localStorage.setItem(PREF.JOURNAL_RAIL, drapeauEcrit(rail)); } catch { /* sans consequence */ } }, [rail]);
 
   const { user } = useAuth();
   const { data: pact } = usePact(user?.id);

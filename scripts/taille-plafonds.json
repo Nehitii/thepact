@@ -6,7 +6,7 @@
   "src/domaines/finance/composants/mois/ParcoursDuMois.tsx": 606,
   "src/domaines/focus/pages/Focus.tsx": 632,
   "src/domaines/journal/composants/JournalEditor.tsx": 661,
-  "src/domaines/journal/composants/JournalNewEntryModal.tsx": 552,
+  "src/domaines/journal/composants/JournalNewEntryModal.tsx": 551,
   "src/domaines/mia/composants/MiaConsole.tsx": 806,
   "src/domaines/objectifs/composants/detail/GoalDetailEditOverlay.tsx": 478,
   "src/domaines/objectifs/hooks/useGoalDetailActions.ts": 539,
