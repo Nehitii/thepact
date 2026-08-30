@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   annonceDuCadran, assezEspacee, avancementParPas, clefDeNotification, referenceDuRegistre,
 } from "@/domaines/focus/logique/cadran";
+import { commandeDuFocus } from "@/domaines/focus/logique/raccourcis";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Maximize, Minimize, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -328,24 +329,22 @@ export default function Focus() {
     if (!timer.isRunning) return;
 
     const handler = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-      if (e.code === "Space") {
-        e.preventDefault();
+      /* Quelle touche fait quoi — et ce qu elle fait de trop —
+         est dans logique/raccourcis.ts. */
+      const quoi = commandeDuFocus(e);
+      if (!quoi) return;
+      e.preventDefault();
+      if (quoi === "basculer") {
         if (timer.isPaused) handleResume();
         else handlePause();
-      } else if (e.shiftKey && e.key.toLowerCase() === "s") {
-        e.preventDefault();
+      } else if (quoi === "passer") {
         handleSkip();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        // If in fullscreen, just exit fullscreen first
-        if (document.fullscreenElement) {
-          exitFullscreen();
-        } else {
-          handleEnd();
-        }
+      } else if (document.fullscreenElement) {
+        /* En plein ecran, Echap rend d abord l ecran : terminer la
+           session au meme geste en supprimerait deux d un coup. */
+        exitFullscreen();
+      } else {
+        handleEnd();
       }
     };
 

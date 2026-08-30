@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoalFilters } from "@/domaines/objectifs/hooks/useGoalFilters";
 import type { Goal } from "@/domaines/objectifs/hooks/useGoals";
+import { saisieEnCours } from "@/socle/outils/clavier";
 
 /* ═══════════════════════════════════════════════════════════════
    ALLER A L OBJECTIF D A COTE
@@ -91,10 +92,9 @@ export function useVoisinsDObjectif(
       if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
 
-      const cible = e.target as HTMLElement | null;
-      const balise = cible?.tagName;
-      if (balise === "INPUT" || balise === "TEXTAREA" || balise === "SELECT") return;
-      if (cible?.isContentEditable) return;
+      /* La meme regle que les trois autres raccourcis globaux — sauf
+         qu ils ne la posaient pas pareil : socle/outils/clavier.ts. */
+      if (saisieEnCours(e.target)) return;
 
       if (e.key === "ArrowLeft" && precedent) { e.preventDefault(); allerAuPrecedent(); }
       if (e.key === "ArrowRight" && suivant) { e.preventDefault(); allerAuSuivant(); }
