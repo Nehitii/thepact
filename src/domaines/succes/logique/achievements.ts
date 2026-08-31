@@ -2,6 +2,7 @@ import { supabase } from "@/socle/supabase/client";
 import {
   dureeEnHeures, honneursDuTemps, type MesureDeLHonneur,
 } from "@/domaines/succes/logique/honneurDuTemps";
+import { verdictDuClient } from "@/domaines/succes/logique/deblocage";
 import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/socle/i18n/i18n";
@@ -257,27 +258,9 @@ export async function trackFinanceMonthValidated(userId: string) {
 
 // ── Core check logic ──
 
-const TRACKABLE_FIELDS = [
-  "consecutive_login_days", "logins_at_same_hour_streak", "midnight_logins_count",
-  "total_goals_created", "goals_completed_total", "steps_completed_total",
-  "easy_goals_completed", "medium_goals_completed", "hard_goals_completed",
-  "extreme_goals_completed", "impossible_goals_completed", "custom_goals_completed",
-  "todos_completed", "pomodoro_sessions", "pomodoro_total_minutes",
-  "journal_entries", "friends_count", "guilds_joined", "guild_messages_sent",
-  "community_posts", "wishlist_items_added", "wishlist_items_acquired",
-  "modules_purchased", "cosmetics_owned", "calendar_events_created",
-  "bonds_spent_total", "bonds_earned_total", "finance_months_validated", "transactions_logged",
-] as const;
-
-/* Le controle d execution et le typage disent la meme chose.
-   TRACKABLE_FIELDS etait un string[] : le compilateur ne pouvait rien en
-   tirer, donc l indexation de la ligne rendait l union de TOUTES ses
-   colonnes — dates et booleens compris — que le code comparait ensuite
-   avec « >= ». En « as const » plus garde de type, l index se restreint
-   aux seules colonnes suivies. */
-type ChampSuivi = (typeof TRACKABLE_FIELDS)[number];
-const estChampSuivi = (cle: string): cle is ChampSuivi =>
-  (TRACKABLE_FIELDS as readonly string[]).includes(cle);
+/* La decision elle-meme vit dans `deblocage.ts`, avec ses tests : elle
+   est la seule autorite pour ce qu elle sait juger, puisque
+   `grant_achievement` ne verifie aucune condition. */
 
 async function checkAchievements(userId: string) {
   const { data: tracking } = await supabase
@@ -305,39 +288,8 @@ async function checkAchievements(userId: string) {
     if (unlockedKeys.has(def.key)) continue;
 
     const condition = def.conditions as unknown as ConditionSucces;
-    let shouldUnlock = false;
 
-    // Check if it's a simple trackable field comparison
-    if (estChampSuivi(condition.type)) {
-      const val = tracking[condition.type];
-      shouldUnlock = (val || 0) >= (condition.value as number);
-    } else {
-      switch (condition.type) {
-        case "all_difficulties_created":
-          shouldUnlock =
-            (tracking.easy_goals_created || 0) > 0 &&
-            (tracking.medium_goals_created || 0) > 0 &&
-            (tracking.hard_goals_created || 0) > 0 &&
-            (tracking.extreme_goals_created || 0) > 0 &&
-            (tracking.impossible_goals_created || 0) > 0 &&
-            (tracking.custom_goals_created || 0) > 0;
-          break;
-        case "has_pact":
-          shouldUnlock = tracking.has_pact || false;
-          break;
-        case "has_edited_pact":
-          shouldUnlock = tracking.has_edited_pact || false;
-          break;
-        case "rank_up":
-          shouldUnlock = (tracking.current_rank_tier || 1) > 1;
-          break;
-        case "speed_complete":
-          // handled inline in trackGoalCompleted
-          break;
-      }
-    }
-
-    if (shouldUnlock) {
+    if (verdictDuClient(condition, tracking) === "debloque") {
       await unlockAchievement(userId, def.key, def.name, def.rarity as AchievementRarity);
     }
   }
