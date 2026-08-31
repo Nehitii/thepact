@@ -1,4 +1,5 @@
 import { addHours, format as formaterDate } from "date-fns";
+import { duJourNu } from "@/socle/outils/jour";
 import { composerInstant } from "@/domaines/agenda/logique/temps";
 import { natureDe, estRendezVous } from "@/domaines/taches";
 import type { CalendarEvent } from "@/domaines/agenda/types";
@@ -41,7 +42,7 @@ const RIEN_DE_PROPRE = {
  * ne se voit pas sur une grille horaire.
  */
 export function momentDuJour(echeance: string, heure: string): { debut: string; fin: string } | null {
-  const jour = new Date(echeance);
+  const jour = duJourNu(echeance);
   if (Number.isNaN(jour.getTime())) return null;
   /* « 14:30:00 » -> « 14:30 » : composerInstant attend hh:mm. */
   const debut = composerInstant(formaterDate(jour, "yyyy-MM-dd"), heure.slice(0, 5));
@@ -107,8 +108,8 @@ export function evenementDObjectif(g: LigneObjectif, userId: string): CalendarEv
     title: `🎯 ${g.name}`,
     description: null,
     location: null,
-    start_time: new Date(g.deadline).toISOString(),
-    end_time: new Date(g.deadline).toISOString(),
+    start_time: duJourNu(g.deadline).toISOString(),
+    end_time: duJourNu(g.deadline).toISOString(),
     all_day: true,
     color: "#a855f7",
     category: "goal-deadline",

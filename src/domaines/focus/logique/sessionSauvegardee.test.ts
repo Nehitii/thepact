@@ -31,7 +31,7 @@
  */
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  AGE_MAX_MS, AU_REPOS, AVANCES_MAX, CLE_SESSION, RETARD_MAX_MS, cleJour,
+  AGE_MAX_MS, AU_REPOS, AVANCES_MAX, CLE_SESSION, RETARD_MAX_MS,
   lireSession, oublierSession, restaurer, secondesDePause,
 } from "./sessionSauvegardee";
 
@@ -56,27 +56,6 @@ const aInstant = <R>(instant: number, f: () => R): R => {
 };
 
 afterEach(() => { localStorage.clear(); });
-
-describe("cleJour : la journee telle qu on la vit", () => {
-  it("rend la date LOCALE, et non la date UTC", () => {
-    /* Une seance close a 1 h 30 du matin a Paris appartient a ce
-       jour-la. Lue en UTC, elle basculait sur la veille : total du
-       jour faux et serie rompue pour qui travaille tard. */
-    const tz = process.env.TZ;
-    process.env.TZ = "Europe/Paris";
-    expect(cleJour(new Date("2026-08-31T01:30:00.000Z"))).toBe("2026-08-31");
-    expect(cleJour(new Date("2026-01-01T04:00:00.000Z"))).toBe("2026-01-01");
-    process.env.TZ = "America/New_York";
-    expect(cleJour(new Date("2026-08-31T01:30:00.000Z"))).toBe("2026-08-30");
-    expect(cleJour(new Date("2026-01-01T04:00:00.000Z"))).toBe("2025-12-31");
-    process.env.TZ = tz;
-  });
-
-  it("complete les mois et les jours a deux chiffres", () => {
-    expect(cleJour(new Date(2026, 0, 5))).toBe("2026-01-05");
-    expect(cleJour(new Date(2026, 11, 31))).toBe("2026-12-31");
-  });
-});
 
 describe("secondesDePause : la longue tous les quatre cycles", () => {
   it("donne la longue au quatrieme, au huitieme, au douzieme", () => {

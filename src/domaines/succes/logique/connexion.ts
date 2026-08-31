@@ -33,6 +33,8 @@
  * enregistree la veille est justement lue comme la veille.
  */
 
+import { jourLocal } from "@/socle/outils/jour";
+
 /** La ligne de suivi, reduite a ce qu une connexion regarde. */
 export interface SuiviDeConnexion {
   last_login_date?: string | null;
@@ -51,11 +53,10 @@ export interface MiseAJourDeConnexion {
   midnight_logins_count?: number;
 }
 
-/** Le jour tel que la personne le vit — celui qui compte. */
-export const jourVecu = (quand: Date): string =>
-  [quand.getFullYear(), quand.getMonth() + 1, quand.getDate()]
-    .map((n, i) => String(n).padStart(i === 0 ? 4 : 2, "0"))
-    .join("-");
+/* Le jour tel que la personne le vit vient du socle : deux domaines
+   en portaient chacun leur version, a l identique. Le nom local reste,
+   les appelants ne bougent pas. */
+export const jourVecu: (quand: Date) => string = jourLocal;
 
 /** Le jour UTC, celui qu on comptait avant. Garde pour le mesurer. */
 export const jourUTC = (quand: Date): string => quand.toISOString().split("T")[0];

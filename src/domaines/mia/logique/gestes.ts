@@ -1,4 +1,5 @@
 import type { EtatDuJour } from "@/domaines/mia/types";
+import { jourLocal } from "@/socle/outils/jour";
 import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 import { aplatir } from "./reflexes";
 
@@ -227,9 +228,7 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
        quelle. */
     const jour = new Date();
     jour.setDate(jour.getDate() + quand);
-    const date = [jour.getFullYear(), jour.getMonth() + 1, jour.getDate()]
-      .map((n, i) => String(n).padStart(i === 0 ? 4 : 2, "0"))
-      .join("-");
+    const date = jourLocal(jour);
     return {
       intention: "reporter",
       texte: `${t.nom} reportée au ${jour.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}.`,

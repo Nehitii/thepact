@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { jourLocal } from "@/socle/outils/jour";
 import { Database, Download, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle, UserX, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/socle/contextes/AuthContext";
@@ -88,7 +89,7 @@ export default function DataPortability() {
   const handleExportData = async () => {
     if (!user?.id) return;
     setIsExporting(true);
-    const jour = new Date().toISOString().slice(0, 10);
+    const jour = jourLocal();
     try {
       /* La sante seule s exporte en tableur : c est la seule categorie
          qu on ouvre pour la LIRE, pas pour la remettre. */

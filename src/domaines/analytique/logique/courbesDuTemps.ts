@@ -1,4 +1,5 @@
 import { parseISO, differenceInDays } from "date-fns";
+import { jourLocal } from "@/socle/outils/jour";
 import type { LigneObjectif, LigneHabitude, LigneMois } from "@/domaines/analytique/types";
 
 /* LES SIX COURBES DU TEMPS.
@@ -81,7 +82,7 @@ export function courbesDuTemps({
         d.setDate(d.getDate() + i);
         // Un jour a venir n'est ni tenu ni manque : il n'existe pas encore.
         if (d > maintenant) return;
-        const cle = d.toISOString().split("T")[0];
+        const cle = jourLocal(d);
         const e = habitByDate.get(cle) || { completed: 0, total: 0 };
         e.total++;
         if (coche) e.completed++;

@@ -28,6 +28,7 @@
  * une decision a prendre, pas un nettoyage a faire en passant.
  */
 import { useMemo } from "react";
+import { joursEntre, jourLocal } from "@/socle/outils/jour";
 import type { TFunction } from "i18next";
 import { getDifficultyIntensity, getDifficultyLabel, getStatusLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { teinteDuPalier } from "@/domaines/objectifs/logique/teintes";
@@ -92,9 +93,14 @@ export function useCarteObjectif(goal: ObjectifAffichable, options: Options): Ca
 
     let echeance: CarteObjectif["echeance"] = null;
     if (goal.deadline) {
-      const joursRestants = Math.ceil(
-        (new Date(goal.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+      /* ═══ ON COMPTE DES JOURS CIVILS, PAS DES MILLISECONDES ═══
+         `goal.deadline` est une colonne « date » : elle rend un jour
+         nu, que `new Date` lisait a MINUIT UTC. L ecart en
+         millisecondes avec l instant courant donnait alors un nombre
+         de jours qui dependait de l heure qu il est — juste a Paris
+         par la grace de l arrondi vers le haut, faux ailleurs. Deux
+         jours civils se soustraient sans ambiguite. */
+      const joursRestants = joursEntre(jourLocal(), goal.deadline);
       echeance = {
         joursRestants,
         couleur: joursRestants > 7 ? "#22c55e" : joursRestants > 0 ? "#f59e0b" : "#ef4444",

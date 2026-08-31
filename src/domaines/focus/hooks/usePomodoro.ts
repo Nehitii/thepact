@@ -6,7 +6,8 @@ import { trackPomodoroCompleted } from "@/domaines/succes";
 import type {
   PomodoroPhase, PomodoroSession, CycleAcheve,
 } from "@/domaines/focus/types";
-import { CLE_SESSION, AU_REPOS, cleJour, secondesDePause, oublierSession, restaurer, type Reprise, type SessionPersistee } from "@/domaines/focus/logique/sessionSauvegardee";
+import { CLE_SESSION, AU_REPOS, secondesDePause, oublierSession, restaurer, type Reprise, type SessionPersistee } from "@/domaines/focus/logique/sessionSauvegardee";
+import { jourLocal } from "@/socle/outils/jour";
 import type { EtatMinuteur } from "@/domaines/focus/types";
 /* Reexportes : les appelants importaient ces formes depuis ce fichier. */
 export type {
@@ -276,10 +277,10 @@ export function usePomodoroSessions() {
   });
 
   /** Journee d une session, en heure locale. */
-  const jourDe = (s: PomodoroSession) => (s.completed_at ? cleJour(new Date(s.completed_at)) : null);
+  const jourDe = (s: PomodoroSession) => (s.completed_at ? jourLocal(new Date(s.completed_at)) : null);
 
   const todayStats = (() => {
-    const aujourdhui = cleJour(new Date());
+    const aujourdhui = jourLocal(new Date());
     const duJour = (sessions.data || []).filter((s) => s.completed && jourDe(s) === aujourdhui);
     return {
       count: duJour.length,
@@ -293,7 +294,7 @@ export function usePomodoroSessions() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const cle = cleJour(d);
+      const cle = jourLocal(d);
       const dayLabel = d.toLocaleDateString(undefined, { weekday: "short" });
       const mins = (sessions.data || [])
         .filter((s) => s.completed && jourDe(s) === cle)
@@ -312,7 +313,7 @@ export function usePomodoroSessions() {
     for (let i = 0; i < 365; i++) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      if (jours.has(cleJour(d))) count++;
+      if (jours.has(jourLocal(d))) count++;
       else break;
     }
     return count;

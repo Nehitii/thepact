@@ -52,19 +52,6 @@ export interface Reprise {
   aCrediter: CycleAcheve[];
 }
 
-/* ── Journees locales ──────────────────────────────────────────
- *
- * toISOString() produit une date UTC. Comparee a des journees
- * construites en heure locale, elle classait tout ce qui est fait entre
- * minuit et le decalage horaire sur la veille : total du jour faux, et
- * serie rompue sans raison pour quiconque travaille tard.
- * ────────────────────────────────────────────────────────────── */
-export function cleJour(d: Date): string {
-  const mois = String(d.getMonth() + 1).padStart(2, "0");
-  const jour = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${mois}-${jour}`;
-}
-
 /** Duree, en secondes, de la pause qui suit le cycle numero `cycles`. */
 export function secondesDePause(cycles: number, breakMinutes: number, longBreakMinutes: number) {
   const longue = cycles > 0 && cycles % 4 === 0;

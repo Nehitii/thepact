@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { jourLocal } from "@/socle/outils/jour";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import type { TablesUpdate } from "@/socle/supabase/types";
@@ -31,9 +32,7 @@ function getWeekBounds() {
   const weekStart = new Date(now.getFullYear(), now.getMonth(), diff);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
-  // Use local date formatting to avoid UTC timezone shift
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const fmt = jourLocal;
   return {
     weekStart: fmt(weekStart),
     weekEnd: fmt(weekEnd),

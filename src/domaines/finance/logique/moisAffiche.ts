@@ -1,3 +1,4 @@
+import { moisLocal } from "@/socle/outils/jour";
 /* ═══════════════════════════════════════════════════════════════
    L ETAT D UN MOIS, ET CE QU IL AUTORISE
 
@@ -14,7 +15,7 @@
 /** Les quatre situations possibles d un mois, du futur vers le clos. */
 export type EtatDuMois = 'venir' | 'cours' | 'retard' | 'valide';
 
-const cle = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+const cle = moisLocal;
 
 /**
  * Ou en est ce mois-la.

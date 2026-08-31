@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { moisLocal } from "@/socle/outils/jour";
 import { useTranslation } from 'react-i18next';
 import { Check, Tag, Type, Coins, X, Repeat, CalendarClock, Layers, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/socle/outils/currency';
@@ -55,10 +56,7 @@ const TOUS_LES_MOIS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const MODES = ['recurrent', 'echeancier'] as const;
 type Mode = typeof MODES[number];
 
-const moisCourantISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
+const moisCourantISO = () => moisLocal();
 
 interface LigneRecurrenteProps {
   ouvert: boolean;

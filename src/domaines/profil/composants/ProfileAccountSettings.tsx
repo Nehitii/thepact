@@ -9,7 +9,7 @@ import { supabase } from "@/socle/supabase/client";
 import { useCurrency } from "@/socle/contextes/CurrencyContext";
 import { toast } from "sonner";
 import { useDateFnsLocale } from "@/socle/i18n/useDateFnsLocale";
-import { texteDepuisDateCivile, aujourdHuiCivil } from "@/domaines/profil/logique/dateCivile";
+import { texteDepuisDateCivile, aujourdHuiCivil } from "@/socle/outils/jour";
 import { Panneau, Bouton, ChampTexte, ChampListe } from "@/socle/ds/console-ui";
 import { VoletSecurite } from "@/domaines/profil/composants/VoletSecuriteCompte";
 

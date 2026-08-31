@@ -7,6 +7,7 @@
  * rail des etapes a cote.
  */
 import React from "react";
+import { jourLocal } from "@/socle/outils/jour";
 import { useTranslation } from "react-i18next";
 import { Check, MessageSquare, Sparkle } from "lucide-react";
 import { formatCurrency } from "@/socle/outils/currency";
@@ -325,7 +326,7 @@ export const DossierCourbe = React.memo(function DossierCourbe({
       if (!tenu) return;
       const d = new Date(depuis);
       d.setDate(d.getDate() + i);
-      m.set(d.toISOString().split("T")[0], { count: 1, completed: true });
+      m.set(jourLocal(d), { count: 1, completed: true });
     });
     return m;
   }, [coches, depuis]);

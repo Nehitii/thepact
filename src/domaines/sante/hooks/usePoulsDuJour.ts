@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { jourLocal } from "@/socle/outils/jour";
 import { supabase } from "@/socle/supabase/client";
 
 /**
@@ -69,11 +70,7 @@ function fenetreDuJour() {
 
   /* La date locale écrite à la main : toISOString() bascule en UTC et
      rendrait « hier » pour tout l'est de Greenwich en soirée. */
-  const jour = [
-    debut.getFullYear(),
-    String(debut.getMonth() + 1).padStart(2, "0"),
-    String(debut.getDate()).padStart(2, "0"),
-  ].join("-");
+  const jour = jourLocal(debut);
 
   return { debut: debut.toISOString(), fin: fin.toISOString(), jour };
 }

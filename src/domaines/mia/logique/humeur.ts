@@ -1,4 +1,5 @@
 import type { EtatDuJour } from "@/domaines/mia/types";
+import { jourLocal } from "@/socle/outils/jour";
 import type { ExpressionMia } from "@/domaines/mia/logique/visages";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 
@@ -167,7 +168,7 @@ export function chercherPassage(etat: EtatDuJour | undefined, vuAvant: string | 
 export function passageDuJour(etat: EtatDuJour | undefined, vuAvant: string | null): Passage | null {
   if (!etat || !etat.ordres.length) return null;
   if (!etat.ordres.every((o) => o.reclame)) return null;
-  const empreinte = `close:${new Date().toISOString().slice(0, 10)}`;
+  const empreinte = `close:${jourLocal()}`;
   if (empreinte === vuAvant) return null;
   const prime = etat.ordres.reduce((s, o) => s + o.prime, 0);
   return {

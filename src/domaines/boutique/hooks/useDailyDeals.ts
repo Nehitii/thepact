@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { jourLocal } from "@/socle/outils/jour";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
 export interface DailyDeal {
@@ -37,11 +38,7 @@ export function useDailyDeals() {
       await supabase.rpc("assurer_offres_du_jour");
 
       const aujourdhui = new Date();
-      const jour = [
-        aujourdhui.getFullYear(),
-        String(aujourdhui.getMonth() + 1).padStart(2, "0"),
-        String(aujourdhui.getDate()).padStart(2, "0"),
-      ].join("-");
+      const jour = jourLocal(aujourdhui);
 
       const { data: deals, error } = await supabase
         .from("shop_daily_deals")

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { moisLocal } from "@/socle/outils/jour";
 import type { Locale } from "date-fns";
 import { RARETES, rangDeRarete, type Rarete } from "@/domaines/succes/logique/rarete";
 import type { Succes } from "@/domaines/succes/types";
@@ -67,7 +68,7 @@ export function chroniqueParMois(succes: Succes[], locale: Locale) {
   for (const x of succes) {
     if (!x.obtenu || !x.obtenu_le) continue;
     const d = new Date(x.obtenu_le);
-    const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const cle = moisLocal(d);
     const groupe = par.get(cle) ?? {
       titre: format(d, "LLLL yyyy", { locale }),
       quand: new Date(d.getFullYear(), d.getMonth(), 1),

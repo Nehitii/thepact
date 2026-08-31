@@ -6,7 +6,7 @@ import { ProfileAccountSettings, type VoletCompte } from "@/domaines/profil/comp
 import { ProfileDevilNote } from "@/domaines/profil/composants/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
-import { dateCivileDepuisTexte } from "@/domaines/profil/logique/dateCivile";
+import { dateCivileDepuisTexte } from "@/socle/outils/jour";
 import { Loader2 } from "lucide-react";
 import "@/socle/ds/reglages.css";
 

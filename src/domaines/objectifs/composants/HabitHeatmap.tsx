@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { duJourNu } from "@/socle/outils/jour";
 import { cn } from "@/socle/outils/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/socle/ui/tooltip";
 import { format, eachDayOfInterval, subDays, startOfWeek } from "date-fns";
@@ -59,10 +60,10 @@ export function HabitHeatmap({ data, weeks = 20, className }: HabitHeatmapProps)
     const months: { label: string; weekIndex: number }[] = [];
     let lastMonth = -1;
     for (const cell of grid) {
-      const month = new Date(cell.date).getMonth();
+      const month = duJourNu(cell.date).getMonth();
       if (month !== lastMonth && cell.dayOfWeek === 0) {
         months.push({
-          label: format(new Date(cell.date), "MMM"),
+          label: format(duJourNu(cell.date), "MMM"),
           weekIndex: cell.weekIndex,
         });
         lastMonth = month;
@@ -121,7 +122,7 @@ export function HabitHeatmap({ data, weeks = 20, className }: HabitHeatmapProps)
                         />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs">
-                        <p className="font-bold">{format(new Date(cell.date), "MMM d, yyyy")}</p>
+                        <p className="font-bold">{format(duJourNu(cell.date), "MMM d, yyyy")}</p>
                         <p>{cell.count} habit{cell.count !== 1 ? "s" : ""} completed</p>
                       </TooltipContent>
                     </Tooltip>

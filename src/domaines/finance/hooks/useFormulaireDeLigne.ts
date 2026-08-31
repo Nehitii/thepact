@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { moisLocal } from "@/socle/outils/jour";
 import { normaliserCadre, cadreAEnregistrer, CADRE_PAR_DEFAUT, type CadreImage } from "@/domaines/finance/logique/cadre";
 import { lireNom, lireMontant } from "@/domaines/finance/logique/garde";
 import { moisDeChute, motifDepuisMois, partsDeLEcheancier, nombreDEcheances } from "@/domaines/finance/logique/cadence";
@@ -35,10 +36,7 @@ export interface FormulaireDeLigne {
  */
 
 /** Le mois en cours, en « aaaa-mm ». */
-const moisCourantISO = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
+const moisCourantISO = () => moisLocal();
 
 export function useFormulaireDeLigne({
   ouvert, ligne, categories, moisParDefaut, onEnregistrer, onOuvert, enCours,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { texteDepuisDateCivile } from "@/socle/outils/jour";
 import { Bouton } from "@/socle/ds/console-ui";
 import { Calendar } from "@/socle/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/socle/ui/popover";
@@ -57,8 +58,14 @@ export function ProjectTimelineCard({
     const { error } = await supabase
       .from("pacts")
       .update({
-        project_start_date: projectStartDate ? projectStartDate.toISOString().split('T')[0] : null,
-        project_end_date: projectEndDate ? projectEndDate.toISOString().split('T')[0] : null,
+        /* ═══ LE SELECTEUR REND UN JOUR, PAS UN INSTANT ═══
+           `toISOString().split('T')[0]` rendait le jour d UTC : une date
+           choisie au 8 septembre est un minuit LOCAL, soit le 7 a
+           22 h UTC l ete — la borne du pacte reculait d un jour a
+           chaque enregistrement. C est la faute deja corrigee pour la
+           date de naissance, revenue ici. */
+        project_start_date: texteDepuisDateCivile(projectStartDate),
+        project_end_date: texteDepuisDateCivile(projectEndDate),
       })
       .eq("id", pactId);
 

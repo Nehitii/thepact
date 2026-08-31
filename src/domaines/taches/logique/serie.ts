@@ -1,3 +1,4 @@
+import { jourLocal } from "@/socle/outils/jour";
 /* LA SERIE, ET LES COMPTEURS QUI L ACCOMPAGNENT.
  *
  * Ce calcul vivait au milieu de `completeTask` : entre trois ecritures
@@ -14,8 +15,7 @@
  *  Greenwich. `toISOString()` renvoie la date UTC : une tache terminee
  *  a 00 h 30 a Paris comptait pour la veille, et cassait une serie qui
  *  aurait du tenir. */
-export const cleDuJour = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+export const cleDuJour: (d: Date) => string = jourLocal;
 
 export interface CompteursDeTaches {
   current_streak: number;
