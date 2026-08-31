@@ -1419,6 +1419,16 @@
 
 /* La coche verte tient sur le sombre ; son signe doit virer au noir. */
 :root.dark .wl-coche[aria-pressed="true"] { color: var(--wl-noir); }
+
+/* ═══ ET LA BASCULE VITRINE/REGISTRE AVAIT ETE OUBLIEE ═══
+   Ses deux voisines — le tri retenu, la coche — ont chacune leur
+   surcharge de nuit. Pas elle : elle pose « color: #FFFFFF » sur
+   « background: var(--wl-encre) », or l encre passe a #EAEEF4 dans
+   le sombre. Blanc sur blanc casse : 1,16 de contraste, un bouton
+   ACTIF ET INVISIBLE. La section le dit elle-meme — « la bascule se
+   tient A PART des tris » — et c est ce qui lui a fait manquer la
+   passe qui a traite les deux autres. */
+:root.dark .wl-forme[aria-pressed="true"] { color: var(--wl-noir); }
 :root.dark .wl-coche:disabled:hover { color: var(--wl-noir); }
 
 /* L etiquette de prix garde son jaune : c est elle, la signature. Son
