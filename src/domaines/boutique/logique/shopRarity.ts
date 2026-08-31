@@ -56,18 +56,35 @@ export const rarityConfig = {
 
    Ces accents sont poses en style INLINE sur les cartes, donc hors de
    portee de theme-clair.css. Ce sont des couleurs d ecran : l or de
-   legendaire, hsl(45 100% 60%), tombe a 1,2:1 sur du papier — c est
+   legendaire, hsl(45 100% 60%), tombe a 1,51:1 sur du papier — c est
    lui qui ecrit les prix, les etiquettes de rarete et le libelle du
    bouton d achat, soit l essentiel de ce qu on lit dans la boutique.
+   Aucun des quatre ne passe le seuil AA sur le fond clair.
 
-   La TEINTE de chaque rarete est conservee au degre pres : commun
-   reste ardoise, rare reste bleu, epique reste violet, legendaire
-   reste or. C est la clarte qui descend, et les alphas des lavis et
-   des lisereS qui montent — un voile a 0,12 se voit sur du noir, il
-   ne se voit pas sur du blanc.
+   La TEINTE de chaque rarete est conservee a trois degres pres :
+   commun reste ardoise, rare reste bleu, epique reste violet,
+   legendaire reste or. C est la clarte qui descend.
+
+   LES LISERES MONTENT, LES LAVIS DESCENDENT — et non l inverse, comme
+   ce commentaire l a longtemps dit. Mesure : lisere 0,30 -> 0,42 pour
+   le commun, jusqu a 0,45 -> 0,55 pour le legendaire ; lavis 0,12 ->
+   0,10 et lavis fort 0,25 -> 0,20. La raison est que l encre claire
+   est bien plus SOMBRE que l accent d ecran : a opacite egale, son
+   voile se voit davantage, donc il en faut moins.
 
    Les classes Tailwind (bg, text, badge*) ne changent pas : elles
-   sont deja rattachees aux signaux du theme dans index.css. */
+   sont deja rattachees aux signaux du theme dans index.css.
+
+   MESURE DU 30/08/2026, accents sur les fonds que declare index.css :
+
+     sur `hsl(210 100% 2%)`    commun 5,66  rare 5,59  epique 4,34
+                               legendaire 13,58
+     sur `hsl(210 50% 96%)`    commun 6,81  rare 8,11  epique 7,89
+                               legendaire 6,82
+
+   L EPIQUE EST SOUS LE SEUIL AA EN THEME SOMBRE, qui est le theme par
+   defaut. Constate, non corrige : en changer la teinte change ce que
+   l ecran affiche. */
 const rarityConfigClair = {
   common: {
     accent: "hsl(212 12% 34%)",
