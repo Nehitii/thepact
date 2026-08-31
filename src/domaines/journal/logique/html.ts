@@ -28,11 +28,41 @@ const BALISES = [
 
 const ATTRIBUTS = ["class", "href", "target", "rel", "data-type", "data-checked"];
 
-/* L editeur enveloppe chaque case dans un <label> qui contient, pour
-   les lecteurs d ecran, le texte « Task item checkbox… ». Retirer la
-   balise seule laissait ce texte dans la page : il faut emporter le
-   contenu avec elle. */
-const SANS_CONTENU = ["label"];
+/* CE DONT ON EMPORTE LE CONTENU, ET PAS SEULEMENT LA BALISE.
+ *
+ * L editeur enveloppe chaque case dans un <label> qui contient, pour
+ * les lecteurs d ecran, le texte « Task item checkbox… ». Retirer la
+ * balise seule laissait ce texte dans la page : il faut emporter le
+ * contenu avec elle.
+ *
+ * ═══ ET C EST CETTE OPTION QUI EN A OUVERT VINGT AUTRES ═══
+ *
+ * `FORBID_CONTENTS` REMPLACE la liste de la bibliotheque, elle ne s y
+ * ajoute pas — et c est cette liste-la qui emporte le texte des
+ * balises dont le contenu n est pas de la prose. Ne passer que
+ * « label » revenait donc a la vider.
+ *
+ * Mesure : vingt et une balises laissaient fuir leur texte, dont
+ * <script>, <style>, <title> et <noscript>. « <p>a</p><script>
+ * alert(1)</script> » rendait « <p>a</p>alert(1) » — le code n etait
+ * pas execute, il etait AFFICHE, en prose, au milieu de la page.
+ *
+ * Le detail qui rendait la faute difficile a voir : une balise seule
+ * en tete de fragment est analysee comme si elle etait dans <head> et
+ * disparait avec son texte. Il faut du contenu AVANT elle — c est-a-
+ * dire un collage dans un document deja commence — pour que la fuite
+ * apparaisse.
+ *
+ * La liste est donc ecrite ici, en toutes lettres, et le test verifie
+ * balise par balise qu aucune ne fuit. Ce n est plus la bibliotheque
+ * qui nous protege, c est la mesure. */
+const SANS_CONTENU = [
+  "label",
+  "script", "style", "title", "noscript", "noframes", "template", "plaintext",
+  "head", "textarea", "xmp", "noembed", "iframe", "object", "form",
+  "svg", "math", "annotation-xml", "foreignobject", "desc",
+  "video", "audio", "colgroup", "thead",
+];
 
 let hookPose = false;
 
