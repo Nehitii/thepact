@@ -54,7 +54,20 @@ const PAGES: { mots: string[]; route: string; nom: string }[] = [
 ];
 
 const VERBES_OUVRIR = ["ouvre", "ouvrir", "montre", "montrer", "affiche", "affiches", "va", "amene", "emmene"];
-const VERBES_COCHER = ["coche", "cocher", "coches", "termine", "terminer", "fini", "finis", "valide", "valider", "fait", "faite"];
+/* « FAIT » ET « FAITE » N'ÉTAIENT PAS DES ORDRES, C'ÉTAIENT DES
+   PARTICIPES — et ils happaient la conversation.
+
+   L'impératif de « faire » est « fais » ; « fait courses » ne se dit
+   pas. Ces deux mots-là ne servaient donc aucune formulation naturelle,
+   mais ils figurent dans une phrase française sur deux : dès qu'ils
+   apparaissaient, M.I.A. cherchait une tâche et répondait « je ne
+   trouve pas … dans tes tâches ouvertes » — au lieu de laisser la
+   question aller au modèle.
+   MESURE : sur dix phrases ordinaires, DIX étaient happées ; sans ces
+   deux mots, quatre. Et pas une seule commande légitime n'est perdue.
+   Les quatre qui restent viennent de « terminé », « validé » et
+   « fini », qui sont, eux, de vrais impératifs. */
+const VERBES_COCHER = ["coche", "cocher", "coches", "termine", "terminer", "fini", "finis", "valide", "valider"];
 const VERBES_AJOUTER = ["ajoute", "ajouter", "cree", "creer", "note", "noter", "rappelle"];
 const VERBES_REPORTER = ["reporte", "reporter", "decale", "decaler", "repousse", "repousser"];
 
@@ -180,7 +193,11 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
 
   /* ── REPORTER UNE TÂCHE ── */
   if (VERBES_REPORTER.some(a)) {
-    const quand = a("demain") ? 1 : a("apres") && a("demain") ? 2 : a("semaine") ? 7 : null;
+    /* APRÈS-DEMAIN D'ABORD, SINON IL N'ARRIVE JAMAIS. « après-demain »
+       contient « demain » : tester « demain » en premier attrapait les
+       deux, et reportait d'un jour au lieu de deux. La branche à deux
+       jours ne pouvait pas se déclencher. */
+    const quand = a("apres") && a("demain") ? 2 : a("demain") ? 1 : a("semaine") ? 7 : null;
     if (quand === null) return null;
     const cible = apresLeVerbe(question, VERBES_REPORTER)?.replace(/\b(a|demain|apres|la|semaine|prochaine)\b/g, "").trim();
     if (!cible) return null;
@@ -192,18 +209,42 @@ export function chercherGeste(question: string, etat: EtatDuJour | undefined): G
         expression: "genee",
       };
     }
+    /* ELLE NE DEVINE PAS ICI NON PLUS. Cocher demandait déjà laquelle
+       quand deux tâches se valaient ; reporter prenait la première
+       venue. La règle de l'en-tête vaut pour les deux gestes. */
+    if (candidats.length > 1 && candidats[0].score === candidats[1].score) {
+      return {
+        intention: "reporter-ambigu",
+        texte: `Deux possibles : « ${candidats[0].t.nom} » ou « ${candidats[1].t.nom} ». Laquelle ?`,
+        expression: "reflexion",
+      };
+    }
     const t = candidats[0].t;
-    const date = new Date(Date.now() + quand * 86_400_000).toISOString().slice(0, 10);
+    /* LE JOUR EST CELUI QU'ON VIT. Ajouter des millisecondes puis lire
+       la date en UTC décalait le report d'un jour entre minuit et
+       l'heure du fuseau — « demain » à une heure du matin renvoyait à
+       aujourd'hui. On avance la date civile, et on l'écrit telle
+       quelle. */
+    const jour = new Date();
+    jour.setDate(jour.getDate() + quand);
+    const date = [jour.getFullYear(), jour.getMonth() + 1, jour.getDate()]
+      .map((n, i) => String(n).padStart(i === 0 ? 4 : 2, "0"))
+      .join("-");
     return {
       intention: "reporter",
-      texte: `${t.nom} reportée au ${new Date(date).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}.`,
+      texte: `${t.nom} reportée au ${jour.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}.`,
       expression: quand >= 7 ? "severe" : "contente",
       action: { type: "reporter", id: t.id, nom: t.nom, a: date },
     };
   }
 
   /* ── AJOUTER UNE TÂCHE ── */
-  if (VERBES_AJOUTER.some(a) && (a("tache") || a("todo") || plat.includes(":"))) {
+  /* LE DEUX-POINTS SE CHERCHE DANS LA QUESTION, PAS DANS SA MISE À
+     PLAT. `aplatir` retire toute ponctuation : `plat` n'a jamais
+     contenu de deux-points, et cette porte-là ne s'ouvrait donc
+     jamais. « ajoute : acheter du pain » ne déclenchait rien, alors que
+     la ligne juste en dessous sait déjà lire ce qui suit le signe. */
+  if (VERBES_AJOUTER.some(a) && (a("tache") || a("todo") || question.includes(":"))) {
     const brut = question.includes(":") ? question.slice(question.indexOf(":") + 1) : apresLeVerbe(question, VERBES_AJOUTER);
     const nom = (brut ?? "").replace(/[«»"“”]/g, "").trim();
     if (!nom || nom.length < 2) return null;
