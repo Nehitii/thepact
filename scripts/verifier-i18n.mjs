@@ -12,9 +12,27 @@
  * Ce script transforme ce risque latent en verification mecanique :
  *   npm run i18n:check
  *
- * Il ne lit que les cles litterales — t("a.b"). Les cles construites
- * (t("prefixe." + variable)) lui echappent par nature ; c est une raison
- * de plus de les eviter.
+ * ═══ IL NE LISAIT QUE LES CLES LITTERALES, ET IL EN MANQUAIT 230 ═══
+ *
+ * Releve du 31 aout 2026 : a cote des cles ecrites en toutes lettres,
+ * le depot en construit DEUX AUTRES FACONS, invisibles a une lecture
+ * litterale.
+ *
+ *   RANGEES COMME DONNEE — 146 cles distinctes, dans un champ nomme
+ *   `cle`, `labelKey` ou `key`, lues au rendu par `t(item.cle)`. La
+ *   palette de commandes en portait TRENTE-DEUX QUI N EXISTAIENT DANS
+ *   AUCUNE DES DEUX LANGUES : chacune retombait sur son repli
+ *   francais, si bien que la palette entiere restait en francais pour
+ *   un lecteur anglais, sans que rien ne le signale. C est exactement
+ *   le risque que decrit le paragraphe ci-dessus, realise.
+ *
+ *   CONSTRUITES PAR GABARIT — 44 prefixes distincts, de la forme
+ *   t(`goals.difficulties.${p.value}`) ou t("todo.priorities." + p).
+ *   On ne peut pas savoir par machine quelles valeurs prendra la
+ *   variable ; on peut en revanche exiger que le PREFIXE existe dans
+ *   les deux langues et y porte EXACTEMENT les memes enfants. Une
+ *   rarete ajoutee d un seul cote afficherait sa propre clef a
+ *   l ecran, et la chaine resterait verte.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -56,12 +74,44 @@ const traductions = Object.fromEntries(
 
 const origine = new Map();
 const cles = new Set();
+/* Les prefixes des cles construites, et le fichier qui les construit. */
+const prefixes = new Map();
+
+/* Une cle rangee comme donnee est une cle comme une autre : le champ
+   dit qu il en porte une, la valeur est un chemin pointe. C est ainsi
+   que la palette de commandes a pu vivre avec trente-deux cles
+   inexistantes. */
+const CHAMP_CLEF = /\b(?:cle|labelKey|key|i18nKey|cleI18n)\s*:\s*"([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)"/g;
+const GABARIT = /\bt\(\s*`([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*)\.\$\{/g;
+const CONCAT = /\bt\(\s*"([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*)\."\s*\+/g;
+
 for (const f of fichiersSources(RACINE)) {
   const source = fs.readFileSync(f, "utf8");
-  for (const m of source.matchAll(/\bt\(\s*"([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)"/g)) {
-    cles.add(m[1]);
-    if (!origine.has(m[1])) origine.set(m[1], path.relative(process.cwd(), f).replace(/\\/g, "/"));
-  }
+  const court = path.relative(process.cwd(), f).replace(/\\/g, "/");
+  const noter = (cle) => {
+    cles.add(cle);
+    if (!origine.has(cle)) origine.set(cle, court);
+  };
+  for (const m of source.matchAll(/\bt\(\s*"([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)"/g)) noter(m[1]);
+  for (const m of source.matchAll(CHAMP_CLEF)) noter(m[1]);
+  for (const re of [GABARIT, CONCAT])
+    for (const m of source.matchAll(re)) if (!prefixes.has(m[1])) prefixes.set(m[1], court);
+}
+
+/* Un prefixe construit doit exister DES DEUX COTES, et y porter les
+   memes enfants : c est tout ce qu on peut verifier sans connaitre la
+   valeur de la variable, et c est deja ce qui manquait. */
+const prefixesFautifs = [];
+for (const [p, ou] of prefixes) {
+  const noeuds = LANGUES.map((l) => feuille(traductions[l], p));
+  const absent = LANGUES.filter((_, i) => !noeuds[i] || typeof noeuds[i] !== "object" || Array.isArray(noeuds[i]));
+  if (absent.length) { prefixesFautifs.push({ p, ou, quoi: "absent ou sans enfants en " + absent.join(", ") }); continue; }
+  const [ens1, ens2] = noeuds.map((n) => new Set(Object.keys(n)));
+  const seul1 = [...ens1].filter((k) => !ens2.has(k));
+  const seul2 = [...ens2].filter((k) => !ens1.has(k));
+  if (seul1.length || seul2.length)
+    prefixesFautifs.push({ p, ou, quoi: "enfants divergents — " + LANGUES[0] + " seul : ["
+      + seul1.join(", ") + "]  " + LANGUES[1] + " seul : [" + seul2.join(", ") + "]" });
 }
 
 /* Une page qui n appelle JAMAIS t() etait invisible pour ce
@@ -107,7 +157,8 @@ const [a, b] = LANGUES.map((l) => aplatir(traductions[l]));
 const seulementA = [...a].filter((k) => !b.has(k));
 const seulementB = [...b].filter((k) => !a.has(k));
 
-console.log(`cles litterales utilisees : ${cles.size}`);
+console.log(`cles utilisees : ${cles.size} (litterales et rangees comme donnee)`);
+console.log(`prefixes construits : ${prefixes.size}`);
 if (muettes.length > 0) {
   console.log(`
 ${muettes.length} page(s) sans aucune traduction :`);
@@ -121,8 +172,8 @@ if (seulementA.length || seulementB.length) {
   for (const k of seulementB.slice(0, 20)) console.log(`  seulement en ${LANGUES[1]} : ${k}`);
 }
 
-if (manquantes.length === 0 && !seulementA.length && !seulementB.length) {
-  console.log("\naucune cle manquante.");
+if (manquantes.length === 0 && !seulementA.length && !seulementB.length && !prefixesFautifs.length) {
+  console.log("\naucune cle manquante, aucun prefixe construit en defaut.");
   process.exit(0);
 }
 
@@ -131,5 +182,15 @@ if (manquantes.length > 0) {
   for (const { cle, absentes, ou } of manquantes) {
     console.log(`  ${cle}   [${absentes.join(", ")}]   ${ou}`);
   }
+}
+
+if (prefixesFautifs.length > 0) {
+  console.log(`\n${prefixesFautifs.length} prefixe(s) construit(s) en defaut :`);
+  for (const { p, quoi, ou } of prefixesFautifs) console.log(`  ${p}   ${quoi}   ${ou}`);
+  console.log(`
+  Une cle construite ne se lit pas en toutes lettres : on ne peut donc
+  verifier que le prefixe. Qu il manque d un cote, ou qu il n y porte
+  pas les memes enfants, et l ecran affichera le chemin brut a la
+  premiere valeur non traduite.`);
 }
 process.exit(1);

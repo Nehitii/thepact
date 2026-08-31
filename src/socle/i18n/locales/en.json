@@ -3699,7 +3699,25 @@
     "chercherEntree": "Enter for the first result",
     "groupePages": "Pages",
     "groupeObjectifs": "Goals",
-    "groupeTaches": "Tasks"
+    "groupeTaches": "Tasks",
+    "home": "Dashboard",
+    "analytics": "Analytics",
+    "goals": "Goals",
+    "calendar": "Calendar",
+    "focus": "Focus",
+    "todo": "Task list",
+    "theCall": "The Call",
+    "journal": "Journal",
+    "finance": "Finance",
+    "health": "Health",
+    "wishlist": "Wishlist",
+    "community": "Community",
+    "friends": "Friends",
+    "leaderboard": "Leaderboard",
+    "hallOfFame": "Hall of Fame",
+    "inbox": "Inbox",
+    "achievements": "Achievements",
+    "shop": "Shop"
   },
   "weekly": {
     "titre": {
@@ -3826,5 +3844,23 @@
     "plusEnAttente": "This pact is no longer waiting for signatures.",
     "engagementTemoin": "By signing, you agree to stand as a moral witness. If the commitment fails, the Bonds at stake are redistributed.",
     "maintiensConfirmer": "Hold for 1.5 seconds to confirm."
+  },
+  "cmd": {
+    "newGoal": "New goal",
+    "graph": "Goal graph",
+    "mia": "Open M.I.A",
+    "shortcuts": "Keyboard shortcuts"
+  },
+  "set": {
+    "account": "Account",
+    "public": "Public profile",
+    "pact": "My pact",
+    "pactRules": "Pact rules",
+    "display": "Display & sound",
+    "healthSettings": "Health settings",
+    "notifications": "Notifications",
+    "security": "Security",
+    "privacy": "Privacy",
+    "data": "My data"
   }
 }

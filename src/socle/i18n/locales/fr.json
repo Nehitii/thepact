@@ -3699,7 +3699,25 @@
     "chercherEntree": "Entrée pour la première réponse",
     "groupePages": "Pages",
     "groupeObjectifs": "Objectifs",
-    "groupeTaches": "Tâches"
+    "groupeTaches": "Tâches",
+    "home": "Tableau de bord",
+    "analytics": "Statistiques",
+    "goals": "Objectifs",
+    "calendar": "Calendrier",
+    "focus": "Focus",
+    "todo": "Liste de tâches",
+    "theCall": "The Call",
+    "journal": "Journal",
+    "finance": "Finance",
+    "health": "Santé",
+    "wishlist": "Liste de souhaits",
+    "community": "Communauté",
+    "friends": "Alliés",
+    "leaderboard": "Classement",
+    "hallOfFame": "Panthéon",
+    "inbox": "Messages",
+    "achievements": "Hauts faits",
+    "shop": "Boutique"
   },
   "weekly": {
     "titre": {
@@ -3826,5 +3844,23 @@
     "plusEnAttente": "Ce pacte n’est plus en attente de signatures.",
     "engagementTemoin": "En signant, tu acceptes d’être témoin moral. Si l’engagement échoue, les Bonds en jeu seront redistribués.",
     "maintiensConfirmer": "Maintiens enfoncé pendant 1,5 seconde pour confirmer."
+  },
+  "cmd": {
+    "newGoal": "Nouvel objectif",
+    "graph": "Graphe des objectifs",
+    "mia": "Ouvrir M.I.A",
+    "shortcuts": "Raccourcis clavier"
+  },
+  "set": {
+    "account": "Compte",
+    "public": "Profil public",
+    "pact": "Mon pacte",
+    "pactRules": "Règles du pacte",
+    "display": "Affichage & son",
+    "healthSettings": "Réglages santé",
+    "notifications": "Notifications",
+    "security": "Sécurité",
+    "privacy": "Confidentialité",
+    "data": "Mes données"
   }
 }
