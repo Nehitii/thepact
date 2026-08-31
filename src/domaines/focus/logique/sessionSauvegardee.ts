@@ -71,13 +71,41 @@ export function secondesDePause(cycles: number, breakMinutes: number, longBreakM
   return (longue ? longBreakMinutes : breakMinutes) * 60;
 }
 
+const compteEntier = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0;
+
+/* ═══ LA PORTE, ET TOUT CE QU ELLE LAISSAIT PASSER ═══
+ *
+ * `localStorage` n est pas une source sure : le navigateur le rend a
+ * qui le lit, et personne ne garantit que ce qui y est ecrit vienne
+ * de cette application. Cette fonction est le seul point de passage
+ * vers `restaurer`, donc vers des lignes de `pomodoro_sessions`.
+ *
+ * Elle ne verifiait que trois choses, et la troisieme ne tenait pas :
+ * `Date.now() - undefined` vaut NaN, et `NaN > AGE_MAX_MS` est FAUX.
+ * Une session sans `ecritAt`, ou dont l `ecritAt` est une chaine,
+ * franchissait donc la limite des douze heures sans la toucher.
+ *
+ * MESURE AVANT CORRECTION, sur une session forgee a la main :
+ * `debutCycleAt` a zero creditait 29 803 432 minutes commencant le
+ * 1er janvier 1970 — une ligne en base, et autant dans le compteur
+ * `pomodoro_total_minutes` des succes. Un `restant` negatif
+ * traversait tel quel, la ou la branche en cours le borne a zero.
+ *
+ * Les cent quatorze seances reellement enregistrees vont de 1 a 45
+ * minutes, aucune avant l an 2000 : le defaut est reste possible, il
+ * n a jamais eu lieu. */
 export function lireSession(): SessionPersistee | null {
   try {
     const brut = localStorage.getItem(CLE_SESSION);
     if (!brut) return null;
     const s = JSON.parse(brut) as SessionPersistee;
     if (s?.v !== 1 || (s.phase !== "work" && s.phase !== "break")) return null;
-    if (Date.now() - s.ecritAt > AGE_MAX_MS) return null;
+    if (!compteEntier(s.ecritAt) || Date.now() - s.ecritAt > AGE_MAX_MS) return null;
+    if (!compteEntier(s.restant) || !compteEntier(s.totalPhase) || !compteEntier(s.cycles)) return null;
+    /* Un cycle commence avant qu on ecrive son etat, et jamais a
+       l epoque Unix : c est ce qui borne la duree creditee. */
+    if (!compteEntier(s.debutCycleAt) || s.debutCycleAt === 0 || s.debutCycleAt > s.ecritAt) return null;
+    if (s.finAt !== null && !compteEntier(s.finAt)) return null;
     return s;
   } catch {
     return null;
