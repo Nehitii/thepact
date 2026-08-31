@@ -24,7 +24,6 @@ import { lazy } from "react";
 
 /* ── Le compteur de gestes ───────────────────────────────── */
 export {
-  rarityColors,
   initializeAchievementTracking,
   trackLogin,
   resynchroniserCompteurs,

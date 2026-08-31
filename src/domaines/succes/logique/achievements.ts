@@ -15,21 +15,6 @@ export type {
   AchievementCategory, AchievementRarity, ConditionSucces, Achievement,
 };
 
-
-
-
-
-export const rarityColors: Record<AchievementRarity, string> = {
-  common: "hsl(var(--achievement-common))",
-  uncommon: "hsl(var(--achievement-uncommon))",
-  rare: "hsl(var(--achievement-rare))",
-  epic: "hsl(var(--achievement-epic))",
-  legendary: "hsl(var(--achievement-legendary))",
-  mythic: "hsl(var(--achievement-mythic))",
-};
-
-
-
 // Initialize tracking for a new user (via SECURITY DEFINER RPC)
 export async function initializeAchievementTracking(_userId: string) {
   await supabase.rpc('init_achievement_tracking');

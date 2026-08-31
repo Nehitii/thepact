@@ -315,14 +315,6 @@ All colors MUST be HSL.
     --difficulty-impossible: 280 70% 38%;
     --difficulty-custom: 270 75% 42%;
 
-    /* Achievement Rarity Colors */
-    --achievement-common: 45 95% 55%;
-    --achievement-uncommon: 142 70% 50%;
-    --achievement-rare: 212 90% 55%;
-    --achievement-epic: 270 80% 60%;
-    --achievement-legendary: 45 100% 60%;
-    --achievement-mythic: 320 85% 60%;
-
     /* Nexus Panel System — theme-aware surfaces */
     --nexus-bg: hsla(210, 40%, 97%, 0.95);
     --nexus-border: hsla(200, 70%, 65%, 0.25);
@@ -473,14 +465,6 @@ All colors MUST be HSL.
     --difficulty-extreme: 0 90% 65%;
     --difficulty-impossible: 280 75% 45%;
     --difficulty-custom: 270 90% 65%;
-
-    /* Achievement Rarity Colors */
-    --achievement-common: 45 95% 60%;
-    --achievement-uncommon: 142 70% 55%;
-    --achievement-rare: 212 90% 60%;
-    --achievement-epic: 270 85% 65%;
-    --achievement-legendary: 45 100% 65%;
-    --achievement-mythic: 320 90% 65%;
 
     /* Nexus Panel System — dark mode (pixel-perfect preservation) */
     /* Translucide : les panneaux flottent dans l espace du fond au lieu de
