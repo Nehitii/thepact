@@ -3,6 +3,7 @@ import {
   dureeEnHeures, honneursDuTemps, type MesureDeLHonneur,
 } from "@/domaines/succes/logique/honneurDuTemps";
 import { verdictDuClient } from "@/domaines/succes/logique/deblocage";
+import { miseAJourDeConnexion } from "@/domaines/succes/logique/connexion";
 import type { Json } from "@/socle/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/socle/i18n/i18n";
@@ -36,11 +37,6 @@ export async function initializeAchievementTracking(_userId: string) {
 
 // Track login event
 export async function trackLogin(userId: string) {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
   const { data: tracking } = await supabase
     .from("achievement_tracking")
     .select("*")
@@ -52,39 +48,14 @@ export async function trackLogin(userId: string) {
     return checkAchievements(userId);
   }
 
-  const updates: Record<string, Json> = {};
+  /* Les trois series et leurs deux horloges vivent dans
+     logique/connexion.ts, avec leurs tests. */
+  const maj = miseAJourDeConnexion(new Date(), tracking);
+  if (!maj) return;
 
-  const lastLogin = tracking.last_login_date;
-  if (lastLogin === today) return;
-
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  if (lastLogin === yesterdayStr) {
-    updates.consecutive_login_days = (tracking.consecutive_login_days || 0) + 1;
-  } else {
-    updates.consecutive_login_days = 1;
-  }
-
-  updates.last_login_date = today;
-
-  const hourDiff = tracking.usual_login_hour !== null
-    ? Math.abs(currentHour - tracking.usual_login_hour)
-    : null;
-
-  if (hourDiff !== null && hourDiff <= 0 && currentMinute <= 15) {
-    updates.logins_at_same_hour_streak = (tracking.logins_at_same_hour_streak || 0) + 1;
-  } else {
-    updates.logins_at_same_hour_streak = 1;
-    updates.usual_login_hour = currentHour;
-  }
-
-  if (currentHour === 0 && currentMinute <= 5) {
-    updates.midnight_logins_count = (tracking.midnight_logins_count || 0) + 1;
-  }
-
-  await supabase.rpc('update_achievement_tracking', { p_updates: updates });
+  await supabase.rpc('update_achievement_tracking', {
+    p_updates: maj as unknown as Record<string, Json>,
+  });
   await checkAchievements(userId);
 }
 
