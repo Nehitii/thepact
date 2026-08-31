@@ -328,7 +328,15 @@ export const REGLES: Regle[] = [
       ["t", "es", "stupide"],
       ["tu", "es", "idiote"],
       ["t", "es", "idiote"],
-      ["ferme", "la"],
+      /* ["ferme", "la"] EST PARTI POUR LA MEME RAISON QUE LES DEUX
+         PRECEDENTS, ET IL AVAIT SURVECU A LA CORRECTION. Le groupe
+         n a pas de destinataire : il attrape « ferme la fenetre »,
+         « ferme la modale », « ferme la boutique », « ferme la liste
+         de souhaits ». Mesure : quatre demandes sur cinq recevaient
+         « Note. » ou « Ca ne change pas les chiffres. ». « ferme le
+         panneau » passait, lui — c est bien le « la » qui coutait, et
+         non le verbe. On perd « ferme-la » seul, qui part au modele.
+         ["tais", "toi"] reste : il porte son destinataire. */
       ["tais", "toi"],
     ],
     repondre: () => ({
