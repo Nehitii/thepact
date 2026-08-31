@@ -26,11 +26,18 @@ export const rarityConfig = {
     badgeBorder: "border-blue-500/30",
     animated: false,
   },
+  /* UN POINT DE CLARTE DE PLUS QUE LES TROIS AUTRES N EN ONT DEMANDE.
+     A 60 %, l accent epique valait 4,34:1 sur le fond sombre — sous le
+     seuil AA, et c est lui qui ecrit les prix des cartes epiques. A
+     61 % il vaut 4,53. Seul l accent portait du texte, donc seul lui
+     devait monter ; les trois autres suivent pour que la rarete reste
+     d une seule couleur, et personne ne verra la difference sur un
+     lavis a 0,15. */
   epic: {
-    accent: "hsl(270 80% 60%)",
-    glow: "hsl(270 80% 60% / 0.15)",
-    glowStrong: "hsl(270 80% 60% / 0.35)",
-    border: "hsl(270 80% 60% / 0.4)",
+    accent: "hsl(270 80% 61%)",
+    glow: "hsl(270 80% 61% / 0.15)",
+    glowStrong: "hsl(270 80% 61% / 0.35)",
+    border: "hsl(270 80% 61% / 0.4)",
     bg: "bg-purple-500/5",
     text: "text-purple-400",
     badgeBg: "bg-purple-500/15",
@@ -77,14 +84,15 @@ export const rarityConfig = {
 
    MESURE DU 30/08/2026, accents sur les fonds que declare index.css :
 
-     sur `hsl(210 100% 2%)`    commun 5,66  rare 5,59  epique 4,34
+     sur `hsl(210 100% 2%)`    commun 5,66  rare 5,59  epique 4,53
                                legendaire 13,58
      sur `hsl(210 50% 96%)`    commun 6,81  rare 8,11  epique 7,89
                                legendaire 6,82
 
-   L EPIQUE EST SOUS LE SEUIL AA EN THEME SOMBRE, qui est le theme par
-   defaut. Constate, non corrige : en changer la teinte change ce que
-   l ecran affiche. */
+   LES QUATRE PASSENT LE SEUIL AA DANS LES DEUX THEMES depuis que
+   l epique a pris un point de clarte — il valait 4,34 avant, sous le
+   seuil, dans le theme par DEFAUT. Il reste le plus juste des quatre,
+   et n a aucune marge a revendre. */
 const rarityConfigClair = {
   common: {
     accent: "hsl(212 12% 34%)",

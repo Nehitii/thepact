@@ -182,26 +182,28 @@ describe("la lisibilite des accents", () => {
     expect(Math.min(...RARETES.map(surClair))).toBeGreaterThan(6.5);
   });
 
-  /* ═══ CONSTATE, NON CORRIGE : L EPIQUE NE PASSE PAS EN THEME SOMBRE ═══
-     Le thème sombre est le thème par defaut, et personne ne l avait
-     mesure — le commentaire du fichier ne s inquiete que du papier.
+  /* ═══ L EPIQUE EST PASSE DE 4,34 A 4,53 ═══
+     Le theme sombre est le theme par defaut, et personne ne l avait
+     mesure — le commentaire du fichier ne s inquietait que du papier.
+     L accent epique y valait 4,34:1, sous le seuil AA, et c est lui qui
+     ecrit les prix des cartes epiques.
 
      MESURE DU 30/08/2026, accents sur le fond `hsl(210 100% 2%)` :
 
        commun      5,66
        rare        5,59
-       epique      4,34   <- sous les 4,5 du seuil AA
+       epique      4,34  ->  4,53  apres un point de clarte
        legendaire  13,58
 
-     L ecart est mince et l epique reste parfaitement visible ; ce qui
-     manque, c est la marge pour qui lit mal. Corriger demande de
-     choisir un autre violet, ce qui change ce que l ecran affiche. */
-  it("laisse l epique sous le seuil en theme sombre, et lui seul", () => {
-    expect(surSombre("epic")).toBeLessThan(4.5);
-    expect(surSombre("epic")).toBeGreaterThan(4.2);
-    for (const r of ["common", "rare", "legendary"] as const) {
-      expect(surSombre(r), r).toBeGreaterThanOrEqual(4.5);
-    }
+     C est le plus petit changement qui passe le seuil : la teinte et la
+     saturation ne bougent pas. Ce test est ce qui empeche de le
+     reperdre. */
+  it("porte le seuil AA en theme sombre, l epique compris", () => {
+    for (const r of RARETES) expect(surSombre(r), r).toBeGreaterThanOrEqual(4.5);
+    /* L epique reste le plus juste des quatre : il n a aucune marge a
+       revendre. */
+    expect(surSombre("epic")).toBeLessThan(4.6);
+    expect(Math.min(...RARETES.map(surSombre))).toBe(surSombre("epic"));
   });
 
   /* ═══ POURQUOI LA TABLE CLAIRE EXISTE ═══

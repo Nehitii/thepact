@@ -1,7 +1,13 @@
+import fs from "node:fs";
 import { describe, expect, it } from "vitest";
-import { encrePapier, selonTheme } from "./encrePapier";
+import { encrePapier } from "./encrePapier";
 
-/* ── LA MESURE, REFAITE ICI ──
+/* CE QUE L ENCRE GARANTIT — le contraste, le papier sur lequel il est
+   pris, la teinte qui ne bouge pas, et ce qui ne doit pas etre touche.
+   Ce qu elle EST — sa clarte, sa charge, son plafond de cible — est
+   eprouve dans `encrePapier.encre.test.ts`.
+
+   ── LA MESURE, REFAITE ICI ──
    Le module calcule le contraste pour DECIDER ; ces lignes le
    recalculent pour VERIFIER. Deux copies du meme code ne prouveraient
    rien — mais la formule WCAG 2.1 n a qu une ecriture, et c est la
@@ -16,11 +22,38 @@ const canaux = (hex: string) => {
   if (!m) throw new Error("pas un hexadecimal : " + hex);
   return [1, 2, 3].map((i) => parseInt(m[i], 16)) as [number, number, number];
 };
+const luminance = ([r, g, b]: [number, number, number]) =>
+  0.2126 * lineaire(r) + 0.7152 * lineaire(g) + 0.0722 * lineaire(b);
+
+/* ═══ LE PAPIER EST LU DANS LA FEUILLE, PAS RECOPIE ═══
+   Le module porte ses trois octets en dur ; ce test va chercher
+   `--background` du bloc clair dans `index.css` et verifie qu ils lui
+   repondent encore. Un papier recopie des deux cotes se desaccorderait
+   en silence le jour ou le theme bouge — et c est precisement ce qui
+   etait arrive : le module mesurait sur du blanc pur quand le theme
+   posait un blanc casse. */
+const feuilleDeStyle = fs.readFileSync("src/index.css", "utf8");
+function fondClairDeclare(): [number, number, number] {
+  const debut = feuilleDeStyle.indexOf("Light Mode");
+  const m = /--background:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%/.exec(feuilleDeStyle.slice(debut));
+  if (!m) throw new Error("fond clair introuvable dans index.css");
+  const h = parseFloat(m[1]) / 360, s = parseFloat(m[2]) / 100, l = parseFloat(m[3]) / 100;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const f = (t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  return [Math.round(f(h + 1 / 3) * 255), Math.round(f(h) * 255), Math.round(f(h - 1 / 3) * 255)];
+}
+const L_PAPIER = luminance(fondClairDeclare());
 const contraste = (hex: string) => {
-  const [r, g, b] = canaux(hex);
-  const l = 0.2126 * lineaire(r) + 0.7152 * lineaire(g) + 0.0722 * lineaire(b);
-  /* Le papier est blanc, donc sa luminance vaut un. */
-  return 1.05 / (l + 0.05);
+  const l = luminance(canaux(hex));
+  return (Math.max(l, L_PAPIER) + 0.05) / (Math.min(l, L_PAPIER) + 0.05);
 };
 const teinte = (hex: string) => {
   const [r, g, b] = canaux(hex).map(lineaire);
@@ -87,16 +120,17 @@ describe("le contraste garanti", () => {
   });
 
   /* AUCUNE DES VINGT NE PASSE LE SEUIL TELLE QUELLE : ce sont des
-     neons, de 1,34 a 4,47 sur du blanc. Toutes sont donc descendues, et
-     elles atterrissent entre 6,69 et 7,96 — bien au-dela des 4,5
-     demandes, parce que la clarte percue visee (0,46) est la meme pour
-     toute la famille et qu elle vaut, elle, environ sept. */
+     neons, de 1,22 a 4,07 sur le fond clair. Toutes sont donc
+     descendues, et elles atterrissent entre 6,10 et 7,26 — bien au-dela
+     des 4,5 demandes, parce que la clarte percue visee (0,46) est la
+     meme pour toute la famille et qu elle vaut, elle, environ six et
+     demi. */
   it("descend les vingt, et les pose toutes au meme poids", () => {
     for (const c of [...DU_CODE, ...DE_LA_BASE]) {
       expect(contraste(c), c).toBeLessThan(4.5);
       expect(encrePapier(c), c).not.toBe(c);
-      expect(contraste(encrePapier(c)), c).toBeGreaterThan(6.6);
-      expect(contraste(encrePapier(c)), c).toBeLessThan(8);
+      expect(contraste(encrePapier(c)), c).toBeGreaterThan(6);
+      expect(contraste(encrePapier(c)), c).toBeLessThan(7.5);
     }
   });
 
@@ -110,24 +144,48 @@ describe("le contraste garanti", () => {
     }
   });
 
-  /* ═══ LE PAPIER EST BLANC, ET LA FRONTIERE LE PROUVE ═══
-     `#0069fc` vaut 4,744 sur du blanc — il passe donc, tout juste. Sur
-     un papier a peine plus gris (#f0f0f0) il tomberait a 4,163 et
-     devrait etre descendu. C est la seule facon de verifier de
-     l exterieur SUR QUOI la mesure est prise : une couleur qui n a la
-     bonne reponse que pour un blanc pur. */
-  it("prend la mesure sur du blanc pur, pas sur un blanc casse", () => {
-    expect(contraste("#0069fc")).toBeGreaterThan(4.5);
-    expect(contraste("#0069fc")).toBeLessThan(4.8);
-    expect(encrePapier("#0069fc")).toBe("#0069fc");
+  /* ═══ LE PAPIER EST CELUI DU THEME, ET UNE COULEUR LE PROUVE ═══
+     `#0069fc` vaut 4,744 sur du BLANC PUR — il y passerait, tout
+     juste. Sur le fond que le theme pose vraiment il tombe a 4,326, et
+     doit donc etre descendu. C est la seule facon de verifier de
+     l exterieur SUR QUOI la mesure est prise : une couleur dont la
+     reponse depend du fond choisi.
+
+     C EST EXACTEMENT LE TROU QUI VIENT D ETRE BOUCHE. Tant que le
+     module mesurait sur du blanc, cette couleur-la ressortait intacte
+     et illisible. */
+  it("prend la mesure sur le fond du theme, pas sur du blanc pur", () => {
+    expect(contraste("#0069fc")).toBeLessThan(4.5);
+    expect(contraste("#0069fc")).toBeGreaterThan(4.2);
+    expect(encrePapier("#0069fc")).not.toBe("#0069fc");
+    expect(contraste(encrePapier("#0069fc"))).toBeGreaterThanOrEqual(4.5);
   });
 
-  /* LA MESURE DE REFERENCE : du noir sur du blanc vaut vingt et un, du
-     blanc sur du blanc vaut un. Si ces deux-la sont justes, la formule
-     l est. */
-  it("retrouve les deux bornes de l echelle WCAG", () => {
-    expect(contraste("#000000")).toBeCloseTo(21, 5);
-    expect(contraste("#ffffff")).toBeCloseTo(1, 5);
+  /* LE PAPIER DU MODULE REPOND A CELUI DE LA FEUILLE. Le module porte
+     ses trois octets en dur pour rester sans dependance ; c est ici
+     qu on verifie qu ils disent la meme chose que `--background`. */
+  it("porte le meme papier que le theme declare", () => {
+    expect(fondClairDeclare()).toEqual([240, 245, 250]);
+    expect(L_PAPIER).toBeCloseTo(0.9073, 4);
+    /* Le blanc pur, lui, vaut un : on mesurait donc 1,097 fois trop. */
+    expect(1.05 / (L_PAPIER + 0.05)).toBeCloseTo(1.0968, 4);
+  });
+
+  /* ═══ LES BORNES DE L ECHELLE, ET CE QUE LE PAPIER LEUR FAIT ═══
+     Du noir sur du BLANC PUR vaut vingt et un : c est la borne de la
+     norme, et elle verifie la formule.
+
+     Sur le papier reel, la meme encre noire ne vaut plus que 19,15 :
+     un fond qui n est pas blanc plafonne ce qu on peut atteindre. Une
+     cible au-dela est donc impossible par construction, pas seulement
+     hors de portee de l algorithme. */
+  it("retrouve la borne de la norme, et le plafond du vrai papier", () => {
+    const surBlanc = (l: number) => 1.05 / (l + 0.05);
+    expect(surBlanc(luminance([0, 0, 0]))).toBeCloseTo(21, 5);
+    expect(surBlanc(1)).toBeCloseTo(1, 5);
+
+    expect(contraste("#000000")).toBeCloseTo(19.15, 2);
+    expect(contraste("#f0f5fa")).toBeCloseTo(1, 5);
   });
 });
 
@@ -225,128 +283,3 @@ describe("les formes acceptees d un hexadecimal", () => {
   });
 });
 
-/* ═══════════════════════════════════════════════════════════════
-   LA BOUCLE DE RATTRAPAGE N A JAMAIS SERVI.
-
-   Apres avoir pose la clarte nominale, la fonction verifie le
-   contraste sur les canaux ARRONDIS et, s il manque quelque chose,
-   redescend d un centieme — quarante fois au plus.
-
-   MESURE : sur les huit cent trente couleurs de la grille qui sont
-   effectivement descendues, AUCUNE n a demande ce cran de plus. La
-   clarte percue de 0,46 vaut a elle seule environ sept de contraste,
-   soit une marge de deux et demi sur les 4,5 demandes. La boucle est un
-   filet, pas un rouage — mais elle n est pas morte pour autant : une
-   cible plus haute la reveille.
-   ═══════════════════════════════════════════════════════════════ */
-describe("la cible, et son plafond", () => {
-  it("n a pas besoin de son rattrapage au seuil par defaut", () => {
-    let descendues = 0, auRas = 0;
-    for (const c of grille()) {
-      const e = encrePapier(c);
-      if (e === c) continue;
-      descendues++;
-      /* Un resultat qui frole 4,5 est le signe que la boucle a du
-         travailler ; tous depassent 6,6. */
-      if (contraste(e) < 6) auRas++;
-    }
-    expect(descendues).toBeGreaterThan(500);
-    expect(auRas).toBe(0);
-  });
-
-  /* ═══ C EST LA QUE LE RATTRAPAGE TRAVAILLE, ET AU CENTIEME PRES ═══
-     A cible haute la clarte nominale ne suffit plus : la boucle
-     redescend cran par cran, et elle verifie le contraste sur les
-     canaux ARRONDIS — ceux que l hexadecimal portera vraiment. Les
-     marges obtenues sont minces, deux centiemes parfois (#ffd700 a 15
-     rend 15,02), et c est exactement ce que la verification avant
-     arrondi laisserait filer sous la cible. */
-  it("honore une cible exigeante, sur plusieurs teintes", () => {
-    for (const c of ["#00ff88", "#ef4444", "#ffd700", "#6366f1", "#22d3ee"]) {
-      for (const cible of [7, 10, 12, 15, 18, 20, 20.5]) {
-        expect(contraste(encrePapier(c, cible)), c + " a " + cible).toBeGreaterThanOrEqual(cible);
-      }
-    }
-  });
-
-  /* ═══ CONSTATE, NON CORRIGE : A VINGT ET UN, LA BOUCLE ABANDONNE
-     SANS LE DIRE ═══
-     Vingt et un est le contraste du noir pur sur du blanc — la borne
-     absolue de l echelle. La fonction descend la clarte par crans d un
-     centieme, quarante fois au plus, ce qui ne l amene jamais au noir :
-     elle rend #000100, qui vaut 20,909, et ne signale rien.
-
-     Ce n est pas atteignable aujourd hui : AUCUN appelant ne passe de
-     cible — les six sites d appel emploient tous `selonTheme(couleur,
-     sombre)` a deux arguments. Corriger demanderait de choisir ce que
-     fait la fonction quand elle n y arrive pas : rendre le noir, lever,
-     ou rendre son meilleur essai comme aujourd hui. */
-  it("s arrete a vingt virgule neuf quand on lui demande vingt et un", () => {
-    const e = encrePapier("#00ff88", 21);
-    expect(contraste(e)).toBeLessThan(21);
-    expect(contraste(e)).toBeGreaterThan(20.9);
-    expect(e).not.toBe("#000000");
-  });
-});
-
-describe("la memoire et le theme", () => {
-  it("rend deux fois le meme resultat", () => {
-    expect(encrePapier("#22c55e")).toBe(encrePapier("#22c55e"));
-  });
-
-  /* LA CIBLE FAIT PARTIE DE LA CLE : sans elle, la premiere demande
-     figerait la couleur pour toutes les suivantes, quelle que soit
-     l exigence. */
-  it("ne confond pas deux cibles differentes pour la meme couleur", () => {
-    expect(encrePapier("#00ff88", 4.5)).not.toBe(encrePapier("#00ff88", 12));
-    expect(encrePapier("#00ff88")).toBe(encrePapier("#00ff88", 4.5));
-  });
-
-  it("ne touche a rien en theme sombre", () => {
-    expect(selonTheme("#00ff88", true)).toBe("#00ff88");
-    expect(selonTheme("#00ff88", false)).toBe(encrePapier("#00ff88"));
-    expect(selonTheme("#00ff88", false, 12)).toBe(encrePapier("#00ff88", 12));
-  });
-});
-
-/* ═══════════════════════════════════════════════════════════════
-   QUATRE MUTATIONS QUE CES TESTS N ATTRAPENT PAS, ET POURQUOI.
-
-   Balayage du 30/08/2026 : trente-six mutations, trente-deux
-   attrapees. Les quatre restantes tournent toutes autour du meme
-   theme — la precision au-dela de ce qu un ecran peut montrer.
-
-   1. LE PAPIER DESCENDU D UN CHEVEU (#ffffff -> #fbfbfb). Le test de
-      frontiere prouve que la mesure est prise sur du blanc a quelques
-      pour cent pres ; il ne pince pas le dernier bit. Le pincer
-      demanderait une couleur dont le contraste tombe dans une fenetre
-      de trois centiemes, et ne dirait rien de plus a personne. Un
-      papier a un pour cent pres ne change aucune decision.
-
-   2. LE BORNAGE DES CANAUX DANS `versHex` EST HORS D ATTEINTE.
-      `ramenerDansLeGamut` rend deja des canaux entre -0,5 et 255,5 ;
-      le `Math.min/max` qui suit ne peut donc pas se declencher. Ce
-      n est pas du code mort, c est l autre moitie d une paire : la
-      tolerance du gamut s autorise un demi-canal PARCE QUE l ecriture
-      le rattrape. Retirer l un des deux seuls ne se voit pas ; retirer
-      les deux se verrait.
-
-   3. LA TEINTE NEGATIVE RAMENEE DANS LE TOUR EST SANS EFFET ICI. `H`
-      ne sert qu a nourrir un cosinus et un sinus, pour qui -30 degres
-      et 330 degres sont le meme angle. La normalisation est ecrite
-      pour qui LIT la valeur, pas pour le calcul qui la consomme.
-
-   4. LA TOLERANCE D UN DEMI-CANAL SUR LE GAMUT est un reglage de
-      precision : la resserrer a zero deplace le resultat de moins
-      d un pas sur 255. Aucun test ne devrait epingler ca — ce serait
-      un detecteur de changement sur un arrondi.
-
-   TROIS AUTRES ONT SURVECU AU PREMIER TOUR ET NE SURVIVENT PLUS : le
-   papier grisatre, la borne haute de la dichotomie et la verification
-   du seuil AVANT arrondi. J allais arbitrer la deuxieme comme
-   numeriquement equivalente — vingt divisions par deux ramenent
-   pourtant l ecart sous le pas d un canal. Elle ne l est pas : a cible
-   haute, elle rend une couleur hors gamut que l ecriture rabote, et le
-   contraste passe sous la cible. Le test des cibles exigeantes l a
-   trouvee. On n arbitre pas ce qu on peut encore mesurer.
-   ═══════════════════════════════════════════════════════════════ */

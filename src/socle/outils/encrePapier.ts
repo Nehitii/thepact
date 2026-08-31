@@ -28,10 +28,11 @@
  * MESURE DU 30/08/2026, sur les vingt couleurs qui passent réellement
  * par ici — douze écrites dans le code (raccourcis de l'accueil, barre
  * neurale, cinq difficultés du tirage) et huit venues de la BASE
- * (cadres de rang, accent de profil, difficulté sur mesure) :
+ * (cadres de rang, accent de profil, difficulté sur mesure), toutes
+ * mesurées sur le fond que le thème clair pose vraiment :
  *
- *   avant  1,34 à 4,47 sur du blanc — aucune ne passe le seuil
- *   après  6,69 à 7,96
+ *   avant  1,22 à 4,07 — aucune ne passe le seuil
+ *   après  6,10 à 7,26
  *
  * L'écart résiduel n'est pas du bruit — c'est l'effet
  * Helmholtz-Kohlrausch : à clarté perçue égale, un rouge saturé porte
@@ -44,8 +45,26 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-/** Le papier sur lequel l'encre est posée. Voir `--fond` du thème clair. */
-const PAPIER = { r: 0xff, g: 0xff, b: 0xff };
+/** Le papier sur lequel l'encre est posée : `--background` du thème
+ *  clair, `hsl(210 50% 96%)`, soit #f0f5fa.
+ *
+ *  IL A LONGTEMPS ÉTÉ BLANC PUR, ET CE N'ÉTAIT PAS ANODIN. Un blanc
+ *  pur est 1,097 fois plus contrasté que le vrai fond : toute couleur
+ *  mesurée ici en ressortait 9,7 % trop optimiste. Les couleurs qui
+ *  passaient le seuil de justesse — donc renvoyées telles quelles —
+ *  ne le passaient en fait pas. MESURE sur une grille de 24 389
+ *  couleurs : 1 056, soit 4,33 %, étaient sous le seuil AA sur le vrai
+ *  fond ; avec le bon papier, zéro.
+ *
+ *  Aucune des vingt couleurs que le projet emploie n'était dans cette
+ *  bande — elles sortent toutes très au-dessus du seuil — donc rien
+ *  n'a changé à l'écran. Le trou concernait les couleurs venues de la
+ *  BASE, que l'utilisateur peut modifier : cadres de rang, accent de
+ *  profil, difficulté sur mesure.
+ *
+ *  Le test lit `--background` dans index.css et vérifie que ces trois
+ *  octets lui répondent encore. */
+const PAPIER = { r: 0xf0, g: 0xf5, b: 0xfa };
 
 /** Le seuil AA pour du texte normal. */
 const CONTRASTE_CIBLE = 4.5;
