@@ -75,7 +75,15 @@ export function preparerVues(data: AnalyticsData) {
     if (!serieTaches.length) return [];
     const parDate = new Map(serieTaches.map((d) => [d.date, d.n]));
     const debut = new Date(serieTaches[0].date + "T12:00:00");
+    /* ═══ LES DEUX BORNES SONT A MIDI, ET C EST LE POINT ═══
+       Le curseur avance de midi en midi ; comparer a l instant courant
+       revenait donc a s arreter la veille TANT QU IL N ETAIT PAS MIDI.
+       Une tache faite le matin disparaissait de la bande — le jour
+       n etait pas fabrique, et la serie se lisait comme rompue depuis
+       la veille. Mesure : a 8 h 30 comme a 11 h 30, deux jours au lieu
+       de trois et un jour tenu au lieu de deux. */
     const fin = new Date();
+    fin.setHours(12, 0, 0, 0);
     const jours: { date: string; n: number }[] = [];
     for (let d = new Date(debut); d <= fin; d.setDate(d.getDate() + 1)) {
       const cle = format(d, "yyyy-MM-dd");
