@@ -179,7 +179,12 @@ export function styleDuCadre(c: CadreImage, teinte: string): React.CSSProperties
  * remplissage un format different rogne differemment — on reglait sur
  * une forme pour obtenir l autre.
  *
- * Le format est desormais fixe des deux cotes, et defini une seule
- * fois. C est la seule facon qu un apercu soit une promesse.
+ * Le format est desormais fixe des deux cotes. Il n est pourtant pas
+ * defini une seule fois, et le pretendre serait mentir : aucune regle
+ * CSS ne sait lire une constante TypeScript, si bien que le rapport
+ * est ecrit deux fois dans finance-cyber.css — une fois par plaque.
+ * Cette constante ne les remplace pas, elle les NOMME. C est le test
+ * qui les tient egaux a elle, et c est par la que l apercu reste une
+ * promesse.
  */
 export const FORMAT_PLAQUE = 16 / 7;

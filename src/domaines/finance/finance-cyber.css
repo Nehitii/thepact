@@ -1718,7 +1718,7 @@
   height: 100%;
   /* LES QUATRE VARIABLES VIENNENT DU CADRAGE ENREGISTRE.
      Sans reglage, ce sont les valeurs de repli ci-dessous — un logo
-     contenu, centre, sans zoom, avec sa marge. Voir lib/finance/cadre.ts. */
+     contenu, centre, sans zoom, avec sa marge. Voir domaines/finance/logique/cadre.ts. */
   object-fit: var(--cadre-ajuste, contain);
   object-position: var(--cadre-pos, 50% 50%);
   /* Lordre compte : scale sapplique dabord, translate ensuite et sur
@@ -2017,7 +2017,7 @@
 
 /* Format fixe, et non hauteur fixe : cest ce qui permet a lapercu
    du cadreur de promettre ce que la fiche affichera. Voir
-   FORMAT_PLAQUE dans lib/finance/cadre.ts. */
+   FORMAT_PLAQUE dans domaines/finance/logique/cadre.ts. */
 .cy-fiche-portrait { position: relative; aspect-ratio: 16 / 7; }
 .cy-fiche-portrait .cy-marque {
   position: absolute;

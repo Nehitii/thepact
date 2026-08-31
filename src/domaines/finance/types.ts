@@ -35,7 +35,7 @@ export interface RecurringExpense {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
-  /** Comment l image se pose sur sa plaque — voir lib/finance/cadre.ts. */
+  /** Comment l image se pose sur sa plaque — voir domaines/finance/logique/cadre.ts. */
   icon_cadre?: unknown;
   /* LA CADENCE — voir src/lib/finance/cadence.ts.
      Un abonnement trimestriel et un paiement en plusieurs fois sont la
@@ -68,7 +68,7 @@ export interface RecurringIncome {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
-  /** Comment l image se pose sur sa plaque — voir lib/finance/cadre.ts. */
+  /** Comment l image se pose sur sa plaque — voir domaines/finance/logique/cadre.ts. */
   icon_cadre?: unknown;
   /* LA CADENCE — voir src/lib/finance/cadence.ts.
      Un abonnement trimestriel et un paiement en plusieurs fois sont la
@@ -148,7 +148,7 @@ export interface FinancialItem {
   category?: string | null;
   icon_emoji?: string | null;
   icon_url?: string | null;
-  /** Comment l image se pose sur sa plaque — voir lib/finance/cadre.ts. */
+  /** Comment l image se pose sur sa plaque — voir domaines/finance/logique/cadre.ts. */
   icon_cadre?: unknown;
   /* LA CADENCE — voir src/lib/finance/cadence.ts.
      Un abonnement trimestriel et un paiement en plusieurs fois sont la
