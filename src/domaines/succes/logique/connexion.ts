@@ -6,30 +6,31 @@
  * interroger, et ce sont des compteurs qui ne se remettent jamais a
  * zero tout seuls — une erreur s y accumule au lieu de se voir.
  *
- * ═══ DEUX HORLOGES, ET ELLES NE SONT PAS D ACCORD ═══
+ * ═══ UNE SEULE HORLOGE, ET C EST CELLE QU ON VIT ═══
  *
- * LE JOUR EST COMPTE EN UTC — `toISOString()` — et L HEURE EN LOCAL —
- * `getHours()`. C est le code d origine, garde tel quel ici ; ce module
- * le rend seulement visible.
+ * LE JOUR SE COMPTAIT EN UTC — `toISOString()` — quand l heure, elle,
+ * se compte en LOCAL — `getHours()`. Deux horloges pour une meme
+ * decision : en France, entre minuit et deux heures du matin l ete
+ * (une l hiver), le jour UTC etait encore celui de la VEILLE.
  *
- * En France, entre minuit et deux heures du matin, le jour UTC est donc
- * ENCORE CELUI DE LA VEILLE. Trois consequences, chacune epinglee par
- * un test :
+ * CE QUE CA COUTAIT :
  *
- *   LA SERIE DE JOURS bascule a 2 h du matin l ete (1 h l hiver), pas a
- *   minuit. Se connecter a 1 h puis a 23 h le meme jour civil compte
- *   pour DEUX jours ; ne se connecter qu a 1 h deux nuits de suite en
- *   compte pour deux aussi, ce qui est juste. Le decalage se voit au
- *   bord, pas au milieu.
+ *   LE SUCCES DE MINUIT ETAIT PRESQUE INGAGNABLE. Il demande une
+ *   connexion entre 0 h 00 et 0 h 05 locales — soit 22 h 00 a 22 h 05
+ *   UTC de la veille. Or la fonction sort avant tout si la journee a
+ *   deja ete comptee : il fallait n avoir pas ouvert l application de
+ *   toute la journee precedente, sept fois de suite. MESURE DU
+ *   31/08/2026 : le compteur valait zero.
  *
- *   LE SUCCES DE MINUIT est presque ingagnable. Il demande une
- *   connexion entre 0 h 00 et 0 h 05 LOCALES — donc 22 h 00 a 22 h 05
- *   UTC de la VEILLE. Or la fonction sort avant tout si le jour UTC a
- *   deja ete vu. Il faut donc n avoir pas ouvert l application de toute
- *   la journee precedente, sept fois, pour decrocher le succes.
+ *   LA SERIE DE JOURS basculait a 2 h du matin, pas a minuit. Se
+ *   connecter a 1 h puis a 23 h le meme jour CIVIL comptait pour deux
+ *   jours de serie, alors qu on n en avait vecu qu un.
  *
- *   L HEURE HABITUELLE ne souffre pas du decalage : elle ne compare que
- *   des heures locales entre elles.
+ * Le jour est desormais le jour LOCAL, comme les heures. Le passage est
+ * sans heurt : une journee enregistree en UTC vaut le jour local pour
+ * toute connexion posterieure a l heure du decalage — c est-a-dire pour
+ * la quasi-totalite d entre elles — et une connexion nocturne
+ * enregistree la veille est justement lue comme la veille.
  */
 
 /** La ligne de suivi, reduite a ce qu une connexion regarde. */
@@ -50,14 +51,14 @@ export interface MiseAJourDeConnexion {
   midnight_logins_count?: number;
 }
 
-/** Le jour tel que la colonne le stocke : en UTC, pas en local. */
-export const jourEnregistre = (quand: Date): string => quand.toISOString().split("T")[0];
-
-/** Le jour tel que la personne le vit. Rien ne l emploie encore. */
+/** Le jour tel que la personne le vit — celui qui compte. */
 export const jourVecu = (quand: Date): string =>
   [quand.getFullYear(), quand.getMonth() + 1, quand.getDate()]
     .map((n, i) => String(n).padStart(i === 0 ? 4 : 2, "0"))
     .join("-");
+
+/** Le jour UTC, celui qu on comptait avant. Garde pour le mesurer. */
+export const jourUTC = (quand: Date): string => quand.toISOString().split("T")[0];
 
 /** Le premier quart d heure d une heure ronde. */
 export const DANS_LE_QUART = 15;
@@ -70,19 +71,19 @@ const compte = (v: number | null | undefined): number => v ?? 0;
  * Ce qu une connexion ajoute — ou `null` s il n y a rien a ecrire.
  *
  * `null` veut dire « ce jour-la est deja compte » : la fonction ne
- * s execute qu une fois par jour UTC, et c est ce qui empeche une
+ * s execute qu une fois par jour civil, et c est ce qui empeche une
  * ouverture d onglet de gonfler les series.
  */
 export function miseAJourDeConnexion(
   maintenant: Date,
   suivi: SuiviDeConnexion,
 ): MiseAJourDeConnexion | null {
-  const aujourdHui = jourEnregistre(maintenant);
+  const aujourdHui = jourVecu(maintenant);
   if (suivi.last_login_date === aujourdHui) return null;
 
-  /* LA VEILLE SE CALCULE EN JOUR LOCAL PUIS S ECRIT EN UTC. Reculer
-     d un jour civil deplace l instant de 24 heures — sauf au passage a
-     l heure d ete, ou il n en deplace que 23. */
+  /* LA VEILLE EST LE JOUR CIVIL PRECEDENT. Reculer d un jour deplace
+     l instant de 24 heures — 23 au passage a l heure d ete — mais la
+     date locale, elle, recule bien d exactement un jour. */
   const veille = new Date(maintenant);
   veille.setDate(veille.getDate() - 1);
 
@@ -91,7 +92,7 @@ export function miseAJourDeConnexion(
 
   const maj: MiseAJourDeConnexion = {
     consecutive_login_days:
-      suivi.last_login_date === jourEnregistre(veille)
+      suivi.last_login_date === jourVecu(veille)
         ? compte(suivi.consecutive_login_days) + 1
         : 1,
     last_login_date: aujourdHui,

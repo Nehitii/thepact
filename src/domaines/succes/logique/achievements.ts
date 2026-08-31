@@ -233,14 +233,33 @@ export async function trackFinanceMonthValidated(userId: string) {
    est la seule autorite pour ce qu elle sait juger, puisque
    `grant_achievement` ne verifie aucune condition. */
 
+/* ═══ ON JUGE SUR LES MESURES, PLUS SUR LES COMPTEURS ═══
+ *
+ * Cette fonction lisait `achievement_tracking` — des compteurs
+ * incrementes a l evenement. `mesures_du_membre` rend la MEME ligne,
+ * avec par-dessus ce que le serveur RECOMPTE depuis les tables
+ * sources : objectifs, etapes, taches, souhaits, achats, transactions.
+ * Les champs que rien ne recompte — la serie de la meme heure, le
+ * compteur de minuit, le pacte edite — traversent inchanges.
+ *
+ * MESURE DU 31/08/2026 SUR LE COMPTE PRINCIPAL : treize compteurs sur
+ * vingt divergeaient du reel. Onze etaient trop BAS — le succes
+ * n arrivait pas quand il etait merite. DEUX ETAIENT TROP HAUTS :
+ * trente sessions de focus pour zero enregistree, sept evenements
+ * d agenda pour trois. Et `grant_achievement` ne verifie aucune
+ * condition : il insere et CREDITE. Le client pouvait donc faire payer
+ * un succes que personne n avait gagne.
+ *
+ * Verifie avant de changer : aucun succes accorde ne manquait a
+ * l appel, et aucun ne s ajoute avec les vraies mesures — le rattrapage
+ * serveur avait deja tout donne. Le comportement visible ne bouge pas ;
+ * c est la possibilite du mauvais octroi qui disparait.
+ */
 async function checkAchievements(userId: string) {
-  const { data: tracking } = await supabase
-    .from("achievement_tracking")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
+  const { data: mesures } = await supabase.rpc("mesures_du_membre", { p_user_id: userId });
 
-  if (!tracking) return;
+  const tracking = mesures as Record<string, unknown> | null;
+  if (!tracking || Object.keys(tracking).length === 0) return;
 
   const { data: definitions } = await supabase
     .from("achievement_definitions")

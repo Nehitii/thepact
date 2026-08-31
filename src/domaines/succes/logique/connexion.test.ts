@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  DANS_LE_QUART, FENETRE_DE_MINUIT, jourEnregistre, jourVecu, miseAJourDeConnexion,
+  DANS_LE_QUART, FENETRE_DE_MINUIT, jourUTC, jourVecu, miseAJourDeConnexion,
 } from "./connexion";
 import type { SuiviDeConnexion } from "./connexion";
 
@@ -23,20 +23,22 @@ const aParis = (iso: string) => new Date(iso);
 const suivi = (p: SuiviDeConnexion = {}): SuiviDeConnexion => p;
 
 describe("les deux facons de nommer un jour", () => {
-  /* LA COLONNE STOCKE LE JOUR UTC ; la personne, elle, vit le jour
-     local. Les deux se separent chaque nuit, entre minuit et l heure du
-     decalage — deux heures l ete, une l hiver. */
+  /* C EST LE JOUR VECU QUI COMPTE DESORMAIS. Le jour UTC reste calcule
+     ici pour montrer ce dont on s est separe : les deux divergent
+     chaque nuit, entre minuit et l heure du decalage — deux heures
+     l ete, une l hiver. C est dans cette fenetre-la que la serie
+     basculait trop tard et que le succes de minuit se perdait. */
   it("se separent la nuit, et se rejoignent le jour", () => {
     const nuitDEte = aParis("2026-08-31T00:02:00");
     expect(jourVecu(nuitDEte)).toBe("2026-08-31");
-    expect(jourEnregistre(nuitDEte)).toBe("2026-08-30");
+    expect(jourUTC(nuitDEte)).toBe("2026-08-30");
 
     const nuitDHiver = aParis("2026-01-15T00:02:00");
     expect(jourVecu(nuitDHiver)).toBe("2026-01-15");
-    expect(jourEnregistre(nuitDHiver)).toBe("2026-01-14");
+    expect(jourUTC(nuitDHiver)).toBe("2026-01-14");
 
     const enPleinJour = aParis("2026-08-31T12:00:00");
-    expect(jourVecu(enPleinJour)).toBe(jourEnregistre(enPleinJour));
+    expect(jourVecu(enPleinJour)).toBe(jourUTC(enPleinJour));
   });
 
   it("ecrit toujours quatre chiffres puis deux et deux", () => {
@@ -53,13 +55,23 @@ describe("une seule fois par jour", () => {
     expect(miseAJourDeConnexion(quand, suivi({ last_login_date: "2026-08-31" }))).toBeNull();
   });
 
-  /* ET C EST LE JOUR UTC QUI COMPTE. A minuit deux, le jour deja
-     enregistre est celui de la veille civile : la fonction sort, et
-     tout ce qui suit — y compris le succes de minuit — ne se produit
-     pas. */
-  it("sort a minuit si la journee de la veille a deja ete ouverte", () => {
+  /* ═══ MINUIT OUVRE UNE JOURNEE NEUVE ═══
+     C etait le defaut : le jour se comptait en UTC, donc a minuit deux
+     on etait encore la veille, la fonction sortait, et tout ce qui
+     suit — y compris le succes de minuit — ne se produisait pas.
+     Desormais la journee bascule a minuit, comme pour la personne qui
+     regarde son horloge. */
+  it("ouvre une journee neuve a minuit, meme si la veille a ete ouverte", () => {
     const minuit = aParis("2026-08-31T00:02:00");
-    expect(miseAJourDeConnexion(minuit, suivi({ last_login_date: "2026-08-30" }))).toBeNull();
+    const maj = miseAJourDeConnexion(minuit, suivi({
+      last_login_date: "2026-08-30", consecutive_login_days: 4, midnight_logins_count: 2,
+    }));
+    expect(maj).not.toBeNull();
+    expect(maj!.last_login_date).toBe("2026-08-31");
+    expect(maj!.consecutive_login_days).toBe(5);
+    expect(maj!.midnight_logins_count).toBe(3);
+    /* Avec l ancienne horloge, ce meme instant rendait `null`. */
+    expect(jourUTC(minuit)).toBe("2026-08-30");
   });
 });
 
@@ -84,27 +96,30 @@ describe("la serie de jours consecutifs", () => {
     expect(maj!.consecutive_login_days).toBe(1);
   });
 
-  /* ═══ LE JOUR BASCULE A DEUX HEURES DU MATIN, PAS A MINUIT ═══
-     Se connecter a 1 h puis a 23 h le meme jour CIVIL tombe sur deux
-     jours UTC differents, et compte donc pour deux jours de serie —
-     alors que la personne n en a vecu qu un. */
-  it("compte deux jours pour une seule nuit blanche", () => {
+  /* ═══ UNE NUIT BLANCHE NE COMPTE PLUS QUE POUR UN JOUR ═══
+     Se connecter a 1 h puis a 23 h le meme jour CIVIL tombait sur deux
+     jours UTC differents, et comptait donc pour deux jours de serie
+     alors qu on n en avait vecu qu un. La seconde connexion ne
+     rapporte plus rien : la journee est deja comptee. */
+  it("ne compte qu un jour pour une seule nuit blanche", () => {
     const uneHeure = aParis("2026-08-31T01:00:00");
     const vingtTroisHeures = aParis("2026-08-31T23:00:00");
-    expect(jourEnregistre(uneHeure)).toBe("2026-08-30");
-    expect(jourEnregistre(vingtTroisHeures)).toBe("2026-08-31");
+    expect(jourVecu(uneHeure)).toBe(jourVecu(vingtTroisHeures));
+    /* Les deux instants tombaient sur deux jours UTC differents. */
+    expect(jourUTC(uneHeure)).toBe("2026-08-30");
+    expect(jourUTC(vingtTroisHeures)).toBe("2026-08-31");
 
     const premier = miseAJourDeConnexion(uneHeure, suivi({ last_login_date: "2026-08-29" }));
     expect(premier!.consecutive_login_days).toBe(1);
+    expect(premier!.last_login_date).toBe("2026-08-31");
     const second = miseAJourDeConnexion(vingtTroisHeures,
       suivi({ last_login_date: premier!.last_login_date, consecutive_login_days: 1 }));
-    expect(second!.consecutive_login_days).toBe(2);
-    expect(jourVecu(uneHeure)).toBe(jourVecu(vingtTroisHeures));
+    expect(second).toBeNull();
   });
 
-  /* AU PASSAGE A L HEURE D ETE, la veille se calcule en jour civil puis
-     s ecrit en UTC : l instant recule de 23 heures et non de 24, et le
-     jour UTC obtenu reste le bon. La serie tient. */
+  /* AU PASSAGE A L HEURE D ETE, reculer d un jour civil deplace
+     l instant de 23 heures et non de 24 — mais la DATE locale, elle,
+     recule bien d exactement un jour. La serie tient. */
   it("tient au passage a l heure d ete", () => {
     /* Le 29 mars 2026, la France passe de 2 h a 3 h. */
     const apres = aParis("2026-03-29T12:00:00");
@@ -227,10 +242,14 @@ describe("le compteur de minuit", () => {
     expect(maj!.midnight_logins_count).toBe(4);
   });
 
-  it("ne monte pas si la journee de la veille avait ete ouverte", () => {
+  /* ET IL MONTE MEME SI L ON A OUVERT L APPLICATION LA VEILLE. C est
+     tout ce qui separait ce succes de l ingagnable : il fallait
+     auparavant n avoir rien ouvert de la journee precedente, sept fois
+     de suite. */
+  it("monte aussi quand la veille avait ete ouverte", () => {
     const minuit = aParis("2026-08-31T00:02:00");
-    expect(miseAJourDeConnexion(minuit, suivi({ last_login_date: "2026-08-30", midnight_logins_count: 3 })))
-      .toBeNull();
+    const maj = miseAJourDeConnexion(minuit, suivi({ last_login_date: "2026-08-30", midnight_logins_count: 3 }));
+    expect(maj!.midnight_logins_count).toBe(4);
   });
 
   it("garde sa fenetre a cinq minutes", () => {
