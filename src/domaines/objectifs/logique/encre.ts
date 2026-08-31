@@ -9,8 +9,37 @@
  * garde le plus d ecart.
  */
 
+/* ═══ UNE COULEUR PEUT ETRE UN JETON DE THEME ═══
+ *
+ * Deux entrees de la palette des objectifs s ecrivent
+ * `var(--succes-papier, hsl(142 70% 50%))` : l etiquette « sante » et
+ * la difficulte « facile ». Sans cette resolution, la chaine n etait
+ * pas lisible, le repli rendait l encre SOMBRE, et le navigateur
+ * peignait quand meme le fond avec la vraie valeur de la variable.
+ *
+ * En theme sombre la variable n existe pas : le repli du `var` — un
+ * vert moyen — s applique, et l encre sombre y tient (10,61:1). En
+ * THEME CLAIR la variable vaut `hsl(152 100% 20%)`, un vert profond :
+ * l encre sombre y tombait a 2,80:1. L encre claire y vaut 6,65.
+ *
+ * On lit donc la variable la ou elle est posee. Hors navigateur, ou si
+ * elle n est pas definie, on retombe sur le repli ecrit dans le `var`
+ * — c est exactement ce que ferait le moteur de style.
+ */
+const VARIABLE = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+?)\s*)?\)$/;
+
+const resolue = (couleur: string, profondeur = 0): string => {
+  const m = VARIABLE.exec(couleur.trim());
+  if (!m || profondeur > 4) return couleur.trim();
+  if (typeof document !== "undefined") {
+    const posee = getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
+    if (posee) return resolue(posee, profondeur + 1);
+  }
+  return m[2] ? resolue(m[2], profondeur + 1) : "";
+};
+
 const versCanaux = (couleur: string): [number, number, number] | null => {
-  const c = couleur.trim();
+  const c = resolue(couleur);
 
   const hex = c.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (hex) {
