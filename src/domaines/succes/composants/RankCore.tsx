@@ -98,7 +98,13 @@ export function RankCore({
         </div>
       </div>
 
-      <span className="rank-core-nom">{rankName}</span>
+      {/* ═══ UN NOM VIDE NE DOIT RIEN OCCUPER ═══
+          Rendu inconditionnellement, ce span reste un element du bloc
+          en colonne : hauteur nulle, mais le `gap` de 7,5 px s ajoute
+          quand meme, et le noyau se retrouve pousse de 3,5 px vers le
+          haut. Sur l echelle, ou aucun barreau ne repete le nom sous
+          son noyau, c est ce qui les decentrait tous. */}
+      {rankName && <span className="rank-core-nom">{rankName}</span>}
 
       {pied && (
         <span className="rank-core-pied">

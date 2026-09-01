@@ -160,11 +160,30 @@
    taille elles ne se comptent plus et ne font que du bruit —, l arc
    et la lueur restent, parce que ce sont eux qui disent la teinte et
    l avancement. */
-.rank-core[data-taille="echelle"] { width: 3.25rem; height: 3.25rem; }
-.rank-core[data-taille="echelle"] .rank-core-center b { font-size: 0.95rem; }
+.rank-core[data-taille="echelle"] { width: 4.25rem; height: 4.25rem; }
+.rank-core[data-taille="echelle"] .rank-core-center b { font-size: 1.25rem; }
 .rank-core[data-taille="echelle"] .rank-core-center i { display: none; }
 .rank-core[data-taille="echelle"] .rank-core-ticks { display: none; }
-.rank-core[data-taille="echelle"] .rank-core-glow { filter: blur(5px); }
+/* L EMBLEME EST LE SUJET DU BARREAU, PAS SA VIGNETTE.
+   A 54 % il faisait vingt-six pixels dans un noyau de quarante-neuf :
+   on voyait un rond avec quelque chose dedans. Les graduations sont
+   masquees a ce cran, et l arc ne commence qu a 82 % du rayon : la
+   place etait libre, elle ne servait a rien.
+   La lueur se resserre et se densifie derriere lui — c est elle qui
+   le detache du fond, et elle porte deja la teinte du palier. */
+.rank-core[data-taille="echelle"] .rank-core-logo {
+  width: 70%;
+  height: 70%;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 85%, transparent));
+}
+.rank-core[data-taille="echelle"] .rank-core-glow {
+  inset: 2%;
+  filter: blur(6px);
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 62%, transparent) 0%,
+    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 20%, transparent) 52%,
+    transparent 76%);
+}
 .rank-core[data-taille="echelle"] .rank-core-nom { font-size: 0.72rem; letter-spacing: 1px; }
 @media (prefers-reduced-motion: reduce) {
   .rank-core-glow { animation: none; opacity: 0.9; }
