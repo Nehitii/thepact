@@ -129,7 +129,75 @@ for (const f of feuilles) {
    couple ne tombe plus sous la visee, la ligne doit disparaitre. */
 const inutiles = [...TOLERES.keys()].filter((c) => !rencontres.has(c));
 
+/* ═══ LE DECOUPAGE AU TEXTE, ET LE RACCOURCI QUI L EFFACE ═══
+ *
+ * Un chiffre peint par son fond — « background-clip: text » avec une
+ * encre transparente — DISPARAIT ENTIEREMENT si une autre regle
+ * reecrit « background » en raccourci : le raccourci reinitialise
+ * « background-clip » a « border-box », le degrade remplit la boite,
+ * et il ne reste qu un aplat de couleur.
+ *
+ * Le solde mensuel de Finances a vecu ainsi. La variante negative ne
+ * voulait que retourner le degrade au rouge ; ecrite en raccourci,
+ * elle emportait le decoupage pose au-dessus, et TOUT MOIS DEFICITAIRE
+ * s affichait en rectangle plein. Le chiffre etait dans le document —
+ * on le lisait par script, « -11,70 € » — et nulle part a l ecran.
+ * Aucune mesure de contraste ne l aurait vu : la couleur declaree
+ * etait juste, c est le texte qui n etait plus peint.
+ *
+ * CELA SE PROUVE SANS CASCADE, ce qui est la condition d entree dans
+ * cette garde : le raccourci reinitialise quelle que soit la
+ * specificite et quel que soit l ordre. Il suffit qu une regle pose le
+ * decoupage sur une classe, et qu une AUTRE regle du meme fichier
+ * ecrive « background: » sur un selecteur qui porte cette classe.
+ *
+ * Le remede est toujours le meme : « background-image ». Le longhand
+ * ne touche qu au degrade. « profil/titre-cosmetique.css » le faisait
+ * deja, surcharges comprises — c est le modele. */
+const CLIP = /(?:-webkit-)?background-clip\s*:\s*text/;
+const RACCOURCI = /(^|[;{\s])background\s*:/;
+const CLASSES = /\.([\w-]+)/g;
+
+/* LES CLASSES DU SUJET, PAS CELLES DES ANCETRES. « .tsk-tete h1 em »
+   decoupe le « em » ; « .tsk-tete i » peint un trait dans un FRERE de
+   son parent. Les deux portent « .tsk-tete » et ne touchent jamais le
+   meme element — comparer tout le selecteur accusait cette paire, qui
+   est juste. Seul le dernier composé designe ce qui est peint. */
+const sujets = (sel) => sel.split(",").map((part) => {
+  const composes = part.trim().split(/[\s>+~]+/).filter(Boolean);
+  return composes[composes.length - 1] ?? "";
+});
+const classesDuSujet = (sel) =>
+  sujets(sel).flatMap((s) => [...s.matchAll(CLASSES)].map((c) => c[1]));
+
+const effaces = [];
+let decoupages = 0;
+for (const f of feuilles) {
+  const src = fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const regles = [...src.matchAll(REGLE)]
+    .map((m) => ({ sel: m[1].trim().replace(/\s+/g, " "), corps: m[2] }))
+    .filter((r) => !r.sel.startsWith("@"));
+
+  /* Les classes sur lesquelles cette feuille peint un texte par son fond. */
+  const decoupees = new Set();
+  for (const r of regles) {
+    if (!CLIP.test(r.corps)) continue;
+    decoupages++;
+    for (const c of classesDuSujet(r.sel)) decoupees.add(c);
+  }
+  if (!decoupees.size) continue;
+
+  for (const r of regles) {
+    /* Une regle qui pose elle-meme le decoupage apres son raccourci est
+       juste : c est l ecriture courante, et rien ne l efface. */
+    if (CLIP.test(r.corps) || !RACCOURCI.test(r.corps)) continue;
+    const touchees = classesDuSujet(r.sel).filter((c) => decoupees.has(c));
+    if (touchees.length) effaces.push({ f, sel: r.sel, classe: touchees[0] });
+  }
+}
+
 console.log("encre : " + blocs + " blocs de jetons, " + couples + " couples encre/fond croises.");
+console.log("        " + decoupages + " regle(s) peignent un texte par son fond.");
 console.log("        " + TOLERES.size + " couple(s) tolere(s), chacun avec sa raison ecrite.");
 if (sousLaVisee.length) {
   console.log("\n" + sousLaVisee.length + " couple(s) entre " + PLANCHER.toFixed(1) + " et "
@@ -139,8 +207,17 @@ if (sousLaVisee.length) {
 }
 for (const c of inutiles) console.log("TOLERANCE INUTILE : « " + c + " » ne correspond a plus aucun jeton.");
 
-if (illisibles.length === 0 && inutiles.length === 0) {
-  console.log("\naucune encre sous " + PLANCHER.toFixed(1) + " sur son propre fond.");
+if (effaces.length) {
+  console.log("\n" + effaces.length + " RACCOURCI(S) « background: » EFFACENT UN DECOUPAGE AU TEXTE.");
+  console.log("Le degrade remplira la boite, et le texte disparaitra :");
+  for (const x of effaces)
+    console.log("  « " + x.sel.slice(0, 40) + " »  efface « ." + x.classe + " »  " + x.f);
+  console.log("\nEcrivez « background-image » : le longhand ne touche qu au degrade.");
+}
+
+if (illisibles.length === 0 && inutiles.length === 0 && effaces.length === 0) {
+  console.log("\naucune encre sous " + PLANCHER.toFixed(1) + " sur son propre fond,");
+  console.log("et aucun texte peint par son fond qu un raccourci efface.");
   process.exit(0);
 }
 if (illisibles.length) {
