@@ -96,9 +96,27 @@
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 80%, transparent));
   transition: background 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
+/* ═══ « text-align: center » NE CENTRE PAS UNE IMAGE EN BLOC ═══
+   Ce conteneur etait un bloc pleine largeur a hauteur automatique, et
+   l alignement du texte n a aucune prise sur un enfant en bloc :
+   l embleme restait COLLE AU BORD GAUCHE, a vingt-quatre pixels du
+   centre sur le noyau du tableau de bord. Le numero de niveau, lui,
+   paraissait centre — son <b> occupe toute la largeur, et c est son
+   TEXTE que l alignement centrait.
+
+   Le defaut date de l arrivee de l embleme dans le noyau. Il ne se
+   voyait pas tant que le tableau de bord n en affichait aucun.
+
+   Le conteneur remplit desormais le noyau et centre en grille : les
+   deux axes, et des pourcentages qui se resolvent enfin contre une
+   taille reelle. */
 .rank-core-center {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 2;
+  display: grid;
+  place-items: center;
+  align-content: center;
   text-align: center;
   line-height: 0.9;
 }
@@ -114,10 +132,21 @@
    Elle remplace le numero de niveau quand l utilisateur en a choisi
    une. Contenue plutot que couvrante : un logo n est pas toujours
    carre, et le recadrer le mutilerait. */
+/* L EMBLEME OCCUPE LA PLACE QUI EST LIBRE.
+   A 54 % il flottait au milieu d un anneau qui le dominait.
+
+   LA MESURE DIT OU EST LA LIMITE, ET ELLE DEPEND DES GRADUATIONS.
+   Elles commencent a 66 % du rayon ; un embleme large de L % du
+   diametre s etend a L % du rayon, donc L ne peut pas depasser 66
+   tant qu elles sont la. Sans elles, la borne devient l arc, a 82 %.
+
+   On les retire donc quand un embleme est present — elles donnent
+   l echelle de l arc, et derriere une image elles ne sont que du
+   bruit. L embleme prend alors 80 %, deux pour cent sous l arc. */
 .rank-core-logo {
   display: block;
-  width: 54%;
-  height: 54%;
+  width: 66%;
+  height: 66%;
   object-fit: contain;
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 55%, transparent));
 }
@@ -172,8 +201,6 @@
    La lueur se resserre et se densifie derriere lui — c est elle qui
    le detache du fond, et elle porte deja la teinte du palier. */
 .rank-core[data-taille="echelle"] .rank-core-logo {
-  width: 70%;
-  height: 70%;
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 85%, transparent));
 }
 .rank-core[data-taille="echelle"] .rank-core-glow {
@@ -351,3 +378,10 @@
 }
 .rg-prereglage[aria-pressed="true"] { border-color: hsl(var(--primary)); }
 .rg-prereglage:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+
+/* Un noyau qui porte un embleme n a pas besoin de ses graduations :
+   elles passeraient dessous, et c est leur presence qui bornait sa
+   taille au tiers du noyau. L arc reste — c est lui qui dit
+   l avancement, et il porte la teinte. */
+.rank-core[data-embleme="1"] .rank-core-ticks { display: none; }
+.rank-core[data-embleme="1"] .rank-core-logo { width: 80%; height: 80%; }

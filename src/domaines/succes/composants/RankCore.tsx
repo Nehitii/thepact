@@ -75,7 +75,16 @@ export function RankCore({
 
   return (
     <div className="rank-bloc" style={style}>
-      <div className="rank-core" data-taille={taille} style={{ ["--rank-pct" as string]: `${pct}%` }}>
+      <div
+        className="rank-core"
+        data-taille={taille}
+        /* Les graduations donnent l echelle de l arc ; derriere une
+           image elles ne sont que du bruit, et elles bornent sa
+           taille a 66 % du rayon. Le noyau le dit, la feuille en
+           tire les consequences. */
+        data-embleme={logoUrl ? "1" : undefined}
+        style={{ ["--rank-pct" as string]: `${pct}%` }}
+      >
         <div className="rank-core-glow" aria-hidden="true" />
         <div className="rank-core-ticks" aria-hidden="true" />
         <div className="rank-core-arc" aria-hidden="true" />
