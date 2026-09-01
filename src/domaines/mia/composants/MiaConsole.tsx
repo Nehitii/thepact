@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { aAtterri, prendreLeVol, type BulleEnVol } from "@/domaines/mia/logique/bulleEnVol";
+import { useGesteDeMia } from "@/domaines/mia/hooks/useGesteDeMia";
 import {
   accorde, hauteurDuChamp, largeurDepuisLePointeur, largeurRetenue,
   LARGEUR_DEFAUT, partEcoulee, pluriel, titreDuFil,
@@ -287,36 +289,9 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     [archive, filActif, conversations],
   );
 
-  const navigate = useNavigate();
-  const { completeTask, createTask, postponeTask } = useTodoList();
-
-  /* Le geste est déjà décidé : il ne reste qu'à le faire. On réutilise
-     les hooks de l'application — les mêmes que ceux des boutons — plutôt
-     que de réécrire les requêtes une deuxième fois. */
-  const executer = useCallback(
-    async (g: Geste) => {
-      const a = g.action;
-      if (!a) return;
-      try {
-        if (a.type === "naviguer") {
-          navigate(a.vers);
-          onClose();
-        } else if (a.type === "focus") {
-          navigate("/focus");
-          onClose();
-        } else if (a.type === "cocher") {
-          await completeTask.mutateAsync(a.id);
-        } else if (a.type === "ajouter") {
-          await createTask.mutateAsync({ name: a.nom, priority: "medium", is_urgent: false });
-        } else if (a.type === "reporter") {
-          await postponeTask.mutateAsync({ taskId: a.id, newDeadline: a.a });
-        }
-      } catch {
-        /* le message d'échec est porté par le hook ; on ne double pas */
-      }
-    },
-    [navigate, onClose, completeTask, createTask, postponeTask],
-  );
+  /* Le geste est deja decide : il ne reste qu a le faire, et cela se
+     fait dans « hooks/useGesteDeMia.ts ». */
+  const executer = useGesteDeMia(onClose);
 
   /* ELLE DIT ELLE-MÊME QU'ELLE NE PEUT PAS.
      Le message d'échec entre dans le fil comme une réponse, avec un
@@ -336,10 +311,21 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     [ecrireEchange],
   );
 
+  /* La question qui vole. La regle qui la fait atterrir vit dans
+     « logique/bulleEnVol.ts », avec ses tests : c est la seule chose
+     delicate de la correction — trop tot elle disparait avant de
+     revenir, trop tard elle double la vraie. */
+  const [enVol, setEnVol] = useState<BulleEnVol | null>(null);
   const envoyer = useCallback(async (impose?: string) => {
     const texte = (impose ?? brouillon).trim();
     if (!texte || streaming) return;
     setBrouillon("");
+
+    /* LA BULLE EN VOL, POSEE AVANT TOUTE BRANCHE — c est ce qui la
+       fait paraitre au moment de la frappe sur les quatre chemins.
+       Pourquoi dans l etat plutot que dans le cache, et quand elle
+       atterrit : « logique/bulleEnVol.ts ». */
+    setEnVol(prendreLeVol(messages, texte));
 
     /* ── LES TROIS COUCHES ──
        Réflexe d'abord, geste ensuite, modèle en dernier. La question
@@ -396,7 +382,18 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
     const verdict = await send(texte);
     if (verdict?.ok) apaiser();
     else if (verdict) direLEchec(filActif, texte, verdict.statut, verdict.corps);
-  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer, direLEchec, ecrireEchange]);
+  }, [brouillon, streaming, filActif, create, send, etatDuJour, executer, direLEchec, ecrireEchange, messages]);
+
+
+  /* ELLE ATTERRIT QUAND LA VRAIE LIGNE ARRIVE. Les quatre chemins
+     finissent tous par poser une question au fil — le reflexe et le
+     geste par « ecrireEchange », qui l ecrit dans le cache AVANT la
+     base ; le modele par l invalidation qui suit sa reponse ; l echec
+     par l excuse, qui la rattrape si le serveur ne l avait pas ecrite.
+     Un seul test les couvre tous les quatre. */
+  useEffect(() => {
+    if (aAtterri(messages, enVol)) setEnVol(null);
+  }, [messages, enVol]);
 
   const enAttente = useRef<string | null>(null);
   useEffect(() => {
@@ -549,7 +546,7 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
             </button>
 
             <div ref={fluxRef} className="mia-flux">
-              {messages.length === 0 && !streaming ? (
+              {messages.length === 0 && !streaming && !enVol ? (
                 <div className="mia-vide">
                   <VisageMia expression={visageDeLEtat} taille={96} />
                   <p>
@@ -568,6 +565,9 @@ export function MiaConsole({ open, onClose, onEtat }: MiaConsoleProps) {
                       quand={m.created_at}
                     />
                   ))}
+                  {/* La question, posee AVANT toute reponse : c est
+                      l ordre dans lequel elle a ete dite. */}
+                  {enVol && <Bulle role="user" contenu={enVol.texte} meta={null} />}
                   {streaming && <Bulle role="assistant" contenu={streamText} meta={null} enCours />}
                 </>
               )}
