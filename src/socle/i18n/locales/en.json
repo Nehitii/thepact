@@ -3862,5 +3862,19 @@
     "security": "Security",
     "privacy": "Privacy",
     "data": "My data"
+  },
+  "ranks": {
+    "embleme": {
+      "mauvaisType": "This file is not an image.",
+      "tropLourd": "The image is larger than 2 MB.",
+      "echec": "The image could not be uploaded.",
+      "titre": "Emblem",
+      "televerser": "Choose an image",
+      "envoi": "Uploading…",
+      "deposer": "Drop an image here",
+      "retirer": "Remove the emblem",
+      "ouColler": "or paste a URL",
+      "adresse": "Emblem URL"
+    }
   }
 }

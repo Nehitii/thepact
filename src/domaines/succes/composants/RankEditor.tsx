@@ -6,6 +6,7 @@ import { Textarea } from "@/socle/ui/textarea";
 import { Slider } from "@/socle/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
 import { RankCard } from "@/domaines/succes/composants/RankCard";
+import { ChampEmblemeDePalier } from "@/domaines/succes/composants/ChampEmblemeDePalier";
 import type { Rank } from "@/domaines/succes/types";
 import { 
   Palette, 
@@ -193,11 +194,10 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
 
                 {activeTab === "visuals" && (
                   <>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Image du rang</Label>
-                      <Input aria-label="Adresse de l’image du rang" value={editedRank.logo_url || ""} onChange={(e) => updateRank({ logo_url: e.target.value || null })} placeholder="https://…/mon-embleme.png" className="bg-card/50 border-primary/30 text-primary text-sm" />
-                      <p className="ds-t-label text-muted-foreground">Laisse vide pour l’icône par défaut</p>
-                    </div>
+                    <ChampEmblemeDePalier
+                      url={editedRank.logo_url}
+                      onUrl={(logo_url) => updateRank({ logo_url })}
+                    />
 
                     <div className="space-y-2">
                       <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Image de fond</Label>

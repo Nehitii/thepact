@@ -10,32 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -2956,42 +2931,6 @@ export type Database = {
         }
         Relationships: []
       }
-      net_worth_snapshots: {
-        Row: {
-          account_count: number
-          created_at: string
-          currency: string | null
-          details: Json | null
-          id: string
-          snapshot_date: string
-          source: string
-          total_balance: number
-          user_id: string
-        }
-        Insert: {
-          account_count?: number
-          created_at?: string
-          currency?: string | null
-          details?: Json | null
-          id?: string
-          snapshot_date: string
-          source?: string
-          total_balance?: number
-          user_id: string
-        }
-        Update: {
-          account_count?: number
-          created_at?: string
-          currency?: string | null
-          details?: Json | null
-          id?: string
-          snapshot_date?: string
-          source?: string
-          total_balance?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
       notification_settings: {
         Row: {
           created_at: string
@@ -5368,26 +5307,6 @@ export type Database = {
         Args: { _contract_id: string; _signature_name: string }
         Returns: Json
       }
-      snapshot_net_worth: {
-        Args: { _date?: string }
-        Returns: {
-          account_count: number
-          created_at: string
-          currency: string | null
-          details: Json | null
-          id: string
-          snapshot_date: string
-          source: string
-          total_balance: number
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "net_worth_snapshots"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       snapshot_season_leaderboard: {
         Args: { _season_id: string; _top?: number }
         Returns: number
@@ -5589,9 +5508,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["user", "admin"],

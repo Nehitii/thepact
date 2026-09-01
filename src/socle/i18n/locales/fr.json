@@ -3862,5 +3862,19 @@
     "security": "Sécurité",
     "privacy": "Confidentialité",
     "data": "Mes données"
+  },
+  "ranks": {
+    "embleme": {
+      "mauvaisType": "Ce fichier n'est pas une image.",
+      "tropLourd": "L'image dépasse 2 Mo.",
+      "echec": "L'image n'a pas pu être envoyée.",
+      "titre": "Emblème",
+      "televerser": "Choisir une image",
+      "envoi": "Envoi…",
+      "deposer": "Dépose une image ici",
+      "retirer": "Retirer l'emblème",
+      "ouColler": "ou colle une adresse",
+      "adresse": "Adresse de l'emblème"
+    }
   }
 }

@@ -11,6 +11,7 @@ import { RankCard } from "@/domaines/succes/composants/RankCard";
 import { RankEditor } from "@/domaines/succes/composants/RankEditor";
 import type { Rank } from "@/domaines/succes/types";
 import { useRankXP } from "@/domaines/succes/hooks/useRankXP";
+import { retirerLEmbleme } from "@/domaines/succes/hooks/useEmblemeDePalier";
 import { usePact } from "@/domaines/objectifs";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -129,7 +130,15 @@ export function RanksCard({ userId }: RanksCardProps) {
     if (!rankToDelete) return;
     const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
     if (error) { toast.error("Erreur", { description: error.message }); }
-    else { toast.success("Rang supprimé", { description: `« ${rankToDelete.name} » a été retiré.` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    else {
+      /* L EMBLEME PART AVEC LE PALIER. Il n est retire que s il vient
+         de notre depot — une adresse collee depuis ailleurs ne nous
+         appartient pas. Sans cela, chaque essai laisserait un fichier
+         que personne ne nettoiera jamais. */
+      await retirerLEmbleme(rankToDelete.logo_url);
+      toast.success("Rang supprimé", { description: `« ${rankToDelete.name} » a été retiré.` });
+      queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
+    }
     setRankToDelete(null);
   };
 
