@@ -3875,6 +3875,41 @@
       "retirer": "Remove the emblem",
       "ouColler": "or paste a URL",
       "adresse": "Emblem URL"
+    },
+    "titre": "Ranks",
+    "compte_one": "{{count}} rank",
+    "compte_other": "{{count}} ranks",
+    "actuel": "Current",
+    "xp": "XP",
+    "ajouter": "Add a rank",
+    "vide": {
+      "titre": "No ranks defined",
+      "aide": "Set XP thresholds to build your progression. Your goals can earn you {{xp}} XP in total."
+    },
+    "plafond": "Reachable ceiling",
+    "horsDePortee": "Out of reach",
+    "horsDePorteeAide": "This threshold is beyond what your goals can earn.",
+    "ecart": "+{{n}} XP",
+    "seuil": "{{n}} XP",
+    "vousEtesIci": "You are here",
+    "modifier": "Edit",
+    "supprimer": "Delete",
+    "actions": "Actions for rank {{nom}}",
+    "annuler": "Cancel",
+    "suppression": {
+      "titre": "Delete “{{nom}}”?",
+      "corps": "This rank will leave your progression, and its emblem the storage. The XP you earned does not move; the ladder does."
+    },
+    "toast": {
+      "nomManquant": "Missing name",
+      "nomManquantAide": "A rank needs a name.",
+      "erreur": "Error",
+      "cree": "Rank created",
+      "creeAide": "“{{nom}}” joins your progression.",
+      "modifie": "Rank updated",
+      "modifieAide": "“{{nom}}” is up to date.",
+      "supprime": "Rank deleted",
+      "supprimeAide": "“{{nom}}” has been removed."
     }
   }
 }

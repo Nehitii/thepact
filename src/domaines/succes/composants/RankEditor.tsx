@@ -5,8 +5,8 @@ import { Label } from "@/socle/ui/label";
 import { Textarea } from "@/socle/ui/textarea";
 import { Slider } from "@/socle/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
-import { RankCard } from "@/domaines/succes/composants/RankCard";
 import { ChampEmblemeDePalier } from "@/domaines/succes/composants/ChampEmblemeDePalier";
+import { RankCore } from "@/domaines/succes/composants/RankCore";
 import type { Rank } from "@/domaines/succes/types";
 import { 
   Palette, 
@@ -115,12 +115,15 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                 Aperçu
               </Label>
               <div className="flex justify-center p-4 bg-background/50 rounded-xl border border-primary/20">
-                <RankCard
-                  rank={editedRank}
-                  currentXP={250}
-                  nextRankMinXP={editedRank.min_points + 500}
-                  isActive={true}
-                  size="md"
+                <RankCore
+                  taille="carte"
+                  level={1}
+                  rankName={editedRank.name}
+                  logoUrl={editedRank.logo_url}
+                  teinte={editedRank.frame_color}
+                  progress={45}
+                  currentXP={editedRank.min_points}
+                  targetXP={editedRank.min_points + 500}
                 />
               </div>
             </div>

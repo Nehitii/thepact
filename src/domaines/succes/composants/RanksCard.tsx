@@ -1,142 +1,124 @@
-import { useState, useEffect } from "react";
-import { Bouton } from "@/socle/ds/console-ui";
-import { supabase } from "@/socle/supabase/client";
-import { Button } from "@/socle/ui/button";
-import { ScrollArea } from "@/socle/ui/scroll-area";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/socle/ui/alert-dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/socle/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/socle/ui/tooltip";
-import { DataPanel } from "@/socle/ds/settings-ui";
-import { RankCard } from "@/domaines/succes/composants/RankCard";
-import { RankEditor } from "@/domaines/succes/composants/RankEditor";
-import type { Rank } from "@/domaines/succes/types";
-import { useRankXP } from "@/domaines/succes/hooks/useRankXP";
-import { retirerLEmbleme } from "@/domaines/succes/hooks/useEmblemeDePalier";
-import { usePact } from "@/domaines/objectifs";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Trophy, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trophy, Plus, Trash2, Edit2, Sparkles, Target, MoreVertical, Info } from "lucide-react";
-import { cn } from "@/socle/outils/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { Bouton } from "@/socle/ds/console-ui";
+import { supabase } from "@/socle/supabase/client";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/socle/ui/alert-dialog";
+import { DataPanel } from "@/socle/ds/settings-ui";
+import { EchelleDesPaliers } from "@/domaines/succes/composants/EchelleDesPaliers";
+import { RankEditor } from "@/domaines/succes/composants/RankEditor";
+import { retirerLEmbleme } from "@/domaines/succes/hooks/useEmblemeDePalier";
+import { useRankXP } from "@/domaines/succes/hooks/useRankXP";
+import { niveauDuRang } from "@/domaines/succes/logique/rang";
+import { lueurDeLaTeinte, normaliserTeinte } from "@/domaines/succes/logique/teinte";
+import type { Rank } from "@/domaines/succes/types";
+import { usePact } from "@/domaines/objectifs";
 
 interface RanksCardProps {
   userId: string;
 }
 
-// --- XP Timeline Bar ---
-function XPTimeline({ ranks, currentXP, totalMaxXP }: { ranks: Rank[]; currentXP: number; totalMaxXP: number }) {
-  if (ranks.length < 2 || totalMaxXP <= 0) return null;
-
-  const maxVal = totalMaxXP;
-  const markerPos = Math.min(100, (currentXP / maxVal) * 100);
-
-  return (
-    <TooltipProvider delayDuration={200}>
-      <div className="mb-4">
-        <div className="ds-t-label font-mono text-primary/40 tracking-[0.15em] mb-1.5 uppercase">Ligne d’XP</div>
-        <div className="relative h-3 w-full rounded-full overflow-hidden bg-primary/10 flex">
-          {ranks.map((rank, i) => {
-            const nextMin = ranks[i + 1]?.min_points ?? maxVal;
-            const segmentWidth = ((nextMin - rank.min_points) / maxVal) * 100;
-            return (
-              <Tooltip key={rank.id}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="h-full transition-all cursor-pointer hover:brightness-125"
-                    style={{
-                      width: `${segmentWidth}%`,
-                      backgroundColor: `${rank.frame_color || '#5bb4ff'}60`,
-                      borderRight: i < ranks.length - 1 ? '1px solid rgba(255,255,255,0.1)' : undefined,
-                    }}
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-card border-primary/30 text-xs font-mono">
-                  <span style={{ color: rank.frame_color || '#5bb4ff' }}>{rank.name}</span>
-                  <span className="text-muted-foreground ml-1.5">{rank.min_points.toLocaleString()} – {nextMin.toLocaleString()} XP</span>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
-        {/* Current XP marker */}
-        <div className="relative h-0">
-          <div
-            className="absolute -top-[14px] w-0 h-0"
-            style={{
-              left: `${markerPos}%`,
-              transform: 'translateX(-50%)',
-              borderLeft: '5px solid transparent',
-              borderRight: '5px solid transparent',
-              borderBottom: '5px solid hsl(var(--primary))',
-            }}
-          />
-        </div>
-      </div>
-    </TooltipProvider>
-  );
-}
-
+/**
+ * LE PANNEAU DES PALIERS, REFAIT AUTOUR DU NOYAU.
+ *
+ * ═══ CE QU IL MONTRAIT, ET POURQUOI C ETAIT ILLISIBLE ═══
+ *
+ * TROIS representations du meme fait : une carte du palier courant en
+ * tete, une « ligne d XP » decoupee en segments, et une liste de lignes
+ * a pastille carree. Trois dessins pour une seule question — ou en
+ * suis-je — et le lecteur devait les rapprocher lui-meme. Ce n etait
+ * pas son style qui le rendait illisible, c etait leur nombre.
+ *
+ * Une seule reste : L ECHELLE. Elle se lit en montant, la position
+ * courante y est marquee, et le plafond atteignable en est le haut —
+ * un palier pose au-dessus se voit hors de portee au lieu d etre refuse
+ * par une notification apres coup.
+ *
+ * `RankCard` a disparu avec elles : le noyau tient les deux roles, dans
+ * un troisieme cran de taille.
+ */
 export function RanksCard({ userId }: RanksCardProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: pact } = usePact(userId);
-  const { data: rankData, isLoading } = useRankXP(userId, pact?.id);
+  const { data: rankData } = useRankXP(userId, pact?.id);
 
-  const [ranks, setRanks] = useState<Rank[]>([]);
   const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
   const [isNewRank, setIsNewRank] = useState(false);
   const [rankToDelete, setRankToDelete] = useState<Rank | null>(null);
 
-  useEffect(() => {
-    if (rankData?.ranks) setRanks(rankData.ranks);
-  }, [rankData?.ranks]);
+  /* La liste vient du hook, sans copie locale : l ancien `useState` +
+     `useEffect` recopiait `rankData.ranks` a chaque rendu et pouvait
+     montrer une liste d un tour en retard. */
+  const paliers = rankData?.ranks ?? [];
+  const totalMaxXP = rankData?.totalMaxXP ?? 0;
+  const currentXP = rankData?.currentXP ?? 0;
 
-  const handleAddRank = () => {
-    const newRank: Rank = { id: "new", min_points: ranks.length > 0 ? (ranks[ranks.length - 1].min_points + 500) : 0, name: "", frame_color: "#5bb4ff", glow_color: "rgba(91,180,255,0.5)" };
-    setSelectedRank(newRank);
+  const ajouter = () => {
+    const dernier = paliers[paliers.length - 1];
+    setSelectedRank({
+      id: "new",
+      name: "",
+      min_points: dernier ? dernier.min_points + 500 : 0,
+      frame_color: "#5bb4ff",
+      glow_color: lueurDeLaTeinte("#5bb4ff"),
+    });
     setIsNewRank(true);
-    setShowEditor(true);
   };
 
-  const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
-
-  const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast.error("Nom manquant", { description: "Un rang a besoin d’un nom." }); throw new Error("nom_manquant"); }
-    
-    // Overlap validation: check for duplicate min_points
-    const conflicting = ranks.find(r => r.min_points === rank.min_points && r.id !== rank.id);
-    if (conflicting) {
-      toast.error("Seuil déjà pris", { description: `« ${conflicting.name} » occupe déjà le seuil de ${rank.min_points.toLocaleString("fr-FR")} XP.` });
-      throw new Error("Conflict");
+  const enregistrer = async (palier: Rank) => {
+    if (!palier.name.trim()) {
+      toast.error(t("ranks.toast.nomManquant"), { description: t("ranks.toast.nomManquantAide") });
+      throw new Error("nom_manquant");
     }
+    /* LA TEINTE EST NORMALISEE AVANT D ETRE ECRITE, et la lueur en
+       descend. Une seule valeur decide, deux colonnes la portent —
+       `glow_color` reste ecrite pour ne rien casser de ce qui la lit. */
+    const teinte = normaliserTeinte(palier.frame_color);
+    const champs = {
+      min_points: palier.min_points,
+      max_points: palier.max_points || null,
+      name: palier.name.trim(),
+      logo_url: palier.logo_url,
+      background_url: palier.background_url,
+      background_opacity: palier.background_opacity,
+      frame_color: teinte,
+      glow_color: lueurDeLaTeinte(teinte),
+      quote: palier.quote,
+    };
 
-    if (isNewRank) {
-      const { error } = await supabase.from("ranks").insert({ user_id: userId, min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote });
-      if (error) { toast.error("Erreur", { description: error.message }); throw error; }
-      toast.success("Rang créé", { description: `« ${rank.name} » rejoint ta progression.` });
-    } else {
-      const { error } = await supabase.from("ranks").update({ min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote }).eq("id", rank.id);
-      if (error) { toast.error("Erreur", { description: error.message }); throw error; }
-      toast.success("Rang modifié", { description: `« ${rank.name} » est à jour.` });
+    const { error } = isNewRank
+      ? await supabase.from("ranks").insert({ user_id: userId, ...champs })
+      : await supabase.from("ranks").update(champs).eq("id", palier.id);
+    if (error) {
+      toast.error(t("ranks.toast.erreur"), { description: error.message });
+      throw error;
     }
+    toast.success(t(isNewRank ? "ranks.toast.cree" : "ranks.toast.modifie"), {
+      description: t(isNewRank ? "ranks.toast.creeAide" : "ranks.toast.modifieAide", { nom: palier.name }),
+    });
     queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
   };
 
-  const handleDeleteRank = async (rank: Rank) => {
-    setRankToDelete(rank);
-  };
-
-  const confirmDeleteRank = async () => {
+  const confirmerLaSuppression = async () => {
     if (!rankToDelete) return;
     const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
-    if (error) { toast.error("Erreur", { description: error.message }); }
-    else {
-      /* L EMBLEME PART AVEC LE PALIER. Il n est retire que s il vient
-         de notre depot — une adresse collee depuis ailleurs ne nous
-         appartient pas. Sans cela, chaque essai laisserait un fichier
-         que personne ne nettoiera jamais. */
+    if (error) {
+      toast.error(t("ranks.toast.erreur"), { description: error.message });
+    } else {
+      /* L EMBLEME PART AVEC LE PALIER. Il n est retire que s il vient de
+         notre depot — une adresse collee ailleurs ne nous appartient
+         pas. Sans cela, chaque essai laisserait un fichier que personne
+         ne nettoiera jamais. */
       await retirerLEmbleme(rankToDelete.logo_url);
-      toast.success("Rang supprimé", { description: `« ${rankToDelete.name} » a été retiré.` });
+      toast.success(t("ranks.toast.supprime"), {
+        description: t("ranks.toast.supprimeAide", { nom: rankToDelete.name }),
+      });
       queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
     }
     setRankToDelete(null);
@@ -145,148 +127,77 @@ export function RanksCard({ userId }: RanksCardProps) {
   return (
     <DataPanel
       code="MODULE_05"
-      title="Rangs"
-      statusText={<span className="text-muted-foreground">{ranks.length} paliers</span>}
-      footerLeft={<span>Actuel : <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>}
-      footerRight={<span>XP : <b className="text-primary">{rankData?.currentXP?.toLocaleString("fr-FR") || "0"}</b></span>}
+      title={t("ranks.titre")}
+      statusText={<span className="text-muted-foreground">{t("ranks.compte", { count: paliers.length })}</span>}
+      footerLeft={
+        <span>{t("ranks.actuel")} : <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>
+      }
+      footerRight={
+        <span>{t("ranks.xp")} : <b className="text-primary">{currentXP.toLocaleString("fr-FR")}</b></span>
+      }
     >
-      <div className="py-4">
-        {/* Current Rank Card — only if a real rank exists */}
-        {rankData?.currentRank && (
-          <div className="mb-4 border border-primary/25 bg-primary/[0.04] p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em] uppercase">Rang actuel</span>
-            </div>
-            <div className="flex justify-center">
-              <RankCard rank={rankData.currentRank} currentXP={rankData.currentXP} nextRankMinXP={rankData.nextRank?.min_points} totalMaxXP={rankData.totalMaxXP} isActive={true} size="sm" />
-            </div>
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between ds-t-label font-mono text-primary/40">
-                <span className="flex items-center gap-1"><Target className="h-3 w-3" />Progression totale</span>
-                <span>{Math.round(rankData.globalProgress)}%</span>
-              </div>
-              <div className="h-1.5 bg-primary/10 overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${rankData.globalProgress}%` }} className="h-full bg-gradient-to-r from-primary/50 to-primary" />
-              </div>
-              <div className="ds-t-label text-primary/25 font-mono text-center">{rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP</div>
-            </div>
+      <div className="space-y-4 py-4">
+        {/* Le plafond, une fois, en tete de l echelle dont il est le haut. */}
+        {totalMaxXP > 0 && (
+          <div className="flex items-center justify-between border border-primary/15 bg-primary/[0.02] px-2.5 py-2">
+            <span className="ds-t-label font-mono uppercase tracking-[0.15em] text-primary/40">
+              {t("ranks.plafond")}
+            </span>
+            <span className="font-mono text-xs font-bold tabular-nums text-primary">
+              {t("ranks.seuil", { n: totalMaxXP.toLocaleString("fr-FR") })}
+            </span>
           </div>
         )}
 
-        {/* Max XP info banner */}
-        {rankData && rankData.totalMaxXP > 0 && (
-          <div className="mb-3 border border-primary/15 bg-primary/[0.02] p-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Info className="h-3 w-3 text-[hsl(40,100%,50%)]" />
-              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em] uppercase">XP maximale des objectifs</span>
-            </div>
-            <span className="text-xs font-mono text-[hsl(40,100%,50%)] font-bold">{rankData.totalMaxXP.toLocaleString()} XP</span>
+        {paliers.length === 0 ? (
+          <div className="border border-dashed border-primary/20 bg-primary/[0.02] py-8 text-center">
+            <Trophy className="mx-auto mb-3 h-10 w-10 text-primary/30" />
+            <p className="font-orbitron text-sm uppercase tracking-wider text-primary/70">
+              {t("ranks.vide.titre")}
+            </p>
+            <p className="mx-auto mt-1 max-w-[280px] font-rajdhani text-xs text-muted-foreground">
+              {t("ranks.vide.aide", { xp: totalMaxXP.toLocaleString("fr-FR") })}
+            </p>
           </div>
+        ) : (
+          <EchelleDesPaliers
+            paliers={paliers}
+            currentXP={currentXP}
+            totalMaxXP={totalMaxXP}
+            niveau={niveauDuRang(rankData)}
+            onModifier={(p) => { setSelectedRank(p); setIsNewRank(false); }}
+            onSupprimer={setRankToDelete}
+          />
         )}
 
-        {/* XP Timeline */}
-        <XPTimeline ranks={ranks} currentXP={rankData?.currentXP || 0} totalMaxXP={rankData?.totalMaxXP || 0} />
-
-        <div className="relative">
-          {ranks.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-primary/20 bg-primary/[0.02]">
-              <Trophy className="h-10 w-10 mx-auto mb-3 text-primary/30" />
-              <p className="font-orbitron text-sm text-primary/70 uppercase tracking-wider">No ranks defined</p>
-              <p className="text-xs text-muted-foreground font-rajdhani mt-1 max-w-[260px] mx-auto">
-                Define XP thresholds to build your progression system. Your goals give you up to{" "}
-                <strong className="text-primary">{(rankData?.totalMaxXP || 0).toLocaleString()} XP</strong> total.
-              </p>
-            </div>
-          ) : (
-            <ScrollArea className="h-[240px] pr-2">
-              <div className="space-y-2">
-                <AnimatePresence>
-                  {ranks.map((rank) => {
-                    const isCurrentRank = rankData?.currentRank?.id === rank.id;
-                    const frameColor = rank.frame_color || '#5bb4ff';
-                    return (
-                      <motion.div key={rank.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                        className={cn(
-                          "relative flex items-center gap-3 p-3 transition-all border",
-                          isCurrentRank ? "border-primary/40" : "border-primary/15 bg-primary/[0.02] hover:border-primary/30",
-                        )}
-                        style={{
-                          borderLeftWidth: isCurrentRank ? '3px' : undefined,
-                          borderLeftColor: isCurrentRank ? frameColor : undefined,
-                          backgroundColor: isCurrentRank ? `${frameColor}10` : undefined,
-                          boxShadow: isCurrentRank ? `0 0 15px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` : undefined,
-                        }}>
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 border"
-                          style={{ borderColor: `${frameColor}50`, background: `linear-gradient(135deg, ${frameColor}10, transparent)` }}>
-                          {rank.logo_url ? <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" loading="lazy" decoding="async" /> : <Trophy className="h-5 w-5" style={{ color: frameColor }} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate" style={{ color: frameColor, textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` }}>{rank.name}</span>
-                            {isCurrentRank && (
-                              <span className="flex-shrink-0 px-1.5 py-0.5 ds-t-label font-mono font-bold uppercase tracking-wider rounded-sm" style={{ backgroundColor: `${frameColor}20`, color: frameColor, border: `1px solid ${frameColor}40` }}>
-                                Actuel
-                              </span>
-                            )}
-                          </div>
-                          <div className="ds-t-label text-muted-foreground font-mono tracking-wider">
-                            {rank.min_points.toLocaleString()}+ XP
-                          </div>
-                        </div>
-
-                        {/* Le menu par rang : modifier, supprimer. */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label={"Actions pour le rang " + rank.name}
-                              className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 flex-shrink-0"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-card border-primary/30 z-50">
-                            <DropdownMenuItem onClick={() => handleEditRank(rank)} className="gap-2 cursor-pointer">
-                              <Edit2 className="h-3.5 w-3.5" /> Modifier
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteRank(rank)} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                              <Trash2 className="h-3.5 w-3.5" /> Supprimer
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            </ScrollArea>
-          )}
-          {ranks.length > 3 && <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />}
-        </div>
-
-        <Bouton onClick={handleAddRank} pleine className="mt-4">
-          <Plus />Ajouter un rang
-        </Bouton>
+        <Bouton onClick={ajouter} pleine><Plus />{t("ranks.ajouter")}</Bouton>
 
         {selectedRank && (
-          <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />
+          <RankEditor
+            rank={selectedRank}
+            open
+            onClose={() => setSelectedRank(null)}
+            onSave={enregistrer}
+            isNew={isNewRank}
+            globalMaxXP={totalMaxXP}
+          />
         )}
 
-        <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
-          <AlertDialogContent className="bg-card border-primary/30">
+        <AlertDialog open={!!rankToDelete} onOpenChange={(o) => !o && setRankToDelete(null)}>
+          <AlertDialogContent className="border-primary/30 bg-card">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-foreground">Supprimer « {rankToDelete?.name} » ?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Ce palier disparaîtra de ta progression. L’XP déjà gagnée ne
-                bouge pas ; c’est l’échelle qui change.
-              </AlertDialogDescription>
+              <AlertDialogTitle className="text-foreground">
+                {t("ranks.suppression.titre", { nom: rankToDelete?.name ?? "" })}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{t("ranks.suppression.corps")}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="border-primary/30">Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Supprimer
+              <AlertDialogCancel className="border-primary/30">{t("ranks.annuler")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmerLaSuppression}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {t("ranks.supprimer")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

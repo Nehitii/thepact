@@ -169,3 +169,90 @@
 @media (prefers-reduced-motion: reduce) {
   .rank-core-glow { animation: none; opacity: 0.9; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   L ECHELLE DES PALIERS — le panneau des reglages du pacte.
+
+   Le panneau montrait TROIS representations du meme fait : une
+   carte du palier courant, une « ligne d XP » en segments, et une
+   liste de lignes a pastille carree. Trois dessins pour un seul
+   fait — ou l on en est —, et c est cela qui le rendait illisible.
+
+   Une echelle en tient lieu. Elle se lit EN MONTANT : le plus haut
+   seuil en tete, le premier en bas, et le montant qui separe deux
+   barreaux ecrit sur le montant qui les relie. La position courante
+   est marquee DESSUS, pas repetee dans une carte separee.
+
+   AUCUNE ANIMATION ICI. La respiration du halo est deja coupee sous
+   `prefers-reduced-motion` ; ajouter des entrees animees a quinze
+   barreaux reviendrait a defaire cette coupure par la bande.
+   ═══════════════════════════════════════════════════════════════ */
+.rg-echelle {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.rg-barreau {
+  --rg-teinte: hsl(var(--primary));
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--rg-teinte) 15%, transparent);
+  background: color-mix(in srgb, var(--rg-teinte) 3%, transparent);
+}
+/* LE BARREAU OU L ON SE TIENT. Le liseré gauche est la marque : il
+   dit la position sans ajouter de carte, et il porte la teinte du
+   palier, pas celle de l application. */
+.rg-barreau[data-courant="1"] {
+  border-color: color-mix(in srgb, var(--rg-teinte) 45%, transparent);
+  border-left-width: 3px;
+  background: color-mix(in srgb, var(--rg-teinte) 9%, transparent);
+}
+/* Un palier qu on ne peut pas atteindre : la teinte se retire, le
+   trait se pointille. Il reste lisible — c est un avertissement, pas
+   une punition. */
+.rg-barreau[data-hors="1"] {
+  border-style: dashed;
+  opacity: 0.62;
+}
+.rg-barreau-corps { min-width: 0; }
+.rg-barreau-nom {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--rg-teinte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* LE MONTANT QUI RELIE DEUX BARREAUX porte l ecart. Il ne parait
+   qu entre deux paliers : le premier barreau n a rien sous lui. */
+.rg-montant {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0 0 1.4rem;
+  height: 1.4rem;
+}
+.rg-montant::before {
+  content: "";
+  width: 2px;
+  height: 100%;
+  background: color-mix(in srgb, hsl(var(--primary)) 22%, transparent);
+}
+/* La barre d avancement d un barreau : l arc du noyau dit deja le
+   palier courant, celle-ci dit le chemin restant sur CE barreau. */
+.rg-jauge {
+  height: 2px;
+  margin-top: 0.3rem;
+  background: color-mix(in srgb, var(--rg-teinte) 14%, transparent);
+}
+.rg-jauge > i {
+  display: block;
+  height: 100%;
+  background: var(--rg-teinte);
+}

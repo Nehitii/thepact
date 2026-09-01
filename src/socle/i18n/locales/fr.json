@@ -3875,6 +3875,41 @@
       "retirer": "Retirer l'emblème",
       "ouColler": "ou colle une adresse",
       "adresse": "Adresse de l'emblème"
+    },
+    "titre": "Rangs",
+    "compte_one": "{{count}} palier",
+    "compte_other": "{{count}} paliers",
+    "actuel": "Actuel",
+    "xp": "XP",
+    "ajouter": "Ajouter un palier",
+    "vide": {
+      "titre": "Aucun palier défini",
+      "aide": "Pose des seuils d'XP pour bâtir ta progression. Tes objectifs peuvent te rapporter {{xp}} XP en tout."
+    },
+    "plafond": "Plafond atteignable",
+    "horsDePortee": "Hors de portée",
+    "horsDePorteeAide": "Ce seuil dépasse ce que tes objectifs peuvent rapporter.",
+    "ecart": "+{{n}} XP",
+    "seuil": "{{n}} XP",
+    "vousEtesIci": "Tu es ici",
+    "modifier": "Modifier",
+    "supprimer": "Supprimer",
+    "actions": "Actions pour le palier {{nom}}",
+    "annuler": "Annuler",
+    "suppression": {
+      "titre": "Supprimer « {{nom}} » ?",
+      "corps": "Ce palier disparaîtra de ta progression, et son emblème du dépôt. L'XP déjà gagnée ne bouge pas ; c'est l'échelle qui change."
+    },
+    "toast": {
+      "nomManquant": "Nom manquant",
+      "nomManquantAide": "Un palier a besoin d'un nom.",
+      "erreur": "Erreur",
+      "cree": "Palier créé",
+      "creeAide": "« {{nom}} » rejoint ta progression.",
+      "modifie": "Palier modifié",
+      "modifieAide": "« {{nom}} » est à jour.",
+      "supprime": "Palier supprimé",
+      "supprimeAide": "« {{nom}} » a été retiré."
     }
   }
 }
