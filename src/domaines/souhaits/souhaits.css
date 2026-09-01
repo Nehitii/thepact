@@ -1652,3 +1652,43 @@
   --wl-encre-3: #5F666E;
   --wl-vert:    #006947;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   RANGER UN ARTICLE DANS UNE LISTE
+
+   Les listes existaient et rien ne pouvait y entrer. On prend un
+   article par sa poignee et on le lache sur l onglet de la liste ;
+   le meme travail se fait sans geste par « ranger dans… », parce
+   qu un deplacement qui n existe qu a la souris n existe pas sur
+   un telephone.
+
+   L ONGLET DIT OUI OU NON PENDANT LE VOL. Un glissement sans retour
+   visuel est un pari : on lache, puis on regarde si ca a pris. Le
+   vert accueille, le rouge refuse — la vue du pacte, qui ne recoit
+   rien, et la liste d ou l on vient, ou l on ne gagnerait rien.
+   ═══════════════════════════════════════════════════════════════ */
+.wl-onglet[data-survol="1"] {
+  color: var(--wl-encre);
+  border-bottom-color: var(--wl-vert);
+  background: color-mix(in srgb, var(--wl-vert) 12%, transparent);
+}
+.wl-onglet[data-refus="1"] {
+  border-bottom-color: var(--wl-rouge);
+  background: color-mix(in srgb, var(--wl-rouge) 9%, transparent);
+  cursor: not-allowed;
+}
+
+.wl-ranger { display: inline-flex; gap: 4px; }
+/* La poignee prend le curseur du deplacement, et le garde pendant :
+   « grabbing » sur l element saisi, sinon la main lache des qu on
+   sort de la poignee alors qu on tient toujours l article. */
+.wl-poignee { cursor: grab; touch-action: none; }
+.wl-poignee[data-glisse="1"] { cursor: grabbing; color: var(--wl-encre); }
+
+/* L article en vol s allege sans disparaitre : on doit continuer a
+   voir CE QU ON DEPLACE pour viser. */
+.wl-socle:has(.wl-poignee[data-glisse="1"]) { opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wl-onglet[data-survol="1"], .wl-onglet[data-refus="1"] { transition: none; }
+}

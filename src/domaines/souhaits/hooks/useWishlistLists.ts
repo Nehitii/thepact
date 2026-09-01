@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/socle/supabase/client";
 import { toast } from "sonner";
+import { apresLeDepot, type ArticleRangeable } from "@/domaines/souhaits/logique/rangementEntreListes";
+
+/* Ce que le cache porte, vu d'ici : on n'a besoin que de quoi
+   déplacer, et le poste complet vit dans « usePactWishlist ». */
+type PosteRangeable = ArticleRangeable & Record<string, unknown>;
 
 /**
  * Les listes personnelles de la wishlist.
@@ -127,7 +132,19 @@ export function useSupprimerListe() {
   });
 }
 
-/** Ranger un poste dans une liste, ou l'en sortir avec `null`. */
+/**
+ * Ranger un poste dans une liste, ou l'en sortir avec `null`.
+ *
+ * L'ARTICLE CHANGE DE LISTE TOUT DE SUITE, et revient si la base
+ * refuse. Un déplacement est un geste de la main : attendre l'aller-
+ * retour pour le voir aboutir donne l'impression d'avoir raté sa
+ * prise, et on recommence — deux fois plutôt qu'une.
+ *
+ * Le retour arrière n'est pas une politesse. La table refuse de donner
+ * une liste à un poste du pacte, et elle peut refuser pour d'autres
+ * raisons qu'on ne connaît pas d'ici ; sans instantané, l'article
+ * resterait affiché dans une liste où il n'est pas.
+ */
 export function useRangerDansListe() {
   const qc = useQueryClient();
   return useMutation({
@@ -135,7 +152,20 @@ export function useRangerDansListe() {
       const { error } = await supabase.from("wishlist_items").update({ list_id: listId }).eq("id", itemId);
       if (error) throw new Error(traduireLeRefus(error.message));
     },
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["pact-wishlist", v.userId] }),
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur"),
+    onMutate: async (v) => {
+      const cle = ["pact-wishlist", v.userId];
+      /* On coupe les relectures en vol : l'une d'elles reposerait
+         l'ancienne liste par-dessus la nouvelle. */
+      await qc.cancelQueries({ queryKey: cle });
+      const avant = qc.getQueryData<PosteRangeable[]>(cle);
+      if (avant) qc.setQueryData(cle, apresLeDepot(avant, v.itemId, v.listId));
+      return { avant, cle };
+    },
+    onError: (e: unknown, _v, contexte) => {
+      if (contexte?.avant) qc.setQueryData(contexte.cle, contexte.avant);
+      toast.error(e instanceof Error ? e.message : "Erreur");
+    },
+    /* Dans les deux cas : la base a le dernier mot sur ce qui est écrit. */
+    onSettled: (_d, _e, v) => qc.invalidateQueries({ queryKey: ["pact-wishlist", v.userId] }),
   });
 }

@@ -2079,6 +2079,11 @@
       "libre": "Hors pacte",
       "aria": "Vues de la liste"
     },
+    "ranger": {
+      "saisir": "Déplacer vers une liste",
+      "menu": "Ranger dans…",
+      "horsListe": "Aucune liste"
+    },
     "tete": {
       "ref": "Bordereau // Acquisitions",
       "compte": "{{n}} articles",

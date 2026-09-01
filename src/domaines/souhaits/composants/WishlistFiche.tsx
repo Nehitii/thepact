@@ -7,6 +7,7 @@ import { formatCurrency } from "@/socle/outils/currency";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
 import { prixEnregistre } from "@/domaines/souhaits/logique/prix";
+import { RangerCetArticle } from "@/domaines/souhaits/composants/RangerCetArticle";
 
 interface WishlistFicheProps {
   item: PactWishlistItem;
@@ -22,6 +23,11 @@ interface WishlistFicheProps {
   onToggleAcquired: (id: string, acquired: boolean) => void;
   /** Corriger une valeur sans ouvrir de fenetre. */
   onCorriger?: (id: string, champ: "prix" | "lien", valeur: string) => void;
+  /* Absent dans la vue du pacte, ou rien ne se range. */
+  rangement?: {
+    listes: ReadonlyArray<{ id: string; name: string }>;
+    onRanger: (itemId: string, cible: string) => void;
+  };
 }
 
 /** Deux lettres tirees du nom, pour la plaque gravee. */
@@ -55,7 +61,7 @@ function initiales(nom: string) {
  * qui propose au survol d en poser une.
  */
 export function WishlistFiche({
-  item, src, currency, piece, onEdit, onDelete, onToggleAcquired, onCorriger,
+  item, src, currency, piece, onEdit, onDelete, onToggleAcquired, onCorriger, rangement,
 }: WishlistFicheProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -191,6 +197,13 @@ export function WishlistFiche({
 
         <div className="wl-fiche-gestes">
           <div className="wl-outils">
+            {rangement && (
+              <RangerCetArticle
+                article={item}
+                listes={rangement.listes}
+                onRanger={rangement.onRanger}
+              />
+            )}
             {item.url ? (
               <a
                 className="wl-outil"

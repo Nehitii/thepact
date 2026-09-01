@@ -46,6 +46,9 @@ import type { Vue, Tri } from "@/domaines/souhaits/types";
 import { compterLesArticles, filtrerEtTrier } from "@/domaines/souhaits/logique/inventaire";
 import { BandeauMesures } from "@/domaines/souhaits/composants/BandeauMesures";
 import { BarreListe } from "@/domaines/souhaits/composants/BarreListe";
+import { DndContext, rectIntersection } from "@dnd-kit/core";
+import { OngletsDeVue } from "@/domaines/souhaits/composants/OngletsDeVue";
+import { useRangementParGlissement } from "@/domaines/souhaits/hooks/useRangementParGlissement";
 
 /* ═══════════════════════════════════════════════════════════════
    LE BORDEREAU
@@ -187,6 +190,13 @@ export default function Wishlist() {
   const [editListId, setEditListId] = useState("none");
   const [newListId, setNewListId] = useState("none");
   const { data: listesWishlist = [] } = useListesWishlist(user?.id);
+  /* LE GESTE QUI MANQUAIT. Les listes existaient, la mutation qui y
+     range un article existait, et rien ne les reliait. */
+  const glisse = useRangementParGlissement(items);
+  const rangementOffert = useMemo(
+    () => ({ listes: listesWishlist, onRanger: glisse.rangerDirectement }),
+    [listesWishlist, glisse.rangerDirectement],
+  );
   const [editUrl, setEditUrl] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
   const [editPriority, setEditPriority] = useState<WishlistPriority>("low");
@@ -445,16 +455,6 @@ export default function Wishlist() {
 
   // ═══ RENDU ═══
 
-  const onglets: Array<{ cle: Vue; mot: string; compte: number }> = [
-    { cle: "tout", mot: t("wishlist.vue.tout", "Global"), compte: items.length },
-    { cle: "pacte", mot: t("wishlist.vue.pacte", "Le pacte"), compte: comptes.duPacte.length },
-    ...listesWishlist.map((l) => ({
-      cle: l.id as Vue,
-      mot: l.name,
-      compte: comptes.parListe.get(l.id)?.length ?? 0,
-    })),
-  ];
-
   /* UNE VUE QUI NE DESIGNE PLUS RIEN RETOMBE SUR « GLOBAL ». La liste
      retenue au dernier passage peut avoir ete supprimee depuis, et un
      onglet actif sans onglet correspondant laisse la page vide sans
@@ -544,6 +544,13 @@ export default function Wishlist() {
         <div className="wl">
 
           {/* ── L en-tete ── */}
+          <DndContext
+            sensors={glisse.capteurs}
+            collisionDetection={rectIntersection}
+            onDragStart={glisse.auDepart}
+            onDragEnd={glisse.aLArrivee}
+            onDragCancel={glisse.aLAbandon}
+          >
           <header className="wl-tete">
             <div className="wl-tete-id">
               {/* L enseigne : une colonne verticale, une seule, a un
@@ -569,22 +576,12 @@ export default function Wishlist() {
             </div>
           </header>
 
-          {/* ── Les trois vues ── */}
-          <div className="wl-onglets" role="tablist" aria-label={t("wishlist.vue.aria", "Vues de la liste")}>
-            {onglets.map((o) => (
-              <button
-                key={o.cle}
-                type="button"
-                role="tab"
-                className="wl-onglet"
-                data-veine={o.cle}
-                aria-selected={vue === o.cle}
-                onClick={() => setVue(o.cle)}
-              >
-                {o.mot} <b>{o.compte}</b>
-              </button>
-            ))}
-          </div>
+          {/* ── Les vues, qui sont aussi les cibles du rangement ── */}
+          <OngletsDeVue
+            vue={vue} setVue={setVue} enVol={glisse.article}
+            total={items.length} duPacte={comptes.duPacte.length}
+            parListe={comptes.parListe} listes={listesWishlist}
+          />
 
           <BandeauMesures vue={vue} comptes={comptes} currency={currency} nbArticles={items.length} />
           <BarreListe vue={vue} recherche={recherche} setRecherche={setRecherche} tri={tri} setTri={setTri} affichage={affichage} setAffichage={setAffichage} />
@@ -652,6 +649,7 @@ export default function Wishlist() {
                   <WishlistRegistre
                     items={vus.actifs} currency={currency} pieces={pieces} listes={listesWishlist}
                     onEdit={ouvrirEdition} onDelete={demanderSuppression} onToggleAcquired={basculerAcquis}
+                    onRanger={vue === "pacte" ? undefined : glisse.rangerDirectement}
                   />
                 ) : (
                 <div className="wl-grille">
@@ -666,6 +664,7 @@ export default function Wishlist() {
                       onDelete={demanderSuppression}
                       onToggleAcquired={basculerAcquis}
                       onCorriger={corriger}
+                      rangement={vue === "pacte" ? undefined : rangementOffert}
                     />
                   ))}
                 </div>
@@ -678,6 +677,7 @@ export default function Wishlist() {
               />
             </>
           )}
+          </DndContext>
         </div>
       </div>
     </DSPageShell>

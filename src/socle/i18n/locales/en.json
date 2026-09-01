@@ -2079,6 +2079,11 @@
       "libre": "Outside the pact",
       "aria": "List views"
     },
+    "ranger": {
+      "saisir": "Move to a list",
+      "menu": "Move to…",
+      "horsListe": "No list"
+    },
     "tete": {
       "ref": "Manifest // Acquisitions",
       "compte": "{{n}} items",

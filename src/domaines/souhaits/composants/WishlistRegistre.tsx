@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, ExternalLink, Pencil, Target, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/socle/outils/currency";
+import { RangerCetArticle } from "@/domaines/souhaits/composants/RangerCetArticle";
 import { WishlistRail } from "@/domaines/souhaits/composants/WishlistRail";
 import type { PactWishlistItem } from "@/domaines/souhaits/hooks/usePactWishlist";
 import type { PieceDeLEtape } from "@/domaines/souhaits/hooks/useWishlistPieces";
@@ -18,6 +19,9 @@ interface WishlistRegistreProps {
   onEdit: (item: PactWishlistItem) => void;
   onDelete: (id: string) => void;
   onToggleAcquired: (id: string, acquired: boolean) => void;
+  /* Le registre range comme la vitrine : le meme geste doit exister
+     quel que soit l affichage choisi. Absent dans la vue du pacte. */
+  onRanger?: (itemId: string, cible: string) => void;
 }
 
 interface Groupe {
@@ -52,7 +56,7 @@ interface Groupe {
  * de cliquer.
  */
 export function WishlistRegistre({
-  items, currency, pieces, listes = [], onEdit, onDelete, onToggleAcquired,
+  items, currency, pieces, listes = [], onEdit, onDelete, onToggleAcquired, onRanger,
 }: WishlistRegistreProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -315,6 +319,13 @@ export function WishlistRegistre({
                         </span>
 
                         <span className="wl-outils">
+                          {onRanger && (
+                            <RangerCetArticle
+                              article={item}
+                              listes={listes}
+                              onRanger={onRanger}
+                            />
+                          )}
                           {item.url && (
                             <a className="wl-outil" href={item.url} target="_blank" rel="noopener noreferrer"
                               title={t("wishlist.fiche.voirEnLigne", "Voir en ligne")}>
