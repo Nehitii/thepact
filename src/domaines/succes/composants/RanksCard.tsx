@@ -59,6 +59,16 @@ export function RanksCard({ userId }: RanksCardProps) {
   const totalMaxXP = rankData?.totalMaxXP ?? 0;
   const currentXP = rankData?.currentXP ?? 0;
 
+  /* ═══ L ECHELLE VOIT CE QU ON EST EN TRAIN DE TAPER ═══
+     L editeur est CONTROLE par ce panneau : le palier en cours vit ici,
+     et l echelle recoit la liste avec lui dedans. Un seuil qu on tape y
+     fait donc glisser le barreau a sa nouvelle place, en direct — ce
+     qu une fenetre modale posee par-dessus n aurait pas permis de
+     voir. */
+  const paliersProjetes = selectedRank
+    ? [...paliers.filter((p) => p.id !== selectedRank.id), selectedRank]
+    : paliers;
+
   const ajouter = () => {
     const dernier = paliers[paliers.length - 1];
     setSelectedRank({
@@ -149,7 +159,21 @@ export function RanksCard({ userId }: RanksCardProps) {
           </div>
         )}
 
-        {paliers.length === 0 ? (
+        {selectedRank && (
+          <RankEditor
+            rank={selectedRank}
+            onChange={setSelectedRank}
+            onClose={() => setSelectedRank(null)}
+            onSave={enregistrer}
+            isNew={isNewRank}
+            paliers={paliers}
+            globalMaxXP={totalMaxXP}
+          />
+        )}
+
+        {/* L etat vide regarde la liste PROJETEE : un palier tout neuf
+            se voit sur l echelle des qu on commence a le decrire. */}
+        {paliersProjetes.length === 0 ? (
           <div className="border border-dashed border-primary/20 bg-primary/[0.02] py-8 text-center">
             <Trophy className="mx-auto mb-3 h-10 w-10 text-primary/30" />
             <p className="font-orbitron text-sm uppercase tracking-wider text-primary/70">
@@ -161,7 +185,7 @@ export function RanksCard({ userId }: RanksCardProps) {
           </div>
         ) : (
           <EchelleDesPaliers
-            paliers={paliers}
+            paliers={paliersProjetes}
             currentXP={currentXP}
             totalMaxXP={totalMaxXP}
             niveau={niveauDuRang(rankData)}
@@ -171,17 +195,6 @@ export function RanksCard({ userId }: RanksCardProps) {
         )}
 
         <Bouton onClick={ajouter} pleine><Plus />{t("ranks.ajouter")}</Bouton>
-
-        {selectedRank && (
-          <RankEditor
-            rank={selectedRank}
-            open
-            onClose={() => setSelectedRank(null)}
-            onSave={enregistrer}
-            isNew={isNewRank}
-            globalMaxXP={totalMaxXP}
-          />
-        )}
 
         <AlertDialog open={!!rankToDelete} onOpenChange={(o) => !o && setRankToDelete(null)}>
           <AlertDialogContent className="border-primary/30 bg-card">

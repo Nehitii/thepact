@@ -3910,6 +3910,27 @@
       "modifieAide": "“{{nom}}” is up to date.",
       "supprime": "Rank deleted",
       "supprimeAide": "“{{nom}}” has been removed."
+    },
+    "editeur": {
+      "nouveau": "New rank",
+      "modifier": "Edit rank",
+      "nom": "Rank name",
+      "nomExemple": "e.g. Celestial Architect",
+      "seuil": "XP threshold",
+      "teinte": "Tint",
+      "teinteNuancier": "Tint, colour picker",
+      "teinteCode": "Tint, hex code",
+      "devise": "Rank motto",
+      "deviseExemple": "A line that gets you back up…",
+      "enregistrer": "Save",
+      "creer": "Create rank",
+      "enregistrement": "Saving…",
+      "apercuImage": "Change the emblem",
+      "apercuTeinte": "Change the tint"
+    },
+    "faute": {
+      "occupe": "“{{nom}}” already holds this threshold.",
+      "plafond": "Above the reachable ceiling ({{plafond}} XP)."
     }
   }
 }

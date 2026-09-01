@@ -3910,6 +3910,27 @@
       "modifieAide": "« {{nom}} » est à jour.",
       "supprime": "Palier supprimé",
       "supprimeAide": "« {{nom}} » a été retiré."
+    },
+    "editeur": {
+      "nouveau": "Nouveau palier",
+      "modifier": "Modifier le palier",
+      "nom": "Nom du palier",
+      "nomExemple": "ex. Architecte Céleste",
+      "seuil": "Seuil d'XP",
+      "teinte": "Teinte",
+      "teinteNuancier": "Teinte, nuancier",
+      "teinteCode": "Teinte, code hexadécimal",
+      "devise": "Devise du palier",
+      "deviseExemple": "Une phrase qui te remet debout…",
+      "enregistrer": "Enregistrer",
+      "creer": "Créer le palier",
+      "enregistrement": "Enregistrement…",
+      "apercuImage": "Changer l'emblème",
+      "apercuTeinte": "Changer la teinte"
+    },
+    "faute": {
+      "occupe": "« {{nom}} » occupe déjà ce seuil.",
+      "plafond": "Au-dessus du plafond atteignable ({{plafond}} XP)."
     }
   }
 }

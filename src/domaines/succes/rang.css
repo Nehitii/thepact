@@ -256,3 +256,79 @@
   height: 100%;
   background: var(--rg-teinte);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   L APERCU EST LE CONTROLE.
+
+   L editeur avait trois onglets pour six champs — plus de
+   navigation que de contenu — et l apercu se trouvait toujours dans
+   celui qu on ne regardait pas.
+
+   Il est desormais en tete, toujours visible, et il agit : le CENTRE
+   du noyau ouvre le choix d embleme, son HALO ouvre le choix de
+   teinte. Les deux cibles sont posees par-dessus le noyau, sans le
+   modifier — il reste le meme composant qu ailleurs.
+
+   ELLES SONT HORS DU PARCOURS CLAVIER, et c est voulu : les memes
+   reglages sont juste dessous, dans de vrais champs etiquetes. Deux
+   arrets de tabulation pour la meme action ajouteraient du bruit a
+   qui navigue au clavier, sans rien lui donner de plus.
+   ═══════════════════════════════════════════════════════════════ */
+.rg-apercu {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.rg-cible {
+  position: absolute;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: box-shadow 140ms linear;
+}
+/* Le centre : la ou vit l embleme. */
+.rg-cible[data-quoi="embleme"] {
+  top: 50%; left: 50%;
+  width: 3.2rem; height: 3.2rem;
+  transform: translate(-50%, -50%);
+}
+/* Le halo : la couronne, la ou vit la teinte. Le trou du milieu la
+   laisse au centre — sans lui, la couronne mangerait l embleme. */
+.rg-cible[data-quoi="teinte"] {
+  top: 0; left: 50%;
+  width: 5.5rem; height: 5.5rem;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 50%, 50% 0, 100% 0, 100% 100%, 0 100%, 0 0, 50% 0);
+}
+.rg-apercu:hover .rg-cible[data-quoi="embleme"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 45%, transparent);
+}
+.rg-apercu:hover .rg-cible[data-quoi="teinte"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 35%, transparent);
+}
+
+/* L editeur en une seule colonne, ouvert DANS le panneau : c est ce
+   qui laisse l echelle visible pendant qu on tape un seuil. */
+.rg-editeur {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+  background: color-mix(in srgb, hsl(var(--primary)) 4%, transparent);
+}
+.rg-prereglages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.rg-prereglage {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.rg-prereglage[aria-pressed="true"] { border-color: hsl(var(--primary)); }
+.rg-prereglage:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }

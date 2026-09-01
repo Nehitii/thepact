@@ -1,280 +1,236 @@
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Check, X } from "lucide-react";
 import { Button } from "@/socle/ui/button";
 import { Input } from "@/socle/ui/input";
 import { Label } from "@/socle/ui/label";
 import { Textarea } from "@/socle/ui/textarea";
-import { Slider } from "@/socle/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/socle/ui/dialog";
-import { ChampEmblemeDePalier } from "@/domaines/succes/composants/ChampEmblemeDePalier";
 import { RankCore } from "@/domaines/succes/composants/RankCore";
+import { ChampEmblemeDePalier } from "@/domaines/succes/composants/ChampEmblemeDePalier";
+import { fauteDuSeuil } from "@/domaines/succes/logique/echelleDesPaliers";
+import { PREREGLAGES_DE_TEINTE, normaliserTeinte } from "@/domaines/succes/logique/teinte";
 import type { Rank } from "@/domaines/succes/types";
-import { 
-  Palette, 
-  Image as ImageIcon, 
-  Quote, 
-  Trophy,
-  Sparkles,
-  X,
-  Check,
-  AlertTriangle
-} from "lucide-react";
-import { cn } from "@/socle/outils/utils";
+import "@/domaines/succes/rang.css";
 
 interface RankEditorProps {
+  /** Le palier en cours d edition — tenu par le panneau, pas ici. */
   rank: Rank;
-  open: boolean;
+  onChange: (rank: Rank) => void;
   onClose: () => void;
   onSave: (rank: Rank) => Promise<void>;
   isNew?: boolean;
+  /** Les autres paliers, pour savoir si un seuil est deja pris. */
+  paliers: Rank[];
+  /** Ce que les objectifs du pacte peuvent rapporter en tout. */
   globalMaxXP?: number;
 }
 
-// Preset color themes
-const colorPresets = [
-  { name: "Cyan", frame: "hsl(var(--ds-accent-primary))", glow: "rgba(91,180,255,0.5)" },
-  { name: "Or", frame: "#f59e0b", glow: "rgba(245,158,11,0.5)" },
-  { name: "Violet", frame: "#a855f7", glow: "rgba(168,85,247,0.5)" },
-  { name: "Cramoisi", frame: "#ef4444", glow: "rgba(239,68,68,0.5)" },
-  { name: "Émeraude", frame: "#10b981", glow: "rgba(16,185,129,0.5)" },
-  { name: "Rose", frame: "#f43f5e", glow: "rgba(244,63,94,0.5)" },
-  { name: "Ambre", frame: "#fbbf24", glow: "rgba(251,191,36,0.5)" },
-  { name: "Indigo", frame: "#6366f1", glow: "rgba(99,102,241,0.5)" },
-];
-
-export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0 }: RankEditorProps) {
-  const [editedRank, setEditedRank] = useState<Rank>(rank);
+/**
+ * L EDITEUR D UN PALIER, SANS ONGLETS.
+ *
+ * ═══ CE QU IL ETAIT ═══
+ *
+ * Une fenetre modale a TROIS ONGLETS — « L essentiel », « Images »,
+ * « Style » — pour SIX CHAMPS. Plus de navigation que de contenu, et
+ * l apercu se trouvait toujours dans l onglet qu on ne regardait pas.
+ *
+ * ═══ CE QU IL EST ═══
+ *
+ * Une seule colonne. L apercu du noyau EN HAUT, toujours visible, et
+ * les reglages dessous dans l ordre ou l on y pense : le nom, le seuil,
+ * l embleme, la teinte, la devise.
+ *
+ * L APERCU N EST PAS DECORATIF, IL EST LE CONTROLE. Cliquer le centre
+ * du noyau ouvre le choix d embleme ; cliquer son halo ouvre le choix
+ * de teinte. Les memes reglages restent atteignables au clavier par les
+ * champs en dessous — la manipulation directe S AJOUTE, elle ne
+ * remplace pas, et les deux cibles sont donc hors du parcours de
+ * tabulation.
+ *
+ * IL S OUVRE DANS LE PANNEAU, PAS PAR-DESSUS. C est ce qui laisse
+ * l echelle visible : un seuil qu on tape y fait glisser le palier a sa
+ * nouvelle place, en direct. Une fenetre modale l aurait couverte, et
+ * la demande d une echelle qui bouge pendant la frappe n aurait pas eu
+ * de sens.
+ *
+ * LE SEUIL NE REFUSE PLUS APRES COUP. Un seuil deja pris ou au-dessus
+ * du plafond se dit SOUS le champ, pendant la frappe. L ancienne
+ * version validait, envoyait, puis annoncait la faute par une
+ * notification : on apprenait son erreur apres l avoir commise.
+ *
+ * `background_url` et `background_opacity` ne sont plus proposes : ils
+ * n existaient que pour `RankCard`, qui n existe plus. Les colonnes
+ * restent, et sont ecrites telles quelles.
+ */
+export function RankEditor({
+  rank, onChange, onClose, onSave, isNew, paliers, globalMaxXP = 0,
+}: RankEditorProps) {
+  const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"basics" | "visuals" | "style">("basics");
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const teinte = normaliserTeinte(rank.frame_color);
+  const faute = fauteDuSeuil(rank.min_points, rank.id, paliers, globalMaxXP);
 
-  useEffect(() => {
-    setEditedRank(rank);
-    setValidationError(null);
-  }, [rank]);
-
-  const validateThresholds = (rankToValidate: Rank): string | null => {
-    if (globalMaxXP > 0) {
-      if (rankToValidate.min_points > globalMaxXP) {
-        return `Le seuil bas (${rankToValidate.min_points.toLocaleString()} XP) dépasse le maximum atteignable (${globalMaxXP.toLocaleString()} XP).`;
-      }
-      if (rankToValidate.max_points && rankToValidate.max_points > globalMaxXP) {
-        return `Le seuil haut (${rankToValidate.max_points.toLocaleString()} XP) dépasse le maximum atteignable (${globalMaxXP.toLocaleString()} XP).`;
-      }
-    }
-    if (rankToValidate.max_points && rankToValidate.max_points <= rankToValidate.min_points) {
-      return "Le seuil haut doit dépasser le seuil bas.";
-    }
-    return null;
+  /* Les deux cibles de la manipulation directe pointent sur les vrais
+     champs, plus bas : c est le meme reglage, atteint autrement. */
+  const champEmbleme = useRef<HTMLDivElement>(null);
+  const champTeinte = useRef<HTMLInputElement>(null);
+  const viserLEmbleme = () => {
+    champEmbleme.current?.scrollIntoView({ block: "nearest" });
+    champEmbleme.current?.querySelector("button")?.click();
+  };
+  const viserLaTeinte = () => {
+    champTeinte.current?.scrollIntoView({ block: "nearest" });
+    champTeinte.current?.click();
   };
 
-  const handleSave = async () => {
-    const error = validateThresholds(editedRank);
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-    
+  const modifier = (bout: Partial<Rank>) => onChange({ ...rank, ...bout });
+
+  const enregistrer = async () => {
     setSaving(true);
     try {
-      await onSave(editedRank);
+      await onSave(rank);
       onClose();
     } catch {
-      // onSave handles its own error toasts; keep editor open
+      /* `onSave` dit lui-meme ce qui n a pas marche ; on reste ouvert. */
     } finally {
       setSaving(false);
     }
   };
 
-  const updateRank = (updates: Partial<Rank>) => {
-    const newRank = { ...editedRank, ...updates };
-    setEditedRank(newRank);
-    setValidationError(null);
-  };
-
-  const tabs = [
-    { id: "basics", label: "L’essentiel", icon: Trophy },
-    { id: "visuals", label: "Images", icon: ImageIcon },
-    { id: "style", label: "Style", icon: Palette },
-  ] as const;
+  const message = faute?.quoi === "occupe"
+    ? t("ranks.faute.occupe", { nom: faute.parQui })
+    : faute?.quoi === "au-dessus-du-plafond"
+      ? t("ranks.faute.plafond", { plafond: faute.plafond.toLocaleString("fr-FR") })
+      : null;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-card border-primary/30 max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-primary font-orbitron flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            {isNew ? "Nouveau rang" : "Modifier le rang"}
-          </DialogTitle>
-        </DialogHeader>
+    <section className="rg-editeur" aria-label={t(isNew ? "ranks.editeur.nouveau" : "ranks.editeur.modifier")}>
+      {/* L APERCU, EN TETE ET TOUJOURS VISIBLE. */}
+      <div className="rg-apercu">
+        <RankCore
+          taille="carte"
+          level={1}
+          rankName={rank.name}
+          logoUrl={rank.logo_url}
+          teinte={rank.frame_color}
+          progress={45}
+          currentXP={rank.min_points}
+          targetXP={rank.min_points + 500}
+          pied={false}
+        />
+        <button
+          type="button" tabIndex={-1} aria-hidden="true"
+          className="rg-cible" data-quoi="teinte"
+          title={t("ranks.editeur.apercuTeinte")}
+          onClick={viserLaTeinte}
+        />
+        <button
+          type="button" tabIndex={-1} aria-hidden="true"
+          className="rg-cible" data-quoi="embleme"
+          title={t("ranks.editeur.apercuImage")}
+          onClick={viserLEmbleme}
+        />
+      </div>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Left: Preview */}
-            <div className="space-y-4">
-              <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                Aperçu
-              </Label>
-              <div className="flex justify-center p-4 bg-background/50 rounded-xl border border-primary/20">
-                <RankCore
-                  taille="carte"
-                  level={1}
-                  rankName={editedRank.name}
-                  logoUrl={editedRank.logo_url}
-                  teinte={editedRank.frame_color}
-                  progress={45}
-                  currentXP={editedRank.min_points}
-                  targetXP={editedRank.min_points + 500}
-                />
-              </div>
-            </div>
+      {/* LE NOM */}
+      <div className="space-y-2">
+        <Label htmlFor="rg-nom" className="text-xs font-orbitron uppercase tracking-wider text-primary/70">
+          {t("ranks.editeur.nom")}
+        </Label>
+        <Input
+          id="rg-nom" value={rank.name} maxLength={40}
+          onChange={(e) => modifier({ name: e.target.value })}
+          placeholder={t("ranks.editeur.nomExemple")}
+          className="border-primary/30 bg-card/50 font-orbitron text-primary"
+        />
+      </div>
 
-            {/* Right: Editor */}
-            <div className="space-y-4">
-              <div className="flex gap-1 p-1 bg-primary/5 rounded-lg">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md text-xs font-rajdhani font-medium transition-all",
-                      activeTab === tab.id
-                        ? "bg-primary/20 text-primary"
-                        : "text-muted-foreground hover:text-primary/70"
-                    )}
-                  >
-                    <tab.icon className="h-3.5 w-3.5" />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+      {/* LE SEUIL — la seule chose ou l on peut se tromper vraiment. */}
+      <div className="space-y-2">
+        <Label htmlFor="rg-seuil" className="text-xs font-orbitron uppercase tracking-wider text-primary/70">
+          {t("ranks.editeur.seuil")}
+        </Label>
+        <Input
+          id="rg-seuil" type="number" min={0} value={rank.min_points}
+          onChange={(e) => modifier({ min_points: parseInt(e.target.value) || 0 })}
+          aria-invalid={!!message}
+          aria-describedby={message ? "rg-seuil-faute" : undefined}
+          className={`border-primary/30 bg-card/50 tabular-nums text-primary ${message ? "border-destructive" : ""}`}
+        />
+        {message && (
+          <p id="rg-seuil-faute" role="status" className="text-xs text-destructive">{message}</p>
+        )}
+      </div>
 
-              <div className="space-y-4">
-                {activeTab === "basics" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Nom du rang</Label>
-                      <Input aria-label="Nom du rang" value={editedRank.name} onChange={(e) => updateRank({ name: e.target.value })} placeholder="ex. Architecte Céleste" maxLength={40} className="bg-card/50 border-primary/30 text-primary font-orbitron" />
-                    </div>
+      {/* L EMBLEME */}
+      <div ref={champEmbleme}>
+        <ChampEmblemeDePalier url={rank.logo_url} onUrl={(logo_url) => modifier({ logo_url })} sansApercu />
+      </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Seuil d’XP</Label>
-                        <Input aria-label="Seuil d’XP" type="number" value={editedRank.min_points} onChange={(e) => updateRank({ min_points: parseInt(e.target.value) || 0 })} min={0} max={globalMaxXP > 0 ? globalMaxXP : undefined} className="bg-card/50 border-primary/30 text-primary" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Seuil haut (optionnel)</Label>
-                        <Input aria-label="Seuil haut (optionnel)" type="number" value={editedRank.max_points || ""} onChange={(e) => updateRank({ max_points: parseInt(e.target.value) || 0 })} min={0} max={globalMaxXP > 0 ? globalMaxXP : undefined} placeholder="Auto" className="bg-card/50 border-primary/30 text-primary" />
-                      </div>
-                    </div>
-
-                    {globalMaxXP > 0 && (
-                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3 w-3 text-amber-400" />
-                          <span className="ds-t-label font-orbitron text-amber-400 uppercase tracking-wider">
-                            Plafond atteignable : {globalMaxXP.toLocaleString()} XP
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {validationError && (
-                      <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
-                        <span className="text-xs text-destructive">{validationError}</span>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider flex items-center gap-1">
-                        <Quote className="h-3 w-3" />
-                        Devise du rang
-                      </Label>
-                      <Textarea aria-label="Devise du rang" value={editedRank.quote || ""} onChange={(e) => updateRank({ quote: e.target.value })} placeholder="Une phrase qui te remet debout…" maxLength={120} className="bg-card/50 border-primary/30 text-primary resize-none h-20" />
-                    </div>
-                  </>
-                )}
-
-                {activeTab === "visuals" && (
-                  <>
-                    <ChampEmblemeDePalier
-                      url={editedRank.logo_url}
-                      onUrl={(logo_url) => updateRank({ logo_url })}
-                    />
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Image de fond</Label>
-                      <Input aria-label="Adresse de l’image de fond" value={editedRank.background_url || ""} onChange={(e) => updateRank({ background_url: e.target.value || null })} placeholder="https://…/mon-fond.png" className="bg-card/50 border-primary/30 text-primary text-sm" />
-                    </div>
-
-                    {editedRank.background_url && (
-                      <div className="space-y-2">
-                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                          Opacité du fond : {Math.round((editedRank.background_opacity || 0.3) * 100)} %
-                        </Label>
-                        <Slider aria-label="Opacité du fond" value={[(editedRank.background_opacity || 0.3) * 100]} onValueChange={([v]) => updateRank({ background_opacity: v / 100 })} min={5} max={60} step={5} className="py-2" />
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {activeTab === "style" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Palettes</Label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {colorPresets.map((preset) => (
-                          <button
-                            key={preset.name}
-                            onClick={() => updateRank({ frame_color: preset.frame, glow_color: preset.glow })}
-                            className={cn(
-                              "p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1",
-                              editedRank.frame_color === preset.frame ? "border-primary bg-primary/10" : "border-primary/20 hover:border-primary/40"
-                            )}
-                          >
-                            <div className="w-6 h-6 rounded-full" style={{ backgroundColor: preset.frame, boxShadow: `0 0 10px ${preset.glow}` }} />
-                            <span className="ds-t-label text-muted-foreground">{preset.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Couleur du cadre</Label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          aria-label="Couleur du cadre, nuancier"
-                          value={editedRank.frame_color || "hsl(var(--ds-accent-primary))"}
-                          onChange={(e) => {
-                            const color = e.target.value;
-                            const rgb = parseInt(color.slice(1), 16);
-                            const r = (rgb >> 16) & 255;
-                            const g = (rgb >> 8) & 255;
-                            const b = rgb & 255;
-                            updateRank({ frame_color: color, glow_color: `rgba(${r},${g},${b},0.5)` });
-                          }}
-                          className="w-12 h-10 rounded cursor-pointer border border-primary/30"
-                        />
-                        <Input aria-label="Couleur du cadre, code hexadécimal" value={editedRank.frame_color || "hsl(var(--ds-accent-primary))"} onChange={(e) => updateRank({ frame_color: e.target.value })} className="flex-1 bg-card/50 border-primary/30 text-primary font-mono text-sm" />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+      {/* LA TEINTE — un seul controle, deux colonnes ecrites. */}
+      <div className="space-y-2">
+        <Label htmlFor="rg-teinte" className="text-xs font-orbitron uppercase tracking-wider text-primary/70">
+          {t("ranks.editeur.teinte")}
+        </Label>
+        <div className="flex items-center gap-2">
+          <input
+            id="rg-teinte" ref={champTeinte} type="color"
+            aria-label={t("ranks.editeur.teinteNuancier")}
+            value={teinte ?? "#5bb4ff"}
+            onChange={(e) => modifier({ frame_color: e.target.value })}
+            className="h-10 w-12 cursor-pointer rounded border border-primary/30"
+          />
+          <Input
+            aria-label={t("ranks.editeur.teinteCode")}
+            value={rank.frame_color ?? ""}
+            onChange={(e) => modifier({ frame_color: e.target.value || null })}
+            className="flex-1 border-primary/30 bg-card/50 font-mono text-sm text-primary"
+          />
         </div>
-
-        <div className="flex gap-2 pt-4 border-t border-primary/20">
-          <Button variant="outline" onClick={onClose} className="flex-1 border-primary/30 text-muted-foreground hover:bg-primary/10">
-            <X className="h-4 w-4 mr-2" />Annuler
-          </Button>
-          <Button onClick={handleSave} disabled={saving || !editedRank.name.trim()} className="flex-1 bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron">
-            <Check className="h-4 w-4 mr-2" />{saving ? "Enregistrement…" : isNew ? "Créer le rang" : "Enregistrer"}
-          </Button>
+        <div className="rg-prereglages">
+          {PREREGLAGES_DE_TEINTE.map((p) => (
+            <button
+              key={p.cle} type="button" className="rg-prereglage"
+              style={{ backgroundColor: p.teinte }}
+              aria-label={p.cle}
+              aria-pressed={teinte === p.teinte}
+              onClick={() => modifier({ frame_color: p.teinte })}
+            />
+          ))}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      {/* LA DEVISE */}
+      <div className="space-y-2">
+        <Label htmlFor="rg-devise" className="text-xs font-orbitron uppercase tracking-wider text-primary/70">
+          {t("ranks.editeur.devise")}
+        </Label>
+        <Textarea
+          id="rg-devise" value={rank.quote || ""} maxLength={120}
+          onChange={(e) => modifier({ quote: e.target.value })}
+          placeholder={t("ranks.editeur.deviseExemple")}
+          className="h-20 resize-none border-primary/30 bg-card/50 text-primary"
+        />
+      </div>
+
+      <div className="flex gap-2 border-t border-primary/20 pt-3">
+        <Button
+          variant="outline" onClick={onClose}
+          className="flex-1 border-primary/30 text-muted-foreground hover:bg-primary/10"
+        >
+          <X className="mr-2 h-4 w-4" />{t("ranks.annuler")}
+        </Button>
+        <Button
+          onClick={enregistrer}
+          disabled={saving || !rank.name.trim() || !!faute}
+          className="flex-1 border border-primary/30 bg-primary/20 font-orbitron text-primary hover:bg-primary/30"
+        >
+          <Check className="mr-2 h-4 w-4" />
+          {saving
+            ? t("ranks.editeur.enregistrement")
+            : isNew ? t("ranks.editeur.creer") : t("ranks.editeur.enregistrer")}
+        </Button>
+      </div>
+    </section>
   );
 }
