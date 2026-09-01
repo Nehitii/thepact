@@ -4,6 +4,7 @@
    avec lui. */
 import "@/domaines/succes/rang.css";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import { normaliserTeinte } from "@/domaines/succes/logique/teinte";
 
 interface RankCoreProps {
@@ -62,6 +63,7 @@ export function RankCore({
   targetXP,
   pied = true,
 }: RankCoreProps) {
+  const { t } = useTranslation();
   const pct = Math.min(100, Math.max(0, progress));
   /* Une teinte illisible ne se pose pas : la variable reste absente et
      la feuille retombe sur `--primary`. C est ce qui rattrape les
@@ -89,7 +91,7 @@ export function RankCore({
                 className="ds-t-label font-mono not-italic"
                 style={{ letterSpacing: 3, color: "var(--nexus-text-dimmer)" }}
               >
-                NIVEAU
+                {t("ranks.noyau.niveau")}
               </i>
             </>
           )}
@@ -111,7 +113,9 @@ export function RankCore({
             className="ds-t-label font-mono truncate max-w-[10rem]"
             style={{ letterSpacing: 1.4, color: "var(--nexus-text-dimmer)" }}
           >
-            {nextRankName ? `PROCHAIN · ${nextRankName}` : "RANG MAXIMAL"}
+            {nextRankName
+              ? t("ranks.noyau.prochain", { nom: nextRankName })
+              : t("ranks.noyau.maximal")}
           </span>
         </span>
       )}

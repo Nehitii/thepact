@@ -3931,6 +3931,11 @@
     "faute": {
       "occupe": "“{{nom}}” already holds this threshold.",
       "plafond": "Above the reachable ceiling ({{plafond}} XP)."
+    },
+    "noyau": {
+      "niveau": "LEVEL",
+      "prochain": "NEXT · {{nom}}",
+      "maximal": "TOP RANK"
     }
   }
 }
