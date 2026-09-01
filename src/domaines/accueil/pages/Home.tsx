@@ -234,6 +234,8 @@ export default function Home() {
             titleFont={pact.title_font}
             titleEffect={pact.title_effect}
             rankName={safeRankData.currentRank?.name}
+            rankLogoUrl={safeRankData.currentRank?.logo_url}
+            rankTeinte={safeRankData.currentRank?.frame_color}
             nextRankName={safeRankData.nextRank?.name ?? null}
             rankProgress={safeRankData.progressInCurrentRank}
             rankXP={safeRankData.currentXP}

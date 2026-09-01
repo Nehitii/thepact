@@ -25,6 +25,12 @@ export interface NexusHeroBannerProps {
    *  separe : il repetait le niveau deja affiche dans les statistiques,
    *  et son nom trois fois dans ses propres 355px. */
   rankName?: string;
+  /* L IMAGE ET LA TEINTE DU PALIER. Le noyau savait deja les afficher
+     — la carte publique les lui passait — mais le bandeau ne lui
+     donnait que le nom : le tableau de bord montrait donc un numero de
+     niveau la ou l utilisateur avait choisi un embleme. */
+  rankLogoUrl?: string | null;
+  rankTeinte?: string | null;
   nextRankName?: string | null;
   rankProgress?: number;
   rankXP?: number;

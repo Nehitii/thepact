@@ -30,6 +30,8 @@ export function NexusHeroBanner({
   titleFont = "orbitron",
   titleEffect = "none",
   rankName,
+  rankLogoUrl,
+  rankTeinte,
   nextRankName,
   rankProgress = 0,
   rankXP = 0,
@@ -131,6 +133,8 @@ export function NexusHeroBanner({
           <RankCore
             level={level}
             rankName={rankName}
+            logoUrl={rankLogoUrl}
+            teinte={rankTeinte}
             nextRankName={nextRankName}
             progress={rankProgress}
             currentXP={rankXP}

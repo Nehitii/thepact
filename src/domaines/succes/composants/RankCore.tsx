@@ -3,6 +3,8 @@
    nom d un autre decor. Elles sont ici desormais, et elles arrivent
    avec lui. */
 import "@/domaines/succes/rang.css";
+import type { CSSProperties } from "react";
+import { normaliserTeinte } from "@/domaines/succes/logique/teinte";
 
 interface RankCoreProps {
   level: number;
@@ -14,15 +16,25 @@ interface RankCoreProps {
      numero de niveau. Quand l image existe, elle prend le centre ; sinon
      le niveau reste. */
   logoUrl?: string | null;
+  /* LA TEINTE DU PALIER.
+     Le noyau ne connaissait que `--primary`, en dur dans la feuille :
+     la lueur, les graduations, l arc et l ombre du logo etaient de la
+     meme couleur pour tous les paliers, alors que chaque palier porte
+     la sienne depuis toujours en base. Elle se pose ici en variable, et
+     `--primary` reste le repli quand elle est absente ou illisible. */
+  teinte?: string | null;
   /* « hub » : 7rem, le noyau du tableau de bord.
-     « carte » : 5,5rem, le pied de la carte publique. */
-  taille?: "hub" | "carte";
+     « carte » : 5,5rem, le pied de la carte publique.
+     « echelle » : 3,25rem, une ligne de l echelle des reglages. */
+  taille?: "hub" | "carte" | "echelle";
   /** Rang suivant, ou null au palier maximal. */
   nextRankName?: string | null;
   /** Avancement dans le rang courant, en pourcentage. */
   progress: number;
   currentXP: number;
   targetXP: number;
+  /** Le pied — XP et rang suivant. Absent sur l echelle, qui les dit deja. */
+  pied?: boolean;
 }
 
 /**
@@ -42,16 +54,25 @@ export function RankCore({
   level,
   rankName,
   logoUrl,
+  teinte,
   taille = "hub",
   nextRankName,
   progress,
   currentXP,
   targetXP,
+  pied = true,
 }: RankCoreProps) {
   const pct = Math.min(100, Math.max(0, progress));
+  /* Une teinte illisible ne se pose pas : la variable reste absente et
+     la feuille retombe sur `--primary`. C est ce qui rattrape les
+     paliers enregistres avec l ancienne variable CSS. */
+  const encre = normaliserTeinte(teinte);
+  const style = {
+    ...(encre ? { ["--rank-encre" as string]: encre } : {}),
+  } as CSSProperties;
 
   return (
-    <div className="flex flex-col items-center gap-2 select-none">
+    <div className="rank-bloc" style={style}>
       <div className="rank-core" data-taille={taille} style={{ ["--rank-pct" as string]: `${pct}%` }}>
         <div className="rank-core-glow" aria-hidden="true" />
         <div className="rank-core-ticks" aria-hidden="true" />
@@ -75,37 +96,25 @@ export function RankCore({
         </div>
       </div>
 
-      <span
-        className="font-orbitron uppercase truncate max-w-[10rem] text-center"
-        style={{
-          fontSize: "1.05rem",
-          fontWeight: 700,
-          letterSpacing: 2,
-          color: "hsl(var(--primary))",
-          textShadow: "0 0 14px hsl(var(--primary) / 0.55)",
-        }}
-      >
-        {rankName}
-      </span>
+      <span className="rank-core-nom">{rankName}</span>
 
-      <span
-        className="flex flex-col items-center gap-0.5 pt-1.5 w-full"
-        style={{ borderTop: "1px solid hsl(var(--primary) / 0.14)" }}
-      >
-        <span
-          className="ds-t-label font-mono"
-          style={{ letterSpacing: 1.4, color: "var(--nexus-text-dim)", fontVariantNumeric: "tabular-nums" }}
-        >
-          {currentXP.toLocaleString("fr-FR")}
-          {targetXP > 0 && ` / ${targetXP.toLocaleString("fr-FR")}`} XP
+      {pied && (
+        <span className="rank-core-pied">
+          <span
+            className="ds-t-label font-mono"
+            style={{ letterSpacing: 1.4, color: "var(--nexus-text-dim)", fontVariantNumeric: "tabular-nums" }}
+          >
+            {currentXP.toLocaleString("fr-FR")}
+            {targetXP > 0 && ` / ${targetXP.toLocaleString("fr-FR")}`} XP
+          </span>
+          <span
+            className="ds-t-label font-mono truncate max-w-[10rem]"
+            style={{ letterSpacing: 1.4, color: "var(--nexus-text-dimmer)" }}
+          >
+            {nextRankName ? `PROCHAIN · ${nextRankName}` : "RANG MAXIMAL"}
+          </span>
         </span>
-        <span
-          className="ds-t-label font-mono truncate max-w-[10rem]"
-          style={{ letterSpacing: 1.4, color: "var(--nexus-text-dimmer)" }}
-        >
-          {nextRankName ? `PROCHAIN · ${nextRankName}` : "RANG MAXIMAL"}
-        </span>
-      </span>
+      )}
     </div>
   );
 }

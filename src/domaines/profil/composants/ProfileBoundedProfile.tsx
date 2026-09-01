@@ -279,6 +279,7 @@ export function ProfileBoundedProfile({
                       level={niveau}
                       rankName={rankData.currentRank.name}
                       logoUrl={rankData.currentRank.logo_url}
+                      teinte={rankData.currentRank.frame_color}
                       nextRankName={rankData.nextRank?.name ?? null}
                       progress={rankData.progressInCurrentRank}
                       currentXP={rankData.currentXP}
