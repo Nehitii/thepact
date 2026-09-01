@@ -699,8 +699,16 @@
       "locked": "Goal locked",
       "unlocked": "Goal unlocked",
       "share": "Share",
-      "deleteTitle": "Delete this goal?",
-      "deleteBody": "The goal and all its steps will be deleted. This cannot be undone.",
+      "delete": {
+        "title": "Delete this goal?",
+        "question": "Delete",
+        "steps_one": "Its step goes with it.",
+        "steps_other": "Its {{count}} steps go with it.",
+        "noSteps": "It has no steps.",
+        "costDrop": "The pact cost will drop by",
+        "final": "This cannot be undone.",
+        "confirm": "Delete goal"
+      },
       "steps": "Steps",
       "checkStep": "Complete step",
       "uncheckStep": "Uncomplete step",

@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useParticleEffect } from "@/socle/hooks/useParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/socle/outils/utils";
 import { useCostItems, useSaveCostItems, useAcquerirPieces } from "@/domaines/objectifs/hooks/useCostItems";
-import { useCreatePactWishlistItem } from "@/domaines/souhaits";
+import { useEnvoiVersSouhaits } from "@/domaines/objectifs/hooks/useEnvoiVersSouhaits";
 import { useUserShop } from "@/domaines/boutique";
 import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
 import { DSPageShell, DSBackground, DSPageLoader } from "@/socle/ds";
@@ -69,9 +69,9 @@ export default function GoalDetail() {
   const { isModulePurchased } = useUserShop(user?.id);
   const social = useSocialFeatures();
   const queryClient = useQueryClient();
-  const createWishlistItem = useCreatePactWishlistItem();
 
   const [goal, setGoal] = useState<Goal | null>(null);
+  const envoyerVersSouhaits = useEnvoiVersSouhaits(goal);
   /* StepData plutot qu un type anonyme de six champs : l etat etait
      alimente par goalDetailData.steps, qui est deja un StepData[]
      complet. Le retrecir jetait is_ultimate et exclude_from_spin, que
@@ -212,14 +212,7 @@ export default function GoalDetail() {
 
   const coutParEtape = coutsParEtape(costItems);
 
-  const wishlistHandler = isModulePurchased("wishlist")
-    ? (item: CostItemData) => {
-        if (!user?.id) return;
-        const name = (item.name || "").trim();
-        if (!name) { toast.error(t("goals.detail.nameRequiredTitle", "Nom manquant"), { description: t("goals.detail.nameRequiredBody", "Donnez d'abord un nom à cette pièce chiffrée.") }); return; }
-        createWishlistItem.mutate({ userId: user.id, name, estimatedCost: Number(item.price) || 0, itemType: "required", category: item.category ?? goal.type ?? null, goalId: goal.id });
-      }
-    : undefined;
+  const wishlistHandler = envoyerVersSouhaits;
 
   const zenith = auZenith(steps);
   const porteurs = groupesPorteurs(goal.id, allGoals);
@@ -278,6 +271,7 @@ export default function GoalDetail() {
               : getStatusLabel(goal.status ?? "not_started")
           }
           etiquettes={displayTags}
+          etapes={steps}
           estHonore={honore}
           auZenith={zenith}
           partageActif={!!social.sharing}

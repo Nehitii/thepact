@@ -13,11 +13,7 @@ import {
   ArrowLeft, Pencil, Check, CheckCheck, Pause, Play, Archive, Copy,
   Lock, LockOpen, Trash2, Star, Target, Link2, Sparkle,
 } from "lucide-react";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger,
-} from "@/socle/ui/alert-dialog";
+import { SupprimerObjectifDialog } from "./SupprimerObjectifDialog";
 import { getTagLabel } from "@/domaines/objectifs/logique/goalConstants";
 import { encreSurFond } from "@/domaines/objectifs/logique/encre";
 import type { GoalDetailData } from "@/domaines/objectifs/hooks/useGoalDetail";
@@ -32,6 +28,9 @@ interface Props {
   libellePalier: string;
   libelleEtat: string;
   etiquettes: string[];
+  /* La fenetre de suppression les nomme : ce qui part, et ce que
+     cela retire au cout du pacte. */
+  etapes: readonly unknown[];
   estHonore: boolean;
   /* L etape ultime est franchie : l objectif est alle au-dela de ce
      qu il promettait. Une marque en plus, pas un etat qui remplace. */
@@ -52,7 +51,7 @@ interface Props {
 
 export const DossierBandeau = React.memo(function DossierBandeau({
   goal, teinte, progression, faites, total, uniteAvancement,
-  libellePalier, libelleEtat, etiquettes, estHonore, auZenith, partageActif,
+  libellePalier, libelleEtat, etiquettes, etapes, estHonore, auZenith, partageActif,
   onRetour, onModifier, onToutValider, onPause, onReprendre, onArchiver,
   onDupliquer, onSupprimer, onBasculerVerrou, onBasculerFocus, onPartager,
 }: Props) {
@@ -155,34 +154,22 @@ export const DossierBandeau = React.memo(function DossierBandeau({
                 <Outil icone={Link2} nom={t("goals.detail.share", "Partager")} onClick={onPartager} />
               )}
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button
-                    type="button"
-                    className="gd-outil gd-outil--danger"
-                    title={t("common.delete", "Supprimer")}
-                    aria-label={t("common.delete", "Supprimer")}
-                  >
-                    <Trash2 size={14} aria-hidden="true" />
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t("goals.detail.deleteTitle", "Supprimer cet objectif ?")}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t("goals.detail.deleteBody", "L'objectif et toutes ses étapes seront supprimés. Cette action est définitive.")}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t("common.cancel", "Annuler")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={onSupprimer} className="bg-destructive text-destructive-foreground">
-                      {t("common.delete", "Supprimer")}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              {/* La fenetre NOMME ce qu elle detruit : l objectif, ses
+                  etapes, et ce qui quitte le cout du pacte. */}
+              <SupprimerObjectifDialog
+                objectif={goal}
+                etapes={etapes}
+                onConfirmer={onSupprimer}
+              >
+                <button
+                  type="button"
+                  className="gd-outil gd-outil--danger"
+                  title={t("common.delete", "Supprimer")}
+                  aria-label={t("common.delete", "Supprimer")}
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
+              </SupprimerObjectifDialog>
             </div>
           </div>
         </div>

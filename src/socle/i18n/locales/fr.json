@@ -699,8 +699,16 @@
       "locked": "Objectif verrouillé",
       "unlocked": "Objectif déverrouillé",
       "share": "Partager",
-      "deleteTitle": "Supprimer cet objectif ?",
-      "deleteBody": "L'objectif et toutes ses étapes seront supprimés. Cette action est définitive.",
+      "delete": {
+        "title": "Supprimer cet objectif ?",
+        "question": "Supprimer",
+        "steps_one": "Son étape disparaît avec lui.",
+        "steps_other": "Ses {{count}} étapes disparaissent avec lui.",
+        "noSteps": "Il n’a aucune étape.",
+        "costDrop": "Le coût du pacte baissera de",
+        "final": "C’est définitif.",
+        "confirm": "Supprimer l’objectif"
+      },
       "steps": "Étapes",
       "checkStep": "Valider l'étape",
       "uncheckStep": "Décocher l'étape",
