@@ -221,7 +221,16 @@ html.light .sb[data-replie="oui"] .sb-signe {
    « Boutique » sans rien dire. Le voile du bas apparait DES QU IL
    RESTE quelque chose en dessous, et disparait quand on touche le
    fond. Il ne prend pas de place et ne se clique pas. */
+/* ═══ LE CURSEUR DOIT VIVRE DANS LE REPERE QUI DEFILE ═══
+   Sans « position », cette zone n ancrait rien : le curseur, en
+   position absolue, se raccrochait au conteneur exterieur — HORS du
+   defilement — alors que la position qu on lui donne, « offsetTop »,
+   est une position de MISE EN PAGE, insensible au defilement. Barre
+   defilee, le curseur se posait donc a l endroit non defile, et le
+   listener de defilement recalculait fidelement la meme mauvaise
+   valeur. */
 .sb-nav {
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;

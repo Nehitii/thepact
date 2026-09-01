@@ -30,6 +30,7 @@ import { AvatarFrame } from "@/socle/ui/avatar-frame";
 import { useCarteProfil } from "@/domaines/profil";
 import { nombre } from "@/socle/outils/nombre";
 import { RechercheBarre, type EntreeCherchable } from "./RechercheBarre";
+import { useCurseurDeNav } from "@/app/useCurseurDeNav";
 
 /* ═══════════════════════════════════════════════════════════════
    LA BARRE LATERALE
@@ -296,41 +297,11 @@ export const AppSidebar = memo(function AppSidebar() {
     return () => { el.removeEventListener("scroll", relire); oeil.disconnect(); };
   }, [categories, mini]);
 
-  /* ── LE CURSEUR SUIT L ENTREE ACTIVE ──────────────────────
-     On pourrait lire « useLocation() », mais cela redessinerait la
-     barre entiere a chaque navigation — precisement ce qu on vient
-     d eviter. NavLink pose lui-meme « aria-current » ; il suffit de
-     regarder cet attribut changer. */
+  /* Le curseur qui suit l entree active vit dans son crochet —
+     « useCurseurDeNav.ts » — avec les trois defauts qu il a fallu
+     corriger pour qu il se pose au bon endroit, et se pose tout court. */
   const curseur = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const nav = zone.current;
-    const barre = curseur.current;
-    if (!nav || !barre) return;
-    let attente = 0;
-    const placer = () => {
-      const actif = nav.querySelector<HTMLElement>('[aria-current="page"]');
-      if (!actif) { barre.dataset.vu = "non"; return; }
-      barre.style.height = actif.offsetHeight + "px";
-      barre.style.transform = "translateY(" + actif.offsetTop + "px)";
-      barre.dataset.vu = "oui";
-    };
-    const differer = () => {
-      cancelAnimationFrame(attente);
-      attente = requestAnimationFrame(placer);
-    };
-    differer();
-    const oeil = new MutationObserver(differer);
-    oeil.observe(nav, { subtree: true, attributes: true, attributeFilter: ["aria-current", "class"] });
-    const taille = new ResizeObserver(differer);
-    taille.observe(nav);
-    nav.addEventListener("scroll", differer, { passive: true });
-    return () => {
-      cancelAnimationFrame(attente);
-      oeil.disconnect();
-      taille.disconnect();
-      nav.removeEventListener("scroll", differer);
-    };
-  }, [categories, mini]);
+  useCurseurDeNav(zone, curseur, categories, mini);
 
   const seDeconnecter = useCallback(async () => {
     await signOut();
