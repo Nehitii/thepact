@@ -50,8 +50,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 7rem;
-  height: 7rem;
+  width: 8.5rem;
+  height: 8.5rem;
 }
 .rank-core-glow {
   position: absolute;
@@ -195,7 +195,7 @@
 }
 
 /* Le pied de la carte publique : le meme noyau, en plus petit. */
-.rank-core[data-taille="carte"] { width: 5.5rem; height: 5.5rem; }
+.rank-core[data-taille="carte"] { width: 6.5rem; height: 6.5rem; }
 .rank-core[data-taille="carte"] .rank-core-center b { font-size: 1.6rem; }
 .rank-core[data-taille="carte"] .rank-core-glow { filter: blur(7px); }
 /* ── LE TROISIEME CRAN : L ECHELLE DES REGLAGES ──
@@ -204,7 +204,7 @@
    taille elles ne se comptent plus et ne font que du bruit —, l arc
    et la lueur restent, parce que ce sont eux qui disent la teinte et
    l avancement. */
-.rank-core[data-taille="echelle"] { width: 4.25rem; height: 4.25rem; }
+.rank-core[data-taille="echelle"] { width: 5rem; height: 5rem; }
 .rank-core[data-taille="echelle"] .rank-core-center b { font-size: 1.25rem; }
 .rank-core[data-taille="echelle"] .rank-core-center i { display: none; }
 .rank-core[data-taille="echelle"] .rank-core-ticks { display: none; }
@@ -395,9 +395,19 @@
 .rg-prereglage[aria-pressed="true"] { border-color: hsl(var(--primary)); }
 .rg-prereglage:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
 
-/* Un noyau qui porte un embleme n a pas besoin de ses graduations :
-   elles passeraient dessous, et c est leur presence qui bornait sa
-   taille au tiers du noyau. L arc reste — c est lui qui dit
-   l avancement, et il porte la teinte. */
-.rank-core[data-embleme="1"] .rank-core-ticks { display: none; }
-.rank-core[data-embleme="1"] .rank-core-logo { width: 86%; height: 86%; }
+/* ═══ QUAND IL Y A UN EMBLEME, L EMBLEME EST LE NOYAU ═══
+   Choisi sur maquette, apres avoir compare six tailles cote a cote.
+   Les graduations et l arc s effacent tous les deux : ils bornaient
+   l image a 86 % du diametre pour dessiner une jauge que le noyau dit
+   deja en chiffres, juste dessous. L image prend donc TOUT.
+
+   CE QUE L ARC DISAIT N EST PAS PERDU. Le pied du noyau imprime
+   « 1 210 / 1 300 XP » sur le tableau de bord comme sur la carte
+   publique, et sur l echelle chaque barreau porte son seuil et sa
+   propre jauge. L avancement change de forme, il ne disparait pas.
+
+   La couronne, elle, reste : c est ce qui pose la teinte du palier
+   autour de l image. */
+.rank-core[data-embleme="1"] .rank-core-ticks,
+.rank-core[data-embleme="1"] .rank-core-arc { display: none; }
+.rank-core[data-embleme="1"] .rank-core-logo { width: 100%; height: 100%; }
