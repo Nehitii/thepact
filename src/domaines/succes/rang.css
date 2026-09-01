@@ -57,10 +57,19 @@
   position: absolute;
   inset: 8%;
   border-radius: 50%;
+  /* ═══ UNE COURONNE, PAS UN DISQUE ═══
+     Mesure sur la carte publique : un disque de 72 px dans un noyau de
+     82, rempli a CINQUANTE POUR CENT au centre. C etait lui, la masse
+     coloree qui dominait tout — l embleme baignait dedans au lieu de
+     s en detacher.
+     Le centre redevient sombre, la couleur se rassemble en couronne
+     sous l arc. L embleme se lit alors contre le fond, pas contre sa
+     propre teinte. */
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 50%, transparent) 0%,
-    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 13%, transparent) 44%,
-    transparent 72%);
+    transparent 0%,
+    transparent 52%,
+    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 34%, transparent) 76%,
+    transparent 96%);
   filter: blur(9px);
   animation: rank-breathe 9s ease-in-out infinite;
 }
@@ -91,9 +100,15 @@
     var(--rank-encre, hsl(var(--primary))) 0%,
     var(--rank-encre, hsl(var(--primary))) var(--rank-pct, 0%),
     color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 12%, transparent) var(--rank-pct, 0%));
-  mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 80%, transparent));
+  /* L ARC RECULE AU BORD, ET SON OMBRE MAIGRIT.
+     La bande ne mesurait que 3,7 px — mais son ombre portee, 6 px a
+     80 %, TRIPLAIT son epaisseur percue. Elle passe a 3 px et 45 % :
+     le trait reste net, il cesse d etre un halo.
+     Le bord interieur passe de 82 a 88 % du rayon : c est la place
+     rendue a l embleme. */
+  mask-image: radial-gradient(circle closest-side, transparent 88%, black 90%, black 96%, transparent 99%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 88%, black 90%, black 96%, transparent 99%);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 45%, transparent));
   transition: background 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 /* ═══ « text-align: center » NE CENTRE PAS UNE IMAGE EN BLOC ═══
@@ -205,11 +220,12 @@
 }
 .rank-core[data-taille="echelle"] .rank-core-glow {
   inset: 2%;
-  filter: blur(6px);
+  filter: blur(5px);
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 62%, transparent) 0%,
-    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 20%, transparent) 52%,
-    transparent 76%);
+    transparent 0%,
+    transparent 50%,
+    color-mix(in srgb, var(--rank-encre, hsl(var(--primary))) 44%, transparent) 74%,
+    transparent 96%);
 }
 .rank-core[data-taille="echelle"] .rank-core-nom { font-size: 0.72rem; letter-spacing: 1px; }
 @media (prefers-reduced-motion: reduce) {
@@ -384,4 +400,4 @@
    taille au tiers du noyau. L arc reste — c est lui qui dit
    l avancement, et il porte la teinte. */
 .rank-core[data-embleme="1"] .rank-core-ticks { display: none; }
-.rank-core[data-embleme="1"] .rank-core-logo { width: 80%; height: 80%; }
+.rank-core[data-embleme="1"] .rank-core-logo { width: 86%; height: 86%; }
