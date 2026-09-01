@@ -15,7 +15,8 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  PREREGLAGES_DE_TEINTE, canauxDeLaTeinte, lueurDeLaTeinte, normaliserTeinte, teinteDuPalier,
+  FOND_DU_PANNEAU, PREREGLAGES_DE_TEINTE, canauxDeLaTeinte, contrasteDeLaTeinte,
+  lueurDeLaTeinte, normaliserTeinte, teinteDuPalier,
 } from "./teinte";
 
 describe("normaliserTeinte : un seul format en sortie", () => {
@@ -53,24 +54,49 @@ describe("normaliserTeinte : un seul format en sortie", () => {
   });
 });
 
-describe("les huit prereglages", () => {
+describe("les vingt prereglages", () => {
   it("sont tous des hexadecimaux normalisables", () => {
-    expect(PREREGLAGES_DE_TEINTE).toHaveLength(8);
+    expect(PREREGLAGES_DE_TEINTE).toHaveLength(20);
     for (const p of PREREGLAGES_DE_TEINTE)
       expect(normaliserTeinte(p.teinte), p.cle).toBe(p.teinte);
   });
 
-  it("portent huit clefs distinctes et huit couleurs distinctes", () => {
-    expect(new Set(PREREGLAGES_DE_TEINTE.map((p) => p.cle)).size).toBe(8);
-    expect(new Set(PREREGLAGES_DE_TEINTE.map((p) => p.teinte)).size).toBe(8);
+  it("portent vingt clefs distinctes et vingt couleurs distinctes", () => {
+    expect(new Set(PREREGLAGES_DE_TEINTE.map((p) => p.cle)).size).toBe(20);
+    expect(new Set(PREREGLAGES_DE_TEINTE.map((p) => p.teinte)).size).toBe(20);
   });
 
-  it("le premier n est plus une variable CSS", () => {
+  it("aucun n est une variable CSS", () => {
     /* Le prereglage « Cyan » valait « hsl(var(--ds-accent-primary)) ».
-       Il porte desormais la valeur que cette variable rend, mesuree. */
-    const cyan = PREREGLAGES_DE_TEINTE.find((p) => p.cle === "cyan");
-    expect(cyan?.teinte).toBe("#5bb4ff");
-    expect(normaliserTeinte(cyan!.teinte)).not.toBeNull();
+       C est la panne d origine ; plus une seule ne peut la reproduire. */
+    for (const p of PREREGLAGES_DE_TEINTE)
+      expect(normaliserTeinte(p.teinte), p.cle).not.toBeNull();
+  });
+
+  it("SE LISENT TOUS sur le fond du panneau", () => {
+    /* LA TEINTE N EST PAS QU UN ORNEMENT : le nom du palier s ecrit
+       DEDANS, en 12,3 px demi-gras — du texte courant, donc 4,5.
+       Trois candidates ont ete ecartees a la mesure : indigo #6366f1
+       a 4,38, acier #64748b a 4,11, bronze #b45309 a 3,89. Ce test
+       est ce qui empeche la prochaine d entrer. */
+    const sombres = PREREGLAGES_DE_TEINTE
+      .map((p) => ({ ...p, k: contrasteDeLaTeinte(p.teinte) }))
+      .filter((p) => p.k < 4.5);
+    expect(sombres.map((p) => p.cle + " " + p.k.toFixed(2))).toEqual([]);
+  });
+
+  it("refuse les trois nuances ecartees, et accepte celles qui les remplacent", () => {
+    for (const [ecartee, retenue] of [["#6366f1", "#818cf8"], ["#64748b", "#8595ab"], ["#b45309", "#cd7f32"]]) {
+      expect(contrasteDeLaTeinte(ecartee), ecartee).toBeLessThan(4.5);
+      expect(contrasteDeLaTeinte(retenue), retenue).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("le fond de reference est celui releve a l ecran", () => {
+    expect(FOND_DU_PANNEAU).toEqual([3, 13, 23]);
+    /* Le repere : du blanc sur ce fond donne pres de dix-neuf. */
+    expect(contrasteDeLaTeinte("#ffffff")).toBeGreaterThan(18);
+    expect(contrasteDeLaTeinte("#0d0d0d")).toBeLessThan(1.3);
   });
 });
 

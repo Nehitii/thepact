@@ -84,18 +84,64 @@ export function teinteDuPalier(
   return normaliserTeinte(palier?.frame_color);
 }
 
-/* LES PREREGLAGES, TOUS HEXADECIMAUX.
-   Le premier valait « hsl(var(--ds-accent-primary)) » : c est lui qui
-   a produit la panne. Il porte desormais la valeur que cette variable
-   rend dans le theme sombre, mesuree, et il est donc manipulable
-   comme les sept autres. */
+/* ═══ LES PREREGLAGES : VINGT, ET AUCUN QUI NE SE LISE PAS ═══
+ *
+ * Ils etaient huit, et le premier valait « hsl(var(--ds-accent-primary)) »
+ * — c est lui qui a produit la panne du cadre sans couleur. Ils sont
+ * desormais tous hexadecimaux, et deux fois et demie plus nombreux :
+ * le tour du cercle chromatique, plus les metaux, qui sont le
+ * vocabulaire d un palier.
+ *
+ * MAIS LA TEINTE N EST PAS QU UN ORNEMENT : le nom du palier s ecrit
+ * DEDANS, sur le fond du panneau. Une teinte trop sombre y devient
+ * illisible. Chacune a donc ete mesuree contre le fond reel — releve
+ * a l ecran, rgb(3, 13, 23) — et trois candidates ont ete ecartees
+ * pour une nuance plus claire de la meme famille :
+ *
+ *   indigo  #6366f1 → 4,38   remplace par #818cf8 → 6,56
+ *   acier   #64748b → 4,11   remplace par #8595ab → 6,41
+ *   bronze  #b45309 → 3,89   remplace par #cd7f32 → 6,22
+ *
+ * `teinte.test.ts` refait ce calcul sur les vingt : en ajouter une
+ * qui ne se lit pas fera tomber la chaine, pas l ecran de quelqu un.
+ */
 export const PREREGLAGES_DE_TEINTE: { cle: string; teinte: string }[] = [
-  { cle: "cyan", teinte: "#5bb4ff" },
+  /* Les metaux — le registre d un palier. */
+  { cle: "platine", teinte: "#e2e8f0" },
+  { cle: "acier", teinte: "#8595ab" },
+  { cle: "bronze", teinte: "#cd7f32" },
   { cle: "or", teinte: "#f59e0b" },
-  { cle: "violet", teinte: "#a855f7" },
-  { cle: "cramoisi", teinte: "#ef4444" },
-  { cle: "emeraude", teinte: "#10b981" },
-  { cle: "rose", teinte: "#f43f5e" },
+  /* Les chauds. */
   { cle: "ambre", teinte: "#fbbf24" },
-  { cle: "indigo", teinte: "#6366f1" },
+  { cle: "orange", teinte: "#fb923c" },
+  { cle: "cramoisi", teinte: "#ef4444" },
+  { cle: "framboise", teinte: "#fb7185" },
+  { cle: "rose", teinte: "#f43f5e" },
+  /* Les pourpres. */
+  { cle: "magenta", teinte: "#e879f9" },
+  { cle: "orchidee", teinte: "#c084fc" },
+  { cle: "violet", teinte: "#a855f7" },
+  { cle: "indigo", teinte: "#818cf8" },
+  /* Les froids. */
+  { cle: "bleu", teinte: "#5bb4ff" },
+  { cle: "azur", teinte: "#38bdf8" },
+  { cle: "cyan", teinte: "#22d3ee" },
+  /* Les verts. */
+  { cle: "jade", teinte: "#2dd4bf" },
+  { cle: "emeraude", teinte: "#10b981" },
+  { cle: "vert", teinte: "#22c55e" },
+  { cle: "lime", teinte: "#a3e635" },
 ];
+
+/* Le fond du panneau des paliers, releve a l ecran. C est contre lui
+   que le nom d un palier se lit, et donc contre lui qu une teinte se
+   mesure. */
+export const FOND_DU_PANNEAU: [number, number, number] = [3, 13, 23];
+
+/** Le contraste WCAG 2.1 entre une teinte et un fond. */
+export function contrasteDeLaTeinte(hexa: string, fond = FOND_DU_PANNEAU): number {
+  const canal = (v: number) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+  const lum = ([r, g, b]: [number, number, number]) => 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
+  const [haut, bas] = [lum(canauxDeLaTeinte(hexa)), lum(fond)].sort((a, b) => b - a);
+  return (haut + 0.05) / (bas + 0.05);
+}

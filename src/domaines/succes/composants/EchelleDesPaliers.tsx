@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { MoreVertical, Edit2, Trash2, TriangleAlert } from "lucide-react";
 import { Button } from "@/socle/ui/button";
@@ -16,6 +18,10 @@ interface Props {
   totalMaxXP: number;
   /** Le niveau du palier courant — le meme calcul que partout ailleurs. */
   niveau: number;
+  /** L identifiant du palier ouvert a l edition, s il y en a un. */
+  enEdition?: string | null;
+  /** L editeur, rendu SOUS le barreau qu il modifie. */
+  editeur?: ReactNode;
   onModifier?: (palier: Rank) => void;
   onSupprimer?: (palier: Rank) => void;
 }
@@ -27,35 +33,63 @@ interface Props {
  * MONTANT : le plus haut seuil en tete, le premier en bas, et l ecart
  * au palier precedent ecrit sur le montant qui les relie.
  *
- * La position courante est MARQUEE sur l echelle — un lisere a gauche
- * du barreau — au lieu d etre repetee dans une carte separee au-dessus.
+ * ═══ L EDITION SE FAIT SUR LE BARREAU, PAS AILLEURS ═══
  *
- * Le plafond atteignable est le haut de l echelle : un palier pose
- * au-dessus se VOIT hors de portee, au lieu d etre refuse par une
- * notification apres coup.
+ * L editeur s ouvrait en TETE du panneau. Modifier un palier du bas
+ * obligeait donc a remonter, et le palier lui-meme — son embleme
+ * compris — sortait de l ecran : on le modifiait a l aveugle.
  *
- * Chaque barreau porte son noyau, dans le troisieme cran de taille.
- * `RankCard` n existe plus : le noyau tient les deux roles.
+ * Il s ouvre desormais SOUS SON BARREAU. Le barreau reste visible juste
+ * au-dessus, et comme l echelle recoit le palier en cours d edition, il
+ * EST l apercu : le nom, la teinte et l embleme s y voient changer a
+ * chaque frappe. L editeur n en porte donc plus aucun.
+ *
+ * Et le barreau se clique. Passer par le menu a trois points pour
+ * ouvrir la seule action qu on veut vraiment etait un detour ; il reste
+ * pour la suppression, qui merite d etre demandee.
  */
 export function EchelleDesPaliers({
-  paliers, currentXP, totalMaxXP, niveau, onModifier, onSupprimer,
+  paliers, currentXP, totalMaxXP, niveau, enEdition, editeur, onModifier, onSupprimer,
 }: Props) {
   const { t } = useTranslation();
   const echelle = construireLEchelle(paliers, currentXP, totalMaxXP);
+  const ouvert = useRef<HTMLLIElement>(null);
+
+  /* Le barreau ouvert vient a l ecran s il n y est pas — c est la
+     derniere chose qui pouvait encore obliger a chercher. */
+  useEffect(() => {
+    if (!enEdition) return;
+    ouvert.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [enEdition]);
 
   return (
     <ol className="rg-echelle" aria-label={t("ranks.titre")}>
       {echelle.barreaux.map((b, i) => {
         const teinte = teinteDuPalier(b.palier);
         const dernier = i === echelle.barreaux.length - 1;
+        const edite = enEdition === b.palier.id;
         return (
-          <li key={b.palier.id}>
+          <li key={b.palier.id} ref={edite ? ouvert : undefined}>
             <div
               className="rg-barreau"
               data-courant={b.courant ? "1" : undefined}
               data-hors={b.horsDePortee ? "1" : undefined}
+              data-edite={edite ? "1" : undefined}
               style={teinte ? { ["--rg-teinte" as string]: teinte } : undefined}
             >
+              {/* Le barreau entier ouvre l edition. Il est pose SOUS le
+                  contenu, en couche, pour ne pas avaler le menu ni les
+                  cibles : un bouton qui enveloppe d autres boutons est
+                  invalide, et illisible au clavier. */}
+              {onModifier && !edite && (
+                <button
+                  type="button"
+                  className="rg-barreau-porte"
+                  aria-label={t("ranks.modifierCePalier", { nom: b.palier.name })}
+                  onClick={() => onModifier(b.palier)}
+                />
+              )}
+
               <RankCore
                 taille="echelle"
                 level={b.courant ? niveau : echelle.barreaux.length - i}
@@ -101,7 +135,7 @@ export function EchelleDesPaliers({
                       size="icon"
                       variant="ghost"
                       aria-label={t("ranks.actions", { nom: b.palier.name })}
-                      className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      className="rg-barreau-menu h-8 w-8 flex-shrink-0 text-muted-foreground hover:bg-primary/10 hover:text-primary"
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -124,6 +158,9 @@ export function EchelleDesPaliers({
                 </DropdownMenu>
               )}
             </div>
+
+            {/* L EDITEUR, SOUS SON BARREAU. */}
+            {edite && editeur}
 
             {/* Le montant qui relie ce barreau au precedent porte l ecart.
                 Le dernier n a rien sous lui. */}

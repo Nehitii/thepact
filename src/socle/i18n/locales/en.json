@@ -3926,7 +3926,8 @@
       "creer": "Create rank",
       "enregistrement": "Saving…",
       "apercuImage": "Change the emblem",
-      "apercuTeinte": "Change the tint"
+      "apercuTeinte": "Change the tint",
+      "fermer": "Close"
     },
     "faute": {
       "occupe": "“{{nom}}” already holds this threshold.",
@@ -3936,6 +3937,29 @@
       "niveau": "LEVEL",
       "prochain": "NEXT · {{nom}}",
       "maximal": "TOP RANK"
+    },
+    "modifierCePalier": "Edit rank {{nom}}",
+    "teinte": {
+      "platine": "Platinum",
+      "acier": "Steel",
+      "bronze": "Bronze",
+      "or": "Gold",
+      "ambre": "Amber",
+      "orange": "Orange",
+      "cramoisi": "Crimson",
+      "framboise": "Raspberry",
+      "rose": "Rose",
+      "magenta": "Magenta",
+      "orchidee": "Orchid",
+      "violet": "Violet",
+      "indigo": "Indigo",
+      "bleu": "Blue",
+      "azur": "Azure",
+      "cyan": "Cyan",
+      "jade": "Jade",
+      "emeraude": "Emerald",
+      "vert": "Green",
+      "lime": "Lime"
     }
   }
 }

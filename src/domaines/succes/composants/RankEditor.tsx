@@ -1,11 +1,10 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import { Button } from "@/socle/ui/button";
 import { Input } from "@/socle/ui/input";
 import { Label } from "@/socle/ui/label";
 import { Textarea } from "@/socle/ui/textarea";
-import { RankCore } from "@/domaines/succes/composants/RankCore";
 import { ChampEmblemeDePalier } from "@/domaines/succes/composants/ChampEmblemeDePalier";
 import { fauteDuSeuil } from "@/domaines/succes/logique/echelleDesPaliers";
 import { PREREGLAGES_DE_TEINTE, normaliserTeinte } from "@/domaines/succes/logique/teinte";
@@ -36,22 +35,19 @@ interface RankEditorProps {
  *
  * ═══ CE QU IL EST ═══
  *
- * Une seule colonne. L apercu du noyau EN HAUT, toujours visible, et
- * les reglages dessous dans l ordre ou l on y pense : le nom, le seuil,
- * l embleme, la teinte, la devise.
+ * Une seule colonne : le nom, le seuil, l embleme, la teinte, la
+ * devise. Dans l ordre ou l on y pense.
  *
- * L APERCU N EST PAS DECORATIF, IL EST LE CONTROLE. Cliquer le centre
- * du noyau ouvre le choix d embleme ; cliquer son halo ouvre le choix
- * de teinte. Les memes reglages restent atteignables au clavier par les
- * champs en dessous — la manipulation directe S AJOUTE, elle ne
- * remplace pas, et les deux cibles sont donc hors du parcours de
- * tabulation.
+ * IL S OUVRE SOUS LE BARREAU QU ON MODIFIE, et c est la deuxieme
+ * correction. Ouvert en TETE du panneau, modifier un palier du bas
+ * obligeait a remonter — et le palier lui-meme, son embleme compris,
+ * sortait de l ecran. On modifiait a l aveugle.
  *
- * IL S OUVRE DANS LE PANNEAU, PAS PAR-DESSUS. C est ce qui laisse
- * l echelle visible : un seuil qu on tape y fait glisser le palier a sa
- * nouvelle place, en direct. Une fenetre modale l aurait couverte, et
- * la demande d une echelle qui bouge pendant la frappe n aurait pas eu
- * de sens.
+ * IL N A DONC PLUS D APERCU A LUI. Le barreau juste au-dessus EST
+ * l apercu : c est le meme palier, le meme noyau, et il se met a jour
+ * en direct puisque l echelle recoit le palier en cours d edition.
+ * Deux apercus du meme objet a trois centimetres l un de l autre
+ * etaient un de trop.
  *
  * LE SEUIL NE REFUSE PLUS APRES COUP. Un seuil deja pris ou au-dessus
  * du plafond se dit SOUS le champ, pendant la frappe. L ancienne
@@ -69,19 +65,6 @@ export function RankEditor({
   const [saving, setSaving] = useState(false);
   const teinte = normaliserTeinte(rank.frame_color);
   const faute = fauteDuSeuil(rank.min_points, rank.id, paliers, globalMaxXP);
-
-  /* Les deux cibles de la manipulation directe pointent sur les vrais
-     champs, plus bas : c est le meme reglage, atteint autrement. */
-  const champEmbleme = useRef<HTMLDivElement>(null);
-  const champTeinte = useRef<HTMLInputElement>(null);
-  const viserLEmbleme = () => {
-    champEmbleme.current?.scrollIntoView({ block: "nearest" });
-    champEmbleme.current?.querySelector("button")?.click();
-  };
-  const viserLaTeinte = () => {
-    champTeinte.current?.scrollIntoView({ block: "nearest" });
-    champTeinte.current?.click();
-  };
 
   const modifier = (bout: Partial<Rank>) => onChange({ ...rank, ...bout });
 
@@ -105,33 +88,6 @@ export function RankEditor({
 
   return (
     <section className="rg-editeur" aria-label={t(isNew ? "ranks.editeur.nouveau" : "ranks.editeur.modifier")}>
-      {/* L APERCU, EN TETE ET TOUJOURS VISIBLE. */}
-      <div className="rg-apercu">
-        <RankCore
-          taille="carte"
-          level={1}
-          rankName={rank.name}
-          logoUrl={rank.logo_url}
-          teinte={rank.frame_color}
-          progress={45}
-          currentXP={rank.min_points}
-          targetXP={rank.min_points + 500}
-          pied={false}
-        />
-        <button
-          type="button" tabIndex={-1} aria-hidden="true"
-          className="rg-cible" data-quoi="teinte"
-          title={t("ranks.editeur.apercuTeinte")}
-          onClick={viserLaTeinte}
-        />
-        <button
-          type="button" tabIndex={-1} aria-hidden="true"
-          className="rg-cible" data-quoi="embleme"
-          title={t("ranks.editeur.apercuImage")}
-          onClick={viserLEmbleme}
-        />
-      </div>
-
       {/* LE NOM */}
       <div className="space-y-2">
         <Label htmlFor="rg-nom" className="text-xs font-orbitron uppercase tracking-wider text-primary/70">
@@ -163,7 +119,7 @@ export function RankEditor({
       </div>
 
       {/* L EMBLEME */}
-      <div ref={champEmbleme}>
+      <div id="rg-embleme">
         <ChampEmblemeDePalier url={rank.logo_url} onUrl={(logo_url) => modifier({ logo_url })} sansApercu />
       </div>
 
@@ -174,7 +130,7 @@ export function RankEditor({
         </Label>
         <div className="flex items-center gap-2">
           <input
-            id="rg-teinte" ref={champTeinte} type="color"
+            id="rg-teinte" type="color"
             aria-label={t("ranks.editeur.teinteNuancier")}
             value={teinte ?? "#5bb4ff"}
             onChange={(e) => modifier({ frame_color: e.target.value })}
@@ -192,7 +148,10 @@ export function RankEditor({
             <button
               key={p.cle} type="button" className="rg-prereglage"
               style={{ backgroundColor: p.teinte }}
-              aria-label={p.cle}
+              /* Le nom de la teinte, pas sa clef : « cyan » etait une
+                 chaine en dur, et la meme dans les deux langues. */
+              aria-label={t("ranks.teinte." + p.cle)}
+              title={t("ranks.teinte." + p.cle)}
               aria-pressed={teinte === p.teinte}
               onClick={() => modifier({ frame_color: p.teinte })}
             />

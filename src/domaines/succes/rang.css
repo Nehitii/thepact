@@ -279,6 +279,36 @@
   border-style: dashed;
   opacity: 0.62;
 }
+/* ═══ LE BARREAU ENTIER OUVRE SON EDITION ═══
+   Passer par le menu a trois points pour la seule action qu on veut
+   vraiment etait un detour. La porte est une couche posee SOUS le
+   contenu : un bouton qui envelopperait le menu et les cibles serait
+   du balisage invalide, et illisible au clavier. */
+.rg-barreau { position: relative; }
+.rg-barreau-porte {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.rg-barreau-porte:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rg-teinte) 70%, transparent);
+  outline-offset: -3px;
+}
+.rg-barreau:hover .rg-barreau-porte { background: color-mix(in srgb, var(--rg-teinte) 6%, transparent); }
+/* Le contenu passe au-dessus de la porte, sinon elle l avalerait. */
+.rg-barreau > .rank-bloc,
+.rg-barreau > .rg-barreau-corps,
+.rg-barreau > .rg-barreau-menu,
+.rg-barreau > button:not(.rg-barreau-porte) { position: relative; z-index: 1; }
+/* Le barreau ouvert se detache : c est lui qu on est en train de
+   modifier, et l editeur juste dessous en depend. */
+.rg-barreau[data-edite="1"] {
+  border-color: color-mix(in srgb, var(--rg-teinte) 55%, transparent);
+  background: color-mix(in srgb, var(--rg-teinte) 11%, transparent);
+}
 .rg-barreau-corps { min-width: 0; }
 .rg-barreau-nom {
   font-family: 'Orbitron', sans-serif;

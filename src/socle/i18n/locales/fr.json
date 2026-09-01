@@ -3926,7 +3926,8 @@
       "creer": "Créer le palier",
       "enregistrement": "Enregistrement…",
       "apercuImage": "Changer l'emblème",
-      "apercuTeinte": "Changer la teinte"
+      "apercuTeinte": "Changer la teinte",
+      "fermer": "Fermer"
     },
     "faute": {
       "occupe": "« {{nom}} » occupe déjà ce seuil.",
@@ -3936,6 +3937,29 @@
       "niveau": "NIVEAU",
       "prochain": "PROCHAIN · {{nom}}",
       "maximal": "RANG MAXIMAL"
+    },
+    "modifierCePalier": "Modifier le palier {{nom}}",
+    "teinte": {
+      "platine": "Platine",
+      "acier": "Acier",
+      "bronze": "Bronze",
+      "or": "Or",
+      "ambre": "Ambre",
+      "orange": "Orange",
+      "cramoisi": "Cramoisi",
+      "framboise": "Framboise",
+      "rose": "Rose",
+      "magenta": "Magenta",
+      "orchidee": "Orchidée",
+      "violet": "Violet",
+      "indigo": "Indigo",
+      "bleu": "Bleu",
+      "azur": "Azur",
+      "cyan": "Cyan",
+      "jade": "Jade",
+      "emeraude": "Émeraude",
+      "vert": "Vert",
+      "lime": "Lime"
     }
   }
 }

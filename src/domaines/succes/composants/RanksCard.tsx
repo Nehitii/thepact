@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Trophy, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -41,6 +41,13 @@ interface RanksCardProps {
  *
  * `RankCard` a disparu avec elles : le noyau tient les deux roles, dans
  * un troisieme cran de taille.
+ *
+ * ═══ ET L EDITION SE FAIT SUR LE BARREAU ═══
+ *
+ * L editeur s ouvrait en TETE du panneau. Modifier un palier du bas
+ * obligeait a remonter, et le palier — son embleme compris — sortait
+ * de l ecran : on le modifiait a l aveugle. Il descend dans l echelle,
+ * SOUS le barreau qu il modifie, qui devient son apercu.
  */
 export function RanksCard({ userId }: RanksCardProps) {
   const { t } = useTranslation();
@@ -65,6 +72,14 @@ export function RanksCard({ userId }: RanksCardProps) {
      fait donc glisser le barreau a sa nouvelle place, en direct — ce
      qu une fenetre modale posee par-dessus n aurait pas permis de
      voir. */
+  /* Echap ferme, comme partout ailleurs dans l application. */
+  useEffect(() => {
+    if (!selectedRank) return;
+    const surTouche = (e: KeyboardEvent) => { if (e.key === "Escape") setSelectedRank(null); };
+    window.addEventListener("keydown", surTouche);
+    return () => window.removeEventListener("keydown", surTouche);
+  }, [selectedRank]);
+
   const paliersProjetes = selectedRank
     ? [...paliers.filter((p) => p.id !== selectedRank.id), selectedRank]
     : paliers;
@@ -159,18 +174,6 @@ export function RanksCard({ userId }: RanksCardProps) {
           </div>
         )}
 
-        {selectedRank && (
-          <RankEditor
-            rank={selectedRank}
-            onChange={setSelectedRank}
-            onClose={() => setSelectedRank(null)}
-            onSave={enregistrer}
-            isNew={isNewRank}
-            paliers={paliers}
-            globalMaxXP={totalMaxXP}
-          />
-        )}
-
         {/* L etat vide regarde la liste PROJETEE : un palier tout neuf
             se voit sur l echelle des qu on commence a le decrire. */}
         {paliersProjetes.length === 0 ? (
@@ -189,6 +192,18 @@ export function RanksCard({ userId }: RanksCardProps) {
             currentXP={currentXP}
             totalMaxXP={totalMaxXP}
             niveau={niveauDuRang(rankData)}
+            enEdition={selectedRank?.id ?? null}
+            editeur={selectedRank && (
+              <RankEditor
+                rank={selectedRank}
+                onChange={setSelectedRank}
+                onClose={() => setSelectedRank(null)}
+                onSave={enregistrer}
+                isNew={isNewRank}
+                paliers={paliers}
+                globalMaxXP={totalMaxXP}
+              />
+            )}
             onModifier={(p) => { setSelectedRank(p); setIsNewRank(false); }}
             onSupprimer={setRankToDelete}
           />
