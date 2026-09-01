@@ -441,3 +441,60 @@
 .rank-core[data-embleme="1"] .rank-core-ticks,
 .rank-core[data-embleme="1"] .rank-core-arc { display: none; }
 .rank-core[data-embleme="1"] .rank-core-logo { width: 100%; height: 100%; }
+
+/* ═══ LE TIROIR ═══
+   L editeur ne parait plus d un coup : il se deplie. Une grille de
+   0fr a 1fr est la seule facon d animer une hauteur qu on ne
+   connait pas d avance — ni maximum arbitraire, ni mesure en
+   JavaScript. L enfant porte le `overflow` : sans lui, le contenu
+   deborderait pendant le pliage. */
+.rg-tiroir {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rg-tiroir[data-ouvert="1"] { grid-template-rows: 1fr; }
+.rg-tiroir > div { overflow: hidden; }
+
+/* ═══ LE BOUTON QUI JETTE ═══
+   Il remplace un menu deroulant ouvert pour une seule entree.
+   Il ne parait que quand la souris est sur le barreau, ou quand le
+   clavier y entre — et il reste TOUJOURS visible la ou il n y a pas
+   de survol, sans quoi il serait inatteignable au doigt. */
+.rg-barreau-jeter {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--nexus-text-dimmer, #5e6b7e);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 140ms linear, background 140ms linear, opacity 140ms linear;
+}
+.rg-barreau-jeter:hover {
+  color: hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.12);
+}
+.rg-barreau-jeter:focus-visible {
+  outline: 2px solid hsl(var(--destructive));
+  outline-offset: 1px;
+}
+@media (hover: hover) {
+  .rg-barreau-jeter { opacity: 0; }
+  .rg-barreau:hover .rg-barreau-jeter,
+  .rg-barreau:focus-within .rg-barreau-jeter,
+  .rg-barreau[data-edite="1"] .rg-barreau-jeter { opacity: 1; }
+}
+
+/* Le barreau change de fond quand on le survole ou qu on l ouvre :
+   assez pour dire qu il est vivant, assez peu pour ne pas clignoter
+   sous le curseur qui traverse la liste. */
+.rg-barreau { transition: background 160ms linear, border-color 160ms linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-tiroir { transition: none; }
+  .rg-barreau, .rg-barreau-jeter { transition: none; }
+}

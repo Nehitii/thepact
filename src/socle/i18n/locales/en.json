@@ -3960,6 +3960,7 @@
       "emeraude": "Emerald",
       "vert": "Green",
       "lime": "Lime"
-    }
+    },
+    "supprimerCePalier": "Delete rank {{nom}}"
   }
 }

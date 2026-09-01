@@ -3960,6 +3960,7 @@
       "emeraude": "Émeraude",
       "vert": "Vert",
       "lime": "Lime"
-    }
+    },
+    "supprimerCePalier": "Supprimer le palier {{nom}}"
   }
 }
