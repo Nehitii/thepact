@@ -304,7 +304,24 @@ html.light .sb[data-replie="oui"] .sb-signe {
   transition: background 160ms var(--sb-e), color 160ms var(--sb-e);
 }
 .sb-lien svg { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 1.9; }
-.sb-lien:hover { background: var(--sb-creux); color: var(--sb-encre); }
+/* ── LE SURVOL NE RECOUVRE PLUS LE CURSEUR ────────────────────
+   Le survol prenait « --sb-creux » PLEIN — exactement la couleur du
+   curseur — et le lien est en « z-index: 1 » contre 0 pour lui, sur
+   les memes bornes au pixel pres. Une entree survolee masquait donc
+   entierement le curseur qui passait dessous, son trait bleu compris.
+
+   Et c est l entree qu on vient de cliquer qui est survolee : la
+   souris y reste. Le curseur arrivait donc invisible, et le trait ne
+   reparaissait qu en bougeant la souris — ce qu on lit comme « il se
+   deplace sous l etat d arrivee, le trait disparait et reapparait ».
+
+   Deux corrections, et elles se completent : le survol s allege pour
+   laisser voir ce qu il couvre, et il ne s applique plus a l entree
+   deja active — celle-la est allumee par le curseur, le survol n a
+   rien a y ajouter. */
+.sb-lien:hover { background: color-mix(in srgb, var(--sb-creux) 45%, transparent); color: var(--sb-encre); }
+.sb-lien[aria-current="page"]:not([data-vise="0"]):hover,
+.sb-lien[data-vise="1"]:hover { background: none; }
 .sb-lien:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: -2px; }
 /* L ENTREE ACTIVE, ET CELLE QU ON REJOINT.
    Le curseur part au clic ; le texte et l icone, eux, pendaient a
