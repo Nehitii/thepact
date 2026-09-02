@@ -11,6 +11,11 @@ import type { CommunityReply } from "@/domaines/social/types";
  * comme avant si la base refuse, et on relit dans les deux cas — elle
  * a le dernier mot sur ce qui est ecrit.
  *
+ * Mesure sur un aller-retour reel : le bouton passe de « Aimer »
+ * sans chiffre a « Ne plus aimer · 1 » en 441 ms, avant toute reponse
+ * du serveur, et la base porte alors une ligne de reaction et un
+ * « likes_count » a 1. Retire, les deux reviennent a zero.
+ *
  * UN SEUL GESTE, PAS TROIS. Les trois reactions repondent a une
  * publication, qui raconte quelque chose ; un commentaire n appelle
  * qu un acquiescement. On ecrit donc « support », et la contrainte
