@@ -592,6 +592,7 @@ export type Database = {
           post_id: string | null
           reaction_type: string
           reel_id: string | null
+          reply_id: string | null
           user_id: string
         }
         Insert: {
@@ -600,6 +601,7 @@ export type Database = {
           post_id?: string | null
           reaction_type: string
           reel_id?: string | null
+          reply_id?: string | null
           user_id: string
         }
         Update: {
@@ -608,6 +610,7 @@ export type Database = {
           post_id?: string | null
           reaction_type?: string
           reel_id?: string | null
+          reply_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -616,6 +619,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_reactions_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "community_replies"
             referencedColumns: ["id"]
           },
           {
@@ -632,6 +642,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          likes_count: number
           post_id: string
           updated_at: string
           user_id: string
@@ -640,6 +651,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          likes_count?: number
           post_id: string
           updated_at?: string
           user_id: string
@@ -648,6 +660,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          likes_count?: number
           post_id?: string
           updated_at?: string
           user_id?: string

@@ -1513,3 +1513,41 @@
   color: var(--co-texte-2, hsl(var(--muted-foreground)));
   text-align: right;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   AIMER UN COMMENTAIRE
+
+   Un seul geste, et il se lit comme tel : plus petit que les trois
+   reactions de la publication, sous le texte de la reponse plutot
+   que dans une rangee d actions. Une publication raconte quelque
+   chose et se commente ; un commentaire n appelle qu un
+   acquiescement.
+
+   LE ZERO NE SE MONTRE PAS. Le chiffre parait quand quelqu un a
+   aime — sinon le bouton reste une icone seule, et la colonne de
+   commentaires ne se remplit pas de « 0 ».
+   ═══════════════════════════════════════════════════════════════ */
+.co-aime {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  padding: 2px 6px 2px 4px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+  font-family: var(--co-fonte-chiffre);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--co-texte-2);
+  transition: color 120ms linear, background-color 140ms var(--co-sortie);
+}
+.co-aime svg { width: 14px; height: 14px; stroke-width: 1.9; }
+.co-aime:hover {
+  color: var(--co-support);
+  background: color-mix(in srgb, var(--co-support) 12%, transparent);
+}
+.co-aime[aria-pressed="true"] { color: var(--co-support); }
+.co-aime[aria-pressed="true"] svg { fill: color-mix(in srgb, currentColor 24%, transparent); }
+.co-aime:focus-visible { outline: 2px solid var(--co-support); outline-offset: 1px; }

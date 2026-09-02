@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { ReactionButton } from "@/domaines/social/composants/ReactionButton";
 import { PostTypeTag } from "@/domaines/social/composants/PostTypeTag";
 import { ReportModal } from "@/domaines/social/composants/ReportModal";
+import { FilDesReponses } from "@/domaines/social/composants/FilDesReponses";
 import { nomAffichable, REACTIONS, type TypeReaction } from "@/domaines/social/logique/vocabulaire";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import type { Cadre } from "@/domaines/social/hooks/useCadres";
@@ -307,78 +308,7 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
           </button>
         </div>
 
-        {reponsesOuvertes && (
-          <div className="co-reponses" onClick={(e) => e.stopPropagation()}>
-            {reponsesEnCours ? (
-              <p className="co-quand" style={{ padding: "4px 0" }}>
-                {t("community.post.loadingReplies", "Chargement des réponses…")}
-              </p>
-            ) : (reponses || []).length === 0 ? (
-              <p className="co-quand" style={{ padding: "4px 0" }}>
-                {t("community.post.noComments", "Pas encore de réponses")}
-              </p>
-            ) : (
-              (reponses || []).map((r) => {
-                const rDecouvrable = r.profile?.community_profile_discoverable ?? true;
-                const rNom = rDecouvrable ? nomAffichable(r.profile?.display_name, anonyme) : anonyme;
-                return (
-                  <div className="co-reponse" key={r.id}>
-                    <Pastille
-                      identifiant={rDecouvrable ? r.user_id : rNom}
-                      nom={rNom}
-                      image={rDecouvrable ? r.profile?.avatar_url : null}
-                      petite
-                    />
-                    <div style={{ minWidth: 0 }}>
-                      <div className="co-post-tete" style={{ marginBottom: 0 }}>
-                        <span className="co-nom" style={{ fontSize: 14 }}>{rNom}</span>
-                        <span className="co-sep" aria-hidden="true">·</span>
-                        <time className="co-quand" style={{ fontSize: 13 }} dateTime={r.created_at}>
-                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true, locale })}
-                        </time>
-                        {user?.id === r.user_id && (
-                          <button
-                            type="button"
-                            className="co-action"
-                            data-reaction="more"
-                            style={{ marginLeft: "auto", height: 24 }}
-                            aria-label={t("community.post.delete", "Supprimer")}
-                            onClick={() => supprimerReponse.mutate({ replyId: r.id, postId: post.id })}
-                          >
-                            <Trash2 aria-hidden="true" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="co-reponse-texte">{r.content}</p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-
-            {user && (
-              <div className="co-repondre">
-                <Pastille identifiant={user.id} nom={user.email} petite />
-                <input
-                  value={texteReponse}
-                  onChange={(e) => setTexteReponse(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); envoyerReponse(); } }}
-                  placeholder={t("community.post.addComment", "Répondre…")}
-                  aria-label={t("community.post.addComment", "Répondre…")}
-                />
-                <button
-                  type="button"
-                  className="co-bouton"
-                  style={{ height: 30, padding: "0 14px", fontSize: 13 }}
-                  onClick={envoyerReponse}
-                  disabled={!texteReponse.trim() || ajouterReponse.isPending}
-                >
-                  {t("community.post.postComment", "Publier")}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {reponsesOuvertes && <FilDesReponses postId={post.id} />}
       </div>
 
       <ReportModal

@@ -41,6 +41,11 @@ export interface CommunityReply {
   post_id: string;
   content: string;
   created_at: string;
+  /* Tenu par la base : le declencheur des reactions le met a jour. */
+  likes_count?: number | null;
+  /* Rapporte a la lecture : la table ne le porte pas, elle porte les
+     reactions. Il vaut « faux » pour qui n est pas connecte. */
+  aimee_par_moi?: boolean | null;
   profile?: {
     display_name: string | null;
     avatar_url: string | null;

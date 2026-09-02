@@ -13,8 +13,12 @@ import type { CommunityReply } from "@/domaines/social/types";
 
 // Fetch replies for a specific post
 export function usePostReplies(postId: string | undefined) {
+  const { user } = useAuth();
+  const moi = user?.id;
   return useQuery({
-    queryKey: ["post-replies", postId],
+    /* L identite entre dans la cle : deux comptes sur le meme appareil
+       ne partagent pas la meme reponse a « est-ce que je l ai aime ». */
+    queryKey: ["post-replies", postId, moi],
     queryFn: async () => {
       if (!postId) return [];
 
@@ -30,9 +34,24 @@ export function usePostReplies(postId: string | undefined) {
       const userIds = [...new Set(replies.map((r) => r.user_id))] as string[];
       const profilesMap = await chargerProfilsPublics(userIds);
 
+      /* CE QUE J AI DEJA AIME, EN UNE SEULE LECTURE. La table des
+         reactions ne dit pas « aime par moi » : elle porte une ligne
+         par personne et par cible. On demande donc les miennes sur
+         ces reponses-la, plutot qu une requete par commentaire. */
+      let miennes = new Set<string>();
+      if (moi) {
+        const { data: aimees } = await supabase
+          .from("community_reactions")
+          .select("reply_id")
+          .eq("user_id", moi)
+          .in("reply_id", replies.map((r) => r.id));
+        miennes = new Set((aimees ?? []).map((a) => a.reply_id as string));
+      }
+
       return replies.map((reply) => ({
         ...reply,
-        profile: profilesMap.get(reply.user_id)
+        profile: profilesMap.get(reply.user_id),
+        aimee_par_moi: miennes.has(reply.id),
       })) as CommunityReply[];
     },
     enabled: !!postId,
