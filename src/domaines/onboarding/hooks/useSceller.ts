@@ -62,22 +62,33 @@ export function useSceller() {
             .eq("id", user.id);
         }
 
+        /* UN PACTE PAR PORTEUR — « pacts_user_id_key » l impose. Le
+           second passage ne peut donc pas INSERER : il reecrit celui
+           qui existe. Sans cela, le rite abrege se terminait sur un
+           refus de cle unique affiche tel quel dans un toast, au tout
+           dernier geste — apres la signature, ce qui est le pire
+           moment possible pour echouer. */
+        const jure = {
+          name: etat.nomDuPacte.trim(),
+          mantra: etat.mantra.trim(),
+          symbol: etat.symbole,
+          color: etat.couleur,
+          sigil_version: VERSION_ALPHABET,
+        };
         const { data: pacte, error: refus } = await supabase
           .from("pacts")
-          .insert({
-            user_id: user.id,
-            name: etat.nomDuPacte.trim(),
-            mantra: etat.mantra.trim(),
-            symbol: etat.symbole,
-            color: etat.couleur,
-            sigil_version: VERSION_ALPHABET,
-          })
+          .upsert({ user_id: user.id, ...jure }, { onConflict: "user_id" })
           .select()
           .single();
         if (refus) throw refus;
 
         void trackPactCreated(user.id);
 
+        /* ON REMPLACE, ON N EMPILE PAS. Au second passage le porteur
+           REDECLARE ses valeurs : les ajouter aux anciennes ferait un
+           anneau charge de doublons, et n en choisir aucune doit
+           vouloir dire « aucune » — pas « les memes qu avant ». */
+        await supabase.from("user_values").delete().eq("user_id", user.id);
         if (etat.valeurs.length > 0) {
           await supabase.from("user_values").insert(
             etat.valeurs.map((label, i) => ({ user_id: user.id, label, rank: i })),
