@@ -47,6 +47,42 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .ob {
+  /* ═══ LA SCENE EST NOCTURNE, ET C EST UNE DECISION ═══
+
+     La spec ouvre sur un mot : « Noir. » Le rite n est pas un ecran de
+     l application, c est une scene — et une scene qui basculerait en
+     blanc parce que le systeme d exploitation le demande perdrait ce
+     qu elle raconte.
+
+     MAIS ELLE L IMPOSE, ELLE NE L IGNORE PAS. Les jetons sombres sont
+     redeclares ICI, sur « .ob » : tout ce que le rite monte — y compris
+     le visage et l anneau de M.I.A., qui viennent de leur domaine et
+     lisent « --ds-* » — reste coherent en theme clair. La version
+     precedente inventait quinze valeurs et laissait le reste basculer :
+     mesure, le fond du rite ne changeait pas, mais rien ne garantissait
+     que ce qu il contient suive.
+
+     « color-scheme: dark » fait le reste — les surfaces que le
+     navigateur dessine lui-meme suivent la scene au lieu du systeme.
+
+     C est la lecon de la barre laterale, qui portait « dark » en dur et
+     un fond ecrit a la main : le correctif d alors avait fige le
+     probleme au lieu de le regler. Ici la scene est declaree, pas subie. */
+  color-scheme: dark;
+  --ds-bg-base:        220 50% 4%;
+  --ds-bg-canvas:      220 40% 6%;
+  --ds-surface-1:      220 30% 8%;
+  --ds-surface-2:      220 25% 11%;
+  --ds-surface-3:      220 20% 14%;
+  --ds-overlay:        220 30% 4%;
+  --ds-border-subtle:  200 50% 75%;
+  --ds-border-default: 200 50% 75%;
+  --ds-border-strong:  200 50% 75%;
+  --ds-text-primary:   210 30% 96%;
+  --ds-text-secondary: 210 20% 75%;
+  --ds-text-muted:     210 18% 68%;
+  --ds-text-disabled:  210 12% 50%;
+
   /* ── LES TROIS VOIX ─────────────────────────────────────────
      Le systeme n est plus « --ds-accent-primary » brut : 190 100% 50
      est le signal le plus sature de la palette, et il ne servait qu a
@@ -65,26 +101,36 @@
 
   /* ── LES SURFACES ───────────────────────────────────────────
      Le fond est un bleu de nuit, pas un gris : il donne au cyan de
-     quoi etre froid, et a une teinte chaude de quoi etre chaude. La
-     plaque se detache par sa propre valeur — 1,32:1 mesures, contre
-     1,06 avant, ou seul le lisere la dessinait. */
-  --ob-fond:      hsl(222 38% 4%);
-  --ob-fond-haut: hsl(222 32% 7%);
-  --ob-plaque:    hsl(220 24% 13%);
-  --ob-creux:     hsl(220 22% 17%);
-  --ob-trait:     hsl(210 20% 70% / 0.14);
-  --ob-trait-fort:hsl(210 20% 74% / 0.30);
+     quoi etre froid, et a une teinte chaude de quoi etre chaude.
+
+     LA PLAQUE MONTE D UN CRAN AU-DESSUS DE CE QUE LE SYSTEME OFFRE.
+     Mesure : « --ds-surface-1 » sur « --ds-bg-base » ne donne que
+     1,07:1 — la fenetre ne se detache pas, et c est exactement le
+     defaut d origine. Les jetons ont ete regles pour des panneaux
+     poses dans une application, pas pour un cadre unique au centre
+     d un ecran noir. On prend donc « surface-3 » pour la plaque et on
+     eclaircit le creux d autant : la derivation reste explicite, et le
+     rite ne reinvente pas ses couleurs — il decale celles du systeme,
+     avec la raison ecrite. */
+  --ob-fond:      hsl(var(--ds-bg-base));
+  --ob-fond-haut: hsl(var(--ds-bg-canvas));
+  --ob-plaque:    hsl(var(--ds-surface-3));
+  --ob-creux:     color-mix(in oklab, hsl(var(--ds-surface-3)) 88%, white);
+  --ob-trait:     hsl(var(--ds-border-default) / 0.14);
+  --ob-trait-fort:hsl(var(--ds-border-strong) / 0.30);
 
   /* ── LES ENCRES ─────────────────────────────────────────────
      Elles descendent du fond, pas du gris neutre : sur une surface
      bleue, un gris pur se lit comme une tache sale. */
-  --ob-encre:     hsl(210 32% 95%);
-  --ob-encre-2:   hsl(210 18% 74%);
-  /* 60 et non 56 : sur « --ob-creux », qui est la surface la plus
-     claire du rite, 56 tombait a 4,41:1 — sous le seuil du texte
-     courant. Mesure sur l aide des gabarits. */
+  --ob-encre:     hsl(var(--ds-text-primary));
+  --ob-encre-2:   hsl(var(--ds-text-secondary));
+  /* L encre tierce est la seule qui ne descend pas telle quelle du
+     systeme : « --ds-text-muted » tombait a 4,41:1 sur « --ob-creux »,
+     la surface la plus claire du rite — sous le seuil du texte courant.
+     Mesure sur l aide des gabarits. Elle est donc relevee ici, et
+     seulement ici. */
   --ob-encre-3:   hsl(212 15% 62%);
-  --ob-alerte:    hsl(354 62% 66%);
+  --ob-alerte:    hsl(var(--ds-accent-critical) / 0.9);
 
   /* Sortante et exponentielle : le mouvement part vite et se pose,
      ce qu un objet lourd fait. */
@@ -127,7 +173,7 @@
   padding: 28px 30px;
   background: var(--ob-plaque);
   clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
-  box-shadow: 0 24px 60px -28px hsl(222 40% 2% / 0.9);
+  box-shadow: 0 24px 60px -28px hsl(var(--ds-overlay) / 0.9);
 }
 .ob-fenetre::before {
   content: "";
@@ -164,10 +210,10 @@
 }
 
 .ob-fenetre-tete {
+  margin: 0 0 18px;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 18px;
   font-family: 'Orbitron', system-ui, sans-serif;
   font-size: max(10px, 0.625rem);
   font-weight: 700;
@@ -409,6 +455,13 @@
   transform-origin: left center;
   background: color-mix(in oklab, var(--ob-pacte) 22%, transparent);
   pointer-events: none;
+}
+/* PROMUE PENDANT LE GESTE, PAS AU REPOS. « will-change » est un
+   indice pour une animation qui va venir, pas un reglage par
+   defaut : le laisser en permanence garde une couche pour un
+   element qui ne bouge que trois secondes dans tout le rite. */
+.ob-signature:active .ob-signature-jauge,
+.ob-signature:focus-visible .ob-signature-jauge {
   will-change: transform;
 }
 .ob-signature span { position: relative; z-index: 1; }
@@ -535,6 +588,8 @@
   .ob-cercle-anneau,
   .ob-voile b { animation: none; }
   .ob-cercle-anneau { stroke-dasharray: none; }
+  /* Plus d animation, donc plus de couche a preparer. */
+  .ob-fenetre::after, .ob-braise, .ob-signature-jauge { will-change: auto; }
   .ob-voile b { opacity: 1; filter: none; transform: none; }
   .ob *, .ob *::before, .ob *::after { transition-duration: 1ms !important; }
 }

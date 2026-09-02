@@ -21,11 +21,22 @@ interface Props {
  * un frere en dessous, decale d un pixel.
  */
 export function FenetreSysteme({ entete, children, ton = "normal" }: Props) {
+  /* L ENTETE EST LE TITRE DE L ECRAN, pas une decoration.
+     Les huit ecrans du rite n en avaient AUCUN : pour un lecteur
+     d ecran, chacun etait un bloc de texte sans hierarchie, et la
+     navigation par titres ne menait nulle part. Un « h1 » par ecran —
+     ils ne coexistent jamais, chacun EST sa page.
+     Les crochets restent decoratifs : ils disent « le systeme parle »
+     a l oeil, et n ont rien a dicter a la voix. */
   return (
     <section className="ob-fenetre" data-ton={ton}>
-      <header className="ob-fenetre-tete">
-        [{entete}]
-        <i aria-hidden="true" />
+      <header>
+        <h1 className="ob-fenetre-tete">
+          <span aria-hidden="true">[</span>
+          {entete}
+          <span aria-hidden="true">]</span>
+          <i aria-hidden="true" />
+        </h1>
       </header>
       <div className="ob-fenetre-corps">{children}</div>
     </section>

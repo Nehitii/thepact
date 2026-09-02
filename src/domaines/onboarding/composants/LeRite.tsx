@@ -156,7 +156,9 @@ export function LeRite({
           exit={sobre ? undefined : { opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
         >
-          {acte === "eveil" && <ActeEveil onAccepter={avancer} onRefuser={onQuitter} />}
+          {acte === "eveil" && (
+            <ActeEveil onAccepter={avancer} onRefuser={onQuitter} sansAnimation={sobre} />
+          )}
 
           {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
 

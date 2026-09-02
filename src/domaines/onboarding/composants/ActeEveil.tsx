@@ -6,6 +6,11 @@ import { TexteEcrit } from "@/domaines/onboarding/composants/TexteEcrit";
 
 interface Props {
   onAccepter: () => void;
+  /* Force le mode sobre. Sans lui, l eveil lisait la preference du
+     SYSTEME et ignorait le reglage : le banc affichait « sobre » et
+     la fenetre attendait quand meme sa seconde et demie. Un banc qui
+     ment sur ce qu il montre ne sert a rien. */
+  sansAnimation?: boolean;
   /** Le second refus est accepte : il renvoie a la deconnexion. */
   onRefuser: () => void;
 }
@@ -29,9 +34,10 @@ const NOIR = 1000;
  * devient une porte fermee — et une porte fermee n est plus une
  * blague : le deuxieme refus est accepte et renvoie a la deconnexion.
  */
-export function ActeEveil({ onAccepter, onRefuser }: Props) {
+export function ActeEveil({ onAccepter, onRefuser, sansAnimation }: Props) {
   const { t } = useTranslation();
-  const sobre = useReducedMotion();
+  const preference = useReducedMotion();
+  const sobre = sansAnimation ?? !!preference;
   /* Sous mouvement reduit, la fenetre est la : elle ne se fait pas
      attendre, elle ne s ecrit pas. Le rite garde ses ecrans. */
   const [ouverte, setOuverte] = useState(!!sobre);

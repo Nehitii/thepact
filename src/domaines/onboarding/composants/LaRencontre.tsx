@@ -51,6 +51,10 @@ export function LaRencontre({ etat, modifier, sansAttente = false }: Props) {
 
   return (
     <div className="ob-mia" onClick={aFiniDeParler(rang) ? undefined : tout}>
+      {/* Elle n a pas de fenetre, donc pas d entete : son titre est
+          pour la voix seule. Sans lui, le dernier ecran du rite serait
+          le seul sans niveau. */}
+      <h1 className="sr-only">{t("onboarding.mia.titre")}</h1>
       {visageVisible(rang)
         ? <VisageMia expression={expressionAu(rang)} taille={96} cadre="visage" />
         : <ReseauMia etat="reponse" taille={72} />}
