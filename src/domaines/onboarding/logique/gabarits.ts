@@ -12,8 +12,17 @@
  */
 import type { GabaritDObjectif } from "@/domaines/onboarding/logique/premierObjectif";
 
-/** Les quatre symboles du sceau. La base a « flame » par defaut. */
-export const SYMBOLES = ["flame", "heart", "target", "sparkles"] as const;
+/* LES NEUF SYMBOLES DU SCEAU — les memes que la carte d identite, le
+   pantheon et le tableau de bord. Le rite n en proposait que quatre :
+   un porteur qui jurait sous la flamme decouvrait ensuite, dans ses
+   reglages, cinq signes qu on ne lui avait jamais montres. Un rite
+   qui cache la moitie du choix fait un pacte par defaut.
+
+   La base a « flame » par defaut. */
+export const SYMBOLES = [
+  "flame", "heart", "target", "sparkles", "phoenix",
+  "compass", "citadel", "vortex", "shield",
+] as const;
 export type Symbole = (typeof SYMBOLES)[number];
 
 /** Les six couleurs du pacte. La base a « amber » par defaut. */

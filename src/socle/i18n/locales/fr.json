@@ -2968,7 +2968,12 @@
           "flame": "Flamme",
           "heart": "Cœur",
           "target": "Cible",
-          "sparkles": "Éclats"
+          "sparkles": "Éclats",
+          "phoenix": "Phénix",
+          "compass": "Boussole",
+          "citadel": "Citadelle",
+          "vortex": "Vortex",
+          "shield": "Bouclier"
         },
         "couleurs": {
           "amber": "Ambre",
@@ -3086,7 +3091,17 @@
       "profile": "Complète ton profil"
     },
     "skip": "Passer pour l'instant",
-    "finish": "Terminer la configuration"
+    "finish": "Terminer la configuration",
+    "actes": {
+      "eveil": "L’éveil",
+      "forge": "La forge",
+      "scellement": "Le scellement",
+      "rencontre": "La rencontre"
+    },
+    "objet": {
+      "entete": "Ton pacte",
+      "vierge": "Rien n’est encore juré."
+    }
   },
   "leaderboard": {
     "title": "Classement",

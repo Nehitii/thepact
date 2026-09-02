@@ -1,9 +1,7 @@
 import { useTranslation, Trans } from "react-i18next";
 import { Link } from "react-router-dom";
-import { CercleDeScellement } from "@/domaines/onboarding/composants/CercleDeScellement";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
 import { peutSigner, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
-import { TEINTE } from "@/domaines/onboarding/logique/gabarits";
 
 
 interface Props {
@@ -35,12 +33,11 @@ export function LeScellement({ etat, modifier, signature }: Props) {
 
   return (
     <FenetreSysteme entete={t("onboarding.scellement.entete")}>
-      <CercleDeScellement
-        nomDuPacte={etat.nomDuPacte}
-        valeurs={etat.valeurs}
-        teinte={TEINTE[etat.couleur] ?? TEINTE.amber}
-      />
-
+      {/* LE CERCLE N EST PLUS ICI. Il vivait dans cette fenetre, et
+          l atelier le montre desormais en permanence a cote : l avoir
+          aux deux endroits donnait deux sceaux du meme pacte sur le
+          meme ecran. C est l objet de gauche qui ferme son anneau
+          quand la signature aboutit. */}
       <p className="ob-ligne">{t("onboarding.scellement.clausesTitre")}</p>
 
       <label className="ob-clauses">

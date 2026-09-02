@@ -2968,7 +2968,12 @@
           "flame": "Flame",
           "heart": "Heart",
           "target": "Target",
-          "sparkles": "Sparks"
+          "sparkles": "Sparks",
+          "phoenix": "Phoenix",
+          "compass": "Compass",
+          "citadel": "Citadel",
+          "vortex": "Vortex",
+          "shield": "Shield"
         },
         "couleurs": {
           "amber": "Amber",
@@ -3086,7 +3091,17 @@
       "profile": "Complete Profile"
     },
     "skip": "Skip for now",
-    "finish": "Finish Setup"
+    "finish": "Finish Setup",
+    "actes": {
+      "eveil": "The waking",
+      "forge": "The forge",
+      "scellement": "The sealing",
+      "rencontre": "The meeting"
+    },
+    "objet": {
+      "entete": "Your pact",
+      "vierge": "Nothing is sworn yet."
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",

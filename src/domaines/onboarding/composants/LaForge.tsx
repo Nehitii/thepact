@@ -1,10 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { Flame, Heart, Target, Sparkles } from "lucide-react";
+import { PactVisual } from "@/domaines/objectifs";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
 import { COULEURS, SYMBOLES, TEINTE, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
 import { VALEURS_MAX, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
-
-const ICONE = { flame: Flame, heart: Heart, target: Target, sparkles: Sparkles } as const;
 
 
 interface Props {
@@ -83,21 +81,23 @@ export function LaForge({ ecran, etat, modifier }: Props) {
     return (
       <FenetreSysteme entete={t("onboarding.forge.sceau.entete")}>
         <p className="ob-ligne">{t("onboarding.forge.sceau.invite")}</p>
-        <div className="ob-choix" role="group" aria-label={t("onboarding.forge.sceau.symbole")}>
-          {SYMBOLES.map((s) => {
-            const Icone = ICONE[s];
-            return (
-              <button
-                key={s} type="button"
-                aria-pressed={etat.symbole === s}
-                aria-label={t(`onboarding.forge.sceau.symboles.${s}`)}
-                title={t(`onboarding.forge.sceau.symboles.${s}`)}
-                onClick={() => modifier({ symbole: s })}
-              >
-                <Icone aria-hidden="true" />
-              </button>
-            );
-          })}
+        {/* LE LOGO VIVANT, PAS SA DOUBLURE. Chaque signe bat ici comme
+            il battra sur le tableau de bord — la flamme vacille, le
+            coeur fait son double battement, le vortex tourne. On ne
+            choisit pas une icone dans une liste : on regarde neuf
+            choses vivre, et on en prend une. */}
+        <div className="ob-symboles" role="group" aria-label={t("onboarding.forge.sceau.symbole")}>
+          {SYMBOLES.map((s) => (
+            <button
+              key={s} type="button" className="ob-symbole"
+              aria-pressed={etat.symbole === s}
+              aria-label={t(`onboarding.forge.sceau.symboles.${s}`)}
+              onClick={() => modifier({ symbole: s })}
+            >
+              <PactVisual symbol={s} size="sm" elan={etat.symbole === s ? 1 : 0.4} />
+              <small>{t(`onboarding.forge.sceau.symboles.${s}`)}</small>
+            </button>
+          ))}
         </div>
         <div className="ob-choix" role="group" aria-label={t("onboarding.forge.sceau.couleur")}>
           {COULEURS.map((c) => (

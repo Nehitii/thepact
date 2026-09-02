@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { LeRite, type ReglagesDuRite } from "@/domaines/onboarding/composants/LeRite";
 import type { FormeDuGeste } from "@/domaines/onboarding/hooks/useGesteDeSignature";
-import { VERSION_ALPHABET, sigilDuPacte } from "@/domaines/onboarding/logique/sigil";
+import { VERSION_ALPHABET, sigilDuPacte } from "@/domaines/objectifs";
 import {
   ETAT_VIDE, RITE_COMPLET, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";

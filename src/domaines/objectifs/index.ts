@@ -32,6 +32,21 @@
  * fichier n etait pas un module.
  */
 export { usePact, fetchPact } from "./hooks/usePact";
+
+/* LE SCEAU DU PACTE. Ses glyphes se deduisent du nom et des valeurs :
+   meme pacte, meme dessin, partout. Il vit ici et non dans le rite
+   qui le fait naitre — la carte d identite, le pantheon et la guilde
+   n ont aucune raison d importer quoi que ce soit d un ecran
+   d inscription qu ils ne montrent jamais.
+
+   « VERSION_ALPHABET » sort aussi : c est ce que le rite ecrit dans
+   « pacts.sigil_version » au moment de sceller. */
+export { SceauDuPacte } from "./composants/SceauDuPacte";
+export {
+  sigilDuPacte, normaliser, empreinte, echantillonner,
+  ALPHABET, VERSION_ALPHABET, TRAITS_MAX,
+  type Sigil, type TraitDuSigil, type AncreDuSigil,
+} from "./logique/sigil";
 export type { Pact } from "./hooks/usePact";
 export { useGoals, fetchGoals } from "./hooks/useGoals";
 export type { Goal } from "./hooks/useGoals";

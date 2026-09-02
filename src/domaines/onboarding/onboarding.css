@@ -161,56 +161,242 @@
 .ob input, .ob textarea { caret-color: var(--ob-voix); }
 .ob :focus-visible { outline: 2px solid var(--ob-voix); outline-offset: 3px; border-radius: 2px; }
 .ob { scrollbar-color: var(--ob-trait-fort) transparent; scrollbar-width: thin; }
+/* ═══════════════════════════════════════════════════════════════
+   L ATELIER
+
+   ═══ CE QUI A ETE DEMONTE, ET POURQUOI ═══
+
+   La fenetre portait des coins tronques par « clip-path », et son
+   lisere etait un frere en « z-index: -1 » cense passer DESSOUS.
+
+   Il ne passait pas dessous. « clip-path » cree un contexte
+   d empilement : a l interieur, aucun enfant ne peut descendre
+   derriere le fond de son propre parent. Le frere restait donc
+   AU-DESSUS de la plaque et la remplissait — un aplat de couleur a la
+   place de la fenetre. C est le defaut que le porteur a vu, et c est
+   celui-la qui rendait « ca ne ressemble a rien » exact.
+
+   La correction n est pas d empiler autrement. Le contour est une
+   VRAIE bordure, sur un rectangle, et la coupe des coins se fait au
+   « border-image » — ou pas du tout. Une bordure qu on peut voir vaut
+   mieux qu une geometrie qu on ne peut pas rendre.
+
+   ═══ ET CE QUI REMPLACE LA PILE ═══
+
+   Les fenetres closes s empilaient derriere en transparence, hors du
+   cadre, et debordaient a droite. Ce qu elles essayaient de dire — on
+   avance, ce qui est declare reste — est desormais dit par L OBJET :
+   le pacte, a gauche, qui grandit a chaque reponse.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── L ATELIER ────────────────────────────────────────────────
+   Deux colonnes : ce qu on fabrique, et ce qu on demande. */
+/* LA VOIE PASSE AVANT L OBJET. Mesure : a parts egales, l objet
+   prenait 340 px et la voie 349 — la grille des neuf symboles n avait
+   plus que 324 px pour trois tuiles de 128, et debordait. L objet est
+   ce qu on REGARDE, la voie est ce dans quoi on TRAVAILLE : c est la
+   seconde qui a besoin de place. */
+.ob-atelier {
+  display: grid;
+  grid-template-columns: minmax(0, 0.52fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(18px, 3vw, 48px);
+  width: min(1180px, 100%);
+}
+
+/* ── LA SCENE ─────────────────────────────────────────────────
+   L objet ne defile pas, ne se replie pas, ne part pas : il est la du
+   premier mot au sceau. C est LUI la barre de progression — on ne lit
+   pas combien il reste, on voit ce qu on a deja. */
+.ob-scene { display: grid; place-items: center; }
+
+/* L OBJET EST DANS LE FLUX, sa legende comprise. Elle etait posee en
+   absolu sous le cercle : la grille ne lui reservait donc aucune
+   place, et sur ecran etroit le nom du pacte passait sous l en-tete
+   de la voie. Une superposition de plus, exactement du genre qu on
+   vient de demonter. */
+.ob-objet {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(288px, 52vw);
+  color: var(--ob-teinte);
+}
+.ob-objet-cadre {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* La lueur du pacte : elle nait avec la teinte, et elle est le seul
+   endroit du rite ou la couleur du porteur remplit une surface. */
+.ob-objet-halo {
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in oklab, var(--ob-teinte) 20%, transparent) 0%,
+    transparent 68%);
+  opacity: calc(0.35 + var(--ob-part) * 0.65);
+  transition: opacity 900ms var(--ob-e-doux);
+  pointer-events: none;
+}
+
+.ob-objet-anneau { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ob-anneau,
+.ob-graduation { fill: none; stroke: currentColor; }
+.ob-anneau-scelle { fill: none; stroke: currentColor; }
+.ob-corde { fill: none; stroke: currentColor; }
+.ob-ancre { fill: currentColor; }
+
+/* LES GLYPHES SE VOIENT, et c est tout le correctif. Ils portaient
+   « stroke-width: 0.014 » avec « vector-effect: non-scaling-stroke » :
+   cette combinaison compte l epaisseur en PIXELS RENDUS, pas en unites
+   du repere. Quatorze milliemes de pixel — le trace se calculait, se
+   posait, et n arrivait jamais a l ecran. L animation ne plantait pas :
+   elle etait invisible. L epaisseur est maintenant donnee en pixels
+   par le composant, ou elle a un sens. */
+.ob-glyphe { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+.ob-objet-coeur { position: relative; z-index: 1; }
+
+.ob-objet-legende {
+  display: grid;
+  gap: 5px;
+  justify-items: center;
+  width: 100%;
+  text-align: center;
+}
+.ob-objet-nom {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: clamp(15px, 1.5vw, 19px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ob-encre);
+  text-wrap: balance;
+}
+.ob-objet-mantra {
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ob-encre-3);
+  font-style: italic;
+  text-wrap: pretty;
+}
+
+/* ── LA VOIE ──────────────────────────────────────────────────
+   UNE SEULE, ET DE HAUTEUR FIXE. C est la garantie structurelle : une
+   colonne qui ne grandit pas ne peut pas ejecter son pied. Le corps
+   defile, la tete et le pied restent poses sur les bords. */
+.ob-voie {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* LA COLONNE EST BRIDEE, et il le faut. Sans « minmax(0, 1fr) » la
+     colonne implicite vaut « auto » : elle se dimensionne au contenu
+     le plus large, et le pied — trois boutons en « nowrap » — sortait
+     de la voie par la droite. Une voie qui deborde de sa colonne
+     ramene exactement le defaut qu on a demonte. */
+  grid-template-columns: minmax(0, 1fr);
+  height: min(560px, 76vh);
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-plaque);
+  box-shadow: 0 30px 70px -34px hsl(var(--ds-overlay) / 0.95);
+}
+
+.ob-voie-tete {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--ob-trait);
+}
+
+/* LES QUATRE ACTES. Un rite n a pas de barre de progression, mais il
+   a des actes — et savoir lequel on traverse n est pas de la
+   decoration : c est ce qui dit que ca finit. */
+.ob-actes {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ob-actes li {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  color: var(--ob-encre-3);
+  opacity: 0.45;
+  transition: color 300ms var(--ob-e-doux), opacity 300ms var(--ob-e-doux);
+}
+.ob-actes li i {
+  height: 2px;
+  background: currentColor;
+  transition: background 300ms var(--ob-e-doux);
+}
+.ob-actes .est-passe { opacity: 0.8; }
+.ob-actes .est-ici { opacity: 1; color: var(--ob-voix); }
+
+/* Le nom de l acte a gauche, la sortie a droite. */
+.ob-voie-jalon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+}
+
+/* Le nom de l acte, en toutes lettres : un seul a la fois, donc
+   jamais tronque. Le chiffre romain dit combien il en reste. */
+.ob-acte-nom {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0;
+  min-width: 0;
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.ob-acte-nom b { color: var(--ob-voix); }
+.ob-acte-nom span { color: var(--ob-encre-2); }
+
+.ob-voie-corps {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 22px;
+}
+.ob-ecran { display: grid; gap: 16px; }
+
+.ob-voie-pied {
+  display: flex;
+  align-items: center;
+  /* Il grandit vers le BAS quand la voie est etroite, jamais vers la
+     droite : un pied qui ne peut ni se replier ni se serrer sort du
+     cadre, et c est la faute d origine. */
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--ob-trait);
+  background: color-mix(in oklab, var(--ob-plaque) 80%, black);
+}
+/* La sortie tient le milieu : les deux gestes du rite gardent les
+   bords, et elle ne se deguise jamais en l un d eux. C est
+   « space-between » qui les place — des marges automatiques en plus
+   se battraient avec lui. */
 
 /* ── LA FENETRE SYSTEME ───────────────────────────────────────
-   Coins tronques par clip-path — une bordure suivrait le rectangle et
-   non la coupe. Le lisere est donc un frere en dessous, et il porte
-   LA VOIX COURANTE : c est lui qui vire du systeme au pacte a mesure
-   que les fenetres se ferment. */
-.ob-fenetre {
-  position: relative;
-  width: min(560px, 100%);
-  padding: 28px 30px;
-  background: var(--ob-plaque);
-  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
-  box-shadow: 0 24px 60px -28px hsl(var(--ds-overlay) / 0.9);
-}
-.ob-fenetre::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  background: color-mix(in oklab, var(--ob-voix) 62%, transparent);
-  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
-  z-index: -1;
-}
-.ob-fenetre[data-ton="alerte"] { --ob-voix: var(--ob-alerte); }
-
-/* LE BALAYAGE, EN TRANSFORM. Il etait un « background-position »
-   anime a l infini sur toute la surface : chaque image repeignait le
-   cadre entier, pendant qu on tapait dedans. C est un frere qui
-   glisse, et le compositeur s en charge seul. */
-.ob-fenetre::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  background: linear-gradient(100deg,
-    transparent 42%,
-    color-mix(in oklab, var(--ob-voix) 8%, transparent) 50%,
-    transparent 58%);
-  width: 300%;
-  left: -100%;
-  animation: ob-balayage 6s linear infinite;
-  will-change: transform;
-}
-@keyframes ob-balayage {
-  from { transform: translate3d(-33.33%, 0, 0); }
-  to   { transform: translate3d(33.33%, 0, 0); }
-}
+   DANS LA VOIE, ELLE N EST PLUS UN CADRE : la voie est le cadre. La
+   fenetre n y garde que son entete et son corps. Elle ne redevient
+   une plaque qu a l eveil, ou elle est seule au milieu du noir. */
+.ob-fenetre { position: relative; display: grid; gap: 16px; }
 
 .ob-fenetre-tete {
-  margin: 0 0 18px;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -222,8 +408,19 @@
   color: var(--ob-voix);
 }
 .ob-fenetre-tete i { flex: 1; height: 1px; background: var(--ob-trait); }
-
 .ob-fenetre-corps { display: grid; gap: 16px; }
+
+/* ── L EVEIL ──────────────────────────────────────────────────
+   Plein cadre, et la fenetre redevient une plaque posee dans le noir.
+   Le contour est une BORDURE — pas un frere derriere une decoupe. */
+.ob--eveil .ob-fenetre {
+  width: min(560px, 100%);
+  padding: 28px 30px;
+  border: 1px solid color-mix(in oklab, var(--ob-voix) 55%, transparent);
+  background: var(--ob-plaque);
+  box-shadow: 0 24px 60px -28px hsl(var(--ds-overlay) / 0.9);
+}
+.ob--eveil .ob-fenetre-tete { margin-bottom: 2px; }
 
 /* Le systeme parle en Orbitron ; ce qu il commente parle en Rajdhani.
    Deux registres, jamais melanges — sinon on ne sait plus qui parle. */
@@ -250,29 +447,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 42px;
-  padding: 0 22px;
-  border: 1px solid color-mix(in oklab, var(--ob-voix) 70%, transparent);
-  background: color-mix(in oklab, var(--ob-voix) 8%, transparent);
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--ob-voix);
+  background: none;
   color: var(--ob-voix);
   font-family: 'Orbitron', system-ui, sans-serif;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  /* « Sceller le pacte » se cassait en deux lignes dans le pied et
+     donnait un bouton deux fois plus haut que « Retour » a cote. */
+  white-space: nowrap;
   cursor: pointer;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  transition: background-color 160ms var(--ob-e-doux), color 160ms var(--ob-e-doux);
+  transition: background 180ms var(--ob-e-doux), color 180ms var(--ob-e-doux);
 }
 .ob-bouton:hover:not(:disabled) { background: var(--ob-voix); color: var(--ob-fond); }
 .ob-bouton:disabled { opacity: 0.32; cursor: not-allowed; }
-/* IL EST SECONDAIRE, DONC IL SE TAIT. Mesure : il montait a 9,13:1
-   quand le bouton principal tenait 7,04 — le retour criait plus fort
-   que le geste qu on attend. */
+
 .ob-bouton--sourd {
-  border-color: var(--ob-trait);
-  background: none;
+  border-color: var(--ob-trait-fort);
   color: var(--ob-encre-3);
 }
 .ob-bouton--sourd:hover:not(:disabled) { background: var(--ob-creux); color: var(--ob-encre); }
@@ -286,118 +481,134 @@
   background: var(--ob-creux);
   color: var(--ob-encre);
   font-family: 'Rajdhani', system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 16.5px;
   transition: border-color 160ms var(--ob-e-doux);
 }
 .ob-champ:hover { border-color: color-mix(in oklab, var(--ob-voix) 45%, var(--ob-trait-fort)); }
 .ob-champ:focus-visible { border-color: var(--ob-voix); outline-offset: 2px; }
 .ob-champ::placeholder { color: var(--ob-encre-3); }
 
-/* LA PHRASE SE GRAVE. Une ligne unique, pas un pave de trois : une
-   phrase gravee ne se corrige pas a la legere. La braise etait un
-   « text-shadow » anime a l infini — repeint a chaque image, sur le
-   texte qu on est en train d ecrire. C est un halo derriere, en
-   opacity. */
+/* La phrase se GRAVE : pas de plaque, une ligne, et une braise
+   derriere elle. */
 .ob-gravure {
-  position: relative;
   width: 100%;
-  padding: 16px;
+  min-height: 48px;
+  padding: 10px 2px;
   border: none;
-  border-bottom: 1px solid color-mix(in oklab, var(--ob-voix) 70%, transparent);
+  border-bottom: 1px solid var(--ob-trait-fort);
   background: none;
   color: var(--ob-encre);
   font-family: 'Orbitron', system-ui, sans-serif;
-  font-size: max(15px, 0.94rem);
-  letter-spacing: 0.05em;
-  text-align: center;
-  text-shadow: 0 0 20px color-mix(in oklab, var(--ob-voix) 45%, transparent);
+  font-size: max(15px, 0.95rem);
+  letter-spacing: 0.04em;
+  transition: border-color 200ms var(--ob-e-doux);
 }
-.ob-gravure:focus-visible { outline: none; border-bottom-width: 2px; }
+.ob-gravure:focus-visible { outline: none; border-bottom-width: 2px; border-bottom-color: var(--ob-voix); }
+.ob-gravure::placeholder { color: var(--ob-encre-3); letter-spacing: 0.02em; }
+/* La braise est un halo DERRIERE, pas une ombre sur le texte : un
+   « text-shadow » anime repeint la phrase a chaque image, pendant
+   qu on tape dedans. */
 .ob-braise {
   position: absolute;
-  left: 10%; right: 10%; bottom: -1px;
-  height: 34px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
   pointer-events: none;
   background: radial-gradient(60% 100% at 50% 100%,
-    color-mix(in oklab, var(--ob-voix) 30%, transparent), transparent 70%);
-  animation: ob-braise 3.4s ease-in-out infinite;
-  will-change: opacity;
+    color-mix(in oklab, var(--ob-voix) 26%, transparent), transparent 72%);
+  opacity: 0;
+  transition: opacity 260ms var(--ob-e-doux);
 }
-@keyframes ob-braise { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-.ob-champ-grave { position: relative; }
+.ob-champ-grave { position: relative; display: block; }
+.ob-champ-grave:focus-within .ob-braise { opacity: 1; }
 
-/* ── LE SCEAU : symboles et couleurs ──────────────────────────
-   C est ici que la teinte du porteur entre dans le rite. */
+/* ── LE SCEAU : les neuf symboles ─────────────────────────────
+   PAS UNE LISTE D ICONES : neuf logos VIVANTS, ceux-la memes que
+   portera le tableau de bord. La flamme vacille, le coeur fait son
+   double battement, le vortex tourne. On regarde neuf choses vivre,
+   et on en prend une — c est un ecran de choix, pas un formulaire. */
+.ob-symboles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.ob-symbole {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 8px 4px 6px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--ob-encre-3);
+  cursor: pointer;
+  /* Le halo du logo deborde sa boite — c est ce qui lui donne sa
+     lueur. « clip » le contient SANS faire de la tuile un conteneur
+     defilable : « hidden » en aurait fait un, et la voie heritait
+     alors d une barre de defilement horizontale. */
+  overflow: clip;
+  transition: border-color 180ms var(--ob-e-doux), background 180ms var(--ob-e-doux),
+    color 180ms var(--ob-e-doux), transform 180ms var(--ob-e);
+}
+/* LE LOGO SE RAMENE A LA TUILE. « PactVisual » dessine a taille fixe —
+   128 px de large avec son halo, pour une colonne qui en fait cent.
+   On le met a l echelle plutot que de le rogner : un halo coupe net
+   au bord d un rectangle se voit tout de suite. */
+.ob-symbole > :first-child {
+  transform: scale(0.66);
+  transform-origin: center;
+  margin: -19px 0 -21px;
+}
+.ob-symbole[aria-pressed="true"] > :first-child { transform: scale(0.74); }
+.ob-symbole small {
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+.ob-symbole:hover { transform: translateY(-2px); border-color: var(--ob-trait-fort); }
+.ob-symbole[aria-pressed="true"] {
+  border-color: var(--ob-voix);
+  background: color-mix(in oklab, var(--ob-voix) 10%, transparent);
+  color: var(--ob-encre);
+}
+
+/* Les teintes : des pastilles, et rien d autre a lire. */
 .ob-choix { display: flex; flex-wrap: wrap; gap: 10px; }
 .ob-choix button {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  border: 1px solid var(--ob-trait-fort);
-  background: var(--ob-creux);
-  color: var(--ob-encre-2);
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  background: none;
   cursor: pointer;
-  transition: border-color 160ms var(--ob-e-doux), color 160ms var(--ob-e-doux),
-              transform 200ms var(--ob-e);
+  transition: transform 180ms var(--ob-e), border-color 180ms var(--ob-e-doux);
 }
 .ob-choix button:hover { transform: translateY(-2px); }
-.ob-choix button[aria-pressed="true"] {
-  border-color: var(--ob-pacte);
-  color: var(--ob-pacte);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ob-pacte) 40%, transparent);
-}
-.ob-pastille { width: 34px; height: 34px; border-radius: 50%; }
+.ob-choix button[aria-pressed="true"] { border-color: var(--ob-encre); }
+.ob-pastille { width: 30px; height: 30px; border-radius: 50%; }
 
 /* ── LES VALEURS ──────────────────────────────────────────────── */
 .ob-valeurs { display: flex; flex-wrap: wrap; gap: 8px; }
-/* QUARANTE-QUATRE PIXELS AU DOIGT. Mesure sur mobile : elles
-   tenaient 33 px de haut, et il y en a douze cote a cote — c est
-   l ecran du rite ou l on se trompe de cible le plus facilement. */
 .ob-valeur {
-  min-height: 44px;
-  padding: 8px 16px;
-  border: 1px solid var(--ob-trait-fort);
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--ob-trait);
   background: none;
   color: var(--ob-encre-2);
   font-family: 'Rajdhani', system-ui, sans-serif;
-  font-size: 14.5px;
-  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  border-radius: 999px;
-  transition: border-color 160ms var(--ob-e-doux), color 160ms var(--ob-e-doux),
-              background-color 160ms var(--ob-e-doux);
+  transition: border-color 160ms var(--ob-e-doux), background 160ms var(--ob-e-doux),
+    color 160ms var(--ob-e-doux);
 }
 .ob-valeur:hover:not(:disabled) { border-color: var(--ob-trait-fort); color: var(--ob-encre); }
 .ob-valeur[aria-pressed="true"] {
-  border-color: color-mix(in oklab, var(--ob-pacte) 70%, transparent);
-  background: color-mix(in oklab, var(--ob-pacte) 12%, transparent);
-  color: var(--ob-pacte);
+  border-color: var(--ob-voix);
+  background: color-mix(in oklab, var(--ob-voix) 14%, transparent);
+  color: var(--ob-encre);
 }
 .ob-valeur:disabled { opacity: 0.3; cursor: not-allowed; }
-
-/* ── LES FENETRES CLOSES ──────────────────────────────────────
-   Un rite n a pas de barre de progression : ce qu on a declare reste
-   empile derriere, en transparence. Une trace, pas une jauge — elle
-   dit ce qui a ete dit, pas ce qui reste a dire. */
-.ob-pile { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.ob-pile i {
-  position: absolute;
-  width: min(560px, 92%);
-  height: 130px;
-  border: 1px solid color-mix(in oklab, var(--ob-voix) 22%, var(--ob-trait));
-  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
-}
-
-/* ── LE CERCLE DE SCELLEMENT ──────────────────────────────────
-   Trois anneaux, des graduations, les glyphes du sigil. Futuriste par
-   la geometrie, arcanique par la lenteur. */
-.ob-cercle { display: block; width: min(340px, 78vw); height: auto; }
-.ob-cercle-anneau { fill: none; stroke: currentColor; opacity: 0.26; }
-.ob-cercle-grad { stroke: currentColor; opacity: 0.42; }
-.ob-cercle-trait { fill: none; stroke: currentColor; stroke-width: 0.014; stroke-linecap: round; }
-.ob-cercle-corde { fill: none; stroke: currentColor; stroke-width: 0.008; opacity: 0.7; }
-.ob-cercle-ancre { fill: currentColor; }
 
 /* ── LES CLAUSES ──────────────────────────────────────────────
    Le theatre enrobe le consentement, il ne le remplace pas : la case
@@ -468,22 +679,22 @@
 
 /* ── LA SORTIE ────────────────────────────────────────────────
    Discrete, jamais cachee : un rite dont on ne peut pas sortir est
-   une porte, pas un rite. */
+   une porte, pas un rite. Elle vit DANS le pied de la voie — flottante
+   en bas de l ecran, elle passait par-dessus le contenu. */
 .ob-passer {
-  position: fixed;
-  right: 12px;
-  bottom: 10px;
-  /* Discret ne veut pas dire minuscule : la zone fait 44 px, le
-     texte reste petit. */
   min-height: 44px;
-  padding: 6px 12px;
+  margin-right: -8px;
+  padding: 6px 8px;
   display: inline-flex;
   align-items: center;
+  /* Sur une ligne : « Passer le rite » se cassait en deux dans le
+     pied et donnait un bouton deux fois plus haut que les autres. */
+  white-space: nowrap;
   border: none;
   background: none;
   color: var(--ob-encre-3);
   font-family: 'Rajdhani', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 13.5px;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -491,25 +702,90 @@
 }
 .ob-passer:hover { color: var(--ob-encre-2); }
 
-/* ── M.I.A. ───────────────────────────────────────────────────
+/* ── LES BULLES DE M.I.A. ─────────────────────────────────────
+   DE VRAIES BULLES. Ses phrases etaient des paragraphes empiles : on
+   lisait le systeme, on n entendait personne. Une bulle a un
+   EMETTEUR — un visage a cote, une queue qui pointe vers lui — et
+   c est cette queue, minuscule, qui separe « du texte s affiche » de
+   « quelqu un te parle ».
+
    Elle n est ni le systeme ni le pacte : sa teinte est la sienne, et
-   elle n existe qu ici. Sans cadre, en Rajdhani — elle ne parle pas
-   la langue des fenetres. */
-.ob-mia { display: grid; gap: 20px; place-items: center; width: min(560px, 100%); --ob-voix: var(--ob-mia); }
-.ob-mia-bulles { display: grid; gap: 12px; width: 100%; }
-.ob-mia-bulles p {
-  margin: 0;
+   elle n existe qu ici. */
+.ob-rencontre { display: grid; gap: 20px; --ob-voix: var(--ob-mia); }
+.ob-bulles { display: grid; gap: 10px; }
+.ob-bulles-anneau { justify-self: center; padding: 6px 0 10px; opacity: 0.9; }
+
+.ob-bulle {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+/* LES DEUX PREMIERES N ONT PAS D EMETTEUR. Elle parle avant d etre
+   la : la bulle sort du noir, sans colonne de portrait, et se pose au
+   milieu. C est voulu — le visage parait a la troisieme. */
+.ob-bulle--sansVisage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+
+.ob-bulle-emetteur {
+  grid-column: 1;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--ob-mia) 40%, transparent);
+}
+
+.ob-bulle-corps {
+  position: relative;
+  grid-column: 2;
+  padding: 12px 16px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
   font-family: 'Rajdhani', system-ui, sans-serif;
   font-size: 16.5px;
   line-height: 1.5;
-  color: var(--ob-encre-2);
+  color: var(--ob-encre);
   text-wrap: pretty;
 }
-/* La derniere qu elle a dite est celle qu on lit. */
-.ob-mia-bulles p:last-child { color: var(--ob-encre); }
+/* LA QUEUE — deux triangles superposes, l un pour la bordure, l autre
+   pour le fond, decale d un pixel. C est ce qui fait qu elle a un
+   contour comme le reste de la bulle. */
+.ob-bulle-corps::before,
+.ob-bulle-corps::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  width: 0;
+  height: 0;
+  border-block: 7px solid transparent;
+}
+.ob-bulle-corps::before {
+  left: -9px;
+  border-right: 9px solid var(--ob-trait-fort);
+}
+.ob-bulle-corps::after {
+  left: -8px;
+  border-right: 9px solid var(--ob-creux);
+}
+/* Une bulle sans emetteur n a personne vers qui pointer. */
+.ob-bulle--sansVisage .ob-bulle-corps { grid-column: 1; max-width: 34ch; text-align: center; }
+.ob-bulle--sansVisage .ob-bulle-corps::before,
+.ob-bulle--sansVisage .ob-bulle-corps::after { content: none; }
+
+/* Celle qui vient d etre dite est celle qu on lit ; les precedentes
+   restent, en retrait. Une conversation garde ce qui a ete dit. */
+.ob-bulle--passee .ob-bulle-corps { color: var(--ob-encre-2); opacity: 0.72; }
+.ob-bulle--passee .ob-bulle-emetteur { opacity: 0.6; }
+
+/* La bulle sans visage garde l alignement de celles qui en ont un :
+   le portrait ne reparait que lorsque son expression change, et sans
+   cette colonne vide le texte sauterait a gauche a chaque ligne. */
+.ob-bulle:not(.ob-bulle--sansVisage) .ob-bulle-corps { grid-column: 2; }
 
 /* ── LES GABARITS D OBJECTIF ──────────────────────────────────── */
-.ob-gabarits { display: grid; gap: 10px; width: 100%; }
+.ob-gabarits { display: grid; gap: 10px; }
 .ob-gabarit {
   display: grid;
   gap: 4px;
@@ -519,77 +795,66 @@
   color: var(--ob-encre);
   text-align: left;
   cursor: pointer;
-  transition: border-color 160ms var(--ob-e-doux), background-color 160ms var(--ob-e-doux);
+  transition: border-color 160ms var(--ob-e-doux), background 160ms var(--ob-e-doux);
 }
 .ob-gabarit:hover { border-color: color-mix(in oklab, var(--ob-mia) 45%, var(--ob-trait-fort)); }
 .ob-gabarit[aria-pressed="true"] {
   border-color: var(--ob-mia);
-  background: color-mix(in oklab, var(--ob-mia) 9%, var(--ob-creux));
+  background: color-mix(in oklab, var(--ob-mia) 12%, var(--ob-creux));
 }
 .ob-gabarit b {
   font-family: 'Orbitron', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 .ob-gabarit small { color: var(--ob-encre-3); font-size: 14px; font-family: 'Rajdhani', system-ui, sans-serif; }
 
 /* ── LE VOILE DE SCELLEMENT ───────────────────────────────────
-   Une demi-seconde de silence total, le cercle brule, et l ecran
-   passe a la couleur du pacte. */
+   Une demi-seconde de silence total, puis le nom du pacte. */
 .ob-voile {
-  position: fixed;
-  inset: 0;
   display: grid;
   place-items: center;
-  z-index: 60;
-  background:
-    radial-gradient(90% 70% at 50% 50%, color-mix(in oklab, currentColor 14%, transparent), transparent 70%),
-    var(--ob-fond);
+  min-height: 100dvh;
+  background: var(--ob-fond);
 }
 .ob-voile b {
   font-family: 'Orbitron', system-ui, sans-serif;
-  font-size: clamp(24px, 6vw, 46px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: clamp(24px, 6vw, 54px);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   text-align: center;
   text-wrap: balance;
-  padding: 0 24px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LES ANIMATIONS
-
-   Toutes coupees sous « prefers-reduced-motion » : le rite garde ses
-   ecrans, ses textes et sa signature ; il perd les balayages, la
-   gravure lettre a lettre et la combustion.
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Le cercle se dessine, anneau par anneau. */
-@keyframes ob-tracer { from { stroke-dashoffset: 999; } to { stroke-dashoffset: 0; } }
-.ob-cercle-anneau {
-  stroke-dasharray: 999;
-  animation: ob-tracer 1.5s var(--ob-e) both;
+/* ── L ECRAN ETROIT ───────────────────────────────────────────
+   L atelier passe en UNE colonne, l objet au-dessus et plus petit :
+   sur un telephone, deux colonnes donneraient deux moities illisibles
+   plutot qu une scene. */
+@media (max-width: 900px) {
+  .ob-atelier { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .ob-objet { width: min(190px, 44vw); gap: 10px; }
+  .ob-voie { height: min(460px, 58vh); }
+  .ob-voie-corps { padding: 18px 16px; }
+  .ob-voie-tete, .ob-voie-pied { padding: 12px 16px; }
+  .ob-symboles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-.ob-cercle-anneau:nth-of-type(2) { animation-delay: 0.16s; }
-.ob-cercle-anneau:nth-of-type(3) { animation-delay: 0.32s; }
 
-/* LA COMBUSTION. Une demi-seconde de silence total, puis le nom
-   emerge du flou — le seul moment du rite ou quelque chose grandit. */
-@keyframes ob-bruler {
-  from { opacity: 0; filter: blur(16px); transform: scale(0.94); }
-  to   { opacity: 1; filter: blur(0); transform: scale(1); }
+/* Sous cette hauteur la legende du pacte cogne le bas de l ecran. */
+@media (max-height: 620px) {
+  .ob-voie { height: min(420px, 74vh); }
 }
-.ob-voile b { animation: ob-bruler 1.2s var(--ob-e) 0.5s both; }
 
+/* ── LE MOUVEMENT SOBRE ───────────────────────────────────────
+   « prefers-reduced-motion » coupe ce qui bouge tout seul. Ce qui
+   reste — les etats, les teintes — se pose sans transition. */
 @media (prefers-reduced-motion: reduce) {
-  .ob-fenetre::after,
-  .ob-braise,
-  .ob-cercle-anneau,
-  .ob-voile b { animation: none; }
-  .ob-cercle-anneau { stroke-dasharray: none; }
-  /* Plus d animation, donc plus de couche a preparer. */
-  .ob-fenetre::after, .ob-braise, .ob-signature-jauge { will-change: auto; }
-  .ob-voile b { opacity: 1; filter: none; transform: none; }
-  .ob *, .ob *::before, .ob *::after { transition-duration: 1ms !important; }
+  .ob *,
+  .ob *::before,
+  .ob *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

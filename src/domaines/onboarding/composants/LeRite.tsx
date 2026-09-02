@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ActeEveil } from "@/domaines/onboarding/composants/ActeEveil";
+import { LObjetDuPacte } from "@/domaines/onboarding/composants/LObjetDuPacte";
 import { LaForge } from "@/domaines/onboarding/composants/LaForge";
 import { LaRencontre } from "@/domaines/onboarding/composants/LaRencontre";
 import { LeScellement } from "@/domaines/onboarding/composants/LeScellement";
@@ -10,9 +11,11 @@ import type { FormeDuGeste } from "@/domaines/onboarding/hooks/useGesteDeSignatu
 import { TEINTE } from "@/domaines/onboarding/logique/gabarits";
 import {
   ACTE_DE, ETAT_VIDE, ecranPrecedent, ecranSuivant, ecransDuRite,
-  fenetresCloses, peutAvancer, type Ecran, type EtatDuRite,
+  fenetresCloses, peutAvancer, type Acte, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";
 
+/** Les quatre actes, dans l ordre ou on les traverse. */
+const ACTES: readonly Acte[] = ["eveil", "forge", "scellement", "rencontre"];
 
 export interface ReglagesDuRite {
   /** Force le mode sobre, quelle que soit la preference du systeme. */
@@ -38,16 +41,35 @@ interface Props {
 }
 
 /**
- * LE RITE, SANS SAVOIR OU IL ECRIT.
+ * LE RITE — UN ATELIER, PAS UNE PILE DE FENETRES.
  *
- * Il etait dans la page ; il en sort pour que le BANC D ESSAI puisse
- * le monter aussi, avec un scellement qui n ecrit rien. Sans cela, on
- * ne peut retravailler le rite qu en creant un compte a chaque
- * passage — et ce qu on ne peut pas regarder, on ne le corrige pas.
+ * ═══ CE QUI A CHANGE, ET POURQUOI ═══
  *
- * La page lui donne « useSceller » et une session ; le banc lui donne
- * un faux et des reglages forces. Ni l un ni l autre ne change ce qui
- * se joue a l ecran, et c est tout l interet.
+ * L ancien rite ouvrait une fenetre par question, empilait les
+ * precedentes en transparence derriere, et posait les boutons SOUS
+ * elle. Trois defauts en decoulaient, tous vus a l ecran :
+ *
+ *   LES FENETRES SE SUPERPOSAIENT. La pile debordait du cadre.
+ *   « Scellement » N ETAIT PAS CADRE : la fenetre grandissait avec son
+ *   contenu et ejectait « Retour » et « Continuer » hors de l ecran.
+ *   ON NE VOYAIT JAMAIS CE QU ON FABRIQUAIT : chaque reponse partait
+ *   dans une fenetre qui se refermait.
+ *
+ * L atelier repond aux trois PAR SA STRUCTURE, pas par des retouches :
+ *
+ *   UN OBJET, PERMANENT. Le pacte est la, a gauche, du premier mot
+ *   jusqu au sceau, et chaque reponse le change sous les yeux. C est
+ *   lui la barre de progression.
+ *
+ *   UNE SEULE VOIE. Les questions se remplacent dans une colonne de
+ *   hauteur FIXE. Rien ne s empile, donc rien ne peut deborder.
+ *
+ *   LES GESTES SONT DANS LE CADRE. « Retour » et « Continuer » vivent
+ *   dans le pied de la voie, entre ses bords : c est le corps qui
+ *   defile quand le contenu est long, jamais les boutons qui sortent.
+ *
+ * L EVEIL RESTE PLEIN CADRE. L objet n existe pas encore — il n y a
+ * rien a montrer a cote, et un atelier vide serait un mensonge.
  */
 export function LeRite({
   abrege, onSceller, pretAEcrire, onQuitter,
@@ -97,16 +119,13 @@ export function LeRite({
 
   const acte = ACTE_DE[ecran];
   const closes = fenetresCloses(ecran, abrege);
+  const teinte = TEINTE[etat.couleur] ?? TEINTE.amber;
 
   /* L ARC CHROMATIQUE. Le systeme cede la place au pacte : « --ob-part »
      va de 0 a 1 a mesure que les fenetres se ferment, et les cadres,
-     l entete et la lueur se melangent de l un vers l autre. Quand la
-     teinte du porteur domine, le pacte est pret a etre scelle.
+     l entete et la lueur se melangent de l un vers l autre.
 
-     LE SCEAU EST LA TROISIEME FENETRE, et c est la que sa couleur
-     entre : avant, il n a rien choisi, et la voix reste celle du
-     systeme. */
-  /* LA COULEUR DU PORTEUR N EXISTE PAS AVANT QU IL L AIT CHOISIE.
+     LA COULEUR DU PORTEUR N EXISTE PAS AVANT QU IL L AIT CHOISIE.
      Elle entre PENDANT l ecran du sceau — il la voit se poser sous ses
      yeux au moment ou il clique — puis gagne a chaque fenetre close.
      La faire paraitre des la deuxieme fenetre montrerait l ambre par
@@ -118,7 +137,7 @@ export function LeRite({
     : closes < rangDuSceau ? 0
     : Math.min(1, (closes - rangDuSceau + 1) / (forge.length - rangDuSceau));
   const habillage = {
-    "--ob-teinte": TEINTE[etat.couleur] ?? TEINTE.amber,
+    "--ob-teinte": teinte,
     "--ob-part": part,
   } as React.CSSProperties;
 
@@ -126,88 +145,134 @@ export function LeRite({
      l ecran passe a la couleur du pacte avec son nom en Orbitron. */
   if (voile) {
     return (
-      <div className="ob ob-voile" style={{ ...habillage, color: TEINTE[etat.couleur] ?? TEINTE.amber }}>
+      <div className="ob ob-voile" style={{ ...habillage, color: teinte }}>
         <b>{etat.nomDuPacte}</b>
       </div>
     );
   }
 
+  /* L EVEIL — plein cadre. Rien n est encore jure : il n y a pas
+     d objet a poser a cote, et pas d acte a jalonner. */
+  if (acte === "eveil") {
+    return (
+      <div className="ob ob--eveil" style={habillage}>
+        <ActeEveil onAccepter={avancer} onRefuser={onQuitter} sansAnimation={sobre} />
+      </div>
+    );
+  }
+
+  const suite = ecranSuivant(ecran, abrege);
+
   return (
-    <div className="ob" style={habillage}>
-      {/* LES FENETRES CLOSES restent empilees derriere, en
-          transparence : c est la trace de ce qu on a declare, et ca
-          remplace la barre de progression — un rite n en a pas. */}
-      {closes > 0 && (
-        <div className="ob-pile" aria-hidden="true">
-          {Array.from({ length: closes }, (_, i) => (
-            <i key={i} style={{ transform: `translateY(${(i + 1) * -9}px) scale(${1 - (i + 1) * 0.03})` }} />
-          ))}
-        </div>
-      )}
+    <div className="ob ob--atelier" style={habillage}>
+      <div className="ob-atelier">
+        {/* ═══ L OBJET — permanent, et il change a chaque reponse ═══ */}
+        <section className="ob-scene" aria-label={t("onboarding.objet.entete")}>
+          <LObjetDuPacte
+            nomDuPacte={etat.nomDuPacte}
+            valeurs={etat.valeurs}
+            symbole={etat.symbole}
+            mantra={etat.mantra}
+            teinte={teinte}
+            scelle={etat.signe}
+            sansAnimation={sobre}
+          />
+        </section>
 
-      {/* CHAQUE FENETRE SE REPLIE VERS LE CENTRE, et la suivante monte
-          a sa place. C est ce mouvement — pas une barre — qui dit
-          qu on avance : ce qui est declare s en va vers le sceau. */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={ecran}
-          initial={sobre ? false : { opacity: 0, y: 22, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={sobre ? undefined : { opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {acte === "eveil" && (
-            <ActeEveil onAccepter={avancer} onRefuser={onQuitter} sansAnimation={sobre} />
-          )}
+        {/* ═══ LA VOIE — une seule, de hauteur fixe ═══ */}
+        <section className="ob-voie">
+          {/* LES QUATRE ACTES. Les barres disent la position, le nom
+              ecrit dit lequel on traverse. Les quatre noms cote a cote
+              ne tenaient pas dans la voie : « LE SCELLEMENT » s y
+              lisait « LE SCELLE… », et un jalon tronque ne jalonne
+              rien. Les noms restent lisibles aux lecteurs d ecran. */}
+          <header className="ob-voie-tete">
+            <ol className="ob-actes">
+              {ACTES.map((a, i) => (
+                <li
+                  key={a}
+                  className={a === acte ? "est-ici" : ACTES.indexOf(acte) > i ? "est-passe" : ""}
+                  aria-current={a === acte ? "step" : undefined}
+                >
+                  <i aria-hidden="true" />
+                  <span className="sr-only">{t(`onboarding.actes.${a}`)}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="ob-voie-jalon">
+              <p className="ob-acte-nom" aria-hidden="true">
+                <b>{"I".repeat(ACTES.indexOf(acte) + 1).replace("IIII", "IV")}</b>
+                <span>{t(`onboarding.actes.${acte}`)}</span>
+              </p>
 
-          {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
+              {/* LA SORTIE EST EN HAUT, pas dans le pied. Les trois
+                  boutons cote a cote ne tenaient pas dans la voie et
+                  le pied se repliait sur trois rangs. Elle est de
+                  toute facon d un autre ordre que « Retour » et
+                  « Continuer » : la mettre a cote d eux la deguisait
+                  en geste du rite. Discrete, jamais cachee. */}
+              {acte !== "scellement" && (
+                <button type="button" className="ob-passer" onClick={() => setEcran("scellement")}>
+                  {t("onboarding.passer")}
+                </button>
+              )}
+            </div>
+          </header>
 
-          {acte === "scellement" && (
-            <LeScellement
-              etat={etat}
-              modifier={modifier}
-              signature={
-                <Signature
-                  actif
-                  sansAnimation={sobre}
-                  formeForcee={reglages?.forme}
-                  onSigne={() => modifier({ signe: true })}
-                />
-              }
-            />
-          )}
+          {/* C EST LUI QUI DEFILE, jamais la page : le pied reste pose
+              au bas du cadre quoi qu il arrive au-dessus. */}
+          <div className="ob-voie-corps">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={ecran}
+                className="ob-ecran"
+                initial={sobre ? false : { opacity: 0, x: 26 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={sobre ? undefined : { opacity: 0, x: -18 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
 
-          {acte === "rencontre" && (
-            <LaRencontre etat={etat} modifier={modifier} sansAttente={sobre} />
-          )}
-        </motion.div>
-      </AnimatePresence>
+                {acte === "scellement" && (
+                  <LeScellement
+                    etat={etat}
+                    modifier={modifier}
+                    signature={
+                      <Signature
+                        actif
+                        sansAnimation={sobre}
+                        formeForcee={reglages?.forme}
+                        onSigne={() => modifier({ signe: true })}
+                      />
+                    }
+                  />
+                )}
 
-      {acte !== "eveil" && (
-        <div className="ob-gestes">
-          {ecranPrecedent(ecran, abrege) && (
-            <button type="button" className="ob-bouton ob-bouton--sourd" onClick={reculer}>
-              {t("onboarding.retour")}
+                {acte === "rencontre" && (
+                  <LaRencontre etat={etat} modifier={modifier} sansAttente={sobre} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <footer className="ob-voie-pied">
+            {ecranPrecedent(ecran, abrege) ? (
+              <button type="button" className="ob-bouton ob-bouton--sourd" onClick={reculer}>
+                {t("onboarding.retour")}
+              </button>
+            ) : <span />}
+
+            <button
+              type="button"
+              className="ob-bouton"
+              disabled={!peutAvancer(ecran, etat) || !pretAEcrire}
+              onClick={avancer}
+            >
+              {suite ? t("onboarding.continuer") : t("onboarding.sceller")}
             </button>
-          )}
-          <button
-            type="button"
-            className="ob-bouton"
-            disabled={!peutAvancer(ecran, etat) || !pretAEcrire}
-            onClick={avancer}
-          >
-            {ecranSuivant(ecran, abrege) ? t("onboarding.continuer") : t("onboarding.sceller")}
-          </button>
-        </div>
-      )}
-
-      {/* La sortie : discrete, jamais cachee. Un rite dont on ne peut
-          pas sortir est une porte, pas un rite. */}
-      {acte !== "scellement" && (
-        <button type="button" className="ob-passer" onClick={() => setEcran("scellement")}>
-          {t("onboarding.passer")}
-        </button>
-      )}
+          </footer>
+        </section>
+      </div>
     </div>
   );
 }

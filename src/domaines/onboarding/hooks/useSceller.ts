@@ -7,7 +7,7 @@ import { messageDErreur } from "@/socle/outils/erreurs";
 import { trackPactCreated } from "@/domaines/succes";
 import { objectifDuGabarit, objectifSurMesure } from "@/domaines/onboarding/logique/premierObjectif";
 import { GABARITS, versObjectif } from "@/domaines/onboarding/logique/gabarits";
-import { VERSION_ALPHABET } from "@/domaines/onboarding/logique/sigil";
+import { VERSION_ALPHABET } from "@/domaines/objectifs";
 import { pretASceller, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
 
 /**
