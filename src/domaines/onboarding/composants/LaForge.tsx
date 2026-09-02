@@ -120,6 +120,10 @@ export function LaForge({ ecran, etat, modifier }: Props) {
     return (
       <FenetreSysteme entete={t("onboarding.forge.phrase.entete")}>
         <p className="ob-ligne">{t("onboarding.forge.phrase.invite")}</p>
+        {/* La braise est un halo DERRIERE, pas une ombre sur le texte :
+            un « text-shadow » anime repeint la phrase a chaque image,
+            pendant qu on l ecrit. */}
+        <span className="ob-champ-grave">
         <input
           className="ob-gravure"
           value={etat.mantra}
@@ -128,6 +132,8 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           aria-label={t("onboarding.forge.phrase.invite")}
           autoFocus
         />
+        <i className="ob-braise" aria-hidden="true" />
+        </span>
       </FenetreSysteme>
     );
   }

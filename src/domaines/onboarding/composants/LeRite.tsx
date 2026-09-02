@@ -98,18 +98,42 @@ export function LeRite({
   const acte = ACTE_DE[ecran];
   const closes = fenetresCloses(ecran, abrege);
 
+  /* L ARC CHROMATIQUE. Le systeme cede la place au pacte : « --ob-part »
+     va de 0 a 1 a mesure que les fenetres se ferment, et les cadres,
+     l entete et la lueur se melangent de l un vers l autre. Quand la
+     teinte du porteur domine, le pacte est pret a etre scelle.
+
+     LE SCEAU EST LA TROISIEME FENETRE, et c est la que sa couleur
+     entre : avant, il n a rien choisi, et la voix reste celle du
+     systeme. */
+  /* LA COULEUR DU PORTEUR N EXISTE PAS AVANT QU IL L AIT CHOISIE.
+     Elle entre PENDANT l ecran du sceau — il la voit se poser sous ses
+     yeux au moment ou il clique — puis gagne a chaque fenetre close.
+     La faire paraitre des la deuxieme fenetre montrerait l ambre par
+     defaut comme si c etait un choix. */
+  const forge = ecransDuRite(abrege).filter((e) => ACTE_DE[e] === "forge");
+  const rangDuSceau = forge.indexOf("sceau");
+  const part = acte === "eveil" ? 0
+    : acte !== "forge" ? 1
+    : closes < rangDuSceau ? 0
+    : Math.min(1, (closes - rangDuSceau + 1) / (forge.length - rangDuSceau));
+  const habillage = {
+    "--ob-teinte": TEINTE[etat.couleur] ?? TEINTE.amber,
+    "--ob-part": part,
+  } as React.CSSProperties;
+
   /* LE VOILE. Une demi-seconde de silence total, le cercle brule, et
      l ecran passe a la couleur du pacte avec son nom en Orbitron. */
   if (voile) {
     return (
-      <div className="ob ob-voile" style={{ color: TEINTE[etat.couleur] ?? TEINTE.amber }}>
+      <div className="ob ob-voile" style={{ ...habillage, color: TEINTE[etat.couleur] ?? TEINTE.amber }}>
         <b>{etat.nomDuPacte}</b>
       </div>
     );
   }
 
   return (
-    <div className="ob">
+    <div className="ob" style={habillage}>
       {/* LES FENETRES CLOSES restent empilees derriere, en
           transparence : c est la trace de ce qu on a declare, et ca
           remplace la barre de progression — un rite n en a pas. */}

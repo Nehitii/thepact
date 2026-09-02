@@ -51,9 +51,11 @@ export function Signature({ actif, onSigne, sansAnimation, formeForcee }: Props)
       onPointerCancel={arreter}
       aria-label={t(`onboarding.signature.${forme}`)}
     >
+      {/* Une echelle, pas une largeur : « width » demande une mise en
+          page a chaque image, sur l element qu on fixe le plus du rite. */}
       <i
         className="ob-signature-jauge"
-        style={{ width: `${Math.round(avancement * 100)}%` }}
+        style={{ transform: `scaleX(${avancement})` }}
         aria-hidden="true"
       />
       <span>{t(`onboarding.signature.${forme}`)}</span>
