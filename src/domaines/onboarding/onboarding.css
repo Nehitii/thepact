@@ -313,3 +313,53 @@
   text-align: center;
   padding: 0 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LES ANIMATIONS
+
+   Elles se coupent TOUTES sous « prefers-reduced-motion » : le rite
+   garde ses ecrans, ses textes et sa signature ; il perd les
+   balayages, la gravure lettre a lettre et la combustion. Les
+   fenetres apparaissent, elles ne s ecrivent pas.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Le balayage horizontal lent qui traverse la fenetre systeme. */
+@keyframes ob-balayage {
+  from { background-position: 200% 0; }
+  to   { background-position: -100% 0; }
+}
+.ob-fenetre::after { animation: ob-balayage 5.5s linear infinite; }
+
+/* La phrase rougeoie pendant qu on la grave. */
+@keyframes ob-braise {
+  0%, 100% { text-shadow: 0 0 14px hsl(var(--ds-accent-primary) / 0.35); }
+  50%      { text-shadow: 0 0 26px hsl(var(--ds-accent-primary) / 0.7); }
+}
+.ob-gravure { animation: ob-braise 2.6s ease-in-out infinite; }
+
+/* Le cercle se dessine : les anneaux d abord, les glyphes ensuite. */
+@keyframes ob-tracer {
+  from { stroke-dasharray: 0 999; }
+  to   { stroke-dasharray: 999 0; }
+}
+.ob-cercle-anneau { animation: ob-tracer 1.4s var(--ob-e) both; }
+.ob-cercle-anneau:nth-of-type(2) { animation-delay: 0.18s; }
+.ob-cercle-anneau:nth-of-type(3) { animation-delay: 0.36s; }
+
+/* LA COMBUSTION. Une demi-seconde de silence total, puis le cercle
+   brule et l ecran passe a la couleur du pacte. */
+@keyframes ob-bruler {
+  from { opacity: 0; filter: blur(14px); }
+  40%  { opacity: 1; filter: blur(0); }
+  to   { opacity: 1; filter: blur(0); }
+}
+.ob-voile b { animation: ob-bruler 1.1s var(--ob-e) 0.5s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-fenetre::after,
+  .ob-gravure,
+  .ob-cercle-anneau,
+  .ob-voile b { animation: none; }
+  .ob-cercle-anneau { stroke-dasharray: none; }
+  .ob-voile b { opacity: 1; filter: none; }
+}

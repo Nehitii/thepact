@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ajouterAuTrace, avancementDuTrace, type Point } from "@/domaines/onboarding/logique/trace";
 
 /** Le geste demande, selon ce que l appareil offre. */
 export type FormeDuGeste = "trace" | "maintien";
@@ -40,6 +41,7 @@ export function useGesteDeSignature({
   const debut = useRef(0);
   const image = useRef(0);
   const fini = useRef(false);
+  const points = useRef<Point[]>([]);
 
   /* Le doigt trace, la souris maintient. « pointer: coarse » est la
      question juste : elle porte sur la finesse du pointeur, pas sur la
@@ -52,9 +54,25 @@ export function useGesteDeSignature({
 
   const arreter = useCallback(() => {
     cancelAnimationFrame(image.current);
+    points.current = [];
     setEnCours(false);
     if (!fini.current) setAvancement(0);
   }, []);
+
+  /* LE TRACE, AU DOIGT. On valide un PARCOURS, pas une calligraphie :
+     la distance cumulee dans le cadre suffit. Le seuil et le filtre du
+     tremblement sont dans « logique/trace.ts », avec leurs tests. */
+  const tracer = useCallback((p: Point, largeur: number, hauteur: number) => {
+    if (!actif || fini.current || forme !== "trace" || !enCours) return;
+    points.current = ajouterAuTrace(points.current, p);
+    const part = avancementDuTrace(points.current, largeur, hauteur);
+    setAvancement(part);
+    if (part >= 1) {
+      fini.current = true;
+      setEnCours(false);
+      onSigne();
+    }
+  }, [actif, forme, enCours, onSigne]);
 
   const commencer = useCallback(() => {
     if (!actif || fini.current) return;
@@ -67,6 +85,9 @@ export function useGesteDeSignature({
       return;
     }
     setEnCours(true);
+    /* AU DOIGT, RIEN NE SE REMPLIT TOUT SEUL : c est le parcours qui
+       fait avancer la jauge, pas le temps. */
+    if (forme === "trace") { points.current = []; setAvancement(0); return; }
     debut.current = performance.now();
     const avancer = (t: number) => {
       const part = Math.min(1, (t - debut.current) / DUREE_MAINTIEN);
@@ -80,7 +101,7 @@ export function useGesteDeSignature({
       image.current = requestAnimationFrame(avancer);
     };
     image.current = requestAnimationFrame(avancer);
-  }, [actif, onSigne, sansAnimation]);
+  }, [actif, forme, onSigne, sansAnimation]);
 
   /* AU CLAVIER, LE MEME GESTE. Espace ou Entree maintenus, meme
      remplissage : qui n a ni souris ni doigt signe comme les autres,
@@ -105,5 +126,5 @@ export function useGesteDeSignature({
 
   useEffect(() => () => cancelAnimationFrame(image.current), []);
 
-  return { forme, avancement, enCours, commencer, arreter };
+  return { forme, avancement, enCours, commencer, arreter, tracer };
 }

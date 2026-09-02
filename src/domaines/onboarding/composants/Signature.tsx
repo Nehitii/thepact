@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useGesteDeSignature } from "@/domaines/onboarding/hooks/useGesteDeSignature";
 
@@ -20,17 +21,29 @@ interface Props {
  */
 export function Signature({ actif, onSigne, sansAnimation }: Props) {
   const { t } = useTranslation();
-  const { forme, avancement, commencer, arreter } = useGesteDeSignature({
+  const cadre = useRef<HTMLButtonElement>(null);
+  const { forme, avancement, commencer, arreter, tracer } = useGesteDeSignature({
     actif, onSigne, sansAnimation,
   });
 
+  /* Le trace se mesure DANS le cadre : les coordonnees de l evenement
+     sont celles de l ecran, et le seuil est relatif a la zone. */
+  const suivre = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const r = cadre.current?.getBoundingClientRect();
+    if (!r) return;
+    tracer({ x: e.clientX - r.left, y: e.clientY - r.top }, r.width, r.height);
+  };
+
   return (
     <button
+      ref={cadre}
       type="button"
       className="ob-signature"
       data-signature=""
+      data-forme={forme}
       disabled={!actif}
       onPointerDown={commencer}
+      onPointerMove={forme === "trace" ? suivre : undefined}
       onPointerUp={arreter}
       onPointerLeave={arreter}
       onPointerCancel={arreter}

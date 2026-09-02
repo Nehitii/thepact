@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -14,6 +15,13 @@ import {
   fenetresCloses, peutAvancer, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";
 import "@/domaines/onboarding/onboarding.css";
+
+/* Les six teintes, en clair : une classe Tailwind construite a la
+   volee serait purgee du bundle. */
+const TEINTE: Record<string, string> = {
+  amber: "#F59E0B", rose: "#F43F5E", emerald: "#10B981",
+  sky: "#0EA5E9", violet: "#8B5CF6", cyan: "#06B6D4",
+};
 
 /**
  * LE RITE DU PACTE.
@@ -36,6 +44,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { sceller, enCours } = useSceller();
+  const sobre = useReducedMotion();
 
   /* Le second passage n est jamais le premier : quelqu un qui a deja
      un pacte repasse par la depuis « ReinitialiserLePacte ». */
@@ -84,9 +93,11 @@ export default function Onboarding() {
   const acte = ACTE_DE[ecran];
   const closes = fenetresCloses(ecran, abrege);
 
+  /* LE VOILE. Une demi-seconde de silence total, le cercle brule, et
+     l ecran passe a la couleur du pacte avec son nom en Orbitron. */
   if (voile) {
     return (
-      <div className="ob ob-voile">
+      <div className="ob ob-voile" style={{ color: TEINTE[etat.couleur] ?? TEINTE.amber }}>
         <b>{etat.nomDuPacte}</b>
       </div>
     );
@@ -105,21 +116,42 @@ export default function Onboarding() {
         </div>
       )}
 
-      {acte === "eveil" && (
-        <ActeEveil onAccepter={avancer} onRefuser={() => navigate("/auth")} />
-      )}
+      {/* CHAQUE FENETRE SE REPLIE VERS LE CENTRE, et la suivante monte
+          a sa place. C est ce mouvement — pas une barre — qui dit
+          qu on avance : ce qui est declare s en va vers le sceau. */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={ecran}
+          initial={sobre ? false : { opacity: 0, y: 22, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={sobre ? undefined : { opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {acte === "eveil" && (
+            <ActeEveil onAccepter={avancer} onRefuser={() => navigate("/auth")} />
+          )}
 
-      {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
+          {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
 
-      {acte === "scellement" && (
-        <LeScellement
-          etat={etat}
-          modifier={modifier}
-          signature={<Signature actif onSigne={() => modifier({ signe: true })} />}
-        />
-      )}
+          {acte === "scellement" && (
+            <LeScellement
+              etat={etat}
+              modifier={modifier}
+              signature={
+                <Signature
+                  actif
+                  sansAnimation={!!sobre}
+                  onSigne={() => modifier({ signe: true })}
+                />
+              }
+            />
+          )}
 
-      {acte === "rencontre" && <LaRencontre etat={etat} modifier={modifier} />}
+          {acte === "rencontre" && (
+            <LaRencontre etat={etat} modifier={modifier} sansAttente={!!sobre} />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {acte !== "eveil" && (
         <div className="ob-gestes">
