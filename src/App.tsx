@@ -35,6 +35,7 @@ const Achievements = lazy(routeImports.achievements);
 const Shop = lazy(routeImports.shop);
 const Community = lazy(() => import("@/domaines/social/pages/Community"));
 const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
+const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -111,6 +112,19 @@ function AppRoutes() {
           legales qu on ne peut lire qu une fois inscrit ne remplissent
           pas leur office. */}
       <Route path="/legal" element={<Legal />} />
+
+      {/* LE BANC D ESSAI DU RITE — public, et il le faut.
+
+          Retravailler l onboarding demandait de creer un compte a
+          chaque passage : le rite ne se joue qu une fois, et il ecrit
+          un pacte, qu on ne peut avoir qu en un seul exemplaire.
+          Autant dire qu on ne le regardait pas — et ce qu on ne
+          regarde pas, on ne le corrige pas.
+
+          Il n ecrit RIEN : le scellement y est feint et montre les
+          lignes qui auraient ete posees. Le mettre derriere
+          « ProtectedRoute » lui reprendrait tout son interet. */}
+      <Route path="/banc/rite" element={<BancDuRite />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />

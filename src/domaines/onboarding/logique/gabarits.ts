@@ -73,3 +73,17 @@ export function versObjectif(g: Gabarit, exemple: string): GabaritDObjectif {
     habit_duration_days: g.joursDHabitude,
   };
 }
+
+/**
+ * Les six teintes, en clair.
+ *
+ * Une classe Tailwind construite a la volee serait purgee du bundle :
+ * « bg-${couleur}-500 » n existe nulle part dans le source, donc le
+ * balayage ne la garde pas. Elles vivent ici plutot que dans un
+ * composant — trois fichiers les employaient, et les exporter depuis
+ * un module de rendu casse le rechargement a chaud.
+ */
+export const TEINTE: Record<string, string> = {
+  amber: "#F59E0B", rose: "#F43F5E", emerald: "#10B981",
+  sky: "#0EA5E9", violet: "#8B5CF6", cyan: "#06B6D4",
+};

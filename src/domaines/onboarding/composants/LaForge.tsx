@@ -1,17 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { Flame, Heart, Target, Sparkles } from "lucide-react";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
-import { COULEURS, SYMBOLES, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
+import { COULEURS, SYMBOLES, TEINTE, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
 import { VALEURS_MAX, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
 
 const ICONE = { flame: Flame, heart: Heart, target: Target, sparkles: Sparkles } as const;
 
-/* Les six teintes, en clair : la classe Tailwind ne peut pas etre
-   construite a la volee, elle serait purgee du bundle. */
-const TEINTE: Record<string, string> = {
-  amber: "#F59E0B", rose: "#F43F5E", emerald: "#10B981",
-  sky: "#0EA5E9", violet: "#8B5CF6", cyan: "#06B6D4",
-};
 
 interface Props {
   ecran: Ecran;

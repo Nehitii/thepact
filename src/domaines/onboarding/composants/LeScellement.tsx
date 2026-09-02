@@ -3,13 +3,8 @@ import { Link } from "react-router-dom";
 import { CercleDeScellement } from "@/domaines/onboarding/composants/CercleDeScellement";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
 import { peutSigner, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
+import { TEINTE } from "@/domaines/onboarding/logique/gabarits";
 
-/* Les six teintes, en clair : une classe Tailwind construite a la
-   volee serait purgee du bundle. */
-const TEINTE: Record<string, string> = {
-  amber: "#F59E0B", rose: "#F43F5E", emerald: "#10B981",
-  sky: "#0EA5E9", violet: "#8B5CF6", cyan: "#06B6D4",
-};
 
 interface Props {
   etat: EtatDuRite;

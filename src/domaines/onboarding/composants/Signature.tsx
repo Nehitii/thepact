@@ -1,11 +1,13 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useGesteDeSignature } from "@/domaines/onboarding/hooks/useGesteDeSignature";
+import { useGesteDeSignature, type FormeDuGeste } from "@/domaines/onboarding/hooks/useGesteDeSignature";
 
 interface Props {
   actif: boolean;
   onSigne: () => void;
   sansAnimation?: boolean;
+  /* Le banc d essai force le geste sans changer d appareil. */
+  formeForcee?: FormeDuGeste;
 }
 
 /**
@@ -19,11 +21,11 @@ interface Props {
  * maintient fait defiler la page et le geste se perd au premier
  * millimetre.
  */
-export function Signature({ actif, onSigne, sansAnimation }: Props) {
+export function Signature({ actif, onSigne, sansAnimation, formeForcee }: Props) {
   const { t } = useTranslation();
   const cadre = useRef<HTMLButtonElement>(null);
   const { forme, avancement, commencer, arreter, tracer } = useGesteDeSignature({
-    actif, onSigne, sansAnimation,
+    actif, onSigne, sansAnimation, formeForcee,
   });
 
   /* Le trace se mesure DANS le cadre : les coordonnees de l evenement

@@ -31,10 +31,13 @@ export function useGesteDeSignature({
   actif,
   onSigne,
   sansAnimation = false,
+  formeForcee,
 }: {
   actif: boolean;
   onSigne: () => void;
   sansAnimation?: boolean;
+  /* Le banc d essai force le geste sans changer d appareil. */
+  formeForcee?: FormeDuGeste;
 }) {
   const [avancement, setAvancement] = useState(0);
   const [enCours, setEnCours] = useState(false);
@@ -47,10 +50,10 @@ export function useGesteDeSignature({
      question juste : elle porte sur la finesse du pointeur, pas sur la
      largeur de l ecran — une tablette avec un stylet n est pas un
      telephone. */
-  const forme: FormeDuGeste =
-    typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches
+  const forme: FormeDuGeste = formeForcee ??
+    (typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches
       ? "trace"
-      : "maintien";
+      : "maintien");
 
   const arreter = useCallback(() => {
     cancelAnimationFrame(image.current);

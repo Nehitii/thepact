@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE BANC D ESSAI
+
+   Le pupitre a gauche, la scene a droite. Il ne ressemble PAS au
+   rite : c est un outil, et le confondre avec ce qu il montre serait
+   la premiere facon de s y tromper. Gris, dense, sans mise en scene.
+
+   Il n emprunte rien a « --ob-* » pour la meme raison : si les
+   jetons du rite changent, le banc doit rester lisible.
+   ═══════════════════════════════════════════════════════════════ */
+
+.banc {
+  --banc-fond:   #101215;
+  --banc-plaque: #191c21;
+  --banc-trait:  #2c313a;
+  --banc-encre:  #e7eaee;
+  --banc-encre-2:#98a1ad;
+  --banc-signal: #59c2ff;
+
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100dvh;
+  background: var(--banc-fond);
+  color: var(--banc-encre);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (max-width: 860px) {
+  .banc { grid-template-columns: 1fr; }
+  .banc-pupitre { position: static; height: auto; }
+}
+
+.banc-pupitre {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  border-right: 1px solid var(--banc-trait);
+  background: var(--banc-plaque);
+  font-size: 13px;
+}
+.banc-pupitre h1 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--banc-signal);
+}
+.banc-note { margin: 0; color: var(--banc-encre-2); font-size: 12px; line-height: 1.5; }
+
+.banc-champ { display: grid; gap: 5px; }
+.banc-champ > span { color: var(--banc-encre-2); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+.banc-champ select {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid var(--banc-trait);
+  border-radius: 5px;
+  background: var(--banc-fond);
+  color: var(--banc-encre);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.banc-bascule { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.banc-bascule input { width: 15px; height: 15px; accent-color: var(--banc-signal); }
+
+.banc-rejouer {
+  min-height: 34px;
+  border: 1px solid var(--banc-signal);
+  border-radius: 5px;
+  background: none;
+  color: var(--banc-signal);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.banc-rejouer:hover { background: var(--banc-signal); color: var(--banc-fond); }
+.banc-rejouer:focus-visible { outline: 2px solid var(--banc-signal); outline-offset: 2px; }
+
+.banc-etat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--banc-trait);
+  font-size: 12px;
+}
+.banc-etat dt { color: var(--banc-encre-2); }
+.banc-etat dd { margin: 0; overflow-wrap: anywhere; }
+
+.banc-ecritures {
+  padding-top: 10px;
+  border-top: 1px solid var(--banc-trait);
+  font-size: 12px;
+}
+.banc-ecritures b { display: block; margin-bottom: 6px; color: var(--banc-signal); }
+.banc-ecritures pre {
+  margin: 0;
+  padding: 9px;
+  border-radius: 5px;
+  background: var(--banc-fond);
+  color: var(--banc-encre-2);
+  font-size: 11.5px;
+  line-height: 1.45;
+  overflow-x: auto;
+}
+
+/* La scene tient le rite tel quel : il pose lui-meme son fond et sa
+   hauteur, on ne fait que lui donner la place. */
+.banc-scene { position: relative; min-width: 0; }
+.banc-scene .ob { min-height: 100dvh; }
