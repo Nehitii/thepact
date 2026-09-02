@@ -3126,6 +3126,7 @@ export type Database = {
           points: number | null
           project_end_date: string | null
           project_start_date: string | null
+          sigil_version: number
           symbol: string | null
           tier: number | null
           title_effect: string | null
@@ -3146,6 +3147,7 @@ export type Database = {
           points?: number | null
           project_end_date?: string | null
           project_start_date?: string | null
+          sigil_version?: number
           symbol?: string | null
           tier?: number | null
           title_effect?: string | null
@@ -3166,6 +3168,7 @@ export type Database = {
           points?: number | null
           project_end_date?: string | null
           project_start_date?: string | null
+          sigil_version?: number
           symbol?: string | null
           tier?: number | null
           title_effect?: string | null
