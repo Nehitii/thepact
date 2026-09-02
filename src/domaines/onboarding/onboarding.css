@@ -1,0 +1,315 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE RITE DU PACTE
+
+   L ancien onboarding etait un formulaire bien habille : six ecrans
+   qui demandent, aucun qui fasse arriver quelque chose. Celui-ci a
+   huit ecrans dont quatre seulement demandent de taper — le reste se
+   regarde.
+
+   Deux registres, et ils ne se melangent pas :
+     LE SYSTEME parle en Orbitron, dans des cadres a coins tronques.
+     M.I.A. parle en Rajdhani, sans cadre.
+
+   Tout descend de « --ds-* » : pas une couleur en dur, la barre
+   laterale a deja paye ce prix-la.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ob {
+  --ob-fond:      hsl(var(--ds-surface-0, 240 10% 4%));
+  --ob-plaque:    hsl(var(--ds-surface-1));
+  --ob-creux:     hsl(var(--ds-surface-2));
+  --ob-trait:     hsl(var(--ds-border-default) / 0.28);
+  --ob-trait-fort: hsl(var(--ds-border-default) / 0.55);
+  --ob-encre:     hsl(var(--ds-text-primary));
+  --ob-encre-2:   hsl(var(--ds-text-secondary));
+  --ob-encre-3:   hsl(var(--ds-text-muted));
+  --ob-signal:    hsl(var(--ds-accent-primary));
+  --ob-alerte:    hsl(var(--ds-accent-critical));
+  --ob-e:         var(--ds-ease-out, cubic-bezier(.16, 1, .3, 1));
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px 18px;
+  background: var(--ob-fond);
+  color: var(--ob-encre);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ── LA FENETRE SYSTEME ───────────────────────────────────────
+   Coins tronques par clip-path — la forme existait deja a l etape 0
+   de l ancienne page. Le liseré est un frere en « inset », parce
+   qu une bordure ordinaire suivrait le rectangle et non la coupe. */
+.ob-fenetre {
+  position: relative;
+  width: min(560px, 100%);
+  padding: 26px 28px;
+  background: var(--ob-plaque);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+.ob-fenetre::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ob-signal);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  z-index: -1;
+  margin: -1px;
+}
+.ob-fenetre[data-ton="alerte"]::before { background: var(--ob-alerte); }
+
+.ob-fenetre-tete {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ob-signal);
+}
+.ob-fenetre-tete i {
+  flex: 1;
+  height: 1px;
+  background: var(--ob-trait);
+}
+
+.ob-fenetre-corps { display: grid; gap: 14px; }
+
+.ob-ligne {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.6;
+  color: var(--ob-encre);
+}
+.ob-ligne--sourde { color: var(--ob-encre-2); font-family: 'Rajdhani', system-ui, sans-serif; font-size: 15px; }
+
+/* Le balayage horizontal lent qui traverse la fenetre. */
+.ob-fenetre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 40%,
+              hsl(var(--ds-accent-primary) / 0.07) 50%, transparent 60%);
+  background-size: 300% 100%;
+}
+
+/* ── LES GESTES ───────────────────────────────────────────────── */
+.ob-gestes { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+.ob-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 20px;
+  border: 1px solid var(--ob-signal);
+  background: none;
+  color: var(--ob-signal);
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  transition: background-color 140ms var(--ob-e), color 140ms var(--ob-e);
+}
+.ob-bouton:hover:not(:disabled) { background: var(--ob-signal); color: var(--ob-fond); }
+.ob-bouton:disabled { opacity: 0.4; cursor: not-allowed; }
+.ob-bouton--sourd { border-color: var(--ob-trait-fort); color: var(--ob-encre-2); }
+.ob-bouton--sourd:hover:not(:disabled) { background: var(--ob-creux); color: var(--ob-encre); }
+.ob-bouton:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 3px; }
+
+/* ── LES CHAMPS ───────────────────────────────────────────────── */
+.ob-champ {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
+  color: var(--ob-encre);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 16px;
+}
+.ob-champ:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 1px; }
+.ob-champ::placeholder { color: var(--ob-encre-3); }
+
+/* La phrase se grave : une ligne unique qui rougeoie. */
+.ob-gravure {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-bottom: 1px solid var(--ob-signal);
+  background: none;
+  color: var(--ob-encre);
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(15px, 0.94rem);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: 0 0 18px hsl(var(--ds-accent-primary) / 0.5);
+}
+.ob-gravure:focus-visible { outline: none; border-bottom-width: 2px; }
+
+/* ── LE SCEAU : symboles et couleurs ──────────────────────────── */
+.ob-choix { display: flex; flex-wrap: wrap; gap: 10px; }
+.ob-choix button {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
+  color: var(--ob-encre-2);
+  cursor: pointer;
+  transition: border-color 140ms var(--ob-e), color 140ms var(--ob-e);
+}
+.ob-choix button[aria-pressed="true"] { border-color: var(--ob-signal); color: var(--ob-signal); }
+.ob-choix button:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 2px; }
+.ob-pastille { width: 34px; height: 34px; border-radius: 50%; }
+
+/* ── LES VALEURS ──────────────────────────────────────────────── */
+.ob-valeurs { display: flex; flex-wrap: wrap; gap: 8px; }
+.ob-valeur {
+  padding: 7px 14px;
+  border: 1px solid var(--ob-trait-fort);
+  background: none;
+  color: var(--ob-encre-2);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 999px;
+}
+.ob-valeur[aria-pressed="true"] { border-color: var(--ob-signal); color: var(--ob-signal); }
+.ob-valeur:disabled { opacity: 0.35; cursor: not-allowed; }
+.ob-valeur:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 2px; }
+
+/* ── LES FENETRES CLOSES ──────────────────────────────────────
+   Un rite n a pas de barre de progression : ce qu on a declare
+   reste empile derriere, en transparence. C est une trace, pas une
+   jauge — elle dit ce qui a ete dit, pas ce qui reste a dire. */
+.ob-pile { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.ob-pile i {
+  position: absolute;
+  width: min(560px, 92%);
+  height: 130px;
+  border: 1px solid var(--ob-trait);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+/* ── LE CERCLE DE SCELLEMENT ──────────────────────────────────── */
+.ob-cercle { display: block; width: min(340px, 78vw); height: auto; }
+.ob-cercle-anneau { fill: none; stroke: currentColor; opacity: 0.32; }
+.ob-cercle-grad { stroke: currentColor; opacity: 0.5; }
+.ob-cercle-trait { fill: none; stroke: currentColor; stroke-width: 0.014; stroke-linecap: round; }
+.ob-cercle-corde { fill: none; stroke: currentColor; stroke-width: 0.008; opacity: 0.75; }
+.ob-cercle-ancre { fill: currentColor; }
+
+/* ── LES CLAUSES ──────────────────────────────────────────────── */
+.ob-clauses {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ob-encre-2);
+}
+.ob-clauses input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--ob-signal); }
+.ob-clauses a { color: var(--ob-signal); text-decoration: underline; }
+
+/* ── LA SIGNATURE ─────────────────────────────────────────────── */
+.ob-signature {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 20px;
+  border: 1px solid var(--ob-signal);
+  background: none;
+  color: var(--ob-signal);
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: none;
+  overflow: hidden;
+}
+.ob-signature:disabled { opacity: 0.35; cursor: not-allowed; }
+.ob-signature-jauge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: hsl(var(--ds-accent-primary) / 0.22);
+  pointer-events: none;
+}
+.ob-signature span { position: relative; z-index: 1; }
+
+/* ── LA SORTIE ────────────────────────────────────────────────
+   Discrete, jamais cachee : un rite dont on ne peut pas sortir est
+   une porte, pas un rite. */
+.ob-passer {
+  position: fixed;
+  right: 18px;
+  bottom: 16px;
+  border: none;
+  background: none;
+  color: var(--ob-encre-3);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 13.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ob-passer:hover { color: var(--ob-encre-2); }
+.ob-passer:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 3px; }
+
+/* ── M.I.A. ───────────────────────────────────────────────────── */
+.ob-mia { display: grid; gap: 18px; place-items: center; width: min(560px, 100%); }
+.ob-mia-bulles { display: grid; gap: 10px; width: 100%; }
+
+/* ── LES GABARITS D OBJECTIF ──────────────────────────────────── */
+.ob-gabarits { display: grid; gap: 10px; width: 100%; }
+.ob-gabarit {
+  display: grid;
+  gap: 3px;
+  padding: 13px 15px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
+  color: var(--ob-encre);
+  text-align: left;
+  cursor: pointer;
+}
+.ob-gabarit[aria-pressed="true"] { border-color: var(--ob-signal); }
+.ob-gabarit:focus-visible { outline: 2px solid var(--ob-signal); outline-offset: 2px; }
+.ob-gabarit b { font-family: 'Orbitron', system-ui, sans-serif; font-size: 13px; letter-spacing: 0.04em; }
+.ob-gabarit small { color: var(--ob-encre-3); font-size: 13.5px; }
+
+/* ── LE VOILE DE SCELLEMENT ───────────────────────────────────── */
+.ob-voile {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 60;
+  background: var(--ob-fond);
+}
+.ob-voile b {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: clamp(22px, 6vw, 44px);
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 0 20px;
+}

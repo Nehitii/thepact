@@ -2934,6 +2934,126 @@
     }
   },
   "onboarding": {
+    "systeme": "SYSTEM",
+    "retour": "Back",
+    "continuer": "Continue",
+    "sceller": "Seal the pact",
+    "passer": "Skip the rite",
+    "eveil": {
+      "porteur": "Unregistered bearer detected.",
+      "aucunPacte": "No active pact.",
+      "question": "▸ Initialise a pact?",
+      "oui": "Yes",
+      "non": "No",
+      "refus": "Answer not recorded."
+    },
+    "forge": {
+      "porteur": {
+        "entete": "BEARER",
+        "invite": "What name will you be known by?",
+        "exemple": "Your name"
+      },
+      "pacte": {
+        "entete": "PACT",
+        "invite": "And this one — what is it called?",
+        "precision": "Not your name: the name of the thing sworn.",
+        "exemple": "Ananta"
+      },
+      "sceau": {
+        "entete": "SEAL",
+        "invite": "The sign and the hue of your pact.",
+        "symbole": "Symbol",
+        "couleur": "Colour",
+        "symboles": {
+          "flame": "Flame",
+          "heart": "Heart",
+          "target": "Target",
+          "sparkles": "Sparks"
+        },
+        "couleurs": {
+          "amber": "Amber",
+          "rose": "Rose",
+          "emerald": "Emerald",
+          "sky": "Sky",
+          "violet": "Violet",
+          "cyan": "Cyan"
+        }
+      },
+      "phrase": {
+        "entete": "PHRASE",
+        "invite": "One line. The one you will say back to yourself.",
+        "exemple": "Hold what was sworn"
+      },
+      "valeurs": {
+        "entete": "VALUES",
+        "invite": "Three to five, or none.",
+        "compte": "{{n}} of {{max}}"
+      }
+    },
+    "valeurs": {
+      "liberte": "Freedom",
+      "excellence": "Excellence",
+      "famille": "Family",
+      "croissance": "Growth",
+      "discipline": "Discipline",
+      "honnetete": "Honesty",
+      "aventure": "Adventure",
+      "impact": "Impact",
+      "sagesse": "Wisdom",
+      "sante": "Health",
+      "creation": "Creation",
+      "serenite": "Serenity"
+    },
+    "scellement": {
+      "entete": "SEALING",
+      "clausesTitre": "No pact without clauses.",
+      "clauses": "I have read and accept the <conditions>terms of service</conditions> and the <confidentialite>privacy policy</confidentialite>.",
+      "avantLaCase": "Accept the clauses before you can sign."
+    },
+    "signature": {
+      "trace": "Trace the sigil to sign",
+      "maintien": "Hold to sign"
+    },
+    "mia": {
+      "quelquun": "There is someone.",
+      "nouveau": "That is new.",
+      "nom": "I am M.I.A. I was here before your pact. I will be here after it, if you break it.",
+      "lu": "What you just sealed, I read. I will not forget it. That is about all I am good for — and it is already more than most.",
+      "seche": "You will find me blunt. It is not aimed at you.",
+      "contreToi": "It will be aimed at you only on the days you lie to your own pact.",
+      "peutEtre": "Perhaps you could—",
+      "rien": "No. Nothing.",
+      "pasEncore": "Not yet.",
+      "vide": "Your pact is empty. Give it something to hold."
+    },
+    "gabarits": {
+      "30day-habit": {
+        "nom": "30-day challenge",
+        "description": "Build a solid habit over 30 consecutive days",
+        "exemple": "Meditate 10 minutes a day"
+      },
+      "fitness": {
+        "nom": "Physical transformation",
+        "description": "A health journey in several steps",
+        "exemple": "Train for a half marathon"
+      },
+      "skill": {
+        "nom": "New skill",
+        "description": "Learn something new, step by step",
+        "exemple": "Learn piano (beginner level)"
+      },
+      "project": {
+        "nom": "Project to finish",
+        "description": "A concrete project with a clear deliverable",
+        "exemple": "Ship my side project in 90 days"
+      }
+    },
+    "objectif": {
+      "entete": "FIRST GOAL",
+      "leTien": "Your own",
+      "leTienAide": "Write it yourself.",
+      "exemple": "What you are going to hold"
+    },
     "welcome": "Welcome to The Pact",
     "subtitle": "You're about to embark on a transformative journey. Let's set up your command center and seal your first pact.",
     "trackGoals": "Track Goals",

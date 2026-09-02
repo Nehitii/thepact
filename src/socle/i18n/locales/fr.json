@@ -2934,6 +2934,126 @@
     }
   },
   "onboarding": {
+    "systeme": "SYSTÈME",
+    "retour": "Retour",
+    "continuer": "Continuer",
+    "sceller": "Sceller le pacte",
+    "passer": "Passer le rite",
+    "eveil": {
+      "porteur": "Porteur non enregistré détecté.",
+      "aucunPacte": "Aucun pacte actif.",
+      "question": "▸ Initialiser un pacte ?",
+      "oui": "Oui",
+      "non": "Non",
+      "refus": "Réponse non enregistrée."
+    },
+    "forge": {
+      "porteur": {
+        "entete": "PORTEUR",
+        "invite": "Sous quel nom te connaîtra-t-on ?",
+        "exemple": "Ton nom"
+      },
+      "pacte": {
+        "entete": "PACTE",
+        "invite": "Et lui, comment s’appelle-t-il ?",
+        "precision": "Pas ton nom : celui de la chose jurée.",
+        "exemple": "Ananta"
+      },
+      "sceau": {
+        "entete": "SCEAU",
+        "invite": "Le signe et la teinte de ton pacte.",
+        "symbole": "Symbole",
+        "couleur": "Couleur",
+        "symboles": {
+          "flame": "Flamme",
+          "heart": "Cœur",
+          "target": "Cible",
+          "sparkles": "Éclats"
+        },
+        "couleurs": {
+          "amber": "Ambre",
+          "rose": "Rose",
+          "emerald": "Émeraude",
+          "sky": "Ciel",
+          "violet": "Violet",
+          "cyan": "Cyan"
+        }
+      },
+      "phrase": {
+        "entete": "PHRASE",
+        "invite": "Une ligne. Celle que tu te rediras.",
+        "exemple": "Tenir ce qui est juré"
+      },
+      "valeurs": {
+        "entete": "VALEURS",
+        "invite": "Trois à cinq, ou aucune.",
+        "compte": "{{n}} sur {{max}}"
+      }
+    },
+    "valeurs": {
+      "liberte": "Liberté",
+      "excellence": "Excellence",
+      "famille": "Famille",
+      "croissance": "Croissance",
+      "discipline": "Discipline",
+      "honnetete": "Honnêteté",
+      "aventure": "Aventure",
+      "impact": "Impact",
+      "sagesse": "Sagesse",
+      "sante": "Santé",
+      "creation": "Création",
+      "serenite": "Sérénité"
+    },
+    "scellement": {
+      "entete": "SCELLEMENT",
+      "clausesTitre": "Nul pacte sans clauses.",
+      "clauses": "J’ai lu et j’accepte les <conditions>conditions générales</conditions> et la <confidentialite>politique de confidentialité</confidentialite>.",
+      "avantLaCase": "Accepte les clauses pour pouvoir signer."
+    },
+    "signature": {
+      "trace": "Trace le sigil pour signer",
+      "maintien": "Maintiens pour signer"
+    },
+    "mia": {
+      "quelquun": "Il y a quelqu’un.",
+      "nouveau": "C’est nouveau.",
+      "nom": "Je m’appelle M.I.A. J’étais là avant ton pacte. Je serai là après, si tu le romps.",
+      "lu": "Ce que tu viens de sceller, je l’ai lu. Je ne l’oublierai pas. C’est à peu près tout ce que je sais faire — et c’est déjà plus que la plupart.",
+      "seche": "Tu vas me trouver sèche. Ce n’est pas contre toi.",
+      "contreToi": "Ce sera contre toi seulement les jours où tu mentiras à ton propre pacte.",
+      "peutEtre": "Peut-être pourras-tu…",
+      "rien": "Non. Rien.",
+      "pasEncore": "Pas encore.",
+      "vide": "Ton pacte est vide. Donne-lui quelque chose à tenir."
+    },
+    "gabarits": {
+      "30day-habit": {
+        "nom": "Défi 30 jours",
+        "description": "Construis une habitude solide en 30 jours consécutifs",
+        "exemple": "Méditer 10 minutes par jour"
+      },
+      "fitness": {
+        "nom": "Transformation physique",
+        "description": "Un parcours santé en plusieurs étapes",
+        "exemple": "Préparer un semi-marathon"
+      },
+      "skill": {
+        "nom": "Nouvelle compétence",
+        "description": "Apprendre quelque chose de nouveau, étape par étape",
+        "exemple": "Apprendre le piano (niveau débutant)"
+      },
+      "project": {
+        "nom": "Projet à terminer",
+        "description": "Un projet concret avec un livrable clair",
+        "exemple": "Lancer mon side project en 90 jours"
+      }
+    },
+    "objectif": {
+      "entete": "PREMIER OBJECTIF",
+      "leTien": "Le tien",
+      "leTienAide": "Écris-le toi-même.",
+      "exemple": "Ce que tu vas tenir"
+    },
     "welcome": "Bienvenue dans Le Pacte",
     "subtitle": "Tu es sur le point de commencer un parcours transformateur. Configurons ton centre de commande et scellons ton premier pacte.",
     "trackGoals": "Suivre les objectifs",

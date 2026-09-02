@@ -1,0 +1,191 @@
+/* LES QUATRE ACTES, ET CE QUI AUTORISE A AVANCER.
+ *
+ * L ancien onboarding etait six etapes numerotees et un « canNext »
+ * fait d une chaine de « if (step === n) ». Six ecrans qui DEMANDENT ;
+ * aucun qui fasse arriver quelque chose. Le mot « pacte » y etait
+ * prononce sept fois et jamais tenu : on ne signait rien, on validait.
+ *
+ * Le rite en a huit, et quatre seulement demandent de taper quelque
+ * chose — le reste se regarde. On echange du remplissage contre de la
+ * mise en scene ; on n ajoute pas du remplissage.
+ *
+ * TOUT CE QUI DECIDE EST ICI, hors des composants : l ordre des
+ * ecrans, ce qui bloque, et ce que le second passage saute. Une
+ * condition d avancement qui se trompe ne casse rien — elle laisse
+ * passer un pacte sans nom, ou retient quelqu un sur un ecran qu il a
+ * rempli. Les deux se lisent comme un ecran correct.
+ */
+
+/** Les quatre actes, dans l ordre ou ils se jouent. */
+export type Acte = "eveil" | "forge" | "scellement" | "rencontre";
+
+/** Les huit ecrans du rite. */
+export type Ecran =
+  | "eveil"
+  | "porteur"
+  | "pacte"
+  | "sceau"
+  | "phrase"
+  | "valeurs"
+  | "scellement"
+  | "rencontre";
+
+export const ACTE_DE: Record<Ecran, Acte> = {
+  eveil: "eveil",
+  porteur: "forge",
+  pacte: "forge",
+  sceau: "forge",
+  phrase: "forge",
+  valeurs: "forge",
+  scellement: "scellement",
+  rencontre: "rencontre",
+};
+
+/* L ORDRE COMPLET, ET LE SEUL ECART QUI COMPTE.
+ *
+ * LE SCEAU PASSE AVANT LA PHRASE. Dans l ancienne page, la
+ * personnalisation venait en dernier, apres l objectif : le sceau
+ * arrivait quand plus rien ne s y accrochait. En troisieme position,
+ * il y a un objet au centre de l ecran pendant tout le reste du rite,
+ * et il change de couleur sous les yeux. */
+export const RITE_COMPLET: readonly Ecran[] = [
+  "eveil", "porteur", "pacte", "sceau", "phrase", "valeurs", "scellement", "rencontre",
+];
+
+/* LE SECOND PASSAGE N EST JAMAIS LE PREMIER. Quelqu un repassera par
+   la — « ReinitialiserLePacte » existe. On garde la forge et la
+   signature, on saute l eveil et la rencontre : le systeme ne
+   redecouvre pas un porteur qu il connait, et M.I.A. ne se represente
+   pas a quelqu un qui l a deja rencontree. */
+export const RITE_ABREGE: readonly Ecran[] = [
+  "porteur", "pacte", "sceau", "phrase", "valeurs", "scellement",
+];
+
+export const ecransDuRite = (abrege: boolean): readonly Ecran[] =>
+  abrege ? RITE_ABREGE : RITE_COMPLET;
+
+/** Ce que le porteur a declare jusqu ici. */
+export interface EtatDuRite {
+  nomDuPorteur: string;
+  nomDuPacte: string;
+  mantra: string;
+  symbole: string;
+  couleur: string;
+  valeurs: string[];
+  /** Coche a l ecran de scellement, par un geste distinct de la signature. */
+  clausesAcceptees: boolean;
+  /** Signe une fois le geste tenu jusqu au bout. */
+  signe: boolean;
+  /** Le gabarit choisi, ou « sur-mesure », ou rien. */
+  objectif: { gabarit: string } | { surMesure: string } | null;
+}
+
+export const ETAT_VIDE: EtatDuRite = {
+  nomDuPorteur: "",
+  nomDuPacte: "",
+  mantra: "",
+  symbole: "flame",
+  couleur: "amber",
+  valeurs: [],
+  clausesAcceptees: false,
+  signe: false,
+  objectif: null,
+};
+
+/** Cinq valeurs au plus : au-dela, ce ne sont plus des valeurs. */
+export const VALEURS_MAX = 5;
+
+/**
+ * Peut-on quitter cet ecran ?
+ *
+ * LES VALEURS SONT FACULTATIVES — « 3 a 5, ou aucune ». Ne rien
+ * choisir est une reponse, et forcer trois cases produirait trois
+ * mensonges plutot qu un silence.
+ *
+ * LE SCELLEMENT DEMANDE DEUX GESTES SEPARES : la case des clauses ET
+ * la signature. Les fondre en un seul rendrait le consentement
+ * equivoque, ce qu il n a pas le droit d etre — quel que soit le gain
+ * de mise en scene.
+ */
+export function peutAvancer(ecran: Ecran, etat: EtatDuRite): boolean {
+  switch (ecran) {
+    case "eveil":
+      return true;
+    case "porteur":
+      return etat.nomDuPorteur.trim().length > 0;
+    case "pacte":
+      return etat.nomDuPacte.trim().length > 0;
+    case "sceau":
+      return etat.symbole.length > 0 && etat.couleur.length > 0;
+    case "phrase":
+      return etat.mantra.trim().length > 0;
+    case "valeurs":
+      return true;
+    case "scellement":
+      return etat.clausesAcceptees && etat.signe;
+    case "rencontre":
+      return etat.objectif !== null && !objectifSansNom(etat.objectif);
+  }
+}
+
+/** Un objectif sur mesure sans titre n en est pas un. */
+const objectifSansNom = (o: NonNullable<EtatDuRite["objectif"]>): boolean =>
+  "surMesure" in o && o.surMesure.trim().length === 0;
+
+/**
+ * Ce que la case des clauses autorise.
+ *
+ * Separee de « peutAvancer » parce que la signature s en sert AVANT
+ * l avancement : on ne doit pas pouvoir commencer a signer tant que
+ * les clauses ne sont pas acceptees. Le theatre enrobe le
+ * consentement, il ne le remplace pas.
+ */
+export const peutSigner = (etat: EtatDuRite): boolean => etat.clausesAcceptees;
+
+/** L ecran suivant, ou `null` quand le rite est fini. */
+export function ecranSuivant(ecran: Ecran, abrege: boolean): Ecran | null {
+  const suite = ecransDuRite(abrege);
+  const i = suite.indexOf(ecran);
+  if (i < 0 || i === suite.length - 1) return null;
+  return suite[i + 1];
+}
+
+/** L ecran precedent, ou `null` quand on est au debut. */
+export function ecranPrecedent(ecran: Ecran, abrege: boolean): Ecran | null {
+  const suite = ecransDuRite(abrege);
+  const i = suite.indexOf(ecran);
+  if (i <= 0) return null;
+  return suite[i - 1];
+}
+
+/**
+ * Combien de fenetres de la forge sont closes.
+ *
+ * LE RITE N A PAS DE BARRE DE PROGRESSION — les fenetres closes
+ * restent empilees derriere, en transparence, et c est la trace de ce
+ * qu on a declare qui tient ce role. Ce compte les denombre.
+ */
+export function fenetresCloses(ecran: Ecran, abrege: boolean): number {
+  const suite = ecransDuRite(abrege).filter((e) => ACTE_DE[e] === "forge");
+  const i = suite.indexOf(ecran);
+  /* Passe la forge, elles sont toutes closes. */
+  if (i < 0) return ACTE_DE[ecran] === "eveil" ? 0 : suite.length;
+  return i;
+}
+
+/**
+ * Le pacte est-il pret a etre ecrit en base ?
+ *
+ * La garde ultime avant l insertion : elle ne fait pas confiance a la
+ * navigation, parce qu un ecran saute par un bouton mal garde ecrirait
+ * un pacte sans nom — et la colonne « pacts.name » est NOT NULL, donc
+ * ce serait un refus de la base au dernier moment du rite.
+ */
+export function pretASceller(etat: EtatDuRite): boolean {
+  return (
+    etat.nomDuPacte.trim().length > 0 &&
+    etat.mantra.trim().length > 0 &&
+    etat.clausesAcceptees &&
+    etat.signe
+  );
+}
