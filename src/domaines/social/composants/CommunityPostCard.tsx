@@ -5,6 +5,7 @@ import {
   MessageCircle,
   MoreHorizontal,
   Pencil,
+  Repeat2,
   Target,
   Trash2,
   X,
@@ -16,6 +17,9 @@ import { ReactionButton } from "@/domaines/social/composants/ReactionButton";
 import { PostTypeTag } from "@/domaines/social/composants/PostTypeTag";
 import { ReportModal } from "@/domaines/social/composants/ReportModal";
 import { FilDesReponses } from "@/domaines/social/composants/FilDesReponses";
+import { PublicationCitee } from "@/domaines/social/composants/PublicationCitee";
+import { RepartagerDialog } from "@/domaines/social/composants/RepartagerDialog";
+import { etatDeLaCitation, peutEtreRepartagee } from "@/domaines/social/logique/repartage";
 import { nomAffichable, REACTIONS, type TypeReaction } from "@/domaines/social/logique/vocabulaire";
 import { Pastille } from "@/domaines/social/composants/Pastille";
 import type { Cadre } from "@/domaines/social/hooks/useCadres";
@@ -79,6 +83,10 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
   const [enEdition, setEnEdition] = useState(false);
   const [texteEdite, setTexteEdite] = useState(post.content);
   const [menu, setMenu] = useState(false);
+  const [repartageOuvert, setRepartageOuvert] = useState(false);
+  /* Trois etats, pas deux : une originale supprimee laisse une
+     reference nulle et se confondrait avec « rien de cite ». */
+  const citation = etatDeLaCitation(post);
 
   const { data: reponses, isLoading: reponsesEnCours } = usePostReplies(
     reponsesOuvertes ? post.id : undefined,
@@ -278,6 +286,15 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
           )
         )}
 
+        {/* L originale citee. Elle n est pas interactive : elle mene
+            a l originale, elle ne la commente pas. */}
+        {citation !== "aucune" && (
+          <PublicationCitee
+            citee={post.shared_post}
+            disparue={citation === "disparue"}
+          />
+        )}
+
         {post.goal_name && objectifVisible && (
           <span className="co-objectif">
             <Target aria-hidden="true" />
@@ -295,6 +312,22 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
               onToggle={() => basculerReaction(type)}
             />
           ))}
+          {/* LE REPARTAGE NE PARAIT QUE S IL EST POSSIBLE. Un bouton
+              grise poserait la question sans y repondre ; un bouton qui
+              mene a un refus est pire. Les trois raisons de se taire
+              sont dans « logique/repartage.ts », et la base les tient
+              une seconde fois. */}
+          {peutEtreRepartagee(post, user?.id) && (
+            <button
+              type="button"
+              className="co-action"
+              data-reaction="repartage"
+              aria-label={t("community.repartage.action", "Repartager")}
+              onClick={() => setRepartageOuvert(true)}
+            >
+              <i className="co-action-rond"><Repeat2 aria-hidden="true" /></i>
+            </button>
+          )}
           <button
             type="button"
             className="co-action"
@@ -316,6 +349,14 @@ export const CommunityPostCard = memo(function CommunityPostCard({ post, cadre }
         onClose={() => setSignalement(false)}
         postId={post.id}
       />
+
+      {repartageOuvert && (
+        <RepartagerDialog
+          ouvert={repartageOuvert}
+          onFermer={() => setRepartageOuvert(false)}
+          originale={post}
+        />
+      )}
     </article>
   );
 });

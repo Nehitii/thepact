@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { supabase } from "@/socle/supabase/client";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { chargerProfilsPublics } from "@/domaines/profil";
+import { chargerLesCitees } from "@/domaines/social/logique/publicationsCitees";
 import { trackCommunityPost } from "@/domaines/succes";
 import type { CommunityPost, PostFilterType, PostSortOption } from "@/domaines/social/types";
 import { TypeDeReaction, retoucherLesVideos } from "@/domaines/social/hooks/useReactions";
@@ -32,7 +33,7 @@ export function useCommunityPosts(
            rester une chaine litterale : Supabase en deduit le type de
            la ligne a la compilation, et une variable lui rend la
            ligne illisible. */
-        .select("id, user_id, content, post_type, goal_name, image_url, created_at, updated_at, support_count, respect_count, inspired_count, replies_count")
+        .select("id, user_id, content, post_type, goal_name, image_url, created_at, updated_at, support_count, respect_count, inspired_count, replies_count, shared_post_id, shared_post_gone")
         .eq("is_public", true));
 
       if (filter !== 'all') {
@@ -101,6 +102,18 @@ export function useCommunityPosts(
         userReactionsMap.get(r.post_id)!.push(r.reaction_type);
       });
 
+      /* LES PUBLICATIONS CITEES, EN UNE PASSE. Un repartage montre
+         l originale ; aller la chercher carte par carte ferait une
+         requete par repartage. On demande donc toutes celles que la
+         page cite, d un coup, et leurs auteurs avec.
+
+         Une originale supprimee n est PAS ici : sa reference a ete
+         coupee et « shared_post_gone » posee a sa place. La carte lit
+         la marque, pas l absence — voir « logique/repartage.ts ». */
+      const cites = await chargerLesCitees(
+        [...new Set(posts.map((p) => p.shared_post_id).filter(Boolean))] as string[],
+      );
+
       const enrichedPosts = posts.map((post) => ({
         ...post,
         post_type: post.post_type as CommunityPost['post_type'],
@@ -111,7 +124,8 @@ export function useCommunityPosts(
           inspired: post.inspired_count || 0,
         },
         replies_count: post.replies_count || 0,
-        user_reactions: userReactionsMap.get(post.id) || []
+        user_reactions: userReactionsMap.get(post.id) || [],
+        shared_post: post.shared_post_id ? cites.get(post.shared_post_id) : undefined,
       })) as CommunityPost[];
 
       /* Une page incomplete est la derniere : c est le seul signal sur
@@ -181,6 +195,11 @@ export function useCreatePost() {
       goal_name?: string;
       image_url?: string | null;
       post_type?: CommunityPost['post_type'];
+      /* La publication citee. Les trois refus — un repartage, une
+         publication privee, la sienne — sont tenus par
+         « verifier_le_repartage » : ce qui arrive ici a deja ete
+         verifie a l ecran, et le sera une seconde fois en base. */
+      shared_post_id?: string | null;
     }) => {
       if (!user) throw new Error("Must be logged in");
 
@@ -193,6 +212,7 @@ export function useCreatePost() {
           goal_name: data.goal_name || null,
           image_url: data.image_url || null,
           post_type: data.post_type || 'reflection',
+          shared_post_id: data.shared_post_id || null,
           is_public: true
         })
         .select()

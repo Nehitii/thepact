@@ -1947,6 +1947,14 @@
       "privacyBlockedWhy": "Vos réglages empêchent de rattacher un objectif à une publication. Réactivez « Partager ma progression » pour publier une vidéo de victoire.",
       "openSettings": "Ouvrir mes réglages"
     },
+    "repartage": {
+      "action": "Repartager",
+      "titre": "Repartager",
+      "mot": "Votre mot",
+      "motPlaceholder": "Ajouter un mot (facultatif)…",
+      "ouvrir": "Voir la publication d’origine",
+      "disparue": "La publication d’origine a été supprimée."
+    },
     "reply": {
       "like": "Aimer",
       "unlike": "Ne plus aimer"

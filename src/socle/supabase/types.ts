@@ -539,6 +539,8 @@ export type Database = {
           post_type: string
           replies_count: number
           respect_count: number
+          shared_post_gone: boolean
+          shared_post_id: string | null
           support_count: number
           updated_at: string
           user_id: string
@@ -555,6 +557,8 @@ export type Database = {
           post_type?: string
           replies_count?: number
           respect_count?: number
+          shared_post_gone?: boolean
+          shared_post_id?: string | null
           support_count?: number
           updated_at?: string
           user_id: string
@@ -571,6 +575,8 @@ export type Database = {
           post_type?: string
           replies_count?: number
           respect_count?: number
+          shared_post_gone?: boolean
+          shared_post_id?: string | null
           support_count?: number
           updated_at?: string
           user_id?: string
@@ -581,6 +587,13 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_posts_shared_post_id_fkey"
+            columns: ["shared_post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
             referencedColumns: ["id"]
           },
         ]

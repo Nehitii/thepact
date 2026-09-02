@@ -1551,3 +1551,85 @@
 .co-aime[aria-pressed="true"] { color: var(--co-support); }
 .co-aime[aria-pressed="true"] svg { fill: color-mix(in srgb, currentColor 24%, transparent); }
 .co-aime:focus-visible { outline: 2px solid var(--co-support); outline-offset: 1px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LE REPARTAGE
+
+   Une publication en cite une autre. La citee garde tout — ses
+   reactions, ses reponses, son auteur — et sa carte imbriquee N EST
+   PAS INTERACTIVE : elle mene a l originale, elle ne la commente
+   pas. Un seul geste, donc, sur tout le cadre : aller voir.
+
+   Elle se distingue par un filet et un fond en creux, pas par une
+   couleur : ce n est pas une categorie de plus, c est le meme
+   contenu vu de plus loin.
+   ═══════════════════════════════════════════════════════════════ */
+.co-citee {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px 13px;
+  text-align: left;
+  border: 1px solid var(--co-filet);
+  border-radius: 14px;
+  background: var(--co-fond-creux);
+  cursor: pointer;
+  font-family: var(--co-fonte);
+  transition: background-color 130ms linear, border-color 130ms linear;
+}
+.co-citee:hover { background: var(--co-fond-eleve); border-color: var(--co-filet-fort); }
+.co-citee:focus-visible { outline: 2px solid var(--co-accent); outline-offset: 2px; }
+
+.co-citee-tete { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.co-citee-tete .co-nom { font-size: 14px; }
+.co-citee-tete .co-quand { font-size: 13px; }
+
+.co-citee-texte {
+  color: var(--co-texte);
+  font-size: 14px;
+  line-height: 1.45;
+  /* Trois lignes suffisent a reconnaitre la publication ; la lire en
+     entier est justement ce que le clic sert a faire. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.co-citee-image { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; }
+
+/* L ORIGINALE SUPPRIMEE SE DIT. Le repartage survit — celui qui l a
+   ecrit a ecrit quelque chose — mais sa citation ne mene plus nulle
+   part. Ne rien afficher laisserait une carte amputee sans que le
+   lecteur comprenne pourquoi. */
+.co-citee--partie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border: 1px dashed var(--co-filet-fort);
+  border-radius: 14px;
+  color: var(--co-texte-2);
+  font-size: 13.5px;
+}
+.co-citee--partie svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.co-action[data-reaction="repartage"] {
+  --co-teinte: var(--co-support);
+  --co-teinte-voile: color-mix(in srgb, var(--co-support) 12%, transparent);
+}
+
+.co-repartage-mot {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--co-filet-fort);
+  border-radius: 12px;
+  background: var(--co-fond-creux);
+  color: var(--co-texte);
+  font-family: var(--co-fonte);
+  font-size: 15px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.co-repartage-mot:focus-visible { outline: 2px solid var(--co-accent); outline-offset: 1px; }

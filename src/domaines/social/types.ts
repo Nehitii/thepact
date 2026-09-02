@@ -33,6 +33,14 @@ export interface CommunityPost {
   };
   replies_count?: number;
   user_reactions?: string[];
+  /* LE REPARTAGE. La reference tombe quand l originale est
+     supprimee, et la marque la remplace : sans elle, un repartage
+     orphelin se lirait comme une publication ordinaire. Les trois
+     etats se demelent dans « logique/repartage.ts ». */
+  shared_post_id?: string | null;
+  shared_post_gone?: boolean | null;
+  /* L originale, chargee avec le fil. Absente si elle n existe plus. */
+  shared_post?: CommunityPost;
 }
 
 export interface CommunityReply {

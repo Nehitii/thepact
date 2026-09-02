@@ -1947,6 +1947,14 @@
       "privacyBlockedWhy": "Your settings prevent attaching a goal to a post. Turn « Share my progress » back on to publish a victory reel.",
       "openSettings": "Open my settings"
     },
+    "repartage": {
+      "action": "Reshare",
+      "titre": "Reshare",
+      "mot": "Your note",
+      "motPlaceholder": "Add a note (optional)…",
+      "ouvrir": "View the original post",
+      "disparue": "The original post was deleted."
+    },
     "reply": {
       "like": "Like",
       "unlike": "Unlike"
