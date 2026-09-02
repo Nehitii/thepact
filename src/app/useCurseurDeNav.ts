@@ -63,9 +63,22 @@ export function useCurseurDeNav(
     const placer = () => {
       const actif = nav.querySelector<HTMLElement>('[aria-current="page"]');
       if (!actif) {
-        barre.dataset.vu = "non";
+        /* UN CURSEUR DEJA POSE NE S ETEINT PAS PARCE QU IL N Y A PLUS
+           D ACTIF. Pendant une navigation, l ancienne entree perd
+           « aria-current » avant que la nouvelle le prenne : il existe
+           un instant ou AUCUNE ne l a. On y remettait « non », donc
+           l opacite a zero — le curseur et son trait bleu
+           disparaissaient puis reparaissaient a chaque changement de
+           page. Le vide est passager : on garde la derniere position.
+
+           Seul le premier rendu, ou rien n a jamais ete pose, laisse
+           le curseur cache — c est ce que « non » veut dire. */
+        if (barre.dataset.vu !== "oui") barre.dataset.vu = "non";
         return;
       }
+      /* L etat provisoire a servi : la barre sait maintenant ou elle
+         en est, les deux sources d apparence se rejoignent. */
+      for (const l of nav.querySelectorAll<HTMLElement>("[data-vise]")) delete l.dataset.vise;
       poserSur(actif);
     };
 
@@ -108,6 +121,21 @@ export function useCurseurDeNav(
       const cible = (e.target as HTMLElement | null)?.closest<HTMLElement>("a[href]");
       if (!cible || !nav.contains(cible) || cible.getAttribute("aria-current") === "page") return;
       cancelAnimationFrame(attente);
+
+      /* LE CURSEUR N EST PAS TOUT L ETAT ACTIF. Le texte s eclaircit et
+         l icone passe au bleu, et ces deux-la pendent a
+         « aria-current » — donc a la navigation. Le curseur partant
+         desormais au clic, il ARRIVAIT SOUS UNE ENTREE ENCORE ETEINTE,
+         qui s allumait un sixieme de seconde plus tard. On voyait le
+         fond glisser sous un texte qui n avait pas suivi.
+         « data-vise » porte l apparence active en attendant : « 1 » sur
+         celle qu on rejoint, « 0 » sur celle qu on quitte — sans quoi
+         les deux resteraient allumees le temps du trajet. */
+      const partant = nav.querySelector<HTMLElement>('[aria-current="page"]');
+      for (const l of nav.querySelectorAll<HTMLElement>("[data-vise]")) delete l.dataset.vise;
+      if (partant && partant !== cible) partant.dataset.vise = "0";
+      cible.dataset.vise = "1";
+
       poserSur(cible);
       clearTimeout(filet);
       filet = window.setTimeout(placer, 700);

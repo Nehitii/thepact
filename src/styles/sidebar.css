@@ -306,8 +306,17 @@ html.light .sb[data-replie="oui"] .sb-signe {
 .sb-lien svg { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 1.9; }
 .sb-lien:hover { background: var(--sb-creux); color: var(--sb-encre); }
 .sb-lien:focus-visible { outline: 2px solid var(--sb-signal); outline-offset: -2px; }
-.sb-lien[aria-current="page"] { color: var(--sb-encre); }
-.sb-lien[aria-current="page"] svg { color: var(--sb-signal); }
+/* L ENTREE ACTIVE, ET CELLE QU ON REJOINT.
+   Le curseur part au clic ; le texte et l icone, eux, pendaient a
+   « aria-current » — donc a la navigation, un sixieme de seconde plus
+   tard. Le fond glissait sous une entree encore eteinte, puis elle
+   s allumait d un coup. « data-vise » comble cet intervalle : « 1 »
+   sur celle qu on rejoint, « 0 » sur celle qu on quitte, et les trois
+   parties de l etat actif partent ensemble. */
+.sb-lien[aria-current="page"]:not([data-vise="0"]),
+.sb-lien[data-vise="1"] { color: var(--sb-encre); }
+.sb-lien[aria-current="page"]:not([data-vise="0"]) svg,
+.sb-lien[data-vise="1"] svg { color: var(--sb-signal); }
 
 /* ── LE CURSEUR GLISSE, IL NE SAUTE PAS ───────────────────────
    Chaque entree portait son propre fond et sa propre barre : au
@@ -366,7 +375,13 @@ html.light .sb[data-replie="oui"] .sb-signe {
 .sb-lien-mot { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sb[data-replie="oui"] .sb-lien { justify-content: center; padding: 8px 0; gap: 0; }
 .sb[data-replie="oui"] .sb-lien-mot { display: none; }
-.sb[data-replie="oui"] .sb-lien[aria-current="page"]::before { top: 5px; bottom: 5px; }
+/* Ici vivait « .sb[data-replie="oui"] .sb-lien[aria-current="page"]
+   ::before { top: 5px; bottom: 5px; } » — une regle MORTE. Aucun
+   « content » n a jamais ete pose sur ce pseudo-element : c est un
+   vestige du temps ou chaque entree portait sa propre barre, avant
+   que le curseur glissant ne la remplace. Elle pretendait regler le
+   trait de l entree active et ne reglait rien, ce qui est le pire
+   endroit ou chercher quand ce trait se comporte mal. */
 
 .sb-pastille {
   flex-shrink: 0;
