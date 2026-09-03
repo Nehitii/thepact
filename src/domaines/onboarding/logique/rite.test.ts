@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACTE_DE, ETAT_VIDE, RITE_ABREGE, RITE_COMPLET, VALEURS_MAX,
   ecranPrecedent, ecranSuivant, ecransDuRite, fenetresCloses,
-  pacteDeclare, peutAvancer, peutSigner, pretASceller, type EtatDuRite,
+  LIMITES, pacteDeclare, peutAvancer, peutSigner, pretASceller, type EtatDuRite,
 } from "./rite";
 
 /* Un pacte REMPLI declare son signe : l etat vide n en a plus. */
@@ -240,5 +240,45 @@ describe("pacteDeclare : ce sans quoi on ne scelle pas", () => {
 
   it("l etat vide n est pas declare : « Passer le rite » n a rien a abreger", () => {
     expect(pacteDeclare(ETAT_VIDE)).toBe(false);
+  });
+});
+
+describe("LIMITES : ce qu on peut taper dans chaque champ libre", () => {
+  it("plafonne les quatre champs libres du rite", () => {
+    /* Le rite ne plafonnait rien : les colonnes sont « TEXT », la base
+       n oppose aucune limite, et quatre cents signes dans le nom du
+       pacte portaient le cadre de l objet de 288 a 6239 pixels — un
+       anneau de 6239 sur 6239 par-dessus la page. */
+    expect(Object.keys(LIMITES).sort()).toEqual(
+      ["mantra", "nomDuPacte", "nomDuPorteur", "objectif"],
+    );
+    for (const n of Object.values(LIMITES)) {
+      expect(n).toBeGreaterThan(0);
+      expect(Number.isInteger(n)).toBe(true);
+    }
+  });
+
+  it("REPREND LES PLAFONDS QUE L APPLICATION IMPOSE DEJA AUX MEMES CHAMPS", () => {
+    /* Ce ne sont pas des nombres inventes ici. Le rite ecrivait des
+       pactes que la page des reglages refusait ensuite de rouvrir sans
+       les tronquer — deux ecrans qui ne s accordaient pas sur ce qu est
+       un nom. Changer l un de ces nombres sans changer l autre ecran
+       fait revenir le desaccord, et ce test le dit. */
+    expect(LIMITES.nomDuPorteur).toBe(40);  // ProfileAccountSettings
+    expect(LIMITES.nomDuPacte).toBe(50);    // PactIdentityCard
+    expect(LIMITES.mantra).toBe(200);       // PactIdentityCard
+    expect(LIMITES.objectif).toBe(100);     // NewGoal
+  });
+
+  it("laisse passer un pacte tout juste a la limite", () => {
+    /* La garde est un plafond, pas un refus : ce qui tient dedans doit
+       se sceller. */
+    const aLaLimite = rempli({
+      nomDuPorteur: "N".repeat(LIMITES.nomDuPorteur),
+      nomDuPacte: "P".repeat(LIMITES.nomDuPacte),
+      mantra: "M".repeat(LIMITES.mantra),
+    });
+    expect(pacteDeclare(aLaLimite)).toBe(true);
+    expect(pretASceller(aLaLimite)).toBe(true);
   });
 });

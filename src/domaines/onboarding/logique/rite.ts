@@ -100,6 +100,38 @@ export const ETAT_VIDE: EtatDuRite = {
 export const VALEURS_MAX = 5;
 
 /**
+ * COMBIEN DE SIGNES DANS CHAQUE CHAMP LIBRE.
+ *
+ * Le rite ne plafonnait rien. Les colonnes sont « TEXT » — la base
+ * n oppose aucune limite —, et l on pouvait donc coller quatre cents
+ * caracteres dans le nom du pacte. Mesure a l ecran : le cadre de
+ * l objet passait de 288 a 6239 pixels, et comme il porte un
+ * « aspect-ratio: 1 », l anneau devenait un cercle de 6239 sur 6239
+ * qui ecrasait la page.
+ *
+ * CES NOMBRES NE SONT PAS INVENTES ICI : ce sont ceux que
+ * l application impose deja aux MEMES champs. Le rite ecrivait des
+ * pacte que la page des reglages refusait ensuite de rouvrir sans les
+ * tronquer — deux ecrans qui ne s accordaient pas sur ce qu est un
+ * nom.
+ *
+ *   porteur   « ProfileAccountSettings » — profiles.display_name
+ *   pacte     « PactIdentityCard »       — pacts.name
+ *   phrase    « PactIdentityCard »       — pacts.mantra
+ *   objectif  « NewGoal »                — goals.title
+ *
+ * ILS NE SUFFISENT PAS SEULS. Cinquante signes sans espace debordent
+ * encore une colonne de 288 pixels : la feuille de style porte la
+ * garde qui, elle, ne peut pas etre contournee — voir « .ob-objet ».
+ */
+export const LIMITES = {
+  nomDuPorteur: 40,
+  nomDuPacte: 50,
+  mantra: 200,
+  objectif: 100,
+} as const;
+
+/**
  * Peut-on quitter cet ecran ?
  *
  * LES VALEURS SONT FACULTATIVES — « 3 a 5, ou aucune ». Ne rien

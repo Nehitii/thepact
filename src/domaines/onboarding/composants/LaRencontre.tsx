@@ -6,7 +6,7 @@ import { GABARITS } from "@/domaines/onboarding/logique/gabarits";
 import {
   DERNIERE, REPLIQUES, aFiniDeParler, repliquesDites,
 } from "@/domaines/onboarding/logique/repliques";
-import type { EtatDuRite } from "@/domaines/onboarding/logique/rite";
+import { LIMITES, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
 
 interface Props {
   etat: EtatDuRite;
@@ -124,6 +124,7 @@ export function LaRencontre({ etat, modifier, sansAttente = false }: Props) {
               onChange={(e) => modifier({ objectif: { surMesure: e.target.value } })}
               placeholder={t("onboarding.objectif.exemple")}
               aria-label={t("onboarding.objectif.leTien")}
+              maxLength={LIMITES.objectif}
               autoFocus
             />
           )}

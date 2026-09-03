@@ -217,9 +217,20 @@
    vient de demonter. */
 .ob-objet {
   display: grid;
+  /* LA PISTE EST BRIDEE, et c est la garde qu on ne peut pas
+     contourner. Sans « minmax(0, 1fr) » la colonne implicite vaut
+     « auto » : elle se dimensionne au contenu le plus large, et un
+     nom de quatre cents signes sans espace la portait a 6239 pixels.
+     Le cadre suit en « width: 100% », il porte « aspect-ratio: 1 », et
+     l anneau devenait un cercle de 6239 sur 6239 par-dessus la page.
+     Les plafonds de saisie evitent le cas courant ; celle-ci tient
+     meme quand ils sont contournes — collage, etat force, banc. */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: 14px;
-  width: min(288px, 52vw);
+  /* Jamais plus large que sa cellule : 288 px dans une colonne de 228
+     debordait deja la scene, sans aucun nom trop long. */
+  width: min(288px, 100%);
   color: var(--ob-teinte);
 }
 .ob-objet-cadre {
@@ -284,6 +295,21 @@
   justify-items: center;
   width: 100%;
   text-align: center;
+}
+/* LA LEGENDE EST UN EMBLEME, PAS UN DOCUMENT. Elle se coupe a trois
+   lignes et casse les mots qui ne cassent pas tout seuls : un nom sans
+   espace debordait la colonne, et deux cents signes de phrase la
+   poussaient sur quinze lignes. Ce qu on ecrit reste entier dans le
+   champ qu on est en train de remplir, juste a cote. */
+.ob-objet-nom,
+.ob-objet-mantra {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 .ob-objet-nom {
   font-family: 'Orbitron', system-ui, sans-serif;
@@ -874,6 +900,12 @@
   text-transform: uppercase;
   text-align: center;
   text-wrap: balance;
+  /* Le nom du pacte s affiche ici a cinquante-quatre pixels. Sans
+     retour a la ligne force, cinquante signes sans espace font plus de
+     trois mille pixels de large — le dernier ecran du rite deborde
+     l ecran, juste apres la signature. */
+  max-width: min(90vw, 22ch);
+  overflow-wrap: anywhere;
 }
 
 /* ── L ECRAN ETROIT ───────────────────────────────────────────

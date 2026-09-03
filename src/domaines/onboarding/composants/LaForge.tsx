@@ -4,7 +4,7 @@ import { PactVisual } from "@/domaines/objectifs";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
 import { Temoin } from "@/domaines/onboarding/composants/Temoin";
 import { COULEURS, SYMBOLES, TEINTE, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
-import { VALEURS_MAX, peutAvancer, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
+import { LIMITES, VALEURS_MAX, peutAvancer, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
 
 
 interface Props {
@@ -58,6 +58,7 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           onChange={(e) => modifier({ nomDuPorteur: e.target.value })}
           placeholder={t("onboarding.forge.porteur.exemple")}
           aria-label={t("onboarding.forge.porteur.invite")}
+          maxLength={LIMITES.nomDuPorteur}
           autoFocus
         />
         {/* LE TEMOIN ACCUSE RECEPTION — voir « Temoin.tsx ». C est la
@@ -79,6 +80,7 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           onChange={(e) => modifier({ nomDuPacte: e.target.value })}
           placeholder={t("onboarding.forge.pacte.exemple")}
           aria-label={t("onboarding.forge.pacte.invite")}
+          maxLength={LIMITES.nomDuPacte}
           autoFocus
         />
         {/* « Aucun antecedent » : le nom est neuf, et c est vrai — un
@@ -163,6 +165,7 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           onChange={(e) => modifier({ mantra: e.target.value })}
           placeholder={t("onboarding.forge.phrase.exemple")}
           aria-label={t("onboarding.forge.phrase.invite")}
+          maxLength={LIMITES.mantra}
           autoFocus
         />
         <i className="ob-braise" aria-hidden="true" />
