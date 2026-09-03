@@ -2945,7 +2945,8 @@
       "question": "▸ Initialise a pact?",
       "oui": "Yes",
       "non": "No",
-      "refus": "Answer not recorded."
+      "refus": "Answer not recorded.",
+      "enjeu": "Without a pact, nothing gets written here."
     },
     "forge": {
       "porteur": {
@@ -2982,6 +2983,17 @@
           "sky": "Sky",
           "violet": "Violet",
           "cyan": "Cyan"
+        },
+        "sens": {
+          "flame": "Flame — what burns and does not go out.",
+          "heart": "Heart — what beats for someone.",
+          "target": "Target — one thing, and nothing else.",
+          "sparkles": "Sparkles — what lights up in bursts.",
+          "phoenix": "Phoenix — what comes back after the fall.",
+          "compass": "Compass — what holds the course.",
+          "citadel": "Citadel — what stands when everything pushes.",
+          "vortex": "Vortex — what pulls everything else along.",
+          "shield": "Shield — what protects what matters."
         }
       },
       "phrase": {
@@ -3101,6 +3113,18 @@
     "objet": {
       "entete": "Your pact",
       "vierge": "Nothing is sworn yet."
+    },
+    "temoin": {
+      "porteur": "> Bearer recorded: {{nom}}.",
+      "pacte": "> Pact named: {{nom}}. No prior record.",
+      "signe": "> Sign accepted: {{signe}}.",
+      "sceau": "> Sign accepted: {{signe}}. Tint locked.",
+      "phrase": "> Line engraved.",
+      "valeurs": {
+        "aucune": "> No values. The ring stays bare.",
+        "une": "> One value. No chord without a second.",
+        "plusieurs": "> {{n}} values. Chord drawn."
+      }
     }
   },
   "leaderboard": {

@@ -2945,7 +2945,8 @@
       "question": "▸ Initialiser un pacte ?",
       "oui": "Oui",
       "non": "Non",
-      "refus": "Réponse non enregistrée."
+      "refus": "Réponse non enregistrée.",
+      "enjeu": "Sans pacte, rien ne s’écrit ici."
     },
     "forge": {
       "porteur": {
@@ -2982,6 +2983,17 @@
           "sky": "Ciel",
           "violet": "Violet",
           "cyan": "Cyan"
+        },
+        "sens": {
+          "flame": "Flamme — ce qui brûle sans s’éteindre.",
+          "heart": "Cœur — ce qui bat pour quelqu’un.",
+          "target": "Cible — une seule chose, et rien d’autre.",
+          "sparkles": "Éclats — ce qui éclaire par à-coups.",
+          "phoenix": "Phénix — ce qui revient après la chute.",
+          "compass": "Boussole — ce qui garde le cap.",
+          "citadel": "Citadelle — ce qui tient quand tout pousse.",
+          "vortex": "Vortex — ce qui entraîne tout le reste.",
+          "shield": "Bouclier — ce qui protège ce qui compte."
         }
       },
       "phrase": {
@@ -3101,6 +3113,18 @@
     "objet": {
       "entete": "Ton pacte",
       "vierge": "Rien n’est encore juré."
+    },
+    "temoin": {
+      "porteur": "> Porteur enregistré : {{nom}}.",
+      "pacte": "> Pacte nommé : {{nom}}. Aucun antécédent.",
+      "signe": "> Signe accepté : {{signe}}.",
+      "sceau": "> Signe accepté : {{signe}}. Teinte verrouillée.",
+      "phrase": "> Phrase gravée.",
+      "valeurs": {
+        "aucune": "> Aucune valeur. L’anneau reste nu.",
+        "une": "> Une valeur. Pas de corde sans une seconde.",
+        "plusieurs": "> {{n}} valeurs. Corde tracée."
+      }
     }
   },
   "leaderboard": {

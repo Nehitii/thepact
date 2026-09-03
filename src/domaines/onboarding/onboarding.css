@@ -456,6 +456,38 @@
   color: var(--ob-encre-2);
 }
 
+/* ── LE TEMOIN ────────────────────────────────────────────────
+   Le systeme accuse reception. Toujours dans SA voix — le cyan du
+   systeme, pas « --ob-voix » qui vire vers le pacte a mesure des
+   fenetres closes. Le temoin ne se rechauffe pas, c est le point :
+   six ecrans d une machine froide, puis quelqu un. */
+.ob-temoin {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--ob-systeme);
+  background: color-mix(in oklab, var(--ob-systeme) 7%, transparent);
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  color: var(--ob-systeme);
+  overflow-wrap: anywhere;
+}
+
+/* Le sens du signe survole ou choisi. Hauteur reservee : une ligne
+   qui parait et disparait ferait sauter la grille sous le curseur. */
+.ob-sens {
+  margin: 0;
+  min-height: 1.5em;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ob-encre-2);
+}
+
 /* ── LES GESTES ───────────────────────────────────────────────── */
 .ob-gestes { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
 

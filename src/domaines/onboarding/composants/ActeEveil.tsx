@@ -78,11 +78,18 @@ export function ActeEveil({ onAccepter, onRefuser, sansAnimation }: Props) {
                 <p className="ob-ligne">
                   <TexteEcrit texte={t("onboarding.eveil.aucunPacte")} retard={900} />
                 </p>
+                {/* L ENJEU, EN UNE LIGNE. Le rite demandait six decisions
+                    avant d avoir jamais dit a quoi sert un pacte. Le
+                    systeme le constate, dans son registre : sans pacte,
+                    rien ne s ecrit. C est tout ce qu on ajoute a l eveil. */}
+                <p className="ob-ligne">
+                  <TexteEcrit texte={t("onboarding.eveil.enjeu")} retard={1600} />
+                </p>
               </>
             )}
 
             <p className="ob-ligne">
-              <TexteEcrit texte={t("onboarding.eveil.question")} retard={refuse ? 700 : 1700} />
+              <TexteEcrit texte={t("onboarding.eveil.question")} retard={refuse ? 700 : 2500} />
             </p>
 
             <div className="ob-gestes">

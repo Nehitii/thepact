@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PactVisual } from "@/domaines/objectifs";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
+import { Temoin } from "@/domaines/onboarding/composants/Temoin";
 import { COULEURS, SYMBOLES, TEINTE, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
-import { VALEURS_MAX, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
+import { VALEURS_MAX, peutAvancer, type Ecran, type EtatDuRite } from "@/domaines/onboarding/logique/rite";
 
 
 interface Props {
@@ -31,6 +33,9 @@ interface Props {
  */
 export function LaForge({ ecran, etat, modifier }: Props) {
   const { t } = useTranslation();
+  /* Le signe survole ou pris au clavier : sa ligne de sens s affiche
+     sous la grille. Nul : celui qui est choisi, s il y en a un. */
+  const [survole, setSurvole] = useState<string | null>(null);
 
   /* LA FORME FONCTIONNELLE, ET ELLE EST NECESSAIRE : deux clics dans
      la meme image liraient tous les deux la meme prop, et le second
@@ -55,6 +60,9 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           aria-label={t("onboarding.forge.porteur.invite")}
           autoFocus
         />
+        {/* LE TEMOIN ACCUSE RECEPTION — voir « Temoin.tsx ». C est la
+            premiere fois que le rite repond a ce qu on lui dit. */}
+        <Temoin texte={peutAvancer("porteur", etat) ? t("onboarding.temoin.porteur", { nom: etat.nomDuPorteur.trim() }) : ""} />
       </FenetreSysteme>
     );
   }
@@ -73,6 +81,10 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           aria-label={t("onboarding.forge.pacte.invite")}
           autoFocus
         />
+        {/* « Aucun antecedent » : le nom est neuf, et c est vrai — un
+            pacte par porteur, et la forge ne se joue qu au premier
+            passage. */}
+        <Temoin texte={peutAvancer("pacte", etat) ? t("onboarding.temoin.pacte", { nom: etat.nomDuPacte.trim() }) : ""} />
       </FenetreSysteme>
     );
   }
@@ -93,12 +105,24 @@ export function LaForge({ ecran, etat, modifier }: Props) {
               aria-pressed={etat.symbole === s}
               aria-label={t(`onboarding.forge.sceau.symboles.${s}`)}
               onClick={() => modifier({ symbole: s })}
+              onMouseEnter={() => setSurvole(s)}
+              onMouseLeave={() => setSurvole(null)}
+              onFocus={() => setSurvole(s)}
+              onBlur={() => setSurvole(null)}
             >
               <PactVisual symbol={s} size="sm" elan={etat.symbole === s ? 1 : 0.4} />
               <small>{t(`onboarding.forge.sceau.symboles.${s}`)}</small>
             </button>
           ))}
         </div>
+        {/* UNE LIGNE DE SENS par signe — celui qu on survole, sinon celui
+            qu on a pris. Neuf logos magnifiques ne disaient rien : on
+            choisissait une image. On choisit un sens. */}
+        <p className="ob-sens" aria-live="polite">
+          {(survole ?? etat.symbole)
+            ? t(`onboarding.forge.sceau.sens.${survole ?? etat.symbole}`)
+            : ""}
+        </p>
         <div className="ob-choix" role="group" aria-label={t("onboarding.forge.sceau.couleur")}>
           {COULEURS.map((c) => (
             <button
@@ -112,6 +136,15 @@ export function LaForge({ ecran, etat, modifier }: Props) {
             </button>
           ))}
         </div>
+        {/* Le temoin suit les deux gestes : le signe d abord, puis la
+            teinte qui se verrouille. Chaque clic recoit sa ligne. */}
+        <Temoin texte={
+          etat.symbole
+            ? t(etat.couleur ? "onboarding.temoin.sceau" : "onboarding.temoin.signe", {
+                signe: t(`onboarding.forge.sceau.symboles.${etat.symbole}`),
+              })
+            : ""
+        } />
       </FenetreSysteme>
     );
   }
@@ -134,6 +167,7 @@ export function LaForge({ ecran, etat, modifier }: Props) {
         />
         <i className="ob-braise" aria-hidden="true" />
         </span>
+        <Temoin texte={peutAvancer("phrase", etat) ? t("onboarding.temoin.phrase") : ""} />
       </FenetreSysteme>
     );
   }
@@ -160,6 +194,14 @@ export function LaForge({ ecran, etat, modifier }: Props) {
           );
         })}
       </div>
+      {/* Aucune, une, plusieurs : trois constats, parce que la corde du
+          sceau n existe qu a partir de deux — et que ne rien choisir
+          est une reponse qui merite d etre constatee, pas grondee. */}
+      <Temoin texte={
+        etat.valeurs.length === 0 ? t("onboarding.temoin.valeurs.aucune")
+          : etat.valeurs.length === 1 ? t("onboarding.temoin.valeurs.une")
+          : t("onboarding.temoin.valeurs.plusieurs", { n: etat.valeurs.length })
+      } />
     </FenetreSysteme>
   );
 }
