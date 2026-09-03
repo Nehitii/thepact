@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAuth } from "@/socle/contextes/AuthContext";
 import { LeRite } from "@/domaines/onboarding/composants/LeRite";
+import { usePacteJure } from "@/domaines/onboarding/hooks/usePacteJure";
 import { useSceller } from "@/domaines/onboarding/hooks/useSceller";
 import type { EtatDuRite } from "@/domaines/onboarding/logique/rite";
 import "@/domaines/onboarding/onboarding.css";
@@ -36,6 +37,12 @@ export default function Onboarding() {
     [],
   );
 
+  /* IL PART DE CE QUI A DEJA ETE JURE. « LeRite » ne lit son etat
+     initial qu au montage : le monter avant que le pacte soit charge
+     ferait redeclarer tout a l aveugle, et « useSceller » ecraserait le
+     pacte par ce qui vient d etre retape. On attend. */
+  const { etat, pret } = usePacteJure(abrege);
+
   const onSceller = useCallback(
     async (etat: EtatDuRite) => {
       const fait = await sceller(etat);
@@ -48,12 +55,15 @@ export default function Onboarding() {
     [sceller, t, navigate],
   );
 
+  if (!pret) return <div className="ob ob--attente" />;
+
   return (
     <LeRite
       abrege={abrege}
       onSceller={onSceller}
       pretAEcrire={!!user && !enCours}
       onQuitter={() => navigate("/auth")}
+      etatInitial={etat}
     />
   );
 }

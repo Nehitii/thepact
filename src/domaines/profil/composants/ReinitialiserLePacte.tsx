@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/socle/ui/input";
 import {
@@ -29,16 +30,31 @@ export function ReinitialiserLePacte({
   pactId, pactName,
 }: { pactId: string | undefined; pactName: string }) {
   const resetPact = useResetPact();
+  const navigate = useNavigate();
   const [ouvert, setOuvert] = useState(false);
   const [confirmation, setConfirmation] = useState("");
 
   if (!pactId) return null;
 
+  /* ON REPASSE PAR LE RITE, ET C EST CETTE PORTE QUE LA SPEC DESIGNE :
+     « ReinitialiserLePacte.tsx existe : quelqu un repassera par la, et
+     la deuxieme fois n est jamais la premiere. »
+
+     Elle ne menait nulle part. Le rite abrege se declenche sur
+     « ?abrege », personne n y envoyait, et « Home » ne route vers le
+     rite que si le porteur n a AUCUN pacte — or celui-ci survit a la
+     reinitialisation. Six ecrans et une branche testee que personne ne
+     pouvait atteindre.
+
+     Le rite abrege part de ce qui etait deja jure : on revoit ses
+     declarations, on les change si l on veut, et l on signe de
+     nouveau. Voir « usePacteJure ». */
   const lancer = async () => {
     try {
       await resetPact.mutateAsync(pactId);
       setConfirmation("");
       setOuvert(false);
+      navigate("/onboarding?abrege");
     } catch {
       /* La mutation affiche son propre message. */
     }
@@ -57,7 +73,8 @@ export function ReinitialiserLePacte({
           </p>
           <p className="ds-t-label text-destructive/50 font-mono leading-relaxed">
             Efface les objectifs, les étapes, les missions et les compteurs de
-            progression de « {pactName} ». Le pacte lui-même survit, vide.
+            progression de « {pactName} », puis te ramène au rite pour que tu
+            jures de nouveau.
           </p>
 
           <AlertDialog
@@ -76,7 +93,9 @@ export function ReinitialiserLePacte({
                 <AlertDialogTitle>Réinitialiser « {pactName} » ?</AlertDialogTitle>
                 <AlertDialogDescription>
                   Cette action est sans retour. Tous tes objectifs, étapes,
-                  missions et compteurs de progression seront effacés.
+                  missions et compteurs de progression seront effacés. Tu
+                  repasseras ensuite par le rite : tes déclarations te seront
+                  présentées telles quelles, et tu signeras de nouveau.
                 </AlertDialogDescription>
               </AlertDialogHeader>
 

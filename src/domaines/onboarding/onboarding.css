@@ -189,6 +189,13 @@
    le pacte, a gauche, qui grandit a chaque reponse.
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── L ATTENTE DU SECOND PASSAGE ──────────────────────────────
+   Le rite abrege charge d abord ce qui a ete jure. Un noir plein, sans
+   rouage ni barre : le rite s ouvre sur « Noir. », et une attente qui
+   s annonce serait le premier mensonge de la scene. Le fond de « .ob »
+   suffit. */
+.ob--attente { min-height: 100dvh; }
+
 /* ── L ATELIER ────────────────────────────────────────────────
    Deux colonnes : ce qu on fabrique, et ce qu on demande. */
 /* LA VOIE PASSE AVANT L OBJET. Mesure : a parts egales, l objet

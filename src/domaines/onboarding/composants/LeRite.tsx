@@ -14,8 +14,20 @@ import {
   fenetresCloses, pacteDeclare, peutAvancer, type Acte, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";
 
-/** Les quatre actes, dans l ordre ou on les traverse. */
-const ACTES: readonly Acte[] = ["eveil", "forge", "scellement", "rencontre"];
+/**
+ * LES ACTES DU RITE EN COURS, dans l ordre ou on les traverse.
+ *
+ * DEDUITS DES ECRANS, pas ecrits en dur : le rite abrege saute l eveil
+ * et la rencontre, et un jalonnement fixe a quatre lui promettait deux
+ * actes qui ne viendraient jamais.
+ */
+const actesDuRite = (abrege: boolean): Acte[] => {
+  const vus: Acte[] = [];
+  for (const e of ecransDuRite(abrege)) {
+    if (!vus.includes(ACTE_DE[e])) vus.push(ACTE_DE[e]);
+  }
+  return vus;
+};
 
 export interface ReglagesDuRite {
   /** Force le mode sobre, quelle que soit la preference du systeme. */
@@ -118,6 +130,7 @@ export function LeRite({
   }, [ecran, abrege, setEcran]);
 
   const acte = ACTE_DE[ecran];
+  const actes = actesDuRite(abrege);
   const closes = fenetresCloses(ecran, abrege);
   /* Pas de couleur choisie, pas de teinte : l objet reste eteint.
      L ambre par defaut faisait croire a un choix deja fait. */
@@ -183,17 +196,17 @@ export function LeRite({
 
         {/* ═══ LA VOIE — une seule, de hauteur fixe ═══ */}
         <section className="ob-voie">
-          {/* LES QUATRE ACTES. Les barres disent la position, le nom
+          {/* LES ACTES DU RITE EN COURS. Les barres disent la position, le nom
               ecrit dit lequel on traverse. Les quatre noms cote a cote
               ne tenaient pas dans la voie : « LE SCELLEMENT » s y
               lisait « LE SCELLE… », et un jalon tronque ne jalonne
               rien. Les noms restent lisibles aux lecteurs d ecran. */}
           <header className="ob-voie-tete">
             <ol className="ob-actes">
-              {ACTES.map((a, i) => (
+              {actes.map((a, i) => (
                 <li
                   key={a}
-                  className={a === acte ? "est-ici" : ACTES.indexOf(acte) > i ? "est-passe" : ""}
+                  className={a === acte ? "est-ici" : actes.indexOf(acte) > i ? "est-passe" : ""}
                   aria-current={a === acte ? "step" : undefined}
                 >
                   <i aria-hidden="true" />
@@ -203,7 +216,7 @@ export function LeRite({
             </ol>
             <div className="ob-voie-jalon">
               <p className="ob-acte-nom" aria-hidden="true">
-                <b>{"I".repeat(ACTES.indexOf(acte) + 1).replace("IIII", "IV")}</b>
+                <b>{"I".repeat(actes.indexOf(acte) + 1).replace("IIII", "IV")}</b>
                 <span>{t(`onboarding.actes.${acte}`)}</span>
               </p>
 
