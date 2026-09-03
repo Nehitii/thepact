@@ -9,14 +9,17 @@ import { describe, expect, it } from "vitest";
 import {
   ACTE_DE, ETAT_VIDE, RITE_ABREGE, RITE_COMPLET, VALEURS_MAX,
   ecranPrecedent, ecranSuivant, ecransDuRite, fenetresCloses,
-  peutAvancer, peutSigner, pretASceller, type EtatDuRite,
+  pacteDeclare, peutAvancer, peutSigner, pretASceller, type EtatDuRite,
 } from "./rite";
 
+/* Un pacte REMPLI declare son signe : l etat vide n en a plus. */
 const rempli = (p: Partial<EtatDuRite> = {}): EtatDuRite => ({
   ...ETAT_VIDE,
   nomDuPorteur: "Nehiti",
   nomDuPacte: "Ananta",
   mantra: "Tenir ce qui est jure",
+  symbole: "flame",
+  couleur: "violet",
   valeurs: ["courage"],
   clausesAcceptees: true,
   signe: true,
@@ -84,8 +87,24 @@ describe("peutAvancer", () => {
     expect(peutAvancer("valeurs", { ...ETAT_VIDE, valeurs: [] })).toBe(true);
   });
 
-  it("le sceau a toujours un symbole et une couleur par defaut", () => {
-    expect(peutAvancer("sceau", ETAT_VIDE)).toBe(true);
+  it("LE SCEAU EXIGE UN VRAI CHOIX : rien n est pose d avance", () => {
+    /* L etat vide valait « flame » et « amber » : l ecran laissait
+       passer sans rien toucher, et l on scellait un pacte sous un signe
+       jamais choisi — grave a vie. Un choix par defaut n est pas un
+       choix. */
+    expect(ETAT_VIDE.symbole).toBe("");
+    expect(ETAT_VIDE.couleur).toBe("");
+    expect(peutAvancer("sceau", ETAT_VIDE)).toBe(false);
+    expect(peutAvancer("sceau", { ...ETAT_VIDE, symbole: "flame" })).toBe(false);
+    expect(peutAvancer("sceau", { ...ETAT_VIDE, couleur: "violet" })).toBe(false);
+    expect(peutAvancer("sceau", { ...ETAT_VIDE, symbole: "flame", couleur: "violet" })).toBe(true);
+  });
+
+  it("le scellement refuse un pacte non declare, meme consenti et signe", () => {
+    /* Sans cela « Passer le rite » depuis le premier ecran menait a un
+       bouton mort : signe, consenti, et rien a ecrire. */
+    expect(peutAvancer("scellement", rempli({ symbole: "" }))).toBe(false);
+    expect(peutAvancer("scellement", rempli({ nomDuPacte: "" }))).toBe(false);
   });
 
   it("LE SCELLEMENT DEMANDE DEUX GESTES SEPARES", () => {
@@ -179,6 +198,11 @@ describe("pretASceller : la garde avant l ecriture", () => {
     expect(pretASceller(rempli({ mantra: "  " }))).toBe(false);
   });
 
+  it("refuse un pacte sans signe ou sans teinte : rien de vide n atteint la base", () => {
+    expect(pretASceller(rempli({ symbole: "" }))).toBe(false);
+    expect(pretASceller(rempli({ couleur: "" }))).toBe(false);
+  });
+
   it("refuse un pacte non consenti ou non signe", () => {
     expect(pretASceller(rempli({ clausesAcceptees: false }))).toBe(false);
     expect(pretASceller(rempli({ signe: false }))).toBe(false);
@@ -195,5 +219,26 @@ describe("pretASceller : la garde avant l ecriture", () => {
 describe("VALEURS_MAX", () => {
   it("plafonne a cinq", () => {
     expect(VALEURS_MAX).toBe(5);
+  });
+});
+
+describe("pacteDeclare : ce sans quoi on ne scelle pas", () => {
+  it("demande un nom, une phrase, un signe et une teinte", () => {
+    expect(pacteDeclare(rempli())).toBe(true);
+    expect(pacteDeclare(rempli({ nomDuPacte: " " }))).toBe(false);
+    expect(pacteDeclare(rempli({ mantra: "" }))).toBe(false);
+    expect(pacteDeclare(rempli({ symbole: "" }))).toBe(false);
+    expect(pacteDeclare(rempli({ couleur: "" }))).toBe(false);
+  });
+
+  it("ne demande ni valeurs, ni consentement, ni signature : ce n est pas son role", () => {
+    /* Les valeurs sont facultatives ; le consentement et la signature
+       sont l affaire de « pretASceller ». Declarer, c est avoir de quoi
+       sceller — pas l avoir fait. */
+    expect(pacteDeclare(rempli({ valeurs: [], clausesAcceptees: false, signe: false }))).toBe(true);
+  });
+
+  it("l etat vide n est pas declare : « Passer le rite » n a rien a abreger", () => {
+    expect(pacteDeclare(ETAT_VIDE)).toBe(false);
   });
 });

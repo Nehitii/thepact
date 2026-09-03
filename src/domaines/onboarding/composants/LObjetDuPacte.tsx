@@ -49,8 +49,18 @@ export function LObjetDuPacte({
   const rayonDesTraits = 0.9;
   const tailleDuTrait = 0.115;
 
+  /* ETEINT tant qu aucun signe n est choisi. L ancien rite montrait une
+     flamme ambre des la premiere question — un choix par defaut
+     deguise en choix. Ici l objet attend : anneau gris, pas de halo,
+     un coeur en pointille. La flamme APPARAIT quand on la prend, et
+     c est la premiere chose qui bouge sous les yeux. */
+  const eteint = symbole.length === 0;
+
   return (
-    <div className="ob-objet" style={{ "--ob-teinte": teinte } as React.CSSProperties}>
+    <div
+      className={`ob-objet${eteint ? " ob-objet--eteint" : ""}`}
+      style={{ "--ob-teinte": teinte } as React.CSSProperties}
+    >
       {/* LE CERCLE DANS SA PROPRE BOITE CARREE. Le halo, l anneau et
           le coeur se posent en absolu : sans ce cadre a eux, ils se
           calaient sur tout l objet, et la legende — posee sous lui en
@@ -160,7 +170,11 @@ export function LObjetDuPacte({
       {/* LE SYMBOLE VIVANT — celui-la meme que porte le tableau de bord
           une fois le pacte scelle. Le rite ne montre pas une doublure. */}
       <div className="ob-objet-coeur">
-        <PactVisual symbol={symbole} size="lg" elan={scelle ? 1 : 0.55} />
+        {eteint
+          ? <svg className="ob-coeur-vide" viewBox="-1 -1 2 2" aria-hidden="true">
+              <circle cx="0" cy="0" r="0.8" strokeWidth={1.2} strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />
+            </svg>
+          : <PactVisual symbol={symbole} size="lg" elan={scelle ? 1 : 0.55} />}
       </div>
       </div>
 

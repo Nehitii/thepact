@@ -84,8 +84,12 @@ export const ETAT_VIDE: EtatDuRite = {
   nomDuPorteur: "",
   nomDuPacte: "",
   mantra: "",
-  symbole: "flame",
-  couleur: "amber",
+  /* VIDES, ET C EST LE POINT. Ils valaient « flame » et « amber » :
+     l objet montrait une flamme ambre avant la premiere question, et
+     l ecran du sceau laissait passer sans rien toucher. Un choix par
+     defaut n est pas un choix — voir « pacteDeclare ». */
+  symbole: "",
+  couleur: "",
   valeurs: [],
   clausesAcceptees: false,
   signe: false,
@@ -122,7 +126,9 @@ export function peutAvancer(ecran: Ecran, etat: EtatDuRite): boolean {
     case "valeurs":
       return true;
     case "scellement":
-      return etat.clausesAcceptees && etat.signe;
+      /* On ne scelle que ce qui est declare : sinon « Passer le rite »
+         depuis le premier ecran menait a un bouton mort. */
+      return pacteDeclare(etat) && etat.clausesAcceptees && etat.signe;
     case "rencontre":
       return etat.objectif !== null && !objectifSansNom(etat.objectif);
   }
@@ -182,10 +188,27 @@ export function fenetresCloses(ecran: Ecran, abrege: boolean): number {
  * ce serait un refus de la base au dernier moment du rite.
  */
 export function pretASceller(etat: EtatDuRite): boolean {
+  return pacteDeclare(etat) && etat.clausesAcceptees && etat.signe;
+}
+
+/**
+ * Le pacte est-il DECLARE — a-t-il tout ce sans quoi on ne scelle pas ?
+ *
+ * Un nom et une phrase, parce que la base les refuse vides. Un signe et
+ * une teinte, parce que L ETAT VIDE N EN A PLUS : ils valaient « flame »
+ * et « amber » d avance, l ecran du sceau laissait passer sans rien
+ * toucher, et l on pouvait sceller un pacte sous un signe jamais choisi
+ * — grave a vie dans le sceau.
+ *
+ * C est aussi ce qui autorise « Passer le rite » : on ne peut abreger
+ * que ce qui existe. Offert des le premier ecran, le raccourci menait
+ * au scellement d un pacte sans nom, et a un bouton mort.
+ */
+export function pacteDeclare(etat: EtatDuRite): boolean {
   return (
     etat.nomDuPacte.trim().length > 0 &&
     etat.mantra.trim().length > 0 &&
-    etat.clausesAcceptees &&
-    etat.signe
+    etat.symbole.length > 0 &&
+    etat.couleur.length > 0
   );
 }

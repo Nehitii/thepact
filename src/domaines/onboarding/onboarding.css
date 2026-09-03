@@ -230,6 +230,22 @@
   aspect-ratio: 1;
 }
 
+/* ETEINT : rien n est encore choisi, et ca se voit. L ancien rite
+   montrait une flamme ambre des la premiere question — un choix par
+   defaut deguise en choix. Anneau gris, pas de halo, un coeur en
+   pointille : l objet attend qu on le prenne. */
+.ob-objet--eteint .ob-objet-halo { opacity: 0; }
+.ob-objet--eteint .ob-anneau,
+.ob-objet--eteint .ob-graduation { opacity: 0.3; }
+.ob-coeur-vide {
+  display: block;
+  width: 64px;
+  height: 64px;
+  fill: none;
+  stroke: currentColor;
+  opacity: 0.6;
+}
+
 /* La lueur du pacte : elle nait avec la teinte, et elle est le seul
    endroit du rite ou la couleur du porteur remplit une surface. */
 .ob-objet-halo {

@@ -129,7 +129,7 @@ export default function BancDuRite() {
           <dt>porteur</dt><dd>{etat.nomDuPorteur || "—"}</dd>
           <dt>pacte</dt><dd>{etat.nomDuPacte || "—"}</dd>
           <dt>phrase</dt><dd>{etat.mantra || "—"}</dd>
-          <dt>sceau</dt><dd>{etat.symbole} · {etat.couleur}</dd>
+          <dt>sceau</dt><dd>{etat.symbole || "—"} · {etat.couleur || "—"}</dd>
           <dt>valeurs</dt><dd>{etat.valeurs.join(", ") || "aucune"}</dd>
           <dt>clauses</dt><dd>{etat.clausesAcceptees ? "acceptees" : "non"}</dd>
           <dt>signe</dt><dd>{etat.signe ? "oui" : "non"}</dd>

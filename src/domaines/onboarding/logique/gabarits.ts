@@ -96,3 +96,8 @@ export const TEINTE: Record<string, string> = {
   amber: "#F59E0B", rose: "#F43F5E", emerald: "#10B981",
   sky: "#0EA5E9", violet: "#8B5CF6", cyan: "#06B6D4",
 };
+
+/* La teinte de l objet AVANT qu une couleur soit choisie : un gris
+   bleute, celui des encres eteintes. Ni l ambre — ce serait un choix
+   par defaut deguise en choix — ni le cyan, qui est la voix du systeme. */
+export const TEINTE_ETEINTE = "#5B6478";

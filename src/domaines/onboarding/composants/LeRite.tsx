@@ -8,10 +8,10 @@ import { LaRencontre } from "@/domaines/onboarding/composants/LaRencontre";
 import { LeScellement } from "@/domaines/onboarding/composants/LeScellement";
 import { Signature } from "@/domaines/onboarding/composants/Signature";
 import type { FormeDuGeste } from "@/domaines/onboarding/hooks/useGesteDeSignature";
-import { TEINTE } from "@/domaines/onboarding/logique/gabarits";
+import { TEINTE, TEINTE_ETEINTE } from "@/domaines/onboarding/logique/gabarits";
 import {
   ACTE_DE, ETAT_VIDE, ecranPrecedent, ecranSuivant, ecransDuRite,
-  fenetresCloses, peutAvancer, type Acte, type Ecran, type EtatDuRite,
+  fenetresCloses, pacteDeclare, peutAvancer, type Acte, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";
 
 /** Les quatre actes, dans l ordre ou on les traverse. */
@@ -119,7 +119,9 @@ export function LeRite({
 
   const acte = ACTE_DE[ecran];
   const closes = fenetresCloses(ecran, abrege);
-  const teinte = TEINTE[etat.couleur] ?? TEINTE.amber;
+  /* Pas de couleur choisie, pas de teinte : l objet reste eteint.
+     L ambre par defaut faisait croire a un choix deja fait. */
+  const teinte = etat.couleur ? (TEINTE[etat.couleur] ?? TEINTE.amber) : TEINTE_ETEINTE;
 
   /* L ARC CHROMATIQUE. Le systeme cede la place au pacte : « --ob-part »
      va de 0 a 1 a mesure que les fenetres se ferment, et les cadres,
@@ -210,8 +212,15 @@ export function LeRite({
                   le pied se repliait sur trois rangs. Elle est de
                   toute facon d un autre ordre que « Retour » et
                   « Continuer » : la mettre a cote d eux la deguisait
-                  en geste du rite. Discrete, jamais cachee. */}
-              {acte !== "scellement" && (
+                  en geste du rite. Discrete, jamais cachee.
+
+                  ON NE PEUT ABREGER QUE CE QUI EXISTE. Offerte des le
+                  premier ecran, elle sautait au scellement d un pacte
+                  sans nom, sans signe — et a un bouton mort. Elle
+                  parait quand le pacte est declare, et seulement dans
+                  la forge : depuis la rencontre, elle ramenait EN
+                  ARRIERE, au scellement. */}
+              {acte === "forge" && pacteDeclare(etat) && (
                 <button type="button" className="ob-passer" onClick={() => setEcran("scellement")}>
                   {t("onboarding.passer")}
                 </button>
