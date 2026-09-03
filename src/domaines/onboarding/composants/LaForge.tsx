@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { PactVisual } from "@/domaines/objectifs";
+import { deplacerValeur, peutDescendre, peutMonter } from "@/domaines/onboarding/logique/rangDesValeurs";
 import { FenetreSysteme } from "@/domaines/onboarding/composants/FenetreSysteme";
 import { Temoin } from "@/domaines/onboarding/composants/Temoin";
 import { COULEURS, SYMBOLES, TEINTE, VALEURS_SUGGEREES } from "@/domaines/onboarding/logique/gabarits";
@@ -181,15 +183,61 @@ export function LaForge({ ecran, etat, modifier }: Props) {
       <p className="ob-ligne ob-ligne--sourde">
         {t("onboarding.forge.valeurs.compte", { n: etat.valeurs.length, max: VALEURS_MAX })}
       </p>
-      <div className="ob-valeurs" role="group" aria-label={t("onboarding.forge.valeurs.entete")}>
+      {/* LES CHOISIES MONTENT EN LISTE NUMEROTEE, et c est tout l objet
+          du lot : leur rang est ecrit en base et DESSINE LA CORDE DU
+          SCEAU, pour toujours. Il valait l ordre des clics — une donnee
+          permanente produite par un effet de bord, que le porteur ne
+          voyait pas et ne pouvait pas changer. */}
+      {etat.valeurs.length > 0 && (
+        <>
+          <ol className="ob-rangs" aria-label={t("onboarding.forge.valeurs.choisies")}>
+            {etat.valeurs.map((mot, rang) => (
+              <li key={mot} className="ob-rang">
+                <b aria-hidden="true">{rang + 1}</b>
+                <span>{mot}</span>
+                <span className="ob-rang-gestes">
+                  <button
+                    type="button"
+                    disabled={!peutMonter(rang)}
+                    aria-label={t("onboarding.forge.valeurs.monter", { valeur: mot })}
+                    onClick={() => modifier((e) => ({ valeurs: [...deplacerValeur(e.valeurs, rang, rang - 1)] }))}
+                  >
+                    <ChevronUp aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!peutDescendre(rang, etat.valeurs.length)}
+                    aria-label={t("onboarding.forge.valeurs.descendre", { valeur: mot })}
+                    onClick={() => modifier((e) => ({ valeurs: [...deplacerValeur(e.valeurs, rang, rang + 1)] }))}
+                  >
+                    <ChevronDown aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t("onboarding.forge.valeurs.retirer", { valeur: mot })}
+                    onClick={() => basculerValeur(mot)}
+                  >
+                    <X aria-hidden="true" />
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="ob-ligne ob-ligne--sourde">{t("onboarding.forge.valeurs.ordre")}</p>
+        </>
+      )}
+
+      <div className="ob-valeurs" role="group" aria-label={t("onboarding.forge.valeurs.ajouter")}>
         {VALEURS_SUGGEREES.map((cle) => {
           const mot = t(`onboarding.valeurs.${cle}`);
-          const choisie = etat.valeurs.includes(mot);
+          /* Celles qu on a prises sont dans la liste au-dessus : les
+             laisser aussi en puce donnerait deux fois le meme mot, et
+             deux endroits pour le retirer. */
+          if (etat.valeurs.includes(mot)) return null;
           return (
             <button
               key={cle} type="button" className="ob-valeur"
-              aria-pressed={choisie}
-              disabled={!choisie && etat.valeurs.length >= VALEURS_MAX}
+              disabled={etat.valeurs.length >= VALEURS_MAX}
               onClick={() => basculerValeur(mot)}
             >
               {mot}

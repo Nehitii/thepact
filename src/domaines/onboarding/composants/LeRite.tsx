@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ActeEveil } from "@/domaines/onboarding/composants/ActeEveil";
 import { LObjetDuPacte } from "@/domaines/onboarding/composants/LObjetDuPacte";
 import { LaForge } from "@/domaines/onboarding/composants/LaForge";
+import { LaLecture } from "@/domaines/onboarding/composants/LaLecture";
 import { LaRencontre } from "@/domaines/onboarding/composants/LaRencontre";
 import { LeScellement } from "@/domaines/onboarding/composants/LeScellement";
 import { Signature } from "@/domaines/onboarding/composants/Signature";
@@ -255,7 +256,9 @@ export function LeRite({
               >
                 {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
 
-                {acte === "scellement" && (
+                {ecran === "lecture" && <LaLecture etat={etat} />}
+
+                {ecran === "scellement" && (
                   <LeScellement
                     etat={etat}
                     modifier={modifier}
@@ -278,9 +281,12 @@ export function LeRite({
           </div>
 
           <footer className="ob-voie-pied">
+            {/* A LA LECTURE, LES DEUX GESTES SE NOMMENT AUTREMENT :
+                on ne continue pas, on confirme — et revenir n est pas
+                reculer d un ecran, c est aller corriger. */}
             {ecranPrecedent(ecran, abrege) ? (
               <button type="button" className="ob-bouton ob-bouton--sourd" onClick={reculer}>
-                {t("onboarding.retour")}
+                {ecran === "lecture" ? t("onboarding.lecture.corriger") : t("onboarding.retour")}
               </button>
             ) : <span />}
 
@@ -290,7 +296,9 @@ export function LeRite({
               disabled={!peutAvancer(ecran, etat) || !pretAEcrire}
               onClick={avancer}
             >
-              {suite ? t("onboarding.continuer") : t("onboarding.sceller")}
+              {ecran === "lecture" ? t("onboarding.lecture.confirmer")
+                : suite ? t("onboarding.continuer")
+                : t("onboarding.sceller")}
             </button>
           </footer>
         </section>

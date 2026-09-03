@@ -3003,8 +3003,14 @@
       },
       "valeurs": {
         "entete": "VALUES",
-        "invite": "Three to five, or none.",
-        "compte": "{{n}} of {{max}}"
+        "invite": "What you don’t negotiate. Three to five, or none.",
+        "compte": "{{n}} of {{max}}",
+        "choisies": "In order",
+        "ordre": "Order matters: it draws the seal’s chord.",
+        "monter": "Move {{valeur}} up",
+        "descendre": "Move {{valeur}} down",
+        "retirer": "Remove {{valeur}}",
+        "ajouter": "Add a value"
       }
     },
     "valeurs": {
@@ -3124,7 +3130,20 @@
         "aucune": "> No values. The ring stays bare.",
         "une": "> One value. No chord without a second.",
         "plusieurs": "> {{n}} values. Chord drawn."
-      }
+      },
+      "lecture": "> Reading back. Nothing is sealed yet."
+    },
+    "lecture": {
+      "entete": "READING",
+      "question": "Is this right?",
+      "porteur": "Bearer",
+      "pacte": "Pact",
+      "valeurs": "Values, in order",
+      "phrase": "Line",
+      "aucuneValeur": "None.",
+      "sousLeSigne": "{{nom}}, under the sign {{signe}}, in {{teinte}}.",
+      "corriger": "No — go back",
+      "confirmer": "That’s it"
     }
   },
   "leaderboard": {

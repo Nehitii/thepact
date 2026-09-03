@@ -3003,8 +3003,14 @@
       },
       "valeurs": {
         "entete": "VALEURS",
-        "invite": "Trois à cinq, ou aucune.",
-        "compte": "{{n}} sur {{max}}"
+        "invite": "Ce que tu ne négocies pas. Trois à cinq, ou aucune.",
+        "compte": "{{n}} sur {{max}}",
+        "choisies": "Dans l’ordre",
+        "ordre": "L’ordre compte : il dessine la corde du sceau.",
+        "monter": "Monter {{valeur}}",
+        "descendre": "Descendre {{valeur}}",
+        "retirer": "Retirer {{valeur}}",
+        "ajouter": "Ajouter une valeur"
       }
     },
     "valeurs": {
@@ -3124,7 +3130,20 @@
         "aucune": "> Aucune valeur. L’anneau reste nu.",
         "une": "> Une valeur. Pas de corde sans une seconde.",
         "plusieurs": "> {{n}} valeurs. Corde tracée."
-      }
+      },
+      "lecture": "> Relecture. Rien n’est encore scellé."
+    },
+    "lecture": {
+      "entete": "LECTURE",
+      "question": "Est-ce bien cela ?",
+      "porteur": "Porteur",
+      "pacte": "Pacte",
+      "valeurs": "Valeurs, dans l’ordre",
+      "phrase": "Phrase",
+      "aucuneValeur": "Aucune.",
+      "sousLeSigne": "{{nom}}, sous le signe {{signe}}, en teinte {{teinte}}.",
+      "corriger": "Non — corriger",
+      "confirmer": "C’est cela"
     }
   },
   "leaderboard": {

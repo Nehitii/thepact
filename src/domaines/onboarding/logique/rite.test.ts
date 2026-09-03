@@ -28,8 +28,8 @@ const rempli = (p: Partial<EtatDuRite> = {}): EtatDuRite => ({
 });
 
 describe("la forme du rite", () => {
-  it("compte huit ecrans, quatre actes", () => {
-    expect(RITE_COMPLET).toHaveLength(8);
+  it("compte neuf ecrans, quatre actes", () => {
+    expect(RITE_COMPLET).toHaveLength(9);
     expect(new Set(RITE_COMPLET.map((e) => ACTE_DE[e]))).toEqual(
       new Set(["eveil", "forge", "scellement", "rencontre"]),
     );
@@ -140,7 +140,7 @@ describe("la navigation", () => {
   });
 
   it("enchaine ceux du rite abrege, en sautant ce qu il saute", () => {
-    expect(ecranSuivant("valeurs", true)).toBe("scellement");
+    expect(ecranSuivant("valeurs", true)).toBe("lecture");
     expect(ecranSuivant("scellement", true)).toBeNull();
     expect(ecranPrecedent("porteur", true)).toBeNull();
   });
@@ -280,5 +280,37 @@ describe("LIMITES : ce qu on peut taper dans chaque champ libre", () => {
     });
     expect(pacteDeclare(aLaLimite)).toBe(true);
     expect(pretASceller(aLaLimite)).toBe(true);
+  });
+});
+
+describe("la lecture : on relit avant de jurer", () => {
+  it("se place entre les valeurs et le scellement, dans les deux rites", () => {
+    for (const suite of [RITE_COMPLET, RITE_ABREGE]) {
+      expect(suite.indexOf("lecture")).toBe(suite.indexOf("valeurs") + 1);
+      expect(suite.indexOf("lecture")).toBe(suite.indexOf("scellement") - 1);
+    }
+  });
+
+  it("LE SECOND PASSAGE Y PASSE AUSSI : on revoit ce qu on avait jure", () => {
+    expect(RITE_ABREGE).toContain("lecture");
+  });
+
+  it("appartient au scellement, pas a la forge", () => {
+    /* On n y declare plus rien : le compte des fenetres closes ne doit
+       pas bouger, et le jalonnement reste sur son acte. */
+    expect(ACTE_DE.lecture).toBe("scellement");
+    expect(fenetresCloses("lecture", false)).toBe(5);
+    expect(fenetresCloses("lecture", true)).toBe(5);
+  });
+
+  it("ne laisse relire que ce qui est declare", () => {
+    expect(peutAvancer("lecture", rempli())).toBe(true);
+    expect(peutAvancer("lecture", rempli({ nomDuPacte: "" }))).toBe(false);
+    expect(peutAvancer("lecture", rempli({ symbole: "" }))).toBe(false);
+    expect(peutAvancer("lecture", ETAT_VIDE)).toBe(false);
+  });
+
+  it("ne demande ni consentement ni signature : ils viennent apres", () => {
+    expect(peutAvancer("lecture", rempli({ clausesAcceptees: false, signe: false }))).toBe(true);
   });
 });

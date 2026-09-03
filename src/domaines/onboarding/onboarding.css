@@ -669,7 +669,92 @@
 .ob-choix button[aria-pressed="true"] { border-color: var(--ob-encre); }
 .ob-pastille { width: 30px; height: 30px; border-radius: 50%; }
 
-/* ── LES VALEURS ──────────────────────────────────────────────── */
+/* ── LES VALEURS, DANS LEUR ORDRE ─────────────────────────────
+   Le rang est ecrit en base et dessine la corde du sceau, pour
+   toujours. Il valait l ordre des clics : invisible, et impossible a
+   changer. Les choisies montent donc en liste numerotee. */
+.ob-rangs {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ob-rang {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 8px 5px 10px;
+  border: 1px solid var(--ob-voix);
+  background: color-mix(in oklab, var(--ob-voix) 12%, transparent);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15.5px;
+  color: var(--ob-encre);
+}
+.ob-rang > b {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ob-voix);
+  font-variant-numeric: tabular-nums;
+}
+.ob-rang > span:nth-of-type(1) { overflow-wrap: anywhere; }
+.ob-rang-gestes { display: flex; gap: 2px; }
+.ob-rang-gestes button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--ob-encre-3);
+  cursor: pointer;
+  transition: color 150ms var(--ob-e-doux), background 150ms var(--ob-e-doux);
+}
+.ob-rang-gestes button svg { width: 15px; height: 15px; }
+.ob-rang-gestes button:hover:not(:disabled) { color: var(--ob-encre); background: var(--ob-creux); }
+.ob-rang-gestes button:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* AU DOIGT, LA CIBLE FAIT 44. Mesure a 420 px de large : les trois
+   boutons tombaient a 32 sur 32, sous le minimum que tout le reste du
+   rite respecte. Au curseur ils restent compacts — la rangee n a pas
+   besoin de trois carres de 44 quand on vise au pixel. */
+@media (pointer: coarse) {
+  .ob-rang-gestes button { width: 44px; height: 44px; }
+  .ob-rang { padding-right: 4px; }
+}
+
+/* ── LA LECTURE ───────────────────────────────────────────────
+   Le systeme relit le pacte avant qu on le jure, dans l ordre ou il
+   sera ecrit en base. */
+.ob-lecture {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ob-trait-fort);
+  background: var(--ob-creux);
+}
+.ob-lecture dt {
+  font-family: 'Orbitron', system-ui, sans-serif;
+  font-size: max(9px, 0.5625rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ob-encre-3);
+  margin-bottom: 3px;
+}
+.ob-lecture dd {
+  margin: 0;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 16.5px;
+  line-height: 1.45;
+  color: var(--ob-encre);
+  overflow-wrap: anywhere;
+}
+
+/* ── LES VALEURS A AJOUTER ────────────────────────────────────── */
 .ob-valeurs { display: flex; flex-wrap: wrap; gap: 8px; }
 .ob-valeur {
   min-height: 40px;

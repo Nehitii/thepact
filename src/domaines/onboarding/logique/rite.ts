@@ -19,7 +19,7 @@
 /** Les quatre actes, dans l ordre ou ils se jouent. */
 export type Acte = "eveil" | "forge" | "scellement" | "rencontre";
 
-/** Les huit ecrans du rite. */
+/** Les neuf ecrans du rite. */
 export type Ecran =
   | "eveil"
   | "porteur"
@@ -27,6 +27,7 @@ export type Ecran =
   | "sceau"
   | "phrase"
   | "valeurs"
+  | "lecture"
   | "scellement"
   | "rencontre";
 
@@ -37,6 +38,9 @@ export const ACTE_DE: Record<Ecran, Acte> = {
   sceau: "forge",
   phrase: "forge",
   valeurs: "forge",
+  /* LA LECTURE APPARTIENT AU SCELLEMENT, pas a la forge : on ne
+     declare plus rien, on relit ce qu on va jurer. */
+  lecture: "scellement",
   scellement: "scellement",
   rencontre: "rencontre",
 };
@@ -49,7 +53,7 @@ export const ACTE_DE: Record<Ecran, Acte> = {
  * il y a un objet au centre de l ecran pendant tout le reste du rite,
  * et il change de couleur sous les yeux. */
 export const RITE_COMPLET: readonly Ecran[] = [
-  "eveil", "porteur", "pacte", "sceau", "phrase", "valeurs", "scellement", "rencontre",
+  "eveil", "porteur", "pacte", "sceau", "phrase", "valeurs", "lecture", "scellement", "rencontre",
 ];
 
 /* LE SECOND PASSAGE N EST JAMAIS LE PREMIER. Quelqu un repassera par
@@ -58,7 +62,7 @@ export const RITE_COMPLET: readonly Ecran[] = [
    redecouvre pas un porteur qu il connait, et M.I.A. ne se represente
    pas a quelqu un qui l a deja rencontree. */
 export const RITE_ABREGE: readonly Ecran[] = [
-  "porteur", "pacte", "sceau", "phrase", "valeurs", "scellement",
+  "porteur", "pacte", "sceau", "phrase", "valeurs", "lecture", "scellement",
 ];
 
 export const ecransDuRite = (abrege: boolean): readonly Ecran[] =>
@@ -157,6 +161,11 @@ export function peutAvancer(ecran: Ecran, etat: EtatDuRite): boolean {
       return etat.mantra.trim().length > 0;
     case "valeurs":
       return true;
+    case "lecture":
+      /* On ne relit que ce qui existe. C est aussi la garde du rite
+         abrege : il commence a la forge, mais rien n empeche d y
+         arriver avec un pacte incomplet. */
+      return pacteDeclare(etat);
     case "scellement":
       /* On ne scelle que ce qui est declare : sinon « Passer le rite »
          depuis le premier ecran menait a un bouton mort. */
