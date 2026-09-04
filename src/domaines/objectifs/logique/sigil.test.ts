@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ALPHABET, TRAITS_MAX, VERSION_ALPHABET,
-  echantillonner, empreinte, normaliser, sigilDuPacte,
+  alphabetDeLaVersion, echantillonner, empreinte, normaliser, sigilDuPacte,
 } from "./sigil";
 
 describe("l alphabet", () => {
@@ -192,5 +192,50 @@ describe("sigilDuPacte", () => {
     expect(sigilDuPacte("pacte").version).toBe(VERSION_ALPHABET);
     /* Un sceau jure sous une version anterieure garde la sienne. */
     expect(sigilDuPacte("pacte", [], 0).version).toBe(0);
+  });
+});
+
+describe("LA VERSION EST HONOREE, PAS SEULEMENT ECRITE", () => {
+  /* Elle etait recopiee dans l objet rendu et jamais consultee : le
+     dessin sortait toujours de l alphabet courant. Ajouter un trait
+     aurait donc redessine en silence tous les sceaux deja jures. */
+
+  it("L ALPHABET V1 NE BOUGE PLUS — un sceau qui bouge n est pas un sceau", () => {
+    /* L empreinte de l alphabet entier. Elle ne change que si l on
+       touche a un trait — et alors ce test tombe, ce qui est le but :
+       une v2 s ecrit A COTE, elle ne rature pas la v1. */
+    expect(alphabetDeLaVersion(1)).toHaveLength(24);
+    /* CETTE VALEUR EST UN SCELLE. Elle a ete relevee sur l alphabet
+       tel qu il etait quand les premiers pactes ont ete jures. La voir
+       tomber veut dire qu on vient de modifier un dessin que des gens
+       portent — pas qu il faut la mettre a jour. */
+    expect(empreinte(alphabetDeLaVersion(1).join("|"))).toBe(2448044856);
+    /* Trois traits nommes, releves a la main : si l ordre glisse, on
+       le voit ici avant de le voir sur le sceau de quelqu un. */
+    expect(alphabetDeLaVersion(1)[0]).toBe("M0 0.5 L1 0.5");
+    expect(alphabetDeLaVersion(1)[11]).toBe("M0.2 0.2 L0.8 0.8 M0.8 0.2 L0.2 0.8");
+    expect(alphabetDeLaVersion(1)[23]).toBe("M0.5 0 L0.5 0.35 M0.5 0.65 L0.5 1");
+  });
+
+  it("dessine avec l alphabet de la version demandee", () => {
+    const v1 = sigilDuPacte("Ananta", [], 1);
+    expect(v1.version).toBe(1);
+    for (const t of v1.traits) expect(alphabetDeLaVersion(1)).toContain(t.d);
+  });
+
+  it("une version inconnue retombe sur la v1 plutot que sur du vide", () => {
+    /* Une base plus recente que le code — apres un retour en arriere —
+       ne doit pas rendre un sceau blanc. */
+    const inconnue = sigilDuPacte("Ananta", [], 99);
+    expect(inconnue.traits).toHaveLength(sigilDuPacte("Ananta", [], 1).traits.length);
+    for (const t of inconnue.traits) expect(alphabetDeLaVersion(1)).toContain(t.d);
+  });
+
+  it("garde la version qu on lui donne, meme inconnue : elle vient de la base", () => {
+    expect(sigilDuPacte("Ananta", [], 99).version).toBe(99);
+  });
+
+  it("l alphabet courant est bien celui de la version courante", () => {
+    expect(ALPHABET).toBe(alphabetDeLaVersion(VERSION_ALPHABET));
   });
 });

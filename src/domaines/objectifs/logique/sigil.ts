@@ -36,8 +36,15 @@ export const TRAITS_MAX = 16;
  * faire pivoter. Ils sont volontairement anguleux et ouverts — une
  * forme fermee se lit comme un symbole, une forme ouverte comme un
  * signe, et c est un signe qu on veut.
+ *
+ * ═══ CELUI-CI EST FIGE. ═══
+ *
+ * C est l alphabet de la VERSION 1, sous lequel des pactes ont ete
+ * jures. On n y touche plus : pas un trait ajoute, pas une courbe
+ * redressee. Une version suivante s ecrit A COTE, et « ALPHABETS » dit
+ * laquelle repond a quel numero.
  */
-export const ALPHABET: readonly string[] = [
+const ALPHABET_V1: readonly string[] = [
   "M0 0.5 L1 0.5",                       /* 0  la barre */
   "M0.5 0 L0.5 1",                       /* 1  le mat */
   "M0 0 L1 1",                           /* 2  la pente */
@@ -63,6 +70,40 @@ export const ALPHABET: readonly string[] = [
   "M0 0.5 L0.35 0.5 M0.65 0.5 L1 0.5",   /* 22 la barre rompue */
   "M0.5 0 L0.5 0.35 M0.5 0.65 L0.5 1",   /* 23 le mat rompu */
 ];
+
+/**
+ * QUELLE VERSION DESSINE QUOI.
+ *
+ * ═══ LA VERSION ETAIT ECRITE ET JAMAIS RELUE ═══
+ *
+ * L en-tete de ce module promettait que « ce module dit laquelle il
+ * produit, et sait toujours dessiner les anciennes ». C etait faux :
+ * « sigilDuPacte » recevait bien un parametre « version », le
+ * recopiait dans l objet rendu, et dessinait TOUJOURS avec l alphabet
+ * courant. La colonne « pacts.sigil_version » etait ecrite fidelement
+ * et ignoree a la lecture.
+ *
+ * Consequence : ajouter un trait a l alphabet aurait redessine EN
+ * SILENCE tous les sceaux deja jures — exactement ce que le
+ * versionnage etait cense empecher. C est la seule chose ici qu on ne
+ * peut pas reparer apres coup : un sceau qui bouge n est pas un sceau.
+ *
+ * La table est donc consultee pour de vrai. Une version inconnue —
+ * une base plus recente que le code, apres un retour en arriere —
+ * retombe sur la v1 : un sceau d une autre epoque vaut mieux qu un
+ * ecran vide.
+ */
+const ALPHABETS: Readonly<Record<number, readonly string[]>> = {
+  1: ALPHABET_V1,
+};
+
+/** L alphabet sous lequel un pacte de cette version a ete jure. */
+export function alphabetDeLaVersion(version: number): readonly string[] {
+  return ALPHABETS[version] ?? ALPHABET_V1;
+}
+
+/** L alphabet courant. Les anciens restent joignables par leur version. */
+export const ALPHABET: readonly string[] = ALPHABETS[VERSION_ALPHABET];
 
 /* ═══ CE QUE LE SIGIL REND ═══ */
 
@@ -157,10 +198,14 @@ export function sigilDuPacte(
   const source = echantillonner(normaliser(nom));
   const decalage = empreinte(source) % DEUX_PI;
 
+  /* L ALPHABET DE SA VERSION, pas celui d aujourd hui. Un pacte jure
+     sous la v1 garde son dessin quand une v2 parait. */
+  const alphabet = alphabetDeLaVersion(version);
+
   const traits: TraitDuSigil[] = [];
   for (let i = 0; i < source.length; i++) {
     traits.push({
-      d: ALPHABET[source.charCodeAt(i) % ALPHABET.length],
+      d: alphabet[source.charCodeAt(i) % alphabet.length],
       angle: (i / source.length) * DEUX_PI + decalage,
     });
   }
