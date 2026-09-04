@@ -7,7 +7,6 @@ import { Textarea } from "@/socle/ui/textarea";
 import { Label } from "@/socle/ui/label";
 import { toast } from "sonner";
 import { PactVisual } from "@/domaines/objectifs";
-import { SceauDuPacte } from "@/domaines/objectifs";
 import { cn } from "@/socle/outils/utils";
 
 const SYMBOL_OPTIONS = [
@@ -53,12 +52,6 @@ interface PactIdentityCardProps {
   onTitleEffectChange: (value: string) => void;
   onSave: () => Promise<void>;
   isSaving?: boolean;
-  /* LE SCEAU SE DEDUIT DU PACTE. Les valeurs ne font que ses ancres :
-     sans elles il se dessine quand meme, avec ses seuls glyphes. */
-  valeurs?: readonly string[];
-  /* La version sous laquelle ce pacte a ete scelle. Un sceau jure
-     sous un alphabet anterieur garde son dessin d alors. */
-  sigilVersion?: number;
 }
 
 const CY_INPUT = [
@@ -82,8 +75,6 @@ export function PactIdentityCard({
   onTitleEffectChange,
   onSave,
   isSaving = false,
-  valeurs,
-  sigilVersion,
 }: PactIdentityCardProps) {
   const handleSave = useCallback(async () => {
     if (!pactId) {
@@ -123,18 +114,12 @@ export function PactIdentityCard({
           <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-3">Aperçu</p>
           <div className="flex items-center gap-4">
             <PactVisual symbol={pactSymbol} size="sm" />
-            {/* LE SCEAU, A COTE DU SYMBOLE. Le symbole est choisi dans
-                une liste de quatre ; le sceau, lui, ne se choisit pas —
-                il se deduit du nom, et deux pactes n en portent jamais
-                le meme. C est ce que le rite a produit et qui lui
-                survit. */}
-            <SceauDuPacte
-              nom={pactName}
-              valeurs={valeurs}
-              version={sigilVersion}
-              taille={44}
-              className="text-primary/70 shrink-0"
-            />
+            {/* LE SCEAU N EST PLUS ICI. Il ne vit que sur le tableau de
+                bord, ou il tient la place du rond du heros. Le montrer
+                aussi sur la carte d identite le reduisait a une
+                vignette de quarante-quatre pixels — et cette carte ne
+                lui passait ni les valeurs ni sa version, si bien qu un
+                pacte jure sous la v1 s y serait redessine en v2. */}
             <div className="min-w-0 flex-1">
               <h4
                 className="text-sm text-primary uppercase tracking-wider truncate"

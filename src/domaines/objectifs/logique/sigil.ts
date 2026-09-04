@@ -23,8 +23,16 @@
  * il produit, et sait toujours dessiner les anciennes.
  */
 
-/** La version que ce module produit aujourd hui. */
-export const VERSION_ALPHABET = 1;
+import { ALPHABET_V2 } from "@/domaines/objectifs/logique/reseau";
+
+/**
+ * La version que ce module produit aujourd hui.
+ *
+ * ELLE PASSE A DEUX. Les pactes deja jures gardent la v1 — leur numero
+ * est en base, et « alphabetDeLaVersion » le consulte. Ceux qui se
+ * scellent a partir de maintenant portent l ecriture engendree.
+ */
+export const VERSION_ALPHABET = 2;
 
 /** Au-dela, le dessin devient illisible. */
 export const TRAITS_MAX = 16;
@@ -95,6 +103,7 @@ const ALPHABET_V1: readonly string[] = [
  */
 const ALPHABETS: Readonly<Record<number, readonly string[]>> = {
   1: ALPHABET_V1,
+  2: ALPHABET_V2,
 };
 
 /** L alphabet sous lequel un pacte de cette version a ete jure. */
