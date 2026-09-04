@@ -23,7 +23,7 @@ import { WeeklyReviewModal } from "@/domaines/revue";
 
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";
-import { usePact, useGoals } from "@/domaines/objectifs";
+import { usePact, useGoals, useValeursDuPacte } from "@/domaines/objectifs";
 import { useProfile } from "@/domaines/profil";
 import { useUserShop } from "@/domaines/boutique";
 import { useRankXP } from "@/domaines/succes";
@@ -60,6 +60,8 @@ export default function Home() {
   const { data: pact, isFetching: pactFetching, isSuccess: pactVu } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
+  /* Le sceau du heros s en sert : leur ORDRE place ses medaillons. */
+  const { data: valeurs = [] } = useValeursDuPacte(user?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: rankData } = useRankXP(user?.id, pact?.id);
 
@@ -231,6 +233,11 @@ export default function Home() {
             pactName={pact.name}
             pactMantra={pact.mantra}
             pactSymbol={pact.symbol}
+            valeurs={valeurs}
+            /* Une ligne d avant la migration n a pas de version :
+               « alphabetDeLaVersion » retombe alors sur la v1, qui est
+               bien ce sous quoi elle a ete juree. */
+            sigilVersion={pact.sigil_version ?? 1}
             titleFont={pact.title_font}
             titleEffect={pact.title_effect}
             rankName={safeRankData.currentRank?.name}

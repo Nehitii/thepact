@@ -65,6 +65,11 @@ export interface Pact {
   created_at?: string | null;
   title_font?: string | null;
   title_effect?: string | null;
+  /* SOUS QUEL ALPHABET CE PACTE A ETE JURE. La colonne existait et le
+     type l ignorait : le sceau du tableau de bord la lit pour ne pas
+     redessiner en v2 un pacte scelle sous la v1. Facultative, parce
+     qu une ligne d avant la migration n en porte pas. */
+  sigil_version?: number | null;
 }
 
 // Super Goal Types and Interfaces

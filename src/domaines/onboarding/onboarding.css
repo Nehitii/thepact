@@ -253,8 +253,7 @@
    defaut deguise en choix. Anneau gris, pas de halo, un coeur en
    pointille : l objet attend qu on le prenne. */
 .ob-objet--eteint .ob-objet-halo { opacity: 0; }
-.ob-objet--eteint .ob-anneau,
-.ob-objet--eteint .ob-graduation { opacity: 0.3; }
+.ob-objet--eteint .ob-objet-rosace { opacity: 0.32; }
 .ob-coeur-vide {
   display: block;
   width: 64px;
@@ -278,21 +277,11 @@
   pointer-events: none;
 }
 
-.ob-objet-anneau { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ob-anneau,
-.ob-graduation { fill: none; stroke: currentColor; }
-.ob-anneau-scelle { fill: none; stroke: currentColor; }
-.ob-corde { fill: none; stroke: currentColor; }
-.ob-ancre { fill: currentColor; }
-
-/* LES GLYPHES SE VOIENT, et c est tout le correctif. Ils portaient
-   « stroke-width: 0.014 » avec « vector-effect: non-scaling-stroke » :
-   cette combinaison compte l epaisseur en PIXELS RENDUS, pas en unites
-   du repere. Quatorze milliemes de pixel — le trace se calculait, se
-   posait, et n arrivait jamais a l ecran. L animation ne plantait pas :
-   elle etait invisible. L epaisseur est maintenant donnee en pixels
-   par le composant, ou elle a un sens. */
-.ob-glyphe { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+/* LA ROSACE, a la place de l ancien anneau : c est la meme figure que
+   sur le tableau de bord, et non plus un second dessin du meme objet. */
+.ob-objet-rosace { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Les regles de l ancien anneau — traits, graduations, corde, ancres,
+   glyphes — sont parties avec lui : la rosace porte les siennes. */
 
 .ob-objet-coeur { position: relative; z-index: 1; }
 

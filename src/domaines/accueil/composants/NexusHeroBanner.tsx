@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
-import { PactVisual } from "@/domaines/objectifs";
+import { PactVisual, RosaceDuPacte } from "@/domaines/objectifs";
 import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
@@ -25,6 +25,8 @@ export function NexusHeroBanner({
   totalMissions,
   activeDays,
   pactName,
+  valeurs,
+  sigilVersion,
   pactMantra,
   pactSymbol = "flame",
   titleFont = "orbitron",
@@ -152,7 +154,22 @@ export function NexusHeroBanner({
           <div className="singularity-flare" />
           <div className="singularity-corona" />
           <div className="singularity-nucleus" />
-          <div className="singularity-ring" />
+          {/* LE SCEAU A PRIS LA PLACE DU ROND.
+              « singularity-ring » n etait pas un ornement : c etait LA
+              JAUGE d avancement du pacte, un degrade conique masque en
+              anneau. La rosace la reprend sur sa piste externe — sans
+              quoi remplacer le rond aurait fait perdre une information.
+              C est le seul endroit de l application ou le sceau se
+              montre : il se deduit du nom, des valeurs et de leur
+              ordre, et deux pactes n en portent jamais le meme. */}
+          <RosaceDuPacte
+            className="singularity-sceau"
+            nom={pactName ?? ""}
+            valeurs={valeurs}
+            version={sigilVersion}
+            progression={Math.min(1, Math.max(0, progression / 100))}
+            alt={pactName ? `Sceau de ${pactName}` : ""}
+          />
           <div className="relative" style={{ zIndex: 4 }}>
             {/* LE LOGO DIT CE QUI EST EN COURS.
 

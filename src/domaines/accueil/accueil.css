@@ -219,22 +219,21 @@
 /* Anneau d'accretion : marque la progression reelle sur le pourtour.
    conic-gradient s'arrete a --sing-progress, donc l'anneau EST la
    jauge — pas une decoration posee a cote d'un chiffre. */
-.singularity-ring {
+/* ── LE SCEAU, A LA PLACE DU ROND ──────────────────────────────
+   « .singularity-ring » etait un degrade conique masque en anneau,
+   pilote par --sing-progress : pas un ornement, LA JAUGE du pacte.
+   La rosace la reprend sur sa piste externe, en SVG — et porte en
+   plus ce que le rond ne disait pas : le nom, les valeurs et leur
+   ordre. Le degrade conique disparait avec lui ; --sing-progress
+   reste, il nourrit encore la luminosite du noyau. */
+.singularity-sceau {
   position: absolute;
-  inset: 6%;
-  border-radius: 50%;
-  background: conic-gradient(
-    from -90deg,
-    hsl(var(--ds-accent-hue, 200) 100% 68%) 0%,
-    hsl(var(--ds-accent-hue, 200) 100% 68%) var(--sing-progress, 0%),
-    transparent var(--sing-progress, 0%));
-  mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
-  filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.8));
-  /* Plus de transition ici : elle visait `background`, qui ne
-     s interpole pas d un conic-gradient a l autre. Le glissement
-     vient maintenant de --sing-progress, anime sur la scene, et le
-     degrade se recalcule a chaque image a partir d elle. */
+  inset: 2%;
+  width: 96%;
+  height: 96%;
+  color: hsl(var(--ds-accent-hue, 200) 100% 68%);
+  filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.55));
+  pointer-events: none;
 }
 /* ── La lumiere que le c\oeur jette sur la page ─────────────────
    Pose sur le conteneur du tableau de bord, sous les panneaux :
@@ -388,12 +387,10 @@
 /* L'anneau d'accrétion EST la jauge de progression : c'est la seule
    couche qui porte une information, donc la seule qui doit être
    franche. Opaque, et sans la lueur qui l'aurait floutée. */
-.light .singularity-ring {
-  background: conic-gradient(
-    from -90deg,
-    hsl(var(--ds-accent-hue, 200) 88% 34%) 0%,
-    hsl(var(--ds-accent-hue, 200) 88% 34%) var(--sing-progress, 0%),
-    transparent var(--sing-progress, 0%));
+/* Sur papier, le halo empate les traits fins du sceau au lieu de les
+   allumer : on le coupe et l on fonce l encre. */
+.light .singularity-sceau {
+  color: hsl(var(--ds-accent-hue, 200) 88% 34%);
   filter: none;
 }
 
@@ -430,13 +427,6 @@
     hsl(var(--ds-accent-hue, 200) 88% 30% / calc(0.46 * var(--sing-lum, 1))) 52%,
     hsl(var(--ds-accent-hue, 200) 92% 24% / calc(0.28 * var(--sing-lum, 1))) 66%,
     transparent 78%);
-}
-.light .singularity-ring {
-  background: conic-gradient(
-    from -90deg,
-    hsl(var(--ds-accent-hue, 200) 100% 26%) 0%,
-    hsl(var(--ds-accent-hue, 200) 100% 26%) var(--sing-progress, 0%),
-    transparent var(--sing-progress, 0%));
 }
 .light .singularity-field,
 .light .singularity-field::after { opacity: 0.55; }

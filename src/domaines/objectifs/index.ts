@@ -41,7 +41,12 @@ export { usePact, fetchPact } from "./hooks/usePact";
 
    « VERSION_ALPHABET » sort aussi : c est ce que le rite ecrit dans
    « pacts.sigil_version » au moment de sceller. */
-export { SceauDuPacte } from "./composants/SceauDuPacte";
+/* LA ROSACE — le sceau tel qu il se montre. Le tableau de bord y met
+   le rond de son heros, le rite l y forge. Nulle part ailleurs. */
+export { RosaceDuPacte } from "./composants/RosaceDuPacte";
+export { rosaceDuPacte, BRANCHES_POSSIBLES } from "./logique/rosace";
+export { useValeursDuPacte } from "./hooks/useValeursDuPacte";
+export type { Rosace, BrancheDeLaRosace, MedaillonDeLaRosace } from "./logique/rosace";
 export {
   sigilDuPacte, normaliser, empreinte, echantillonner,
   ALPHABET, VERSION_ALPHABET, TRAITS_MAX,

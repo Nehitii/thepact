@@ -19,6 +19,12 @@ export interface NexusHeroBannerProps {
   pactName?: string;
   pactMantra?: string;
   pactSymbol?: string;
+  /* LE SCEAU A BESOIN DES DEUX. Les valeurs, DANS LEUR ORDRE DE RANG,
+     placent ses medaillons ; la version dit sous quel alphabet ce
+     pacte a ete jure — sans elle, un pacte de la v1 se redessinerait
+     en v2 au premier chargement. */
+  valeurs?: readonly string[];
+  sigilVersion?: number;
   titleFont?: string | null;
   titleEffect?: string | null;
   /** Rang, integre dans un coin du bandeau plutot que dans un panneau
