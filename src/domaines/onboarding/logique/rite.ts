@@ -19,7 +19,7 @@
 /** Les quatre actes, dans l ordre ou ils se jouent. */
 export type Acte = "eveil" | "forge" | "scellement" | "rencontre";
 
-/** Les neuf ecrans du rite. */
+/** Les dix ecrans du rite — neuf traverses, plus le raccourci. */
 export type Ecran =
   | "eveil"
   | "porteur"
@@ -27,6 +27,7 @@ export type Ecran =
   | "sceau"
   | "phrase"
   | "valeurs"
+  | "compact"
   | "lecture"
   | "scellement"
   | "rencontre";
@@ -38,6 +39,10 @@ export const ACTE_DE: Record<Ecran, Acte> = {
   sceau: "forge",
   phrase: "forge",
   valeurs: "forge",
+  /* LE FORMULAIRE COMPACT EST LA FORGE, repliee sur un seul ecran :
+     memes champs, meme acte. Il ne figure dans AUCUNE des deux suites —
+     on ne le traverse pas, on y saute. */
+  compact: "forge",
   /* LA LECTURE APPARTIENT AU SCELLEMENT, pas a la forge : on ne
      declare plus rien, on relit ce qu on va jurer. */
   lecture: "scellement",
@@ -169,6 +174,10 @@ export function peutAvancer(ecran: Ecran, etat: EtatDuRite): boolean {
       return etat.mantra.trim().length > 0;
     case "valeurs":
       return true;
+    case "compact":
+      /* Il porte les memes champs que la forge entiere : il exige donc
+         la meme chose qu elle, d un coup. */
+      return pacteDeclare(etat);
     case "lecture":
       /* On ne relit que ce qui existe. C est aussi la garde du rite
          abrege : il commence a la forge, mais rien n empeche d y
@@ -197,8 +206,16 @@ const objectifSansNom = (o: NonNullable<EtatDuRite["objectif"]>): boolean =>
  */
 export const peutSigner = (etat: EtatDuRite): boolean => etat.clausesAcceptees;
 
-/** L ecran suivant, ou `null` quand le rite est fini. */
+/**
+ * L ecran suivant, ou `null` quand le rite est fini.
+ *
+ * LE FORMULAIRE COMPACT N EST DANS AUCUNE SUITE, donc l index ne le
+ * trouve pas : il a sa navigation a lui. On y saute depuis la forge,
+ * on en sort vers la lecture — le raccourci abrege les declarations,
+ * il ne dispense ni de relire ni de jurer.
+ */
 export function ecranSuivant(ecran: Ecran, abrege: boolean): Ecran | null {
+  if (ecran === "compact") return "lecture";
   const suite = ecransDuRite(abrege);
   const i = suite.indexOf(ecran);
   if (i < 0 || i === suite.length - 1) return null;
@@ -207,6 +224,9 @@ export function ecranSuivant(ecran: Ecran, abrege: boolean): Ecran | null {
 
 /** L ecran precedent, ou `null` quand on est au debut. */
 export function ecranPrecedent(ecran: Ecran, abrege: boolean): Ecran | null {
+  /* On revient du compact a la premiere fenetre de la forge : il les
+     remplace toutes, aucune n est « celle d avant ». */
+  if (ecran === "compact") return ecransDuRite(abrege).find((e) => ACTE_DE[e] === "forge") ?? null;
   const suite = ecransDuRite(abrege);
   const i = suite.indexOf(ecran);
   if (i <= 0) return null;

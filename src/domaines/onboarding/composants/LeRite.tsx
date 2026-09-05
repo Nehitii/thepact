@@ -1,10 +1,11 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { ActeEveil } from "@/domaines/onboarding/composants/ActeEveil";
 import { LObjetDuPacte } from "@/domaines/onboarding/composants/LObjetDuPacte";
 import { LaForge } from "@/domaines/onboarding/composants/LaForge";
 import { LaLecture } from "@/domaines/onboarding/composants/LaLecture";
+import { LeCompact } from "@/domaines/onboarding/composants/LeCompact";
 import { LaRencontre } from "@/domaines/onboarding/composants/LaRencontre";
 import { LeScellement } from "@/domaines/onboarding/composants/LeScellement";
 import { Signature } from "@/domaines/onboarding/composants/Signature";
@@ -96,10 +97,18 @@ export function LeRite({
   const [etat, setEtat] = useState<EtatDuRite>(() => etatInitial ?? ETAT_VIDE);
   const [voile, setVoile] = useState(false);
 
-  const setEcran = useCallback((e: Ecran) => {
-    poserEcran(e);
-    onEcranChange?.(e);
-  }, [onEcranChange]);
+  /* ON PREVIENT LE BANC DEPUIS UN EFFET, PAS DEPUIS LE RENDU.
+     « onEtatChange » etait appele DANS la fonction de mise a jour de
+     « setEtat » — que React peut executer pendant un rendu. Il posait
+     donc un etat sur « BancDuRite » au milieu du rendu de « LeRite »,
+     et React le signalait : « Cannot update a component while rendering
+     a different component ». Un avertissement, pas un plantage — mais
+     l ordre des rendus n est alors plus garanti.
+     Les effets se declenchent APRES le rendu : c est leur role. */
+  useEffect(() => { onEcranChange?.(ecran); }, [ecran, onEcranChange]);
+  useEffect(() => { onEtatChange?.(etat); }, [etat, onEtatChange]);
+
+  const setEcran = useCallback((e: Ecran) => poserEcran(e), []);
 
   /* Il accepte une FONCTION autant qu un objet : sans cela, deux clics
      dans la meme image lisent tous les deux l etat d avant, et le
@@ -107,12 +116,8 @@ export function LeRite({
      laissaient qu une — mesure a l ecran. */
   const modifier = useCallback(
     (champ: Partial<EtatDuRite> | ((e: EtatDuRite) => Partial<EtatDuRite>)) =>
-      setEtat((e) => {
-        const suivant = { ...e, ...(typeof champ === "function" ? champ(e) : champ) };
-        onEtatChange?.(suivant);
-        return suivant;
-      }),
-    [onEtatChange],
+      setEtat((e) => ({ ...e, ...(typeof champ === "function" ? champ(e) : champ) })),
+    [],
   );
 
   const terminer = useCallback(async () => {
@@ -234,8 +239,15 @@ export function LeRite({
                   parait quand le pacte est declare, et seulement dans
                   la forge : depuis la rencontre, elle ramenait EN
                   ARRIERE, au scellement. */}
-              {acte === "forge" && pacteDeclare(etat) && (
-                <button type="button" className="ob-passer" onClick={() => setEcran("scellement")}>
+              {/* LA SORTIE MENE AU FORMULAIRE COMPACT, plus au
+                  scellement. Elle y sautait — et le scellement refuse un
+                  pacte non declare : le raccourci ne servait donc
+                  qu une fois toutes les fenetres remplies, c est-a-dire
+                  quand il n y avait plus rien a passer. Elle est
+                  desormais offerte des la premiere fenetre, sans
+                  condition : c est ce que « jamais cachee » veut dire. */}
+              {acte === "forge" && ecran !== "compact" && (
+                <button type="button" className="ob-passer" onClick={() => setEcran("compact")}>
                   {t("onboarding.passer")}
                 </button>
               )}
@@ -254,7 +266,10 @@ export function LeRite({
                 exit={sobre ? undefined : { opacity: 0, x: -18 }}
                 transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               >
-                {acte === "forge" && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
+                {acte === "forge" && ecran !== "compact"
+                  && <LaForge ecran={ecran} etat={etat} modifier={modifier} />}
+
+                {ecran === "compact" && <LeCompact etat={etat} modifier={modifier} />}
 
                 {ecran === "lecture" && <LaLecture etat={etat} />}
 

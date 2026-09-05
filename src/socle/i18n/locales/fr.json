@@ -3159,6 +3159,10 @@
       "sousLeSigne": "{{nom}}, sous le signe {{signe}}, en teinte {{teinte}}.",
       "corriger": "Non — corriger",
       "confirmer": "C’est cela"
+    },
+    "compact": {
+      "entete": "FORMULAIRE",
+      "invite": "Tout d’un coup. Le pacte est le même ; c’est la mise en scène qu’on abrège."
     }
   },
   "leaderboard": {

@@ -328,3 +328,35 @@ describe("la lecture : on relit avant de jurer", () => {
     expect(peutAvancer("lecture", rempli({ clausesAcceptees: false, signe: false }))).toBe(true);
   });
 });
+
+describe("le formulaire compact : la sortie que la spec demandait", () => {
+  it("N EST DANS AUCUNE DES DEUX SUITES : on y saute, on ne le traverse pas", () => {
+    expect(RITE_COMPLET).not.toContain("compact");
+    expect(RITE_ABREGE).not.toContain("compact");
+  });
+
+  it("appartient a la forge : il en porte les memes champs", () => {
+    expect(ACTE_DE.compact).toBe("forge");
+  });
+
+  it("EXIGE AUTANT QUE LA FORGE ENTIERE — il abrege la mise en scene, pas le pacte", () => {
+    expect(peutAvancer("compact", ETAT_VIDE)).toBe(false);
+    expect(peutAvancer("compact", rempli({ nomDuPacte: "" }))).toBe(false);
+    expect(peutAvancer("compact", rempli({ symbole: "" }))).toBe(false);
+    expect(peutAvancer("compact", rempli())).toBe(true);
+  });
+
+  it("SORT VERS LA LECTURE, pas vers le scellement", () => {
+    /* Il dispense de declarer une fenetre a la fois. Il ne dispense ni
+       de relire ce qu on jure, ni de le jurer. */
+    for (const abrege of [false, true]) {
+      expect(ecranSuivant("compact", abrege)).toBe("lecture");
+    }
+  });
+
+  it("revient a la premiere fenetre de la forge", () => {
+    /* Il les remplace toutes : aucune n est « celle d avant ». */
+    expect(ecranPrecedent("compact", false)).toBe("porteur");
+    expect(ecranPrecedent("compact", true)).toBe("porteur");
+  });
+});

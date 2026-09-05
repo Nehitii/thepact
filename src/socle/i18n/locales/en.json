@@ -3159,6 +3159,10 @@
       "sousLeSigne": "{{nom}}, under the sign {{signe}}, in {{teinte}}.",
       "corriger": "No — go back",
       "confirmer": "That’s it"
+    },
+    "compact": {
+      "entete": "FORM",
+      "invite": "All at once. The pact is the same; it is the ceremony we are skipping."
     }
   },
   "leaderboard": {
