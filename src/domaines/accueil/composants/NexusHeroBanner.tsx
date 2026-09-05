@@ -171,7 +171,10 @@ export function NexusHeroBanner({
             elan={Math.min(1, enCours / 5)}
             alt={pactName ? `Sceau de ${pactName}` : ""}
           />
-          <div className="relative" style={{ zIndex: 4 }}>
+          {/* GRILLE, PAS BLOC : le logo est un « inline-block » et se
+              posait sur la ligne de base, qui reserve sous lui la place
+              des jambages — quatre pixels au-dessus du centre du sceau. */}
+          <div className="relative grid place-items-center" style={{ zIndex: 4 }}>
             {/* LE LOGO DIT CE QUI EST EN COURS.
 
                 Il ondulait a vide — trois anneaux a 8, 5 et 3 secondes,

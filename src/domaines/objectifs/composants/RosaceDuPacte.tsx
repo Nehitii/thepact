@@ -19,6 +19,23 @@ interface Props {
    * vitesse. C est un ETAT, qu on sent avant de le lire.
    */
   elan?: number;
+  /**
+   * CE QUI EST DEJA JURE, pendant la forge.
+   *
+   * Le sceau se construisait d un coup, au nom : anneaux nus pendant
+   * quatre ecrans, puis la figure entiere d un seul geste. On ne
+   * voyait pas ce qu on fabriquait, on le decouvrait a la fin.
+   *
+   * Chaque declaration revele donc SA couche. Hors du rite — sur le
+   * tableau de bord, ou le pacte est complet — tout est revele, et
+   * c est le defaut.
+   */
+  revele?: {
+    /** Le signe et la teinte : l etoile et le moyeu. */
+    signe?: boolean;
+    /** La phrase : les graduations et les marques du dedans. */
+    phrase?: boolean;
+  };
   /** Ce que le sceau dit aux lecteurs d ecran. Vide par defaut. */
   alt?: string;
   className?: string;
@@ -99,7 +116,9 @@ const signe = (d: string, x: number, y: number, taille: number, rot: number, w: 
   + ` stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g>`;
 
 /** Le dessin entier, en une chaine : rien a reconcilier cote React. */
-function dessiner(r: Rosace, progression: number): string {
+/* « avecSigne » et non « signe » : ce dernier est la fonction qui
+   dessine un glyphe, et le parametre la masquait. */
+function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase: boolean): string {
   let out = "";
 
   /* Les couches externes existent meme sans nom : un cadre qui attend
@@ -113,11 +132,14 @@ function dessiner(r: Rosace, progression: number): string {
   /* LES GRADUATIONS TOURNENT A L ENVERS de la bande : c est le
      contresens qui fait le mecanisme. Deux couronnes dans le meme sens
      se lisent comme un seul bloc qui pivote. */
+  /* LES GRADUATIONS VIENNENT AVEC LA PHRASE : c est la gravure. */
   out += `</g><g class="sceau-couche sceau-grad">`;
-  for (let i = 0; i < branches * 6; i++) {
-    const a = -Math.PI / 2 + (i / (branches * 6)) * DEUX_PI;
-    const longue = i % 6 === 0;
-    out += rayon(a, R.railHaut, R.railHaut + 0.035, longue ? 1.4 : 0.6, longue ? 0.55 : 0.22);
+  if (avecPhrase) {
+    for (let i = 0; i < branches * 6; i++) {
+      const a = -Math.PI / 2 + (i / (branches * 6)) * DEUX_PI;
+      const longue = i % 6 === 0;
+      out += rayon(a, R.railHaut, R.railHaut + 0.035, longue ? 1.4 : 0.6, longue ? 0.55 : 0.22);
+    }
   }
 
   /* LA BANDE. La taille des signes suit l arc reellement disponible :
@@ -142,20 +164,28 @@ function dessiner(r: Rosace, progression: number): string {
   }
 
   out += `</g><g class="sceau-couche sceau-moyeu">`;
-  out += anneau(R.construction, 0.7, 0.3, ".014 .024") + anneau(0.485, 0.6, 0.22);
-  for (let i = 0; i < branches * 4; i++) {
-    const a = -Math.PI / 2 + ((i + 0.5) / (branches * 4)) * DEUX_PI;
-    out += rayon(a, R.marques, R.marques + 0.03, 0.8, 0.35);
+  /* LE MOYEU VIENT AVEC LE SIGNE : c est la charpente qui porte
+     l etoile, elle n a pas de raison d exister avant elle. */
+  if (avecSigne) {
+    out += anneau(R.construction, 0.7, 0.3, ".014 .024") + anneau(0.485, 0.6, 0.22);
+    for (let b = 0; b < branches; b++) {
+      const a = -Math.PI / 2 + (b / branches) * DEUX_PI;
+      out += rayon(a, R.moyeu, R.railBas, 0.9, 0.26) + losange(a, 0.645, 0.022);
+    }
+    out += anneau(R.moyeu, 1.3, 0.5);
   }
-  for (let b = 0; b < branches; b++) {
-    const a = -Math.PI / 2 + (b / branches) * DEUX_PI;
-    out += rayon(a, R.moyeu, R.railBas, 0.9, 0.26) + losange(a, 0.645, 0.022);
+  if (avecPhrase) {
+    for (let i = 0; i < branches * 4; i++) {
+      const a = -Math.PI / 2 + ((i + 0.5) / (branches * 4)) * DEUX_PI;
+      out += rayon(a, R.marques, R.marques + 0.03, 0.8, 0.35);
+    }
   }
-  out += anneau(R.moyeu, 1.3, 0.5);
 
   /* LES MEDAILLONS NE TOURNENT PAS : leurs signes doivent rester
-     droits. Une couronne qui tourne emporte ses signes avec elle. */
-  out += `</g><g class="sceau-couche">`;
+     droits. Une couronne qui tourne emporte ses signes avec elle.
+     La couche est nommee : elle ne tourne pas, mais on doit pouvoir la
+     designer — au style comme a la mesure. */
+  out += `</g><g class="sceau-couche sceau-medaillons">`;
   if (r.medaillons.length > 0) {
     const pts = r.medaillons.map((m) => surLeCercle(m.angle, R.medaillon).replace(" ", ","));
     for (const m of r.medaillons) {
@@ -172,19 +202,26 @@ function dessiner(r: Rosace, progression: number): string {
     }
   }
 
+  /* L ETOILE VIENT AVEC LE SIGNE. Elle etait la des le premier ecran,
+     avant qu on ait rien choisi : la figure centrale d un pacte qui
+     n existait pas encore. */
   out += `</g><g class="sceau-couche sceau-etoile">`;
   const sommets: string[] = [];
   for (let i = 0; i < branches * 2; i++) {
     const a = -Math.PI / 2 + (i / (branches * 2)) * DEUX_PI;
     sommets.push(surLeCercle(a, i % 2 ? R.etoile * 0.38 : R.etoile).replace(" ", ","));
   }
-  out += `<polygon points="${sommets.join(" ")}" fill="currentColor" opacity=".22"/>`
-    + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="2.4"`
-    + ` stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+  if (avecSigne) {
+    out += `<polygon points="${sommets.join(" ")}" fill="currentColor" opacity=".22"/>`
+      + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="2.4"`
+      + ` stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+  }
   /* Le coeur reste fixe, comme les medaillons. */
-  out += `</g><g class="sceau-couche">`;
-  out += `<circle cx="0" cy="0" r="${R.coeur}" fill="var(--ds-bg-base-solide, #080B12)" stroke="currentColor"`
-    + ` stroke-width="2" vector-effect="non-scaling-stroke"/>` + anneau(0.135, 0.8, 0.45);
+  out += `</g><g class="sceau-couche sceau-coeur">`;
+  if (avecSigne) {
+    out += `<circle cx="0" cy="0" r="${R.coeur}" fill="var(--ds-bg-base-solide, #080B12)" stroke="currentColor"`
+      + ` stroke-width="2" vector-effect="non-scaling-stroke"/>` + anneau(0.135, 0.8, 0.45);
+  }
   if (r.coeur) out += signe(r.coeur, 0, 0, 0.19, 0, 2.4, false);
 
   /* Une seule couche ouverte au depart, une seule fermee a la fin :
@@ -208,12 +245,15 @@ function dessiner(r: Rosace, progression: number): string {
  * progression ; ici React ne voit qu une propriete qui change.
  */
 export function RosaceDuPacte({
-  nom, valeurs = [], progression = 0, version, elan = 0.5, alt = "", className,
+  nom, valeurs = [], progression = 0, version, elan = 0.5, revele, alt = "", className,
 }: Props) {
+  /* Hors du rite, tout est deja jure : on revele tout. */
+  const avecSigne = revele?.signe ?? true;
+  const avecPhrase = revele?.phrase ?? true;
   const part = Math.min(1, Math.max(0, progression));
   const dessin = useMemo(
-    () => dessiner(rosaceDuPacte(nom, valeurs, version), part),
-    [nom, valeurs, version, part],
+    () => dessiner(rosaceDuPacte(nom, valeurs, version), part, avecSigne, avecPhrase),
+    [nom, valeurs, version, part, avecSigne, avecPhrase],
   );
 
   /* LES DUREES DESCENDENT DE L ELAN. A un, la bande fait un tour en

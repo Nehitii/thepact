@@ -60,6 +60,11 @@ export function LObjetDuPacte({
           nom={nomDuPacte}
           valeurs={valeurs}
           progression={scelle ? 1 : 0}
+          /* CHAQUE DECLARATION REVELE SA COUCHE. Le sceau se
+             construisait d un coup, au nom : quatre ecrans d anneaux
+             nus, puis la figure entiere. On ne voyait pas ce qu on
+             fabriquait, on le decouvrait a la fin. */
+          revele={{ signe: symbole.length > 0, phrase: mantra.trim().length > 0 }}
           /* Rien n est encore en cours : il tourne au ralenti, puis
              prend son elan une fois le pacte scelle. */
           elan={scelle ? 1 : 0.2}

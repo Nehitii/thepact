@@ -31,13 +31,31 @@ describe("la forme de la rosace", () => {
     expect(rosaceDuPacte("Kaïros")).toEqual(rosaceDuPacte("kairos"));
   });
 
-  it("un pacte sans nom n a pas de rosace, et c est juste", () => {
+  it("un pacte sans nom n a ni bande ni coeur, et c est juste", () => {
     /* Pendant la frappe : mieux vaut un cadre qui attend qu un sceau
        qu on n a pas encore. */
     const vide = rosaceDuPacte("   ");
     expect(vide.branches).toBe(0);
     expect(vide.bandes).toEqual([]);
     expect(vide.coeur).toBeNull();
+  });
+
+  it("MAIS SES VALEURS ONT DEJA LEURS MEDAILLONS", () => {
+    /* Le nom est la DERNIERE declaration de la forge. Un retour anticipe
+       sur « nom vide » rendait donc la rosace entiere vide pendant tout
+       le rite, et le sceau se construisait d un seul coup a la fin :
+       trois valeurs jurees, zero medaillon a l ecran jusqu au nom.
+       Chaque medaillon descend de SA valeur, pas du nom — il doit
+       exister des qu on choisit celle-ci. */
+    const sansNom = rosaceDuPacte("", ["Liberté", "Discipline", "Clarté"]);
+    expect(sansNom.medaillons).toHaveLength(3);
+    expect(sansNom.medaillons.map((m) => m.valeur))
+      .toEqual(["Liberté", "Discipline", "Clarté"]);
+    expect(sansNom.medaillons.every((m) => m.d.length > 0)).toBe(true);
+
+    /* Et le nom ne les change pas : il ajoute la bande et le coeur. */
+    const avecNom = rosaceDuPacte("Ananta", ["Liberté", "Discipline", "Clarté"]);
+    expect(avecNom.medaillons).toEqual(sansNom.medaillons);
   });
 
   it("pose une branche par secteur, la premiere en haut", () => {

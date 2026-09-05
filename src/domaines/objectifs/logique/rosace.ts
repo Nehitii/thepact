@@ -61,9 +61,12 @@ const HAUT = -Math.PI / 2;
  * deux cent soixante et un pactes auraient partage leur sceau avec un
  * autre. En miroir de branche, aucun.
  *
- * UN PACTE SANS NOM N A PAS DE ROSACE. Pendant la frappe, la bande
- * reste vide et les anneaux se dessinent seuls : mieux vaut un cadre
- * qui attend qu un sceau qu on n a pas encore.
+ * LA FIGURE SE CONSTRUIT DECLARATION PAR DECLARATION. Les medaillons
+ * naissent des valeurs, la bande et le coeur naissent du nom : chacun
+ * apparait quand SA declaration est faite, pas quand la derniere l est.
+ * Tant que le nom manque, la bande reste vide et les anneaux se
+ * dessinent seuls — mieux vaut un cadre qui attend qu un sceau qu on
+ * n a pas encore.
  */
 export function rosaceDuPacte(
   nom: string,
@@ -73,8 +76,27 @@ export function rosaceDuPacte(
   const alphabet = alphabetDeLaVersion(version);
   const source = echantillonner(normaliser(nom));
 
+  /* LES MEDAILLONS SE CALCULENT AVANT TOUT LE RESTE, PARCE QU ILS NE
+     DEPENDENT PAS DU NOM. Chacun descend de SA valeur : il existe des
+     qu on choisit celle-ci, meme si le pacte n a pas encore de nom.
+     Ils sortaient d un retour anticipe qui rendait la rosace entiere
+     vide tant que le nom manquait. Le nom etant la DERNIERE declaration
+     de la forge, les valeurs etaient toujours choisies avant lui : le
+     sceau se construisait donc d un seul coup a la fin. Mesure a
+     l ecran, trois valeurs jurees, zero medaillon jusqu au nom.
+
+     ILS SE REPARTISSENT SUR LE TOUR ENTIER, pas sur les axes des
+     branches : poses sur les axes, trois valeurs dans une figure a
+     quatre branches laissaient un axe nu et la figure perdait son
+     miroir. Repartis, n valeurs gardent toujours un axe vertical. */
+  const medaillons = valeurs.map((valeur, i) => ({
+    valeur,
+    d: alphabet[empreinte(valeur) % alphabet.length],
+    angle: HAUT + (i / valeurs.length) * DEUX_PI,
+  }));
+
   if (source.length === 0) {
-    return { version, branches: 0, bandes: [], medaillons: [], coeur: null, source };
+    return { version, branches: 0, bandes: [], medaillons, coeur: null, source };
   }
 
   const marque = empreinte(source);
@@ -109,16 +131,6 @@ export function rosaceDuPacte(
     }
     bandes.push({ angle: HAUT + (b / branches) * DEUX_PI, signes });
   }
-
-  /* LES MEDAILLONS SE REPARTISSENT SUR LE TOUR ENTIER, pas sur les axes
-     des branches : poses sur les axes, trois valeurs dans une figure a
-     quatre branches laissaient un axe nu et la figure perdait son
-     miroir. Repartis, n valeurs gardent toujours un axe vertical. */
-  const medaillons = valeurs.map((valeur, i) => ({
-    valeur,
-    d: alphabet[empreinte(valeur) % alphabet.length],
-    angle: HAUT + (i / valeurs.length) * DEUX_PI,
-  }));
 
   return {
     version,

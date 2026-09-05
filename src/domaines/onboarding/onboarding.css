@@ -283,7 +283,12 @@
 /* Les regles de l ancien anneau — traits, graduations, corde, ancres,
    glyphes — sont parties avec lui : la rosace porte les siennes. */
 
-.ob-objet-coeur { position: relative; z-index: 1; }
+/* EN GRILLE, PAS EN BLOC. Le logo est un « inline-block » : pose dans
+   un conteneur en bloc, il s assied sur la ligne de base, qui reserve
+   sous lui la place des jambages. Mesure : boite de 96 sur 103 pour un
+   logo de 96 sur 96, donc le symbole tombait 4 px au-dessus du centre
+   du cercle. Une grille ne connait pas de ligne de base. */
+.ob-objet-coeur { position: relative; z-index: 1; display: grid; place-items: center; }
 
 .ob-objet-legende {
   display: grid;
