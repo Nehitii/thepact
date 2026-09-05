@@ -1,3 +1,8 @@
+/* LA PEAU DES BANCS D ESSAI. Elle etait dans « domaines/onboarding »,
+   ou seul le banc du rite pouvait la lire. Un deuxieme banc — celui du
+   bandeau — l aurait recopiee ou serait entre par la fenetre : un
+   domaine n importe pas la feuille d un autre. Une peau d outil ne
+   nomme aucun domaine, elle a donc sa place ici. */
 /* ═══════════════════════════════════════════════════════════════
    LE BANC D ESSAI
 
@@ -54,7 +59,10 @@
 
 .banc-champ { display: grid; gap: 5px; }
 .banc-champ > span { color: var(--banc-encre-2); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; }
-.banc-champ select {
+/* La saisie libre et le curseur : le banc du bandeau regle un nom,
+   une raison et trois nombres. Meme peau que les menus. */
+.banc-champ select,
+.banc-saisie {
   width: 100%;
   min-height: 32px;
   padding: 5px 8px;
@@ -64,6 +72,11 @@
   color: var(--banc-encre);
   font-family: inherit;
   font-size: 13px;
+}
+
+.banc-champ input[type="range"] {
+  width: 100%;
+  accent-color: var(--banc-signal);
 }
 
 .banc-bascule { display: flex; align-items: center; gap: 8px; cursor: pointer; }

@@ -52,6 +52,14 @@ export {
   ALPHABET, VERSION_ALPHABET, TRAITS_MAX,
   type Sigil, type TraitDuSigil, type AncreDuSigil,
 } from "./logique/sigil";
+/* COMMENT LE PACTE ECRIT SON NOM. Deux colonnes de « pacts » : le
+   bandeau les rend, « Mon pacte » les choisit, et les deux lisaient
+   chacun sa propre copie de la table. */
+export {
+  POLICES_DU_TITRE, EFFETS_DU_TITRE, POLICE_PAR_DEFAUT,
+  familleDeLaPolice, styleDeLEffet,
+  type PoliceDuTitre, type EffetDuTitre,
+} from "./logique/typographieDuPacte";
 export type { Pact } from "./hooks/usePact";
 export { useGoals, fetchGoals } from "./hooks/useGoals";
 export type { Goal } from "./hooks/useGoals";
@@ -59,6 +67,7 @@ export { useSharedPacts } from "./hooks/useSharedPacts";
 export { useEtapes } from "./hooks/useEtapes";
 export { useGoalFilters } from "./hooks/useGoalFilters";
 export { PactVisual } from "./composants/PactVisual";
+export { IdentiteDuPacte } from "./composants/IdentiteDuPacte";
 export { getDifficultyLabel, getStatusLabel, getTagLabel } from "./logique/goalConstants";
 
 /* QUATRE PIECES DE PLUS, TROUVEES PAR LA GARDE APRES COUP.

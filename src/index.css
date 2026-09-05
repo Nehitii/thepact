@@ -58,6 +58,36 @@
   src: url('/fonts/jetbrains-mono.woff2') format('woff2');
 }
 
+/* SWITZER — le grotesque de la maison, en trois graisses.
+   Indian Type Foundry, licence libre, 55,7 Ko au total.
+   Trois et pas cinq : 600 et 800 n existent pas dans les fichiers, le
+   navigateur les FABRIQUERAIT en epaississant le trait — un faux gras,
+   visible et sale.
+   Elle etait declaree dans « domaines/social/community.css », que seules
+   cinq pages importent, alors que la carte de profil, les deux ecrans
+   d authentification et desormais le titre du pacte la demandent. */
+@font-face {
+  font-family: 'Switzer';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/switzer-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Switzer';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/switzer-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Switzer';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/switzer-700.woff2') format('woff2');
+}
+
 /* design-tokens.css est importe depuis main.tsx. Un @import place ici, apres
    les @font-face qui precedent, est invalide au sens de la spec CSS et se
    trouve silencieusement ignore : la feuille n'etait jamais chargee. */

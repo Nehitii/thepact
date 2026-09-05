@@ -36,6 +36,7 @@ const Shop = lazy(routeImports.shop);
 const Community = lazy(() => import("@/domaines/social/pages/Community"));
 const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
+const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -125,6 +126,16 @@ function AppRoutes() {
           lignes qui auraient ete posees. Le mettre derriere
           « ProtectedRoute » lui reprendrait tout son interet. */}
       <Route path="/banc/rite" element={<BancDuRite />} />
+
+      {/* LE BANC DU BANDEAU — public, et pour la meme raison.
+          Le tableau de bord est derriere la session, la double
+          authentification et un pacte deja jure : regarder son bandeau
+          demandait de se connecter, ce qui suffit a ne pas le
+          regarder. Et il y a plus a voir ici qu ailleurs — quatre
+          polices, six effets, neuf symboles, un sceau qui descend du
+          nom et des valeurs : c est la COMBINAISON qu il faut juger.
+          Il ne lit ni n ecrit rien ; tout vient de ses menus. */}
+      <Route path="/banc/bandeau" element={<BancDuBandeau />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />

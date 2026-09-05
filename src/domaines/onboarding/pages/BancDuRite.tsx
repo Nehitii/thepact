@@ -6,7 +6,7 @@ import {
   ETAT_VIDE, RITE_COMPLET, type Ecran, type EtatDuRite,
 } from "@/domaines/onboarding/logique/rite";
 import "@/domaines/onboarding/onboarding.css";
-import "@/domaines/onboarding/banc.css";
+import "@/socle/ds/banc.css";
 
 /* Un pacte deja declare, pour arriver directement au scellement sans
    retaper cinq fenetres. C est tout l objet du banc. */

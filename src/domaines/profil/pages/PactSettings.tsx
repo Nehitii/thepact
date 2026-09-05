@@ -3,7 +3,7 @@ import { useAuth } from "@/socle/contextes/AuthContext";
 import { supabase } from "@/socle/supabase/client";
 import { ProfilePactSettings } from "@/domaines/profil/composants/ProfilePactSettings";
 import { Loader2 } from "lucide-react";
-import { usePactMutation } from "@/domaines/objectifs";
+import { usePactMutation, useValeursDuPacte } from "@/domaines/objectifs";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
@@ -30,6 +30,12 @@ export default function PactSettings() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+  /* LE SCEAU DE L APERCU A BESOIN DES DEUX. Les valeurs, DANS LEUR
+     ORDRE DE RANG, placent ses medaillons ; la version dit sous quel
+     alphabet ce pacte a ete jure — sans elle, un pacte de la v1 se
+     redessinerait en v2 dans son propre apercu. */
+  const [sigilVersion, setSigilVersion] = useState<number | undefined>(undefined);
+  const { data: valeurs } = useValeursDuPacte(user?.id);
 
   const { updatePact, isUpdating } = usePactMutation(user?.id, pactId);
 
@@ -51,7 +57,7 @@ export default function PactSettings() {
 
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, name, mantra, symbol, color, project_start_date, project_end_date, title_font, title_effect")
+        .select("id, name, mantra, symbol, color, project_start_date, project_end_date, title_font, title_effect, sigil_version")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -62,6 +68,7 @@ export default function PactSettings() {
         setPactSymbol(pactData.symbol || "flame");
         setTitleFont(pactData.title_font || "orbitron");
         setTitleEffect(pactData.title_effect || "none");
+        setSigilVersion(pactData.sigil_version ?? undefined);
         if (pactData.project_start_date) setProjectStartDate(new Date(pactData.project_start_date));
         if (pactData.project_end_date) setProjectEndDate(new Date(pactData.project_end_date));
       }
@@ -103,6 +110,8 @@ export default function PactSettings() {
     >
       <ProfilePactSettings
         volet={volet}
+        valeurs={valeurs}
+        sigilVersion={sigilVersion}
         userId={user.id}
         pactId={pactId}
         pactName={pactName}

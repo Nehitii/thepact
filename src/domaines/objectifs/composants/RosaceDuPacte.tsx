@@ -181,7 +181,15 @@ function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase
     }
   }
 
-  /* LES MEDAILLONS NE TOURNENT PAS : leurs signes doivent rester
+  /* LE TROU EST CELUI DE LA PAGE, PAS UN NOIR ECRIT EN DUR.
+     Les deux disques perces — medaillons et coeur — se remplissaient
+     de « var(--ds-bg-base-solide, #080B12) ». Ce jeton n existe nulle
+     part dans le depot : c est donc toujours le repli qui servait, un
+     quasi-noir fixe. En theme clair, sur un fond a 249/248/246, chaque
+     medaillon devenait une pastille noire. « --ds-bg-base » existe,
+     lui, et change avec le theme.
+
+     LES MEDAILLONS NE TOURNENT PAS : leurs signes doivent rester
      droits. Une couronne qui tourne emporte ses signes avec elle.
      La couche est nommee : elle ne tourne pas, mais on doit pouvoir la
      designer — au style comme a la mesure. */
@@ -190,7 +198,7 @@ function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase
     const pts = r.medaillons.map((m) => surLeCercle(m.angle, R.medaillon).replace(" ", ","));
     for (const m of r.medaillons) {
       const x = Math.cos(m.angle) * R.medaillon, y = Math.sin(m.angle) * R.medaillon;
-      out += `<circle cx="${f(x)}" cy="${f(y)}" r="${R.medaillonRayon}" fill="var(--ds-bg-base-solide, #080B12)"`
+      out += `<circle cx="${f(x)}" cy="${f(y)}" r="${R.medaillonRayon}" fill="hsl(var(--ds-bg-base, 220 50% 4%))"`
         + ` stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
       out += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R.medaillonRayon * 0.78)}" fill="none"`
         + ` stroke="currentColor" stroke-width=".7" opacity=".5" vector-effect="non-scaling-stroke"/>`;
@@ -219,7 +227,7 @@ function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase
   /* Le coeur reste fixe, comme les medaillons. */
   out += `</g><g class="sceau-couche sceau-coeur">`;
   if (avecSigne) {
-    out += `<circle cx="0" cy="0" r="${R.coeur}" fill="var(--ds-bg-base-solide, #080B12)" stroke="currentColor"`
+    out += `<circle cx="0" cy="0" r="${R.coeur}" fill="hsl(var(--ds-bg-base, 220 50% 4%))" stroke="currentColor"`
       + ` stroke-width="2" vector-effect="non-scaling-stroke"/>` + anneau(0.135, 0.8, 0.45);
   }
   if (r.coeur) out += signe(r.coeur, 0, 0, 0.19, 0, 2.4, false);

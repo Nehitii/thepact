@@ -5,6 +5,7 @@ import { ProjectTimelineCard } from "@/domaines/profil/composants/ProjectTimelin
 import { CustomDifficultyCard } from "@/domaines/profil/composants/CustomDifficultyCard";
 import { RanksCard } from "@/domaines/succes";
 import { PactIdentityCard } from "@/domaines/profil/composants/PactIdentityCard";
+import { ApercuDuBandeau } from "@/domaines/profil/composants/ApercuDuBandeau";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
    L identite du pacte est un editeur a elle seule — 1 282 px — et les
@@ -22,6 +23,10 @@ interface ProfilePactSettingsProps {
   pactSymbol: string;
   titleFont: string;
   titleEffect: string;
+  /** Dans leur ordre de rang : elles placent les medaillons du sceau. */
+  valeurs?: readonly string[];
+  /** Sous quel alphabet le pacte a ete jure. */
+  sigilVersion?: number;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
@@ -50,6 +55,8 @@ export function ProfilePactSettings({
   pactSymbol,
   titleFont,
   titleEffect,
+  valeurs,
+  sigilVersion,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
@@ -84,6 +91,20 @@ export function ProfilePactSettings({
             pas par un tableau de bord, encore moins deux fois. Les deux
             valeurs qui n existaient qu ici — scelle le, jours tenus —
             ont rejoint l autre table. */}
+        {/* ON VOIT CE QU ON REGLE, PENDANT QU ON LE REGLE. Le choix
+            de la police est en bas du second panneau ; il fallait
+            enregistrer, revenir au tableau de bord, puis repartir dans
+            les reglages pour savoir ce qu on venait de choisir. */}
+        <ApercuDuBandeau
+          nom={pactName}
+          mantra={pactMantra}
+          symbole={pactSymbol}
+          valeurs={valeurs}
+          version={sigilVersion}
+          police={titleFont}
+          effet={titleEffect}
+        />
+
         <PactIdentityCard
           pactId={pactId}
           pactName={pactName}

@@ -1,16 +1,13 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CornerBrackets } from "@/domaines/accueil/composants/CornerBrackets";
-import { PactVisual, RosaceDuPacte } from "@/domaines/objectifs";
+import { IdentiteDuPacte } from "@/domaines/objectifs";
 import { RankCore } from "@/domaines/succes";
 import { PREF } from "@/socle/outils/preferencesAffichage";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { selonTheme } from "@/socle/outils/encrePapier";
 import type { MesureProgression, NexusHeroBannerProps } from "@/domaines/accueil/types";
-import {
-  EFFECT_STYLES, EFFETS_PAPIER, STYLE_LIBELLE,
-  FONT_MAP, ROULEMENT, STYLE_VALEUR,
-} from "@/domaines/accueil/logique/stylesBanniere";
+import { STYLE_LIBELLE, ROULEMENT, STYLE_VALEUR } from "@/domaines/accueil/logique/stylesBanniere";
 /* Reexporte : la page Home l importait depuis ce composant. */
 export type { MesureProgression };
 
@@ -87,9 +84,6 @@ export function NexusHeroBanner({
     { cle: "jours", value: String(activeDays), label: "JOURS ACTIFS", color: selonTheme("#ff8c00", sombre), glow: sombre ? "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" : "none" },
   ], [progression, mesure, onChangerMesure, level, totalMissions, activeDays, sombre]);
 
-  const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
-  const effectStyle = (sombre ? EFFECT_STYLES : EFFETS_PAPIER)[titleEffect || "none"] || {};
-
   // La Singularite tire ses trois parametres des donnees reelles du pacte.
   // Sans cela, ce ne serait qu'un economiseur d'ecran.
   const singularity = useMemo(() => {
@@ -146,91 +140,24 @@ export function NexusHeroBanner({
       )}
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Le c\oeur. L'anneau d'accretion EST la jauge de progression :
-            elle n'est plus un chiffre pose a cote d'un dessin. Le symbole
-            du pacte se tient au centre, dans la lumiere du noyau. */}
-        <div className="singularity-core mb-6">
-          <div className="singularity-influx" />
-          <div className="singularity-flare" />
-          <div className="singularity-corona" />
-          <div className="singularity-nucleus" />
-          {/* LE SCEAU A PRIS LA PLACE DU ROND.
-              « singularity-ring » n etait pas un ornement : c etait LA
-              JAUGE d avancement du pacte, un degrade conique masque en
-              anneau. La rosace la reprend sur sa piste externe — sans
-              quoi remplacer le rond aurait fait perdre une information.
-              C est le seul endroit de l application ou le sceau se
-              montre : il se deduit du nom, des valeurs et de leur
-              ordre, et deux pactes n en portent jamais le meme. */}
-          <RosaceDuPacte
-            className="singularity-sceau"
-            nom={pactName ?? ""}
-            valeurs={valeurs}
-            version={sigilVersion}
-            progression={Math.min(1, Math.max(0, progression / 100))}
-            elan={Math.min(1, enCours / 5)}
-            alt={pactName ? `Sceau de ${pactName}` : ""}
-          />
-          {/* GRILLE, PAS BLOC : le logo est un « inline-block » et se
-              posait sur la ligne de base, qui reserve sous lui la place
-              des jambages — quatre pixels au-dessus du centre du sceau. */}
-          <div className="relative grid place-items-center" style={{ zIndex: 4 }}>
-            {/* LE LOGO DIT CE QUI EST EN COURS.
-
-                Il ondulait a vide — trois anneaux a 8, 5 et 3 secondes,
-                quoi qu il arrive. Or rien sur ce hub ne montrait la
-                charge VIVE du pacte : la progression dit le chemin fait,
-                le rang dit l experience, les missions le total, les jours
-                actifs l anciennete. Aucun ne dit ce qui est ouvert.
-
-                Cinq chantiers ouverts font le plein elan : au-dela le
-                logo ne tournerait pas plus vite pour rien dire de plus.
-                Zero, et il ralentit jusqu a presque s arreter — un pacte
-                au repos, ce qui est en soi une information. */}
-            <PactVisual
-              symbol={pactSymbol}
-              size="sm"
-              progress={progression}
-              elan={Math.min(1, enCours / 5)}
-              titre={
-                enCours > 0
-                  ? `${enCours} ${enCours > 1 ? "objectifs en cours" : "objectif en cours"}`
-                  : "Aucun objectif en cours"
-              }
-            />
-          </div>
-        </div>
-
-        {/* Pact Title */}
-        <h1
-          style={{
-            fontFamily,
-            fontSize: "clamp(28px, 5vw, 58px)",
-            fontWeight: 900,
-            letterSpacing: 6,
-            textTransform: "uppercase" as const,
-            color: "var(--nexus-heading)",
-            lineHeight: 1.1,
-            ...effectStyle,
-          }}
-        >
-          {pactName || "NEXUS OS"}
-        </h1>
-
-        {/* Pact Mantra */}
-        <p
-          style={{
-            fontWeight: 300,
-            fontSize: 13,
-            letterSpacing: 4,
-            color: "var(--nexus-text-dim)",
-            textTransform: "uppercase" as const,
-            marginTop: 10,
-            maxWidth: 500,
-          }}
-        >
-          {pactMantra || "Neural Execution & Unified Experience System"}
-        </p>
+        {/* CE BLOC EST SORTI D ICI. Le sceau, le nom et la raison sont
+            ce que « Mon pacte » regle — et cette page ne les montrait
+            pas : on y choisissait une police et un effet pour un ecran
+            qu on ne voyait pas. Le bloc vit maintenant dans
+            « objectifs », que les deux domaines consomment deja ; le
+            recopier aurait fait une deuxieme verite, ce qui venait
+            justement d arriver aux tables de polices. */}
+        <IdentiteDuPacte
+          nom={pactName}
+          mantra={pactMantra}
+          symbole={pactSymbol}
+          valeurs={valeurs}
+          version={sigilVersion}
+          progression={progression}
+          enCours={enCours}
+          police={titleFont}
+          effet={titleEffect}
+        />
 
         {/* Stats row */}
         <div className="flex justify-center flex-wrap" style={{ gap: 48, marginTop: 32 }}>

@@ -1,44 +1,9 @@
-/* ═══════════════════════════════════════════════════════════════
-   SWITZER — la voix de cette page
-   ═══════════════════════════════════════════════════════════════
-
-   Le titre et le texte etaient dans la meme famille : celle du
-   systeme. C est, par definition, ce a quoi ressemble n importe
-   quelle page. X a fait dessiner Chirp, Instagram a la sienne — le
-   premium d un reseau social passe d abord par sa police.
-
-   Switzer est un grotesque suisse contemporain (Indian Type
-   Foundry, licence libre). Trois graisses, 55,7 Ko au total, en
-   local comme Orbitron et Rajdhani : aucune requete externe a
-   l execution, le produit reste hors-ligne d abord.
-
-   Trois graisses et pas cinq : 600 et 800 n existent pas dans les
-   fichiers, le navigateur les aurait FABRIQUEES en epaississant le
-   trait — un faux gras, visible et sale. Les valeurs de la feuille
-   sont ramenees sur 400, 500 et 700, ce qui fait aussi un systeme
-   plutot qu une derive. */
-
-@font-face {
-  font-family: "Switzer";
-  src: url("/fonts/switzer-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Switzer";
-  src: url("/fonts/switzer-500.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Switzer";
-  src: url("/fonts/switzer-700.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* SWITZER EST DECLAREE DANS « src/index.css », avec les autres.
+   Ses trois @font-face vivaient ici — dans la feuille d un domaine que
+   seules cinq pages du social importent. Or la carte de profil et les
+   deux ecrans d authentification demandaient deja "Switzer" sans jamais
+   la charger : ils tombaient sur le sans-serif du systeme. Une fonte
+   n appartient pas a la page qui s en sert la premiere. */
 
 /* ═══════════════════════════════════════════════════════════════
    COMMUNITY — un vrai reseau, pas une maquette

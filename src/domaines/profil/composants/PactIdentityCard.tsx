@@ -6,7 +6,11 @@ import { Input } from "@/socle/ui/input";
 import { Textarea } from "@/socle/ui/textarea";
 import { Label } from "@/socle/ui/label";
 import { toast } from "sonner";
-import { PactVisual } from "@/domaines/objectifs";
+import {
+  PactVisual, POLICES_DU_TITRE, EFFETS_DU_TITRE,
+  familleDeLaPolice, styleDeLEffet,
+} from "@/domaines/objectifs";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { cn } from "@/socle/outils/utils";
 
 const SYMBOL_OPTIONS = [
@@ -21,22 +25,13 @@ const SYMBOL_OPTIONS = [
   { key: "shield", label: "Bouclier" },
 ];
 
-const FONT_OPTIONS = [
-  { key: "orbitron", label: "Orbitron", family: "'Orbitron', sans-serif" },
-  { key: "rajdhani", label: "Rajdhani", family: "'Rajdhani', sans-serif" },
-  { key: "share-tech-mono", label: "Share Tech", family: "'JetBrains Mono', ui-monospace, monospace" },
-  { key: "space-grotesk", label: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
-  { key: "inter", label: "Inter", family: "'Inter', sans-serif" },
-];
-
-const EFFECT_OPTIONS = [
-  { key: "none", label: "Aucun", style: {} },
-  { key: "cyan-glow", label: "Halo cyan", style: { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" } },
-  { key: "fire-glow", label: "Halo de feu", style: { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" } },
-  { key: "purple-glow", label: "Halo violet", style: { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" } },
-  { key: "gold-glow", label: "Halo doré", style: { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" } },
-  { key: "glitch", label: "Parasites", style: {} },
-];
+/* LES POLICES ET LES EFFETS SONT CEUX DU PACTE, PAS CEUX DE CETTE
+   CARTE. Elle en tenait sa propre copie — cinq polices, six effets —
+   recopiee a la main de « stylesBanniere ». Les deux avaient diverge :
+   « Parasites » y valait « {} » alors que le bandeau l anime, et deux
+   des cinq polices n existaient nulle part dans le depot. Un ecran de
+   choix qui dessine lui-meme ce qu il propose peut mentir sur ce qu il
+   donne ; celui-ci lit desormais la meme table que le bandeau. */
 
 interface PactIdentityCardProps {
   pactId: string | null;
@@ -96,8 +91,11 @@ export function PactIdentityCard({
     }
   }, [pactId, pactName, onSave]);
 
-  const selectedFontFamily = FONT_OPTIONS.find(f => f.key === titleFont)?.family || "'Orbitron', sans-serif";
-  const selectedEffectStyle = EFFECT_OPTIONS.find(e => e.key === titleEffect)?.style || {};
+  /* L EFFET DEPEND DU THEME. La carte supposait le sombre et montrait
+     un halo a qui, en theme clair, allait recevoir une bavure d encre. */
+  const sombre = useThemeSombre();
+  const selectedFontFamily = familleDeLaPolice(titleFont);
+  const selectedEffectStyle = styleDeLEffet(titleEffect, sombre);
 
   return (
     <>
@@ -109,30 +107,12 @@ export function PactIdentityCard({
       footerRight={<span className="text-primary/40">Symbole : {pactSymbol.toUpperCase()}</span>}
     >
       <div className="py-4 space-y-5">
-        {/* Live Preview */}
-        <div className="border border-dashed border-primary/25 bg-primary/[0.03] p-4">
-          <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-3">Aperçu</p>
-          <div className="flex items-center gap-4">
-            <PactVisual symbol={pactSymbol} size="sm" />
-            {/* LE SCEAU N EST PLUS ICI. Il ne vit que sur le tableau de
-                bord, ou il tient la place du rond du heros. Le montrer
-                aussi sur la carte d identite le reduisait a une
-                vignette de quarante-quatre pixels — et cette carte ne
-                lui passait ni les valeurs ni sa version, si bien qu un
-                pacte jure sous la v1 s y serait redessine en v2. */}
-            <div className="min-w-0 flex-1">
-              <h4
-                className="text-sm text-primary uppercase tracking-wider truncate"
-                style={{ fontFamily: selectedFontFamily, ...selectedEffectStyle }}
-              >
-                {pactName || "Ton projet"}
-              </h4>
-              <p className="text-xs text-muted-foreground font-rajdhani mt-0.5 line-clamp-2">
-                {pactMantra || "Ta raison d’avancer…"}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* L APERCU EST PARTI EN HAUT DE LA PAGE, ET IL EST ENTIER.
+            Celui d ici montrait un logo de 44 px a cote du titre : ni
+            le sceau, ni l echelle, ni le fond sur lequel le bandeau se
+            pose. On y choisissait une police pour un ecran qu on ne
+            voyait pas. Le nouveau est collant, donc encore visible
+            quand on descend jusqu au choix de la police. */}
 
         {/* Project Name */}
         <div className="space-y-1.5">
@@ -174,7 +154,7 @@ export function PactIdentityCard({
       code="MODULE_02b"
       title="Emblème du pacte"
       statusText={<span className="text-primary/40">{pactSymbol.toUpperCase()}</span>}
-      footerRight={<span className="text-primary/40">Police : {titleFont.toUpperCase()}</span>}
+      footerRight={<span className="text-primary/40">Police : {POLICES_DU_TITRE.find((f) => f.cle === titleFont)?.nom ?? "—"}</span>}
     >
       <div className="py-4 space-y-5">
         {/* Pact Symbol */}
@@ -207,25 +187,26 @@ export function PactIdentityCard({
             <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Police du titre</Label>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {FONT_OPTIONS.map(({ key, label, family }) => (
+            {POLICES_DU_TITRE.map(({ cle, nom, famille }) => (
               <button
-                key={key}
+                key={cle}
                 type="button"
-                onClick={() => onTitleFontChange(key)}
+                onClick={() => onTitleFontChange(cle)}
+                aria-pressed={titleFont === cle}
                 className={cn(
                   "flex items-center gap-3 p-3 border transition-all duration-200 text-left",
-                  titleFont === key
+                  titleFont === cle
                     ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
                     : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
                 )}
               >
                 <span
                   className="text-base text-primary/80 truncate"
-                  style={{ fontFamily: family }}
+                  style={{ fontFamily: famille }}
                 >
                   {pactName || "Projet"}
                 </span>
-                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{label}</span>
+                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{nom}</span>
               </button>
             ))}
           </div>
@@ -239,25 +220,26 @@ export function PactIdentityCard({
             <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Effet du titre</Label>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {EFFECT_OPTIONS.map(({ key, label, style }) => (
+            {EFFETS_DU_TITRE.map(({ cle, nom }) => (
               <button
-                key={key}
+                key={cle}
                 type="button"
-                onClick={() => onTitleEffectChange(key)}
+                onClick={() => onTitleEffectChange(cle)}
+                aria-pressed={titleEffect === cle}
                 className={cn(
                   "flex flex-col items-center gap-1.5 p-3 border transition-all duration-200",
-                  titleEffect === key
+                  titleEffect === cle
                     ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
                     : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
                 )}
               >
                 <span
                   className="text-sm text-primary/80 font-bold uppercase"
-                  style={{ fontFamily: selectedFontFamily, ...style }}
+                  style={{ fontFamily: selectedFontFamily, ...styleDeLEffet(cle, sombre) }}
                 >
                   Aa
                 </span>
-                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase">{label}</span>
+                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase">{nom}</span>
               </button>
             ))}
           </div>
