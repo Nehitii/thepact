@@ -1019,3 +1019,28 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── LES AMORCES DE PHRASE ────────────────────────────────────
+   Elles descendent des valeurs que le porteur vient de prendre, et ne
+   paraissent que si le champ est vide : une aide qui reste affichee
+   pendant qu on ecrit invite a se corriger vers elle. */
+.ob-amorces { display: grid; gap: 5px; }
+.ob-amorce {
+  padding: 9px 12px;
+  border: 1px solid var(--ob-trait);
+  background: none;
+  color: var(--ob-encre-2);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.4;
+  font-style: italic;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms var(--ob-e-doux), color 160ms var(--ob-e-doux),
+    background 160ms var(--ob-e-doux);
+}
+.ob-amorce:hover {
+  border-color: var(--ob-voix);
+  background: color-mix(in oklab, var(--ob-voix) 8%, transparent);
+  color: var(--ob-encre);
+}

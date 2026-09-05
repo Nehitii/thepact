@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { PactVisual } from "@/domaines/objectifs";
@@ -38,6 +38,20 @@ export function LaForge({ ecran, etat, modifier }: Props) {
   /* Le signe survole ou pris au clavier : sa ligne de sens s affiche
      sous la grille. Nul : celui qui est choisi, s il y en a un. */
   const [survole, setSurvole] = useState<string | null>(null);
+
+  /* Les amorces de phrase, une par valeur prise, dans l ordre de rang.
+     Trois au plus : au-dela on remplace la page blanche par un
+     catalogue, ce qui ne l ouvre pas davantage. */
+  const amorces = useMemo(() => {
+    const parLibelle = new Map(
+      VALEURS_SUGGEREES.map((cle) => [t(`onboarding.valeurs.${cle}`), cle] as const),
+    );
+    return etat.valeurs
+      .map((mot) => parLibelle.get(mot))
+      .filter((cle): cle is (typeof VALEURS_SUGGEREES)[number] => !!cle)
+      .slice(0, 3)
+      .map((cle) => t(`onboarding.forge.phrase.amorces.${cle}`));
+  }, [etat.valeurs, t]);
 
   /* LA FORME FONCTIONNELLE, ET ELLE EST NECESSAIRE : deux clics dans
      la meme image liraient tous les deux la meme prop, et le second
@@ -172,6 +186,36 @@ export function LaForge({ ecran, etat, modifier }: Props) {
         />
         <i className="ob-braise" aria-hidden="true" />
         </span>
+
+        {/* LES AMORCES DESCENDENT DES VALEURS QU ON VIENT DE CHOISIR.
+            La phrase est le champ le plus dur du rite : on la demande a
+            froid, sur une page blanche. Ce ne sont pas des exemples
+            generiques — chacune vient d une valeur que le porteur a
+            prise, ce qui la rend deja un peu sienne.
+
+            ELLES NE PARAISSENT QUE SI LE CHAMP EST VIDE : une aide qui
+            reste affichee pendant qu on ecrit invite a se corriger vers
+            elle, et ce n est plus la phrase de personne.
+
+            LE LIBELLE REMONTE A SA CLE. L etat garde les valeurs
+            traduites — « Liberté », pas « liberte » — parce que c est
+            ce qui part en base. On refait donc le chemin inverse. */}
+        {etat.mantra.trim().length === 0 && amorces.length > 0 && (
+          <>
+            <p className="ob-ligne ob-ligne--sourde">{t("onboarding.forge.phrase.amorcesTitre")}</p>
+            <div className="ob-amorces" role="group" aria-label={t("onboarding.forge.phrase.amorcesTitre")}>
+              {amorces.map((amorce) => (
+                <button
+                  key={amorce} type="button" className="ob-amorce"
+                  onClick={() => modifier({ mantra: amorce })}
+                >
+                  {amorce}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         <Temoin texte={peutAvancer("phrase", etat) ? t("onboarding.temoin.phrase") : ""} />
       </FenetreSysteme>
     );

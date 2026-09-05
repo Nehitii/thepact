@@ -2999,7 +2999,22 @@
       "phrase": {
         "entete": "PHRASE",
         "invite": "One line. The one you will say back to yourself.",
-        "exemple": "Hold what was sworn"
+        "exemple": "Hold what was sworn",
+        "amorces": {
+          "liberte": "Choose, even when it costs more.",
+          "excellence": "Done well, or not done.",
+          "famille": "Be there when it counts.",
+          "croissance": "A little further than yesterday.",
+          "discipline": "Do what I said, the day I said it.",
+          "honnetete": "Tell the truth, to myself first.",
+          "aventure": "Prefer the unknown to the comfortable.",
+          "impact": "Leave it better than found.",
+          "sagesse": "Understand before judging.",
+          "sante": "The body first, the rest after.",
+          "creation": "Create before consuming.",
+          "serenite": "Hold without hurrying."
+        },
+        "amorcesTitre": "Or start from one of your values"
       },
       "valeurs": {
         "entete": "VALUES",

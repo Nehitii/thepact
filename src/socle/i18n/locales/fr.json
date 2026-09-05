@@ -2999,7 +2999,22 @@
       "phrase": {
         "entete": "PHRASE",
         "invite": "Une ligne. Celle que tu te rediras.",
-        "exemple": "Tenir ce qui est juré"
+        "exemple": "Tenir ce qui est juré",
+        "amorces": {
+          "liberte": "Choisir, même quand c’est plus cher.",
+          "excellence": "Bien fait, ou pas fait.",
+          "famille": "Être là quand ça compte.",
+          "croissance": "Un peu plus loin qu’hier.",
+          "discipline": "Faire ce que j’ai dit, le jour où je l’ai dit.",
+          "honnetete": "Dire vrai, surtout à moi.",
+          "aventure": "Préférer l’inconnu au confortable.",
+          "impact": "Laisser mieux que trouvé.",
+          "sagesse": "Comprendre avant de juger.",
+          "sante": "Le corps d’abord, le reste ensuite.",
+          "creation": "Créer avant de consommer.",
+          "serenite": "Tenir sans me presser."
+        },
+        "amorcesTitre": "Ou pars de l’une de tes valeurs"
       },
       "valeurs": {
         "entete": "VALEURS",
