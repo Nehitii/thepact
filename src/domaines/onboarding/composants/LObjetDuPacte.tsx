@@ -60,6 +60,9 @@ export function LObjetDuPacte({
           nom={nomDuPacte}
           valeurs={valeurs}
           progression={scelle ? 1 : 0}
+          /* Rien n est encore en cours : il tourne au ralenti, puis
+             prend son elan une fois le pacte scelle. */
+          elan={scelle ? 1 : 0.2}
         />
 
         <div className="ob-objet-coeur">

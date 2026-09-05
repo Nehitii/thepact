@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════════
+   LE SCEAU QUI TOURNE
+
+   ═══ LE MOUVEMENT DOIT DIRE QUELQUE CHOSE ═══
+
+   « PactVisual » a deja tranche pour ce produit : « un logo qui ondule
+   sans rien dire est un economiseur d ecran pose sur un tableau de
+   bord ». Rien ici ne bouge donc gratuitement.
+
+     LA ROTATION CONTRAIRE   dit l ELAN — combien d objectifs sont
+                             ouverts. A huit, la bande fait un tour en
+                             40 s ; a zero, en 120 s. Trois fois plus
+                             lent, presque immobile : un pacte au repos,
+                             ce qui est en soi une information.
+     LE SOUFFLE              dit la PROGRESSION. Un pacte a 10 %
+                             respire a peine, un pacte a 90 % pulse.
+
+   ═══ L ORIGINE EST « 0 0 », ET SUREMENT PAS « center » ═══
+
+   Le viewBox va de -1.2 a 1.2 : son centre EST l origine des
+   coordonnees. Or « transform-origin: 50% 50% » se resout en
+   « 1.2px 1.2px » — compte en coordonnees absolues, pas depuis le coin
+   du viewBox. Les couches tournaient alors autour de (1.2, 1.2).
+
+   Mesure : 208 px de derive au quart de tour sur un sceau large de
+   208 px. La figure sortait entierement de l ecran. « center » a
+   exactement le meme defaut ici.
+
+   ═══ CE QUI TOURNE, ET CE QUI NE TOURNE PAS ═══
+
+   Les medaillons et le coeur restent fixes : leurs signes doivent
+   rester droits. Une couronne qui tourne emporte ses signes avec elle,
+   et l on ne lit plus rien.
+   ═══════════════════════════════════════════════════════════════ */
+
+.sceau-couche {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+@keyframes sceau-tourne     { to { transform: rotate(360deg); } }
+@keyframes sceau-tourne-inv { to { transform: rotate(-360deg); } }
+@keyframes sceau-souffle {
+  0%, 100% { opacity: var(--sceau-repos, 0.82); }
+  50%      { opacity: 1; }
+}
+
+/* Les durees viennent du composant : il les calcule depuis l elan. */
+.sceau-bande   { animation: sceau-tourne     var(--sceau-t-bande, 90s)   linear infinite; }
+.sceau-grad    { animation: sceau-tourne-inv var(--sceau-t-grad, 158s)   linear infinite; }
+.sceau-moyeu   { animation: sceau-tourne     var(--sceau-t-moyeu, 200s)  linear infinite; }
+.sceau-etoile  { animation: sceau-tourne-inv var(--sceau-t-etoile, 338s) linear infinite; }
+.sceau-anime   { animation: sceau-souffle    var(--sceau-t-souffle, 7s)  ease-in-out infinite; }
+
+/* PAS DE COUCHE PROMUE AU REPOS. « will-change » est un indice pour
+   une animation qui vient, pas un reglage par defaut : le laisser
+   quand rien ne bouge garde cinq couches en memoire pour rien. */
+@media (prefers-reduced-motion: reduce) {
+  .sceau-couche { will-change: auto; }
+  .sceau-bande, .sceau-grad, .sceau-moyeu, .sceau-etoile, .sceau-anime {
+    animation: none;
+  }
+}

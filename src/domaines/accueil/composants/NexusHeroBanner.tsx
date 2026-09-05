@@ -168,6 +168,7 @@ export function NexusHeroBanner({
             valeurs={valeurs}
             version={sigilVersion}
             progression={Math.min(1, Math.max(0, progression / 100))}
+            elan={Math.min(1, enCours / 5)}
             alt={pactName ? `Sceau de ${pactName}` : ""}
           />
           <div className="relative" style={{ zIndex: 4 }}>

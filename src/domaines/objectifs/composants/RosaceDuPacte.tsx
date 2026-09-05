@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { rosaceDuPacte, type Rosace } from "@/domaines/objectifs/logique/rosace";
+import "@/domaines/objectifs/sceau.css";
 
 interface Props {
   nom: string;
@@ -9,6 +10,15 @@ interface Props {
   progression?: number;
   /** La version sous laquelle ce pacte a ete jure — « pacts.sigil_version ». */
   version?: number;
+  /**
+   * L ELAN, de 0 a 1 — a quel rythme le sceau tourne.
+   *
+   * C est la regle que « PactVisual » a posee pour ce produit : a un,
+   * il tourne a sa cadence ; a zero, trois fois plus lentement, presque
+   * immobile. Ce n est pas une jauge — on ne lit pas un nombre dans une
+   * vitesse. C est un ETAT, qu on sent avant de le lire.
+   */
+  elan?: number;
   /** Ce que le sceau dit aux lecteurs d ecran. Vide par defaut. */
   alt?: string;
   className?: string;
@@ -100,6 +110,10 @@ function dessiner(r: Rosace, progression: number): string {
   out += piste(progression) + anneau(R.pisteHaut, 0.5, 0.16);
   out += anneau(R.railHaut, 2.2, 0.85) + anneau(R.railBas, 2.2, 0.85) + anneau(R.railBas - 0.015, 0.6, 0.3);
 
+  /* LES GRADUATIONS TOURNENT A L ENVERS de la bande : c est le
+     contresens qui fait le mecanisme. Deux couronnes dans le meme sens
+     se lisent comme un seul bloc qui pivote. */
+  out += `</g><g class="sceau-couche sceau-grad">`;
   for (let i = 0; i < branches * 6; i++) {
     const a = -Math.PI / 2 + (i / (branches * 6)) * DEUX_PI;
     const longue = i % 6 === 0;
@@ -109,6 +123,7 @@ function dessiner(r: Rosace, progression: number): string {
   /* LA BANDE. La taille des signes suit l arc reellement disponible :
      a huit branches, deux signes par demi-secteur n ont que 0,099
      d arc pour une forme de 0,115 — ils se chevauchaient. */
+  out += `</g><g class="sceau-couche sceau-bande">`;
   if (r.bandes.length > 0) {
     const secteur = DEUX_PI / r.branches;
     const parBranche = r.bandes[0].signes.length;
@@ -126,6 +141,7 @@ function dessiner(r: Rosace, progression: number): string {
     }
   }
 
+  out += `</g><g class="sceau-couche sceau-moyeu">`;
   out += anneau(R.construction, 0.7, 0.3, ".014 .024") + anneau(0.485, 0.6, 0.22);
   for (let i = 0; i < branches * 4; i++) {
     const a = -Math.PI / 2 + ((i + 0.5) / (branches * 4)) * DEUX_PI;
@@ -137,7 +153,9 @@ function dessiner(r: Rosace, progression: number): string {
   }
   out += anneau(R.moyeu, 1.3, 0.5);
 
-  /* Les medaillons des valeurs, et la corde entre eux. */
+  /* LES MEDAILLONS NE TOURNENT PAS : leurs signes doivent rester
+     droits. Une couronne qui tourne emporte ses signes avec elle. */
+  out += `</g><g class="sceau-couche">`;
   if (r.medaillons.length > 0) {
     const pts = r.medaillons.map((m) => surLeCercle(m.angle, R.medaillon).replace(" ", ","));
     for (const m of r.medaillons) {
@@ -154,7 +172,7 @@ function dessiner(r: Rosace, progression: number): string {
     }
   }
 
-  /* L etoile centrale et le coeur. */
+  out += `</g><g class="sceau-couche sceau-etoile">`;
   const sommets: string[] = [];
   for (let i = 0; i < branches * 2; i++) {
     const a = -Math.PI / 2 + (i / (branches * 2)) * DEUX_PI;
@@ -163,11 +181,15 @@ function dessiner(r: Rosace, progression: number): string {
   out += `<polygon points="${sommets.join(" ")}" fill="currentColor" opacity=".22"/>`
     + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="2.4"`
     + ` stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+  /* Le coeur reste fixe, comme les medaillons. */
+  out += `</g><g class="sceau-couche">`;
   out += `<circle cx="0" cy="0" r="${R.coeur}" fill="var(--ds-bg-base-solide, #080B12)" stroke="currentColor"`
     + ` stroke-width="2" vector-effect="non-scaling-stroke"/>` + anneau(0.135, 0.8, 0.45);
   if (r.coeur) out += signe(r.coeur, 0, 0, 0.19, 0, 2.4, false);
 
-  return out;
+  /* Une seule couche ouverte au depart, une seule fermee a la fin :
+     les « </g><g> » intercales decoupent le dessin sans compter. */
+  return `<g class="sceau-couche">${out}</g>`;
 }
 
 /**
@@ -186,16 +208,35 @@ function dessiner(r: Rosace, progression: number): string {
  * progression ; ici React ne voit qu une propriete qui change.
  */
 export function RosaceDuPacte({
-  nom, valeurs = [], progression = 0, version, alt = "", className,
+  nom, valeurs = [], progression = 0, version, elan = 0.5, alt = "", className,
 }: Props) {
+  const part = Math.min(1, Math.max(0, progression));
   const dessin = useMemo(
-    () => dessiner(rosaceDuPacte(nom, valeurs, version), Math.min(1, Math.max(0, progression))),
-    [nom, valeurs, version, progression],
+    () => dessiner(rosaceDuPacte(nom, valeurs, version), part),
+    [nom, valeurs, version, part],
   );
+
+  /* LES DUREES DESCENDENT DE L ELAN. A un, la bande fait un tour en
+     40 s ; a zero, en 120 s — le facteur trois que « PactVisual » a
+     pose pour ce produit. Le souffle, lui, suit la progression : un
+     pacte qui avance respire plus vite, et de plus loin. */
+  const cadence = useMemo(() => {
+    const e = Math.min(1, Math.max(0, elan));
+    const lent = 3 - e * 2;
+    return {
+      "--sceau-t-bande": (40 * lent).toFixed(1) + "s",
+      "--sceau-t-grad": (70 * lent).toFixed(1) + "s",
+      "--sceau-t-moyeu": (95 * lent).toFixed(1) + "s",
+      "--sceau-t-etoile": (150 * lent).toFixed(1) + "s",
+      "--sceau-t-souffle": (9 - part * 4).toFixed(1) + "s",
+      "--sceau-repos": (0.9 - part * 0.28).toFixed(2),
+    } as React.CSSProperties;
+  }, [elan, part]);
 
   return (
     <svg
-      className={className}
+      className={className ? className + " sceau-anime" : "sceau-anime"}
+      style={cadence}
       viewBox="-1.2 -1.2 2.4 2.4"
       role={alt ? "img" : undefined}
       aria-label={alt || undefined}
