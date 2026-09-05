@@ -39,6 +39,15 @@ describe("la forme du rite", () => {
     expect(RITE_COMPLET.filter((e) => ACTE_DE[e] === "forge")).toHaveLength(5);
   });
 
+  it("LE NOM DU PACTE EST LA DERNIERE DECLARATION", () => {
+    /* Nommer une chose vide est la question la plus dure du rite : on
+       la posait en deuxieme, a froid. En fin de forge, l anneau porte
+       deja sa teinte, sa corde et son symbole. */
+    const forge = RITE_COMPLET.filter((e) => ACTE_DE[e] === "forge");
+    expect(forge[forge.length - 1]).toBe("pacte");
+    expect(RITE_ABREGE.filter((e) => ACTE_DE[e] === "forge").at(-1)).toBe("pacte");
+  });
+
   it("LE SCEAU PASSE AVANT LA PHRASE", () => {
     /* L ecart qui fait tout : en troisieme position, le sceau est un
        objet au centre de l ecran pendant tout le reste du rite. */
@@ -135,12 +144,12 @@ describe("peutSigner : la case avant le geste", () => {
 describe("la navigation", () => {
   it("enchaine les ecrans du rite complet", () => {
     expect(ecranSuivant("eveil", false)).toBe("porteur");
-    expect(ecranSuivant("sceau", false)).toBe("phrase");
+    expect(ecranSuivant("sceau", false)).toBe("valeurs");
     expect(ecranSuivant("rencontre", false)).toBeNull();
   });
 
   it("enchaine ceux du rite abrege, en sautant ce qu il saute", () => {
-    expect(ecranSuivant("valeurs", true)).toBe("lecture");
+    expect(ecranSuivant("valeurs", true)).toBe("phrase");
     expect(ecranSuivant("scellement", true)).toBeNull();
     expect(ecranPrecedent("porteur", true)).toBeNull();
   });
@@ -171,8 +180,9 @@ describe("fenetresCloses : la trace qui remplace la barre", () => {
   it("aucune a l eveil, puis une par fenetre franchie", () => {
     expect(fenetresCloses("eveil", false)).toBe(0);
     expect(fenetresCloses("porteur", false)).toBe(0);
-    expect(fenetresCloses("pacte", false)).toBe(1);
-    expect(fenetresCloses("valeurs", false)).toBe(4);
+    expect(fenetresCloses("sceau", false)).toBe(1);
+    /* La derniere fenetre de la forge en a quatre derriere elle. */
+    expect(fenetresCloses("pacte", false)).toBe(4);
   });
 
   it("toutes closes une fois la forge passee", () => {
@@ -181,7 +191,7 @@ describe("fenetresCloses : la trace qui remplace la barre", () => {
   });
 
   it("compte pareil dans le rite abrege, qui garde la forge entiere", () => {
-    expect(fenetresCloses("pacte", true)).toBe(1);
+    expect(fenetresCloses("sceau", true)).toBe(1);
     expect(fenetresCloses("scellement", true)).toBe(5);
   });
 });
@@ -286,7 +296,11 @@ describe("LIMITES : ce qu on peut taper dans chaque champ libre", () => {
 describe("la lecture : on relit avant de jurer", () => {
   it("se place entre les valeurs et le scellement, dans les deux rites", () => {
     for (const suite of [RITE_COMPLET, RITE_ABREGE]) {
-      expect(suite.indexOf("lecture")).toBe(suite.indexOf("valeurs") + 1);
+      /* Juste apres la DERNIERE fenetre de la forge, quelle qu elle
+         soit : l ordre des declarations a deja bouge une fois, et ce
+         test ne doit pas se briser a la prochaine. */
+      const forge = suite.filter((e) => ACTE_DE[e] === "forge");
+      expect(suite.indexOf("lecture")).toBe(suite.indexOf(forge[forge.length - 1]) + 1);
       expect(suite.indexOf("lecture")).toBe(suite.indexOf("scellement") - 1);
     }
   });

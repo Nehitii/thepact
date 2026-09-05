@@ -45,15 +45,23 @@ export const ACTE_DE: Record<Ecran, Acte> = {
   rencontre: "rencontre",
 };
 
-/* L ORDRE COMPLET, ET LE SEUL ECART QUI COMPTE.
+/* L ORDRE COMPLET, ET LES DEUX ECARTS QUI COMPTENT.
  *
  * LE SCEAU PASSE AVANT LA PHRASE. Dans l ancienne page, la
  * personnalisation venait en dernier, apres l objectif : le sceau
- * arrivait quand plus rien ne s y accrochait. En troisieme position,
- * il y a un objet au centre de l ecran pendant tout le reste du rite,
- * et il change de couleur sous les yeux. */
+ * arrivait quand plus rien ne s y accrochait. Tot, il y a un objet au
+ * centre de l ecran pendant tout le reste du rite, et il change de
+ * couleur sous les yeux.
+ *
+ * LE NOM PASSE EN DERNIER, et c est le deuxieme ecart. Il venait en
+ * deuxieme : nommer une chose vide est la question la plus dure du
+ * rite, et on la posait a froid, avant que le porteur ait rien vu de
+ * ce qu il fabriquait. En fin de forge, l anneau porte deja sa teinte,
+ * sa corde et son symbole — et chaque lettre tapee fait s engraver un
+ * signe. Le pacte nait la, sous les yeux, et il a un nom parce qu il
+ * existe. */
 export const RITE_COMPLET: readonly Ecran[] = [
-  "eveil", "porteur", "pacte", "sceau", "phrase", "valeurs", "lecture", "scellement", "rencontre",
+  "eveil", "porteur", "sceau", "valeurs", "phrase", "pacte", "lecture", "scellement", "rencontre",
 ];
 
 /* LE SECOND PASSAGE N EST JAMAIS LE PREMIER. Quelqu un repassera par
@@ -62,7 +70,7 @@ export const RITE_COMPLET: readonly Ecran[] = [
    redecouvre pas un porteur qu il connait, et M.I.A. ne se represente
    pas a quelqu un qui l a deja rencontree. */
 export const RITE_ABREGE: readonly Ecran[] = [
-  "porteur", "pacte", "sceau", "phrase", "valeurs", "lecture", "scellement",
+  "porteur", "sceau", "valeurs", "phrase", "pacte", "lecture", "scellement",
 ];
 
 export const ecransDuRite = (abrege: boolean): readonly Ecran[] =>

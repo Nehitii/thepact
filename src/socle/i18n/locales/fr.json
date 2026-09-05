@@ -2956,8 +2956,8 @@
       },
       "pacte": {
         "entete": "PACTE",
-        "invite": "Et lui, comment s’appelle-t-il ?",
-        "precision": "Pas ton nom : celui de la chose jurée.",
+        "invite": "Il a un signe, une corde, une phrase. Il lui manque un nom.",
+        "precision": "Pas le tien : celui de la chose jurée.",
         "exemple": "Ananta"
       },
       "sceau": {
