@@ -44,9 +44,9 @@ export { usePact, fetchPact } from "./hooks/usePact";
 /* LA ROSACE — le sceau tel qu il se montre. Le tableau de bord y met
    le rond de son heros, le rite l y forge. Nulle part ailleurs. */
 export { RosaceDuPacte } from "./composants/RosaceDuPacte";
-export { rosaceDuPacte, BRANCHES_POSSIBLES } from "./logique/rosace";
+export { rosaceDuPacte, ORDRES_POSSIBLES, ORDRE_PAR_DEFAUT, LETTRES_DU_POURTOUR } from "./logique/rosace";
 export { useValeursDuPacte } from "./hooks/useValeursDuPacte";
-export type { Rosace, BrancheDeLaRosace, MedaillonDeLaRosace } from "./logique/rosace";
+export type { Rosace, MedaillonDeLaRosace } from "./logique/rosace";
 export {
   sigilDuPacte, normaliser, empreinte, echantillonner,
   ALPHABET, VERSION_ALPHABET, TRAITS_MAX, ecritureDeLaVersion, type EcritureDuSceau,

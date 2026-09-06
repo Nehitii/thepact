@@ -92,6 +92,20 @@ describe("echantillonner : seize traits au plus", () => {
     const b = "z".repeat(40) + "bbbb";
     expect(echantillonner(a)).not.toBe(echantillonner(b));
   });
+
+  it("LIT LA DERNIERE LETTRE, ET PAS SEULEMENT L AVANT-DERNIERE", () => {
+    /* Le pas etait « floor(i x longueur / plafond) » : sur un nom de
+       trente lettres il tirait 0, 1, 3, … 26, 28, et n atteignait
+       JAMAIS l indice 29. Deux pactes ne differant que par leur
+       derniere lettre rendaient le meme echantillon — exactement ce
+       que cette fonction dit empecher. Le defaut ne se voyait pas sur
+       les noms courts, qui sortent intacts. */
+    const base = "un-nom-assez-long-pour-etre-echantillonne";
+    expect(base.length).toBeGreaterThan(16);
+    expect(echantillonner(base + "a")).not.toBe(echantillonner(base + "z"));
+    /* Et le dernier caractere y est vraiment. */
+    expect(echantillonner(base + "!").endsWith("!")).toBe(true);
+  });
 });
 
 describe("sigilDuPacte", () => {

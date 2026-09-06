@@ -1,49 +1,61 @@
 import { ecritureDeLaVersion, VERSION_ALPHABET, echantillonner, empreinte, normaliser } from "@/domaines/objectifs/logique/sigil";
 
-/* LA ROSACE DU PACTE — la structure, pas le dessin.
+/* LE CERCLE DU PACTE — la structure, pas le dessin.
  *
- * Le sigil v1 posait ses signes a « (i / n) x 2π + decalage », le
- * decalage venant de l empreinte du nom. Rien ne tombait donc jamais
- * sur un axe : ni vertical, ni horizontal. Une figure dont aucun
- * element n est aligne ne peut pas PARAITRE construite, quel que soit
- * le soin du reste — et les ancres, posees a « empreinte(valeur) % 2π »,
- * pouvaient se superposer a deux degres l une de l autre.
+ * ═══ CE QUE LA FIGURE D AVANT N AVAIT PAS ═══
  *
- * Ici la symetrie n est plus esperee, elle est CONSTRUITE : un nombre
- * de branches, un motif par branche, et les branches se repondent en
- * miroir gauche-droite. Mesure sur cinq pactes : 97 a 100 % des points
- * traces ont leur reflet de l autre cote de l axe vertical, contre 42 a
- * 85 % pour la v1.
+ * Elle etait faite d anneaux concentriques et de rayons : AUCUNE DROITE
+ * NE TRAVERSAIT LE DISQUE. C est la raison, unique et suffisante, pour
+ * laquelle elle se lisait « rouage » et jamais « sceau ». Tous les
+ * cercles arcaniques portent un polygone etoile inscrit — pentagramme,
+ * hexagramme — dont les cordes coupent le champ de part en part.
+ *
+ * La figure se construit donc dans l autre sens : un POLYGONE ETOILE
+ * {n/k} d abord, et les anneaux autour. Les medaillons des valeurs se
+ * posent SUR SES SOMMETS, la ou la geometrie et le contenu se
+ * rejoignent, au lieu de flotter sur une couronne choisie au hasard.
+ *
+ * ═══ CE QUE LA SYMETRIE DEVIENT ═══
+ *
+ * Elle n est plus construite branche par branche, elle est celle du
+ * polygone — exacte par definition. Un {n/k} a n axes de symetrie,
+ * quel que soit n et quel que soit k. C est plus fort que l ancien
+ * miroir gauche-droite, qui se mesurait a 97 ou 100 % selon les
+ * pactes, et cela ne coute rien a tenir.
  *
  * CE MODULE NE DESSINE RIEN. Il dit ou vont les choses ; « RosaceDuPacte »
- * les rend. La separation permet de tester la symetrie et l unicite
- * sans monter d ecran.
+ * les rend. La separation permet de tester la construction sans monter
+ * d ecran.
  */
 
-/** Quatre, six ou huit branches — le pacte choisit. */
-export const BRANCHES_POSSIBLES = [4, 6, 8] as const;
+/** Cinq, six, sept ou huit sommets — le nom choisit. */
+export const ORDRES_POSSIBLES = [5, 6, 7, 8] as const;
 
-export interface BrancheDeLaRosace {
-  /** L angle de son rayon, en radians. Zero est en haut. */
-  angle: number;
-  /** Les signes posés de part et d autre du rayon, du plus proche au plus loin. */
-  signes: string[];
-}
+/* L ordre du cadre qui attend, avant qu un nom soit donne. Six : c est
+   celui qui porte proprement deux, trois ou six medaillons. */
+export const ORDRE_PAR_DEFAUT = 6;
+
+/** Combien de lettres court le pourtour. */
+export const LETTRES_DU_POURTOUR = 40;
 
 export interface MedaillonDeLaRosace {
   valeur: string;
-  /** Le signe de cette valeur. */
+  /** Le caractere de cette valeur. */
   d: string;
+  /** Le sommet du polygone qui le porte. */
+  sommet: number;
   angle: number;
 }
 
 export interface Rosace {
   version: number;
-  branches: number;
-  bandes: BrancheDeLaRosace[];
+  /** Les sommets du polygone. Zero tant que le pacte n a pas de nom. */
+  ordre: number;
+  /** Le pas du trace : un {ordre/pas}. Zero sans nom. */
+  pas: number;
+  /** Le nom, lettre a lettre, tout autour. Vide sans nom. */
+  inscription: string[];
   medaillons: MedaillonDeLaRosace[];
-  /** Le signe du coeur, deduit du nom entier. */
-  coeur: string | null;
   source: string;
 }
 
@@ -52,68 +64,69 @@ const DEUX_PI = Math.PI * 2;
 const HAUT = -Math.PI / 2;
 
 /**
- * La rosace d un pacte.
+ * LE PAS DU TRACE, ET POURQUOI IL NE SE TIRE PAS AU HASARD.
  *
- * CHAQUE BRANCHE PORTE SA PROPRE TRANCHE DU NOM, et les branches se
- * repondent en miroir : celle du haut et celle du bas sont sur l axe,
- * les autres vont par paires. Repeter le MEME motif partout n employait
- * que deux ou trois lettres — mesure sur deux mille noms distincts,
- * deux cent soixante et un pactes auraient partage leur sceau avec un
- * autre. En miroir de branche, aucun.
+ * Un {n/k} n est une etoile que si k et n sont premiers entre eux et
+ * si k vaut au moins deux. {6/3} n est pas une figure — ce sont trois
+ * segments qui se croisent au centre — et {8/2} n est qu un carre
+ * dessine deux fois. Le pas se choisit donc dans ce qui tient.
+ */
+const PAS_POSSIBLES: Readonly<Record<number, readonly number[]>> = {
+  5: [2],
+  6: [2],
+  7: [2, 3],
+  8: [3],
+};
+
+function pasDeLOrdre(ordre: number, marque: number): number {
+  const choix = PAS_POSSIBLES[ordre] ?? [2];
+  return choix[marque % choix.length];
+}
+
+/**
+ * Le cercle d un pacte.
  *
- * LA FIGURE SE CONSTRUIT DECLARATION PAR DECLARATION. Les medaillons
- * naissent des valeurs, la bande et le coeur naissent du nom : chacun
+ * IL SE CONSTRUIT DECLARATION PAR DECLARATION. Les medaillons naissent
+ * des valeurs, l inscription et le polygone naissent du nom : chacun
  * apparait quand SA declaration est faite, pas quand la derniere l est.
- * Tant que le nom manque, la bande reste vide et les anneaux se
- * dessinent seuls — mieux vaut un cadre qui attend qu un sceau qu on
- * n a pas encore.
+ * Tant que le nom manque, le pourtour reste nu et les medaillons se
+ * posent sur les sommets du cadre qui attend.
  */
 export function rosaceDuPacte(
   nom: string,
   valeurs: readonly string[] = [],
   version: number = VERSION_ALPHABET,
 ): Rosace {
-  /* DEUX ECRITURES, DEUX EMPLOIS. La bande epelle le nom lettre a
+  /* DEUX ECRITURES, DEUX EMPLOIS. Le pourtour epelle le nom lettre a
      lettre ; chaque medaillon porte une valeur entiere, et recoit donc
-     un caractere qui la tient seule. Sous les versions 1 et 2, les
-     deux tables sont la meme — le sceau ne change pas pour autant. */
+     un caractere qui la tient seule. Sous les versions 1 et 2, les deux
+     tables sont la meme — leur sceau ne change pas pour autant. */
   const { signes, valeurs: ecritureDesValeurs } = ecritureDeLaVersion(version);
   const source = echantillonner(normaliser(nom));
+  const marque = source.length > 0 ? empreinte(source) : 0;
 
-  /* LES MEDAILLONS SE CALCULENT AVANT TOUT LE RESTE, PARCE QU ILS NE
-     DEPENDENT PAS DU NOM. Chacun descend de SA valeur : il existe des
-     qu on choisit celle-ci, meme si le pacte n a pas encore de nom.
-     Ils sortaient d un retour anticipe qui rendait la rosace entiere
-     vide tant que le nom manquait. Le nom etant la DERNIERE declaration
-     de la forge, les valeurs etaient toujours choisies avant lui : le
-     sceau se construisait donc d un seul coup a la fin. Mesure a
-     l ecran, trois valeurs jurees, zero medaillon jusqu au nom.
+  const ordre = source.length > 0
+    ? ORDRES_POSSIBLES[marque % ORDRES_POSSIBLES.length]
+    : 0;
+  /* Les medaillons ont besoin d un sommet avant meme le nom : ils se
+     posent sur ceux du cadre qui attend, et se replacent quand le nom
+     decide de l ordre. C est le seul saut de la forge, et il tombe au
+     dernier ecran, la ou toute la figure se ferme de toute facon. */
+  const sommets = ordre || ORDRE_PAR_DEFAUT;
 
-     ILS SE REPARTISSENT SUR LE TOUR ENTIER, pas sur les axes des
-     branches : poses sur les axes, trois valeurs dans une figure a
-     quatre branches laissaient un axe nu et la figure perdait son
-     miroir. Repartis, n valeurs gardent toujours un axe vertical. */
-  /* DEUX VALEURS D UN MEME PACTE NE PORTENT PAS LE MEME CARACTERE.
-     Le caractere se prenait a « empreinte(valeur) % 24 » : sur un
-     vocabulaire de vingt-quatre valeurs, 374 pactes a trois valeurs sur
-     2 024 — 18,5 % — en affichaient deux identiques. Le pacte de
-     reference en faisait partie : « Excellence » et « Apprentissage »
-     tombent l un et l autre sur l index 19.
+  /* LES MEDAILLONS SE REPARTISSENT SUR LES SOMMETS, aussi egalement que
+     l ordre le permet. Trois valeurs sur six sommets tombent sur un
+     sommet sur deux ; sur sept, la repartition boite d un cran — c est
+     la figure qui le dit, pas un defaut de calcul.
 
-     Le defaut existait des la v1 ; les ideogrammes le rendent
-     flagrant, parce qu un caractere dense se reconnait la ou deux
-     traits se confondent. On avance donc jusqu au premier libre.
-
-     A PARTIR DE LA V3 SEULEMENT. Corriger en amont redessinerait les
-     sceaux deja jures — c est exactement ce que le versionnage
-     empeche.
-
-     L ORDRE DECIDE, ET C EST DEJA LE CAS. Le rang d une valeur place
-     son medaillon sur le tour ; il choisit maintenant aussi lequel
-     cede sa place. Deux porteurs qui ont jure les memes valeurs dans
-     un ordre different n avaient deja pas le meme sceau. */
+     DEUX VALEURS D UN MEME PACTE NE PORTENT PAS LE MEME CARACTERE.
+     Il se prenait a « empreinte(valeur) % 24 » : sur un vocabulaire de
+     vingt-quatre valeurs, 374 pactes a trois valeurs sur 2 024 — 18,5 %
+     — en affichaient deux identiques. On avance jusqu au premier libre,
+     a partir de la v3 seulement : corriger en amont redessinerait les
+     sceaux deja jures. */
   const pris = new Set<number>();
-  const medaillons = valeurs.map((valeur, i) => {
+  const medaillons: MedaillonDeLaRosace[] = valeurs.map((valeur, i) => {
     let k = empreinte(valeur) % ecritureDesValeurs.length;
     if (version >= 3) {
       for (let n = 0; pris.has(k) && n < ecritureDesValeurs.length; n++) {
@@ -121,56 +134,38 @@ export function rosaceDuPacte(
       }
       pris.add(k);
     }
+    const sommet = Math.round((i * sommets) / Math.max(1, valeurs.length)) % sommets;
     return {
       valeur,
       d: ecritureDesValeurs[k],
-      angle: HAUT + (i / valeurs.length) * DEUX_PI,
+      sommet,
+      angle: HAUT + (sommet / sommets) * DEUX_PI,
     };
   });
 
   if (source.length === 0) {
-    return { version, branches: 0, bandes: [], medaillons, coeur: null, source };
+    return { version, ordre: 0, pas: 0, inscription: [], medaillons, source };
   }
 
-  const marque = empreinte(source);
-  const branches = BRANCHES_POSSIBLES[marque % BRANCHES_POSSIBLES.length];
-  /* Deux signes par demi-secteur des six branches : au-dela ils se
-     touchent. A quatre branches le secteur est assez large pour trois. */
-  const parBranche = branches >= 6 ? 2 : 3;
-  const demi = Math.floor(branches / 2);
-
-  /* LES TRANCHES SE PRENNENT SUR TOUTE LA LONGUEUR DU NOM.
-     Lues consecutivement depuis le debut, elles n en couvraient que
-     les premiers caracteres : a six branches, huit places pour un nom
-     de dix, et la fin n etait jamais lue. Mesure sur mille noms, trois
-     paires portaient le meme sceau en ne differant que par leur queue.
-     C est le meme principe qu « echantillonner » : le debut, la fin et
-     la forme generale pesent tous les trois. */
-  const places = (demi + 1) * parBranche;
-  const bandes: BrancheDeLaRosace[] = [];
-  for (let b = 0; b < branches; b++) {
-    /* La branche et son reflet lisent la meme tranche. */
-    const rang = b <= demi ? b : branches - b;
-    const lus: string[] = [];
-    for (let i = 0; i < parBranche; i++) {
-      /* BORNES COMPRISES : on repartit sur « longueur - 1 », pas sur
-         « longueur ». Sinon la derniere lettre n est jamais lue — huit
-         places sur un nom de quinze donnaient 0, 1, 3, 5, 7, 9, 11, 13,
-         et deux pactes ne differant que par leur derniere lettre
-         portaient le meme sceau. */
-      const place = rang * parBranche + i;
-      const ou = places > 1 ? Math.round((place * (source.length - 1)) / (places - 1)) : 0;
-      lus.push(signes[source.charCodeAt(ou) % signes.length]);
-    }
-    bandes.push({ angle: HAUT + (b / branches) * DEUX_PI, signes: lus });
+  /* L INSCRIPTION SE PREND SUR TOUTE LA LONGUEUR DU NOM, bornes
+     comprises. Lue consecutivement depuis le debut, elle n en couvrait
+     que les premiers caracteres, et deux pactes ne differant que par
+     leur queue portaient le meme sceau. On repartit sur
+     « longueur - 1 » : la derniere lettre est lue comme la premiere. */
+  const inscription: string[] = [];
+  for (let i = 0; i < LETTRES_DU_POURTOUR; i++) {
+    const ou = source.length > 1
+      ? Math.round((i * (source.length - 1)) / (LETTRES_DU_POURTOUR - 1))
+      : 0;
+    inscription.push(signes[source.charCodeAt(ou) % signes.length]);
   }
 
   return {
     version,
-    branches,
-    bandes,
+    ordre,
+    pas: pasDeLOrdre(ordre, marque),
+    inscription,
     medaillons,
-    coeur: signes[marque % signes.length],
     source,
   };
 }

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { rosaceDuPacte, type Rosace } from "@/domaines/objectifs/logique/rosace";
+import { rosaceDuPacte, ORDRE_PAR_DEFAUT, type Rosace } from "@/domaines/objectifs/logique/rosace";
 import "@/domaines/objectifs/sceau.css";
 
 interface Props {
@@ -31,9 +31,9 @@ interface Props {
    * c est le defaut.
    */
   revele?: {
-    /** Le signe et la teinte : l etoile et le moyeu. */
+    /** Le signe : le polygone et le centre. */
     signe?: boolean;
-    /** La phrase : les graduations et les marques du dedans. */
+    /** La phrase : la couronne de graduations. */
     phrase?: boolean;
   };
   /** Ce que le sceau dit aux lecteurs d ecran. Vide par defaut. */
@@ -41,29 +41,47 @@ interface Props {
   className?: string;
 }
 
-/* Les couronnes. Chaque famille a la sienne, et n en sort pas : c est
-   ce qui rend le chevauchement impossible par construction plutot que
-   par reglage. Mesure sur la version d avant : douze paires se
-   croisaient, les medaillons mordant sur l etoile. */
-/* L ETOILE EST LA SEULE COUCHE QUI DEBORDAIT, et la seule qui pouvait :
-   elle se dessine APRES les medaillons, donc par-dessus, la ou toutes
-   les autres passent dessous et sont proprement percees par le disque.
-
-   Mesure : le disque d un medaillon va de 0,328 a 0,612 ; la pointe de
-   l etoile etait a 0,345, plus la moitie de son contour de 2,4 px non
-   mis a l echelle — soit 0,011 unite. Son bord visible tombait donc a
-   0,356 et mordait de 3,0 px dans le disque. Et comme elle TOURNE,
-   chacune de ses pointes balayait tour a tour chaque medaillon.
-
-   A 0,29 le bord visible tombe a 0,301 : il reste 2,8 px de garde,
-   du meme ordre que l ecart des pointes exterieures. */
+/* ═══ LES COURONNES ═══
+ *
+ * Chaque famille a la sienne et n en sort pas : c est ce qui rend le
+ * chevauchement impossible par construction plutot que par reglage.
+ * Un test le mesure — la promesse en prose n avait pas suffi, l etoile
+ * de la figure precedente mordait de trois pixels sur les medaillons.
+ *
+ * LA FIGURE SE LIT DE L EXTERIEUR VERS LE CENTRE :
+ *
+ *   1,166 .. 1,056   les pointes cardinales, detachees
+ *   1,03             l anneau de garde
+ *   1,005            la piste — la jauge d avancement
+ *   0,920            l inscription : le nom, lettre a lettre
+ *   0,845 / 0,83     le filet double qui ferme l inscription
+ *   0,70             le polygone etoile, et ses medaillons aux sommets
+ *   0,56 / 0,43      le filet double du champ interieur
+ *   0,50             les graduations
+ *   0,34 / 0,305     le centre — la monture du logo, et rien d autre
+ *
+ * LES GARDES SE COMPTENT EN PIXELS RENDUS. Le premier reglage tenait
+ * l inscription a 0,955 pour une lettre de 0,115 : elle mordait sur la
+ * piste ET sur son filet, et les medaillons, poses a 0,80, remontaient
+ * jusque dans la bande des lettres. Ici chaque famille garde deux
+ * pixels au moins de ses voisines, sur un sceau de 253 px :
+ *
+ *   lettre / piste           2,0 px
+ *   lettre / filet           2,0 px
+ *   medaillon / lettre       4,9 px
+ *   medaillon / filet bas    1,7 px
+ *   centre / logo            3,9 px
+ */
 const R = {
   pointe: 1.03, pointeLong: 0.11, pointeEcart: 0.026,
-  piste: 0.955, pisteHaut: 0.995,
-  railHaut: 0.9, railBas: 0.69, signes: 0.8,
-  construction: 0.6, marques: 0.585, moyeu: 0.36,
-  medaillon: 0.47, medaillonRayon: 0.142,
-  etoile: 0.29, etoileTrait: 2.4, coeur: 0.175,
+  garde: 1.03, piste: 1.005,
+  filetHaut: 0.845, filetHautDeux: 0.83,
+  inscription: 0.92, lettre: 0.1,
+  polygone: 0.7, medaillonRayon: 0.115,
+  graduations: 0.5,
+  filetBas: 0.56, filetBasDeux: 0.43,
+  construction: 0.46,
+  coeur: 0.34, coeurDeux: 0.305,
 } as const;
 
 /* Reservee a la garde : elle verifie que les couronnes ne se coupent
@@ -71,12 +89,13 @@ const R = {
 export const _couronnes = R;
 
 const DEUX_PI = Math.PI * 2;
+const HAUT = -Math.PI / 2;
 const f = (x: number) => x.toFixed(3);
 const surLeCercle = (a: number, r: number) => `${f(Math.cos(a) * r)} ${f(Math.sin(a) * r)}`;
 
 /** Un anneau. */
 const anneau = (r: number, w: number, o: number, tirets?: string) =>
-  `<circle cx="0" cy="0" r="${r}" fill="none" stroke="currentColor" stroke-width="${w}"`
+  `<circle cx="0" cy="0" r="${f(r)}" fill="none" stroke="currentColor" stroke-width="${w}"`
   + ` opacity="${o}" vector-effect="non-scaling-stroke"${tirets ? ` stroke-dasharray="${tirets}"` : ""}/>`;
 
 /** Un segment radial. */
@@ -85,35 +104,20 @@ const rayon = (a: number, r1: number, r2: number, w: number, o: number) =>
   + ` y2="${f(Math.sin(a) * r2)}" stroke="currentColor" stroke-width="${w}" opacity="${o}"`
   + ` vector-effect="non-scaling-stroke"/>`;
 
-/** Un losange plein, pose sur un rayon. */
-const losange = (a: number, r: number, t: number) => {
-  const x = Math.cos(a) * r, y = Math.sin(a) * r;
-  return `<path d="M${f(x)} ${f(y - t)} L${f(x + t)} ${f(y)} L${f(x)} ${f(y + t)} L${f(x - t)} ${f(y)} Z"`
-    + ` fill="currentColor" opacity=".75"/>`;
-};
-
 /**
- * Une pointe cardinale, POSEE A DISTANCE de l anneau de garde.
+ * Un caractere, pose et tourne.
  *
- * Son sommet interieur tombait exactement sur « R.pointe », c est-a-dire
- * sur le rayon de l anneau : les deux se touchaient en un point, et la
- * pointe se lisait comme une excroissance du cercle plutot que comme une
- * piece a part. Les deux autres losanges de la figure — celui du rail
- * haut, celui du rail bas — flottaient deja entre leurs couronnes ;
- * seule celle-ci etait collee.
- *
- * L ECART SE COMPTE EN PIXELS RENDUS, pas en unites. Le viewBox fait
- * 2,4 pour un sceau large de 238 px au tableau de bord : une unite vaut
- * donc environ 99 px, et l anneau de garde, en trait non mis a
- * l echelle, ne fait que 0,8 px — soit 0,008 unite. Un ecart de 0,026
- * fait un peu plus de deux pixels et demi : trois fois l epaisseur du
- * trait, assez pour se lire comme un detachement voulu et non comme un
- * defaut de rendu.
- *
- * La longueur passe de 0,12 a 0,11 pour que la silhouette ne grandisse
- * presque pas : la pointe finit a 1,166 au lieu de 1,15, et il reste
- * 0,034 avant le bord du viewBox.
+ * « rot » est en degres. Sur le pourtour il vaut l angle de la lettre
+ * plus un quart de tour : une inscription se lit debout, la tete vers
+ * l exterieur, pas couchee sur le rayon.
  */
+const signe = (d: string, x: number, y: number, taille: number, rot: number, w: number, o = 1) =>
+  `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)}) scale(${f(taille)}) translate(-.5 -.5)"`
+  + `${o < 1 ? ` opacity="${o}"` : ""}><path d="${d}" fill="none" stroke="currentColor"`
+  + ` stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`
+  + ` vector-effect="non-scaling-stroke"/></g>`;
+
+/** Une pointe cardinale, posee a distance de l anneau de garde. */
 const pointe = (a: number) => {
   const c = Math.cos(a), s = Math.sin(a), l = R.pointeLong, w = 0.026;
   const r0 = R.pointe + R.pointeEcart;
@@ -126,11 +130,39 @@ const pointe = (a: number) => {
 };
 
 /**
+ * LE POLYGONE ETOILE {n/k} — ce qui manquait a la figure d avant.
+ *
+ * On part d un sommet et l on avance de k a chaque pas jusqu a revenir
+ * au depart. Quand k et n ne sont pas premiers entre eux, un seul tour
+ * ne visite pas tous les sommets : il faut repartir de ceux qu on n a
+ * pas vus. C est ce qui donne l hexagramme — deux triangles au lieu
+ * d un trace unique.
+ */
+function polygone(n: number, k: number, r: number, w: number, o: number): string {
+  let out = "";
+  const vus = new Set<number>();
+  for (let depart = 0; depart < n; depart++) {
+    if (vus.has(depart)) continue;
+    const cycle: string[] = [];
+    let i = depart;
+    do {
+      vus.add(i);
+      cycle.push(surLeCercle(HAUT + (i / n) * DEUX_PI, r).replace(" ", ","));
+      i = (i + k) % n;
+    } while (i !== depart);
+    out += `<polygon points="${cycle.join(" ")}" fill="none" stroke="currentColor"`
+      + ` stroke-width="${w}" opacity="${o}" stroke-linejoin="round"`
+      + ` vector-effect="non-scaling-stroke"/>`;
+  }
+  return out;
+}
+
+/**
  * LA PISTE DE PROGRESSION, creuse et remplie.
  *
- * Sur le tableau de bord, la rosace prend la place de
+ * Sur le tableau de bord, le sceau prend la place de
  * « singularity-ring » — qui n est pas un ornement mais LA JAUGE
- * d avancement du pacte. Elle la reprend, sans quoi remplacer le rond
+ * d avancement du pacte. Il la reprend, sans quoi remplacer le rond
  * ferait perdre une information.
  *
  * Le rail vide se voit autant que la part remplie : sans lui, un arc
@@ -140,159 +172,145 @@ const piste = (part: number) => {
   const creux = anneau(R.piste, 3.4, 0.1);
   if (part <= 0) return creux;
   if (part >= 1) return creux + anneau(R.piste, 3.4, 0.95);
-  const a0 = -Math.PI / 2, a1 = a0 + part * DEUX_PI;
+  const a1 = HAUT + part * DEUX_PI;
   return creux
-    + `<path d="M${surLeCercle(a0, R.piste)} A${R.piste} ${R.piste} 0 ${part > 0.5 ? 1 : 0} 1`
+    + `<path d="M${surLeCercle(HAUT, R.piste)} A${f(R.piste)} ${f(R.piste)} 0 ${part > 0.5 ? 1 : 0} 1`
     + ` ${surLeCercle(a1, R.piste)}" fill="none" stroke="currentColor" stroke-width="3.4"`
     + ` stroke-linecap="round" opacity=".95" vector-effect="non-scaling-stroke"/>`;
 };
 
-/** Un signe, pose a son angle et tourne vers l exterieur. */
-const signe = (d: string, x: number, y: number, taille: number, rot: number, w: number, miroir: boolean) =>
-  `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)}) scale(${f(taille)}) translate(-.5 -.5)`
-  + `${miroir ? " matrix(-1,0,0,1,1,0)" : ""}"><path d="${d}" fill="none" stroke="currentColor"`
-  + ` stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g>`;
-
-/** Le dessin entier, en une chaine : rien a reconcilier cote React. */
 /* « avecSigne » et non « signe » : ce dernier est la fonction qui
-   dessine un glyphe, et le parametre la masquait. */
+   dessine un caractere, et le parametre la masquait. */
 function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase: boolean): string {
   let out = "";
+  const n = r.ordre || ORDRE_PAR_DEFAUT;
 
-  /* Les couches externes existent meme sans nom : un cadre qui attend
-     vaut mieux qu un vide. */
-  const branches = r.branches || 4;
-  for (let b = 0; b < branches; b++) out += pointe(-Math.PI / 2 + (b / branches) * DEUX_PI);
-  out += anneau(R.pointe, 0.8, 0.28);
-  out += piste(progression) + anneau(R.pisteHaut, 0.5, 0.16);
-  out += anneau(R.railHaut, 2.2, 0.85) + anneau(R.railBas, 2.2, 0.85) + anneau(R.railBas - 0.015, 0.6, 0.3);
+  /* ── LES ARCS DE CONSTRUCTION ──────────────────────────────────
+     Le compas qu on voit encore sous le trace. C est ce qui fait tout
+     le fond des cercles arcaniques : n cercles de meme rayon centres
+     sur les sommets, dont les intersections ont servi a poser la
+     figure. Ils tournent, tres lentement, en sens inverse du reste. */
+  out += `<g class="sceau-couche sceau-construction">`;
+  if (avecSigne) {
+    for (let i = 0; i < n; i++) {
+      const a = HAUT + (i / n) * DEUX_PI;
+      out += `<circle cx="${f(Math.cos(a) * R.construction)}" cy="${f(Math.sin(a) * R.construction)}"`
+        + ` r="${f(R.construction)}" fill="none" stroke="currentColor" stroke-width="0.9"`
+        + ` opacity=".13" vector-effect="non-scaling-stroke"/>`;
+    }
+  }
 
-  /* LES GRADUATIONS TOURNENT A L ENVERS de la bande : c est le
-     contresens qui fait le mecanisme. Deux couronnes dans le meme sens
-     se lisent comme un seul bloc qui pivote. */
-  /* LES GRADUATIONS VIENNENT AVEC LA PHRASE : c est la gravure. */
+  /* ── LE CADRE ──────────────────────────────────────────────────
+     Il existe des le premier ecran : mieux vaut un cadre qui attend
+     qu un sceau qu on n a pas encore. */
+  out += `</g><g class="sceau-couche">`;
+  for (let i = 0; i < n; i++) out += pointe(HAUT + (i / n) * DEUX_PI);
+  out += anneau(R.garde, 0.8, 0.28);
+  out += piste(progression);
+  out += anneau(R.filetHaut, 1.2, 0.5) + anneau(R.filetHautDeux, 0.7, 0.28);
+
+  /* ── L INSCRIPTION ─────────────────────────────────────────────
+     Le nom, lettre a lettre, debout vers l exterieur. Elle tourne :
+     c est la couche qui donne son mouvement au sceau. */
+  out += `</g><g class="sceau-couche sceau-bande">`;
+  r.inscription.forEach((d, i) => {
+    const a = HAUT + (i / r.inscription.length) * DEUX_PI;
+    const x = Math.cos(a) * R.inscription, y = Math.sin(a) * R.inscription;
+    out += signe(d, x, y, R.lettre, (a * 180) / Math.PI + 90, 1.1, 0.85);
+  });
+
+  /* ── LES GRADUATIONS VIENNENT AVEC LA PHRASE ───────────────────
+     Elles tournent a l envers de l inscription : c est le contresens
+     qui fait le mecanisme. Deux couronnes dans le meme sens se lisent
+     comme un seul bloc qui pivote. */
   out += `</g><g class="sceau-couche sceau-grad">`;
   if (avecPhrase) {
-    for (let i = 0; i < branches * 6; i++) {
-      const a = -Math.PI / 2 + (i / (branches * 6)) * DEUX_PI;
-      const longue = i % 6 === 0;
-      out += rayon(a, R.railHaut, R.railHaut + 0.035, longue ? 1.4 : 0.6, longue ? 0.55 : 0.22);
+    for (let i = 0; i < n * 6; i++) {
+      const a = HAUT + (i / (n * 6)) * DEUX_PI;
+      const long = i % 3 === 0 ? 0.045 : 0.024;
+      out += rayon(a, R.graduations, R.graduations + long, i % 3 === 0 ? 1.4 : 0.8, 0.4);
     }
+    out += anneau(R.filetBas, 0.9, 0.35) + anneau(R.filetBasDeux, 0.9, 0.35);
   }
 
-  /* LA BANDE. La taille des signes suit l arc reellement disponible :
-     a huit branches, deux signes par demi-secteur n ont que 0,099
-     d arc pour une forme de 0,115 — ils se chevauchaient. */
-  out += `</g><g class="sceau-couche sceau-bande">`;
-  if (r.bandes.length > 0) {
-    const secteur = DEUX_PI / r.branches;
-    const parBranche = r.bandes[0].signes.length;
-    const taille = Math.min(0.125, ((secteur * 0.5) / (parBranche + 1)) * R.signes * 1.55);
-    for (const bande of r.bandes) {
-      out += losange(bande.angle, R.railHaut + 0.03, 0.016);
-      bande.signes.forEach((d, i) => {
-        const ecart = ((i + 1) / (parBranche + 1)) * secteur * 0.5;
-        for (const cote of [-1, 1] as const) {
-          const a = bande.angle + cote * ecart;
-          out += signe(d, Math.cos(a) * R.signes, Math.sin(a) * R.signes, taille,
-            (a * 180) / Math.PI + 90, 1.35, cote < 0);
-        }
-      });
-    }
-  }
-
-  out += `</g><g class="sceau-couche sceau-moyeu">`;
-  /* LE MOYEU VIENT AVEC LE SIGNE : c est la charpente qui porte
-     l etoile, elle n a pas de raison d exister avant elle. */
-  if (avecSigne) {
-    out += anneau(R.construction, 0.7, 0.3, ".014 .024") + anneau(0.485, 0.6, 0.22);
-    for (let b = 0; b < branches; b++) {
-      const a = -Math.PI / 2 + (b / branches) * DEUX_PI;
-      out += rayon(a, R.moyeu, R.railBas, 0.9, 0.26) + losange(a, 0.645, 0.022);
-    }
-    out += anneau(R.moyeu, 1.3, 0.5);
-  }
-  if (avecPhrase) {
-    for (let i = 0; i < branches * 4; i++) {
-      const a = -Math.PI / 2 + ((i + 0.5) / (branches * 4)) * DEUX_PI;
-      out += rayon(a, R.marques, R.marques + 0.03, 0.8, 0.35);
-    }
-  }
-
-  /* LE TROU EST CELUI DE LA PAGE, PAS UN NOIR ECRIT EN DUR.
-     Les deux disques perces — medaillons et coeur — se remplissaient
-     de « var(--ds-bg-base-solide, #080B12) ». Ce jeton n existe nulle
-     part dans le depot : c est donc toujours le repli qui servait, un
-     quasi-noir fixe. En theme clair, sur un fond a 249/248/246, chaque
-     medaillon devenait une pastille noire. « --ds-bg-base » existe,
-     lui, et change avec le theme.
-
-     LES MEDAILLONS NE TOURNENT PAS : leurs signes doivent rester
-     droits. Une couronne qui tourne emporte ses signes avec elle.
-     La couche est nommee : elle ne tourne pas, mais on doit pouvoir la
-     designer — au style comme a la mesure. */
-  out += `</g><g class="sceau-couche sceau-medaillons">`;
-  if (r.medaillons.length > 0) {
-    const pts = r.medaillons.map((m) => surLeCercle(m.angle, R.medaillon).replace(" ", ","));
-    for (const m of r.medaillons) {
-      const x = Math.cos(m.angle) * R.medaillon, y = Math.sin(m.angle) * R.medaillon;
-      out += `<circle cx="${f(x)}" cy="${f(y)}" r="${R.medaillonRayon}" fill="hsl(var(--ds-bg-base, 220 50% 4%))"`
-        + ` stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
-      out += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R.medaillonRayon * 0.78)}" fill="none"`
-        + ` stroke="currentColor" stroke-width=".7" opacity=".5" vector-effect="non-scaling-stroke"/>`;
-      /* UN IDEOGRAMME DEMANDE PLUS DE PLACE QU UNE LETTRE. Les
-         medaillons de la v3 portent un caractere de quatre a douze
-         traits, la ou les versions precedentes posaient un signe de
-         deux ou trois. A 0,12 il devenait une tache : le signe
-         n occupait que 12,7 px dans un anneau qui en offre 23,4. A
-         0,185 la boite dessinee fait 13,7 px pour une diagonale de
-         19,3 px — il reste 4 px de garde avant l anneau. Le trait
-         s affine d autant, sans quoi trois barres se toucheraient. */
-      const denses = r.version >= 3;
-      out += signe(m.d, x, y, denses ? 0.185 : 0.12, 0, denses ? 1.5 : 1.8, false);
-    }
-    if (pts.length > 1) {
-      out += `<polygon points="${pts.join(" ")}" fill="none" stroke="currentColor"`
-        + ` stroke-width=".9" opacity=".35" vector-effect="non-scaling-stroke"/>`;
-    }
-  }
-
-  /* L ETOILE VIENT AVEC LE SIGNE. Elle etait la des le premier ecran,
-     avant qu on ait rien choisi : la figure centrale d un pacte qui
-     n existait pas encore. */
+  /* ── LE POLYGONE ETOILE ────────────────────────────────────────
+     Il vient avec le signe, comme le centre : ce sont les deux choses
+     qui font qu il y a un pacte. Il ne tourne pas — les medaillons
+     sont poses sur ses sommets, et des signes qui tournent ne se
+     lisent plus. Le mouvement est autour de lui, pas en lui. */
   out += `</g><g class="sceau-couche sceau-etoile">`;
-  const sommets: string[] = [];
-  for (let i = 0; i < branches * 2; i++) {
-    const a = -Math.PI / 2 + (i / (branches * 2)) * DEUX_PI;
-    sommets.push(surLeCercle(a, i % 2 ? R.etoile * 0.38 : R.etoile).replace(" ", ","));
-  }
   if (avecSigne) {
-    out += `<polygon points="${sommets.join(" ")}" fill="currentColor" opacity=".22"/>`
-      + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="${R.etoileTrait}"`
-      + ` stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+    out += polygone(n, r.pas || 2, R.polygone, 1.8, 0.9);
+    /* A partir de six sommets, le polygone simple se pose dessous en
+       filet leger : c est l hexagone sous l hexagramme, qui donne sa
+       profondeur a la figure. */
+    if (n >= 6) out += polygone(n, 1, R.polygone, 0.9, 0.26);
+    out += anneau(R.polygone, 0.8, 0.22);
   }
-  /* Le coeur reste fixe, comme les medaillons. */
+
+  /* ── LES MEDAILLONS, SUR LES SOMMETS ───────────────────────────
+     Ils ne tournent pas : leurs caracteres doivent rester droits. Une
+     couronne qui tourne emporte ses signes avec elle. */
+  out += `</g><g class="sceau-couche sceau-medaillons">`;
+  /* LES SOMMETS SANS VALEUR RECOIVENT UN NOEUD. Trois valeurs sur sept
+     sommets laissaient quatre pointes nues, et la figure paraissait
+     inachevee — dans les references, chaque sommet porte quelque chose.
+     Un petit disque suffit : il ferme la construction sans rien
+     pretendre dire. */
+  if (avecSigne) {
+    const occupes = new Set(r.medaillons.map((m) => m.sommet));
+    for (let i = 0; i < n; i++) {
+      if (occupes.has(i)) continue;
+      const a = HAUT + (i / n) * DEUX_PI;
+      const x = Math.cos(a) * R.polygone, y = Math.sin(a) * R.polygone;
+      out += `<circle cx="${f(x)}" cy="${f(y)}" r="0.032"`
+        + ` fill="hsl(var(--ds-bg-base, 220 50% 4%))" stroke="currentColor" stroke-width="1.4"`
+        + ` opacity=".75" vector-effect="non-scaling-stroke"/>`;
+    }
+  }
+  for (const m of r.medaillons) {
+    const x = Math.cos(m.angle) * R.polygone, y = Math.sin(m.angle) * R.polygone;
+    out += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R.medaillonRayon)}"`
+      + ` fill="hsl(var(--ds-bg-base, 220 50% 4%))" stroke="currentColor" stroke-width="1.8"`
+      + ` vector-effect="non-scaling-stroke"/>`;
+    out += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R.medaillonRayon * 0.8)}" fill="none"`
+      + ` stroke="currentColor" stroke-width="0.7" opacity=".45" vector-effect="non-scaling-stroke"/>`;
+    out += signe(m.d, x, y, 0.15, 0, 1.4);
+  }
+
+  /* ── LE CENTRE EST UNE MONTURE, PAS UNE CASE ───────────────────
+     Il portait un caractere deduit du nom. MESURE : le logo du pacte
+     fait 0,606 unite de large et le disque en faisait 0,56 — le logo
+     le couvrait donc entierement, sur le tableau de bord comme dans le
+     rite, ou il est monte au meme endroit. Le caractere n a jamais ete
+     visible nulle part.
+
+     Le centre devient ce qu il est vraiment : le double cercle qui
+     SERTIT le logo. A 0,34 il deborde de 0,037 unite tout autour —
+     un filet de quatre pixels. Et c est aussi ce que font les cercles
+     arcaniques : leur milieu est le seul endroit ou l oeil se repose,
+     le remplir revient a n avoir aucun centre. */
   out += `</g><g class="sceau-couche sceau-coeur">`;
   if (avecSigne) {
-    out += `<circle cx="0" cy="0" r="${R.coeur}" fill="hsl(var(--ds-bg-base, 220 50% 4%))" stroke="currentColor"`
-      + ` stroke-width="2" vector-effect="non-scaling-stroke"/>` + anneau(0.135, 0.8, 0.45);
+    out += `<circle cx="0" cy="0" r="${f(R.coeur)}" fill="hsl(var(--ds-bg-base, 220 50% 4%))"`
+      + ` stroke="currentColor" stroke-width="1.8" vector-effect="non-scaling-stroke"/>`
+      + anneau(R.coeurDeux, 1.1, 0.6);
   }
-  if (r.coeur) out += signe(r.coeur, 0, 0, 0.19, 0, 2.4, false);
 
   /* Une seule couche ouverte au depart, une seule fermee a la fin :
      les « </g><g> » intercales decoupent le dessin sans compter. */
-  return `<g class="sceau-couche">${out}</g>`;
+  return `<g class="sceau-couche">${out}</g></g>`;
 }
 
 /**
- * LA ROSACE DU PACTE.
+ * LE CERCLE DU PACTE.
  *
  * Le sceau, dessine. La structure vient de « logique/rosace » ; ici on
  * ne fait que la poser sur ses couronnes.
  *
- * IL N EXISTE QU A UN ENDROIT — le tableau de bord, ou il tient la
+ * IL N EXISTE QU A DEUX ENDROITS — le tableau de bord, ou il tient la
  * place du rond du heros, et le rite, ou il se forge. Ni la carte
- * d identite, ni la guilde, ni le pantheon : une figure a dix couches
+ * d identite, ni la guilde, ni le pantheon : une figure a six couches
  * devient une tache sur une vignette de liste.
  *
  * LE DESSIN EST UNE CHAINE. Deux cents elements SVG rendus en JSX
@@ -311,8 +329,8 @@ export function RosaceDuPacte({
     [nom, valeurs, version, part, avecSigne, avecPhrase],
   );
 
-  /* LES DUREES DESCENDENT DE L ELAN. A un, la bande fait un tour en
-     40 s ; a zero, en 120 s — le facteur trois que « PactVisual » a
+  /* LES DUREES DESCENDENT DE L ELAN. A un, l inscription fait un tour
+     en 40 s ; a zero, en 120 s — le facteur trois que « PactVisual » a
      pose pour ce produit. Le souffle, lui, suit la progression : un
      pacte qui avance respire plus vite, et de plus loin. */
   const cadence = useMemo(() => {

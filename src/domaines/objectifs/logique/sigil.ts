@@ -25,15 +25,16 @@
 
 import { ALPHABET_V2 } from "@/domaines/objectifs/logique/reseau";
 import { IDEOGRAMMES } from "@/domaines/objectifs/logique/ideogrammes";
+import { CURSIVE } from "@/domaines/objectifs/logique/cursive";
 
 /**
  * La version que ce module produit aujourd hui.
  *
- * ELLE PASSE A TROIS. Les pactes deja jures gardent la leur — leur
+ * ELLE PASSE A QUATRE. Les pactes deja jures gardent la leur — leur
  * numero est en base, et la table le consulte. « Mon pacte » propose
  * la refonte, en montrant les deux figures avant de la demander.
  */
-export const VERSION_ALPHABET = 3;
+export const VERSION_ALPHABET = 4;
 
 /** Au-dela, le dessin devient illisible. */
 export const TRAITS_MAX = 16;
@@ -125,6 +126,13 @@ const ECRITURES: Readonly<Record<number, EcritureDuSceau>> = {
   1: { signes: ALPHABET_V1, valeurs: ALPHABET_V1 },
   2: { signes: ALPHABET_V2, valeurs: ALPHABET_V2 },
   3: { signes: ALPHABET_V2, valeurs: IDEOGRAMMES },
+  /* LA V4 : le pourtour devient une CURSIVE. Un cercle arcanique ne
+     porte pas des figures sur son anneau, il porte du texte — des
+     lettres liees, debout vers l exterieur, qu on ne lit pas mais
+     qu on reconnait comme de l ecriture. Les signes du reseau, poses a
+     plat, donnaient une couronne de polygones. Les medaillons gardent
+     les ideogrammes : une valeur reste un concept, pas une lettre. */
+  4: { signes: CURSIVE, valeurs: IDEOGRAMMES },
 };
 
 /** Les deux ecritures sous lesquelles un pacte de cette version a ete jure. */
@@ -213,7 +221,17 @@ export function echantillonner(source: string, plafond = TRAITS_MAX): string {
   if (source.length <= plafond) return source;
   let pris = "";
   for (let i = 0; i < plafond; i++) {
-    pris += source[Math.floor((i * source.length) / plafond)];
+    /* BORNES COMPRISES. « floor(i x longueur / plafond) » ne va jamais
+       jusqu au dernier caractere : sur un nom de trente lettres, les
+       seize indices tires sont 0, 1, 3, 5, 7, 9, 11, 13, 15, 16, 18,
+       20, 22, 24, 26, 28 — le vingt-neuvieme manque. Deux pactes qui ne
+       different que par leur derniere lettre rendaient donc exactement
+       le meme echantillon, ce que cette fonction promet justement
+       d empecher : « le debut, la fin, et la forme generale du nom
+       pesent tous les trois ».
+       Sur « longueur - 1 », le dernier indice vaut exactement
+       « longueur - 1 » : la fin est lue comme le debut. */
+    pris += source[Math.round((i * (source.length - 1)) / (plafond - 1))];
   }
   return pris;
 }
