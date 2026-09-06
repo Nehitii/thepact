@@ -28,8 +28,33 @@ import { ecritureDeLaVersion, VERSION_ALPHABET, echantillonner, empreinte, norma
  * d ecran.
  */
 
-/** Cinq, six, sept ou huit sommets — le nom choisit. */
-export const ORDRES_POSSIBLES = [5, 6, 7, 8] as const;
+/** Les ordres qu on sait tracer et qui restent lisibles a 253 px. */
+export const ORDRES_POSSIBLES = [5, 6, 7, 8, 9] as const;
+
+/**
+ * L ORDRE DOIT SE DIVISER PAR LE NOMBRE DE VALEURS.
+ *
+ * C etait le defaut le plus visible de la premiere version : trois
+ * valeurs sur huit sommets tombaient a trois, deux et trois sommets
+ * d intervalle. La figure avait une symetrie d ordre huit, les valeurs
+ * une repartition boiteuse, et les deux se battaient — le sceau
+ * paraissait mal construit sans qu on sache dire pourquoi.
+ *
+ * On ne choisit donc l ordre que parmi ceux qui portent les valeurs a
+ * intervalle EGAL. A trois valeurs il reste six et neuf, soit quatre
+ * figures avec les pas — {6/2}, {9/2}, {9/3}, {9/4} — ce qui laisse de
+ * quoi differencier deux pactes.
+ *
+ * A une valeur ou zero, tous conviennent : on ne divise rien.
+ */
+export function ordresPourValeurs(combien: number): readonly number[] {
+  if (combien <= 1) return ORDRES_POSSIBLES;
+  const tenables = ORDRES_POSSIBLES.filter((n) => n % combien === 0);
+  /* Plus de valeurs que d ordres divisibles — impossible aujourd hui,
+     ou le rite en plafonne trois — mais on rend une figure plutot que
+     rien. */
+  return tenables.length > 0 ? tenables : ORDRES_POSSIBLES;
+}
 
 /* L ordre du cadre qui attend, avant qu un nom soit donne. Six : c est
    celui qui porte proprement deux, trois ou six medaillons. */
@@ -76,6 +101,7 @@ const PAS_POSSIBLES: Readonly<Record<number, readonly number[]>> = {
   6: [2],
   7: [2, 3],
   8: [3],
+  9: [2, 3, 4],
 };
 
 function pasDeLOrdre(ordre: number, marque: number): number {
@@ -105,19 +131,19 @@ export function rosaceDuPacte(
   const source = echantillonner(normaliser(nom));
   const marque = source.length > 0 ? empreinte(source) : 0;
 
-  const ordre = source.length > 0
-    ? ORDRES_POSSIBLES[marque % ORDRES_POSSIBLES.length]
-    : 0;
+  const tenables = ordresPourValeurs(valeurs.length);
+  const ordre = source.length > 0 ? tenables[marque % tenables.length] : 0;
   /* Les medaillons ont besoin d un sommet avant meme le nom : ils se
-     posent sur ceux du cadre qui attend, et se replacent quand le nom
-     decide de l ordre. C est le seul saut de la forge, et il tombe au
-     dernier ecran, la ou toute la figure se ferme de toute facon. */
+     posent sur ceux du cadre qui attend. Six est divisible par un, deux
+     et trois — les seuls comptes que le rite autorise — donc leurs
+     ANGLES ne bougent pas quand le nom arrive et decide de l ordre :
+     un sur deux d un hexagone, un sur trois d un enneagone, ce sont les
+     memes 0, 120 et 240 degres. Le cadre qui attend annonce donc juste. */
   const sommets = ordre || ORDRE_PAR_DEFAUT;
 
-  /* LES MEDAILLONS SE REPARTISSENT SUR LES SOMMETS, aussi egalement que
-     l ordre le permet. Trois valeurs sur six sommets tombent sur un
-     sommet sur deux ; sur sept, la repartition boite d un cran — c est
-     la figure qui le dit, pas un defaut de calcul.
+  /* LES MEDAILLONS SE REPARTISSENT A INTERVALLE EGAL, toujours :
+     l ordre a ete choisi pour cela. « sommets / combien » est donc un
+     entier, et le pas d un medaillon au suivant ne varie jamais.
 
      DEUX VALEURS D UN MEME PACTE NE PORTENT PAS LE MEME CARACTERE.
      Il se prenait a « empreinte(valeur) % 24 » : sur un vocabulaire de
@@ -134,6 +160,10 @@ export function rosaceDuPacte(
       }
       pris.add(k);
     }
+    /* L arrondi ne sert qu au cas de repli — plus de valeurs que
+       d ordres divisibles, que le rite ne permet pas aujourd hui. Sur
+       un ordre choisi pour elles, « i x sommets / combien » tombe juste
+       et l arrondi ne change rien. */
     const sommet = Math.round((i * sommets) / Math.max(1, valeurs.length)) % sommets;
     return {
       valeur,

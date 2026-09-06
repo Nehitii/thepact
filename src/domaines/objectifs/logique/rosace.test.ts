@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ORDRES_POSSIBLES, ORDRE_PAR_DEFAUT, LETTRES_DU_POURTOUR, rosaceDuPacte } from "./rosace";
+import {
+  ORDRES_POSSIBLES, ORDRE_PAR_DEFAUT, LETTRES_DU_POURTOUR,
+  ordresPourValeurs, rosaceDuPacte,
+} from "./rosace";
 import { VERSION_ALPHABET, ecritureDeLaVersion } from "./sigil";
 
 /* LE CERCLE DU PACTE.
@@ -23,10 +26,35 @@ const NOMS = [
 ];
 
 describe("Le polygone du cercle", () => {
-  it("a cinq, six, sept ou huit sommets — et le nom choisit", () => {
+  it("a cinq a neuf sommets — et le nom choisit", () => {
     for (const nom of NOMS) {
-      expect(ORDRES_POSSIBLES).toContain(rosaceDuPacte(nom).ordre as 5 | 6 | 7 | 8);
+      expect(ORDRES_POSSIBLES).toContain(rosaceDuPacte(nom).ordre as 5 | 6 | 7 | 8 | 9);
     }
+  });
+
+  it("SON ORDRE SE DIVISE PAR LE NOMBRE DE VALEURS", () => {
+    /* C etait le defaut le plus visible de la premiere version : trois
+       valeurs sur huit sommets tombaient a trois, deux et trois sommets
+       d intervalle. La figure avait une symetrie d ordre huit, les
+       valeurs une repartition boiteuse, et les deux se battaient. */
+    for (const nom of NOMS) {
+      for (const combien of [2, 3]) {
+        const valeurs = ["Liberté", "Discipline", "Clarté"].slice(0, combien);
+        expect(rosaceDuPacte(nom, valeurs).ordre % combien).toBe(0);
+      }
+    }
+  });
+
+  it("et il reste plusieurs figures possibles a trois valeurs", () => {
+    /* Un ordre unique donnerait le meme squelette a tous les pactes.
+       Six et neuf, avec leurs pas, en font quatre. */
+    expect(ordresPourValeurs(3)).toEqual([6, 9]);
+    const figures = new Set<string>();
+    for (let i = 0; i < 400; i++) {
+      const r = rosaceDuPacte(`pacte-${i}`, ["a", "b", "c"]);
+      figures.add(`${r.ordre}/${r.pas}`);
+    }
+    expect(figures.size).toBeGreaterThanOrEqual(4);
   });
 
   it("EST UNE ETOILE, PAS UN POLYGONE SIMPLE NI TROIS SEGMENTS", () => {
@@ -124,6 +152,22 @@ describe("Les medaillons, sur les sommets", () => {
     }
   });
 
+  it("SONT A INTERVALLE EGAL, toujours", () => {
+    /* La preuve du reglage : d un medaillon au suivant, le meme ecart —
+       et le tour se referme exactement. Un ecart qui varie fait boiter
+       la figure, et c est ce qui se voyait a trois valeurs sur huit
+       sommets. */
+    for (const nom of NOMS) {
+      const r = rosaceDuPacte(nom, TROIS);
+      const ecarts = r.medaillons.map((m, i) => {
+        const suivant = r.medaillons[(i + 1) % r.medaillons.length];
+        return ((suivant.sommet - m.sommet + r.ordre) % r.ordre) || r.ordre;
+      });
+      expect(new Set(ecarts).size).toBe(1);
+      expect(ecarts[0] * r.medaillons.length).toBe(r.ordre);
+    }
+  });
+
   it("le premier est en haut : un sceau se lit depuis son sommet", () => {
     const r = rosaceDuPacte("Ananta", TROIS);
     expect(r.medaillons[0].sommet).toBe(0);
@@ -148,6 +192,20 @@ describe("La figure se construit declaration par declaration", () => {
     expect(vide.ordre).toBe(0);
     expect(vide.pas).toBe(0);
     expect(vide.inscription).toEqual([]);
+  });
+
+  it("LE CADRE QUI ATTEND ANNONCE JUSTE : les angles ne bougeront pas", () => {
+    /* Six est divisible par un, deux et trois — les seuls comptes que
+       le rite autorise. Un sur deux d un hexagone et un sur trois d un
+       enneagone, ce sont les memes angles : quand le nom arrive et
+       decide de l ordre, les medaillons ne sautent pas. */
+    for (const combien of [1, 2, 3]) {
+      const valeurs = ["Liberté", "Discipline", "Clarté"].slice(0, combien);
+      const avant = rosaceDuPacte("", valeurs).medaillons.map((m) => m.angle);
+      for (const nom of NOMS) {
+        expect(rosaceDuPacte(nom, valeurs).medaillons.map((m) => m.angle)).toEqual(avant);
+      }
+    }
   });
 
   it("MAIS SES VALEURS ONT DEJA LEURS MEDAILLONS", () => {
