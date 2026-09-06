@@ -3,7 +3,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Bouton } from "@/socle/ds/console-ui";
 import { DataPanel } from "@/socle/ds/settings-ui";
-import { RosaceDuPacte, VERSION_ALPHABET, usePactMutation } from "@/domaines/objectifs";
+import { RosaceDuPacte, VERSION_ALPHABET, ecritureDeLaVersion, usePactMutation } from "@/domaines/objectifs";
 
 /* REFONDRE LE SCEAU — le seul geste qui change tous ses signes.
  *
@@ -58,9 +58,15 @@ function Vignette({ nom, valeurs, version, legende, courant }: {
 }) {
   return (
     <figure className="m-0 flex flex-col items-center gap-2">
+      {/* CENT QUATRE-VINGTS, PAS CENT TRENTE-DEUX. Ce panneau existe
+          pour qu on voie ce qu on change ; a 132 px un ideogramme de
+          medaillon ne faisait que 10,2 px et les deux versions se
+          ressemblaient. A 180 il en fait 13,9 — l ordre de grandeur du
+          tableau de bord, qui en montre 19,5. La comparaison est donc
+          honnete plutot que decorative. */}
       <div
         className={
-          "grid h-[132px] w-[132px] place-items-center border p-1 " +
+          "grid h-[180px] w-[180px] place-items-center border p-1 " +
           (courant ? "border-primary/15 bg-primary/[0.02]" : "border-primary/40 bg-primary/[0.06]")
         }
       >
@@ -99,6 +105,13 @@ export function AlphabetDuSceau({ userId, pactId, nom, valeurs, version, onRefon
   if (version === undefined) return null;
 
   const aJour = version >= VERSION_ALPHABET;
+  /* ON DIT CE QUI CHANGE VRAIMENT, PAS UN TEXTE GENERAL. La v3 garde
+     les signes de la v2 et ne remplace que ceux des medaillons : ecrire
+     « tous ses signes » a qui n en verra changer que trois serait un
+     mensonge, et ce panneau existe justement pour ne pas en faire. */
+  const avant = ecritureDeLaVersion(version);
+  const apres = ecritureDeLaVersion(VERSION_ALPHABET);
+  const bandeChange = avant.signes !== apres.signes;
 
   return (
     <DataPanel
@@ -119,11 +132,12 @@ export function AlphabetDuSceau({ userId, pactId, nom, valeurs, version, onRefon
         ) : (
           <>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Ton pacte a été juré sous un alphabet plus ancien. Son sceau garde
-              donc les signes de l’époque — c’est voulu : une figure jurée ne se
-              redessine pas toute seule. Tu peux la refondre, et c’est le seul
-              geste qui change <b className="text-primary/70">tous</b> ses signes
-              à la fois. La structure ne bouge pas ; les signes, si.
+              Ton pacte a été juré sous une écriture plus ancienne. Son sceau en
+              garde les signes — c’est voulu : une figure jurée ne se redessine
+              pas toute seule. La structure ne bougera pas ;{" "}
+              {bandeChange
+                ? <>en revanche <b className="text-primary/70">tous</b> ses signes changent, ceux de la bande comme ceux des valeurs.</>
+                : <>seuls les caractères des <b className="text-primary/70">valeurs</b> changent — la bande, qui épelle ton nom, reste la même.</>}
             </p>
 
             <div className="flex flex-wrap items-start justify-center gap-6">
@@ -137,7 +151,7 @@ export function AlphabetDuSceau({ userId, pactId, nom, valeurs, version, onRefon
                   Refondre le sceau de « {nom || "ton pacte"} » ?
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Il portera l’alphabet de droite. On peut revenir en arrière,
+                  Il portera la figure de droite. On peut revenir en arrière,
                   mais pas en un clic depuis cet écran.
                 </p>
                 <div className="flex gap-2">

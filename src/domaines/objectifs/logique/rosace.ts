@@ -1,4 +1,4 @@
-import { alphabetDeLaVersion, VERSION_ALPHABET, echantillonner, empreinte, normaliser } from "@/domaines/objectifs/logique/sigil";
+import { ecritureDeLaVersion, VERSION_ALPHABET, echantillonner, empreinte, normaliser } from "@/domaines/objectifs/logique/sigil";
 
 /* LA ROSACE DU PACTE — la structure, pas le dessin.
  *
@@ -73,7 +73,11 @@ export function rosaceDuPacte(
   valeurs: readonly string[] = [],
   version: number = VERSION_ALPHABET,
 ): Rosace {
-  const alphabet = alphabetDeLaVersion(version);
+  /* DEUX ECRITURES, DEUX EMPLOIS. La bande epelle le nom lettre a
+     lettre ; chaque medaillon porte une valeur entiere, et recoit donc
+     un caractere qui la tient seule. Sous les versions 1 et 2, les
+     deux tables sont la meme — le sceau ne change pas pour autant. */
+  const { signes, valeurs: ecritureDesValeurs } = ecritureDeLaVersion(version);
   const source = echantillonner(normaliser(nom));
 
   /* LES MEDAILLONS SE CALCULENT AVANT TOUT LE RESTE, PARCE QU ILS NE
@@ -89,11 +93,40 @@ export function rosaceDuPacte(
      branches : poses sur les axes, trois valeurs dans une figure a
      quatre branches laissaient un axe nu et la figure perdait son
      miroir. Repartis, n valeurs gardent toujours un axe vertical. */
-  const medaillons = valeurs.map((valeur, i) => ({
-    valeur,
-    d: alphabet[empreinte(valeur) % alphabet.length],
-    angle: HAUT + (i / valeurs.length) * DEUX_PI,
-  }));
+  /* DEUX VALEURS D UN MEME PACTE NE PORTENT PAS LE MEME CARACTERE.
+     Le caractere se prenait a « empreinte(valeur) % 24 » : sur un
+     vocabulaire de vingt-quatre valeurs, 374 pactes a trois valeurs sur
+     2 024 — 18,5 % — en affichaient deux identiques. Le pacte de
+     reference en faisait partie : « Excellence » et « Apprentissage »
+     tombent l un et l autre sur l index 19.
+
+     Le defaut existait des la v1 ; les ideogrammes le rendent
+     flagrant, parce qu un caractere dense se reconnait la ou deux
+     traits se confondent. On avance donc jusqu au premier libre.
+
+     A PARTIR DE LA V3 SEULEMENT. Corriger en amont redessinerait les
+     sceaux deja jures — c est exactement ce que le versionnage
+     empeche.
+
+     L ORDRE DECIDE, ET C EST DEJA LE CAS. Le rang d une valeur place
+     son medaillon sur le tour ; il choisit maintenant aussi lequel
+     cede sa place. Deux porteurs qui ont jure les memes valeurs dans
+     un ordre different n avaient deja pas le meme sceau. */
+  const pris = new Set<number>();
+  const medaillons = valeurs.map((valeur, i) => {
+    let k = empreinte(valeur) % ecritureDesValeurs.length;
+    if (version >= 3) {
+      for (let n = 0; pris.has(k) && n < ecritureDesValeurs.length; n++) {
+        k = (k + 1) % ecritureDesValeurs.length;
+      }
+      pris.add(k);
+    }
+    return {
+      valeur,
+      d: ecritureDesValeurs[k],
+      angle: HAUT + (i / valeurs.length) * DEUX_PI,
+    };
+  });
 
   if (source.length === 0) {
     return { version, branches: 0, bandes: [], medaillons, coeur: null, source };
@@ -118,7 +151,7 @@ export function rosaceDuPacte(
   for (let b = 0; b < branches; b++) {
     /* La branche et son reflet lisent la meme tranche. */
     const rang = b <= demi ? b : branches - b;
-    const signes: string[] = [];
+    const lus: string[] = [];
     for (let i = 0; i < parBranche; i++) {
       /* BORNES COMPRISES : on repartit sur « longueur - 1 », pas sur
          « longueur ». Sinon la derniere lettre n est jamais lue — huit
@@ -127,9 +160,9 @@ export function rosaceDuPacte(
          portaient le meme sceau. */
       const place = rang * parBranche + i;
       const ou = places > 1 ? Math.round((place * (source.length - 1)) / (places - 1)) : 0;
-      signes.push(alphabet[source.charCodeAt(ou) % alphabet.length]);
+      lus.push(signes[source.charCodeAt(ou) % signes.length]);
     }
-    bandes.push({ angle: HAUT + (b / branches) * DEUX_PI, signes });
+    bandes.push({ angle: HAUT + (b / branches) * DEUX_PI, signes: lus });
   }
 
   return {
@@ -137,7 +170,7 @@ export function rosaceDuPacte(
     branches,
     bandes,
     medaillons,
-    coeur: alphabet[marque % alphabet.length],
+    coeur: signes[marque % signes.length],
     source,
   };
 }

@@ -27,8 +27,9 @@ import "@/socle/ds/banc.css";
    sur la derniere version du code. C est voulu (un sceau qui bouge
    n est pas un sceau) mais il faut pouvoir le CONSTATER. */
 const VERSIONS = [
-  { valeur: 2, nom: "v2 — le reseau (pactes recents)" },
-  { valeur: 1, nom: "v1 — l ancien alphabet (pactes anterieurs)" },
+  { valeur: 3, nom: "v3 — ideogrammes sur les valeurs" },
+  { valeur: 2, nom: "v2 — le reseau partout" },
+  { valeur: 1, nom: "v1 — l ancien alphabet" },
 ];
 const SYMBOLES = [
   "flame", "heart", "target", "sparkles", "phoenix",
@@ -44,7 +45,7 @@ export default function BancDuBandeau() {
   const [progression, setProgression] = useState(62);
   const [enCours, setEnCours] = useState(2);
   const [valeurs, setValeurs] = useState("Liberté, Discipline, Création");
-  const [version, setVersion] = useState(2);
+  const [version, setVersion] = useState(3);
   /* L apercu de « Mon pacte » monte LE MEME bloc, reduit. Il se
      regarde ici pour la meme raison que le bandeau : la page de
      reglages est derriere la session. */

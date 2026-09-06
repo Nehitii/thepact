@@ -224,7 +224,16 @@ function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase
         + ` stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
       out += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R.medaillonRayon * 0.78)}" fill="none"`
         + ` stroke="currentColor" stroke-width=".7" opacity=".5" vector-effect="non-scaling-stroke"/>`;
-      out += signe(m.d, x, y, 0.12, 0, 1.8, false);
+      /* UN IDEOGRAMME DEMANDE PLUS DE PLACE QU UNE LETTRE. Les
+         medaillons de la v3 portent un caractere de quatre a douze
+         traits, la ou les versions precedentes posaient un signe de
+         deux ou trois. A 0,12 il devenait une tache : le signe
+         n occupait que 12,7 px dans un anneau qui en offre 23,4. A
+         0,185 la boite dessinee fait 13,7 px pour une diagonale de
+         19,3 px — il reste 4 px de garde avant l anneau. Le trait
+         s affine d autant, sans quoi trois barres se toucheraient. */
+      const denses = r.version >= 3;
+      out += signe(m.d, x, y, denses ? 0.185 : 0.12, 0, denses ? 1.5 : 1.8, false);
     }
     if (pts.length > 1) {
       out += `<polygon points="${pts.join(" ")}" fill="none" stroke="currentColor"`

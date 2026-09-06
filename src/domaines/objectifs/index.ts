@@ -49,7 +49,7 @@ export { useValeursDuPacte } from "./hooks/useValeursDuPacte";
 export type { Rosace, BrancheDeLaRosace, MedaillonDeLaRosace } from "./logique/rosace";
 export {
   sigilDuPacte, normaliser, empreinte, echantillonner,
-  ALPHABET, VERSION_ALPHABET, TRAITS_MAX,
+  ALPHABET, VERSION_ALPHABET, TRAITS_MAX, ecritureDeLaVersion, type EcritureDuSceau,
   type Sigil, type TraitDuSigil, type AncreDuSigil,
 } from "./logique/sigil";
 /* COMMENT LE PACTE ECRIT SON NOM. Deux colonnes de « pacts » : le

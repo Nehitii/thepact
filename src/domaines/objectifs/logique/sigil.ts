@@ -24,15 +24,16 @@
  */
 
 import { ALPHABET_V2 } from "@/domaines/objectifs/logique/reseau";
+import { IDEOGRAMMES } from "@/domaines/objectifs/logique/ideogrammes";
 
 /**
  * La version que ce module produit aujourd hui.
  *
- * ELLE PASSE A DEUX. Les pactes deja jures gardent la v1 — leur numero
- * est en base, et « alphabetDeLaVersion » le consulte. Ceux qui se
- * scellent a partir de maintenant portent l ecriture engendree.
+ * ELLE PASSE A TROIS. Les pactes deja jures gardent la leur — leur
+ * numero est en base, et la table le consulte. « Mon pacte » propose
+ * la refonte, en montrant les deux figures avant de la demander.
  */
-export const VERSION_ALPHABET = 2;
+export const VERSION_ALPHABET = 3;
 
 /** Au-dela, le dessin devient illisible. */
 export const TRAITS_MAX = 16;
@@ -101,18 +102,43 @@ const ALPHABET_V1: readonly string[] = [
  * retombe sur la v1 : un sceau d une autre epoque vaut mieux qu un
  * ecran vide.
  */
-const ALPHABETS: Readonly<Record<number, readonly string[]>> = {
-  1: ALPHABET_V1,
-  2: ALPHABET_V2,
+/* ═══ LE SCEAU ECRIT DEUX CHOSES DE NATURE DIFFERENTE ═══
+ *
+ * La bande epelle un NOM, lettre a lettre : un signe y vaut un
+ * caractere, et seul il ne dit rien. Les medaillons portent chacun une
+ * VALEUR — un mot entier. Les ecrire avec le meme alphabet revenait a
+ * ecrire « liberte » avec un « l ».
+ *
+ * La v3 les separe : le nom garde les signes de reseau, les valeurs
+ * recoivent des ideogrammes. Les deux versions precedentes n avaient
+ * qu une ecriture pour les deux emplois — elles la gardent, telle
+ * qu elle etait.
+ */
+export interface EcritureDuSceau {
+  /** La bande et le coeur : le nom, lettre a lettre. */
+  signes: readonly string[];
+  /** Les medaillons : une valeur, un caractere. */
+  valeurs: readonly string[];
+}
+
+const ECRITURES: Readonly<Record<number, EcritureDuSceau>> = {
+  1: { signes: ALPHABET_V1, valeurs: ALPHABET_V1 },
+  2: { signes: ALPHABET_V2, valeurs: ALPHABET_V2 },
+  3: { signes: ALPHABET_V2, valeurs: IDEOGRAMMES },
 };
 
-/** L alphabet sous lequel un pacte de cette version a ete jure. */
+/** Les deux ecritures sous lesquelles un pacte de cette version a ete jure. */
+export function ecritureDeLaVersion(version: number): EcritureDuSceau {
+  return ECRITURES[version] ?? ECRITURES[1];
+}
+
+/** L alphabet de la bande, sous la version demandee. */
 export function alphabetDeLaVersion(version: number): readonly string[] {
-  return ALPHABETS[version] ?? ALPHABET_V1;
+  return ecritureDeLaVersion(version).signes;
 }
 
 /** L alphabet courant. Les anciens restent joignables par leur version. */
-export const ALPHABET: readonly string[] = ALPHABETS[VERSION_ALPHABET];
+export const ALPHABET: readonly string[] = ECRITURES[VERSION_ALPHABET].signes;
 
 /* ═══ CE QUE LE SIGIL REND ═══ */
 
