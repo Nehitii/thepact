@@ -2,6 +2,25 @@
 -- REFERMER LES FONCTIONS QUE PERSONNE N APPELLE
 -- ═══════════════════════════════════════════════════════════════════
 --
+-- ⚠ NE PAS APPLIQUER CE FICHIER PAR « supabase db push ».
+--
+-- Les deux historiques de migration ont diverge. Releve du 06/09 par
+-- « supabase migration list --linked » :
+--
+--     43 migrations des deux cotes
+--    149 locales absentes du distant   <- ce que « db push » rejouerait
+--    194 distantes absentes du local
+--
+-- La plus ancienne des 149 date du 22 novembre 2025. « db push » les
+-- rejouerait toutes, dans l ordre, sur un schema qui a avance depuis
+-- par 194 autres — il echouerait en chemin, apres avoir peut-etre
+-- deja ecrit.
+--
+-- Ce fichier s applique donc SEUL : par l editeur SQL du projet, ou
+-- par psql sur la chaine de connexion. Ses vingt-deux signatures ont
+-- ete verifiees contre « pg_proc » le 06/09 — toutes se resolvent.
+-- ═══════════════════════════════════════════════════════════════════
+--
 -- Soixante-treize fonctions « security definer » etaient executables
 -- par tout compte connecte via /rest/v1/rpc/. Elles contournent les
 -- politiques RLS par definition : c est leur raison d etre, et c est
