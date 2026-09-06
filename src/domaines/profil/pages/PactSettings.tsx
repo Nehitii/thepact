@@ -112,6 +112,7 @@ export default function PactSettings() {
         volet={volet}
         valeurs={valeurs}
         sigilVersion={sigilVersion}
+        onSigilVersionChange={setSigilVersion}
         userId={user.id}
         pactId={pactId}
         pactName={pactName}

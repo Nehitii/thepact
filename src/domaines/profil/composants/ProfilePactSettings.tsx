@@ -6,6 +6,7 @@ import { CustomDifficultyCard } from "@/domaines/profil/composants/CustomDifficu
 import { RanksCard } from "@/domaines/succes";
 import { PactIdentityCard } from "@/domaines/profil/composants/PactIdentityCard";
 import { ApercuDuBandeau } from "@/domaines/profil/composants/ApercuDuBandeau";
+import { AlphabetDuSceau } from "@/domaines/profil/composants/AlphabetDuSceau";
 
 /* CINQ ECRANS DANS UNE SEULE SECTION, C EST TROP.
    L identite du pacte est un editeur a elle seule — 1 282 px — et les
@@ -27,6 +28,8 @@ interface ProfilePactSettingsProps {
   valeurs?: readonly string[];
   /** Sous quel alphabet le pacte a ete jure. */
   sigilVersion?: number;
+  /** Quand on vient de le refondre : la page relit la version ecrite. */
+  onSigilVersionChange?: (version: number) => void;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
@@ -57,6 +60,7 @@ export function ProfilePactSettings({
   titleEffect,
   valeurs,
   sigilVersion,
+  onSigilVersionChange,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
@@ -119,6 +123,20 @@ export function ProfilePactSettings({
           onTitleEffectChange={onTitleEffectChange}
           onSave={onSavePactIdentity}
           isSaving={isSavingIdentity}
+        />
+
+        {/* UN PACTE JURE SOUS UN ALPHABET PLUS ANCIEN NE POUVAIT PAS EN
+            CHANGER. Le figement est voulu — un sceau qui bouge tout
+            seul n en est pas un — mais figer n est pas enfermer : le
+            geste existe, il est explicite, et il montre les deux
+            figures avant de demander. */}
+        <AlphabetDuSceau
+          userId={userId}
+          pactId={pactId}
+          nom={pactName}
+          valeurs={valeurs}
+          version={sigilVersion}
+          onRefondu={(v) => onSigilVersionChange?.(v)}
         />
       </>
     );

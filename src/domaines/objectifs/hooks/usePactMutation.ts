@@ -16,6 +16,11 @@ interface PactUpdateData {
   project_end_date?: string | null;
   title_font?: string;
   title_effect?: string;
+  /* L ALPHABET SOUS LEQUEL LE SCEAU EST DESSINE. Il ne se change pas en
+     passant : refondre un sceau, c est en changer tous les signes. La
+     colonne existait, mais rien ne l ecrivait apres le scellement — un
+     pacte jure avant la v2 restait donc en v1 pour toujours. */
+  sigil_version?: number;
 }
 
 interface UsePactMutationOptions {
