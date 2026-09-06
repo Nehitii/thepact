@@ -19,7 +19,17 @@ import "@/socle/ds/banc.css";
  * viennent des menus. C est un decor, pas une session.
  */
 
-const VALEURS = ["Liberté", "Discipline", "Création"];
+/* LA VERSION DE L ALPHABET EST UN REGLAGE DU BANC, pas un detail.
+   « pacts.sigil_version » a ete ajoutee avec « default 1 » : tous les
+   pactes anterieurs sont donc en v1, et rien dans l application ne les
+   fait passer en v2. Un pacte jure avant ce jour dessine encore
+   l ancien alphabet — et son porteur ne verra jamais le nouveau, meme
+   sur la derniere version du code. C est voulu (un sceau qui bouge
+   n est pas un sceau) mais il faut pouvoir le CONSTATER. */
+const VERSIONS = [
+  { valeur: 2, nom: "v2 — le reseau (pactes recents)" },
+  { valeur: 1, nom: "v1 — l ancien alphabet (pactes anterieurs)" },
+];
 const SYMBOLES = [
   "flame", "heart", "target", "sparkles", "phoenix",
   "compass", "citadel", "vortex", "shield",
@@ -33,11 +43,15 @@ export default function BancDuBandeau() {
   const [effet, setEffet] = useState("none");
   const [progression, setProgression] = useState(62);
   const [enCours, setEnCours] = useState(2);
-  const [nbValeurs, setNbValeurs] = useState(3);
+  const [valeurs, setValeurs] = useState("Liberté, Discipline, Création");
+  const [version, setVersion] = useState(2);
   /* L apercu de « Mon pacte » monte LE MEME bloc, reduit. Il se
      regarde ici pour la meme raison que le bandeau : la page de
      reglages est derriere la session. */
   const [reduit, setReduit] = useState(false);
+
+  /* Une virgule seule ne fait pas une valeur. */
+  const listeDesValeurs = valeurs.split(",").map((v) => v.trim()).filter(Boolean);
 
   return (
     <div className="banc">
@@ -80,9 +94,16 @@ export default function BancDuBandeau() {
         </label>
 
         <label className="banc-champ">
-          <span>Valeurs jurees : {nbValeurs}</span>
-          <input type="range" min={0} max={3} value={nbValeurs}
-            onChange={(e) => setNbValeurs(Number(e.target.value))} />
+          <span>Valeurs jurees (separees par des virgules)</span>
+          <input className="banc-saisie" value={valeurs}
+            onChange={(e) => setValeurs(e.target.value)} />
+        </label>
+
+        <label className="banc-champ">
+          <span>Alphabet du sceau</span>
+          <select value={version} onChange={(e) => setVersion(Number(e.target.value))}>
+            {VERSIONS.map((v) => <option key={v.valeur} value={v.valeur}>{v.nom}</option>)}
+          </select>
         </label>
 
         <label className="banc-champ">
@@ -113,7 +134,8 @@ export default function BancDuBandeau() {
               nom={nom}
               mantra={mantra}
               symbole={symbole}
-              valeurs={VALEURS.slice(0, nbValeurs)}
+              valeurs={listeDesValeurs}
+              version={version}
               police={police}
               effet={effet}
               progression={progression}
@@ -129,7 +151,8 @@ export default function BancDuBandeau() {
           pactName={nom}
           pactMantra={mantra}
           pactSymbol={symbole}
-          valeurs={VALEURS.slice(0, nbValeurs)}
+          valeurs={listeDesValeurs}
+          sigilVersion={version}
           titleFont={police}
           titleEffect={effet}
           enCours={enCours}
