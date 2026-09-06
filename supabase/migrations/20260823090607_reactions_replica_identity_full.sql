@@ -1,0 +1,28 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- RESTAURE DEPUIS LE REGISTRE DE LA BASE, LE 06/09/2026
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- Cette migration a ete APPLIQUEE en production le 2026-08-23
+-- sans qu un fichier soit ecrit dans le depot. Elle n existait plus
+-- que dans « supabase_migrations.schema_migrations », qui garde le SQL
+-- de chaque migration en plus de son numero.
+--
+-- Le contenu ci-dessous est celui du registre, mot pour mot — la prose
+-- d origine comprise. Rien n a ete reecrit.
+--
+-- NE PAS LA REJOUER : elle est deja appliquee. Elle est ici pour que
+-- « supabase/migrations » redevienne un compte rendu fidele du schema,
+-- et pour qu un environnement neuf puisse etre reconstruit.
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Pour qu'un client sache reconnaitre SES PROPRES evenements.
+--
+-- En replica identity par defaut, la charge d'un evenement DELETE ne
+-- contient que la cle primaire : impossible de savoir de qui venait la
+-- reaction supprimee, donc impossible d'ignorer la sienne. Le fil se
+-- rechargeait entierement a chaque retrait, y compris le sien —
+-- mesure : neuf requetes pour un clic, dont quatre en double.
+--
+-- En FULL, l'ancienne ligne complete voyage avec l'evenement. La table
+-- est petite et peu ecrite : le surcout de journal est negligeable.
+alter table public.community_reactions replica identity full;
