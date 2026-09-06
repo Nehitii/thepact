@@ -45,14 +45,30 @@ interface Props {
    ce qui rend le chevauchement impossible par construction plutot que
    par reglage. Mesure sur la version d avant : douze paires se
    croisaient, les medaillons mordant sur l etoile. */
+/* L ETOILE EST LA SEULE COUCHE QUI DEBORDAIT, et la seule qui pouvait :
+   elle se dessine APRES les medaillons, donc par-dessus, la ou toutes
+   les autres passent dessous et sont proprement percees par le disque.
+
+   Mesure : le disque d un medaillon va de 0,328 a 0,612 ; la pointe de
+   l etoile etait a 0,345, plus la moitie de son contour de 2,4 px non
+   mis a l echelle — soit 0,011 unite. Son bord visible tombait donc a
+   0,356 et mordait de 3,0 px dans le disque. Et comme elle TOURNE,
+   chacune de ses pointes balayait tour a tour chaque medaillon.
+
+   A 0,29 le bord visible tombe a 0,301 : il reste 2,8 px de garde,
+   du meme ordre que l ecart des pointes exterieures. */
 const R = {
   pointe: 1.03, pointeLong: 0.11, pointeEcart: 0.026,
   piste: 0.955, pisteHaut: 0.995,
   railHaut: 0.9, railBas: 0.69, signes: 0.8,
   construction: 0.6, marques: 0.585, moyeu: 0.36,
   medaillon: 0.47, medaillonRayon: 0.142,
-  etoile: 0.345, coeur: 0.175,
+  etoile: 0.29, etoileTrait: 2.4, coeur: 0.175,
 } as const;
+
+/* Reservee a la garde : elle verifie que les couronnes ne se coupent
+   pas, plutot que de croire le commentaire qui le promet. */
+export const _couronnes = R;
 
 const DEUX_PI = Math.PI * 2;
 const f = (x: number) => x.toFixed(3);
@@ -252,7 +268,7 @@ function dessiner(r: Rosace, progression: number, avecSigne: boolean, avecPhrase
   }
   if (avecSigne) {
     out += `<polygon points="${sommets.join(" ")}" fill="currentColor" opacity=".22"/>`
-      + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="2.4"`
+      + `<polygon points="${sommets.join(" ")}" fill="none" stroke="currentColor" stroke-width="${R.etoileTrait}"`
       + ` stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
   }
   /* Le coeur reste fixe, comme les medaillons. */

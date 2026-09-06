@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { RosaceDuPacte } from "./RosaceDuPacte";
+import { RosaceDuPacte, _couronnes } from "./RosaceDuPacte";
 
 /* LE SCEAU SE CONSTRUIT DECLARATION PAR DECLARATION.
  *
@@ -125,5 +125,47 @@ describe("La rosace du pacte, pendant la forge", () => {
     for (let i = 1; i < totaux.length; i++) {
       expect(totaux[i]).toBeGreaterThan(totaux[i - 1]);
     }
+  });
+});
+
+/* LES COURONNES NE SE COUPENT PAS — verifie, plus seulement promis.
+ *
+ * La table des rayons affirme depuis le debut que « chaque famille a
+ * la sienne, et n en sort pas ». C etait faux pour l etoile : sa
+ * pointe tombait a 0,345 quand le disque du medaillon commence a
+ * 0,328, et son contour de 2,4 px non mis a l echelle ajoutait encore
+ * 0,011. Elle mordait de 3,0 px — et comme elle tourne, chacune de ses
+ * pointes balayait tour a tour chaque medaillon.
+ *
+ * L etoile est la SEULE couche qui pouvait deborder : toutes les
+ * autres se dessinent avant les medaillons et sont proprement percees
+ * par leur disque, qui est plein. Elle passe apres, donc par-dessus.
+ */
+describe("Les couronnes du sceau", () => {
+  /** La moitie d un trait non mis a l echelle, en unites du viewBox. */
+  const enUnites = (px: number) => (px / 2) / (253 / 2.4);
+
+  it("L ETOILE RESTE HORS DES DISQUES DES MEDAILLONS", () => {
+    const { medaillon, medaillonRayon, etoile, etoileTrait } = _couronnes;
+    const bordDuDisque = medaillon - medaillonRayon;
+    const bordDeLEtoile = etoile + enUnites(etoileTrait);
+    expect(bordDeLEtoile).toBeLessThan(bordDuDisque);
+    /* Et pas de justesse : une garde d au moins deux pixels, sinon le
+       contact revient au premier reglage de rayon. */
+    expect((bordDuDisque - bordDeLEtoile) * (253 / 2.4)).toBeGreaterThan(2);
+  });
+
+  it("le coeur reste sous l etoile, qui le couvre", () => {
+    /* L etoile rayonne DE DERRIERE le coeur : ses sommets interieurs
+       doivent rester dans le disque du coeur, qui est plein. */
+    const { etoile, coeur } = _couronnes;
+    expect(etoile * 0.38).toBeLessThan(coeur);
+  });
+
+  it("les pointes exterieures restent detachees de l anneau de garde", () => {
+    const { pointe, pointeEcart, pointeLong } = _couronnes;
+    expect(pointeEcart).toBeGreaterThan(0);
+    /* Et rien ne sort du viewBox, qui s arrete a 1,2. */
+    expect(pointe + pointeEcart + pointeLong).toBeLessThan(1.2);
   });
 });
