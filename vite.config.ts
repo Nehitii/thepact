@@ -164,6 +164,34 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        /* ═══ MILLE SIX CENT TRENTE-SIX MORCEAUX, ET ON LES GARDE ═══
+           Rollup sort un fichier par module partage entre deux routes
+           differees : 1 636 morceaux dont 1 513 sous un kilo-octet.
+           Le chiffre est spectaculaire, la correction ne vaut rien.
+
+           MESURE DU 06/09, fermeture statique par route, gzip :
+
+             variante              morceaux  entree  GoalDetail
+             celle-ci                 1 636   405 Ko  71 morceaux, 93 Ko
+             minChunkSize 20 ko       1 588   418 Ko  —
+             noyaux logique+hooks       119   633 Ko  12 morceaux, 30 Ko
+             noyaux logique seule       128   584 Ko  19 morceaux, 54 Ko
+
+           Regrouper les modules par domaine effondre bien le cout des
+           routes — « GoalDetail » passe de 71 requetes a 12 — mais
+           l entree grossit de 180 a 230 Ko : elle touche un module de
+           « social » et un de « succes », et tire alors leurs paquets
+           entiers, 143 et 130 Ko.
+
+           On echange donc une seconde de telechargement au premier
+           chargement contre cinquante requetes de moins de 700 octets
+           sur une route, multiplexees en HTTP/2. Le troc est mauvais,
+           et il l est dans le sens qui compte le plus : la premiere
+           visite, cache froid.
+
+           CE QUI CHANGERAIT LA DONNE : que l entree cesse d importer
+           statiquement quoi que ce soit de « social » et de « succes ».
+           C est un travail sur les imports, pas sur le decoupage. */
         manualChunks: {
           "react-vendor": ["react", "react-dom", "react-router-dom"],
           "supabase-vendor": ["@supabase/supabase-js"],
