@@ -46,7 +46,7 @@ interface Props {
    par reglage. Mesure sur la version d avant : douze paires se
    croisaient, les medaillons mordant sur l etoile. */
 const R = {
-  pointe: 1.03, pointeLong: 0.12,
+  pointe: 1.03, pointeLong: 0.11, pointeEcart: 0.026,
   piste: 0.955, pisteHaut: 0.995,
   railHaut: 0.9, railBas: 0.69, signes: 0.8,
   construction: 0.6, marques: 0.585, moyeu: 0.36,
@@ -76,14 +76,36 @@ const losange = (a: number, r: number, t: number) => {
     + ` fill="currentColor" opacity=".75"/>`;
 };
 
-/** Une pointe cardinale, hors de l anneau de garde. */
+/**
+ * Une pointe cardinale, POSEE A DISTANCE de l anneau de garde.
+ *
+ * Son sommet interieur tombait exactement sur « R.pointe », c est-a-dire
+ * sur le rayon de l anneau : les deux se touchaient en un point, et la
+ * pointe se lisait comme une excroissance du cercle plutot que comme une
+ * piece a part. Les deux autres losanges de la figure — celui du rail
+ * haut, celui du rail bas — flottaient deja entre leurs couronnes ;
+ * seule celle-ci etait collee.
+ *
+ * L ECART SE COMPTE EN PIXELS RENDUS, pas en unites. Le viewBox fait
+ * 2,4 pour un sceau large de 238 px au tableau de bord : une unite vaut
+ * donc environ 99 px, et l anneau de garde, en trait non mis a
+ * l echelle, ne fait que 0,8 px — soit 0,008 unite. Un ecart de 0,026
+ * fait un peu plus de deux pixels et demi : trois fois l epaisseur du
+ * trait, assez pour se lire comme un detachement voulu et non comme un
+ * defaut de rendu.
+ *
+ * La longueur passe de 0,12 a 0,11 pour que la silhouette ne grandisse
+ * presque pas : la pointe finit a 1,166 au lieu de 1,15, et il reste
+ * 0,034 avant le bord du viewBox.
+ */
 const pointe = (a: number) => {
   const c = Math.cos(a), s = Math.sin(a), l = R.pointeLong, w = 0.026;
+  const r0 = R.pointe + R.pointeEcart;
   const p = Math.cos(a + Math.PI / 2) * w, q = Math.sin(a + Math.PI / 2) * w;
-  return `<path d="M${f(c * R.pointe)} ${f(s * R.pointe)}`
-    + ` L${f(c * (R.pointe + l * 0.45) + p)} ${f(s * (R.pointe + l * 0.45) + q)}`
-    + ` L${f(c * (R.pointe + l))} ${f(s * (R.pointe + l))}`
-    + ` L${f(c * (R.pointe + l * 0.45) - p)} ${f(s * (R.pointe + l * 0.45) - q)} Z"`
+  return `<path d="M${f(c * r0)} ${f(s * r0)}`
+    + ` L${f(c * (r0 + l * 0.45) + p)} ${f(s * (r0 + l * 0.45) + q)}`
+    + ` L${f(c * (r0 + l))} ${f(s * (r0 + l))}`
+    + ` L${f(c * (r0 + l * 0.45) - p)} ${f(s * (r0 + l * 0.45) - q)} Z"`
     + ` fill="currentColor" opacity=".92"/>`;
 };
 
