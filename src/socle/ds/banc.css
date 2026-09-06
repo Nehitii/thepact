@@ -131,3 +131,7 @@
    hauteur, on ne fait que lui donner la place. */
 .banc-scene { position: relative; min-width: 0; }
 .banc-scene .ob { min-height: 100dvh; }
+
+/* Un banc dont la scene occupe presque tout : la finance a trois
+   ecrans larges, un pupitre etroit suffit. */
+.banc--large { grid-template-columns: 210px 1fr; }

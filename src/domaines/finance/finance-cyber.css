@@ -3126,3 +3126,158 @@
   text-transform: uppercase;
   color: var(--cy-jaune);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FIN.SYS EN CLAIR — LE PLAN DE L APPAREIL
+   ═══════════════════════════════════════════════════════════════════
+
+   L onglet portait 3 436 lignes de CSS et pas une regle « .light ». En
+   theme clair il rendait donc son tableau de bord de nuit, entier, pose
+   sur du papier : la page etait noire quand tout le reste etait blanc.
+
+   ON NE DECOLORE PAS LE SOMBRE, on dessine son jumeau de jour. C est la
+   doctrine de « theme-clair.css » et elle vaut mot pour mot ici : un HUD
+   eclaire au soleil est un PLAN — un dessin technique. Papier froid,
+   traits d encre, accents satures, aucune lueur, de vraies ombres.
+
+   TROIS TRADUCTIONS PORTENT TOUT CE QUI SUIT.
+
+     LA LUEUR DEVIENT DU POIDS. « inset 0 0 24px jaune » dit « ceci est
+     sous tension » sur du noir ; sur du blanc c est une tache. La meme
+     chose se dit par un trait plus franc.
+
+     LE CREUX S INVERSE. Sur le noir, un renfoncement est PLUS SOMBRE
+     que la plaque. Sur le papier il l est aussi — mais de deux pour
+     cent, pas de quinze : au-dela on retombe dans le gris sale.
+
+     LE VOILE BLANC DEVIENT DE L ENCRE. « rgba(255,255,255,0.02) »
+     eclaircit un fond noir ; sur du papier il ne fait rien du tout.
+     Il passe en noir a la meme opacite.
+
+   CE QUI SE CORRIGE TOUT SEUL. Les fonds d accent dont le texte est
+   ecrit « var(--cy-fond) » — la moitie d entre eux — deviennent justes
+   des que la palette bascule : encre saturee dessous, papier dessus.
+   Seuls les cinq qui codaient leur texte en dur sont repris a la main.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── LA PALETTE ─────────────────────────────────────────────────────
+   Les accents descendent jusqu a porter sur du blanc. Le jaune de
+   l appareil — #FCEE0A, un neon — devient l or du plan : meme teinte,
+   contraste tenu. */
+.light .cy,
+.light .cy-reg,
+.light .cy-parc {
+  --cy-fond:   #E9E7E1;
+  --cy-plaque: #FBFAF7;
+  --cy-creux:  #EDEAE3;
+  --cy-trait:      hsl(200 14% 22% / 0.26);
+  --cy-trait-fort: hsl(200 16% 19% / 0.52);
+
+  --cy-jaune: #7A5C00;
+  --cy-cyan:  #00697A;
+  --cy-vert:  #00693A;
+  --cy-rouge: #A80020;
+  /* Sur papier, le rouge des remplissages et celui des mots n ont plus
+     a differer : les deux portent. */
+  --cy-rouge-encre: #A80020;
+
+  --cy-encre:   #14181A;
+  --cy-encre-2: #4A5257;
+  /* LA TROISIEME ENCRE SE MESURE, ELLE NE SE CHOISIT PAS. Reprise a
+     #6C7176 du gris de « theme-clair.css », elle tombait a 4,06 sur le
+     papier et 3,77 dans le creux — seize libelles sous le seuil, tous
+     de cette seule couleur. A #5C6166 : 5,06 sur le papier, 5,99 sur
+     la plaque, 4,79 dans le creux. Le creux est le fond qui decide. */
+  --cy-encre-3: #5C6166;
+}
+
+/* ── LE FOND ────────────────────────────────────────────────────────
+   Deux halos de couleur sur du noir font une profondeur ; sur du papier
+   ils font une tache. Le fond devient uni, et la grille qui le texture
+   passe de la lumiere a l encre. */
+.light .cy-fond { background: var(--cy-fond); }
+.light .cy-fond::before {
+  background-image:
+    linear-gradient(hsl(200 14% 22% / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(200 14% 22% / 0.045) 1px, transparent 1px);
+}
+/* Les lignes de balayage sont un artefact d ecran cathodique. Un plan
+   n en a pas. */
+.light .cy-fond::after { background-image: none; }
+
+/* ── LA PLAQUE ET LES CREUX ─────────────────────────────────────────
+   Le degrade descendait vers un presque-noir ; il descend maintenant
+   d un demi-ton, et les surfaces reçoivent une ombre portee au lieu
+   d une lueur interne. */
+.light .cy-baie,
+.light .cy-reg,
+.light .cy-navette button {
+  background: linear-gradient(180deg, var(--cy-plaque), #F3F1EC) !important;
+  box-shadow: 0 1px 2px hsl(212 40% 20% / 0.07), 0 2px 8px hsl(212 40% 20% / 0.06);
+}
+.light .cy-tete,
+.light .cy-reg-tete,
+.light .cy-reg-pied { background: hsl(200 14% 22% / 0.05); }
+
+/* Le creux : sur le noir il tombait a #0A0E13, quinze pour cent sous la
+   plaque. Sur le papier, deux suffisent. */
+.light .cy-barre,
+.light .cy-jauge,
+.light .cy-reg-champ,
+.light .cy-reg-bascule button,
+.light .cy-palm-bande button,
+.light .cy-cat { background: #E4E1DA; }
+/* LES PSEUDO-ELEMENTS DE MARQUE VONT SEULS, ET C EST UNE REGLE DU
+   LANGAGE. Groupes avec les autres, ils emportaient tout : un
+   selecteur qu un moteur ne comprend pas INVALIDE LA LISTE ENTIERE, et
+   Chrome ne connait pas « ::-moz-range-track ». La barre restait donc
+   noire sur le papier, sans qu aucune erreur ne le dise. */
+.light .cy-horizon-curseur::-webkit-slider-runnable-track { background: #E4E1DA; }
+.light .cy-horizon-curseur::-moz-range-track { background: #E4E1DA; }
+.light .cy textarea,
+.light .cy .category-pill,
+.light .cy .category-pill .rounded-full,
+.light .cy .neu-inset { background: #E4E1DA !important; }
+.light .cy-balance,
+.light .cy-parc,
+.light .cy-parc-comptes > div { background: #EDEAE3; }
+.light .cy-barre::before {
+  background-image: repeating-linear-gradient(90deg,
+    transparent 0 calc(2.5% - 1px), hsl(200 14% 22% / 0.22) calc(2.5% - 1px) 2.5%);
+}
+
+/* Le voile blanc n eclaircit rien sur du papier : il passe en encre. */
+.light .cy-piece { background: hsl(200 14% 22% / 0.03); }
+
+/* ── LA LUEUR DEVIENT DU POIDS ──────────────────────────────────────
+   Une lueur interne jaune sur du blanc est une tache. Le champ dit son
+   etat par son trait, comme sur un plan. */
+.light .cy-champ { box-shadow: none; }
+.light .cy-champ:focus-within {
+  box-shadow: 0 0 0 3px hsl(45 100% 24% / 0.22);
+}
+.light .cy-pied {
+  box-shadow: 0 -1px 0 hsl(200 14% 22% / 0.14), 0 -8px 24px hsl(212 40% 20% / 0.06);
+}
+
+/* ── LE TEXTE POSE SUR UN ACCENT ────────────────────────────────────
+   Cinq regles codaient leur texte en sombre parce que leur fond etait
+   un neon. Le fond devient de l encre : le texte passe au papier. */
+.light .cy-index,
+.light .cy-sceau,
+.light .cy-valider,
+.light .cy-valider.est-rouge,
+.light .cy-palm-appel button { color: #FBFAF7; }
+
+/* ── LES DEGRADES DE REMPLISSAGE ────────────────────────────────────
+   « color-mix » melangeait l accent a un presque-noir : sur papier il
+   se melange au creux. */
+.light .cy-palm-bande button[data-valide="1"] {
+  background: color-mix(in oklab, var(--cy-vert) 16%, #E4E1DA);
+}
+.light .cy-palm-bande button[data-avenir="1"] {
+  background: color-mix(in oklab, var(--cy-cyan) 8%, #E4E1DA);
+}
+.light .cy-cat[aria-checked="true"] {
+  background: color-mix(in oklab, var(--cy-cat) 14%, #E4E1DA);
+}

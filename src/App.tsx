@@ -37,6 +37,7 @@ const Community = lazy(() => import("@/domaines/social/pages/Community"));
 const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
+const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -136,6 +137,14 @@ function AppRoutes() {
           nom et des valeurs : c est la COMBINAISON qu il faut juger.
           Il ne lit ni n ecrit rien ; tout vient de ses menus. */}
       <Route path="/banc/bandeau" element={<BancDuBandeau />} />
+
+      {/* LE BANC DE LA FINANCE — public, et pour la troisieme fois la
+          meme raison. L onglet porte 3 436 lignes de CSS et n avait pas
+          une regle « .light » : en clair il rendait un tableau de bord
+          de nuit pose sur du papier. On ne pouvait pas ecrire son
+          jumeau de jour sans le voir. Il ne lit rien : sans session,
+          la page montre ses etats a zero. */}
+      <Route path="/banc/finance" element={<BancDeLaFinance />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />

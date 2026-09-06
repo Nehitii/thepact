@@ -131,11 +131,27 @@ export default function Finance() {
 
   return (
     <DSPageShell width="lg" padding="tight">
-      {/* « dark » decrit ce que la page EST : .cy-fond peint un sol
-          noir fixe qui recouvre le viewport, quel que soit le theme du
-          systeme. Sans cette classe, les utilitaires de signal y
-          prendraient leur valeur claire et disparaitraient. */}
-      <div className="cy dark">
+      {/* LA CLASSE « dark » EST PARTIE, ET AVEC ELLE LA DERNIERE PAGE
+          QUI REFUSAIT LE THEME.
+
+          Elle disait : « .cy-fond peint un sol noir fixe qui recouvre
+          le viewport, quel que soit le theme ; sans cette classe les
+          utilitaires de signal y prendraient leur valeur claire et
+          disparaitraient. » C etait vrai tant que la finance n avait
+          pas de theme clair — elle n en avait aucun, pas une regle
+          « .light » sur 3 436 lignes de CSS, et l onglet rendait donc
+          un tableau de bord de nuit pose sur du papier.
+
+          Le sol n est plus noir en clair : « finance-cyber.css » porte
+          desormais son jumeau de jour. Et l argument des utilitaires ne
+          tenait plus depuis longtemps — un seul « dark: » subsiste dans
+          tout le domaine, un voile blanc au survol qui ne fait rien sur
+          du papier de toute facon.
+
+          C etait aussi la SEULE page de « src/domaines » a s imposer
+          une classe de theme. Une page qui decide seule de son jour et
+          de sa nuit finit par ignorer le reglage de celui qui la lit. */}
+      <div className="cy">
         <div className="cy-fond" aria-hidden="true" />
         <div className="cy-balayage" aria-hidden="true" />
 
