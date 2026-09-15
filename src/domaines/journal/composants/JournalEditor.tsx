@@ -6,10 +6,6 @@ import {
 } from "@/domaines/journal/logique/menuOblique";
 import { useEditor, useEditorState, EditorContent } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import StarterKit from "@tiptap/starter-kit";
-import { TextStyle } from "@tiptap/extension-text-style";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
 import type { ChainedCommands } from "@tiptap/core";
 import type { EditorView } from "@tiptap/pm/view";
 import { useTranslation } from "react-i18next";
@@ -18,7 +14,7 @@ import {
   List, ListOrdered, ListChecks, Quote, Minus, Code, Link2, Sparkles,
   Highlighter, RemoveFormatting, Droplet, Check, X, type LucideIcon,
 } from "lucide-react";
-import { EncreEtat, Lueur, Marque } from "@/domaines/journal/logique/marques";
+import { extensionsDuJournal } from "@/domaines/journal/logique/extensions";
 import { MOOD_OPTIONS, getAlign, getFont, getSize } from "@/domaines/journal/types";
 
 /* LA FEUILLE
@@ -155,23 +151,7 @@ export function JournalEditor({
     { id: "code", icone: Code, cles: "code bloc", raccourci: "```", lancer: (c) => c.toggleCodeBlock() },
   ], []);
 
-  const extensions = useMemo(() => [
-    StarterKit.configure({
-      heading: { levels: [2, 3] },
-      link: {
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
-        HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
-      },
-    }),
-    TextStyle,
-    TaskList,
-    TaskItem.configure({ nested: false }),
-    Lueur,
-    Marque,
-    EncreEtat,
-  ], []);
+  const extensions = useMemo(() => extensionsDuJournal(), []);
 
   /* Le menu d insertion vit dans React : le clavier passe par un
      relais pour ne jamais lire un etat perime. */
