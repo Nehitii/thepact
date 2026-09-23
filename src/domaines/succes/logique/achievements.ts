@@ -26,7 +26,12 @@ export async function trackLogin(userId: string) {
     .from("achievement_tracking")
     .select("*")
     .eq("user_id", userId)
-    .single();
+    /* `.single()` exigeait une ligne : quand elle manquait — premier
+       passage, ou session pas encore elevee que la politique
+       `mfa_aal2_requis` laisse sans reponse — PostgREST rendait un 406,
+       releve quatre fois en vingt-quatre heures (audit du 22/09). Le
+       cas etait pourtant prevu juste en dessous. */
+    .maybeSingle();
 
   if (!tracking) {
     await initializeAchievementTracking(userId);
