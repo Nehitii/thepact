@@ -1,0 +1,297 @@
+/* ═══════════════════════════════════════════════════════════════
+   LES PIECES COMMUNES DES POINTEUSES
+
+   L acier et ses vis, la plaque gravee, les tambours du compteur, la
+   carte de pointage — carton chamois imprime en rouge, tape a la
+   machine —, ses trous, le bouton rouge et le tampon violet. Chaque
+   variante n ecrit que ce qui la distingue.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* L acier brosse du pupitre, quatre vis aux coins. */
+.pt-acier {
+  background:
+    radial-gradient(circle at 10px 10px, #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at 10px calc(100% - 10px), #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px),
+    linear-gradient(175deg, #33363d, #1c1e23);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 -2px 0 rgb(0 0 0 / 0.45),
+    0 0 0 1px #0a0b0d,
+    0 18px 40px -24px rgb(0 0 0 / 0.9);
+}
+
+.pt-plaque {
+  padding: 6px 12px 5px;
+  border-radius: 3px;
+  background: linear-gradient(#16171a, #0b0c0e);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.08);
+  font: 700 11px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #e4e7ec;
+}
+
+.pt-bascule {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #6a6f78, #2a2d33 72%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 2px 5px rgb(0 0 0 / 0.6);
+  color: #d3d7de;
+  cursor: pointer;
+}
+.pt-bascule:hover { color: #ffffff; }
+.pt-bascule:focus-visible { outline: 2px solid #ffb020; outline-offset: 2px; }
+.pt-bascule svg { transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
+.pt-bascule[aria-expanded="false"] svg { transform: rotate(-90deg); }
+
+/* ── Les tambours : cylindres blancs, chiffres noirs, un chiffre qui
+   change roule jusqu au suivant. Leurs dix chiffres ne se selectionnent
+   pas : le releve se lit par son « aria-label ». ── */
+.pt-tambours {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px;
+  border-radius: 3px;
+  background: #0b0c0e;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.07);
+  font: 700 14px/1 "JetBrains Mono", ui-monospace, monospace;
+  user-select: none;
+}
+.pt-tambour {
+  --pt-h: 20px;
+  position: relative;
+  display: block;
+  width: 13px;
+  height: var(--pt-h);
+  overflow: hidden;
+  border-radius: 2px;
+  background: linear-gradient(#e2ded6, #fbf9f4 45%, #d6d2c9);
+  color: #141414;
+}
+.pt-tambour::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgb(0 0 0 / 0.42), transparent 32%, transparent 68%, rgb(0 0 0 / 0.42));
+  pointer-events: none;
+}
+.pt-tambour > span {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--d) * var(--pt-h) * -1));
+  transition: transform 700ms cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+.pt-tambour i { display: grid; place-items: center; height: var(--pt-h); font-style: normal; }
+.pt-separe { padding: 0 1px; color: #a2a8b2; }
+
+/* ── La carte ── */
+.pt-carte {
+  --pt-papier: #efe6cc;
+  --pt-encre: #27231c;
+  --pt-rouge: #ae2f29;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 11px 13px 16px;
+  border-radius: 3px 3px 0 0;
+  background-color: var(--pt-papier);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .13 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 8px 16px rgb(0 0 0 / 0.45);
+  color: var(--pt-encre);
+}
+.pt-carte::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  border-radius: 3px 3px 0 0;
+  background: color-mix(in srgb, var(--pt-c) 70%, var(--pt-papier));
+}
+.pt-carte[data-pointage] { animation: pt-inserer 700ms cubic-bezier(0.3, 1.2, 0.4, 1); }
+
+.pt-carte-tete {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--pt-rouge) 55%, transparent);
+  font: 700 10px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pt-rouge);
+}
+.pt-genre { margin-left: auto; }
+.pt-etiquette { display: none; }
+
+.pt-nom {
+  margin: 0;
+  font: 400 19px/1.15 "Special Elite", "Courier New", monospace;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--pt-encre);
+}
+.pt-desc {
+  margin: 0;
+  font: 400 12.5px/1.4 "Special Elite", "Courier New", monospace;
+  color: color-mix(in srgb, var(--pt-encre) 78%, var(--pt-papier));
+}
+
+.pt-pied {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in srgb, var(--pt-rouge) 45%, transparent);
+  font: 700 10.5px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pt-rouge);
+}
+.pt-mesure { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.02em; color: var(--pt-encre); }
+
+/* ── Les trous : un anneau imprime ; perce, on voit le fond a travers,
+   et le carton se souleve autour. ── */
+.pt-trous { display: grid; grid-template-columns: repeat(var(--pt-col), 14px); gap: 6px; padding: 2px 0; }
+.pt-trous i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pt-rouge, #ae2f29) 65%, transparent);
+}
+.pt-trous i[data-perce] {
+  background: radial-gradient(circle at 50% 38%, #0c0d10 52%, #2a2c31);
+  box-shadow: 0 0 0 1px rgb(120 96 56 / 0.35), inset 0 2px 3px rgb(0 0 0 / 0.85);
+  animation: pt-percer 320ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.pt-trous[data-seul] { grid-template-columns: 40px; }
+.pt-trous[data-seul] i { width: 40px; height: 24px; border-radius: 5px; }
+/* Sur une ligne : des trous plus petits, un blanc tous les cinq. */
+.pt-trous[data-rangee] { grid-template-columns: repeat(var(--pt-col), 8px); gap: 3px; }
+.pt-trous[data-rangee] i { width: 8px; height: 8px; }
+.pt-trous[data-rangee] i:nth-child(5n):not(:last-child) { margin-right: 5px; }
+.pt-trous[data-rangee][data-seul] { grid-template-columns: 26px; }
+.pt-trous[data-rangee][data-seul] i { width: 26px; height: 12px; border-radius: 3px; margin: 0; }
+
+/* ── Le bouton rouge, epais, qui s enfonce ── */
+.pt-pointer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(#e2483f, #b0231c);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25), 0 3px 0 #6b1410, 0 5px 9px rgb(0 0 0 / 0.35);
+  font: 800 12px/1 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff6f2;
+  cursor: pointer;
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+}
+.pt-pointer b { font-weight: 800; letter-spacing: 0.04em; }
+.pt-pointer:hover:not(:disabled) { background: linear-gradient(#ec5249, #b8261e); }
+.pt-pointer:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 0 #6b1410, 0 2px 4px rgb(0 0 0 / 0.3);
+}
+.pt-pointer:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.pt-pointer:disabled { cursor: progress; opacity: 0.75; }
+
+/* ── Le tampon : encre violette, de travers, grenee ── */
+.pt-tampon {
+  position: absolute;
+  right: 12px;
+  bottom: 44px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 5px 10px 4px;
+  border: 2.5px solid currentColor;
+  border-radius: 6px;
+  color: rgb(86 52 172 / 0.85);
+  font: 800 15px/1.05 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.7 1.45'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.7 1.45'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  transform: rotate(-11deg);
+  pointer-events: none;
+  animation: pt-tamponner 460ms cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.pt-tampon small { font: 700 10px/1.2 "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0.04em; }
+.pt-tampon b { font-size: 13px; letter-spacing: 0.06em; }
+
+/* ── Replie : les cartes ne montrent plus que leur tete, et a droite
+   ou elles en sont. ── */
+[data-replie] .pt-carte > :not(.pt-carte-tete, .pt-nom) { display: none; }
+[data-replie] .pt-carte { padding-bottom: 12px; }
+[data-replie] .pt-nom { font-size: 16px; }
+[data-replie] .pt-genre { margin-left: 0; }
+[data-replie] .pt-etiquette { display: inline; margin-left: auto; color: var(--pt-encre); }
+[data-replie] .pt-carte[data-etat="prete"] .pt-etiquette { color: var(--pt-rouge); }
+
+/* Sur un telephone, les cartes s empilent ; pour qu elles restent
+   courtes, la grille de trous passe a droite du texte. La requete
+   interroge le conteneur de chaque variante. */
+@container (max-width: 560px) {
+  .pt-carte {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "tete tete" "nom trous" "desc trous" "pied pied" "action action";
+    align-content: start;
+    column-gap: 14px;
+  }
+  .pt-carte-tete { grid-area: tete; }
+  .pt-nom { grid-area: nom; }
+  .pt-desc { grid-area: desc; }
+  .pt-carte > .pt-trous { grid-area: trous; align-self: start; }
+  .pt-pied { grid-area: pied; }
+  .pt-carte > .pt-pointer { grid-area: action; }
+  .pt-carte > .pt-tampon { top: 44px; right: 16px; bottom: auto; }
+}
+
+@keyframes pt-percer {
+  0% { transform: scale(1.5); box-shadow: 0 0 0 4px rgb(255 255 255 / 0.9); }
+  100% { transform: scale(1); }
+}
+@keyframes pt-tamponner {
+  0% { opacity: 0; transform: rotate(-11deg) scale(1.7); }
+  60% { opacity: 1; transform: rotate(-11deg) scale(0.94); }
+  100% { opacity: 1; transform: rotate(-11deg) scale(1); }
+}
+/* La carte descend dans la machine, et remonte. */
+@keyframes pt-inserer {
+  0% { transform: none; }
+  45% { transform: translateY(18px) scale(0.985); }
+  100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-trous i[data-perce], .pt-tampon, .pt-carte[data-pointage] { animation: none; }
+  .pt-tambour > span, .pt-pointer, .pt-bascule svg { transition: none; }
+}
+[data-reduce-motion="true"] .pt-trous i[data-perce],
+[data-reduce-motion="true"] .pt-tampon,
+[data-reduce-motion="true"] .pt-carte[data-pointage] { animation: none; }
+[data-reduce-motion="true"] .pt-tambour > span,
+[data-reduce-motion="true"] .pt-pointer,
+[data-reduce-motion="true"] .pt-bascule svg { transition: none; }

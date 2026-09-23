@@ -6,6 +6,10 @@ import { OrdresVitrine } from "@/domaines/accueil/composants/ordres/OrdresVitrin
 import { OrdresPointeuse } from "@/domaines/accueil/composants/ordres/OrdresPointeuse";
 import { OrdresCarnet } from "@/domaines/accueil/composants/ordres/OrdresCarnet";
 import { OrdresArdoise } from "@/domaines/accueil/composants/ordres/OrdresArdoise";
+import { PointeuseHorodateur } from "@/domaines/accueil/composants/ordres/pointeuse/PointeuseHorodateur";
+import { PointeuseCasiers } from "@/domaines/accueil/composants/ordres/pointeuse/PointeuseCasiers";
+import { PointeuseCarteDuJour } from "@/domaines/accueil/composants/ordres/pointeuse/PointeuseCarteDuJour";
+import { PointeuseNuit } from "@/domaines/accueil/composants/ordres/pointeuse/PointeuseNuit";
 import { useSansMouvementAuBanc } from "@/domaines/accueil/hooks/useSansMouvementAuBanc";
 import { avancer, reclamer, SCENARIOS, scenarioDe } from "@/domaines/accueil/logique/scenariosDesOrdres";
 import type { OrdreAffiche, ProprietesDesOrdres } from "@/domaines/accueil/types";
@@ -24,8 +28,11 @@ import "@/domaines/accueil/banc-du-bandeau.css";
  * UTC pour voir la cloture approcher, et le repli. Prendre une prime
  * la prend pour de faux, apres le delai d une vraie requete.
  *
+ * LA POINTEUSE A ETE RETENUE (23/09) ; ses quatre variantes suivent la
+ * premiere, et la planche ne montre plus qu elles et le panneau actuel.
+ *
  * Clavier : ← → changent de proposition, P ouvre la planche, H masque le
- * pupitre. L adresse fait de meme : « ?variante=vitrine&journee=close
+ * pupitre. L adresse fait de meme : « ?variante=casiers&journee=close
  * &heure=23:40&replie=1&rue=0&enseigne=0&pupitre=0&mouvement=0 ».
  *
  * IL NE LIT NI N ECRIT RIEN. */
@@ -49,14 +56,22 @@ interface Variante {
   nom: string;
   idee: string;
   Composant: ComponentType<ProprietesDesOrdres>;
+  /** Sur la planche : la famille retenue — la pointeuse — et le panneau actuel. */
+  planche: boolean;
 }
 
+/* La pointeuse a ete retenue le 23/09 ; ses variantes suivent la
+   premiere. Les trois autres pistes restent au bout de la liste. */
 const VARIANTES: readonly Variante[] = [
-  { id: "ancien", nom: "Panneau actuel", idee: "Le panneau en service : sceaux hexagonaux, pistes, un bouton « Réclamer ».", Composant: AncienPanneau },
-  { id: "vitrine", nom: "A · La vitrine", idee: "Chaque ordre est une enseigne dont les lettres s’allument à mesure qu’on avance ; atteint, il allume un « À prendre » qui clignote.", Composant: OrdresVitrine },
-  { id: "pointeuse", nom: "B · La pointeuse", idee: "Des cartes de pointage dans un casier d’acier : un trou percé par geste, un bouton rouge pour pointer, un coup de tampon « Perçu ».", Composant: OrdresPointeuse },
-  { id: "carnet", nom: "C · Le carnet à souches", idee: "Un ticket par ordre, talon et coupon : on détache le coupon pour toucher la prime, le talon garde la trace.", Composant: OrdresCarnet },
-  { id: "ardoise", nom: "D · L’ardoise", idee: "Les ordres à la craie comme un plat du jour : des bâtons pour compter, la prime entourée quand elle est à prendre, la ligne barrée une fois prise.", Composant: OrdresArdoise },
+  { id: "ancien", nom: "Panneau actuel", idee: "Le panneau en service : sceaux hexagonaux, pistes, un bouton « Réclamer ».", Composant: AncienPanneau, planche: true },
+  { id: "pointeuse", nom: "B · La pointeuse — la première", idee: "Des cartes de pointage dans un casier d’acier : un trou percé par geste, un bouton rouge pour pointer, un coup de tampon « Perçu ».", Composant: OrdresPointeuse, planche: true },
+  { id: "horodateur", nom: "B1 · L’horodateur", idee: "La machine elle-même, à gauche du casier : un cadran à aiguilles, le secteur rouge du temps qui reste, une fente qui s’allume quand on pointe.", Composant: PointeuseHorodateur, planche: true },
+  { id: "casiers", nom: "B2 · Les deux casiers", idee: "« À pointer » et « Pointées » : une carte pointée glisse d’un casier à l’autre. L’état d’un ordre devient une place.", Composant: PointeuseCasiers, planche: true },
+  { id: "carte-du-jour", nom: "B3 · La carte du jour", idee: "Une seule carte de pointage réglée en lignes ; l’horodateur frappe l’heure en violet dans la colonne « Pointage ». La plus compacte.", Composant: PointeuseCarteDuJour, planche: true },
+  { id: "nuit", nom: "B4 · L’atelier de nuit", idee: "Le casier scellé dans le béton de l’enseigne, sous une lampe grillagée ; une plaque émaillée de rue, des compteurs à tubes nixie.", Composant: PointeuseNuit, planche: true },
+  { id: "vitrine", nom: "A · La vitrine", idee: "Chaque ordre est une enseigne dont les lettres s’allument à mesure qu’on avance ; atteint, il allume un « À prendre » qui clignote.", Composant: OrdresVitrine, planche: false },
+  { id: "carnet", nom: "C · Le carnet à souches", idee: "Un ticket par ordre, talon et coupon : on détache le coupon pour toucher la prime, le talon garde la trace.", Composant: OrdresCarnet, planche: false },
+  { id: "ardoise", nom: "D · L’ardoise", idee: "Les ordres à la craie comme un plat du jour : des bâtons pour compter, la prime entourée quand elle est à prendre, la ligne barrée une fois prise.", Composant: OrdresArdoise, planche: false },
 ];
 
 const parametre = (cle: string) => new URLSearchParams(window.location.search).get(cle);
@@ -70,7 +85,7 @@ function lireLHeure(texte: string | null): number | null {
 }
 
 export default function BancDesOrdres() {
-  const [variante, setVariante] = useState(() => parametre("variante") ?? "vitrine");
+  const [variante, setVariante] = useState(() => parametre("variante") ?? "horodateur");
   const [planche, setPlanche] = useState(() => parametre("planche") === "1");
   const [pupitre, setPupitre] = useState(() => parametre("pupitre") !== "0");
   const [avecEnseigne, setAvecEnseigne] = useState(() => parametre("enseigne") !== "0");
@@ -219,7 +234,7 @@ export default function BancDesOrdres() {
         {planche ? (
           <>
             {(enseigne || rue) && <div className="bdb-colonne bda-pile bdb-epreuve">{enseigne}{rue}</div>}
-            {VARIANTES.map(({ id, nom, idee, Composant }) => (
+            {VARIANTES.filter((v) => v.planche).map(({ id, nom, idee, Composant }) => (
               <section key={id} className="bdb-epreuve" aria-label={nom}>
                 <p className="bdb-legende"><b>{nom}</b> {idee}</p>
                 <div className="bdb-colonne"><Composant {...proprietes} /></div>

@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE B4 — L ATELIER DE NUIT
+
+   Le beton de l enseigne et de la rue. Une lampe grillagee pend au
+   milieu, et sa lumiere tombe en cone : les cartes du centre sont
+   chaudes, celles des bords dans la penombre. Les tubes nixie ont leur
+   verre, leur grille, leurs chiffres eteints devines derriere, et le
+   seul allume, orange.
+   ═══════════════════════════════════════════════════════════════ */
+
+.pn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 18px 18px 20px;
+  border-radius: 4px;
+  container-type: inline-size;
+  background-color: #0c0d10;
+  background-image:
+    radial-gradient(ellipse at 50% 40%, transparent 45%, rgb(0 0 0 / 0.5) 100%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 260px),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .6 0 0 0 0 .62 0 0 0 0 .66 0 0 0 .16 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.85);
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  color: #e6e8ec;
+}
+/* Le cone de la lampe, sur le beton. */
+.pn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 42% 105% at 50% 0%, rgb(255 206 140 / 0.2), rgb(255 186 110 / 0.07) 55%, transparent 78%);
+  pointer-events: none;
+}
+
+/* ── La lampe : un cable, une douille, une ampoule dans sa cage ── */
+.pn-lampe {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 3;
+  width: 26px;
+  height: 40px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.pn-lampe::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 10px;
+  transform: translateX(-50%);
+  background: #2a2b2e;
+}
+.pn-lampe i {
+  position: absolute;
+  top: 9px;
+  left: 3px;
+  width: 20px;
+  height: 26px;
+  border-radius: 6px 6px 50% 50%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 4px, rgb(20 20 22 / 0.85) 4px 5.5px),
+    radial-gradient(circle at 50% 62%, #fff6df 0 4px, #ffd08a 7px, #d98b2e 12px);
+  box-shadow: 0 0 14px 4px rgb(255 190 100 / 0.45), 0 0 40px 12px rgb(255 170 80 / 0.18);
+}
+
+/* ── L en-tete ── */
+.pn-tete { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 4px 4px 16px; }
+/* La plaque emaillee : bleu de rue, filet blanc, un eclat d email. */
+.pn-plaque {
+  padding: 6px 13px 5px;
+  border-radius: 4px;
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.16), transparent 40%), #1c3c8c;
+  box-shadow: inset 0 0 0 2px #1c3c8c, inset 0 0 0 3.5px #eef2f8, 0 3px 6px rgb(0 0 0 / 0.55);
+  font: 700 11.5px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #f4f7fb;
+}
+.pn-droite { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-left: auto; }
+.pn-releve { display: inline-flex; align-items: center; gap: 8px; }
+.pn-releve small {
+  font: 600 9.5px/1 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a4a9b2;
+}
+
+/* ── Les tubes nixie ── */
+.pn-nixies { display: inline-flex; align-items: flex-end; gap: 3px; user-select: none; }
+.pn-tube {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 38px;
+  padding-bottom: 5px;
+  border-radius: 12px 12px 4px 4px;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 55%, rgb(255 120 40 / 0.2), transparent 70%),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.16) 20%, rgb(255 255 255 / 0.03) 42%, rgb(255 255 255 / 0.09) 85%),
+    #140c08;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), inset 0 -8px 8px rgb(0 0 0 / 0.55), 0 3px 6px rgb(0 0 0 / 0.6);
+}
+/* Les cathodes eteintes, devinees derriere celle qui brille. */
+.pn-tube::before {
+  content: "8";
+  position: absolute;
+  inset: 0 0 5px;
+  display: grid;
+  place-items: center;
+  font: 400 25px/1 "Tilt Neon", "Switzer", sans-serif;
+  color: rgb(255 150 70 / 0.08);
+}
+/* Le culot et ses broches. */
+.pn-tube::after {
+  content: "";
+  position: absolute;
+  inset: auto 3px 0;
+  height: 5px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(#2c2d31, #111214);
+}
+.pn-grille {
+  position: absolute;
+  inset: 4px 3px 7px;
+  z-index: 1;
+  border-radius: 9px 9px 2px 2px;
+  background:
+    repeating-linear-gradient(60deg, rgb(255 210 170 / 0.07) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-60deg, rgb(255 210 170 / 0.07) 0 1px, transparent 1px 4px);
+}
+.pn-tube b {
+  position: relative;
+  font: 400 25px/1 "Tilt Neon", "Switzer", sans-serif;
+  color: #ffe0c2;
+  text-shadow: 0 0 1px #fff3e6, 0 0 4px #ff9a4a, 0 0 10px #ff6a14, 0 0 20px rgb(255 100 20 / 0.55);
+}
+/* Les deux points : deux petites lampes au neon. */
+.pn-points {
+  display: grid;
+  gap: 7px;
+  align-self: center;
+  margin: 0 2px;
+}
+.pn-points::before,
+.pn-points::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffb070;
+  box-shadow: 0 0 6px #ff7a1f;
+}
+
+/* ── Le casier, scelle dans le mur ── */
+.pn-casier {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px 12px 0;
+  border-radius: 4px;
+  background: linear-gradient(#0f1012, #18191c);
+  box-shadow: inset 0 2px 12px rgb(0 0 0 / 0.85), 0 0 0 1px rgb(255 255 255 / 0.04);
+}
+/* La penombre : le cone ne va pas jusqu aux bords. */
+.pn-casier::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 4px;
+  background: radial-gradient(ellipse 58% 140% at 50% -12%, transparent 48%, rgb(0 0 0 / 0.4));
+  pointer-events: none;
+}
+.pn-casier::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  height: 16px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(#3a3d44, #1f2126);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 0.12), 0 -5px 10px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+}
+.pn-casier .pt-carte { padding-bottom: 28px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 8px 16px rgb(0 0 0 / 0.6), 0 0 34px rgb(255 190 110 / 0.07); }
+.pn-casier .pt-tampon { bottom: 56px; }
+.pn[data-replie] .pn-casier .pt-carte { padding-bottom: 22px; }
+
+.pn-mot { grid-column: 1 / -1; margin: 4px 4px 28px; font: 400 14px/1.5 "Special Elite", "Courier New", monospace; color: #d4d0c6; }
+.pn-mot[data-attente] { animation: pn-attente 1.6s ease-in-out infinite; }
+@keyframes pn-attente { 50% { opacity: 0.45; } }
+
+@container (max-width: 640px) {
+  .pn { padding: 16px 10px 14px; }
+  .pn-casier { grid-template-columns: minmax(0, 1fr); }
+  .pn-tube { width: 20px; height: 32px; }
+  .pn-tube b, .pn-tube::before { font-size: 21px; }
+  /* L en-tete passe sur deux lignes : la lampe n y a plus de place,
+     son cone suffit. */
+  .pn-lampe { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pn-mot[data-attente] { animation: none; }
+}
+[data-reduce-motion="true"] .pn-mot[data-attente] { animation: none; }
