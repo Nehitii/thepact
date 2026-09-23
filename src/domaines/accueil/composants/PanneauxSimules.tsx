@@ -8,13 +8,18 @@
  * espacements — et un contenu plausible, pour que l oeil ait quelque
  * chose a lire devant le fond.
  *
- * SAUF LA RUE D ENSEIGNES, qui est la vraie depuis le 23/09 : son mur
- * de beton est opaque comme celui de l enseigne, et c est lui que le
- * fond borde. Ses appuis ne menent nulle part. */
+ * SAUF LE TEMPS « AGIR », qui est le vrai depuis le 23/09 : la rue
+ * d enseignes et l atelier de nuit des ordres du jour. Leur mur de
+ * beton est opaque comme celui de l enseigne, et c est lui que le fond
+ * borde. Les ordres sont ceux d une journee feinte ; aucun appui ne
+ * mene nulle part. */
 
 import { AccesRue } from "@/domaines/accueil/composants/acces/AccesRue";
+import { PointeuseNuit } from "@/domaines/accueil/composants/ordres/pointeuse/PointeuseNuit";
+import { scenarioDe } from "@/domaines/accueil/logique/scenariosDesOrdres";
 
 const MODULES_ACHETES = { "todo-list": true, journal: true, "track-health": true };
+const ORDRES = scenarioDe("a-prendre").ordres;
 const nullePart = () => {};
 
 const ETAT = [
@@ -23,25 +28,12 @@ const ETAT = [
   { libelle: "Série", valeur: "12 j" },
 ];
 
-const QUETES = [
-  { nom: "Écrire trois lignes au journal", fait: true },
-  { nom: "Clore une étape en cours", fait: false },
-  { nom: "Pointer le mois", fait: false },
-];
-
 export function PanneauxSimules() {
   return (
     <>
       <section className="banc-fond-groupe banc-fond-groupe--pile" aria-label="Agir">
         <AccesRue ownedModules={MODULES_ACHETES} onNaviguer={nullePart} />
-        <div className="banc-fond-panneau">
-          <span className="banc-fond-libelle">Quêtes du jour</span>
-          <ul className="banc-fond-quetes">
-            {QUETES.map((q) => (
-              <li key={q.nom} data-fait={q.fait || undefined}>{q.nom}</li>
-            ))}
-          </ul>
-        </div>
+        <PointeuseNuit ordres={ORDRES} onReclamer={nullePart} replie={false} onBasculerRepli={nullePart} />
       </section>
 
       <section className="banc-fond-groupe banc-fond-groupe--trois" aria-label="État">

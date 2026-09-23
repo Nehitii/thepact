@@ -6,7 +6,18 @@
    chaudes, celles des bords dans la penombre. Les tubes nixie ont leur
    verre, leur grille, leurs chiffres eteints devines derriere, et le
    seul allume, orange.
+
+   Les chiffres des tubes sont la Tilt Neon (licence OFL), embarquee
+   dans « public/fonts » : l atelier est sur l accueil depuis le 23/09.
    ═══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Tilt Neon';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/tilt-neon.woff2') format('woff2');
+}
 
 .pn {
   position: relative;

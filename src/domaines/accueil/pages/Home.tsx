@@ -24,7 +24,7 @@ import { CountdownPanel } from "@/domaines/accueil/composants/CountdownPanel";
 import { MissionRandomizer } from "@/domaines/accueil/composants/hero/MissionRandomizer";
 import { PassageMia } from "@/domaines/mia";
 import { MonitoringPanel } from "@/domaines/accueil/composants/MonitoringPanel";
-import { DailyQuestsPanel } from "@/domaines/succes";
+import { OrdresDuJour } from "@/domaines/accueil/composants/ordres/OrdresDuJour";
 import { WeeklyReviewModal } from "@/domaines/revue";
 
 // Hooks
@@ -306,10 +306,10 @@ export default function Home() {
             <Skeleton className="h-[270px] min-[673px]:h-[147px] w-full rounded" />
           )}
 
-          {/* Les quetes expirent a minuit : c'est le contenu le plus
-              perissable de la page. Elles etaient repliees sous une
-              etiquette de surveillance, donc jamais vues. */}
-          <DailyQuestsPanel />
+          {/* Les ordres du jour tombent a minuit UTC : le contenu le plus
+              perissable de la page. L atelier de nuit depuis le 23/09 —
+              l ancien panneau reste au banc des ordres. */}
+          <OrdresDuJour />
         </section>
 
         {/* L'ETAT — ou j'en suis. Le compte a rebours dit le temps qui

@@ -1,13 +1,10 @@
 import { useId, useRef, type CSSProperties } from "react";
 import { useJourneeDesOrdres, type OrdreLu } from "@/domaines/accueil/hooks/useJourneeDesOrdres";
 import { useGlissement } from "@/domaines/accueil/hooks/useGlissement";
-import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import type { ProprietesDesOrdres } from "@/domaines/accueil/types";
 import { Bascule, BoutonPointer, Tambours, Tampon, Trous } from "@/domaines/accueil/composants/ordres/pointeuse/communs";
 import { mesureDe, surTrois } from "@/domaines/accueil/composants/ordres/pointeuse/lecture";
 import "@/domaines/accueil/composants/ordres/pointeuse/casiers.css";
-
-const SPECIAL_ELITE = "https://fonts.googleapis.com/css2?family=Special+Elite&display=swap";
 
 /* VARIANTE B2 — LES DEUX CASIERS.
  *
@@ -81,7 +78,6 @@ function Casier({ titre, ordres, places, rang, onReclamer }: {
 }
 
 export function PointeuseCasiers(p: ProprietesDesOrdres) {
-  usePoliceDuBanc(SPECIAL_ELITE);
   const { journee: j, lignes, cloture } = useJourneeDesOrdres(p);
   const corps = useId();
   const casiers = useRef<HTMLDivElement>(null);

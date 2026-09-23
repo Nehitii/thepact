@@ -1,12 +1,10 @@
 import { useId } from "react";
 import { useJourneeDesOrdres } from "@/domaines/accueil/hooks/useJourneeDesOrdres";
-import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import type { ProprietesDesOrdres } from "@/domaines/accueil/types";
 import { Bascule, Carte, Tambours } from "@/domaines/accueil/composants/ordres/pointeuse/communs";
 import { surTrois } from "@/domaines/accueil/composants/ordres/pointeuse/lecture";
 import "@/domaines/accueil/composants/ordres/pointeuse/horodateur.css";
 
-const SPECIAL_ELITE = "https://fonts.googleapis.com/css2?family=Special+Elite&display=swap";
 const DOUZE_HEURES = 12 * 3_600_000;
 
 /* VARIANTE B1 — L HORODATEUR.
@@ -62,7 +60,6 @@ function Cadran({ maintenant, reste }: { maintenant: number; reste: number }) {
 }
 
 export function PointeuseHorodateur(p: ProprietesDesOrdres) {
-  usePoliceDuBanc(SPECIAL_ELITE);
   const { journee: j, lignes, cloture, maintenant } = useJourneeDesOrdres(p);
   const corps = useId();
   const close = j.etat === "close";

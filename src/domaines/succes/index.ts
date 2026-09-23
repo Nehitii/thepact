@@ -82,8 +82,13 @@ export const RanksCard = lazy(() =>
 export const DailyQuestsPanel = lazy(() =>
   import("./composants/DailyQuestsPanel").then((m) => ({ default: m.DailyQuestsPanel })),
 );
-/* Son dessin seul, sans requete : le banc des ordres le monte a cote de
-   ses refontes, sur des ordres feints. Differe pour la meme raison. */
+/* LES ORDRES DU JOUR ET LEUR RECLAMATION. L accueil les dessine depuis
+   le 23/09 (l atelier de nuit) : il lit ici les deux crochets. Ils sont
+   legers — react-query, le client, un toast, tous deja au demarrage. */
+export { useDailyQuests, useClaimQuest } from "./hooks/useDailyQuests";
+/* Le dessin seul de l ancien panneau, sans requete : le banc des ordres
+   le monte a cote de ses refontes, sur des ordres feints. Differe pour
+   la meme raison que les composants plus haut. */
 export const PanneauDesOrdres = lazy(() =>
   import("./composants/PanneauDesOrdres").then((m) => ({ default: m.PanneauDesOrdres })),
 );

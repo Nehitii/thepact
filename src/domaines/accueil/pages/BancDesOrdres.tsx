@@ -29,7 +29,8 @@ import "@/domaines/accueil/banc-du-bandeau.css";
  * la prend pour de faux, apres le delai d une vraie requete.
  *
  * LA POINTEUSE A ETE RETENUE (23/09) ; ses quatre variantes suivent la
- * premiere, et la planche ne montre plus qu elles et le panneau actuel.
+ * premiere, et la planche ne montre plus qu elles et l ancien panneau.
+ * L atelier de nuit (B4) est celle de l accueil depuis le 23/09.
  *
  * Clavier : ← → changent de proposition, P ouvre la planche, H masque le
  * pupitre. L adresse fait de meme : « ?variante=casiers&journee=close
@@ -63,12 +64,12 @@ interface Variante {
 /* La pointeuse a ete retenue le 23/09 ; ses variantes suivent la
    premiere. Les trois autres pistes restent au bout de la liste. */
 const VARIANTES: readonly Variante[] = [
-  { id: "ancien", nom: "Panneau actuel", idee: "Le panneau en service : sceaux hexagonaux, pistes, un bouton « Réclamer ».", Composant: AncienPanneau, planche: true },
+  { id: "ancien", nom: "Ancien panneau", idee: "Le panneau d’avant le 23/09 : sceaux hexagonaux, pistes, un bouton « Réclamer ».", Composant: AncienPanneau, planche: true },
   { id: "pointeuse", nom: "B · La pointeuse — la première", idee: "Des cartes de pointage dans un casier d’acier : un trou percé par geste, un bouton rouge pour pointer, un coup de tampon « Perçu ».", Composant: OrdresPointeuse, planche: true },
   { id: "horodateur", nom: "B1 · L’horodateur", idee: "La machine elle-même, à gauche du casier : un cadran à aiguilles, le secteur rouge du temps qui reste, une fente qui s’allume quand on pointe.", Composant: PointeuseHorodateur, planche: true },
   { id: "casiers", nom: "B2 · Les deux casiers", idee: "« À pointer » et « Pointées » : une carte pointée glisse d’un casier à l’autre. L’état d’un ordre devient une place.", Composant: PointeuseCasiers, planche: true },
   { id: "carte-du-jour", nom: "B3 · La carte du jour", idee: "Une seule carte de pointage réglée en lignes ; l’horodateur frappe l’heure en violet dans la colonne « Pointage ». La plus compacte.", Composant: PointeuseCarteDuJour, planche: true },
-  { id: "nuit", nom: "B4 · L’atelier de nuit", idee: "Le casier scellé dans le béton de l’enseigne, sous une lampe grillagée ; une plaque émaillée de rue, des compteurs à tubes nixie.", Composant: PointeuseNuit, planche: true },
+  { id: "nuit", nom: "B4 · L’atelier de nuit — en service", idee: "Le casier scellé dans le béton de l’enseigne, sous une lampe grillagée ; une plaque émaillée de rue, des compteurs à tubes nixie. Les ordres de l’accueil depuis le 23/09.", Composant: PointeuseNuit, planche: true },
   { id: "vitrine", nom: "A · La vitrine", idee: "Chaque ordre est une enseigne dont les lettres s’allument à mesure qu’on avance ; atteint, il allume un « À prendre » qui clignote.", Composant: OrdresVitrine, planche: false },
   { id: "carnet", nom: "C · Le carnet à souches", idee: "Un ticket par ordre, talon et coupon : on détache le coupon pour toucher la prime, le talon garde la trace.", Composant: OrdresCarnet, planche: false },
   { id: "ardoise", nom: "D · L’ardoise", idee: "Les ordres à la craie comme un plat du jour : des bâtons pour compter, la prime entourée quand elle est à prendre, la ligne barrée une fois prise.", Composant: OrdresArdoise, planche: false },

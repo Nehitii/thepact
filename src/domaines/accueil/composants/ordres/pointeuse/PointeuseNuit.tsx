@@ -1,12 +1,9 @@
 import { useId } from "react";
 import { useJourneeDesOrdres } from "@/domaines/accueil/hooks/useJourneeDesOrdres";
-import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import type { ProprietesDesOrdres } from "@/domaines/accueil/types";
 import { Bascule, Carte } from "@/domaines/accueil/composants/ordres/pointeuse/communs";
 import { surTrois } from "@/domaines/accueil/composants/ordres/pointeuse/lecture";
 import "@/domaines/accueil/composants/ordres/pointeuse/nuit.css";
-
-const POLICES = "https://fonts.googleapis.com/css2?family=Special+Elite&family=Tilt+Neon&display=swap";
 
 /* VARIANTE B4 — L ATELIER DE NUIT.
  *
@@ -40,7 +37,6 @@ function Nixies({ texte }: { texte: string }) {
 }
 
 export function PointeuseNuit(p: ProprietesDesOrdres) {
-  usePoliceDuBanc(POLICES);
   const { journee: j, lignes, cloture } = useJourneeDesOrdres(p);
   const corps = useId();
   const close = j.etat === "close";

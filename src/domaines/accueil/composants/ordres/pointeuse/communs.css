@@ -5,7 +5,20 @@
    carte de pointage — carton chamois imprime en rouge, tape a la
    machine —, ses trous, le bouton rouge et le tampon violet. Chaque
    variante n ecrit que ce qui la distingue.
+
+   La machine a ecrire est la Special Elite (licence Apache 2.0),
+   embarquee dans « public/fonts » depuis que l atelier de nuit est
+   sur l accueil : l application ne depend pas d un tiers pour ecrire
+   une carte.
    ═══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/special-elite.woff2') format('woff2');
+}
 
 /* L acier brosse du pupitre, quatre vis aux coins. */
 .pt-acier {

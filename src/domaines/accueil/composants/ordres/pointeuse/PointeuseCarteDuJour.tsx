@@ -1,12 +1,10 @@
 import { useId, type CSSProperties } from "react";
 import { useJourneeDesOrdres } from "@/domaines/accueil/hooks/useJourneeDesOrdres";
-import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import type { ProprietesDesOrdres } from "@/domaines/accueil/types";
 import { Bascule, BoutonPointer, Trous } from "@/domaines/accueil/composants/ordres/pointeuse/communs";
 import { dateDHorodateur, heureDuGeste, mesureDe, surTrois } from "@/domaines/accueil/composants/ordres/pointeuse/lecture";
 import "@/domaines/accueil/composants/ordres/pointeuse/carte-du-jour.css";
 
-const SPECIAL_ELITE = "https://fonts.googleapis.com/css2?family=Special+Elite&display=swap";
 const JOUR_MS = 86_400_000;
 
 /* VARIANTE B3 — LA CARTE DU JOUR.
@@ -24,7 +22,6 @@ const JOUR_MS = 86_400_000;
  * Le total du jour est frappe de la meme encre au pied de la carte. */
 
 export function PointeuseCarteDuJour(p: ProprietesDesOrdres) {
-  usePoliceDuBanc(SPECIAL_ELITE);
   const { journee: j, lignes, cloture, maintenant } = useJourneeDesOrdres(p);
   const corps = useId();
   const close = j.etat === "close";
