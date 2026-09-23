@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useCompteur } from "@/domaines/accueil/hooks/useCompteur";
-import type { IdInterrupteur } from "@/domaines/accueil/logique/interrupteurs";
+import { INTERRUPTEUR_PAR_DEFAUT, type IdInterrupteur } from "@/domaines/accueil/logique/interrupteurs";
 import type { Lecture } from "@/domaines/accueil/composants/bandeau/lecture";
 import "@/domaines/accueil/composants/bandeau/interrupteur-de-mesure.css";
 import { CommandeDeMesure } from "@/domaines/accueil/composants/bandeau/interrupteurs/CommandeDeMesure";
@@ -14,8 +14,8 @@ import { CommandeDeMesure } from "@/domaines/accueil/composants/bandeau/interrup
  * rien ne se passait entre les deux etats : le chiffre sautait.
  *
  * C est desormais un OBJET QUI SE MANOEUVRE, visse au mur a cote du
- * pourcentage — un levier, une cle, des touches de poste… sept modeles,
- * dans « interrupteurs/ », que l utilisateur choisit au banc. Un objet
+ * pourcentage. Sept modeles dans « interrupteurs/ » ; l utilisateur a
+ * retenu le CORDON — on rebranche la fiche dans l autre prise. Un objet
  * qui se manoeuvre dit de lui-meme qu il se manoeuvre.
  *
  * ═══ LA BASCULE EST UNE COUPURE DE COURANT ═══
@@ -34,7 +34,7 @@ import { CommandeDeMesure } from "@/domaines/accueil/composants/bandeau/interrup
  */
 
 export function InterrupteurDeMesure({
-  lecture, onChanger, famille, modele = "levier",
+  lecture, onChanger, famille, modele = INTERRUPTEUR_PAR_DEFAUT,
 }: {
   lecture: Lecture;
   onChanger?: () => void;

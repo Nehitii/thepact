@@ -57,6 +57,6 @@ export interface ProprietesDuBandeau extends NexusHeroBannerProps {
   /** Jours civils « AAAA-MM-JJ » : « project_start_date », « project_end_date ». */
   jureLe?: string | null;
   terme?: string | null;
-  /** Le modele d interrupteur de mesure de l enseigne : « levier » par defaut. */
+  /** Le modele d interrupteur de mesure de l enseigne : le cordon, sauf au banc. */
   interrupteur?: string | null;
 }

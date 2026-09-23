@@ -20,9 +20,13 @@ describe("les interrupteurs de l'enseigne", () => {
     expect(lireLInterrupteur("cordon")).toBe("cordon");
   });
 
-  it("retombent sur le levier pour une valeur inconnue ou absente", () => {
+  it("retombent sur le cordon, retenu pour l’accueil, pour une valeur inconnue ou absente", () => {
     expect(lireLInterrupteur("inconnu")).toBe(INTERRUPTEUR_PAR_DEFAUT);
-    expect(lireLInterrupteur(null)).toBe("levier");
-    expect(lireLInterrupteur(undefined)).toBe("levier");
+    expect(lireLInterrupteur(null)).toBe("cordon");
+    expect(lireLInterrupteur(undefined)).toBe("cordon");
+  });
+
+  it("lisent encore le levier quand on le demande", () => {
+    expect(lireLInterrupteur("levier")).toBe("levier");
   });
 });

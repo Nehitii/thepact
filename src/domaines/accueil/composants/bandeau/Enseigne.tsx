@@ -17,9 +17,9 @@ import "@/domaines/accueil/composants/bandeau/enseigne.css";
  * translucides, des objets de ville qui gresillent.
  *
  * Une enseigne a sa grammaire, et on la suit : un nom en capitales, une
- * ligne en cursive dans un autre tube (la raison), un interrupteur de
- * tableau electrique pour changer de mesure, et un bandeau a diodes qui
- * fait defiler le reste.
+ * ligne en cursive dans un autre tube (la raison), un cordon de
+ * brassage qu on rebranche pour changer de mesure, et un bandeau a
+ * diodes qui fait defiler le reste.
  *
  * TROIS OBJETS SUR LE MUR. Le sceau en neon a gauche, le nom au milieu,
  * le palier a droite — son embleme eclaire par l arriere, comme un logo

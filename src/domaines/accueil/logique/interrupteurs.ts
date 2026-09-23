@@ -8,7 +8,11 @@
  * Chacun dit la meme chose de deux facons : sa POSITION (le levier en
  * haut ou en bas, la cle droite ou tournee, la fiche dans une prise ou
  * dans l autre) et une ETIQUETTE ALLUMEE. Aucun ne compte sur la
- * couleur seule. */
+ * couleur seule.
+ *
+ * CHOISI LE 23/09 : LE CORDON. C est lui que l accueil monte ; les six
+ * autres restent au banc, sur la planche des interrupteurs, pour qu on
+ * puisse y revenir. */
 
 export const INTERRUPTEURS = [
   {
@@ -50,9 +54,9 @@ export const INTERRUPTEURS = [
 
 export type IdInterrupteur = (typeof INTERRUPTEURS)[number]["id"];
 
-export const INTERRUPTEUR_PAR_DEFAUT: IdInterrupteur = "levier";
+export const INTERRUPTEUR_PAR_DEFAUT: IdInterrupteur = "cordon";
 
-/** Un identifiant lu d une adresse ou d un reglage : inconnu, c est le levier. */
+/** Un identifiant lu d une adresse ou d un reglage : inconnu, c est le modele retenu. */
 export function lireLInterrupteur(brut: string | null | undefined): IdInterrupteur {
   return INTERRUPTEURS.find((i) => i.id === brut)?.id ?? INTERRUPTEUR_PAR_DEFAUT;
 }
