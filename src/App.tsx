@@ -38,6 +38,7 @@ const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
 const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
+const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -145,6 +146,12 @@ function AppRoutes() {
           jumeau de jour sans le voir. Il ne lit rien : sans session,
           la page montre ses etats a zero. */}
       <Route path="/banc/finance" element={<BancDeLaFinance />} />
+
+      {/* LE BANC DES FONDS — public, pour la raison des trois autres.
+          Huit remplacants du fond spatial s y comparent en plein ecran,
+          derriere le vrai bandeau et des panneaux aux couleurs de
+          l accueil, dans les six teintes du pacte. Rien n y est lu. */}
+      <Route path="/banc/fond" element={<BancDuFond />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />

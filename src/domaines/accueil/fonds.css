@@ -1,0 +1,345 @@
+/* ─────────────────────────────────────────────────────────────
+   LES FONDS VIVANTS, ET LEUR BANC.
+
+   Un fond vivant est un canvas fixe, sous tout le reste, que rien ne
+   peut cliquer. Le banc pose par-dessus le vrai bandeau, des panneaux
+   aux couleurs de l accueil et un pupitre.
+   ───────────────────────────────────────────────────────────── */
+
+.fond-vivant {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.banc-fond {
+  --banc-teinte: #8B5CF6;
+  --banc-encre: #E6EEF8;
+  --banc-encre-2: #A9B8CC;
+  --banc-donnee: #7FD4F0;
+  --banc-plaque: rgba(6, 9, 17, 0.95);
+  --banc-trait: rgba(140, 190, 240, 0.18);
+  position: relative;
+  isolation: isolate;
+  min-height: 250vh;
+  color: var(--banc-encre);
+  font-family: Rajdhani, system-ui, sans-serif;
+}
+.banc-fond ::selection {
+  background: color-mix(in srgb, var(--banc-teinte) 40%, transparent);
+  color: #fff;
+}
+
+/* Les lignes de balayage de l accueil, a l identique. */
+.banc-fond-balayage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.022) 2px, rgba(0, 0, 0, 0.022) 4px);
+}
+
+/* ── La scene : la colonne de l accueil ── */
+.banc-fond-scene {
+  position: relative;
+  z-index: 1;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+.banc-fond-groupe {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.5rem;
+}
+.banc-fond-groupe--trois { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.banc-fond-panneau {
+  position: relative;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-radius: 4px;
+  box-shadow: var(--nexus-shadow);
+  padding: 12px 14px 14px;
+  min-height: 7.5rem;
+}
+.banc-fond-panneau--haut { min-height: 14rem; }
+.banc-fond-libelle {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nexus-text-dim);
+}
+.banc-fond-valeur {
+  font-family: Orbitron, sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--nexus-heading);
+}
+.banc-fond-acces {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+.banc-fond-acces span {
+  border: 1px solid var(--nexus-border);
+  border-radius: 3px;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--nexus-heading);
+}
+.banc-fond-quetes {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1rem;
+  color: var(--nexus-heading);
+}
+.banc-fond-quetes li::before {
+  content: "";
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.6rem;
+  border: 1px solid var(--nexus-border);
+  border-radius: 2px;
+  vertical-align: -0.05rem;
+}
+.banc-fond-quetes li[data-fait] { color: var(--nexus-text-dim); text-decoration: line-through; }
+.banc-fond-quetes li[data-fait]::before { background: var(--nexus-border); }
+.banc-fond-barres {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  height: 9rem;
+}
+.banc-fond-barres span {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, color-mix(in srgb, var(--banc-teinte) 55%, transparent), color-mix(in srgb, var(--banc-teinte) 12%, transparent));
+}
+
+/* ── Le pupitre ── */
+.banc-fond-pupitre {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 50;
+  transform: translateX(-50%);
+  width: min(68rem, calc(100% - 32px));
+  max-height: min(34rem, calc(100vh - 32px));
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  background: var(--banc-plaque);
+  border: 1px solid var(--banc-trait);
+  border-radius: 10px;
+  box-shadow: 0 22px 44px -16px rgba(0, 0, 0, 0.75), 0 3px 8px rgba(0, 0, 0, 0.45);
+  scrollbar-width: thin;
+  scrollbar-color: var(--banc-trait) transparent;
+}
+.bfp-tete {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+.bfp-titre h1 {
+  margin: 0 0 4px;
+  font-family: Orbitron, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-wrap: balance;
+}
+.bfp-idee { margin: 0; font-size: 1.05rem; font-weight: 500; line-height: 1.35; max-width: 62ch; }
+.bfp-pourquoi { margin: 4px 0 0; font-size: 0.98rem; line-height: 1.35; color: var(--banc-encre-2); max-width: 62ch; }
+.bfp-technique {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74rem;
+  color: var(--banc-donnee);
+}
+.bfp-mesure {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(7.5rem, auto));
+  gap: 6px 18px;
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+}
+.bfp-mesure dt { color: var(--banc-encre-2); letter-spacing: 0.08em; text-transform: uppercase; }
+.bfp-mesure dd {
+  margin: 1px 0 0;
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--banc-encre);
+  font-variant-numeric: tabular-nums;
+}
+
+.bfp-choix {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--banc-trait) transparent;
+}
+.bfp-choix button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--banc-trait);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--banc-encre-2);
+  font: 600 0.95rem Rajdhani, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 160ms ease-out, color 160ms ease-out, background-color 160ms ease-out;
+}
+.bfp-choix button:hover { border-color: color-mix(in srgb, var(--banc-teinte) 60%, var(--banc-trait)); color: var(--banc-encre); }
+.bfp-choix button[aria-pressed="true"] {
+  border-color: var(--banc-teinte);
+  background: color-mix(in srgb, var(--banc-teinte) 24%, transparent);
+  color: #fff;
+}
+.bfp-jour {
+  font: 500 0.62rem "JetBrains Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.8;
+}
+
+.bfp-reglages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+}
+.bfp-teintes {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+/* Les libelles suivent la regle « HUD » de l application (index.css) :
+   Orbitron, capitales, 0,15 em. La legende d un fieldset n est pas un
+   label et y echappait ; elle la rejoint. */
+.bfp-teintes legend {
+  float: left;
+  margin-right: 8px;
+  font-family: Orbitron, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--banc-encre-2);
+}
+.bfp-teintes button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--pastille);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: transform 160ms ease-out;
+}
+.bfp-teintes button:hover { transform: scale(1.1); }
+.bfp-teintes button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--banc-plaque), 0 0 0 4px var(--pastille); }
+
+.bfp-curseur {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--banc-encre-2);
+}
+.bfp-curseur input { width: 8.5rem; accent-color: var(--banc-teinte); }
+.bfp-curseur output {
+  min-width: 3.2rem;
+  font: 500 0.78rem "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--banc-encre);
+}
+.bfp-bascules { display: inline-flex; flex-wrap: wrap; gap: 16px; color: var(--banc-encre-2); }
+.bfp-bascules label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.bfp-bascules input { accent-color: var(--banc-teinte); }
+.bfp-raccourcis { margin: 0 0 0 auto; font-size: 0.85rem; color: var(--banc-encre-2); }
+.banc-fond kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border: 1px solid var(--banc-trait);
+  border-radius: 3px;
+  font: 500 0.75rem "JetBrains Mono", monospace;
+  text-align: center;
+  color: var(--banc-encre);
+}
+
+.banc-fond-rappel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--banc-trait);
+  border-radius: 999px;
+  background: var(--banc-plaque);
+  color: var(--banc-encre);
+  font: 600 0.95rem Rajdhani, system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.7);
+}
+
+.banc-fond button:focus-visible,
+.banc-fond input:focus-visible {
+  outline: 2px solid var(--banc-teinte);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .bfp-tete { grid-template-columns: 1fr; }
+  .bfp-raccourcis { display: none; }
+  .banc-fond-pupitre { bottom: 8px; width: calc(100% - 16px); max-height: 56vh; padding: 12px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bfp-choix button, .bfp-teintes button { transition: none; }
+}
+
+/* ── Le jour : le pupitre passe a l encre sur papier ── */
+.light .banc-fond {
+  --banc-encre: #14181A;
+  --banc-encre-2: #4A5257;
+  --banc-donnee: #00697A;
+  --banc-plaque: rgba(251, 250, 247, 0.96);
+  --banc-trait: rgba(20, 24, 26, 0.16);
+}
+.light .bfp-choix button[aria-pressed="true"] { color: #14181A; }
+.light .banc-fond ::selection { color: #14181A; }
