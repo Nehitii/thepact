@@ -83,7 +83,11 @@ export function useCosmetiquesDuProfil(userId: string) {
           supabase.from("cosmetic_banners").select("*").eq("is_active", true),
           supabase.from("cosmetic_titles").select("*").eq("is_active", true),
           supabase.from("user_cosmetics").select("cosmetic_type, cosmetic_id").eq("user_id", userId),
-          supabase.from("profiles").select("active_frame_id, active_banner_id, active_title_id").eq("id", userId).single(),
+          /* `.maybeSingle()` et non `.single()` : une ligne absente
+             rendait un 406 et faisait echouer tout le chargement des
+             cosmetiques, alors que la lecture plus bas sait deja faire
+             avec `null`. (Audit du 22/09.) */
+          supabase.from("profiles").select("active_frame_id, active_banner_id, active_title_id").eq("id", userId).maybeSingle(),
         ]);
 
         const echec = [framesRes, bannersRes, titlesRes, ownershipRes, profileRes].find((r) => r.error);
