@@ -1,0 +1,140 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE C — L ENSEIGNE : LE PALIER RETROECLAIRE
+
+   Le nom est encadre de deux enseignes : le sceau en neon a gauche, le
+   palier a droite. L embleme y est un logo de facade eclaire par
+   l arriere : pose seul sur le mur, la lumiere deborde autour de sa
+   silhouette. C est une autre matiere que le tube, d ou sa feuille.
+
+   LE HALO SUIT LA SILHOUETTE, PAS UN CADRE. « drop-shadow » lit la
+   transparence de l image : un ecusson detoure s entoure de lumiere
+   la ou il a des bords, pas dans un rectangle. Pas d ombre noire
+   portee : un logo eclaire par l arriere n en jette pas sur le mur.
+   ═══════════════════════════════════════════════════════════════ */
+
+.en-rang {
+  --en-coeur-rang: color-mix(in srgb, var(--en-rang) 26%, #ffffff);
+  --en-lumiere-rang:
+    0 0 0.02em #ffffff,
+    0 0 0.07em var(--en-rang),
+    0 0 0.18em var(--en-rang),
+    0 0 0.45em color-mix(in srgb, var(--en-rang) 55%, transparent),
+    0.05em 0.14em 0.08em rgb(0 0 0 / 0.55);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  animation: en-allume-bloc 1s steps(1, end) 1.05s both;
+}
+
+/* ── Le logo ── */
+.en-logo {
+  position: relative;
+  isolation: isolate;
+  width: clamp(108px, 15cqi, 152px);
+  aspect-ratio: 1;
+}
+/* La lumiere sur le beton, derriere le logo. Elle s eteint par paliers
+   plutot qu en ligne droite : une chute lineaire s arrete net, et l oeil
+   voit un cercle. */
+.en-logo::before {
+  content: "";
+  position: absolute;
+  inset: -26%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+    color-mix(in srgb, var(--en-rang) 32%, transparent) 0%,
+    color-mix(in srgb, var(--en-rang) 16%, transparent) 42%,
+    color-mix(in srgb, var(--en-rang) 5%, transparent) 72%,
+    transparent 100%);
+}
+.en-logo-image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 1px color-mix(in srgb, var(--en-rang) 70%, #ffffff))
+    drop-shadow(0 0 7px var(--en-rang))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--en-rang) 55%, transparent));
+}
+
+/* Sans embleme, le niveau prend la place, en grands chiffres de neon. */
+.en-logo-niveau {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  font-size: clamp(56px, 8.4cqi, 80px);
+  font-weight: 500;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--en-coeur-rang);
+  text-shadow: var(--en-lumiere-rang);
+}
+.en-logo-niveau small {
+  margin-bottom: 8px;
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* ── Le niveau, le rang, les ampoules ── */
+.en-rang-textes { display: grid; justify-items: center; gap: 6px; }
+.en-niveau {
+  display: flex;
+  align-items: baseline;
+  gap: 0.28em;
+  margin: 0;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--en-coeur-rang);
+  text-shadow: var(--en-lumiere-rang);
+}
+.en-niveau small { font-size: 0.42em; letter-spacing: 0.16em; text-transform: uppercase; }
+.en-palier {
+  margin: 0;
+  font: 600 12.5px/1.2 "Switzer", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--en-coeur-rang);
+  text-shadow: var(--en-lumiere-rang);
+}
+
+/* Les ampoules d un fronton : eteintes, du verre fume ; allumees, un
+   point blanc dans la teinte du palier. Elles s allument une a une a
+   l ouverture, apres le logo. */
+.en-ampoules { display: flex; gap: 6px; margin-top: 2px; }
+.en-ampoules i {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6d717a, #26282d 72%);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14), 0 1px 1px rgb(0 0 0 / 0.6);
+}
+.en-ampoules i[data-allumee]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffffff, var(--en-coeur-rang) 45%, var(--en-rang) 100%);
+  box-shadow: 0 0 4px var(--en-rang), 0 0 11px color-mix(in srgb, var(--en-rang) 60%, transparent);
+  animation: en-ampoule 0.2s steps(1, end) calc(1.45s + var(--j) * 80ms) both;
+}
+@keyframes en-ampoule {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .en-rang, .en-ampoules i[data-allumee]::after { animation: none; }
+}

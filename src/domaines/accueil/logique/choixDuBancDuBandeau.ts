@@ -28,7 +28,7 @@ export const SYMBOLES = [
    la plupart des emblemes, et le symbole de la marque, plus large que
    haut. « Aucun » montre ce que fait chaque variante sans image. */
 export const ECUSSON_D_ESSAI = "data:image/svg+xml;utf8," + encodeURIComponent(
-  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'>"
+  "<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'>"
   + "<defs><linearGradient id='o' x1='0' y1='0' x2='0' y2='1'>"
   + "<stop offset='0' stop-color='#ffe29a'/><stop offset='1' stop-color='#b8741c'/></linearGradient></defs>"
   + "<path d='M64 8 112 27v38c0 28-21 48-48 56C37 113 16 93 16 65V27Z' fill='#1a1430'"
