@@ -46,10 +46,11 @@ export interface NexusHeroBannerProps {
 }
 
 /* CE QUE LES VARIANTES DU BANDEAU LISENT EN PLUS. Trois colonnes de
- * « pacts » que le bandeau actuel n affiche pas : la couleur choisie au
+ * « pacts » que l ancien bandeau n affichait pas : la couleur choisie au
  * rite, le jour du serment et l echeance. La piece d identite les
  * imprime, la stele grave la date, le plan large l affiche en salle.
- * Facultatives : le banc les fournit, la page ne les passe pas encore. */
+ * Facultatives : l enseigne, en service sur l accueil depuis le 23/09,
+ * les recoit de la page ; les autres variantes ne vivent qu au banc. */
 export interface ProprietesDuBandeau extends NexusHeroBannerProps {
   /** « pacts.color » : amber, rose, emerald, sky, violet ou cyan. */
   teinte?: string | null;

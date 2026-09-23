@@ -11,7 +11,9 @@ import { Skeleton } from "@/socle/ui/skeleton";
 import { GettingStartedCard } from "@/domaines/accueil/composants/GettingStartedCard";
 import { LockedModulesTeaser } from "@/domaines/accueil/composants/LockedModulesTeaser";
 import { NeuralBar } from "@/domaines/accueil/composants/NeuralBar";
-import { NexusHeroBanner, CLE_MESURE, type MesureProgression } from "@/domaines/accueil/composants/NexusHeroBanner";
+import { Enseigne } from "@/domaines/accueil/composants/bandeau/Enseigne";
+import type { MesureProgression } from "@/domaines/accueil/types";
+import { PREF } from "@/socle/outils/preferencesAffichage";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import { FondVivant } from "@/socle/ds/fonds/FondVivant";
 import { useFondDuTableau } from "@/socle/ds/fonds/choix";
@@ -106,11 +108,11 @@ export default function Home() {
      rendu suivant. Le typecheck ne dit rien la-dessus ; eslint si. */
   const [mesure, setMesure] = useState<MesureProgression>(() => {
     try {
-      return localStorage.getItem(CLE_MESURE) === "steps" ? "steps" : "goals";
+      return localStorage.getItem(PREF.HUB_MESURE) === "steps" ? "steps" : "goals";
     } catch { return "goals"; }
   });
   useEffect(() => {
-    try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
+    try { localStorage.setItem(PREF.HUB_MESURE, mesure); } catch { /* stockage indisponible */ }
   }, [mesure]);
 
   /* LE FOND CHOISI DANS LES OPTIONS (Affichage & son).
@@ -234,7 +236,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* NOTE: Home volontairement sans DSPageHeader — NexusHeroBanner joue le rôle d'identité visuelle */}
+      {/* NOTE: Home volontairement sans DSPageHeader — l'enseigne du pacte joue le rôle d'identité visuelle */}
       {/* Le desordre ne venait pas des panneaux mais de leur espacement :
           dix bandes pleine largeur separees toutes de la meme distance, donc
           aucun regroupement lisible. La page se lit maintenant en quatre
@@ -247,9 +249,9 @@ export default function Home() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        {/* HERO BANNER */}
+        {/* L ENSEIGNE DU PACTE, depuis le 23/09. L ancien bandeau reste au banc. */}
         {pact ? (
-          <NexusHeroBanner
+          <Enseigne
             progression={progression}
             enCours={dashboardData.statusCounts.in_progress}
             mesure={mesure}
@@ -274,6 +276,10 @@ export default function Home() {
             rankProgress={safeRankData.progressInCurrentRank}
             rankXP={safeRankData.currentXP}
             rankXPTarget={safeRankData.nextRank?.min_points ?? 0}
+            /* Le gaz du tube et le jour du serment ; la date declaree fait foi. */
+            teinte={pact.color}
+            jureLe={pact.project_start_date || pact.created_at}
+            terme={pact.project_end_date}
           />
         ) : (
           <Skeleton className="h-48 w-full rounded-xl" />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { NexusHeroBanner } from "@/domaines/accueil/composants/NexusHeroBanner";
+import { Enseigne } from "@/domaines/accueil/composants/bandeau/Enseigne";
 import { rosaceDuPacte } from "@/domaines/objectifs";
 import { PROPOSITIONS, TEINTES_DU_PACTE, voisine, type IdDuFond } from "@/socle/ds/fonds/catalogue";
 import type { MesureDuRendu } from "@/socle/ds/fonds/useRenduDuFond";
@@ -108,7 +108,10 @@ export default function BancDuFond() {
 
       {superposition && (
         <main className="banc-fond-scene">
-          <NexusHeroBanner
+          {/* Le vrai bandeau est l enseigne depuis le 23/09 : un fond
+              se juge derriere elle, et derriere son mur opaque. */}
+          <Enseigne
+            teinte={nomDeTeinte}
             progression={Math.round(progression * 100)}
             level={12}
             totalMissions={47}

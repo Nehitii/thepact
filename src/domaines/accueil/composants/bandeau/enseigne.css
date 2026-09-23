@@ -15,6 +15,28 @@
    Le mur reste nocturne dans les deux themes : c est une rue.
    ═══════════════════════════════════════════════════════════════ */
 
+/* LES DEUX POLICES DE L ENSEIGNE, hebergees par l application comme
+   toutes les autres : Neonderthaw (Robert Leuschke) pour la cursive de
+   la raison, Allerta Stencil (Matt McInerney) pour le pochoir des
+   valeurs. Licence libre SIL OFL 1.1, sous-ensemble latin de Google
+   Fonts — 52,6 Ko et 8,3 Ko. Elles vivent dans cette feuille et non dans
+   « index.css » : seule l enseigne les emploie, et le navigateur ne
+   telecharge une police qu au premier texte qui la demande. */
+@font-face {
+  font-family: 'Neonderthaw';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/neonderthaw.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Allerta Stencil';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/allerta-stencil.woff2') format('woff2');
+}
+
 .en {
   --en-fond: #0c0d10;
   --en-encre: #eceef2;

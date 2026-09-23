@@ -14,6 +14,12 @@
   height: 100%;
 }
 
+/* LE LOGO DEBORDE SA CELLULE, ET C EST VOULU. « PactVisual » en
+   taille « sm » mesure 96 px — 64 de logo, 16 de halo de chaque cote.
+   Dans une grille de 64 px, la piste prenait les 96 px et partait du
+   bord gauche : le logo tombait 16 px trop a droite et trop bas, 9 px
+   a l ecran une fois reduit. « place-content » centre la PISTE dans
+   la cellule, et le logo retombe au centre du sceau. */
 .bdx-embleme {
   position: absolute;
   left: 50%;
@@ -21,6 +27,7 @@
   width: 64px;
   height: 64px;
   display: grid;
+  place-content: center;
   place-items: center;
   transform-origin: center;
   z-index: 1;

@@ -53,8 +53,8 @@ interface Variante {
 
 const VARIANTES: readonly Variante[] = [
   {
-    id: "actuel", nom: "Actuel",
-    idee: "Le bandeau en production : la singularité, le nom, la raison, quatre compteurs.",
+    id: "actuel", nom: "Ancien bandeau",
+    idee: "Le bandeau d’avant l’enseigne : la singularité, le nom, la raison, quatre compteurs. Gardé pour comparer.",
     Composant: NexusHeroBanner,
   },
   {
@@ -68,7 +68,7 @@ const VARIANTES: readonly Variante[] = [
     Composant: Eclipse,
   },
   {
-    id: "enseigne", nom: "C · L’enseigne",
+    id: "enseigne", nom: "C · L’enseigne — en service",
     idee: "Le nom en tubes de néon sur un mur de béton ; un tube faiblit quand aucun chantier n’est ouvert.",
     Composant: Enseigne,
   },
@@ -95,7 +95,7 @@ const VARIANTES: readonly Variante[] = [
 const parametre = (cle: string) => new URLSearchParams(window.location.search).get(cle);
 
 export default function BancDuBandeau() {
-  const [variante, setVariante] = useState(() => parametre("variante") ?? "jauge");
+  const [variante, setVariante] = useState(() => parametre("variante") ?? "enseigne");
   const [planche, setPlanche] = useState(() => parametre("planche") === "1");
   const [pupitre, setPupitre] = useState(() => parametre("pupitre") !== "0");
   const [jour, setJour] = useState(() => parametre("clair") === "1");

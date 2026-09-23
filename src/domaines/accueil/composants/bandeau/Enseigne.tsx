@@ -1,7 +1,6 @@
 import { useMemo, type CSSProperties } from "react";
 import { normaliserTeinte } from "@/domaines/succes";
 import { useTailleDuNom } from "@/domaines/accueil/hooks/useTailleDuNom";
-import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import { graineDuTexte } from "@/domaines/accueil/logique/dessinsDuBandeau";
 import type { ProprietesDuBandeau } from "@/domaines/accueil/types";
 import { BasculeDeMesure, SceauDuPacte } from "@/domaines/accueil/composants/bandeau/communs";
@@ -37,8 +36,6 @@ import "@/domaines/accueil/composants/bandeau/caisson-du-palier.css";
  * A l ouverture, les tubes s allument un par un. C est le seul
  * mouvement voulu de la variante ; le defilement des diodes n est
  * que la nature d un bandeau a diodes. */
-
-const POLICES = "https://fonts.googleapis.com/css2?family=Neonderthaw&family=Allerta+Stencil&display=swap";
 
 /* Le gaz du tube, selon l effet choisi. */
 const TUBES: Readonly<Record<string, string>> = {
@@ -116,7 +113,6 @@ function CaissonDuPalier({ p, famille, tube }: { p: ProprietesDuBandeau; famille
 }
 
 export function Enseigne(p: ProprietesDuBandeau) {
-  usePoliceDuBanc(POLICES);
   const l = useLectureDuBandeau(p);
   const tube = TUBES[l.effet] ?? l.teinte;
   const { cadre, taille, tient } = useTailleDuNom<HTMLDivElement>({
