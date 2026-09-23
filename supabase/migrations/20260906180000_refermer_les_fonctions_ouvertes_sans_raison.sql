@@ -101,8 +101,14 @@ revoke execute on function public.use_streak_freeze(_goal_id uuid, _date date) f
 --    (« trigger functions can only be called as triggers »). Le risque
 --    est nul, mais un avis qui reste allume pour rien finit par cacher
 --    ceux qui comptent.
-revoke execute on function public.marquer_les_repartages_orphelins() from anon, authenticated;
-revoke execute on function public.verifier_le_repartage() from anon, authenticated;
+--
+--    CORRIGE LE 23/09, AVANT TOUTE APPLICATION. Ces deux-la tiennent
+--    aussi leur droit de PUBLIC (acl « =X/postgres ») : le retirer a
+--    anon et authenticated seuls n aurait rien ferme, et l avis serait
+--    reste allume. Un declencheur ne verifie ce droit qu a sa creation,
+--    jamais quand il se declenche : le retirer a PUBLIC ne l arrete pas.
+revoke execute on function public.marquer_les_repartages_orphelins() from public, anon, authenticated;
+revoke execute on function public.verifier_le_repartage() from public, anon, authenticated;
 
 -- ── Le chemin de recherche des trois dernieres fonctions mutables ──
 --    Aucune n est « security definer », donc le risque est faible : elles

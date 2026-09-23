@@ -37,8 +37,8 @@ grant execute on function public.pouls_du_jour(p_debut timestamp with time zone,
 grant execute on function public.rate_template(_template_id uuid, _rating smallint, _review text) to anon, authenticated;
 grant execute on function public.use_streak_freeze(_goal_id uuid, _date date) to anon, authenticated;
 
-grant execute on function public.marquer_les_repartages_orphelins() to anon, authenticated;
-grant execute on function public.verifier_le_repartage() to anon, authenticated;
+grant execute on function public.marquer_les_repartages_orphelins() to public, anon, authenticated;
+grant execute on function public.verifier_le_repartage() to public, anon, authenticated;
 
 -- Le chemin de recherche redevient mutable. « reset » le remet a la
 -- valeur de la session, qui est ce qu il etait avant.
