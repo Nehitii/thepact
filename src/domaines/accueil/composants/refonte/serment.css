@@ -1,0 +1,250 @@
+/* ─────────────────────────────────────────────────────────────
+   LE SERMENT VIVANT.
+
+   Une feuille, trois colonnes : la marge des numeros, le texte, la
+   marge des notes. Chaque article est une rangee de la meme grille
+   (subgrid) — une note reste donc toujours en face de ce qu elle
+   commente, quelle que soit la longueur de l article.
+   ───────────────────────────────────────────────────────────── */
+
+.se {
+  --se-vif: #00d4ff;
+  --se-or: #ffcc00;
+  --se-vert: #34d399;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 140px;
+  font-family: Rajdhani, system-ui, sans-serif;
+  color: var(--nexus-text-label);
+}
+.se ::selection { background: color-mix(in srgb, var(--teinte, #8b5cf6) 45%, transparent); color: #fff; }
+
+.se-feuille {
+  position: relative;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 660px) 230px;
+  column-gap: 36px;
+  justify-content: center;
+  padding: 48px 40px 40px;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-radius: 4px;
+  box-shadow: var(--nexus-shadow);
+}
+
+.se-rangee {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
+  padding: 24px 0;
+  border-top: 1px solid var(--nexus-separator);
+}
+.se-tete { padding: 0 0 30px; border-top: 0; }
+.se-marge { grid-column: 1; justify-self: end; margin: 0; }
+.se-texte { grid-column: 2; min-width: 0; }
+.se-note {
+  grid-column: 3;
+  margin: 6px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--nexus-border);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--nexus-text-dim);
+}
+.se-note[data-ton="retard"] { color: color-mix(in srgb, #ff8c00 75%, var(--nexus-text-label)); }
+
+/* ── L en-tete : le sceau en marge, le titre, la raison ── */
+.se-sceau { width: 120px; height: 120px; color: var(--teinte, #8b5cf6); }
+.se-tete h1 {
+  margin: 0;
+  font: 800 36px/1.1 Orbitron, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nexus-heading);
+  text-wrap: balance;
+}
+.se-sous-titre { margin: 12px 0 0; font-size: 16px; color: var(--nexus-text-dim); }
+.se-mantra {
+  margin: 16px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--teinte, #8b5cf6);
+}
+
+/* ── Le texte des articles ── */
+.se-num {
+  padding-top: 2px;
+  font: 800 34px/1 Orbitron, sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--nexus-text-dimmer);
+}
+.se-texte h2 { margin: 0 0 8px; font: 700 23px/1.2 Rajdhani, sans-serif; letter-spacing: 0.02em; text-transform: none; color: var(--nexus-heading); }
+.se-texte p { margin: 0 0 10px; max-width: 62ch; font-size: 18.5px; line-height: 1.6; }
+.se-texte b { font-weight: 700; color: var(--nexus-heading); }
+/* Un chiffre vivant : la meme encre, une autre fonte, et un pointille
+   de la teinte du pacte — on voit que c est une mesure, pas du texte. */
+.se-vif {
+  padding: 0 2px;
+  border-bottom: 1px dotted color-mix(in srgb, var(--teinte, #8b5cf6) 75%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.88em;
+  font-variant-numeric: tabular-nums;
+}
+
+.se-valeur {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 9px 0 6px;
+  border: 1px solid color-mix(in srgb, var(--teinte, #8b5cf6) 45%, transparent);
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--nexus-heading);
+}
+.se-valeur i { font: normal 600 11px "JetBrains Mono", monospace; color: var(--teinte, #8b5cf6); }
+
+.se-regle { position: relative; height: 3px; margin: 16px 0 32px; background: var(--nexus-track-bg); max-width: 62ch; }
+.se-regle i { position: absolute; inset: 0 auto 0 0; background: var(--teinte, #8b5cf6); }
+.se-regle-rang { margin-bottom: 8px; }
+.se-regle-rang i { background: #5bb4ff; }
+.se-regle-ici {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  font: 500 12px "JetBrains Mono", monospace;
+  color: var(--nexus-text-dim);
+  white-space: nowrap;
+}
+.se-regle-ici::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  width: 1px;
+  height: 10px;
+  background: var(--nexus-heading);
+}
+
+/* ── Les clauses ── */
+.se-clauses { list-style: none; margin: 14px 0 6px; padding: 0; display: grid; gap: 14px; }
+.se-clause { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 6px; }
+.se-par { padding-top: 4px; font: 600 13px "JetBrains Mono", monospace; color: var(--p); }
+.se-clause p { margin: 0; font-size: 17px; line-height: 1.5; }
+.se-clause[data-statut="fully_completed"] p { color: var(--nexus-text-dim); }
+.se-clause[data-statut="fully_completed"] b { color: var(--nexus-text-label); }
+.se-palier {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--p) 14%, transparent);
+  color: var(--p);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+.se-avance { display: block; height: 2px; max-width: 62ch; margin-top: 7px; background: var(--nexus-track-bg); }
+.se-avance i { display: block; height: 100%; background: var(--p); }
+.se-deplier {
+  margin: 6px 0 0 50px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--se-vif);
+  font: 700 14px Rajdhani, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  cursor: pointer;
+}
+
+/* ── Les ordres : des cases, un tampon ── */
+.se-ordres { list-style: none; margin: 12px 0 18px; padding: 0; display: grid; gap: 8px; }
+.se-ordres li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+}
+.se-case {
+  position: relative;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--nexus-text-dim);
+  border-radius: 3px;
+}
+[data-etat="pret"] > .se-case { border-color: var(--se-or); background: color-mix(in srgb, var(--se-or) 18%, transparent); }
+[data-etat="tenu"] > .se-case { border-color: var(--se-vert); background: var(--se-vert); }
+[data-etat="tenu"] > .se-case::after {
+  content: "";
+  position: absolute;
+  left: 4.5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--nexus-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.se-ordre { font-size: 17px; font-weight: 600; color: var(--nexus-heading); }
+.se-ordre em { margin-left: 6px; font: normal 500 12.5px "JetBrains Mono", monospace; color: var(--nexus-text-dim); }
+[data-etat="tenu"] .se-ordre { color: var(--nexus-text-dim); }
+.se-tamponner {
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--se-or) 60%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--se-or) 10%, transparent);
+  color: var(--se-or);
+  font: 700 13px Rajdhani, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+.se-tamponner:hover { background: color-mix(in srgb, var(--se-or) 20%, transparent); }
+.se-tampon {
+  justify-self: end;
+  padding: 3px 12px;
+  border: 2px solid var(--se-vert);
+  border-radius: 4px;
+  color: var(--se-vert);
+  font: 800 13px Orbitron, sans-serif;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* ── Le seing ── */
+.se-seing .se-texte p { font-size: 16px; color: var(--nexus-text-dim); }
+.se-paraphe {
+  display: inline-block;
+  margin-top: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--nexus-border);
+  font: 800 30px Orbitron, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teinte, #8b5cf6) !important;
+}
+
+.se button:focus-visible { outline: 2px solid var(--se-vif); outline-offset: 3px; }
+
+@media (max-width: 1080px) {
+  .se-feuille { grid-template-columns: minmax(0, 1fr); padding: 28px 22px; }
+  .se-rangee { grid-template-columns: minmax(0, 1fr); }
+  .se-marge, .se-texte, .se-note { grid-column: 1; justify-self: start; }
+  .se-num { font-size: 18px; margin-bottom: 4px; }
+  .se-sceau { width: 84px; height: 84px; margin-bottom: 14px; }
+  .se-note { margin-top: 12px; padding: 9px 12px; border: 0; border-radius: 4px; background: var(--nexus-inner-bg); }
+  .se-tete h1 { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .se-tamponner { transition: none; }
+}
+
+.light .se { --se-vif: #00697a; --se-or: #7a5a00; --se-vert: #00794a; }

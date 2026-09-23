@@ -1,0 +1,120 @@
+/* ─────────────────────────────────────────────────────────────
+   LE BANC DU TABLEAU DE BORD.
+
+   La racine isole son empilement : le fond vivant, fixe et en z-index
+   negatif, reste ainsi au-dessus du sol de la page et sous tout le
+   reste. Le pupitre flotte en bas, comme celui du banc des fonds.
+   ───────────────────────────────────────────────────────────── */
+
+.bt {
+  --bt-plaque: rgba(6, 9, 17, 0.95);
+  --bt-trait: rgba(140, 190, 240, 0.18);
+  --bt-encre: #e6eef8;
+  --bt-encre-2: #a9b8cc;
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+.bt-scene { position: relative; z-index: 1; padding-bottom: 150px; }
+
+.bt-pupitre {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 50;
+  transform: translateX(-50%);
+  width: min(64rem, calc(100% - 32px));
+  display: grid;
+  gap: 10px;
+  padding: 12px 16px 12px;
+  background: var(--bt-plaque);
+  border: 1px solid var(--bt-trait);
+  border-radius: 10px;
+  box-shadow: 0 22px 44px -16px rgba(0, 0, 0, 0.75), 0 3px 8px rgba(0, 0, 0, 0.45);
+  font-family: Rajdhani, system-ui, sans-serif;
+  color: var(--bt-encre);
+}
+.bt-choix { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-choix button {
+  padding: 7px 14px;
+  border: 1px solid var(--bt-trait);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bt-encre-2);
+  font: 700 15px Rajdhani, sans-serif;
+  cursor: pointer;
+  transition: border-color 160ms ease-out, color 160ms ease-out, background-color 160ms ease-out;
+}
+.bt-choix button:hover { color: var(--bt-encre); border-color: color-mix(in srgb, var(--teinte) 60%, var(--bt-trait)); }
+.bt-choix button[aria-pressed="true"] {
+  border-color: var(--teinte);
+  background: color-mix(in srgb, var(--teinte) 24%, transparent);
+  color: var(--bt-encre);
+}
+.bt-these { margin: 0; font-size: 15.5px; line-height: 1.4; }
+.bt-these span { color: var(--bt-encre-2); }
+
+.bt-reglages { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.bt-fond,
+.bt-bascule { display: inline-flex; align-items: center; gap: 8px; color: var(--bt-encre-2); }
+.bt-fond select {
+  padding: 4px 8px;
+  border: 1px solid var(--bt-trait);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bt-encre);
+  font: 600 14px Rajdhani, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.bt-fond option { background: #0a0f1c; color: #e6eef8; }
+.bt-bascule input { accent-color: var(--teinte); }
+.bt-fictif { margin: 0; font: 500 12px "JetBrains Mono", monospace; color: var(--bt-encre-2); }
+.bt-raccourcis { margin: 0 0 0 auto; font-size: 13px; color: var(--bt-encre-2); }
+.bt kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border: 1px solid var(--bt-trait);
+  border-radius: 3px;
+  font: 500 11px "JetBrains Mono", monospace;
+  text-align: center;
+  color: var(--bt-encre);
+}
+.bt-rappel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--bt-trait);
+  border-radius: 999px;
+  background: var(--bt-plaque);
+  color: var(--bt-encre);
+  font: 600 15px Rajdhani, sans-serif;
+  cursor: pointer;
+}
+.bt-pupitre button:focus-visible,
+.bt-pupitre select:focus-visible,
+.bt-rappel:focus-visible { outline: 2px solid var(--teinte); outline-offset: 2px; }
+
+@media (max-width: 720px) {
+  .bt-pupitre { bottom: 8px; width: calc(100% - 16px); padding: 10px 12px; }
+  .bt-raccourcis { display: none; }
+  .bt-these span { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-choix button { transition: none; }
+}
+
+.light .bt {
+  --bt-plaque: rgba(251, 250, 247, 0.96);
+  --bt-trait: rgba(20, 24, 26, 0.16);
+  --bt-encre: #14181a;
+  --bt-encre-2: #4a5257;
+}
+.light .bt-fond select { background: rgba(0, 0, 0, 0.03); }
+.light .bt-fond option { background: #fbfaf7; color: #14181a; }

@@ -39,6 +39,7 @@ const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
 const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
 const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
+const BancDuTableau = lazy(() => import("@/domaines/accueil/pages/BancDuTableau"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -153,6 +154,11 @@ function AppRoutes() {
           l accueil, dans les six teintes du pacte. Sept d entre eux se
           choisissent dans les options. Rien n y est lu. */}
       <Route path="/banc/fond" element={<BancDuFond />} />
+
+      {/* LE BANC DU TABLEAU DE BORD — public, meme raison. Trois refontes
+          du tableau de bord s y comparent sur un scenario fictif : le
+          registre de bord, le cadran du pacte, le serment vivant. */}
+      <Route path="/banc/tableau" element={<BancDuTableau />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />
