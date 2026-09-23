@@ -19,7 +19,7 @@ import { FondVivant } from "@/socle/ds/fonds/FondVivant";
 import { useFondDuTableau } from "@/socle/ds/fonds/choix";
 import { teinteDuPacte } from "@/socle/ds/fonds/catalogue";
 import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
-import { QuickAccessPanel } from "@/domaines/accueil/composants/QuickAccessPanel";
+import { AccesRue } from "@/domaines/accueil/composants/acces/AccesRue";
 import { CountdownPanel } from "@/domaines/accueil/composants/CountdownPanel";
 import { MissionRandomizer } from "@/domaines/accueil/composants/hero/MissionRandomizer";
 import { PassageMia } from "@/domaines/mia";
@@ -285,13 +285,13 @@ export default function Home() {
           <Skeleton className="h-48 w-full rounded-xl" />
         )}
 
-        {/* AGIR — ce qui se fait maintenant. Les six accès et les quetes du
-            jour forment un seul bloc : ce sont les deux seuls endroits de la
-            page ou l'on declenche quelque chose. Serres a 0.5rem, ils se
-            lisent comme une console d'action et non comme deux panneaux. */}
+        {/* AGIR — ce qui se fait maintenant. La rue d enseignes (depuis le
+            23/09 ; l ancienne barre reste au banc) et les quetes du jour
+            forment un seul bloc : les deux seuls endroits de la page ou
+            l on declenche quelque chose, serres a 0.5rem. */}
         <section className="space-y-2">
           {isShopReady ? (
-            <QuickAccessPanel
+            <AccesRue
               onMissionRandomizer={() => setTirageOuvert((v) => !v)}
               missionRandomizerOuvert={tirageOuvert}
               missionRandomizerDisponible={tirageDisponible}
@@ -303,7 +303,7 @@ export default function Home() {
               onWeeklyReview={() => setWeeklyReviewOpen(true)}
             />
           ) : (
-            <Skeleton className="h-14 w-full rounded" />
+            <Skeleton className="h-[270px] min-[673px]:h-[147px] w-full rounded" />
           )}
 
           {/* Les quetes expirent a minuit : c'est le contenu le plus

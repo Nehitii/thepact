@@ -19,7 +19,10 @@ import "@/domaines/accueil/composants/acces/acces-rue.css";
  *   hotels pleins : « Complet ». Ouvert sur la page, « Ouvert ».
  *
  * A l ouverture, les enseignes s allument l une apres l autre, apres
- * celle du pacte. */
+ * celle du pacte.
+ *
+ * EN SERVICE depuis le 23/09 : c est la barre de l accueil. Les trois
+ * autres propositions et l ancienne barre restent au banc. */
 
 export function AccesRue(p: ProprietesAccesRapide) {
   const acces = useAccesRapides(p);

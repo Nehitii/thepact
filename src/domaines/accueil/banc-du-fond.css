@@ -49,6 +49,8 @@
   gap: 0.5rem;
 }
 .banc-fond-groupe--trois { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+/* L accueil empile la rue d enseignes et les quetes, pleine largeur. */
+.banc-fond-groupe--pile { grid-template-columns: minmax(0, 1fr); }
 .banc-fond-panneau {
   position: relative;
   background: var(--nexus-bg);
@@ -73,19 +75,6 @@
   font-size: 1.9rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--nexus-heading);
-}
-.banc-fond-acces {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-}
-.banc-fond-acces span {
-  border: 1px solid var(--nexus-border);
-  border-radius: 3px;
-  padding: 0.5rem 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 600;
   color: var(--nexus-heading);
 }
 .banc-fond-quetes {

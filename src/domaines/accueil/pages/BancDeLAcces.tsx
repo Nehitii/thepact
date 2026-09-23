@@ -15,14 +15,16 @@ import "@/domaines/accueil/banc-du-bandeau.css";
 /* LE BANC DE L ACCES RAPIDE.
  *
  * Quatre refontes de la barre d acces rapide, sous l enseigne du pacte
- * — c est la qu elles vivront, et c est avec elle qu elles doivent se
- * lire. Chacune recoit les proprietes exactes de la barre actuelle.
+ * — c est la qu elles vivent, et c est avec elle qu elles doivent se
+ * lire. Chacune recoit les proprietes exactes de l ancienne barre.
+ * La rue (A) a ete choisie le 23/09 : c est elle que l accueil monte ;
+ * l ancienne barre reste ici pour comparer.
  *
  * LE PUPITRE FAIT VARIER CE QUI CHANGE LA BARRE : les modules achetes
  * (un module manquant verrouille son acces), le tirage (ouvert, ou pris
  * par une mission en cours). Les appuis ne quittent pas le banc : la
  * navigation est interceptee, et le pupitre dit ou l on serait alle.
- * La barre actuelle, elle, navigue pour de vrai — elle n a pas ce
+ * L ancienne barre, elle, navigue pour de vrai — elle n a pas ce
  * crochet.
  *
  * Clavier : ← → changent de proposition, P ouvre la planche, H masque
@@ -39,8 +41,8 @@ interface Variante {
 }
 
 const VARIANTES: readonly Variante[] = [
-  { id: "actuel", nom: "Actuel", idee: "La barre en service : sept cases HUD, des touches F1–F7 qui ne répondent pas, deux cases pour la même page.", Composant: QuickAccessPanel },
-  { id: "rue", nom: "A · La rue", idee: "Six petites enseignes au néon sur le même béton que l’enseigne du pacte ; éteintes quand le module n’est pas acheté.", Composant: AccesRue },
+  { id: "actuel", nom: "Ancienne barre", idee: "La barre d’avant le 23/09 : sept cases HUD, des touches F1–F7 qui ne répondent pas, deux cases pour la même page.", Composant: QuickAccessPanel },
+  { id: "rue", nom: "A · La rue — en service", idee: "Six petites enseignes au néon sur le même béton que l’enseigne du pacte ; éteintes quand le module n’est pas acheté. C’est la barre de l’accueil depuis le 23/09.", Composant: AccesRue },
   { id: "pupitre", nom: "B · Le pupitre", idee: "Des boutons-poussoirs lumineux sur une platine d’acier : un bouton à clé pour ce qui est à débloquer, un capot sur le tirage déjà pris.", Composant: AccesPupitre },
   { id: "clavier", nom: "C · Le clavier", idee: "Un pavé de touches à écran : chaque touche affiche son pictogramme, s’enfonce, et s’inverse quand l’outil est ouvert.", Composant: AccesClavier },
   { id: "panneaux", nom: "D · Les panneaux", idee: "La signalétique d’une station la nuit : pastille de couleur, nom, ce que fait l’accès, une flèche.", Composant: AccesPanneaux },
