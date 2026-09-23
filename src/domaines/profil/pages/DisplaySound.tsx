@@ -13,6 +13,7 @@ import { cn } from "@/socle/outils/utils";
 import { ConsoleReglages } from "@/domaines/profil/composants/ConsoleReglages";
 import { PanneauVisuel } from "@/domaines/profil/composants/reglages/PanneauVisuel";
 import { PanneauAudio } from "@/domaines/profil/composants/reglages/PanneauAudio";
+import { PanneauFond } from "@/domaines/profil/composants/reglages/PanneauFond";
 import { Panneau, Reglage, Segmente, Jauge } from "@/socle/ds/console-ui";
 import { reagitAuxAbsences, reglerReactionAuxAbsences, VisageMia } from "@/domaines/mia";
 import { useChromeFlottant } from "@/socle/outils/chromeFlottant";
@@ -128,6 +129,11 @@ export default function DisplaySound() {
         police={police}
         setLocalPolice={setLocalPolice}
       />
+
+      {/* Le fond du tableau de bord suit l affichage : c est encore la
+          question « a quoi ressemble l application ». Il vit dans le
+          navigateur, comme la vignette plus bas, et non en base. */}
+      <PanneauFond noter={noter} journal={journaux.fond ?? null} />
 
       <PanneauAudio
         effective={effective}

@@ -1,17 +1,12 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { NexusHeroBanner } from "@/domaines/accueil/composants/NexusHeroBanner";
 import { rosaceDuPacte } from "@/domaines/objectifs";
-import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
-import { PROPOSITIONS, TEINTES_DU_PACTE, voisine, type IdDuFond } from "@/domaines/accueil/logique/propositionsDeFond";
-import type { MesureDuRendu } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { FondAurore, FondHorizon, FondNebuleuse, FondOrbite } from "@/domaines/accueil/composants/fonds/FondShader";
-import { FondEssaim } from "@/domaines/accueil/composants/fonds/FondEssaim";
-import { FondDerive } from "@/domaines/accueil/composants/fonds/FondDerive";
-import { FondConstellation } from "@/domaines/accueil/composants/fonds/FondConstellation";
-import { FondAtlas } from "@/domaines/accueil/composants/fonds/FondAtlas";
-import { PanneauxSimules } from "@/domaines/accueil/composants/fonds/PanneauxSimules";
+import { PROPOSITIONS, TEINTES_DU_PACTE, voisine, type IdDuFond } from "@/socle/ds/fonds/catalogue";
+import type { MesureDuRendu } from "@/socle/ds/fonds/useRenduDuFond";
+import { FondVivant } from "@/socle/ds/fonds/FondVivant";
+import { PanneauxSimules } from "@/domaines/accueil/composants/PanneauxSimules";
 import "@/domaines/accueil/accueil.css";
-import "@/domaines/accueil/fonds.css";
+import "@/domaines/accueil/banc-du-fond.css";
 
 /* LE BANC DES FONDS.
  *
@@ -54,14 +49,7 @@ export default function BancDuFond() {
   const proposition = PROPOSITIONS.find((p) => p.id === id) ?? PROPOSITIONS[0];
   const teinte = TEINTES_DU_PACTE[nomDeTeinte];
 
-  const sceau = useMemo(() => {
-    const rosace = rosaceDuPacte("Ananta", VALEURS, 4);
-    return {
-      ordre: rosace.ordre,
-      pas: rosace.pas,
-      valeurs: rosace.medaillons.map((m) => ({ nom: m.valeur, sommet: m.sommet })),
-    };
-  }, []);
+  const sceau = useMemo(() => rosaceDuPacte("Ananta", VALEURS, 4), []);
 
   /* La bascule agit sur la racine, comme le vrai selecteur de theme. */
   useEffect(() => {
@@ -95,28 +83,7 @@ export default function BancDuFond() {
     setCarte(null);
   }, [id]);
 
-  const commun = {
-    teinte, intensite, mouvement,
-    cadence: proposition.cadence || 30,
-    surMesure: setMesure,
-    surCarte: setCarte,
-  };
-
-  const fond = (() => {
-    switch (id) {
-      case "actuel": return <SpaceBackdrop />;
-      case "nebuleuse": return <FondNebuleuse {...commun} />;
-      case "horizon": return <FondHorizon {...commun} />;
-      case "constellation": return <FondConstellation {...commun} {...sceau} progression={progression} />;
-      case "derive": return <FondDerive {...commun} />;
-      case "aurore": return <FondAurore {...commun} />;
-      case "orbite": return <FondOrbite {...commun} />;
-      case "essaim": return <FondEssaim {...commun} />;
-      case "atlas": return <FondAtlas {...commun} {...sceau} progression={progression} jour={jour} />;
-    }
-  })();
-
-  const cadence = id === "actuel"
+  const cadence = id === "classique"
     ? "CSS"
     : mesure === null ? "…" : mesure.fps === 0 ? "image fixe" : `${Math.round(mesure.fps)} i/s`;
 
@@ -124,7 +91,19 @@ export default function BancDuFond() {
     <div className="banc-fond" style={{ "--banc-teinte": teinte } as CSSProperties}>
       {/* Une cle par proposition : chacune ouvre son contexte graphique,
           et le rend en partant. */}
-      <div key={id}>{fond}</div>
+      <div key={id}>
+        <FondVivant
+          id={id}
+          teinte={teinte}
+          intensite={intensite}
+          mouvement={mouvement}
+          sceau={sceau}
+          progression={progression}
+          jour={jour}
+          surMesure={setMesure}
+          surCarte={setCarte}
+        />
+      </div>
       <div className="banc-fond-balayage" aria-hidden="true" />
 
       {superposition && (
@@ -164,11 +143,11 @@ export default function BancDuFond() {
               <div><dt>Cadence</dt><dd>{cadence}</dd></div>
               <div>
                 <dt>Processeur</dt>
-                <dd>{id === "actuel" || !mesure ? "—" : `${mesure.ms.toFixed(2)} ms/image`}</dd>
+                <dd>{id === "classique" || !mesure ? "—" : `${mesure.ms.toFixed(2)} ms/image`}</dd>
               </div>
               <div>
                 <dt>Tampon</dt>
-                <dd>{id === "actuel" || !mesure ? "—" : `${mesure.largeur} × ${mesure.hauteur}`}</dd>
+                <dd>{id === "classique" || !mesure ? "—" : `${mesure.largeur} × ${mesure.hauteur}`}</dd>
               </div>
               <div><dt>Carte</dt><dd title={carte ?? undefined}>{lireLaCarte(carte)}</dd></div>
             </dl>

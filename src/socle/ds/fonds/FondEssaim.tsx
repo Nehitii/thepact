@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useRenduDuFond, type Moteur } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { composantes } from "@/domaines/accueil/logique/propositionsDeFond";
+import { useRenduDuFond, type Moteur } from "@/socle/ds/fonds/useRenduDuFond";
+import { composantes } from "@/socle/ds/fonds/catalogue";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
-import { aleatoire, carteGraphique, contexte, liberer, programme, uniformes } from "@/domaines/accueil/composants/fonds/gl";
-import { FRAGMENTS_ESSAIM, SOMMETS_ESSAIM } from "@/domaines/accueil/composants/fonds/glsl/essaim";
-import type { ProprietesDuFond } from "@/domaines/accueil/composants/fonds/types";
+import { aleatoire, carteGraphique, contexte, liberer, programme, uniformes } from "@/socle/ds/fonds/gl";
+import { FRAGMENTS_ESSAIM, SOMMETS_ESSAIM } from "@/socle/ds/fonds/glsl/essaim";
+import type { ProprietesDuFond } from "@/socle/ds/fonds/types";
 
 /* L ESSAIM.
  *

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { composantes, PROPOSITIONS, TEINTES_DU_PACTE, voisine } from "./propositionsDeFond";
+import { composantes, PROPOSITIONS, TEINTES_DU_PACTE, teinteDuPacte, voisine } from "./catalogue";
 
 /* ═══════════════════════════════════════════════════════════════
    CE QUE CE FICHIER PROTÈGE
@@ -16,8 +16,8 @@ describe("le catalogue", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("garde le fond actuel en tête, comme référence", () => {
-    expect(PROPOSITIONS[0].id).toBe("actuel");
+  it("garde le fond classique en tête, comme référence", () => {
+    expect(PROPOSITIONS[0].id).toBe("classique");
   });
 
   it("dit pour chaque fond ce qu'on voit, pourquoi, et comment", () => {
@@ -29,7 +29,7 @@ describe("le catalogue", () => {
   });
 
   it("plafonne la cadence de chaque fond calculé", () => {
-    for (const p of PROPOSITIONS.filter((x) => x.id !== "actuel")) {
+    for (const p of PROPOSITIONS.filter((x) => x.id !== "classique")) {
       expect(p.cadence, p.id).toBeGreaterThan(0);
       expect(p.cadence, p.id).toBeLessThanOrEqual(60);
     }
@@ -43,8 +43,8 @@ describe("le parcours au clavier", () => {
   });
 
   it("boucle aux deux bouts", () => {
-    expect(voisine("atlas", 1)).toBe("actuel");
-    expect(voisine("actuel", -1)).toBe("atlas");
+    expect(voisine("atlas", 1)).toBe("classique");
+    expect(voisine("classique", -1)).toBe("atlas");
   });
 
   it("revient au départ après un tour complet", () => {
@@ -69,5 +69,12 @@ describe("les teintes", () => {
 
   it("retombe sur le violet devant une teinte illisible", () => {
     expect(composantes("violet")).toEqual([0.55, 0.36, 0.96]);
+  });
+
+  it("lit la teinte d’un pacte par son nom, et donne le violet à un pacte qui n’en a pas", () => {
+    expect(teinteDuPacte("emerald")).toBe("#10B981");
+    expect(teinteDuPacte(null)).toBe("#8B5CF6");
+    expect(teinteDuPacte("")).toBe("#8B5CF6");
+    expect(teinteDuPacte("chartreuse")).toBe("#8B5CF6");
   });
 });

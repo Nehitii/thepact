@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useRenduDuFond, type Moteur } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { composantes } from "@/domaines/accueil/logique/propositionsDeFond";
+import { useRenduDuFond, type Moteur } from "@/socle/ds/fonds/useRenduDuFond";
+import { composantes } from "@/socle/ds/fonds/catalogue";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import {
   aleatoire, carteGraphique, contexte, liberer, programme, SOMMETS_PLEIN_ECRAN, trianglePleinEcran, uniformes,
-} from "@/domaines/accueil/composants/fonds/gl";
-import { FOND_DERIVE, FRAGMENTS_DERIVE, SOMMETS_DERIVE } from "@/domaines/accueil/composants/fonds/glsl/derive";
-import type { ProprietesDuFond } from "@/domaines/accueil/composants/fonds/types";
+} from "@/socle/ds/fonds/gl";
+import { FOND_DERIVE, FRAGMENTS_DERIVE, SOMMETS_DERIVE } from "@/socle/ds/fonds/glsl/derive";
+import type { ProprietesDuFond } from "@/socle/ds/fonds/types";
 
 /* LA DERIVE.
  *

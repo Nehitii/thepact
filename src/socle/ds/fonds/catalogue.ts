@@ -1,13 +1,18 @@
-/* LES PROPOSITIONS DE FOND DU TABLEAU DE BORD.
+/* LES FONDS DU TABLEAU DE BORD.
  *
- * Le fond actuel est un empilement de degrades et de quatre couches
+ * Le fond classique est un empilement de degrades et de quatre couches
  * d etoiles en CSS. Il tient, mais il ne dit rien du pacte : c est le
  * meme ciel pour tout le monde, et PRODUCT.md promet l inverse — « le
  * tableau de bord porte sa teinte ».
  *
- * Huit remplacants, chacun avec son idee, sa raison et son cout. Ils se
+ * Huit autres, chacun avec son idee, sa raison et son cout. Ils se
  * comparent sur le banc `/banc/fond`, derriere le vrai bandeau, dans
- * les six teintes du pacte.
+ * les six teintes du pacte ; sept d entre eux se choisissent dans les
+ * options (voir `choix.ts`).
+ *
+ * ILS VIVENT AU SOCLE, PAS A L ACCUEIL. Le tableau de bord les porte,
+ * mais les options les montrent aussi, en apercu : deux domaines, donc
+ * aucun des deux — la meme raison qui a envoye SpaceBackdrop ici.
  *
  * UNE CONTRAINTE LES TIENT TOUS : l accueil pose des panneaux OPAQUES
  * (`--nexus-bg`) sur une colonne de 1 024 px. Le fond ne se voit que
@@ -16,7 +21,7 @@
  */
 
 export type IdDuFond =
-  | "actuel" | "nebuleuse" | "horizon" | "constellation" | "derive"
+  | "classique" | "nebuleuse" | "horizon" | "constellation" | "derive"
   | "aurore" | "orbite" | "essaim" | "atlas";
 
 export interface PropositionDeFond {
@@ -36,9 +41,9 @@ export interface PropositionDeFond {
 
 export const PROPOSITIONS: readonly PropositionDeFond[] = [
   {
-    id: "actuel",
-    nom: "Actuel",
-    idee: "Le fond d’aujourd’hui : six dégradés, une bande galactique, quatre couches d’étoiles.",
+    id: "classique",
+    nom: "Classique",
+    idee: "Le ciel d’origine : une bande galactique et quatre couches d’étoiles qui glissent au défilement.",
     pourquoi: "La référence. Tout le reste se mesure à lui.",
     technique: "CSS · parallaxe au défilement · aucune image calculée",
     cadence: 0,
@@ -130,6 +135,12 @@ export const TEINTES_DU_PACTE: Readonly<Record<string, string>> = {
   violet: "#8B5CF6",
   cyan: "#06B6D4",
 };
+
+/** La teinte d un pacte, par le nom que la base retient (`pacts.color`).
+ *  Un pacte sans couleur prend le violet : c est celui de la marque. */
+export function teinteDuPacte(nom: string | null | undefined): string {
+  return (nom && TEINTES_DU_PACTE[nom]) || TEINTES_DU_PACTE.violet;
+}
 
 /** Une couleur hexadecimale en composantes de 0 a 1, pour un shader. */
 export function composantes(hex: string): [number, number, number] {

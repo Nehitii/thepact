@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useRenduDuFond, type Moteur } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { aleatoire } from "@/domaines/accueil/composants/fonds/gl";
+import { useRenduDuFond, type Moteur } from "@/socle/ds/fonds/useRenduDuFond";
+import { aleatoire } from "@/socle/ds/fonds/gl";
 import {
   aretesAllumees, aretesDuSceau, dessinerLeSceau, rgba, sommetsDuSceau,
-} from "@/domaines/accueil/composants/fonds/dessinDuSceau";
-import type { ProprietesDuFond, SceauDuFond } from "@/domaines/accueil/composants/fonds/types";
+} from "@/socle/ds/fonds/dessinDuSceau";
+import type { ProprietesDuFond, SceauDuFond } from "@/socle/ds/fonds/types";
 
 /* L ATLAS.
  *
@@ -43,11 +43,11 @@ function catalogue(): Astre[] {
 }
 
 export function FondAtlas({
-  teinte, intensite, mouvement, cadence, surMesure, ordre, pas, valeurs, progression, jour,
+  teinte, intensite, mouvement, cadence, surMesure, ordre, pas, medaillons, progression, jour,
 }: ProprietesDuFond & SceauDuFond & { jour: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const reglages = useRef({ teinte, intensite, ordre, pas, valeurs, progression, jour });
-  reglages.current = { teinte, intensite, ordre, pas, valeurs, progression, jour };
+  const reglages = useRef({ teinte, intensite, ordre, pas, medaillons, progression, jour });
+  reglages.current = { teinte, intensite, ordre, pas, medaillons, progression, jour };
 
   const fabriquer = useCallback((canvas: HTMLCanvasElement): Moteur | null => {
     const ctx = canvas.getContext("2d", { alpha: false });
@@ -132,21 +132,23 @@ export function FondAtlas({
         /* Le sceau se tient dans la marge gauche, la ou l accueil laisse
            voir le fond — pas a une coordonnee du ciel, qui le ferait sortir
            de l ecran selon sa taille. Il tourne avec la carte. */
-        const rayon = Math.min(l, h) * 0.12;
-        const marge = (l - 1024 * k) / 2;
-        const centre = l >= h
-          ? { x: Math.max(rayon * 1.5, marge / 2), y: h * 0.64 }
-          : { x: l * 0.5, y: h * 0.7 };
-        ctx.save();
-        ctx.setLineDash([2 * k, 4 * k]);
-        ctx.strokeStyle = rgba(encre, (papier ? 0.4 : 0.28) * force);
-        ctx.lineWidth = 0.8 * k;
-        ctx.beginPath(); ctx.arc(centre.x, centre.y, rayon * 1.45, 0, Math.PI * 2); ctx.stroke();
-        ctx.restore();
-        const sommets = sommetsDuSceau(r.ordre, centre, rayon, tour + 0.2);
-        const teinteDeGravure = papier ? melanger(r.teinte, "#16202C", 0.35) : r.teinte;
-        dessinerLeSceau(ctx, sommets, aretesDuSceau(r.ordre, r.pas), aretesAllumees(r.ordre, r.progression),
-          r.valeurs, centre, { teinte: teinteDeGravure, force, encre: papier, echelle: k, revele: 1, temps: e.t });
+        if (r.ordre >= 3) {
+          const rayon = Math.min(l, h) * 0.12;
+          const marge = (l - 1024 * k) / 2;
+          const centre = l >= h
+            ? { x: Math.max(rayon * 1.5, marge / 2), y: h * 0.64 }
+            : { x: l * 0.5, y: h * 0.7 };
+          ctx.save();
+          ctx.setLineDash([2 * k, 4 * k]);
+          ctx.strokeStyle = rgba(encre, (papier ? 0.4 : 0.28) * force);
+          ctx.lineWidth = 0.8 * k;
+          ctx.beginPath(); ctx.arc(centre.x, centre.y, rayon * 1.45, 0, Math.PI * 2); ctx.stroke();
+          ctx.restore();
+          const sommets = sommetsDuSceau(r.ordre, centre, rayon, tour + 0.2);
+          const teinteDeGravure = papier ? melanger(r.teinte, "#16202C", 0.35) : r.teinte;
+          dessinerLeSceau(ctx, sommets, aretesDuSceau(r.ordre, r.pas), aretesAllumees(r.ordre, r.progression),
+            r.medaillons, centre, { teinte: teinteDeGravure, force, encre: papier, echelle: k, revele: 1, temps: e.t });
+        }
 
         if (!papier) {
           const v = ctx.createRadialGradient(l / 2, h / 2, Math.min(l, h) * 0.4, l / 2, h / 2, Math.hypot(l, h) * 0.6);
@@ -163,7 +165,7 @@ export function FondAtlas({
   const { redessiner } = useRenduDuFond(ref, fabriquer, { echelle: 1, cadence, mouvement, surMesure });
   useEffect(() => {
     redessiner();
-  }, [teinte, intensite, ordre, pas, valeurs, progression, jour, redessiner]);
+  }, [teinte, intensite, ordre, pas, medaillons, progression, jour, redessiner]);
 
   return <canvas ref={ref} className="fond-vivant" aria-hidden="true" />;
 }

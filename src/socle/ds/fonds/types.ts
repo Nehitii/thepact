@@ -1,6 +1,6 @@
-import type { MesureDuRendu } from "@/domaines/accueil/hooks/useRenduDuFond";
+import type { MesureDuRendu } from "@/socle/ds/fonds/useRenduDuFond";
 
-/** Ce que tout fond recoit du banc — et, demain, du tableau de bord. */
+/** Ce que tout fond recoit, du banc comme du tableau de bord. */
 export interface ProprietesDuFond {
   /** La couleur du pacte, en hexadecimal. */
   teinte: string;
@@ -19,8 +19,10 @@ export interface ProprietesDuFond {
 export interface SceauDuFond {
   ordre: number;
   pas: number;
-  /** Les valeurs du pacte, et le sommet de l etoile ou chacune se tient. */
-  valeurs: readonly { nom: string; sommet: number }[];
+  /** Les valeurs du pacte, et le sommet de l etoile ou chacune se tient.
+   *  C est la forme meme de `rosaceDuPacte` : on lui passe la rosace
+   *  telle quelle, sans la recopier. */
+  medaillons: readonly { valeur: string; sommet: number }[];
   /** La part des objectifs accomplis, de 0 a 1. */
   progression: number;
 }

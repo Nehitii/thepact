@@ -58,6 +58,9 @@ export const PREF = {
   /* ── Ambiance ── */
   FOCUS_FOND: "overwrite.focus.fond",
   SOUFFLE_SON: "overwrite.souffle.son",
+  /* Le fond du tableau de bord. Absente, c est le ciel classique : on
+     ne l ecrit que pour un autre choix. */
+  HUB_FOND: "overwrite.hub.fond",
 
   /* ── CE QUI N'EST PAS DE LA MISE EN PAGE ──
      Recensé ici pour que l'inventaire soit complet, mais ABSENT de la
@@ -69,7 +72,7 @@ export const PREF = {
 
 /* ═══ CE QUE « REMETTRE À ZÉRO » EMPORTE ═══════════════════════════
 
-   Dix-sept clés : des vues, des tris, des mises en page, deux
+   Vingt-trois clés : des vues, des tris, des mises en page, trois
    ambiances. Tout ce qui décrit COMMENT l'application se montre.
 
    Trois clés recensées plus haut en sont exclues, et deux autres ne

@@ -13,6 +13,10 @@ import { LockedModulesTeaser } from "@/domaines/accueil/composants/LockedModules
 import { NeuralBar } from "@/domaines/accueil/composants/NeuralBar";
 import { NexusHeroBanner, CLE_MESURE, type MesureProgression } from "@/domaines/accueil/composants/NexusHeroBanner";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
+import { FondVivant } from "@/socle/ds/fonds/FondVivant";
+import { useFondDuTableau } from "@/socle/ds/fonds/choix";
+import { teinteDuPacte } from "@/socle/ds/fonds/catalogue";
+import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 import { QuickAccessPanel } from "@/domaines/accueil/composants/QuickAccessPanel";
 import { CountdownPanel } from "@/domaines/accueil/composants/CountdownPanel";
 import { MissionRandomizer } from "@/domaines/accueil/composants/hero/MissionRandomizer";
@@ -23,7 +27,7 @@ import { WeeklyReviewModal } from "@/domaines/revue";
 
 // Hooks
 import { useTodoReminders } from "@/domaines/taches";
-import { usePact, useGoals, useValeursDuPacte } from "@/domaines/objectifs";
+import { usePact, useGoals, useValeursDuPacte, rosaceDuPacte } from "@/domaines/objectifs";
 import { useProfile } from "@/domaines/profil";
 import { useUserShop } from "@/domaines/boutique";
 import { useRankXP } from "@/domaines/succes";
@@ -109,6 +113,20 @@ export default function Home() {
     try { localStorage.setItem(CLE_MESURE, mesure); } catch { /* stockage indisponible */ }
   }, [mesure]);
 
+  /* LE FOND CHOISI DANS LES OPTIONS (Affichage & son).
+
+     Les fonds vivants sont faits pour la nuit : en theme clair, le
+     tableau de bord garde le ciel classique, qui sait se retourner en
+     papier. Le sceau de la constellation est celui du pacte — la meme
+     rosace que le bandeau, calculee ici une fois. Ces hooks se
+     declarent avant le retour anticipe, pour la raison dite plus haut. */
+  const [fond] = useFondDuTableau();
+  const sombre = useThemeSombre();
+  const sceau = useMemo(
+    () => (pact ? rosaceDuPacte(pact.name, valeurs, pact.sigil_version ?? 1) : undefined),
+    [pact, valeurs],
+  );
+
   /* Le retour anticipé suit la même condition que la redirection :
      s'ils divergent, on rend un écran vide sans jamais partir, ou
      l'inverse. */
@@ -185,7 +203,16 @@ export default function Home() {
               contenu, et c'est precisement ce decalage qui donne la
               distance. Les deux degrades discrets qui occupaient cette
               place restaient a l'echelle d'un fond de page. */}
-          <SpaceBackdrop />
+          {sombre && fond !== "classique" ? (
+            <FondVivant
+              id={fond}
+              teinte={teinteDuPacte(pact?.color)}
+              sceau={sceau}
+              progression={progression / 100}
+            />
+          ) : (
+            <SpaceBackdrop />
+          )}
           <div
             className="absolute inset-0 pointer-events-none z-[1]"
             style={{

@@ -74,7 +74,7 @@ export function dessinerLeSceau(
   sommets: Point[],
   aretes: [number, number][],
   allumees: number,
-  valeurs: readonly { nom: string; sommet: number }[],
+  medaillons: readonly { valeur: string; sommet: number }[],
   centre: Point,
   { teinte, force, encre = false, echelle: k, revele, temps }: Style,
 ): void {
@@ -135,7 +135,7 @@ export function dessinerLeSceau(
   ctx.save();
   ctx.font = `600 ${10 * k}px Orbitron, Rajdhani, sans-serif`;
   ctx.textBaseline = "middle";
-  valeurs.forEach(({ nom, sommet }) => {
+  medaillons.forEach(({ valeur, sommet }) => {
     const p = sommets[sommet];
     if (!p) return;
     const dx = p.x - centre.x;
@@ -146,7 +146,7 @@ export function dessinerLeSceau(
     const y = p.y + (dy / d) * ecart;
     ctx.textAlign = Math.abs(dx / d) < 0.3 ? "center" : dx > 0 ? "left" : "right";
     ctx.fillStyle = rgba(teinte, (estAllume(sommet) ? 0.92 : 0.55) * force);
-    ctx.fillText(espacer(nom.toUpperCase()), x, y);
+    ctx.fillText(espacer(valeur.toUpperCase()), x, y);
   });
   ctx.restore();
 }

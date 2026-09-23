@@ -148,9 +148,10 @@ function AppRoutes() {
       <Route path="/banc/finance" element={<BancDeLaFinance />} />
 
       {/* LE BANC DES FONDS — public, pour la raison des trois autres.
-          Huit remplacants du fond spatial s y comparent en plein ecran,
-          derriere le vrai bandeau et des panneaux aux couleurs de
-          l accueil, dans les six teintes du pacte. Rien n y est lu. */}
+          Le ciel classique et huit autres fonds s y comparent en plein
+          ecran, derriere le vrai bandeau et des panneaux aux couleurs de
+          l accueil, dans les six teintes du pacte. Sept d entre eux se
+          choisissent dans les options. Rien n y est lu. */}
       <Route path="/banc/fond" element={<BancDuFond />} />
 
       {/* Protected without layout */}

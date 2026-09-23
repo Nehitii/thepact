@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useRenduDuFond, type Moteur } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { aleatoire } from "@/domaines/accueil/composants/fonds/gl";
+import { useRenduDuFond, type Moteur } from "@/socle/ds/fonds/useRenduDuFond";
+import { aleatoire } from "@/socle/ds/fonds/gl";
 import {
   aretesAllumees, aretesDuSceau, dessinerLeSceau, rgba, sommetsDuSceau,
-} from "@/domaines/accueil/composants/fonds/dessinDuSceau";
-import type { ProprietesDuFond, SceauDuFond } from "@/domaines/accueil/composants/fonds/types";
+} from "@/socle/ds/fonds/dessinDuSceau";
+import type { ProprietesDuFond, SceauDuFond } from "@/socle/ds/fonds/types";
 
 /* LA CONSTELLATION.
  *
  * Le ciel est peint UNE fois, a chaque redimensionnement, sur un canvas
- * hors ecran : une lueur diffuse le long d une diagonale, puis quatre
- * mille deux cents etoiles, dont presque la moitie s y masse — une voie
+ * hors ecran : une lueur diffuse le long d une diagonale, puis jusqu a
+ * quatre mille deux cents etoiles, dont presque la moitie s y masse — une voie
  * lactee, sans quoi un champ uniforme n a ni haut ni bas. L eclat suit
  * une loi tres raide, comme dans le vrai ciel : une poussiere d etoiles
  * pales, quelques-unes vives, et une poignee seulement ont un halo. Des
@@ -22,11 +22,11 @@ import type { ProprietesDuFond, SceauDuFond } from "@/domaines/accueil/composant
  * assez pour vivre, pas assez pour se voir bouger. */
 
 export function FondConstellation({
-  teinte, intensite, mouvement, cadence, surMesure, ordre, pas, valeurs, progression,
+  teinte, intensite, mouvement, cadence, surMesure, ordre, pas, medaillons, progression,
 }: ProprietesDuFond & SceauDuFond) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const reglages = useRef({ teinte, intensite, ordre, pas, valeurs, progression, mouvement });
-  reglages.current = { teinte, intensite, ordre, pas, valeurs, progression, mouvement };
+  const reglages = useRef({ teinte, intensite, ordre, pas, medaillons, progression, mouvement });
+  reglages.current = { teinte, intensite, ordre, pas, medaillons, progression, mouvement };
 
   const fabriquer = useCallback((canvas: HTMLCanvasElement): Moteur | null => {
     const ctx = canvas.getContext("2d", { alpha: false });
@@ -35,7 +35,8 @@ export function FondConstellation({
     let l = 1;
     let h = 1;
     let k = 1;
-    let debut = -1;
+    let debut = 0;
+    let ordreDuTrace = -1;
 
     const peindreLeCiel = () => {
       const c = document.createElement("canvas");
@@ -58,7 +59,12 @@ export function FondConstellation({
         g.fillStyle = nuage;
         g.fillRect(x - rayon, y - rayon, rayon * 2, rayon * 2);
       }
-      for (let i = 0; i < 4200; i++) {
+      /* LA DENSITE, PAS LE NOMBRE. 4 200 etoiles sur un ecran de
+         1 600 × 900 ; un cadre d apercu en recoit autant par pixel,
+         pas autant en tout — sinon le meme ciel y devient un amas. */
+      const surface = (c.width * c.height) / (k * k);
+      const combien = Math.round(Math.min(4200, Math.max(700, 4200 * surface / (1600 * 900 * 1.15))));
+      for (let i = 0; i < combien; i++) {
         let x = hasard() * c.width;
         let y = hasard() * c.height;
         if (hasard() < 0.45) {
@@ -100,37 +106,45 @@ export function FondConstellation({
         const centre = { x: paysage ? l * 0.77 : l * 0.5, y: paysage ? h * 0.34 : h * 0.2 };
         const rayon = Math.min(l, h) * (paysage ? 0.2 : 0.16);
 
-        const lueur = ctx.createRadialGradient(centre.x, centre.y, 0, centre.x, centre.y, rayon * 2.3);
-        lueur.addColorStop(0, rgba(r.teinte, 0.11 * force));
-        lueur.addColorStop(1, rgba(r.teinte, 0));
-        ctx.fillStyle = lueur;
-        ctx.fillRect(centre.x - rayon * 2.3, centre.y - rayon * 2.3, rayon * 4.6, rayon * 4.6);
-
-        // Le cadran : la rosace du pacte, en graduations.
-        ctx.strokeStyle = rgba(r.teinte, 0.18 * force);
-        ctx.lineWidth = k;
-        ctx.beginPath(); ctx.arc(centre.x, centre.y, rayon * 1.34, 0, Math.PI * 2); ctx.stroke();
-        for (let i = 0; i < 72; i++) {
-          const a = (i / 72) * Math.PI * 2 + e.t * 0.002;
-          const long = i % 6 === 0 ? 9 : 4;
-          const r1 = rayon * 1.34;
-          ctx.beginPath();
-          ctx.moveTo(centre.x + Math.cos(a) * r1, centre.y + Math.sin(a) * r1);
-          ctx.lineTo(centre.x + Math.cos(a) * (r1 - long * k), centre.y + Math.sin(a) * (r1 - long * k));
-          ctx.stroke();
+        /* SANS SCEAU, PAS DE CADRAN. Le pacte arrive apres le fond : le
+           ciel se peint d abord, seul, et le sceau se trace quand ses
+           donnees sont la — depuis le debut, pas deja fini. */
+        if (r.ordre !== ordreDuTrace) {
+          ordreDuTrace = r.ordre;
+          debut = e.t;
         }
+        if (r.ordre >= 3) {
+          const lueur = ctx.createRadialGradient(centre.x, centre.y, 0, centre.x, centre.y, rayon * 2.3);
+          lueur.addColorStop(0, rgba(r.teinte, 0.11 * force));
+          lueur.addColorStop(1, rgba(r.teinte, 0));
+          ctx.fillStyle = lueur;
+          ctx.fillRect(centre.x - rayon * 2.3, centre.y - rayon * 2.3, rayon * 4.6, rayon * 4.6);
 
-        if (debut < 0) debut = e.t;
-        const revele = r.mouvement ? Math.min(1, (e.t - debut) / 2.5) : 1;
-        const sommets = sommetsDuSceau(r.ordre, centre, rayon, e.t * 0.006);
-        dessinerLeSceau(ctx, sommets, aretesDuSceau(r.ordre, r.pas), aretesAllumees(r.ordre, r.progression), r.valeurs, centre, {
-          teinte: r.teinte, force, echelle: k, revele, temps: e.t,
-        });
+          // Le cadran : la rosace du pacte, en graduations.
+          ctx.strokeStyle = rgba(r.teinte, 0.18 * force);
+          ctx.lineWidth = k;
+          ctx.beginPath(); ctx.arc(centre.x, centre.y, rayon * 1.34, 0, Math.PI * 2); ctx.stroke();
+          for (let i = 0; i < 72; i++) {
+            const a = (i / 72) * Math.PI * 2 + e.t * 0.002;
+            const long = i % 6 === 0 ? 9 : 4;
+            const r1 = rayon * 1.34;
+            ctx.beginPath();
+            ctx.moveTo(centre.x + Math.cos(a) * r1, centre.y + Math.sin(a) * r1);
+            ctx.lineTo(centre.x + Math.cos(a) * (r1 - long * k), centre.y + Math.sin(a) * (r1 - long * k));
+            ctx.stroke();
+          }
 
-        ctx.font = `500 ${10 * k}px "JetBrains Mono", monospace`;
-        ctx.textAlign = "center";
-        ctx.fillStyle = rgba(r.teinte, 0.6 * force);
-        ctx.fillText(`${Math.round(r.progression * 100)} %`, centre.x, centre.y + rayon * 1.34 + 18 * k);
+          const revele = r.mouvement ? Math.min(1, (e.t - debut) / 2.5) : 1;
+          const sommets = sommetsDuSceau(r.ordre, centre, rayon, e.t * 0.006);
+          dessinerLeSceau(ctx, sommets, aretesDuSceau(r.ordre, r.pas), aretesAllumees(r.ordre, r.progression), r.medaillons, centre, {
+            teinte: r.teinte, force, echelle: k, revele, temps: e.t,
+          });
+
+          ctx.font = `500 ${10 * k}px "JetBrains Mono", monospace`;
+          ctx.textAlign = "center";
+          ctx.fillStyle = rgba(r.teinte, 0.6 * force);
+          ctx.fillText(`${Math.round(r.progression * 100)} %`, centre.x, centre.y + rayon * 1.34 + 18 * k);
+        }
 
         const vignette = ctx.createRadialGradient(l / 2, h / 2, Math.min(l, h) * 0.45, l / 2, h / 2, Math.hypot(l, h) * 0.62);
         vignette.addColorStop(0, "rgba(0,0,0,0)");
@@ -147,7 +161,7 @@ export function FondConstellation({
   const { redessiner } = useRenduDuFond(ref, fabriquer, { echelle: 0.8, cadence, mouvement, surMesure });
   useEffect(() => {
     redessiner();
-  }, [teinte, intensite, ordre, pas, valeurs, progression, redessiner]);
+  }, [teinte, intensite, ordre, pas, medaillons, progression, redessiner]);
 
   return <canvas ref={ref} className="fond-vivant" aria-hidden="true" />;
 }

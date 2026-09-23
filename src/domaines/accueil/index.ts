@@ -34,5 +34,10 @@
  * partage par quatre pages de trois domaines n appartient a aucun : il
  * est parti au socle, hors du baril, comme Telemetrie — un composant
  * qu on met dans le baril, tout le monde le traine.
+ *
+ * LES FONDS VIVANTS ONT SUIVI LE MEME CHEMIN (23/09). Nes ici, sur le
+ * banc des fonds, ils sont partis a `socle/ds/fonds` le jour ou les
+ * options ont du les montrer : le tableau de bord les porte, le profil
+ * les apercoit. Seuls le banc et ses panneaux simules restent ici.
  */
 export {};

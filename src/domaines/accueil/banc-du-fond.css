@@ -1,20 +1,10 @@
 /* ─────────────────────────────────────────────────────────────
-   LES FONDS VIVANTS, ET LEUR BANC.
+   LE BANC DES FONDS.
 
-   Un fond vivant est un canvas fixe, sous tout le reste, que rien ne
-   peut cliquer. Le banc pose par-dessus le vrai bandeau, des panneaux
-   aux couleurs de l accueil et un pupitre.
+   Les fonds eux-memes vivent au socle (socle/ds/fonds). Le banc pose
+   par-dessus le vrai bandeau, des panneaux aux couleurs de l accueil
+   et un pupitre.
    ───────────────────────────────────────────────────────────── */
-
-.fond-vivant {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  z-index: -1;
-  pointer-events: none;
-}
 
 .banc-fond {
   --banc-teinte: #8B5CF6;

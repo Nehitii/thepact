@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useRenduDuFond, type Moteur } from "@/domaines/accueil/hooks/useRenduDuFond";
-import { composantes } from "@/domaines/accueil/logique/propositionsDeFond";
+import { useRenduDuFond, type Moteur } from "@/socle/ds/fonds/useRenduDuFond";
+import { composantes } from "@/socle/ds/fonds/catalogue";
 import { SpaceBackdrop } from "@/socle/ds/SpaceBackdrop";
 import {
   carteGraphique, contexte, liberer, programme, SOMMETS_PLEIN_ECRAN, trianglePleinEcran, uniformes,
-} from "@/domaines/accueil/composants/fonds/gl";
-import { NEBULEUSE } from "@/domaines/accueil/composants/fonds/glsl/nebuleuse";
-import { HORIZON } from "@/domaines/accueil/composants/fonds/glsl/horizon";
-import { AURORE } from "@/domaines/accueil/composants/fonds/glsl/aurore";
-import { ORBITE } from "@/domaines/accueil/composants/fonds/glsl/orbite";
-import type { ProprietesDuFond } from "@/domaines/accueil/composants/fonds/types";
+} from "@/socle/ds/fonds/gl";
+import { NEBULEUSE } from "@/socle/ds/fonds/glsl/nebuleuse";
+import { HORIZON } from "@/socle/ds/fonds/glsl/horizon";
+import { AURORE } from "@/socle/ds/fonds/glsl/aurore";
+import { ORBITE } from "@/socle/ds/fonds/glsl/orbite";
+import type { ProprietesDuFond } from "@/socle/ds/fonds/types";
 
 /* UN FOND EN UN SEUL SHADER.
  *

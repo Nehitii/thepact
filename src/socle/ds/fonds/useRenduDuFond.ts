@@ -9,7 +9,11 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
  *     boucle ; elle reprend au retour.
  *   - LE MOUVEMENT REDUIT EST UNE IMAGE FIXE, pas un fond vide : une
  *     image est dessinee, puis plus rien — sauf au redimensionnement,
- *     au defilement ou quand un reglage change.
+ *     au defilement ou quand un reglage change. Il se demande de deux
+ *     endroits, et les deux comptent : le systeme
+ *     (`prefers-reduced-motion`) et l option « Reduire les animations »,
+ *     que ProfilePreferencesSync pose sur la racine en
+ *     `data-reduce-motion`.
  *   - LA CADENCE EST PLAFONNEE. Une nebuleuse qui se replie en deux
  *     minutes n a pas besoin de 60 images par seconde ; a 30, l oeil ne
  *     voit pas la difference et la batterie, si.
@@ -103,7 +107,9 @@ export function useRenduDuFond(
     let cumul = 0;
     let fenetre = performance.now();
 
-    const anime = () => reglages.current.mouvement && !reduit.matches;
+    const racine = document.documentElement;
+    const anime = () =>
+      reglages.current.mouvement && !reduit.matches && racine.getAttribute("data-reduce-motion") !== "true";
 
     const dimensionner = () => {
       const densite = Math.min(window.devicePixelRatio || 1, 2);
@@ -197,6 +203,10 @@ export function useRenduDuFond(
     window.addEventListener("scroll", auDefilement, { passive: true });
     document.addEventListener("visibilitychange", auRetour);
     reduit.addEventListener("change", relancer);
+    /* L option se bascule sans recharger : la boucle doit l apprendre
+       tout de suite, dans un sens comme dans l autre. */
+    const option = new MutationObserver(relancer);
+    option.observe(racine, { attributes: true, attributeFilter: ["data-reduce-motion"] });
     canvas.addEventListener("webglcontextlost", auContextePerdu);
 
     dimensionner();
@@ -211,6 +221,7 @@ export function useRenduDuFond(
       window.removeEventListener("scroll", auDefilement);
       document.removeEventListener("visibilitychange", auRetour);
       reduit.removeEventListener("change", relancer);
+      option.disconnect();
       // Retire AVANT de liberer : liberer perd le contexte expres.
       canvas.removeEventListener("webglcontextlost", auContextePerdu);
       relance.current = () => {};

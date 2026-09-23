@@ -1,0 +1,44 @@
+/* ─────────────────────────────────────────────────────────────
+   LE FOND VIVANT.
+
+   Un canvas fixe, sous tout le reste, que rien ne peut cliquer. Il
+   entre en fondu : sa premiere image part apres le premier rendu, et
+   sans fondu on verrait passer, le temps d une image, le sol nu.
+   ───────────────────────────────────────────────────────────── */
+
+.fond-vivant {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  pointer-events: none;
+  animation: fond-vivant-apparait 500ms ease-out both;
+}
+
+/* Le temps que le code du fond arrive : le noir qu il va peindre. */
+.fond-vivant--attente {
+  background: #02040a;
+  animation: none;
+}
+
+@keyframes fond-vivant-apparait {
+  from { opacity: 0; }
+}
+
+/* EN CADRE : l apercu des options.
+   Un ancetre transforme devient le repere de ses descendants fixes. Le
+   fond et son repli CSS, qui couvrent l ecran partout ailleurs, se
+   peignent alors dans le cadre — sans une ligne a changer chez eux. */
+.fond-du-ciel[data-cadre] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: translateZ(0);
+  background: #02040a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fond-vivant { animation: none; }
+}
