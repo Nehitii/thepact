@@ -35,3 +35,24 @@
 /* Le banc de l acces rapide empile l enseigne et la barre avec l ecart
    du tableau de bord entre deux temps de la page (2,5 rem). */
 .bda-pile { display: grid; gap: 40px; }
+
+/* Le banc des ordres : la rue et les ordres forment le temps « Agir »
+   de l accueil, serres a 0,5 rem. Le pupitre y ajoute un bouton par
+   ordre, pour avancer d un pas. */
+.bdo-agir { display: grid; gap: 8px; }
+.bdo-pas { display: grid; gap: 6px; }
+.bdo-pas button {
+  min-height: 30px;
+  padding: 4px 8px;
+  border: 1px solid var(--banc-trait);
+  border-radius: 5px;
+  background: var(--banc-fond);
+  color: var(--banc-encre);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.bdo-pas button:hover:not(:disabled) { border-color: var(--banc-signal); color: var(--banc-signal); }
+.bdo-pas button:disabled { color: var(--banc-encre-2); cursor: default; }
+.bdo-pas button:focus-visible { outline: 2px solid var(--banc-signal); outline-offset: 2px; }

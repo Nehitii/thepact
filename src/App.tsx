@@ -38,6 +38,7 @@ const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
 const BancDeLAcces = lazy(() => import("@/domaines/accueil/pages/BancDeLAcces"));
+const BancDesOrdres = lazy(() => import("@/domaines/accueil/pages/BancDesOrdres"));
 const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
 const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
 const BancDuTableau = lazy(() => import("@/domaines/accueil/pages/BancDuTableau"));
@@ -145,6 +146,11 @@ function AppRoutes() {
           les refontes de la barre sous l enseigne, et ses etats (modules
           achetes, tirage). Il n ecrit rien et ne quitte pas le banc. */}
       <Route path="/banc/acces" element={<BancDeLAcces />} />
+
+      {/* LE BANC DES ORDRES DU JOUR — public, meme raison : les refontes
+          du panneau des ordres sous l enseigne et la rue, sur une
+          journee feinte qu on fait avancer. Il n ecrit rien. */}
+      <Route path="/banc/ordres" element={<BancDesOrdres />} />
 
       {/* LE BANC DE LA FINANCE — public, et pour la troisieme fois la
           meme raison. L onglet porte 3 436 lignes de CSS et n avait pas

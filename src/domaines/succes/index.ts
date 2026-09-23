@@ -82,6 +82,11 @@ export const RanksCard = lazy(() =>
 export const DailyQuestsPanel = lazy(() =>
   import("./composants/DailyQuestsPanel").then((m) => ({ default: m.DailyQuestsPanel })),
 );
+/* Son dessin seul, sans requete : le banc des ordres le monte a cote de
+   ses refontes, sur des ordres feints. Differe pour la meme raison. */
+export const PanneauDesOrdres = lazy(() =>
+  import("./composants/PanneauDesOrdres").then((m) => ({ default: m.PanneauDesOrdres })),
+);
 
 /* Le niveau est un rang dans une liste : deux domaines le lisent —
    l accueil pour son bandeau, le profil pour sa fiche publique. */

@@ -1,14 +1,12 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { QuickAccessPanel } from "@/domaines/accueil/composants/QuickAccessPanel";
-import { Enseigne } from "@/domaines/accueil/composants/bandeau/Enseigne";
+import { EnseigneDEssai } from "@/domaines/accueil/composants/bandeau/EnseigneDEssai";
 import { AccesRue } from "@/domaines/accueil/composants/acces/AccesRue";
 import { AccesPupitre } from "@/domaines/accueil/composants/acces/AccesPupitre";
 import { AccesClavier } from "@/domaines/accueil/composants/acces/AccesClavier";
 import { AccesPanneaux } from "@/domaines/accueil/composants/acces/AccesPanneaux";
-import { ECUSSON_D_ESSAI } from "@/domaines/accueil/logique/choixDuBancDuBandeau";
 import { useSansMouvementAuBanc } from "@/domaines/accueil/hooks/useSansMouvementAuBanc";
-import { jourDecale } from "@/socle/outils/jour";
-import type { MesureProgression, ProprietesAccesRapide } from "@/domaines/accueil/types";
+import type { ProprietesAccesRapide } from "@/domaines/accueil/types";
 import "@/socle/ds/banc.css";
 import "@/domaines/accueil/banc-du-bandeau.css";
 
@@ -60,7 +58,6 @@ export default function BancDeLAcces() {
   const [sante, setSante] = useState(() => parametre("sante") !== "0");
   const [tirageOuvert, setTirageOuvert] = useState(() => parametre("tirage") === "ouvert");
   const [tirageDisponible, setTirageDisponible] = useState(() => parametre("tirage") !== "pris");
-  const [mesure, setMesure] = useState<MesureProgression>("goals");
   const [dernier, setDernier] = useState("—");
   const active = VARIANTES.find((v) => v.id === variante) ?? VARIANTES[1];
 
@@ -98,34 +95,7 @@ export default function BancDeLAcces() {
     onNaviguer: (route) => setDernier(`Vers ${route}`),
   };
 
-  const enseigne = avecEnseigne && (
-    <Enseigne
-      progression={mesure === "steps" ? 73 : 62}
-      mesure={mesure}
-      onChangerMesure={() => setMesure((m) => (m === "goals" ? "steps" : "goals"))}
-      level={12}
-      totalMissions={47}
-      activeDays={91}
-      pactName="Ananta"
-      pactMantra="Tenir ce qui est juré"
-      pactSymbol="flame"
-      valeurs={["Liberté", "Discipline", "Création"]}
-      sigilVersion={4}
-      titleFont="orbitron"
-      titleEffect="none"
-      enCours={2}
-      rankName="Architecte"
-      rankLogoUrl={ECUSSON_D_ESSAI}
-      rankTeinte="#f5b93a"
-      rankProgress={64}
-      rankXP={3200}
-      rankXPTarget={5000}
-      nextRankName="Bâtisseur"
-      teinte="violet"
-      jureLe={jourDecale(-91)}
-      terme="2027-06-30"
-    />
-  );
+  const enseigne = avecEnseigne && <EnseigneDEssai />;
 
   return (
     <div className="banc" data-pupitre={pupitre ? undefined : "masque"}>

@@ -78,3 +78,36 @@ export interface ProprietesAccesRapide {
   onNaviguer?: (route: string) => void;
   className?: string;
 }
+
+/* UN ORDRE DU JOUR, tel qu une refonte du panneau le dessine : la ligne
+ * de `daily_quests` sans ce qu elle ne montre pas. Une `DailyQuest` du
+ * domaine succes s y range telle quelle. */
+export interface OrdreAffiche {
+  id: string;
+  /** « complete_steps », « log_habit », « journal_entry », « focus_minutes ». */
+  kind: string;
+  title: string;
+  description: string | null;
+  target: number;
+  progress: number;
+  reward_bonds: number;
+  status: "active" | "completed" | "claimed" | "expired";
+  /** Pour un ordre reclame, l heure du geste — a peu pres. */
+  updated_at?: string;
+}
+
+/* CE QUE RECOIT UNE REFONTE DES ORDRES DU JOUR. Le repli est tenu par
+ * celui qui la monte : c est une preference qui dure (« ORDRES_REPLIES »),
+ * pas un etat du dessin. */
+export interface ProprietesDesOrdres {
+  ordres: readonly OrdreAffiche[];
+  chargement?: boolean;
+  onReclamer: (id: string) => void;
+  /** L ordre dont la reclamation est partie, le temps que la base reponde. */
+  enReclamation?: string | null;
+  replie: boolean;
+  onBasculerRepli: () => void;
+  /** Au banc seulement : une heure imposee, pour voir la cloture venir. */
+  maintenant?: number;
+  className?: string;
+}
