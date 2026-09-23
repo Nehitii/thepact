@@ -32,7 +32,10 @@ const cibles = fs
   .concat(
     fs
       .readdirSync(path.join(RACINE, "_shared"))
-      .filter((f) => f.endsWith(".ts") && !f.endsWith("_test.ts"))
+      /* `_test.ts` est la convention de Deno, `.test.ts` celle de
+         vitest : ni l une ni l autre n est du code deploye, et un test
+         vitest importe « vitest », que Deno ne resout pas. */
+      .filter((f) => f.endsWith(".ts") && !f.endsWith("_test.ts") && !f.endsWith(".test.ts"))
       .map((f) => path.posix.join(RACINE, "_shared", f)),
   );
 

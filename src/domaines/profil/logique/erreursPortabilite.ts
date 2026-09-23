@@ -17,10 +17,19 @@
    functions.invoke jette le corps de toute reponse non-2xx. On relit
    donc la reponse conservee dans context, comme ailleurs dans
    l application. */
-export const motifLisible = (code: string) =>
-  code === "second_facteur_requis"
-    ? "Ton compte est protégé par un second facteur. Reconnecte-toi en le saisissant, puis réessaie."
-    : code;
+const MOTIFS: Record<string, string> = {
+  second_facteur_requis:
+    "Ton compte est protégé par un second facteur. Reconnecte-toi en le saisissant, puis réessaie.",
+  /* Les deux codes suivants viennent de la garde commune aux deux
+     fonctions de destruction (23/09) et de l effacement, qui ne se
+     tait plus quand une table lui resiste. */
+  second_facteur_illisible:
+    "Impossible de vérifier ton second facteur pour l’instant. Rien n’a été effacé ; réessaie dans un moment.",
+  effacement_partiel:
+    "Une partie de tes données n’a pas pu être effacée. Réessaie : ce qui l’a déjà été ne reviendra pas.",
+};
+
+export const motifLisible = (code: string) => MOTIFS[code] ?? code;
 
 export const motifDeLEchec = async (error: { message: string; context?: unknown }) => {
   if (error.context instanceof Response) {

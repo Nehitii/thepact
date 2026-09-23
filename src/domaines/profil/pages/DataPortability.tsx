@@ -75,6 +75,7 @@ export default function DataPortability() {
     if (d.parmi) q = q.in(d.parmi[0], d.parmi[1]);
     if (d.ordre) q = q.order(d.ordre[0], { ascending: d.ordre[1] });
     if (d.limite) q = q.limit(d.limite);
+    if (d.plage) q = q.range(d.plage[0], d.plage[1]);
     return d.unique ? await q.maybeSingle() : await q;
   };
 
@@ -195,9 +196,11 @@ export default function DataPortability() {
     setIsResetting(true);
     try {
       const { data, error } = await supabase.functions.invoke("delete-all-data", { headers: { Authorization: `Bearer ${session?.access_token}` } });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success("Données supprimées", { description: "Toutes tes données ont été réinitialisées." });
+      /* Lue comme sa voisine : un 403 ou un 500 porte un code dans son
+         corps, et `invoke` le jette si on ne va pas le chercher. */
+      if (error) throw new Error(await motifDeLEchec(error));
+      if (data?.error) throw new Error(motifLisible(data.error));
+      toast.success("Données supprimées", { description: "Tes contenus et ta progression sont effacés. Ton compte, tes achats et tes liens restent." });
       setShowResetModal(false); setResetConfirm("");
     } catch (e) {
       toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) });

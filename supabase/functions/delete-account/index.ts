@@ -5,6 +5,7 @@
 // creator). We delete owned guilds explicitly here.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { messageDErreur } from "../_shared/erreurs.ts";
+import { exigerLeSecondFacteur } from "../_shared/secondFacteur.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,23 +46,15 @@ Deno.serve(async (req) => {
     // the same bar the `mfa_aal2_requis` RLS policy sets on their own data.
     // Users without a factor are unaffected: there is nothing to demand.
     //
-    // The predicate is `a_un_second_facteur()`, the SECURITY DEFINER function
-    // those policies already call, run through the *user* client so that
-    // `auth.uid()` resolves to the caller. Reusing it keeps one definition of
-    // "this account is protected" instead of two that can drift apart.
-    const { data: hasVerifiedFactor, error: factorError } =
-      await userClient.rpc("a_un_second_facteur");
-    if (factorError) {
-      // Fail closed: an unreadable factor state is not a green light.
-      console.error("Error checking second factor:", factorError);
-      return new Response(JSON.stringify({ error: "Failed to verify second factor" }), { status: 500, headers: corsHeaders });
-    }
-    if (hasVerifiedFactor && claimsData.claims.aal !== "aal2") {
-      return new Response(
-        JSON.stringify({ error: "second_facteur_requis" }),
-        { status: 403, headers: corsHeaders },
-      );
-    }
+    // The guard lives in `_shared/secondFacteur.ts` since 23/09: this block
+    // was written here and nowhere else, and `delete-all-data` wiped the
+    // same data without it for a month.
+    const refus = await exigerLeSecondFacteur(
+      () => userClient.rpc("a_un_second_facteur"),
+      claimsData.claims.aal,
+      corsHeaders,
+    );
+    if (refus) return refus;
 
     // Guilds are intentionally not FK-cascaded — drop the ones this user owns.
     await adminClient.from("guilds").delete().eq("owner_id", userId);

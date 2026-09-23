@@ -15,18 +15,31 @@
  * categorie absente du fichier ne peut plus etre confondue avec une
  * categorie vide.
  */
+import { TABLES_DU_COMPTE, type TableDuCompte } from "@/domaines/profil/logique/perimetreDeLExport";
+
 export interface Lecture {
   data: unknown;
   error: { message: string } | null;
 }
 
-/* LES DOUZE TABLES QUE LA SAUVEGARDE LIT.
-   Ecrites une fois, elles disent ce que le fichier contient — et
-   Supabase, qui refuse un nom de table dynamique, les verifie. */
+/* LES TABLES QUE LA SAUVEGARDE LIT.
+   Les douze des sections nommees, puis celles du compte, rangees dans
+   `perimetreDeLExport.ts`. Ecrites une fois, elles disent ce que le
+   fichier contient — et Supabase, qui refuse un nom de table
+   dynamique, les verifie. */
 export type TableExportee =
   | "profiles" | "pacts" | "goals" | "steps" | "journal_entries" | "health_data"
   | "recurring_income" | "recurring_expenses" | "finance"
-  | "monthly_finance_validations" | "pact_spending" | "user_achievements";
+  | "monthly_finance_validations" | "pact_spending" | "user_achievements"
+  | TableDuCompte;
+
+/* UNE PAGE, C EST MILLE LIGNES. PostgREST n en rend pas davantage par
+   requete : une table plus longue se coupait a la millieme ligne, et la
+   sauvegarde partait amputee sans le dire. */
+export const LIGNES_PAR_PAGE = 1000;
+/* Une liste d identifiants voyage dans l adresse : cent par requete
+   restent loin de la limite de longueur d une URL. */
+const IDENTIFIANTS_PAR_REQUETE = 100;
 
 /** Ce dont l export a besoin du monde exterieur, et rien de plus. */
 export type Lire = (demande: {
@@ -40,6 +53,8 @@ export type Lire = (demande: {
   unique?: boolean;
   ordre?: [colonne: string, croissant: boolean];
   limite?: number;
+  /** Les lignes de `debut` a `fin`, bornes comprises. */
+  plage?: [debut: number, fin: number];
 }) => Promise<Lecture>;
 
 export type Categorie = "all" | "goals-steps" | "journal" | "finance" | "health";
@@ -69,8 +84,25 @@ export async function construireExport({
     if (r.error) throw new Error(`${quoi} : ${r.error.message}`);
     return r.data;
   };
-  const lignes = async (demande: Parameters<Lire>[0], quoi: string): Promise<Ligne[]> =>
-    ((await verifier(demande, quoi)) as Ligne[] | null) ?? [];
+  /* Page apres page, dans l ordre des identifiants : sans ordre fixe,
+     deux pages successives peuvent se chevaucher ou laisser un trou. */
+  const lignes = async (demande: Parameters<Lire>[0], quoi: string): Promise<Ligne[]> => {
+    const toutes: Ligne[] = [];
+    for (let debut = 0; ; debut += LIGNES_PAR_PAGE) {
+      const page = ((await verifier(
+        { ordre: ["id", true], ...demande, plage: [debut, debut + LIGNES_PAR_PAGE - 1] }, quoi,
+      )) as Ligne[] | null) ?? [];
+      toutes.push(...page);
+      if (page.length < LIGNES_PAR_PAGE) return toutes;
+    }
+  };
+  const etapesDe = async (goalIds: string[]): Promise<Ligne[]> => {
+    const etapes: Ligne[] = [];
+    for (let i = 0; i < goalIds.length; i += IDENTIFIANTS_PAR_REQUETE)
+      etapes.push(...await lignes({ table: "steps", colonnes: "*",
+        parmi: ["goal_id", goalIds.slice(i, i + IDENTIFIANTS_PAR_REQUETE)] }, "étapes"));
+    return etapes;
+  };
   const uneLigne = async (demande: Parameters<Lire>[0], quoi: string): Promise<Ligne | null> =>
     ((await verifier({ ...demande, unique: true }, quoi)) as Ligne | null) ?? null;
 
@@ -96,10 +128,7 @@ export async function construireExport({
     const goals = pactId
       ? await lignes({ table: "goals", colonnes: "*", ou: { pact_id: pactId } }, "objectifs")
       : [];
-    const goalIds = goals.map((g) => g.id as string);
-    const steps = goalIds.length
-      ? await lignes({ table: "steps", colonnes: "*", parmi: ["goal_id", goalIds] }, "étapes")
-      : [];
+    const steps = await etapesDe(goals.map((g) => g.id as string));
     sortie = { ...sortie, goals, steps };
   }
 
@@ -109,8 +138,11 @@ export async function construireExport({
   }
 
   if (categorie === "all" || categorie === "health") {
-    const healthData = await lignes({ table: "health_data", colonnes: "*",
-      ou: { user_id: utilisateur.id }, ordre: ["entry_date", true] }, "santé");
+    /* Lue par identifiant pour que les pages ne se chevauchent pas,
+       puis remise dans l ordre des jours, celui du tableur. */
+    const healthData = (await lignes({ table: "health_data", colonnes: "*",
+      ou: { user_id: utilisateur.id } }, "santé"))
+      .sort((a, b) => String(a.entry_date).localeCompare(String(b.entry_date)));
     if (healthData.length) sortie = { ...sortie, healthData };
   }
 
@@ -140,7 +172,31 @@ export async function construireExport({
       : null;
     const achievements = await lignes(
       { table: "user_achievements", colonnes: "*", ou: { user_id: utilisateur.id } }, "succès");
-    sortie = { ...sortie, profile, pact, achievements, stats };
+
+    /* LES AUTRES PACTES. Les sections ci-dessus ne suivent que l actif ;
+       un compte qui en a tenu plusieurs partait sans les precedents. */
+    const autresPactes: Record<string, unknown>[] = [];
+    const tousLesPactes = await lignes(
+      { table: "pacts", colonnes: "*", ou: { user_id: utilisateur.id } }, "pactes");
+    for (const autre of tousLesPactes.filter((p) => p.id !== pactId)) {
+      const goals = await lignes(
+        { table: "goals", colonnes: "*", ou: { pact_id: autre.id as string } }, "objectifs d un autre pacte");
+      autresPactes.push({ pact: autre, goals, steps: await etapesDe(goals.map((g) => g.id as string)) });
+    }
+
+    /* TOUT LE RESTE DU COMPTE, table par table. Une table qui designe la
+       personne par deux colonnes — l expediteur et le destinataire d un
+       message — est lue deux fois ; une ligne vue deux fois n est gardee
+       qu une fois. */
+    const tables: Record<string, Ligne[]> = {};
+    for (const [table, colonne] of TABLES_DU_COMPTE) {
+      const lues = await lignes({ table, colonnes: "*", ou: { [colonne]: utilisateur.id } }, table);
+      const deja = tables[table] ?? [];
+      const vues = new Set(deja.map((l) => l.id));
+      tables[table] = [...deja, ...lues.filter((l) => !vues.has(l.id))];
+    }
+
+    sortie = { ...sortie, profile, pact, achievements, autresPactes, tables, stats };
   }
 
   return sortie;

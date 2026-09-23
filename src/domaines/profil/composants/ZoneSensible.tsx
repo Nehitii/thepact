@@ -59,7 +59,7 @@ export function ZoneSensible({
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">
               <p className="text-xs font-mono text-destructive/80 tracking-wider uppercase font-bold">Supprimer toutes les données</p>
-              <p className="ds-t-label text-destructive/50 font-mono leading-relaxed">Supprime tous tes objectifs, pacts, journal, finances et historiques. Ton compte reste actif mais vide.</p>
+              <p className="ds-t-label text-destructive/50 font-mono leading-relaxed">Efface tes objectifs, ton journal, ta santé, tes finances, tes conversations avec Mia et ta progression. Ton pacte est remis à zéro ; ton compte, tes achats, tes alliés et tes guildes restent.</p>
               <Bouton role="danger" onClick={() => setShowResetModal(true)}>
                 <Trash2 />
                 Réinitialiser mes données

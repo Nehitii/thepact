@@ -99,7 +99,7 @@ describe("ce que chaque catégorie emporte", () => {
     expect(out.exportedAt).toBe("2026-03-14T10:00:00.000Z");
     expect(out.user).toEqual({ id: "u1", email: "moi@exemple.fr" });
     expect(out.stats).toEqual({ n: 3 });
-    for (const c of ["goals", "steps", "journalEntries", "finance", "profile", "pact", "achievements"])
+    for (const c of ["goals", "steps", "journalEntries", "finance", "profile", "pact", "achievements", "autresPactes", "tables"])
       expect(out).toHaveProperty(c);
   });
 });
