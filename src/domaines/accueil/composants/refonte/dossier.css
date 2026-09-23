@@ -1,0 +1,368 @@
+/* ─────────────────────────────────────────────────────────────
+   LE DOSSIER SCELLE.
+
+   Trois matieres, pas une de plus : le carton noir de la chemise, le
+   papier pelure des feuillets, la cire du cachet. Et trois encres :
+   le carbone de la machine, le violet des visas, le rouge de ce qui
+   presse. Le grain vient d un bruit fractal en SVG, pose une fois en
+   fond — aucune image a charger.
+   ───────────────────────────────────────────────────────────── */
+
+.do {
+  --do-carton: #111318;
+  --do-carton-clair: #1c1f27;
+  --do-papier: #dde2e9;
+  --do-encre: #1a2744;
+  --do-encre-2: #4d5872;
+  --do-imprime: #56607a;
+  --do-violet: #4a33b5;
+  --do-rouge: #c3142d;
+  --do-cire: color-mix(in srgb, var(--teinte, #8b5cf6) 78%, #000);
+  --do-cire-clair: color-mix(in srgb, var(--teinte, #8b5cf6) 72%, #fff);
+  --do-cire-sombre: color-mix(in srgb, var(--teinte, #8b5cf6) 42%, #000);
+  --do-machine: "Courier Prime", "Courier New", monospace;
+  --do-caoutchouc: Oswald, Switzer, sans-serif;
+  --do-grain-papier: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0 0.26 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --do-grain-carton: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  --do-encre-trouee: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 4.2 -1.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)'/%3E%3C/svg%3E");
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 30px 18px 140px;
+}
+.do ::selection { background: color-mix(in srgb, var(--do-violet) 30%, transparent); color: var(--do-encre); }
+/* La regle globale des titres (Orbitron, capitales) est remise a plat
+   avec la specificite d un simple element : les classes du dossier —
+   l imprime, la machine — reprennent la main sans lutter. */
+:where(.do) :is(h2, h3) { margin: 0; font: inherit; letter-spacing: normal; text-transform: none; }
+
+/* ── La chemise ── */
+.do-chemise {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+  align-items: start;
+  padding: 44px 28px 34px;
+  border-radius: 8px;
+  background: var(--do-grain-carton), linear-gradient(180deg, var(--do-carton-clair), var(--do-carton) 60%);
+  box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.9), 0 14px 28px -14px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  perspective: 2400px;
+}
+.do-pli {
+  align-self: stretch;
+  margin: -20px 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.05) 48%, rgba(0, 0, 0, 0.55));
+}
+.do-couverture {
+  position: absolute;
+  inset: 0 0 0 50%;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  border-radius: 0 8px 8px 0;
+  background: var(--do-grain-carton), linear-gradient(160deg, #20242d, #0f1115);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
+  transform-origin: left center;
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+.do-couverture-titre {
+  font: 800 26px Orbitron, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #cfd6e0;
+}
+.do-couverture-mention {
+  padding: 4px 12px;
+  border: 1px solid #58606f;
+  font: 600 11px Switzer, sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a93a3;
+}
+
+/* ── Les feuillets : du papier pelure, empile ── */
+.do-feuille {
+  position: relative;
+  min-width: 0;
+  padding: 30px 32px 36px;
+  border-radius: 2px;
+  color: var(--do-encre);
+  background: var(--do-grain-papier), linear-gradient(180deg, #e6eaef, var(--do-papier) 45%, #d3d9e1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 18px 34px -22px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+.do-feuille::before,
+.do-feuille::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 2px;
+  background: #c3cad3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.do-feuille::before { transform: translate(4px, 5px) rotate(0.5deg); }
+.do-feuille::after { transform: translate(-3px, 8px) rotate(-0.6deg); background: #b7bfc9; }
+
+.do-tape {
+  margin: 0;
+  font-family: var(--do-machine);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--do-encre);
+  text-shadow: 0 0 0.6px rgba(26, 39, 68, 0.55);
+}
+.do-tape b { font-weight: 700; }
+.do-discret { color: var(--do-encre-2); }
+.do-imprime {
+  margin: 0;
+  font: 600 10.5px/1.35 Switzer, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--do-imprime);
+}
+.do-chiffre { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.do-jauge { white-space: pre; font-size: 13.5px; letter-spacing: 0; overflow: hidden; text-overflow: clip; }
+
+/* ── Les tampons : de l encre, pas une couleur d interface ── */
+.do-tampon {
+  display: inline-grid;
+  justify-items: center;
+  align-content: center;
+  padding: 3px 12px;
+  border: 3px solid currentColor;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 2px transparent, inset 0 0 0 3.5px currentColor;
+  font: 700 14px/1.1 var(--do-caoutchouc);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  -webkit-mask-image: var(--do-encre-trouee);
+  mask-image: var(--do-encre-trouee);
+  -webkit-mask-size: 180px;
+  mask-size: 180px;
+}
+.do-tampon[data-encre="violette"] { color: var(--do-violet); }
+.do-tampon[data-encre="rouge"] { color: var(--do-rouge); }
+.do-tampon[data-taille="petit"] { padding: 1px 8px; border-width: 2px; font-size: 11.5px; }
+.do-tampon[data-taille="grand"] { padding: 8px 16px; border-width: 4px; font-size: 15px; }
+.do-tampon i { font-style: normal; font-size: 11px; letter-spacing: 0.3em; }
+.do-tampon b { font-weight: 700; }
+.do-pale { opacity: 0.55; }
+
+/* ── Le proces-verbal ── */
+.do-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid rgba(26, 39, 68, 0.45);
+}
+.do-entete h2 { margin-top: 6px; font-size: 21px; font-weight: 700; }
+.do-entete h2::first-letter { text-transform: uppercase; }
+.do-dateur b { font-size: 21px; letter-spacing: 0.06em; }
+
+.do-ordres { width: 100%; margin: 0 0 22px; border-collapse: collapse; }
+.do-ordres caption { padding-bottom: 8px; caption-side: top; text-align: left; }
+.do-ordres th {
+  padding: 6px 8px;
+  border-top: 1.5px solid rgba(26, 39, 68, 0.55);
+  border-bottom: 1px solid rgba(26, 39, 68, 0.3);
+  font: 600 10px Switzer, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--do-imprime);
+}
+.do-ordres td { padding: 9px 8px; border-bottom: 1px dashed rgba(26, 39, 68, 0.3); vertical-align: middle; }
+.do-visa { width: 150px; text-align: center; }
+
+.do-bouton-tampon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px 6px 30px;
+  border: 1.5px solid var(--do-rouge);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--do-rouge) 6%, transparent);
+  color: var(--do-rouge);
+  font: 700 12.5px var(--do-caoutchouc);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  transition: background-color 140ms ease-out;
+}
+.do-bouton-tampon:hover { background: color-mix(in srgb, var(--do-rouge) 13%, transparent); }
+.do-bouton-tampon:focus-visible { outline: 2px solid var(--do-rouge); outline-offset: 3px; }
+.do-anneau {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: conic-gradient(var(--do-rouge) calc(var(--part, 0) * 360deg), color-mix(in srgb, var(--do-rouge) 20%, transparent) 0);
+}
+.do-anneau::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: #e2e6ec; }
+
+/* La fiche bristol de la mission, agrafee d un trombone. */
+.do-fiche {
+  position: relative;
+  margin: 8px 8px 26px;
+  padding: 24px 22px 16px 30px;
+  background:
+    linear-gradient(90deg, transparent 20px, rgba(196, 20, 45, 0.45) 20px, rgba(196, 20, 45, 0.45) 21px, transparent 21px),
+    repeating-linear-gradient(180deg, transparent 0 25px, rgba(70, 110, 190, 0.3) 25px 26px),
+    #f4f6f9;
+  background-position: 0 0, 0 42px, 0 0;
+  box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.25);
+  transform: rotate(-1.2deg);
+}
+.do-fiche::before {
+  content: "";
+  position: absolute;
+  inset: 16px 0 auto 0;
+  height: 2px;
+  background: rgba(196, 20, 45, 0.55);
+}
+.do-trombone { position: absolute; top: -20px; left: 34px; width: 18px; height: 48px; transform: rotate(7deg); filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.35)); }
+.do-fiche-titre { color: var(--do-rouge); }
+.do-fiche-mission { margin-top: 8px; font-size: 18.5px; font-weight: 700; }
+.do-reste { margin: 10px 0 0; font: 700 13px var(--do-caoutchouc); letter-spacing: 0.12em; text-transform: uppercase; color: var(--do-rouge); }
+.do-reste b { margin-left: 6px; font: 700 17px var(--do-machine); letter-spacing: 0; }
+
+.do-main-courante h3 { margin-bottom: 8px; }
+.do-main-courante ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(26, 39, 68, 0.35); }
+.do-main-courante li { padding: 6px 0; border-bottom: 1px dotted rgba(26, 39, 68, 0.3); font-size: 14px; }
+.do-main-courante time { display: inline-block; width: 70px; color: var(--do-encre-2); }
+
+/* ── Le feuillet de droite, sous ses onglets ── */
+.do-droite { padding-top: 34px; }
+.do-onglets { position: absolute; top: -26px; left: 22px; display: flex; gap: 4px; }
+.do-onglet {
+  padding: 7px 16px 12px;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  background: #aeb6c2;
+  color: #36405a;
+  font: 600 11px Switzer, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset 0 -7px 9px -7px rgba(0, 0, 0, 0.45);
+  transition: background-color 140ms ease-out, transform 140ms ease-out;
+}
+.do-onglet:hover { background: #c3cad4; }
+.do-onglet[aria-selected="true"] { background: #e6eaef; color: var(--do-encre); box-shadow: none; transform: translateY(1px); }
+.do-onglet:focus-visible { outline: 2px solid var(--do-violet); outline-offset: 2px; }
+.do-pile { position: relative; min-height: 560px; padding-bottom: 40px; }
+
+.do-champs { display: grid; gap: 8px; margin: 14px 0 22px; }
+.do-champs div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px dotted rgba(26, 39, 68, 0.35);
+}
+.do-champs dd { margin: 0; }
+
+.do-delai { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 24px; margin: 20px 0 26px; }
+.do-reste-tampon b { font-size: 46px; line-height: 1; letter-spacing: 0.02em; }
+
+.do-tient { position: relative; margin: 0 0 26px; padding: 14px 16px 16px; border: 1px solid rgba(26, 39, 68, 0.4); }
+.do-tient h3 { margin-bottom: 8px; }
+.do-tient .do-tape { font-size: 14px; }
+.do-verdict { margin-top: 12px; }
+
+.do-signature .do-tape { font-style: italic; }
+.do-paraphe {
+  display: inline-block;
+  margin: 4px 0 0;
+  padding: 0 36px 4px 0;
+  border-bottom: 1px solid rgba(26, 39, 68, 0.45);
+  font: 800 24px Orbitron, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--do-encre);
+  opacity: 0.85;
+}
+
+/* ── La cire : ficelee, frappee du sceau ── */
+.do-cire { position: absolute; right: -34px; bottom: -44px; width: 156px; height: 156px; transform: rotate(-9deg); filter: drop-shadow(0 9px 10px rgba(0, 0, 0, 0.5)); }
+.do-cire::before {
+  content: "";
+  position: absolute;
+  left: -70px;
+  top: 58%;
+  z-index: -1;
+  width: 270px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, #b3202e 0 7px, #ece8e2 7px 14px);
+  transform: rotate(22deg);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+.do-cire-goutte { position: absolute; inset: 0; width: 100%; height: 100%; }
+.do-cire-sceau {
+  position: absolute;
+  inset: 13%;
+  width: 74%;
+  height: 74%;
+  color: var(--do-cire-sombre);
+  filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--do-cire-clair) 80%, transparent)) drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.45));
+}
+.do-cire .sceau-anime,
+.do-cire .sceau-bande,
+.do-cire .sceau-grad,
+.do-cire .sceau-moyeu,
+.do-cire .sceau-etoile { animation: none; }
+
+/* ── L inventaire et le brevet ── */
+.do-valeur h3 { margin: 18px 0 8px; }
+.do-valeur ol { list-style: none; margin: 0; padding: 0; }
+.do-piece {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dotted rgba(26, 39, 68, 0.32);
+}
+.do-numero { font-size: 13px; color: var(--do-encre-2); }
+.do-piece .do-tape { font-size: 14px; }
+.do-code { font-size: 9.5px; }
+.do-suite { color: var(--do-encre-2); }
+.do-piece-visa { padding-top: 2px; }
+
+.do-brevet { margin-top: 30px; font-style: italic; }
+.do-rang { margin: 12px 0 8px; font: 800 44px/1 Orbitron, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--do-encre); }
+.do-brevet-tampon { position: absolute; right: 26px; top: 110px; }
+
+@media (max-width: 980px) {
+  .do-chemise { grid-template-columns: minmax(0, 1fr); padding: 40px 12px 24px; }
+  .do-pli, .do-couverture { display: none; }
+  .do-droite { margin-top: 56px; }
+  .do-cire { right: 6px; bottom: -34px; width: 110px; height: 110px; }
+  .do-delai { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .do-feuille { padding: 24px 16px 28px; }
+  .do-champs div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .do-visa { width: auto; }
+  .do-ordres th:nth-child(3), .do-ordres td:nth-child(3) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .do-couverture { display: none; }
+  .do-bouton-tampon, .do-onglet { transition: none; }
+}

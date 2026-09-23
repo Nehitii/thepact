@@ -12,6 +12,8 @@ import type { DonneesDuTableau } from "@/domaines/accueil/composants/refonte/com
 import { Registre } from "@/domaines/accueil/composants/refonte/Registre";
 import { Cadran } from "@/domaines/accueil/composants/refonte/Cadran";
 import { Serment } from "@/domaines/accueil/composants/refonte/Serment";
+import { Dossier } from "@/domaines/accueil/composants/refonte/Dossier";
+import { Reseau } from "@/domaines/accueil/composants/refonte/Reseau";
 import "@/domaines/accueil/accueil.css";
 import "@/domaines/accueil/banc-du-tableau.css";
 
@@ -26,7 +28,23 @@ import "@/domaines/accueil/banc-du-tableau.css";
  * objectifs, un mercredi soir. L heure du scenario avance avec la
  * vraie, a partir de 19 h 42. Rien n est lu, rien n est ecrit. */
 
+/* DEUX SERIES. Les mondes d abord — une matiere, une typographie, une
+   grammaire entiere chacun — puis les trois structures de la premiere
+   serie, jugees « trop simples, trop IA » : elles changeaient la mise
+   en page sans changer de monde. */
 const STRUCTURES = [
+  {
+    id: "dossier",
+    nom: "Le dossier scellé",
+    these: "Le pacte est un serment : son tableau de bord est le dossier qu’on ouvre chaque jour. L’état ne se colore pas, il se tamponne.",
+    risque: "Un décor d’objet peut devenir costume s’il ne sert pas l’action : tamponner doit rester le geste principal.",
+  },
+  {
+    id: "reseau",
+    nom: "Le plan du réseau",
+    these: "Chaque objectif est une ligne, chaque étape une station ; tous les trains sont à quai au méridien d’aujourd’hui.",
+    risque: "Un plan se lit vite mais ne dit pas l’heure : le tableau des départs la porte.",
+  },
   {
     id: "registre",
     nom: "Le registre de bord",
@@ -57,7 +75,7 @@ function motsDesOrdres(ordres: readonly OrdreDuJour[]): string {
 }
 
 export default function BancDuTableau() {
-  const [id, setId] = useState<IdDeStructure>("registre");
+  const [id, setId] = useState<IdDeStructure>("dossier");
   const [fond, setFond] = useState<IdDuFond>("classique");
   const [jour, setJour] = useState(false);
   const [pupitre, setPupitre] = useState(true);
@@ -135,6 +153,8 @@ export default function BancDuTableau() {
       </div>
 
       <div key={id} className="bt-scene">
+        {id === "dossier" && <Dossier {...donnees} />}
+        {id === "reseau" && <Reseau {...donnees} />}
         {id === "registre" && <Registre {...donnees} />}
         {id === "cadran" && <Cadran {...donnees} />}
         {id === "serment" && <Serment {...donnees} />}
@@ -143,8 +163,9 @@ export default function BancDuTableau() {
       {pupitre ? (
         <aside className="bt-pupitre" aria-label="Pupitre du banc du tableau de bord">
           <nav className="bt-choix" aria-label="Structures">
-            {STRUCTURES.map((s) => (
-              <button key={s.id} type="button" aria-pressed={s.id === id} onClick={() => setId(s.id)}>
+            {STRUCTURES.map((s, i) => (
+              <button key={s.id} type="button" aria-pressed={s.id === id} onClick={() => setId(s.id)}
+                data-serie={i < 2 ? "mondes" : "structures"}>
                 {s.nom}
               </button>
             ))}

@@ -118,3 +118,5 @@
 }
 .light .bt-fond select { background: rgba(0, 0, 0, 0.03); }
 .light .bt-fond option { background: #fbfaf7; color: #14181a; }
+.bt-choix button[data-serie="structures"] { opacity: 0.72; }
+.bt-choix button[data-serie="mondes"] + button[data-serie="structures"] { margin-left: 12px; }
