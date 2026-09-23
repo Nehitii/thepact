@@ -1,0 +1,125 @@
+/* ═══════════════════════════════════════════════════════════════
+   INTERRUPTEUR — LE CORDON
+
+   Un tableau de brassage : deux prises sur une platine d acier, leur
+   nom grave au-dessus, et une fiche branchee dans l une d elles. Son
+   cordon pend et part vers le compteur. Pour changer de mesure, on
+   clique la prise libre : la fiche se debranche, se souleve, passe et
+   se rebranche ; le cordon suit.
+
+   LE CORDON EST UN CHEMIN SVG DONT LA FORME EST DANS LA FEUILLE
+   (« d: path() »), une par prise. Les deux chemins ont les memes
+   commandes : le navigateur les interpole, et le cordon suit la fiche
+   au lieu de sauter. Un navigateur qui n interpole pas « d » le pose
+   directement a l arrivee — la fiche, elle, voyage toujours.
+
+   Reperes, en pixels de la platine (156 × 56) : prises a x = 40 et
+   x = 116, trou a y = 33. Les prises sont posees a ces abscisses, pas
+   rangees par une boite flexible : une etiquette plus large que sa
+   prise l elargissait, et la fiche tombait a cote du trou. Le SVG
+   deborde de 24 px a gauche et de 44 px en bas pour le cordon.
+   ═══════════════════════════════════════════════════════════════ */
+
+.en-commande.en-commande--cordon { margin: 0; padding: 0 0 40px; }
+
+.cor-panneau {
+  position: relative;
+  width: 156px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--en-acier);
+  box-shadow: var(--en-acier-relief);
+}
+
+.cor-prise {
+  position: absolute;
+  top: 6px;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 64px;
+  margin-left: -32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+}
+.cor-prise--objectifs { left: 40px; }
+.cor-prise--etapes { left: 116px; }
+.cor-prise .en-position { font-size: 9.5px; letter-spacing: 0.12em; }
+button.cor-prise { cursor: pointer; }
+button.cor-prise[data-actif] { cursor: default; }
+button.cor-prise:focus-visible { outline: 2px solid var(--en-tube); outline-offset: 3px; border-radius: 4px; }
+
+.cor-trou {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #000000 0 40%, #26282e 41% 58%, #c7ccd4 60%, #5b6069 82%, #2a2c31 100%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.08);
+  transition: box-shadow 160ms ease-out;
+}
+button.cor-prise:not([data-actif]):hover .cor-trou {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--en-tube) 45%, transparent), 0 0 10px var(--en-tube);
+}
+
+/* La fiche : une bague chrome, un manchon noir cercle de la couleur du
+   tube. Elle est posee sur la prise de gauche et se decale vers celle
+   de droite. */
+.cor-fiche {
+  position: absolute;
+  z-index: 2;
+  left: 40px;
+  top: 33px;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    #0c0c0e 0 28%,
+    var(--en-tube) 30% 36%,
+    #1c1d21 38% 58%,
+    #e6e9ee 61%,
+    #7c828c 82%,
+    #3a3d44 100%);
+  box-shadow: 0 3px 5px rgb(0 0 0 / 0.65);
+  transform: translateX(0);
+  transition: transform 420ms cubic-bezier(0.45, 0, 0.2, 1);
+}
+.en-compteur[data-mesure="steps"] .cor-fiche { transform: translateX(76px); }
+/* Debrancher, c est d abord soulever : la fiche grossit et remonte a
+   mi-course. Deux animations identiques, une par sens — changer de nom
+   est ce qui la rejoue a chaque bascule. */
+.en-compteur[data-tour][data-mesure="steps"] .cor-fiche { animation: cor-soulever-a 420ms ease-in-out; }
+.en-compteur[data-tour][data-mesure="goals"] .cor-fiche { animation: cor-soulever-b 420ms ease-in-out; }
+@keyframes cor-soulever-a { 50% { translate: 0 -12px; scale: 1.14; } }
+@keyframes cor-soulever-b { 50% { translate: 0 -12px; scale: 1.14; } }
+
+.cor-cable {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  width: 184px;
+  height: 100px;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+}
+.cor-cable-gaine,
+.cor-cable-reflet {
+  d: path("M 64 43 C 64 74, 34 82, 4 96");
+  transition: d 420ms cubic-bezier(0.45, 0, 0.2, 1);
+}
+.en-compteur[data-mesure="steps"] .cor-cable-gaine,
+.en-compteur[data-mesure="steps"] .cor-cable-reflet {
+  d: path("M 140 43 C 140 80, 66 86, 4 96");
+}
+.cor-cable-gaine { stroke: #17181c; stroke-width: 6; filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.6)); }
+.cor-cable-reflet { stroke: rgb(255 255 255 / 0.1); stroke-width: 1.5; transform: translate(-1px, -1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cor-fiche, .cor-cable-gaine, .cor-cable-reflet, .cor-trou { transition: none; animation: none; }
+}

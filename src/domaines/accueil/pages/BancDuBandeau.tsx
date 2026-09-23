@@ -6,6 +6,8 @@ import { Enseigne } from "@/domaines/accueil/composants/bandeau/Enseigne";
 import { PieceDuPacte } from "@/domaines/accueil/composants/bandeau/PieceDuPacte";
 import { Stele } from "@/domaines/accueil/composants/bandeau/Stele";
 import { PlanLarge } from "@/domaines/accueil/composants/bandeau/PlanLarge";
+import { PlancheDesInterrupteurs } from "@/domaines/accueil/composants/bandeau/PlancheDesInterrupteurs";
+import { INTERRUPTEURS, lireLInterrupteur } from "@/domaines/accueil/logique/interrupteurs";
 import { IdentiteDuPacte, POLICES_DU_TITRE, EFFETS_DU_TITRE } from "@/domaines/objectifs";
 import { TEINTES_DU_PACTE } from "@/socle/ds/fonds/catalogue";
 import { jourDecale } from "@/socle/outils/jour";
@@ -73,6 +75,11 @@ const VARIANTES: readonly Variante[] = [
     Composant: Enseigne,
   },
   {
+    id: "interrupteurs", nom: "C · Les interrupteurs de l’enseigne",
+    idee: "Les sept commandes de mesure côte à côte, chacune manœuvrable. Celle de l’enseigne se choisit dans ce pupitre.",
+    Composant: PlancheDesInterrupteurs,
+  },
+  {
     id: "piece", nom: "D · La pièce",
     idee: "La carte d’identité du pacte : guillochis, film holographique, zone lisible par machine vérifiable.",
     Composant: PieceDuPacte,
@@ -120,6 +127,7 @@ export default function BancDuBandeau() {
   });
   const [teintePalier, setTeintePalier] = useState("#f5b93a");
   const [avancePalier, setAvancePalier] = useState(64);
+  const [interrupteur, setInterrupteur] = useState(() => lireLInterrupteur(parametre("interrupteur")));
   const [version, setVersion] = useState(4);
   /* L apercu de « Mon pacte » monte LE MEME bloc, reduit. Il se
      regarde ici pour la meme raison que le bandeau : la page de
@@ -205,6 +213,7 @@ export default function BancDuBandeau() {
     teinte,
     jureLe: jourDecale(-jours),
     terme: terme || null,
+    interrupteur,
   };
 
   return (
@@ -223,6 +232,13 @@ export default function BancDuBandeau() {
           </select>
         </label>
         <p className="banc-note bdb-idee">{active.idee}</p>
+
+        <label className="banc-champ">
+          <span>Interrupteur de l’enseigne</span>
+          <select value={interrupteur} onChange={(e) => setInterrupteur(lireLInterrupteur(e.target.value))}>
+            {INTERRUPTEURS.map((i) => <option key={i.id} value={i.id}>{i.nom}</option>)}
+          </select>
+        </label>
 
         <label className="banc-bascule">
           <input type="checkbox" checked={planche} onChange={(e) => setPlanche(e.target.checked)} />

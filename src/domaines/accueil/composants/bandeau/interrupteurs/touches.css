@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════
+   INTERRUPTEUR — LES TOUCHES DE POSTE
+
+   Deux touches d ivoire dans un chassis chrome, comme les touches de
+   gamme d une radio ancienne : l une est enfoncee, l autre est levee.
+   Enfoncer celle qui est levee fait remonter l autre, avec un petit
+   rebond ; appuyer sur celle qui est deja enfoncee ne fait rien.
+
+   Chaque touche porte son mot et son voyant. C est la seule commande
+   ou la mesure s ecrit sur l objet meme.
+   ═══════════════════════════════════════════════════════════════ */
+
+.en-commande.en-commande--touches {
+  gap: 4px;
+  padding: 5px;
+  margin: 0;
+  border-radius: 7px;
+  background: linear-gradient(#2c2e33, #141518);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 0 0 1px #0a0b0d, 0 3px 8px rgb(0 0 0 / 0.6);
+}
+
+.tou-touche {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: 92px;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  font: 800 10.5px/1 "Switzer", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3d372a;
+  background: linear-gradient(#f4eedc, #ddd3b6);
+  box-shadow: 0 5px 0 #a89c7a, 0 6px 9px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.75);
+  transform: translateY(-3px);
+  transition:
+    transform 140ms cubic-bezier(0.3, 1.7, 0.6, 1),
+    box-shadow 140ms ease-out,
+    background 140ms ease-out;
+}
+.tou-touche[data-actif] {
+  background: linear-gradient(#e0d7bc, #cdc2a2);
+  box-shadow: 0 1px 0 #a89c7a, 0 2px 3px rgb(0 0 0 / 0.5), inset 0 2px 3px rgb(0 0 0 / 0.16);
+  transform: translateY(1px);
+}
+button.tou-touche { cursor: pointer; }
+button.tou-touche[data-actif] { cursor: default; }
+button.tou-touche:not([data-actif]):hover { background: linear-gradient(#fbf6e8, #e5dcc2); }
+button.tou-touche:not([data-actif]):active { transform: translateY(0); }
+button.tou-touche:focus-visible { outline: 2px solid var(--en-tube); outline-offset: 3px; }
+
+.tou-voyant {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6d6450;
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.45);
+  transition: background 120ms ease-out, box-shadow 120ms ease-out;
+}
+.tou-touche[data-actif] .tou-voyant {
+  background: radial-gradient(circle at 40% 35%, #ffffff, var(--en-coeur) 45%, var(--en-tube) 100%);
+  box-shadow: 0 0 4px var(--en-tube), 0 0 9px var(--en-tube);
+}
+
+@container (max-width: 600px) {
+  .tou-touche { width: 80px; font-size: 9.5px; letter-spacing: 0.06em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tou-touche, .tou-voyant { transition: none; }
+}

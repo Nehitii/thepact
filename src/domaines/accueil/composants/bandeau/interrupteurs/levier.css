@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════════════════════════════
+   INTERRUPTEUR — LE LEVIER
+
+   Un interrupteur a levier de tableau electrique : une platine
+   d acier, deux vis, une bague chromee, un levier a bille. Le levier
+   montre l etiquette allumee — en haut les objectifs, en bas les
+   etapes.
+
+   IL BASCULE EN PASSANT DEVANT. Il tourne autour de sa base
+   (« rotateX », avec une perspective sur la platine) : a mi-course il
+   pointe vers nous et on ne voit plus que sa bille, comme un vrai. La
+   courbe depasse un peu sa cible et revient : c est le claquement.
+   ═══════════════════════════════════════════════════════════════ */
+
+.lev-platine {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 54px;
+  border-radius: 6px;
+  perspective: 140px;
+  background: var(--en-acier);
+  box-shadow: var(--en-acier-relief);
+  transition: transform 90ms ease-out;
+}
+button.en-commande--levier:active .lev-platine { transform: translateY(1px); }
+
+.lev-vis {
+  position: absolute;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #a3a9b3, #3c3f46 72%);
+}
+.lev-vis:nth-child(1) { top: 4px; }
+.lev-vis:nth-child(2) { bottom: 4px; }
+
+.lev-manette {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 6px;
+  height: 19px;
+  margin-left: -3px;
+  border-radius: 3px 3px 2px 2px;
+  background: linear-gradient(90deg, #6c717b, #eef0f4 45%, #8b919b);
+  transform-origin: 50% 100%;
+  transform: rotateX(0deg);
+  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.lev-manette::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c8ccd4 45%, #6e737d);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+}
+.en-compteur[data-mesure="steps"] .lev-manette { transform: rotateX(180deg); }
+button.en-commande--levier:hover .lev-manette::before {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #e2e5eb 45%, #80858f);
+}
+
+.lev-bague {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--en-chrome);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.75), inset 0 -1px 1px rgb(0 0 0 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lev-manette, .lev-platine { transition: none; }
+}

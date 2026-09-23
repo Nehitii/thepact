@@ -77,6 +77,17 @@ export function useLectureDuBandeau(p: ProprietesDuBandeau): Lecture {
   };
 }
 
+/* LE GAZ DU TUBE DE L ENSEIGNE, selon l effet choisi : halo cyan, feu,
+   violet ou dore donnent la couleur ; sans effet, c est la teinte du
+   pacte. L enseigne et la planche des interrupteurs le lisent ici. */
+const TUBES: Readonly<Record<string, string>> = {
+  "cyan-glow": "#19d8ff",
+  "fire-glow": "#ff5a1f",
+  "purple-glow": "#b862ff",
+  "gold-glow": "#ffc23a",
+};
+export const gazDuTube = (effet: string, teinte: string): string => TUBES[effet] ?? teinte;
+
 /** 3200 → « 3 200 », avec l espace fine insecable du francais. */
 export const nombre = (n: number): string => Math.round(n).toLocaleString("fr-FR");
 

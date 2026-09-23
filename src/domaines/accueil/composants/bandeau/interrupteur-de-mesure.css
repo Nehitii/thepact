@@ -1,15 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   VARIANTE C — L ENSEIGNE : L INTERRUPTEUR DE MESURE
+   VARIANTE C — L ENSEIGNE : LE COMPTEUR ET SA COMMANDE
 
-   Un interrupteur a levier de tableau electrique, visse au mur a cote
-   du pourcentage : une platine d acier, deux vis, une bague chromee,
-   un levier a bille. Ses deux positions sont ecrites en petits tubes :
-   l allumee est celle que le levier montre.
-
-   LE LEVIER BASCULE EN PASSANT DEVANT. Il tourne autour de sa base
-   (« rotateX », avec une perspective sur la platine) : a mi-course il
-   pointe vers nous et on ne voit plus que sa bille, comme un vrai. La
-   courbe depasse un peu sa cible et revient : c est le claquement.
+   Le pourcentage en tube, et a cote la commande qui change de mesure.
+   La commande a sept modeles — un par feuille, dans « interrupteurs/ ».
+   Cette feuille-ci porte ce qu ils partagent : le compteur, sa coupure
+   a chaque bascule, les deux etiquettes en tube, et le bouton de base.
    ═══════════════════════════════════════════════════════════════ */
 
 .en-compteur {
@@ -22,7 +17,7 @@
 
 /* ── Le pourcentage ──
    Aligne a droite dans une largeur de trois chiffres : en roulant de
-   99 a 100, il ne pousse pas l interrupteur. */
+   99 a 100, il ne pousse pas la commande. */
 .en-chiffre {
   display: inline-block;
   min-width: 3.2ch;
@@ -49,8 +44,10 @@
   92%, 100% { opacity: 1; text-shadow: var(--en-lumiere); }
 }
 
-/* ── L interrupteur ── */
-.en-levier {
+/* ── Le bouton de base ──
+   Chaque modele y ajoute son objet ; le bouton, lui, ne se voit pas :
+   c est l objet qui dit qu on peut appuyer. */
+.en-commande {
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -63,81 +60,10 @@
   color: inherit;
   text-align: left;
 }
-button.en-levier { cursor: pointer; }
-button.en-levier:focus-visible { outline: 2px solid var(--en-tube); outline-offset: 2px; }
+button.en-commande { cursor: pointer; }
+button.en-commande:focus-visible { outline: 2px solid var(--en-tube); outline-offset: 2px; }
 
-.en-interrupteur {
-  position: relative;
-  flex: none;
-  width: 30px;
-  height: 54px;
-  border-radius: 6px;
-  perspective: 140px;
-  background: linear-gradient(160deg, #3b3f47, #1d1f24 55%, #121316);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.14),
-    inset 0 -1px 0 rgb(0 0 0 / 0.6),
-    0 0 0 1px #0a0b0d,
-    0 4px 8px rgb(0 0 0 / 0.55);
-  transition: transform 90ms ease-out;
-}
-button.en-levier:active .en-interrupteur { transform: translateY(1px); }
-
-.en-vis {
-  position: absolute;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  margin-left: -2.5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #a3a9b3, #3c3f46 72%);
-}
-.en-vis:nth-child(1) { top: 4px; }
-.en-vis:nth-child(2) { bottom: 4px; }
-
-.en-manette {
-  position: absolute;
-  left: 50%;
-  bottom: 50%;
-  width: 6px;
-  height: 19px;
-  margin-left: -3px;
-  border-radius: 3px 3px 2px 2px;
-  background: linear-gradient(90deg, #6c717b, #eef0f4 45%, #8b919b);
-  transform-origin: 50% 100%;
-  transform: rotateX(0deg);
-  transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.en-manette::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -5px;
-  width: 11px;
-  height: 11px;
-  margin-left: -5.5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff, #c8ccd4 45%, #6e737d);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
-}
-.en-compteur[data-mesure="steps"] .en-manette { transform: rotateX(180deg); }
-button.en-levier:hover .en-manette::before {
-  background: radial-gradient(circle at 35% 30%, #ffffff, #e2e5eb 45%, #80858f);
-}
-
-.en-bague {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle at 36% 30%, #eef1f5, #8a909b 52%, #3e424a);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.75), inset 0 -1px 1px rgb(0 0 0 / 0.35);
-}
-
-/* ── Les deux positions ──
+/* ── Les etiquettes en tube ──
    Eteinte, l etiquette est du verre sans courant : grise, mais lisible
    — c est la ou l on ira. Au survol, elle se prepare. */
 .en-positions { display: grid; gap: 9px; }
@@ -151,7 +77,8 @@ button.en-levier:hover .en-manette::before {
   transition: color 160ms ease-out;
 }
 .en-position[data-actif] { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
-button.en-levier:hover .en-position:not([data-actif]) { color: #9ca1aa; }
+button.en-commande:hover .en-position:not([data-actif]),
+button:hover > .en-position:not([data-actif]) { color: #9ca1aa; }
 
 .en-compteur:not([data-tour]) .en-position[data-actif] {
   animation: en-allume-bloc 1s steps(1, end) 1.6s both;
@@ -172,14 +99,25 @@ button.en-levier:hover .en-position:not([data-actif]) { color: #9ca1aa; }
   70%, 100% { color: #7a7f88; text-shadow: 0 1px 0 rgb(0 0 0 / 0.6); }
 }
 
-/* En colonne etroite, le chiffre et l interrupteur restent cote a cote
-   a 390 px : moins de corps, moins d interlettrage. Plus etroit encore,
+/* La platine d acier et le chrome, que plusieurs modeles partagent. */
+.en-compteur {
+  --en-acier: linear-gradient(160deg, #3b3f47, #1d1f24 55%, #121316);
+  --en-acier-relief:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 -1px 0 rgb(0 0 0 / 0.6),
+    0 0 0 1px #0a0b0d,
+    0 4px 8px rgb(0 0 0 / 0.55);
+  --en-chrome: radial-gradient(circle at 36% 30%, #eef1f5, #8a909b 52%, #3e424a);
+}
+
+/* En colonne etroite, le chiffre et la commande restent cote a cote a
+   390 px : moins de corps, moins d interlettrage. Plus etroit encore,
    ils passent l un sous l autre — et le chiffre n a plus besoin de sa
    largeur de reserve, qui le decalait. */
 @container (max-width: 600px) {
   .en-compteur { gap: 8px 12px; }
   .en-chiffre { min-width: 0; font-size: 40px; }
-  .en-levier { gap: 10px; padding-right: 4px; }
+  .en-commande { gap: 10px; padding-right: 4px; }
   .en-position { font-size: 10px; letter-spacing: 0.1em; }
 }
 
@@ -189,5 +127,4 @@ button.en-levier:hover .en-position:not([data-actif]) { color: #9ca1aa; }
   .en-compteur[data-tour] .en-position[data-actif],
   .en-compteur[data-tour] .en-position:not([data-actif]),
   .en-compteur:not([data-tour]) .en-position[data-actif] { animation: none; }
-  .en-manette, .en-interrupteur { transition: none; }
 }

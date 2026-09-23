@@ -5,7 +5,8 @@ import type { ProprietesDuBandeau } from "@/domaines/accueil/types";
 import { SceauDuPacte } from "@/domaines/accueil/composants/bandeau/communs";
 import { InterrupteurDeMesure } from "@/domaines/accueil/composants/bandeau/InterrupteurDeMesure";
 import { PalierLumineux } from "@/domaines/accueil/composants/bandeau/PalierLumineux";
-import { datePleine, nombre, useLectureDuBandeau } from "@/domaines/accueil/composants/bandeau/lecture";
+import { datePleine, gazDuTube, nombre, useLectureDuBandeau } from "@/domaines/accueil/composants/bandeau/lecture";
+import { lireLInterrupteur } from "@/domaines/accueil/logique/interrupteurs";
 import "@/domaines/accueil/composants/bandeau/enseigne.css";
 
 /* L ENSEIGNE — LE BANDEAU DU TABLEAU DE BORD DEPUIS LE 23/09.
@@ -41,19 +42,11 @@ import "@/domaines/accueil/composants/bandeau/enseigne.css";
  * mesure, le compteur se coupe et repart. Le defilement des diodes
  * n est que la nature d un bandeau a diodes. */
 
-/* Le gaz du tube, selon l effet choisi. */
-const TUBES: Readonly<Record<string, string>> = {
-  "cyan-glow": "#19d8ff",
-  "fire-glow": "#ff5a1f",
-  "purple-glow": "#b862ff",
-  "gold-glow": "#ffc23a",
-};
-
 const pluriel = (n: number, un: string, plusieurs: string) => (n > 1 ? plusieurs : un);
 
 export function Enseigne(p: ProprietesDuBandeau) {
   const l = useLectureDuBandeau(p);
-  const tube = TUBES[l.effet] ?? l.teinte;
+  const tube = gazDuTube(l.effet, l.teinte);
   const { cadre, taille, tient } = useTailleDuNom<HTMLDivElement>({
     texte: l.nom, famille: l.famille, graisse: 500, espacement: 0.08, min: 30, max: 112,
   });
@@ -118,7 +111,12 @@ export function Enseigne(p: ProprietesDuBandeau) {
             ))}
           </h1>
           {l.mantra && <p className="en-script">{l.mantra}</p>}
-          <InterrupteurDeMesure lecture={l} onChanger={p.onChangerMesure} famille={l.famille} />
+          <InterrupteurDeMesure
+            lecture={l}
+            onChanger={p.onChangerMesure}
+            famille={l.famille}
+            modele={lireLInterrupteur(p.interrupteur)}
+          />
         </div>
         <PalierLumineux p={p} famille={l.famille} tube={tube} />
       </div>
