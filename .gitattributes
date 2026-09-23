@@ -1,0 +1,5 @@
+# Le fichier d en-tetes est lu par Cloudflare ligne a ligne. Sous
+# Windows, `core.autocrlf` le rendrait en CRLF a chaque checkout, et
+# rien ne garantit qu un « \r » en fin de valeur d en-tete soit tolere.
+# Il reste en LF, quelle que soit la machine qui construit.
+public/_headers text eol=lf
