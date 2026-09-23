@@ -44,3 +44,16 @@ export interface NexusHeroBannerProps {
   /** Combien d objectifs sont reellement en cours. Le logo bat avec. */
   enCours?: number;
 }
+
+/* CE QUE LES VARIANTES DU BANDEAU LISENT EN PLUS. Trois colonnes de
+ * « pacts » que le bandeau actuel n affiche pas : la couleur choisie au
+ * rite, le jour du serment et l echeance. La piece d identite les
+ * imprime, la stele grave la date, le plan large l affiche en salle.
+ * Facultatives : le banc les fournit, la page ne les passe pas encore. */
+export interface ProprietesDuBandeau extends NexusHeroBannerProps {
+  /** « pacts.color » : amber, rose, emerald, sky, violet ou cyan. */
+  teinte?: string | null;
+  /** Jours civils « AAAA-MM-JJ » : « project_start_date », « project_end_date ». */
+  jureLe?: string | null;
+  terme?: string | null;
+}

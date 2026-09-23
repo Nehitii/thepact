@@ -42,24 +42,10 @@ export const ICONE_DE_L_ECHEANCE: Record<Echeance["genre"], LucideIcon> = {
   pacte: Flag,
 };
 
-/**
- * Une police de Google Fonts, chargee une fois, pour un monde du banc.
- *
- * Les mondes de la seconde serie ont leur propre typographie — une
- * machine a ecrire pour le dossier. La CSP de production autorise deja
- * fonts.googleapis.com et fonts.gstatic.com ; le lien n est pose qu une
- * fois, meme si le monde est ouvert dix fois.
- */
-export function usePoliceDuBanc(href: string): void {
-  useEffect(() => {
-    if (document.querySelector(`link[data-police-du-banc="${href}"]`)) return;
-    const lien = document.createElement("link");
-    lien.rel = "stylesheet";
-    lien.href = href;
-    lien.dataset.policeDuBanc = href;
-    document.head.appendChild(lien);
-  }, [href]);
-}
+/* La police d un monde du banc. Elle a rejoint les crochets du domaine :
+   les variantes du bandeau s en servent aussi, et un composant de banc
+   n a pas a importer une serie qu il ne montre pas. */
+export { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 
 /**
  * Un nombre qui roule jusqu a sa valeur au lieu d y sauter.

@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { NexusHeroBanner } from "@/domaines/accueil/composants/NexusHeroBanner";
+import { JaugeDuNom } from "@/domaines/accueil/composants/bandeau/JaugeDuNom";
+import { Eclipse } from "@/domaines/accueil/composants/bandeau/Eclipse";
+import { Enseigne } from "@/domaines/accueil/composants/bandeau/Enseigne";
+import { PieceDuPacte } from "@/domaines/accueil/composants/bandeau/PieceDuPacte";
+import { Stele } from "@/domaines/accueil/composants/bandeau/Stele";
+import { PlanLarge } from "@/domaines/accueil/composants/bandeau/PlanLarge";
 import { IdentiteDuPacte, POLICES_DU_TITRE, EFFETS_DU_TITRE } from "@/domaines/objectifs";
+import { TEINTES_DU_PACTE } from "@/socle/ds/fonds/catalogue";
+import { jourDecale } from "@/socle/outils/jour";
+import type { MesureProgression, ProprietesDuBandeau } from "@/domaines/accueil/types";
 import "@/socle/ds/banc.css";
+import "@/domaines/accueil/banc-du-bandeau.css";
 
 /* LE BANC D ESSAI DU BANDEAU.
  *
@@ -15,9 +25,66 @@ import "@/socle/ds/banc.css";
  * symboles : deux cent seize bandeaux qu aucune capture isolee ne
  * couvre.
  *
+ * LES VARIANTES PASSENT SOUS LES MEMES REGLAGES. Chacune recoit les
+ * proprietes exactes du bandeau actuel ; chaque reglage du pupitre
+ * s applique donc a toutes. Une variante qui ne tient qu avec
+ * « Ananta » en Orbitron n est pas une variante, c est une maquette :
+ * c est ici qu on le voit, avec un nom de cinquante signes en
+ * JetBrains Mono.
+ *
+ * Clavier : ← → changent de variante, P ouvre la planche — toutes les
+ * variantes l une sous l autre, comme une planche-contact —, H masque le
+ * pupitre. L adresse fait de meme : « ?variante=piece&planche=1&pupitre=0&clair=1 »,
+ * et fixe au besoin « nom », « police », « effet », « teinte » et « progression ».
+ *
  * IL NE LIT NI N ECRIT RIEN. Aucune requete, aucun pacte : les valeurs
  * viennent des menus. C est un decor, pas une session.
  */
+
+interface Variante {
+  id: string;
+  nom: string;
+  idee: string;
+  Composant: ComponentType<ProprietesDuBandeau>;
+}
+
+const VARIANTES: readonly Variante[] = [
+  {
+    id: "actuel", nom: "Actuel",
+    idee: "Le bandeau en production : la singularité, le nom, la raison, quatre compteurs.",
+    Composant: NexusHeroBanner,
+  },
+  {
+    id: "jauge", nom: "A · Le nom-jauge",
+    idee: "Le nom est la jauge : ses lettres se remplissent de lumière à mesure que le pacte avance.",
+    Composant: JaugeDuNom,
+  },
+  {
+    id: "eclipse", nom: "B · L’éclipse",
+    idee: "Le sceau est la lune ; la progression, la magnitude de l’éclipse. À 100 %, la totalité.",
+    Composant: Eclipse,
+  },
+  {
+    id: "enseigne", nom: "C · L’enseigne",
+    idee: "Le nom en tubes de néon sur un mur de béton ; un tube faiblit quand aucun chantier n’est ouvert.",
+    Composant: Enseigne,
+  },
+  {
+    id: "piece", nom: "D · La pièce",
+    idee: "La carte d’identité du pacte : guillochis, film holographique, zone lisible par machine vérifiable.",
+    Composant: PieceDuPacte,
+  },
+  {
+    id: "stele", nom: "E · La stèle",
+    idee: "Le pacte gravé : capitales romaines, chiffres romains, un sillon que l’émail remplit.",
+    Composant: Stele,
+  },
+  {
+    id: "plan", nom: "F · Le plan large",
+    idee: "Le plan d’ouverture d’un film : le soleil se lève avec la progression, les chiffres sont le générique.",
+    Composant: PlanLarge,
+  },
+];
 
 /* LA VERSION DE L ALPHABET EST UN REGLAGE DU BANC, pas un detail.
    « pacts.sigil_version » a ete ajoutee avec « default 1 » : tous les
@@ -37,14 +104,29 @@ const SYMBOLES = [
   "compass", "citadel", "vortex", "shield",
 ];
 
+/* L ADRESSE OUVRE LE BANC OU L ON VEUT : « ?variante=stele&pupitre=0 ».
+   Une variante se montre par un lien, et une capture se refait a
+   l identique. */
+const parametre = (cle: string) => new URLSearchParams(window.location.search).get(cle);
+
 export default function BancDuBandeau() {
-  const [nom, setNom] = useState("Ananta");
-  const [mantra, setMantra] = useState("Tenir ce qui est jure");
+  const [variante, setVariante] = useState(() => parametre("variante") ?? "jauge");
+  const [planche, setPlanche] = useState(() => parametre("planche") === "1");
+  const [pupitre, setPupitre] = useState(() => parametre("pupitre") !== "0");
+  const [jour, setJour] = useState(() => parametre("clair") === "1");
+  const [nom, setNom] = useState(() => parametre("nom") ?? "Ananta");
+  const [mantra, setMantra] = useState("Tenir ce qui est juré");
   const [symbole, setSymbole] = useState("flame");
-  const [police, setPolice] = useState("orbitron");
-  const [effet, setEffet] = useState("none");
-  const [progression, setProgression] = useState(62);
+  const [police, setPolice] = useState(() => parametre("police") ?? "orbitron");
+  const [effet, setEffet] = useState(() => parametre("effet") ?? "none");
+  const [teinte, setTeinte] = useState(() => parametre("teinte") ?? "violet");
+  const [progression, setProgression] = useState(() => Number(parametre("progression") ?? 62));
+  const [mesure, setMesure] = useState<MesureProgression>("goals");
   const [enCours, setEnCours] = useState(2);
+  const [niveau, setNiveau] = useState(12);
+  const [missions, setMissions] = useState(47);
+  const [jours, setJours] = useState(91);
+  const [terme, setTerme] = useState("2027-06-30");
   const [valeurs, setValeurs] = useState("Liberté, Discipline, Création");
   const [version, setVersion] = useState(4);
   /* L apercu de « Mon pacte » monte LE MEME bloc, reduit. Il se
@@ -54,15 +136,108 @@ export default function BancDuBandeau() {
 
   /* Une virgule seule ne fait pas une valeur. */
   const listeDesValeurs = valeurs.split(",").map((v) => v.trim()).filter(Boolean);
+  const active = VARIANTES.find((v) => v.id === variante) ?? VARIANTES[0];
+
+  /* « ?mouvement=0 » coupe le mouvement comme le reglage du profil :
+     chaque variante s affiche d emblee dans son etat final. C est ce
+     qu il faut pour une capture — volet masque, les transitions ne
+     s achevent jamais. */
+  useEffect(() => {
+    if (parametre("mouvement") !== "0") return;
+    const racine = document.documentElement;
+    const avant = racine.getAttribute("data-reduce-motion");
+    racine.setAttribute("data-reduce-motion", "true");
+    return () => {
+      if (avant === null) racine.removeAttribute("data-reduce-motion");
+      else racine.setAttribute("data-reduce-motion", avant);
+    };
+  }, []);
+
+  /* La bascule agit sur la racine, comme le vrai selecteur de theme. */
+  useEffect(() => {
+    const racine = document.documentElement;
+    const avant = { clair: racine.classList.contains("light"), sombre: racine.classList.contains("dark") };
+    racine.classList.toggle("light", jour);
+    racine.classList.toggle("dark", !jour);
+    return () => {
+      racine.classList.toggle("light", avant.clair);
+      racine.classList.toggle("dark", avant.sombre);
+    };
+  }, [jour]);
+
+  useEffect(() => {
+    const auClavier = (e: KeyboardEvent) => {
+      const cible = e.target as HTMLElement | null;
+      if (cible instanceof HTMLInputElement && cible.type !== "checkbox") return;
+      if (cible && ["SELECT", "TEXTAREA"].includes(cible.tagName)) return;
+      const pas = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (pas) {
+        setVariante((id) => {
+          const i = VARIANTES.findIndex((v) => v.id === id);
+          return VARIANTES[(i + pas + VARIANTES.length) % VARIANTES.length].id;
+        });
+      } else if (e.key === "h" || e.key === "H") setPupitre((v) => !v);
+      else if (e.key === "p" || e.key === "P") setPlanche((v) => !v);
+    };
+    window.addEventListener("keydown", auClavier);
+    return () => window.removeEventListener("keydown", auClavier);
+  }, []);
+
+  /* LES DEUX MESURES NE DONNENT PAS LE MEME CHIFFRE. Par etapes, on
+     avance a chaque pas franchi : le chiffre est plus haut. Le banc en
+     derive un plausible, pour que basculer se VOIE sur chaque variante. */
+  const affichee = mesure === "steps" ? Math.min(100, Math.round(progression * 1.12 + 4)) : progression;
+
+  const proprietes: ProprietesDuBandeau = {
+    progression: affichee,
+    mesure,
+    onChangerMesure: () => setMesure((m) => (m === "goals" ? "steps" : "goals")),
+    level: niveau,
+    totalMissions: missions,
+    activeDays: jours,
+    pactName: nom,
+    pactMantra: mantra,
+    pactSymbol: symbole,
+    valeurs: listeDesValeurs,
+    sigilVersion: version,
+    titleFont: police,
+    titleEffect: effet,
+    enCours,
+    rankName: "Architecte",
+    rankProgress: 64,
+    rankXP: 3200,
+    rankXPTarget: 5000,
+    nextRankName: "Bâtisseur",
+    teinte,
+    jureLe: jourDecale(-jours),
+    terme: terme || null,
+  };
 
   return (
-    <div className="banc">
+    <div className="banc" data-pupitre={pupitre ? undefined : "masque"}>
       <aside className="banc-pupitre">
         <h1>Banc du bandeau</h1>
         <p className="banc-note">
-          Rien n est lu en base. Le bandeau est le meme qu en production ;
-          seules les valeurs viennent d ici.
+          Rien n est lu en base. Chaque réglage s applique à toutes les
+          variantes. ← → changent de variante, P ouvre la planche, H masque ce pupitre.
         </p>
+
+        <label className="banc-champ">
+          <span>Variante</span>
+          <select value={variante} onChange={(e) => setVariante(e.target.value)}>
+            {VARIANTES.map((v) => <option key={v.id} value={v.id}>{v.nom}</option>)}
+          </select>
+        </label>
+        <p className="banc-note bdb-idee">{active.idee}</p>
+
+        <label className="banc-bascule">
+          <input type="checkbox" checked={planche} onChange={(e) => setPlanche(e.target.checked)} />
+          <span>Planche : toutes les variantes</span>
+        </label>
+        <label className="banc-bascule">
+          <input type="checkbox" checked={jour} onChange={(e) => setJour(e.target.checked)} />
+          <span>Thème clair</span>
+        </label>
 
         <label className="banc-champ">
           <span>Nom du pacte</span>
@@ -89,6 +264,13 @@ export default function BancDuBandeau() {
         </label>
 
         <label className="banc-champ">
+          <span>Teinte du pacte</span>
+          <select value={teinte} onChange={(e) => setTeinte(e.target.value)}>
+            {Object.keys(TEINTES_DU_PACTE).map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+
+        <label className="banc-champ">
           <span>Symbole</span>
           <select value={symbole} onChange={(e) => setSymbole(e.target.value)}>
             {SYMBOLES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -109,7 +291,7 @@ export default function BancDuBandeau() {
         </label>
 
         <label className="banc-champ">
-          <span>Progression : {progression} %</span>
+          <span>Progression : {progression} % {mesure === "steps" ? `(étapes : ${affichee} %)` : ""}</span>
           <input type="range" min={0} max={100} value={progression}
             onChange={(e) => setProgression(Number(e.target.value))} />
         </label>
@@ -120,14 +302,36 @@ export default function BancDuBandeau() {
             onChange={(e) => setEnCours(Number(e.target.value))} />
         </label>
 
+        <label className="banc-champ">
+          <span>Niveau : {niveau}</span>
+          <input type="range" min={1} max={60} value={niveau}
+            onChange={(e) => setNiveau(Number(e.target.value))} />
+        </label>
+
+        <label className="banc-champ">
+          <span>Missions : {missions}</span>
+          <input type="range" min={0} max={400} value={missions}
+            onChange={(e) => setMissions(Number(e.target.value))} />
+        </label>
+
+        <label className="banc-champ">
+          <span>Jours depuis le serment : {jours}</span>
+          <input type="range" min={1} max={1500} value={jours}
+            onChange={(e) => setJours(Number(e.target.value))} />
+        </label>
+
+        <label className="banc-champ">
+          <span>Échéance (vide : aucune)</span>
+          <input className="banc-saisie" type="date" value={terme} onChange={(e) => setTerme(e.target.value)} />
+        </label>
+
         <label className="banc-bascule">
           <input type="checkbox" checked={reduit} onChange={(e) => setReduit(e.target.checked)} />
           <span>Vue « Mon pacte » (bloc reduit)</span>
         </label>
-
       </aside>
 
-      <div className="banc-scene">
+      <div className="banc-scene bdb-scene">
         {reduit ? (
           <div style={{ maxWidth: 520, margin: "24px auto", padding: 16 }}>
             <IdentiteDuPacte
@@ -144,26 +348,17 @@ export default function BancDuBandeau() {
               enCours={enCours}
             />
           </div>
+        ) : planche ? (
+          VARIANTES.map(({ id, nom: titre, idee, Composant }) => (
+            <section key={id} className="bdb-epreuve" aria-label={titre}>
+              <p className="bdb-legende"><b>{titre}</b> {idee}</p>
+              <div className="bdb-colonne"><Composant {...proprietes} /></div>
+            </section>
+          ))
         ) : (
-        <NexusHeroBanner
-          progression={progression}
-          level={12}
-          totalMissions={47}
-          activeDays={91}
-          pactName={nom}
-          pactMantra={mantra}
-          pactSymbol={symbole}
-          valeurs={listeDesValeurs}
-          sigilVersion={version}
-          titleFont={police}
-          titleEffect={effet}
-          enCours={enCours}
-          rankName="Architecte"
-          rankProgress={64}
-          rankXP={3200}
-          rankXPTarget={5000}
-          nextRankName="Bâtisseur"
-        />
+          <div className="bdb-colonne" key={active.id}>
+            <active.Composant {...proprietes} />
+          </div>
         )}
       </div>
     </div>

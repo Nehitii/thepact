@@ -1,0 +1,231 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE F — LE PLAN LARGE
+
+   Le ciel est un melange entre deux ciels — la nuit et l aube a la
+   teinte du pacte — dose par la progression. Le soleil monte de sous
+   l image (100 %) jusqu a mi-hauteur (50 %) : c est une aube, pas un
+   zenith, et il ne croise jamais le titre. La ville, posee par-dessus,
+   le cache tant qu il n a pas passe l horizon.
+
+   Les bandes noires ne sont pas un effet : ce sont elles qui font du
+   rectangle un plan de cinema. Elles portent les dates et le generique,
+   comme sur une affiche.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* LA PROGRESSION EST UNE PROPRIETE ENREGISTREE : elle s interpole. Le
+   ciel, le soleil et les etoiles la lisent tous ; une seule transition,
+   posee sur elle, les fait bouger ensemble — l aube ne peut pas
+   arriver avant le soleil. */
+@property --pl-p {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.pl {
+  --pl-noir: #000000;
+  --pl-encre: #dfe2e7;
+  --pl-encre-2: #8f949c;
+  --pl-sy: calc(100% - var(--pl-p) * 50%);
+  --pl-sx: calc(66% + var(--pl-p) * 8%);
+  --pl-duree: 2.4s;
+  --pl-courbe: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--pl-noir);
+  box-shadow: 0 26px 60px -30px rgb(0 0 0 / 0.9);
+  container-type: inline-size;
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  color: var(--pl-encre);
+  transition: --pl-p var(--pl-duree) var(--pl-courbe);
+}
+.pl ::selection { background: color-mix(in srgb, var(--pl-teinte) 45%, transparent); color: #fff; }
+
+/* ── Les bandes ── */
+.pl-bande {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding: 11px 18px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pl-encre-2);
+}
+.pl-bande--bas { justify-content: center; padding: 12px 18px 14px; }
+
+/* ── L image ── */
+.pl-image {
+  position: relative;
+  aspect-ratio: 2.39 / 1;
+  overflow: hidden;
+  isolation: isolate;
+  background: #04060d;
+}
+.pl-image > * { position: absolute; }
+
+.pl-ciel {
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at var(--pl-sx) var(--pl-sy),
+      color-mix(in srgb, var(--pl-teinte) 44%, transparent) 0%,
+      color-mix(in srgb, var(--pl-teinte) 24%, transparent) 26%,
+      color-mix(in srgb, var(--pl-teinte) 9%, transparent) 52%,
+      color-mix(in srgb, var(--pl-teinte) 2%, transparent) 76%,
+      transparent 100%),
+    linear-gradient(180deg,
+      color-mix(in oklab, #03050b, #101c3f calc(var(--pl-p) * 100%)) 0%,
+      color-mix(in oklab, #080c1d, color-mix(in srgb, var(--pl-teinte) 38%, #1a1030) calc(var(--pl-p) * 100%)) 52%,
+      color-mix(in oklab, #0d1127, color-mix(in srgb, var(--pl-teinte) 70%, #ffb36b) calc(var(--pl-p) * 100%)) 80%,
+      #06070c 100%);
+}
+.pl-etoiles {
+  inset: 0 0 25%;
+  opacity: calc(1 - var(--pl-p) * 0.9);
+  background-image:
+    radial-gradient(1.2px 1.2px at 13px 21px, rgb(255 255 255 / 0.8), transparent),
+    radial-gradient(1px 1px at 87px 113px, rgb(255 255 255 / 0.55), transparent),
+    radial-gradient(1px 1px at 201px 57px, rgb(255 255 255 / 0.45), transparent),
+    radial-gradient(1.4px 1.4px at 163px 12px, rgb(214 226 255 / 0.75), transparent);
+  background-size: 233px 149px, 311px 181px, 277px 139px, 389px 163px;
+}
+.pl-soleil {
+  left: var(--pl-sx);
+  top: var(--pl-sy);
+  width: 6.2cqi;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #ffffff 0 42%, color-mix(in srgb, var(--pl-teinte) 30%, #fff5e6) 72%, color-mix(in srgb, var(--pl-teinte) 70%, #ffffff) 100%);
+  box-shadow:
+    0 0 3cqi 1cqi color-mix(in srgb, var(--pl-teinte) 55%, transparent),
+    0 0 12cqi 4cqi color-mix(in srgb, var(--pl-teinte) 28%, transparent);
+}
+
+.pl-ville {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 24%;
+  fill: #020306;
+}
+.pl-fenetres { fill: #ffcf7a; opacity: calc(0.55 + (1 - var(--pl-p)) * 0.35); }
+
+.pl-titre {
+  left: 50%;
+  top: 38%;
+  width: 92%;
+  margin: 0;
+  padding-left: 0.3em;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  line-height: 1.06;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: #f5f2ea;
+  text-shadow: 0 2px 22px rgb(0 0 0 / 0.5);
+  opacity: 0;
+  transition: opacity 1.6s ease-out 0.25s, letter-spacing 2.4s var(--pl-courbe) 0.1s;
+}
+.pl:not([data-pret]) .pl-titre { letter-spacing: 0.62em; }
+.pl[data-pret] .pl-titre { opacity: 1; }
+
+/* Le sous-titre : blanc cerne de noir, comme a l ecran. */
+.pl-sous-titre {
+  left: 50%;
+  bottom: 7%;
+  max-width: 84%;
+  margin: 0;
+  transform: translateX(-50%);
+  font-size: clamp(13px, 1.85cqi, 19px);
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 0 2px #000, 0 1px 3px #000, 0 0 1px #000;
+}
+
+.pl-grain {
+  inset: -50%;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  animation: pl-grain 0.9s steps(4) infinite;
+}
+@keyframes pl-grain {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-4%, 3%); }
+  50% { transform: translate(3%, -2%); }
+  75% { transform: translate(-2%, -4%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Le generique ──
+   La typographie des affiches : des noms tres hauts et tres etroits,
+   et entre eux des mots de liaison minuscules. C est ce contraste de
+   tailles qui fait un generique, pas la police seule. */
+.pl-generique {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 0.34em;
+  margin: 0;
+  font-family: "Six Caps", "Rajdhani", sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--pl-encre);
+}
+.pl-generique b { font-weight: 400; letter-spacing: 0.03em; }
+.pl-generique small {
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--pl-encre-2);
+}
+.pl-bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+}
+button.pl-bascule { cursor: pointer; }
+button.pl-bascule b {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--pl-encre) 30%, transparent);
+}
+button.pl-bascule:hover b { text-decoration-color: var(--pl-teinte); }
+button.pl-bascule:focus-visible { outline: 2px solid var(--pl-teinte); outline-offset: 3px; }
+.pl-logo { display: inline-grid; margin-left: 0.3em; color: var(--pl-encre-2); --ds-bg-base: 0 0% 0%; }
+
+/* ── L affiche : sous 560 px, le plan se redresse ── */
+@container (max-width: 560px) {
+  .pl-image { aspect-ratio: 4 / 5; }
+  .pl-ville { height: 20%; }
+  .pl-soleil { width: 14cqi; }
+  .pl-titre { top: 36%; letter-spacing: 0.18em; padding-left: 0.18em; }
+  .pl-bande--haut { flex-direction: column; align-items: center; text-align: center; font-size: 9.5px; }
+  .pl-generique { font-size: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl, .pl-titre { transition: none; }
+  .pl-grain { animation: none; }
+}

@@ -1,0 +1,33 @@
+/* LE BANC DU BANDEAU : la scene reprend la colonne du tableau de bord
+   — 64 rem, une gouttiere de 20 px — pour que chaque variante se juge
+   a la largeur ou elle vivra, et pas etalee sur tout l ecran. */
+
+.banc[data-pupitre="masque"] { grid-template-columns: 1fr; }
+.banc[data-pupitre="masque"] .banc-pupitre { display: none; }
+
+.bdb-idee { color: var(--banc-encre); }
+
+.bdb-scene {
+  min-height: 100dvh;
+  background: hsl(var(--ds-bg-base));
+  padding-block: 24px 64px;
+}
+
+.bdb-colonne {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+@media (max-width: 640px) {
+  .bdb-colonne { padding: 0 16px; }
+}
+
+.bdb-epreuve + .bdb-epreuve { margin-top: 56px; }
+.bdb-legende {
+  max-width: 64rem;
+  margin: 0 auto 12px;
+  padding: 0 20px;
+  font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: hsl(var(--ds-text-secondary, 215 20% 65%));
+}
+.bdb-legende b { margin-right: 8px; color: hsl(var(--ds-text-primary, 210 40% 96%)); }

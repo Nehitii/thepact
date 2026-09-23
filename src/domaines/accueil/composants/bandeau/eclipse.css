@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE B — L ECLIPSE
+
+   L astre est un carre : le soleil et la lune y font 48 % du cote,
+   la couronne 144 % — elle deborde, comme une vraie. La lune glisse
+   de sa propre largeur : a 0 elle est a cote du soleil, a 1 elle le
+   couvre exactement. Toute la geometrie tient dans « --ec-p ».
+
+   Le ciel reste nocturne dans les deux themes : c est une
+   photographie, pas une surface de l interface.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ec {
+  --ec-fond: #04050a;
+  --ec-encre: #eef1f7;
+  --ec-encre-2: #aab1c0;
+  --ec-encre-3: #808899;
+  --ec-regle: #1b2030;
+  --ec-duree: 1.9s;
+  --ec-courbe: cubic-bezier(0.16, 1, 0.3, 1);
+
+  position: relative;
+  isolation: isolate;
+  border-radius: 4px;
+  overflow: hidden;
+  container-type: inline-size;
+  background-color: var(--ec-fond);
+  /* Le halo du ciel s eteint par paliers : une chute lineaire s arrete
+     net, et l oeil voit une arete la ou la pente casse. */
+  background-image:
+    radial-gradient(ellipse 52% 90% at 23% 50%,
+      color-mix(in srgb, var(--ec-teinte) 15%, transparent) 0%,
+      color-mix(in srgb, var(--ec-teinte) 9%, transparent) 30%,
+      color-mix(in srgb, var(--ec-teinte) 4%, transparent) 55%,
+      color-mix(in srgb, var(--ec-teinte) 1.2%, transparent) 78%,
+      transparent 100%),
+    radial-gradient(1.3px 1.3px at 13px 21px, rgb(255 255 255 / 0.75), transparent),
+    radial-gradient(1px 1px at 87px 143px, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1px 1px at 201px 67px, rgb(255 255 255 / 0.42), transparent),
+    radial-gradient(1.5px 1.5px at 163px 12px, rgb(214 226 255 / 0.7), transparent),
+    radial-gradient(1px 1px at 41px 97px, rgb(255 255 255 / 0.32), transparent);
+  background-size: 100% 100%, 233px 179px, 311px 241px, 277px 199px, 389px 263px, 157px 131px;
+  box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.8);
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  color: var(--ec-encre-2);
+}
+/* La grille est a l interieur du cadre : une requete de conteneur
+   interroge un ANCETRE, jamais l element lui-meme. */
+.ec-grille {
+  display: grid;
+  grid-template-columns: minmax(200px, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(20px, 4cqi, 56px);
+  padding: clamp(24px, 3.6cqi, 44px) clamp(20px, 4.4cqi, 56px);
+}
+.ec ::selection { background: color-mix(in srgb, var(--ec-teinte) 40%, transparent); color: #fff; }
+
+/* ── L astre ── */
+.ec-astre {
+  position: relative;
+  width: 100%;
+  max-width: 330px;
+  aspect-ratio: 1;
+  justify-self: center;
+}
+.ec-astre > * { position: absolute; }
+
+.ec-couronne {
+  left: -22%;
+  top: -22%;
+  width: 144%;
+  height: 144%;
+  stroke: color-mix(in srgb, var(--ec-teinte) 62%, #ffffff);
+  stroke-linecap: round;
+  filter: blur(1.1px);
+  opacity: calc(0.1 + var(--ec-p) * var(--ec-p) * 0.9);
+  transition: opacity var(--ec-duree) var(--ec-courbe);
+}
+
+.ec-halo {
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--ec-teinte) 60%, transparent) 30%,
+    color-mix(in srgb, var(--ec-teinte) 20%, transparent) 46%,
+    transparent 68%);
+  filter: blur(5px);
+  opacity: calc(0.2 + var(--ec-p) * 0.8);
+  transition: opacity var(--ec-duree) var(--ec-courbe);
+}
+
+.ec-soleil,
+.ec-lune {
+  left: 26%;
+  top: 26%;
+  width: 48%;
+  height: 48%;
+  border-radius: 50%;
+}
+
+/* L eclat blanc recule a mesure que la lune couvre : ce n est pas la
+   lumiere du pacte, c est celle qu on subit. Un degrade radial, et pas
+   une ombre portee de cent pixels : Chrome la rasterise dans une boite,
+   et son bord se voyait comme une arete verticale dans le ciel. */
+.ec-eclat {
+  left: -12%;
+  top: -12%;
+  width: 124%;
+  height: 124%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgb(255 250 236 / 0.95) 0 19%,
+    rgb(255 244 214 / 0.42) 26%,
+    rgb(255 240 210 / 0.14) 40%,
+    transparent 64%);
+  opacity: calc(1 - var(--ec-p) * 0.72);
+  transition: opacity var(--ec-duree) var(--ec-courbe);
+}
+.ec-soleil {
+  background: radial-gradient(circle,
+    #fffef8 0 50%,
+    #fff3da 66%,
+    color-mix(in srgb, var(--ec-teinte) 32%, #fff2d8) 86%,
+    color-mix(in srgb, var(--ec-teinte) 66%, #ffffff) 100%);
+}
+
+.ec-lune {
+  z-index: 2;
+  background: radial-gradient(circle at 36% 32%, #181b24 0%, #0a0b10 58%, #040407 100%);
+  color: color-mix(in srgb, var(--ec-teinte) 78%, #ffffff);
+  transform: translate(calc((var(--ec-p) - 1) * 104%), calc((var(--ec-p) - 1) * 34%));
+  transition: transform var(--ec-duree) var(--ec-courbe);
+}
+/* Le sceau est grave sur la face sombre : la couronne l eclaire. Ses
+   medaillons prennent la couleur de la lune, pas celle de la page. */
+.ec-sceau {
+  --ds-bg-base: 228 22% 7%;
+  opacity: calc(0.28 + var(--ec-p) * 0.72);
+  transition: opacity var(--ec-duree) var(--ec-courbe);
+}
+
+/* L anneau de diamant : la derniere perle de soleil, a la totalite. */
+.ec-perle {
+  z-index: 3;
+  left: 62%;
+  top: 28.5%;
+  width: 9%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0 18%, rgb(255 255 255 / 0.55) 36%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease-out 1.2s;
+}
+.ec-perle::before,
+.ec-perle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 420%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.8), transparent);
+  transform: translate(-50%, -50%);
+}
+.ec-perle::after { transform: translate(-50%, -50%) rotate(90deg); width: 260%; }
+.ec[data-totale] .ec-perle { opacity: 1; }
+
+/* ── Le texte et les ephemerides ── */
+.ec-texte { min-width: 0; position: relative; z-index: 1; }
+.ec-nom {
+  margin: 0;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ec-encre);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.ec-raison {
+  margin: 12px 0 0;
+  max-width: 46ch;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ec-encre-2);
+}
+
+.ec-ephemerides {
+  display: grid;
+  margin: clamp(18px, 3cqi, 28px) 0 0;
+  border-top: 1px solid var(--ec-regle);
+  font-size: 13.5px;
+  line-height: 1.35;
+}
+.ec-ligne {
+  display: grid;
+  grid-template-columns: 8.2em minmax(0, 1fr);
+  align-items: baseline;
+  gap: 14px;
+  padding: 7px 0 8px;
+  border-bottom: 1px solid var(--ec-regle);
+}
+.ec-ligne dt {
+  font: 600 10.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ec-encre-3);
+}
+.ec-ligne dd { margin: 0; color: var(--ec-encre-2); overflow-wrap: anywhere; }
+.ec-ligne b {
+  font: 600 14px/1 "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--ec-encre);
+}
+
+.ec-bascule {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.ec-bascule b { font-size: 22px; color: color-mix(in srgb, var(--ec-teinte) 50%, #ffffff); }
+button.ec-bascule { cursor: pointer; }
+button.ec-bascule span {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--ec-encre-3);
+  text-underline-offset: 4px;
+}
+button.ec-bascule:hover span,
+button.ec-bascule:focus-visible span { color: var(--ec-encre); text-decoration-color: var(--ec-teinte); }
+button.ec-bascule:focus-visible { outline: 2px solid var(--ec-teinte); outline-offset: 4px; border-radius: 2px; }
+
+@container (max-width: 640px) {
+  .ec-grille { grid-template-columns: minmax(0, 1fr); }
+  .ec-astre { max-width: 220px; margin-block: 12px 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ec-couronne, .ec-halo, .ec-eclat, .ec-lune, .ec-sceau, .ec-perle { transition: none; }
+}

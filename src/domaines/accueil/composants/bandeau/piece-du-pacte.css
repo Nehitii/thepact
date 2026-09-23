@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE D — LA PIECE
+
+   La carte est un conteneur : tout ce qu elle porte se mesure en
+   « cqi », en centiemes de SA largeur. Elle garde donc ses
+   proportions de 800 a 300 px, comme une vraie carte photographiee
+   de plus ou moins pres. Le format est l ID-1 : 85,6 × 54 mm, des
+   coins de 3,18 mm.
+
+   L inclinaison au repos est fixe — quelques degres, pour que l objet
+   se lise comme un objet. Le pointeur la prend en main ; en le
+   quittant, elle revient doucement.
+   ═══════════════════════════════════════════════════════════════ */
+
+.pi {
+  display: grid;
+  place-items: center;
+  padding: 6px 0 22px;
+  container-type: inline-size;
+}
+
+.pi-carte {
+  --pi-fond: #eef0ea;
+  --pi-texte: #151922;
+  --pi-texte-2: #434a58;
+
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 800px);
+  aspect-ratio: 85.6 / 54;
+  container-type: inline-size;
+  overflow: hidden;
+  border-radius: 3.7% / 5.87%;
+  background-color: var(--pi-fond);
+  background-image:
+    radial-gradient(ellipse at 72% 44%, color-mix(in srgb, var(--pi-teinte) 12%, transparent), transparent 60%),
+    linear-gradient(128deg, #f6f7f2 0%, #e7ebe5 42%, #eff1f5 70%, #e5e8e2 100%);
+  color: var(--pi-texte);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.25),
+    0 16px 34px -12px rgb(0 0 0 / 0.6),
+    0 44px 80px -40px rgb(0 0 0 / 0.55),
+    inset 0 0 0 1px rgb(255 255 255 / 0.65);
+  transform: perspective(1400px) rotateX(var(--pi-rx, 3deg)) rotateY(var(--pi-ry, -5deg));
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+}
+.pi:hover .pi-carte { transition-duration: 0.12s; }
+.pi ::selection { background: color-mix(in srgb, var(--pi-teinte) 30%, transparent); }
+
+.pi-guillochis {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--pi-encre);
+  stroke-width: 0.7;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.pi-page {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  padding: 2.5cqi 3.6cqi 2.3cqi;
+}
+
+/* ── L en-tete ── */
+.pi-entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2cqi;
+  padding-bottom: 0.9cqi;
+  border-bottom: max(1px, 0.14cqi) solid color-mix(in srgb, var(--pi-encre) 60%, transparent);
+}
+.pi-emetteur {
+  font-size: 1.9cqi;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--pi-encre);
+}
+.pi-titre {
+  font-size: 1.3cqi;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--pi-texte-2);
+}
+.pi-numero {
+  font: 600 1.6cqi/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  color: var(--pi-texte);
+}
+/* La microlettre : la devise repetee en corps de 5 px, illisible a
+   l oeil, comme la ligne de securite d un billet. */
+.pi-micro {
+  margin: 0.45cqi 0 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font: 500 0.66cqi/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--pi-encre) 75%, transparent);
+}
+
+/* ── Le corps : portrait, champs, cote ── */
+.pi-corps {
+  display: grid;
+  grid-template-columns: 22cqi minmax(0, 1fr) 11cqi;
+  gap: 2.8cqi;
+  min-height: 0;
+  padding-top: 1.9cqi;
+}
+
+.pi-portrait {
+  align-self: start;
+  aspect-ratio: 35 / 45;
+  padding: 1.2cqi;
+  border-radius: 1cqi;
+  background: linear-gradient(170deg, #e3e7e1, #d4d9d2);
+  box-shadow: inset 0 0 0 max(1px, 0.12cqi) rgb(0 0 0 / 0.08);
+  color: var(--pi-encre);
+  --ds-bg-base: 100 9% 86%;
+}
+
+.pi-champs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 1.2cqi 2.4cqi;
+  min-width: 0;
+  margin: 0;
+}
+.pi-champ { min-width: 0; }
+.pi-champ--large { grid-column: 1 / -1; }
+.pi-champ dt {
+  font-size: 1.02cqi;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--pi-encre);
+}
+.pi-champ dd {
+  margin: 0.25cqi 0 0;
+  font-size: 1.75cqi;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--pi-texte);
+  overflow-wrap: anywhere;
+}
+.pi-nom {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--pi-texte);
+}
+.pi-carte[data-parasites] .pi-nom {
+  text-shadow: -0.035em 0 rgb(226 0 92 / 0.5), 0.035em 0 rgb(0 168 228 / 0.5);
+}
+.pi-devise {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.pi-chiffres {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.pi-bascule {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+button.pi-bascule {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--pi-encre) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+button.pi-bascule:hover { text-decoration-color: var(--pi-encre); }
+button.pi-bascule:focus-visible { outline: 2px solid var(--pi-encre); outline-offset: 3px; border-radius: 2px; }
+
+/* ── La cote : la puce, le film, le portrait fantome ── */
+.pi-cote {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2.4cqi;
+  padding-top: 0.6cqi;
+}
+.pi-puce {
+  width: 8.4cqi;
+  height: auto;
+  border-radius: 12% / 16%;
+  background: linear-gradient(135deg, #f1dc98, #c99f45 48%, #f4e2a8 60%, #b58b37);
+  box-shadow: inset 0 0 0 1px rgb(120 90 30 / 0.35);
+  fill: none;
+  stroke: rgb(120 88 26 / 0.6);
+  stroke-width: 0.8;
+}
+.pi-holo {
+  width: 9.6cqi;
+  aspect-ratio: 1;
+  padding: 0.5cqi;
+  border-radius: 50%;
+  color: rgb(255 255 255 / 0.9);
+  --ds-bg-base: 0 0% 100% / 0.18;
+  background: conic-gradient(from calc(var(--pi-mx, 0.35) * 540deg),
+    #ff8ac2, #ffd36e, #92ffc9, #7ad7ff, #b494ff, #ff8ac2);
+  box-shadow: inset 0 0 0 max(1px, 0.12cqi) rgb(255 255 255 / 0.7), 0 0 0 max(1px, 0.1cqi) rgb(0 0 0 / 0.08);
+}
+.pi-carte[data-feuille="or"] .pi-holo {
+  background: conic-gradient(from calc(var(--pi-mx, 0.35) * 540deg), #fff4c9, #d8a838, #fff1b0, #b8862a, #ffe9a3, #fff4c9);
+}
+.pi-carte[data-feuille="cuivre"] .pi-holo {
+  background: conic-gradient(from calc(var(--pi-mx, 0.35) * 540deg), #ffe0cc, #c8622e, #ffc7a1, #9c4a22, #ffd4b8, #ffe0cc);
+}
+.pi-carte[data-feuille="cyan"] .pi-holo {
+  background: conic-gradient(from calc(var(--pi-mx, 0.35) * 540deg), #dcfbff, #19c4e6, #bdf3ff, #0d8fb0, #c9f6ff, #dcfbff);
+}
+.pi-carte[data-feuille="violet"] .pi-holo {
+  background: conic-gradient(from calc(var(--pi-mx, 0.35) * 540deg), #f1e4ff, #9a55f0, #dcc2ff, #6f35c4, #e8d6ff, #f1e4ff);
+}
+.pi-fantome {
+  width: 7.4cqi;
+  aspect-ratio: 1;
+  color: var(--pi-encre);
+  opacity: 0.3;
+  --ds-bg-base: 90 10% 91%;
+}
+.pi-holo > svg, .pi-fantome > svg { width: 100%; height: 100%; display: block; }
+
+/* ── La zone lisible par machine ── */
+.pi-zone {
+  display: grid;
+  margin: 0;
+  padding-top: 1.2cqi;
+  font: 500 4.05cqi/1.14 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  white-space: pre;
+  color: #1b1e25;
+}
+
+/* Le film de protection : un reflet qui suit l angle, et l irisation
+   des cartes plastifiees. */
+.pi-film {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(112deg, transparent 34%, rgb(255 255 255 / 0.55) 47%, transparent 60%)
+      calc(var(--pi-mx, 0.3) * 100%) 0 / 260% 100% no-repeat,
+    repeating-linear-gradient(118deg,
+      rgb(255 120 180 / 0.08) 0 1.2cqi,
+      rgb(120 255 200 / 0.08) 1.2cqi 2.4cqi,
+      rgb(120 180 255 / 0.08) 2.4cqi 3.6cqi);
+  mix-blend-mode: soft-light;
+}
+
+/* ── Le badge : sous 560 px, la carte se redresse ── */
+@container (max-width: 560px) {
+  .pi-carte { aspect-ratio: auto; border-radius: 16px; transform: none; }
+  .pi-page { padding: 5cqi 5.5cqi 5cqi; grid-template-rows: auto; }
+  .pi-emetteur { font-size: 4.2cqi; }
+  .pi-titre { display: none; }
+  .pi-numero { font-size: 3.6cqi; }
+  .pi-micro { font-size: 1.6cqi; }
+  .pi-corps { grid-template-columns: 34cqi minmax(0, 1fr); gap: 4cqi 5cqi; padding-top: 4cqi; }
+  .pi-portrait { padding: 2cqi; border-radius: 2cqi; }
+  .pi-champs { grid-column: 1 / -1; grid-row: 2; gap: 3cqi 5cqi; }
+  .pi-cote { grid-column: 2; grid-row: 1; grid-auto-flow: column; align-content: center; gap: 4cqi; }
+  .pi-puce { width: 17cqi; }
+  .pi-holo { width: 20cqi; }
+  .pi-fantome { display: none; }
+  .pi-champ dt { font-size: 2.5cqi; }
+  .pi-champ dd { font-size: 4cqi; }
+  .pi-zone { font-size: 4.25cqi; padding-top: 5cqi; letter-spacing: 0.06em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pi-carte { transition: none; }
+}

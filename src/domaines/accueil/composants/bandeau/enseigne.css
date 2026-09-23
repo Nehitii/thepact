@@ -1,0 +1,285 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE C — L ENSEIGNE
+
+   UN TUBE, CE N EST PAS UN HALO. Le coeur du verre est presque blanc,
+   la couleur est dans la lumiere autour — cinq ombres, de la plus
+   serree a la plus large. Une sixieme, sombre et decalee, est l ombre
+   du tube sur le mur : c est elle qui dit que l objet est pose DEVANT
+   le beton, et pas peint dessus.
+
+   L ALLUMAGE PAR PALIERS. Chaque lettre passe par « eteint, allume,
+   eteint, allume » sans transition — un tube qui s amorce ne fond
+   pas, il claque. D ou « steps(1, end) » : chaque etape tient jusqu a
+   la suivante.
+
+   Le mur reste nocturne dans les deux themes : c est une rue.
+   ═══════════════════════════════════════════════════════════════ */
+
+.en {
+  --en-fond: #0c0d10;
+  --en-encre: #eceef2;
+  --en-verre: #2a2d33;
+  --en-script: #ffcf9e;
+  --en-diode: #ffa92a;
+  --en-coeur: color-mix(in srgb, var(--en-tube) 28%, #ffffff);
+  --en-lumiere:
+    0 0 0.02em #ffffff,
+    0 0 0.06em var(--en-tube),
+    0 0 0.15em var(--en-tube),
+    0 0 0.36em color-mix(in srgb, var(--en-tube) 60%, transparent),
+    0 0 0.9em color-mix(in srgb, var(--en-tube) 32%, transparent),
+    0.05em 0.14em 0.08em rgb(0 0 0 / 0.55);
+  --en-eteint:
+    0 0 0 transparent, 0 0 0 transparent, 0 0 0 transparent,
+    0 0 0 transparent, 0 0 0 transparent,
+    0.05em 0.14em 0.08em rgb(0 0 0 / 0.55);
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  /* Une piste bornee : le bandeau a diodes est large comme tout son
+     texte, et une piste « auto » s elargissait avec lui — le compteur
+     partait a 2 600 px, hors du mur. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 2.6vw, 26px);
+  padding: clamp(24px, 3.6vw, 44px) clamp(20px, 4vw, 52px) clamp(18px, 2.4vw, 26px);
+  border-radius: 4px;
+  overflow: hidden;
+  container-type: inline-size;
+  background-color: var(--en-fond);
+  /* Le beton : un grain, des joints de banche tous les 260 px, un
+     vignetage. Le grain est une turbulence SVG, pas une image. */
+  background-image:
+    radial-gradient(ellipse at 50% 42%, transparent 40%, rgb(0 0 0 / 0.55) 100%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 260px),
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.35) 0 1px, transparent 1px 130px),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .6 0 0 0 0 .62 0 0 0 0 .66 0 0 0 .16 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.85);
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  color: var(--en-encre);
+}
+.en > * { min-width: 0; }
+.en ::selection { background: color-mix(in srgb, var(--en-tube) 45%, transparent); color: #fff; }
+.en-lu {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* La lumiere que l enseigne jette sur le mur. */
+.en-lueur {
+  position: absolute;
+  inset: -10% -5% 20%;
+  z-index: -1;
+  background: radial-gradient(ellipse at 52% 40%, color-mix(in srgb, var(--en-tube) 26%, transparent), transparent 62%);
+  animation: en-lueur 1.4s steps(1, end) 0.2s both;
+}
+
+/* ── L enseigne : le rond et le nom ── */
+.en-enseigne {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(18px, 3.4cqi, 40px);
+}
+.en-rond {
+  width: clamp(92px, 15cqi, 150px);
+  aspect-ratio: 1;
+  color: var(--en-coeur);
+  --ds-bg-base: 225 11% 6%;
+  filter:
+    drop-shadow(0 0 1.5px var(--en-tube))
+    drop-shadow(0 0 7px var(--en-tube))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--en-tube) 50%, transparent));
+  animation: en-allume-bloc 1s steps(1, end) 0.1s both;
+}
+
+.en-textes { min-width: 0; }
+.en-nom {
+  display: block;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.en-l {
+  white-space: pre-wrap;
+  color: var(--en-coeur);
+  text-shadow: var(--en-lumiere);
+  animation: en-allumage 1.2s steps(1, end) calc(0.35s + var(--i) * 75ms) both;
+}
+.en-nom[data-tient] .en-l { white-space: pre; }
+[data-faiblit] .en-l--faible {
+  animation:
+    en-allumage 1.2s steps(1, end) calc(0.35s + var(--i) * 75ms) both,
+    en-faiblit 6.5s steps(1, end) calc(2.4s + var(--i) * 75ms) infinite;
+}
+[data-parasites] .en-nom { animation: en-parasites 5s steps(1, end) 2.6s infinite; }
+
+@keyframes en-allumage {
+  0% { color: var(--en-verre); text-shadow: var(--en-eteint); }
+  14% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+  20% { color: var(--en-verre); text-shadow: var(--en-eteint); }
+  34% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+  40% { color: var(--en-verre); text-shadow: var(--en-eteint); }
+  56%, 100% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+}
+@keyframes en-faiblit {
+  0%, 86% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+  87% { color: var(--en-verre); text-shadow: var(--en-eteint); }
+  89% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+  91% { color: var(--en-verre); text-shadow: var(--en-eteint); }
+  95%, 100% { color: var(--en-coeur); text-shadow: var(--en-lumiere); }
+}
+@keyframes en-parasites {
+  0%, 93% { transform: none; }
+  94% { transform: translateX(0.03em) skewX(-4deg); }
+  96% { transform: translateX(-0.02em); }
+  98% { transform: none; }
+}
+@keyframes en-allume-bloc {
+  0% { opacity: 0.12; }
+  18% { opacity: 1; }
+  26% { opacity: 0.12; }
+  44%, 100% { opacity: 1; }
+}
+@keyframes en-lueur {
+  0% { opacity: 0; }
+  40% { opacity: 0.6; }
+  48% { opacity: 0.1; }
+  70%, 100% { opacity: 1; }
+}
+
+/* La raison, dans un second tube : une cursive d enseigne, blanc chaud. */
+.en-script {
+  margin: 0.1em 0 0 0.2em;
+  font-family: "Neonderthaw", "Segoe Script", cursive;
+  font-size: clamp(30px, 5.6cqi, 58px);
+  line-height: 1.05;
+  color: #fff6ec;
+  text-shadow:
+    0 0 0.03em #ffffff,
+    0 0 0.1em var(--en-script),
+    0 0 0.26em var(--en-script),
+    0 0 0.6em color-mix(in srgb, var(--en-script) 45%, transparent),
+    0.04em 0.12em 0.06em rgb(0 0 0 / 0.5);
+  animation: en-allume-bloc 1s steps(1, end) 1.3s both;
+}
+
+/* ── Le bas du mur : le pochoir, le chiffre, la plaque ── */
+.en-bas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 28px;
+}
+.en-pochoir {
+  margin: 0;
+  font-family: "Allerta Stencil", "Switzer", sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgb(232 234 238 / 0.66);
+  text-shadow: 0 0 1px rgb(232 234 238 / 0.35), 0 0 9px rgb(232 234 238 / 0.08);
+}
+.en-compteur { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.en-chiffre {
+  font-size: 46px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--en-coeur);
+  text-shadow: var(--en-lumiere);
+  animation: en-allume-bloc 1s steps(1, end) 1.6s both;
+}
+.en-chiffre small { margin-left: 0.08em; font-size: 0.55em; }
+
+/* La plaque emaillee, bleu de rue, filet blanc : c est la bascule. */
+.en-plaque {
+  display: inline-block;
+  padding: 7px 14px 6px;
+  border: 0;
+  border-radius: 5px;
+  background: #13408f;
+  box-shadow:
+    inset 0 0 0 2px #13408f,
+    inset 0 0 0 3.5px #eef2f8,
+    0 2px 0 rgb(0 0 0 / 0.45),
+    0 8px 14px -6px rgb(0 0 0 / 0.7);
+  font: 700 11.5px/1.25 "Switzer", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f4f7fb;
+}
+button.en-plaque { cursor: pointer; transition: transform 160ms ease-out; }
+button.en-plaque:hover { transform: translateY(-1px); }
+button.en-plaque:focus-visible { outline: 2px solid var(--en-tube); outline-offset: 4px; }
+
+/* ── Le bandeau a diodes ──
+   Les diodes eteintes sont un fond de points ; les allumees, le texte
+   vu a travers un masque de points FIXE. Le texte glisse sous la
+   grille — c est ce que fait un vrai bandeau. */
+.en-diodes {
+  position: relative;
+  padding: 7px 10px;
+  border: 1px solid #1d1c1a;
+  border-radius: 3px;
+  background-color: #060606;
+  background-image: radial-gradient(circle, #1d1407 0.9px, transparent 1.3px);
+  background-size: 3px 3px;
+  box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.04);
+}
+.en-matrice {
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle, #000 0.95px, transparent 1.3px);
+  -webkit-mask-size: 3px 3px;
+  mask-image: radial-gradient(circle, #000 0.95px, transparent 1.3px);
+  mask-size: 3px 3px;
+}
+.en-bande {
+  display: flex;
+  width: max-content;
+  font: 800 16px/27px "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--en-diode);
+  animation: en-defile 42s linear infinite;
+}
+.en-diodes:hover .en-bande { animation-play-state: paused; }
+.en-boucle { display: flex; white-space: nowrap; }
+.en-sep {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin: 0 22px;
+  vertical-align: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+@keyframes en-defile { to { transform: translateX(-50%); } }
+
+@container (max-width: 600px) {
+  .en-enseigne { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+  .en-rond { width: 96px; }
+  .en-compteur { margin-left: 0; }
+}
+
+/* Sans mouvement, le bandeau ne defile plus : il s affiche en entier,
+   sur plusieurs lignes, plutot que de cacher ce qui depasse. Le reglage
+   du profil (« data-reduce-motion ») vaut celui du systeme. */
+@media (prefers-reduced-motion: reduce) {
+  .en-l, [data-faiblit] .en-l--faible, [data-parasites] .en-nom,
+  .en-rond, .en-lueur, .en-script, .en-chiffre { animation: none; }
+  .en-bande { animation: none; width: auto; flex-wrap: wrap; }
+  .en-boucle { white-space: normal; flex-wrap: wrap; }
+  .en-boucle + .en-boucle { display: none; }
+}
+[data-reduce-motion="true"] .en-bande { animation: none; width: auto; flex-wrap: wrap; }
+[data-reduce-motion="true"] .en-boucle { white-space: normal; flex-wrap: wrap; }
+[data-reduce-motion="true"] .en-boucle + .en-boucle { display: none; }
