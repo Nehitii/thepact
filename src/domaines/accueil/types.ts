@@ -60,3 +60,21 @@ export interface ProprietesDuBandeau extends NexusHeroBannerProps {
   /** Le modele d interrupteur de mesure de l enseigne : le cordon, sauf au banc. */
   interrupteur?: string | null;
 }
+
+/* CE QUE RECOIT UNE BARRE D ACCES RAPIDE — l actuelle et ses refontes.
+ * Les modules achetes decident des verrous ; les deux rappels ouvrent
+ * les outils de la page (la revue, le tirage). */
+export interface ProprietesAccesRapide {
+  ownedModules: {
+    "todo-list": boolean;
+    journal: boolean;
+    "track-health": boolean;
+  };
+  onWeeklyReview?: () => void;
+  onMissionRandomizer?: () => void;
+  missionRandomizerOuvert?: boolean;
+  missionRandomizerDisponible?: boolean;
+  /** Au banc seulement : ou l acces aurait mene, au lieu d y aller. */
+  onNaviguer?: (route: string) => void;
+  className?: string;
+}

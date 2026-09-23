@@ -31,3 +31,7 @@
   color: hsl(var(--ds-text-secondary, 215 20% 65%));
 }
 .bdb-legende b { margin-right: 8px; color: hsl(var(--ds-text-primary, 210 40% 96%)); }
+
+/* Le banc de l acces rapide empile l enseigne et la barre avec l ecart
+   du tableau de bord entre deux temps de la page (2,5 rem). */
+.bda-pile { display: grid; gap: 40px; }

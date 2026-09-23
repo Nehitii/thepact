@@ -37,6 +37,7 @@ const Community = lazy(() => import("@/domaines/social/pages/Community"));
 const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
 const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
 const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
+const BancDeLAcces = lazy(() => import("@/domaines/accueil/pages/BancDeLAcces"));
 const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
 const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
 const BancDuTableau = lazy(() => import("@/domaines/accueil/pages/BancDuTableau"));
@@ -139,6 +140,11 @@ function AppRoutes() {
           nom et des valeurs : c est la COMBINAISON qu il faut juger.
           Il ne lit ni n ecrit rien ; tout vient de ses menus. */}
       <Route path="/banc/bandeau" element={<BancDuBandeau />} />
+
+      {/* LE BANC DE L ACCES RAPIDE — public, meme raison que le bandeau :
+          les refontes de la barre sous l enseigne, et ses etats (modules
+          achetes, tirage). Il n ecrit rien et ne quitte pas le banc. */}
+      <Route path="/banc/acces" element={<BancDeLAcces />} />
 
       {/* LE BANC DE LA FINANCE — public, et pour la troisieme fois la
           meme raison. L onglet porte 3 436 lignes de CSS et n avait pas

@@ -8,6 +8,7 @@ import { Stele } from "@/domaines/accueil/composants/bandeau/Stele";
 import { PlanLarge } from "@/domaines/accueil/composants/bandeau/PlanLarge";
 import { PlancheDesInterrupteurs } from "@/domaines/accueil/composants/bandeau/PlancheDesInterrupteurs";
 import { INTERRUPTEURS, lireLInterrupteur } from "@/domaines/accueil/logique/interrupteurs";
+import { useSansMouvementAuBanc } from "@/domaines/accueil/hooks/useSansMouvementAuBanc";
 import { IdentiteDuPacte, POLICES_DU_TITRE, EFFETS_DU_TITRE } from "@/domaines/objectifs";
 import { TEINTES_DU_PACTE } from "@/socle/ds/fonds/catalogue";
 import { jourDecale } from "@/socle/outils/jour";
@@ -139,19 +140,8 @@ export default function BancDuBandeau() {
   const active = VARIANTES.find((v) => v.id === variante) ?? VARIANTES[0];
 
   /* « ?mouvement=0 » coupe le mouvement comme le reglage du profil :
-     chaque variante s affiche d emblee dans son etat final. C est ce
-     qu il faut pour une capture — volet masque, les transitions ne
-     s achevent jamais. */
-  useEffect(() => {
-    if (parametre("mouvement") !== "0") return;
-    const racine = document.documentElement;
-    const avant = racine.getAttribute("data-reduce-motion");
-    racine.setAttribute("data-reduce-motion", "true");
-    return () => {
-      if (avant === null) racine.removeAttribute("data-reduce-motion");
-      else racine.setAttribute("data-reduce-motion", avant);
-    };
-  }, []);
+     chaque variante s affiche d emblee dans son etat final. */
+  useSansMouvementAuBanc(parametre("mouvement") === "0");
 
   /* La bascule agit sur la racine, comme le vrai selecteur de theme. */
   useEffect(() => {
