@@ -81,10 +81,14 @@
 /* ── L enseigne : le rond et le nom ── */
 .en-enseigne {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "rond textes rang";
   align-items: center;
   gap: clamp(18px, 3.4cqi, 40px);
 }
+.en-rond { grid-area: rond; }
+.en-textes { grid-area: textes; }
+.en-rang { grid-area: rang; }
 .en-rond {
   width: clamp(92px, 15cqi, 150px);
   aspect-ratio: 1;
@@ -265,8 +269,14 @@ button.en-plaque:focus-visible { outline: 2px solid var(--en-tube); outline-offs
 @keyframes en-defile { to { transform: translateX(-50%); } }
 
 @container (max-width: 600px) {
-  .en-enseigne { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+  .en-enseigne {
+    grid-template-columns: auto auto;
+    grid-template-areas: "rond rang" "textes textes";
+    justify-content: space-between;
+  }
   .en-rond { width: 96px; }
+  .en-caisson { width: 96px; }
+  .en-niveau { font-size: 24px; }
   .en-compteur { margin-left: 0; }
 }
 
@@ -275,7 +285,7 @@ button.en-plaque:focus-visible { outline: 2px solid var(--en-tube); outline-offs
    du profil (« data-reduce-motion ») vaut celui du systeme. */
 @media (prefers-reduced-motion: reduce) {
   .en-l, [data-faiblit] .en-l--faible, [data-parasites] .en-nom,
-  .en-rond, .en-lueur, .en-script, .en-chiffre { animation: none; }
+  .en-rond, .en-rang, .en-lueur, .en-script, .en-chiffre { animation: none; }
   .en-bande { animation: none; width: auto; flex-wrap: wrap; }
   .en-boucle { white-space: normal; flex-wrap: wrap; }
   .en-boucle + .en-boucle { display: none; }

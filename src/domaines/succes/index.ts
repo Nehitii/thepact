@@ -87,4 +87,10 @@ export const DailyQuestsPanel = lazy(() =>
    l accueil pour son bandeau, le profil pour sa fiche publique. */
 export { niveauDuRang } from "@/domaines/succes/logique/rang";
 
+/* LA TEINTE D UN PALIER, telle que le noyau la lit. L enseigne du
+   bandeau allume l anneau du palier a sa couleur : elle doit refuser
+   les memes valeurs illisibles que le noyau — la variable CSS de
+   l ancien prereglage « Cyan » — sinon les deux divergent. */
+export { normaliserTeinte } from "@/domaines/succes/logique/teinte";
+
 export { mesureDeLHonneur } from "@/domaines/succes/logique/honneurDuTemps";

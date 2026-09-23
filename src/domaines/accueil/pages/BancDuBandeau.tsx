@@ -10,6 +10,9 @@ import { IdentiteDuPacte, POLICES_DU_TITRE, EFFETS_DU_TITRE } from "@/domaines/o
 import { TEINTES_DU_PACTE } from "@/socle/ds/fonds/catalogue";
 import { jourDecale } from "@/socle/outils/jour";
 import type { MesureProgression, ProprietesDuBandeau } from "@/domaines/accueil/types";
+import {
+  ECUSSON_D_ESSAI, EMBLEMES, SYMBOLES, TEINTES_DE_PALIER, VERSIONS,
+} from "@/domaines/accueil/logique/choixDuBancDuBandeau";
 import "@/socle/ds/banc.css";
 import "@/domaines/accueil/banc-du-bandeau.css";
 
@@ -86,24 +89,6 @@ const VARIANTES: readonly Variante[] = [
   },
 ];
 
-/* LA VERSION DE L ALPHABET EST UN REGLAGE DU BANC, pas un detail.
-   « pacts.sigil_version » a ete ajoutee avec « default 1 » : tous les
-   pactes anterieurs sont donc en v1, et rien dans l application ne les
-   fait passer en v2. Un pacte jure avant ce jour dessine encore
-   l ancien alphabet — et son porteur ne verra jamais le nouveau, meme
-   sur la derniere version du code. C est voulu (un sceau qui bouge
-   n est pas un sceau) mais il faut pouvoir le CONSTATER. */
-const VERSIONS = [
-  { valeur: 4, nom: "v4 — cursive au pourtour, ideogrammes aux sommets" },
-  { valeur: 3, nom: "v3 — reseau au pourtour, ideogrammes aux sommets" },
-  { valeur: 2, nom: "v2 — le reseau partout" },
-  { valeur: 1, nom: "v1 — l ancien alphabet" },
-];
-const SYMBOLES = [
-  "flame", "heart", "target", "sparkles", "phoenix",
-  "compass", "citadel", "vortex", "shield",
-];
-
 /* L ADRESSE OUVRE LE BANC OU L ON VEUT : « ?variante=stele&pupitre=0 ».
    Une variante se montre par un lien, et une capture se refait a
    l identique. */
@@ -128,6 +113,13 @@ export default function BancDuBandeau() {
   const [jours, setJours] = useState(91);
   const [terme, setTerme] = useState("2027-06-30");
   const [valeurs, setValeurs] = useState("Liberté, Discipline, Création");
+  /* « ?embleme=aucun » ou « ?embleme=marque » : les trois cas du palier. */
+  const [embleme, setEmbleme] = useState(() => {
+    const voulu = parametre("embleme");
+    return voulu === "aucun" ? "" : voulu === "marque" ? EMBLEMES[1].valeur : ECUSSON_D_ESSAI;
+  });
+  const [teintePalier, setTeintePalier] = useState("#f5b93a");
+  const [avancePalier, setAvancePalier] = useState(64);
   const [version, setVersion] = useState(4);
   /* L apercu de « Mon pacte » monte LE MEME bloc, reduit. Il se
      regarde ici pour la meme raison que le bandeau : la page de
@@ -204,8 +196,10 @@ export default function BancDuBandeau() {
     titleEffect: effet,
     enCours,
     rankName: "Architecte",
-    rankProgress: 64,
-    rankXP: 3200,
+    rankLogoUrl: embleme || null,
+    rankTeinte: teintePalier || null,
+    rankProgress: avancePalier,
+    rankXP: Math.round(5000 * avancePalier / 100),
     rankXPTarget: 5000,
     nextRankName: "Bâtisseur",
     teinte,
@@ -300,6 +294,26 @@ export default function BancDuBandeau() {
           <span>Chantiers ouverts : {enCours}</span>
           <input type="range" min={0} max={8} value={enCours}
             onChange={(e) => setEnCours(Number(e.target.value))} />
+        </label>
+
+        <label className="banc-champ">
+          <span>Emblème du palier</span>
+          <select value={embleme} onChange={(e) => setEmbleme(e.target.value)}>
+            {EMBLEMES.map((e) => <option key={e.nom} value={e.valeur}>{e.nom}</option>)}
+          </select>
+        </label>
+
+        <label className="banc-champ">
+          <span>Teinte du palier</span>
+          <select value={teintePalier} onChange={(e) => setTeintePalier(e.target.value)}>
+            {TEINTES_DE_PALIER.map((t) => <option key={t.nom} value={t.valeur}>{t.nom}</option>)}
+          </select>
+        </label>
+
+        <label className="banc-champ">
+          <span>Avancement dans le palier : {avancePalier} %</span>
+          <input type="range" min={0} max={100} value={avancePalier}
+            onChange={(e) => setAvancePalier(Number(e.target.value))} />
         </label>
 
         <label className="banc-champ">

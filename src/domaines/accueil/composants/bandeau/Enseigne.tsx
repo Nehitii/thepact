@@ -1,11 +1,13 @@
 import { useMemo, type CSSProperties } from "react";
+import { normaliserTeinte } from "@/domaines/succes";
 import { useTailleDuNom } from "@/domaines/accueil/hooks/useTailleDuNom";
 import { usePoliceDuBanc } from "@/domaines/accueil/hooks/usePoliceDuBanc";
 import { graineDuTexte } from "@/domaines/accueil/logique/dessinsDuBandeau";
 import type { ProprietesDuBandeau } from "@/domaines/accueil/types";
 import { BasculeDeMesure, SceauDuPacte } from "@/domaines/accueil/composants/bandeau/communs";
-import { nombre, useLectureDuBandeau } from "@/domaines/accueil/composants/bandeau/lecture";
+import { datePleine, nombre, useLectureDuBandeau } from "@/domaines/accueil/composants/bandeau/lecture";
 import "@/domaines/accueil/composants/bandeau/enseigne.css";
+import "@/domaines/accueil/composants/bandeau/caisson-du-palier.css";
 
 /* VARIANTE C — L ENSEIGNE.
  *
@@ -18,6 +20,10 @@ import "@/domaines/accueil/composants/bandeau/enseigne.css";
  * une ligne en cursive dans un autre tube (la raison), un pochoir peint
  * a la bombe sur le mur (les valeurs), une plaque emaillee sous le
  * chiffre, et un bandeau a diodes qui fait defiler le reste.
+ *
+ * LE PALIER A SA PROPRE ENSEIGNE. Le sceau en neon a gauche du nom, le
+ * caisson du palier a droite : deux objets qui l encadrent, comme les
+ * deux logos d une devanture. Voir « CaissonDuPalier » plus bas.
  *
  * L EFFET CHOISI DEVIENT LE GAZ DU TUBE : halo cyan, feu, violet ou
  * dore donnent la couleur ; sans effet, c est la teinte du pacte.
@@ -44,6 +50,71 @@ const TUBES: Readonly<Record<string, string>> = {
 
 const pluriel = (n: number, un: string, plusieurs: string) => (n > 1 ? plusieurs : un);
 
+/**
+ * LE CAISSON DU PALIER.
+ *
+ * L embleme du palier est une IMAGE que l utilisateur a choisie — un
+ * tube de neon ne sait pas dessiner une image. Un caisson lumineux, si :
+ * c est l objet des devantures qui porte un logo imprime sur un
+ * diffuseur eclaire par l arriere. L embleme y est imprime ; sans
+ * embleme, c est le numero du niveau qui prend le disque, comme sur le
+ * noyau du tableau de bord actuel.
+ *
+ * AUTOUR, UN ANNEAU DE NEON EST LA JAUGE DU PALIER : la part allumee
+ * est l avancement vers le palier suivant, le reste est du verre
+ * eteint. C est la jauge du noyau actuel — un arc autour de l embleme —
+ * dite avec un tube.
+ *
+ * Tout est a la teinte du palier, celle que le noyau lit deja ; une
+ * teinte illisible retombe sur le gaz de l enseigne.
+ */
+function CaissonDuPalier({ p, famille, tube }: { p: ProprietesDuBandeau; famille: string; tube: string }) {
+  const teinte = normaliserTeinte(p.rankTeinte) ?? tube;
+  const avance = Math.min(100, Math.max(0, p.rankProgress ?? 0));
+  const embleme = p.rankLogoUrl || null;
+  const suite = p.nextRankName
+    ? ` ${nombre(p.rankXP ?? 0)} sur ${nombre(p.rankXPTarget ?? 0)} XP avant ${p.nextRankName}.`
+    : "";
+
+  return (
+    <div className="en-rang" style={{ "--en-rang": teinte } as CSSProperties}>
+      <p className="en-lu">
+        Niveau {p.level}{p.rankName && `, ${p.rankName}`} : {Math.round(avance)} % du palier.{suite}
+      </p>
+      <div className="en-caisson" aria-hidden="true">
+        <svg className="en-anneau en-anneau--verre" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" />
+        </svg>
+        <svg className="en-anneau en-anneau--gaz" viewBox="0 0 100 100">
+          {avance > 0 && (
+            <circle
+              cx="50" cy="50" r="46"
+              pathLength={100}
+              strokeDasharray={`${avance} 100`}
+              transform="rotate(-90 50 50)"
+            />
+          )}
+        </svg>
+        <div className="en-disque" data-embleme={embleme ? "1" : undefined}>
+          {embleme ? (
+            <img className="en-embleme" src={embleme} alt="" loading="lazy" decoding="async" />
+          ) : (
+            <span className="en-disque-niveau" style={{ fontFamily: famille }}>
+              <small>Niveau</small>{p.level}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="en-rang-textes" aria-hidden="true">
+        {embleme && (
+          <p className="en-niveau" style={{ fontFamily: famille }}><small>Niv</small>{p.level}</p>
+        )}
+        {p.rankName && <p className="en-palier">{p.rankName}</p>}
+      </div>
+    </div>
+  );
+}
+
 export function Enseigne(p: ProprietesDuBandeau) {
   usePoliceDuBanc(POLICES);
   const l = useLectureDuBandeau(p);
@@ -63,8 +134,10 @@ export function Enseigne(p: ProprietesDuBandeau) {
     return pleines.length ? pleines[graineDuTexte(l.nom) % pleines.length] : -1;
   }, [l.nom]);
 
+  /* Le niveau et le rang ont quitte le bandeau : ils sont sur le
+     caisson. Le bandeau garde ce qui n a pas d autre place. */
   const diodes = [
-    `Niveau ${p.level}${p.rankName ? ` — ${p.rankName}` : ""}`,
+    ...(l.jureLe ? [`Juré le ${datePleine(l.jureLe)}`] : []),
     `${nombre(p.totalMissions)} ${pluriel(p.totalMissions, "mission", "missions")}`,
     `Jour ${nombre(p.activeDays)}`,
     ...(p.rankXPTarget
@@ -111,6 +184,7 @@ export function Enseigne(p: ProprietesDuBandeau) {
           </h1>
           {l.mantra && <p className="en-script">{l.mantra}</p>}
         </div>
+        <CaissonDuPalier p={p} famille={l.famille} tube={tube} />
       </div>
 
       <div className="en-bas">
