@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
-  clamp01, contractionDuCoeur, intensiteDuFond, lobesDuCoeur, rayonDuCoeur, renduDe,
-  souffleDuCoeur, teinte, transformationDePhase, tremblement,
+  RENDU, clamp01, contractionDuCoeur, intensiteDuFond, lobesDuCoeur, rayonDuCoeur, renduDe,
+  souffleDuCoeur, teinte, transformationDePhase,
   type PhaseCoeur, type Rendu,
 } from "@/domaines/appel/logique/coeur";
 import {
@@ -15,6 +15,7 @@ import {
 import { dosageNeuf, lireLeMontage, suivreLeFocus } from "@/domaines/appel/logique/montage";
 import { forceDesJets } from "@/domaines/appel/logique/nervure";
 import { creerLesAnneaux } from "@/domaines/appel/composants/toile/anneaux";
+import { creerLaCamera } from "@/domaines/appel/composants/toile/camera";
 import { creerLeChamp } from "@/domaines/appel/composants/toile/champ";
 import { creerLesOndes, tracerLaGrille, tracerLeFond } from "@/domaines/appel/composants/toile/decor";
 import {
@@ -143,6 +144,9 @@ export function CoeurStellaire({
     const horlogeDeLaFusion = horlogeDeLaFusionNeuve();
     const dosage = dosageNeuf();
     let focusDeLaFusion = 0;
+    const camera = creerLaCamera();
+    /* Un ecran ou l on tient du doigt : le sujet y remonte au tiers. */
+    const tactile = window.matchMedia("(pointer: coarse)");
 
     /* L HORLOGE DE LA TOILE EST ACCUMULEE, image par image, et chaque pas
        est borne a un vingtieme de seconde. Un onglet mis en arriere-plan
@@ -235,17 +239,18 @@ export function CoeurStellaire({
          l encaisser. */
       const souffle = fin.souffle(regime, maintenant, cx, cy, p, largeur, hauteur, immobile);
 
-      /* LA SCENE ENCAISSE. Le souffle secoue la camera, bref et violent ;
-         avant lui, la scene fremit a mesure que la fusion se charge — une
-         image calme jusqu a l instant de la detonation ne promet rien. */
-      const secousse = immobile ? 0
-        : (souffle.actif ? Math.pow(1 - souffle.u, 3) * 46 : 0)
-          + fusion.puissance * fusion.puissance * 5
-          + (fusion.union ? Math.pow(1 - fusion.tDeLUnion, 3) * 30 : 0);
-      const tremble = tremblement(p, immobile, recit.excentrique) + secousse;
-      const ox = (Math.random() - 0.5) * tremble;
-      const oy = (Math.random() - 0.5) * tremble + anneaux.aCoup(maintenant, immobile);
-      ctx.translate(ox, oy);
+      /* L OEIL. La camera lit ce qui vient d arriver — un seuil, le clac
+         du verrou, la faille, l union, le souffle — et pose son cadre :
+         travelling, sujet remonte sous le doigt, secousse, bandes. La
+         grille et les aplats couvrent ensuite le champ qu elle voit. */
+      camera.avancer({
+        dt, maintenant, p, phase: ph, depuis, cx, cy, hauteur, tactile: tactile.matches, immobile,
+        seuil: avance.onde, aCoup: anneaux.aCoup(maintenant, immobile), failleOuverte: faille.ouverture > 0.001,
+        union: fusion.union, souffle: souffle.actif, puissanceDeLaFusion: fusion.puissance,
+        excentrique: recit.excentrique,
+      });
+      camera.appliquer(ctx);
+      const vue = camera.vue(largeur, hauteur);
 
       // ── Le fond et la grille ─────────────────────────────────
       /* Le fond n est pas peint sous ce qui l efface : passe le quart du
@@ -258,7 +263,7 @@ export function CoeurStellaire({
       /* La grille reste peinte pendant le souffle : sans elle, il n y
          aurait rien a souffler. */
       if (o.gravite && !muette && (echelle > 0.02 || (souffle.actif && souffle.u < 0.5))) {
-        tracerLaGrille(ctx, cx, cy, base, largeur, hauteur, c, p, dosage.grille, faille, souffle);
+        tracerLaGrille(ctx, cx, cy, base, vue, c, p, dosage.grille, faille, souffle);
       }
       ctx.globalCompositeOperation = r.fusion;
       if (!muette) tracerLaFaille(ctx, faille, cx, cy, c, r, maintenant, force);
@@ -334,7 +339,7 @@ export function CoeurStellaire({
             tracerLaPromesse(ctx, cx, cy, rCoeur, base, fusion.puissance, maintenant, c, r);
           }
         } else champ.eteindre();
-        if (fusion.union) tracerLaDetonation(ctx, cx, cy, rCoeur, fusion.tDeLUnion, largeur, hauteur, ox, oy, c, r);
+        if (fusion.union) tracerLaDetonation(ctx, cx, cy, rCoeur, fusion.tDeLUnion, largeur, hauteur, -vue.x0, -vue.y0, c, r);
 
         for (let i = calques.length - 1; i >= 0; i--) calques[i](true);
       }
@@ -352,6 +357,10 @@ export function CoeurStellaire({
         jets.tracer(false, cx, cy, base, rCoeur, c, p, r, maintenant, force, true);
         jets.tracer(true, cx, cy, base, rCoeur, c, p, r, maintenant, force, true);
       }
+
+      /* Les bandes, a l ecran : hors de la camera, elles ne tremblent pas. */
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      camera.tracerLesBandes(ctx, largeur, hauteur, r === RENDU.sombre);
 
       ctx.globalCompositeOperation = "source-over";
       ctx.setTransform(1, 0, 0, 1, 0, 0);

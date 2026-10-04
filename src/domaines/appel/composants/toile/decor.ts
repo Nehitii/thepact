@@ -6,6 +6,7 @@
 import {
   MAX_ONDES, TAU, cadenceDesOndes, deplacementParGravite, lerp, rgba, type Couleur,
 } from "@/domaines/appel/logique/coeur";
+import type { Vue } from "@/domaines/appel/logique/camera";
 import { deplacerParLaFaille, type Faille } from "@/domaines/appel/logique/faille";
 import type { Souffle } from "./fin";
 import { disque, type Contexte } from "./trace";
@@ -45,7 +46,7 @@ export function tracerLeFond(
  * LA POUSSEE REECRIT LE POINT, ELLE N EN REND PAS UN AUTRE : quinze cents
  * points par image, chacun passait par deux tableaux jetables. */
 export function tracerLaGrille(
-  ctx: Contexte, cx: number, cy: number, base: number, largeur: number, hauteur: number,
+  ctx: Contexte, cx: number, cy: number, base: number, vue: Vue,
   c: Couleur, p: number, dose: number, faille: Faille, souffle: Souffle,
 ) {
   const pas = 46;
@@ -74,8 +75,14 @@ export function tracerLaGrille(
       coteAvant = failleOuverte ? faille.cote : 0;
     }
   };
-  for (let x = -pas; x <= largeur + pas; x += pas) ligne(x, -pas, hauteur + pas, true);
-  for (let y = -pas; y <= hauteur + pas; y += pas) ligne(y, -pas, largeur + pas, false);
+  /* LA GRILLE COUVRE CE QUE VOIT LA CAMERA, pas la toile : zoomee, elle
+     peint moins de points ; recadree ou penchee, elle ne laisse pas de
+     bord nu. Ses lignes restent calees sur les multiples du pas — une
+     grille qui suivrait le cadre glisserait avec lui. */
+  const x0 = Math.floor(vue.x0 / pas) * pas - pas, x1 = vue.x1 + pas;
+  const y0 = Math.floor(vue.y0 / pas) * pas - pas, y1 = vue.y1 + pas;
+  for (let x = x0; x <= x1; x += pas) ligne(x, y0, y1, true);
+  for (let y = y0; y <= y1; y += pas) ligne(y, x0, x1, false);
   ctx.stroke();
 }
 

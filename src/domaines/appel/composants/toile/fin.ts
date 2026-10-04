@@ -180,7 +180,9 @@ export function creerLaFin(ctx: Contexte) {
       const dans = (depuis % 0.057) / 0.057;
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = rgba(r.trait, clamp01(bat[i] * (dans < 0.55 ? 1 : 1 - (dans - 0.55) / 0.45)));
-      ctx.fillRect(0, 0, largeur, hauteur);
+      /* Trois fois le cadre : la camera secoue, zoome et penche — un
+         blanc qui laisserait voir un coin de noir n est plus un blanc. */
+      ctx.fillRect(-largeur, -hauteur, largeur * 3, hauteur * 3);
       ctx.globalCompositeOperation = r.fusion;
     }
     const rr = rayonDuSouffle(u, portee, immobile);
