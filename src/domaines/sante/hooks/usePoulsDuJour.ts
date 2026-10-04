@@ -91,24 +91,19 @@ export function usePoulsDuJour(userId: string | undefined) {
     staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
     queryFn: async (): Promise<Systeme[]> => {
-      /* `src/integrations/supabase/types.ts` est genere depuis le
-         schema et ne connait pas encore cette fonction : sans la
-         conversion, TypeScript refuse un nom qui n'est pas dans sa
-         liste. Le projet emploie deja ce recours ailleurs (voir
-         `daily_quests` dans useDailyQuests). La conversion est
-         contenue ici, sur la seule ligne d'appel — la forme du retour,
-         elle, reste verifiee par `PoulsBrut`. */
-      const { data, error } = await (supabase.rpc as unknown as (
-        nom: string,
-        args: Record<string, string>,
-      ) => Promise<{ data: unknown; error: { message: string } | null }>)("pouls_du_jour", {
+      /* LE CLIENT TYPE, PLUS UNE CONVERSION. Elle datait d avant la
+         regeneration des types, et `(supabase.rpc as unknown as …)(
+         "pouls_du_jour"` echappe a une recherche de `.rpc("` : l audit
+         du 06/09 a donc cru la fonction inutilisee et l a revoquee
+         (voir la migration 20260923180000). */
+      const { data, error } = await supabase.rpc("pouls_du_jour", {
         p_debut: debut,
         p_fin: fin,
         p_jour: jour,
       });
       if (error) throw error;
 
-      const b = ((Array.isArray(data) ? data[0] : data) ?? {}) as Partial<PoulsBrut>;
+      const b = (data?.[0] ?? {}) as Partial<PoulsBrut>;
       const taches = b.taches ?? 0;
       const appel = b.appel ?? 0;
       const journal = b.journal ?? 0;

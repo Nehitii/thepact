@@ -58,9 +58,11 @@ export function useDailyQuests() {
   return useQuery({
     queryKey: ["daily-quests", user?.id, today],
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as unknown as (
-        nom: string,
-      ) => Promise<{ data: unknown; error: { message: string } | null }>)("assurer_ordres_du_jour");
+      /* Le client type, plus une conversion : ecrit
+         `(supabase.rpc as unknown as …)("assurer_ordres_du_jour")`,
+         l appel echappait a une recherche de `.rpc("`, et l audit du
+         06/09 a revoque la fonction (voir la migration 20260923180000). */
+      const { data, error } = await supabase.rpc("assurer_ordres_du_jour");
       if (error) throw error;
       return ((data ?? []) as DailyQuest[]);
     },
@@ -73,15 +75,8 @@ export function useClaimQuest() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (questId: string) => {
-      /* Meme recours que dans useDailyQuests : les types generes ne
-         connaissent pas encore cette fonction. La conversion tient
-         sur la ligne d appel, et la forme du retour reste decrite. */
-      const { data, error } = await (supabase.rpc as unknown as (
-        nom: string,
-        args: Record<string, string>,
-      ) => Promise<{ data: unknown; error: { message: string } | null }>)("claim_quest", {
-        _quest_id: questId,
-      });
+      /* Le client type, pour la meme raison que plus haut. */
+      const { data, error } = await supabase.rpc("claim_quest", { _quest_id: questId });
       if (error) throw error;
       return data as { reward?: number } | null;
     },
