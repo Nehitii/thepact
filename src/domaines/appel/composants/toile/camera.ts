@@ -105,6 +105,10 @@ export function creerLaCamera() {
     /** Le champ que voit l oeil, en coordonnees de scene. */
     vue: (largeur: number, hauteur: number): Vue => champVisible(prise, largeur, hauteur),
 
+    /** La hauteur de chaque bande en part de la hauteur — la lumiere les garde noires. */
+    fractionDesBandes: (largeur: number, hauteur: number): number =>
+      hauteur > 0 ? (hauteurDesBandes(largeur, hauteur) * bandes) / hauteur : 0,
+
     /* Les bandes se peignent en dernier, a l ecran, hors de la camera :
        elles ne tremblent pas. En theme clair, ou le fond est blanc, elles
        ne sont pas peintes — une bande noire y serait un trou. */

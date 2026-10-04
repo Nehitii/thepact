@@ -16,6 +16,7 @@ import { dosageNeuf, lireLeMontage, suivreLeFocus } from "@/domaines/appel/logiq
 import { forceDesJets } from "@/domaines/appel/logique/nervure";
 import { creerLesAnneaux } from "@/domaines/appel/composants/toile/anneaux";
 import { creerLaCamera } from "@/domaines/appel/composants/toile/camera";
+import { creerLaLumiere } from "@/domaines/appel/composants/toile/lumiere";
 import { creerLeChamp } from "@/domaines/appel/composants/toile/champ";
 import { creerLesOndes, tracerLaGrille, tracerLeFond } from "@/domaines/appel/composants/toile/decor";
 import {
@@ -100,6 +101,8 @@ export function CoeurStellaire({
   progres, phase, immobile, cible, options, evenements,
 }: CoeurStellaireProps) {
   const toileRef = useRef<HTMLCanvasElement>(null);
+  /* La seconde toile, celle de la lumiere : voir `toile/lumiere.ts`. */
+  const toileGLRef = useRef<HTMLCanvasElement>(null);
   const phaseRef = useRef<PhaseCoeur>(phase);
   const optionsRef = useRef<OptionsCoeur>(options ?? {});
   /* Une reference, pas une dependance : changer le reglage en cours de
@@ -115,6 +118,7 @@ export function CoeurStellaire({
     if (!toile) return;
     const ctx = toile.getContext("2d", { alpha: true });
     if (!ctx) return;
+    const lumiere = creerLaLumiere(toileGLRef.current, toile);
 
     let dpr = 1, largeur = 0, hauteur = 0;
     const redimensionner = () => {
@@ -124,6 +128,7 @@ export function CoeurStellaire({
       dpr = Math.max(1, Math.min(souhaite, Math.sqrt(PIXELS_MAX / Math.max(1, largeur * hauteur))));
       toile.width = Math.round(largeur * dpr);
       toile.height = Math.round(hauteur * dpr);
+      lumiere.redimensionner(toile.width, toile.height);
     };
     redimensionner();
     const observateur = new ResizeObserver(redimensionner);
@@ -364,6 +369,11 @@ export function CoeurStellaire({
 
       ctx.globalCompositeOperation = "source-over";
       ctx.setTransform(1, 0, 0, 1, 0, 0);
+      /* La lumiere reprend l image finie : halo, epaule, grain. */
+      lumiere.peindre({
+        p, phase: ph, depuis, focus: focusDeLaFusion, immobile, sombre: r === RENDU.sombre, maintenant,
+        bandes: camera.fractionDesBandes(largeur, hauteur),
+      });
       boucleId = requestAnimationFrame(dessiner);
     };
 
@@ -372,14 +382,14 @@ export function CoeurStellaire({
       vivant = false;
       cancelAnimationFrame(boucleId);
       observateur.disconnect();
+      lumiere.liberer();
     };
   }, [progres, cible, evenements]);
 
   return (
-    <canvas
-      ref={toileRef}
-      aria-hidden="true"
-      className="absolute inset-0 w-full h-full pointer-events-none"
-    />
+    <>
+      <canvas ref={toileRef} aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none" />
+      <canvas ref={toileGLRef} aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none" />
+    </>
   );
 }
