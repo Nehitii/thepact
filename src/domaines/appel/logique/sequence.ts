@@ -22,7 +22,7 @@ export type Phase = PhaseCoeur;
 /* LES QUATRE PHASES OU LA MAIN NE SERT PLUS A RIEN. Une fois la
    sequence partie, elle va jusqu au bout : reprendre la prise au milieu
    relancerait un compte par-dessus un appel deja conclu. */
-export const PHASES_DE_SEQUENCE: Phase[] = ["implosion", "singularite", "explosion", "revelation"];
+export const PHASES_DE_SEQUENCE: Phase[] = ["enflement", "effondrement", "tempsMort", "projection"];
 
 export function enSequence(phase: Phase): boolean {
   return PHASES_DE_SEQUENCE.includes(phase);
@@ -37,51 +37,52 @@ export function priseTenable(pret: boolean, phase: Phase): boolean {
 
 /* ── LE DEROULE DE LA CONCLUSION ─────────────────────────────── */
 
-/** L effondrement : une demi-seconde pour rentrer dans le point. */
-export const DUREE_IMPLOSION = 500;
-/** Le point lui-meme : deux dixiemes, juste de quoi le voir. */
-export const DUREE_SINGULARITE = 200;
-/* LE SOUFFLE DURE CINQ FOIS PLUS LONGTEMPS QUAND LE MOUVEMENT EST
-   REDUIT. Ce n est pas une compensation d animation : sans a-coup, une
-   onde de un dixieme de seconde ne se voit pas passer. */
-export const DUREE_EXPLOSION = 100;
-export const DUREE_EXPLOSION_IMMOBILE = 500;
+/** Le coeur gonfle au-dela de sa taille : la coquille se tend. */
+export const DUREE_ENFLEMENT = 600;
+/** Puis il cede, plus violemment et plus vite qu il n a gonfle. */
+export const DUREE_EFFONDREMENT = 350;
+/* LE TEMPS MORT DURE AU MOINS CELA — ET AUTANT QUE L ECRITURE. C est le
+   seul moment de la conclusion ou rien ne bouge : il couvre donc la
+   requete au lieu de la faire attendre. Si la base repond en deux
+   cents millisecondes, le silence en dure cinq cents ; si elle en met
+   trois mille, le point residuel palpite trois secondes, et personne
+   ne voit une panne. */
+export const DUREE_TEMPS_MORT = 500;
 
 export interface EtapeDeConclusion {
   phase: Phase;
   attente: number;
 }
 
-/* CE QUI SE JOUE AVANT L ECRITURE, ET CE QUI SE JOUE APRES.
+/* CE QUI SE JOUE AVANT L ECRITURE, PENDANT, ET APRES.
  *
  * La coupure n est pas decorative : l ecriture est ATTENDUE, et son
  * echec rend la main. Ce qui vient avant a donc lieu meme si
  * l enregistrement echoue ; ce qui vient apres n a lieu que s il
- * reussit. Sept dixiemes de seconde separent la fin de l appui de la
- * requete — et pendant ces sept dixiemes, quitter la page n annule
- * rien : l appel sera ecrit. C est voulu, la course etait finie. */
+ * reussit. Presque une seconde separe la fin de l appui de la requete —
+ * et pendant ce temps, quitter la page n annule rien : l appel sera
+ * ecrit. C est voulu, la course etait finie. */
 export const AVANT_ECRITURE: EtapeDeConclusion[] = [
-  { phase: "implosion", attente: DUREE_IMPLOSION },
-  { phase: "singularite", attente: DUREE_SINGULARITE },
+  { phase: "enflement", attente: DUREE_ENFLEMENT },
+  { phase: "effondrement", attente: DUREE_EFFONDREMENT },
 ];
 
-export function apresEcriture(immobile: boolean): EtapeDeConclusion[] {
-  return [
-    { phase: "explosion", attente: immobile ? DUREE_EXPLOSION_IMMOBILE : DUREE_EXPLOSION },
-    /* LA REVELATION NE S EFFACE PAS TOUTE SEULE. Elle restait trois
-       secondes puis disparaissait : ce qu on vient de gagner ne doit
-       pas etre chasse par une minuterie. C est un bouton qui la
-       quitte, d ou une attente nulle. */
-    { phase: "revelation", attente: 0 },
-  ];
-}
+export const PENDANT_L_ECRITURE: EtapeDeConclusion = { phase: "tempsMort", attente: DUREE_TEMPS_MORT };
 
-export function dureeDeLaConclusion(immobile: boolean): number {
-  return [...AVANT_ECRITURE, ...apresEcriture(immobile)]
+/* LA PROJECTION NE S EFFACE PAS TOUTE SEULE. Ce qu on vient de gagner ne
+   doit pas etre chasse par une minuterie : on y reste jusqu au clic,
+   d ou une attente nulle. */
+export const APRES_ECRITURE: EtapeDeConclusion = { phase: "projection", attente: 0 };
+
+/** La plus courte conclusion possible : celle ou la base repond pendant le silence. */
+export function dureeDeLaConclusion(): number {
+  return [...AVANT_ECRITURE, PENDANT_L_ECRITURE, APRES_ECRITURE]
     .reduce((somme, e) => somme + e.attente, 0);
 }
 
-/** Le temps qu il faut a la revelation pour s eteindre avant le poste. */
+/* LA SORTIE CROISE LES DEUX ECRANS. La phase passe a « verrouille » au
+   clic, et les mots mettent ce temps a s eteindre : les jets tombent
+   pendant qu ils s effacent, puis l astre monte derriere eux. */
 export const DUREE_SORTIE = 620;
 /** Puis le clavier reprend la main sur le bouton de suite. */
 export const DELAI_FOCUS = 900;

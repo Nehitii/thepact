@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
-  AVANT_ECRITURE, DELAI_DEMONSTRATION, DELAI_FOCUS, DUREE_EXPLOSION,
-  DUREE_EXPLOSION_IMMOBILE, DUREE_IMPLOSION, DUREE_MESSAGE_RUPTURE, DUREE_SINGULARITE,
-  DUREE_SORTIE, IMAGES_MAX_DE_RETOUR, PAS_DE_RETOUR, PHASES_DE_SEQUENCE, SEUIL_DE_RUPTURE,
-  apresEcriture, cleDeLAnnonce, cleDuMessage, dureeDeLaConclusion, enSequence,
+  APRES_ECRITURE, AVANT_ECRITURE, DELAI_DEMONSTRATION, DELAI_FOCUS, DUREE_EFFONDREMENT,
+  DUREE_ENFLEMENT, DUREE_MESSAGE_RUPTURE, DUREE_SORTIE, DUREE_TEMPS_MORT, IMAGES_MAX_DE_RETOUR,
+  PAS_DE_RETOUR, PENDANT_L_ECRITURE, PHASES_DE_SEQUENCE, SEUIL_DE_RUPTURE,
+  cleDeLAnnonce, cleDuMessage, dureeDeLaConclusion, enSequence,
   imagesDeRetour, priseTenable, retourDe, ruptureAuRelachement, type Phase,
 } from "./sequence";
 import { DUREE, avancementDuRituel } from "./rituel";
 
 const TOUTES: Phase[] = [
   "attente", "montee", "critique",
-  "implosion", "singularite", "explosion", "revelation", "verrouille",
+  "enflement", "effondrement", "tempsMort", "projection", "verrouille",
 ];
 
 describe("quand la sequence a pris la main", () => {
   it("reconnait les quatre phases de la conclusion", () => {
-    expect(PHASES_DE_SEQUENCE).toEqual(["implosion", "singularite", "explosion", "revelation"]);
+    expect(PHASES_DE_SEQUENCE).toEqual(["enflement", "effondrement", "tempsMort", "projection"]);
     for (const p of PHASES_DE_SEQUENCE) expect(enSequence(p)).toBe(true);
   });
 
@@ -56,74 +56,60 @@ describe("la prise tenable", () => {
 });
 
 describe("le deroule de la conclusion", () => {
-  it("joue l effondrement puis le point, avant d ecrire", () => {
+  it("gonfle puis s effondre, avant d ecrire", () => {
     expect(AVANT_ECRITURE).toEqual([
-      { phase: "implosion", attente: DUREE_IMPLOSION },
-      { phase: "singularite", attente: DUREE_SINGULARITE },
+      { phase: "enflement", attente: DUREE_ENFLEMENT },
+      { phase: "effondrement", attente: DUREE_EFFONDREMENT },
     ]);
-    expect(DUREE_IMPLOSION).toBe(500);
-    expect(DUREE_SINGULARITE).toBe(200);
+    expect(DUREE_ENFLEMENT).toBe(600);
+    expect(DUREE_EFFONDREMENT).toBe(350);
   });
 
-  /* SEPT DIXIEMES DE SECONDE SEPARENT LA FIN DE L APPUI DE LA REQUETE.
-     Pendant ce temps, quitter la page n annule rien : la course etait
-     finie, l appel sera ecrit. C est le seul endroit du rituel ou la
-     page peut disparaitre sans empecher une ecriture. */
-  it("laisse sept dixiemes de seconde avant la requete", () => {
-    expect(AVANT_ECRITURE.reduce((s, e) => s + e.attente, 0)).toBe(700);
+  /* L EFFONDREMENT EST PLUS VIOLENT ET PLUS COURT QUE L ENFLEMENT : la
+     coquille met du temps a se tendre, et cede d un coup. */
+  it("s effondre plus vite qu il n a gonfle", () => {
+    expect(DUREE_EFFONDREMENT).toBeLessThan(DUREE_ENFLEMENT);
   });
 
-  it("joue le souffle puis la revelation, apres l ecriture", () => {
-    expect(apresEcriture(false)).toEqual([
-      { phase: "explosion", attente: DUREE_EXPLOSION },
-      { phase: "revelation", attente: 0 },
-    ]);
+  /* PRESQUE UNE SECONDE SEPARE LA FIN DE L APPUI DE LA REQUETE. Pendant
+     ce temps, quitter la page n annule rien : la course etait finie,
+     l appel sera ecrit. C est le seul endroit du rituel ou la page peut
+     disparaitre sans empecher une ecriture. */
+  it("laisse neuf dixiemes et demi de seconde avant la requete", () => {
+    expect(AVANT_ECRITURE.reduce((s, e) => s + e.attente, 0)).toBe(950);
   });
 
-  /* LE SOUFFLE DURE CINQ FOIS PLUS LONGTEMPS SANS MOUVEMENT. Sans
-     a-coup, une onde d un dixieme de seconde ne se voit pas passer. */
-  it("etire le souffle quand le mouvement est reduit", () => {
-    expect(DUREE_EXPLOSION).toBe(100);
-    expect(DUREE_EXPLOSION_IMMOBILE).toBe(500);
-    expect(apresEcriture(true)[0].attente).toBe(DUREE_EXPLOSION_IMMOBILE);
-    expect(apresEcriture(true)[0].attente / apresEcriture(false)[0].attente).toBe(5);
+  /* L ECRITURE SE FAIT DANS LE SILENCE. Le temps mort est le seul
+     moment de la conclusion ou rien ne bouge : il couvre la requete, et
+     son attente n est qu un minimum. */
+  it("ecrit pendant le temps mort, qui dure au moins une demi-seconde", () => {
+    expect(PENDANT_L_ECRITURE).toEqual({ phase: "tempsMort", attente: DUREE_TEMPS_MORT });
+    expect(DUREE_TEMPS_MORT).toBe(500);
   });
 
-  /* LA REVELATION N A PAS DE DUREE. Elle restait trois secondes puis
-     s effacait toute seule ; ce qu on vient de gagner ne doit pas etre
-     chasse par une minuterie. Une attente nulle, c est un bouton qui
+  /* LA PROJECTION N A PAS DE DUREE. Ce qu on vient de gagner ne doit pas
+     etre chasse par une minuterie : une attente nulle, c est un clic qui
      la quitte. */
-  it("ne met aucune minuterie sur la revelation", () => {
-    for (const immobile of [false, true]) {
-      const derniere = apresEcriture(immobile).at(-1);
-      expect(derniere?.phase).toBe("revelation");
-      expect(derniere?.attente).toBe(0);
-    }
+  it("ne met aucune minuterie sur la projection", () => {
+    expect(APRES_ECRITURE).toEqual({ phase: "projection", attente: 0 });
   });
 
-  it("compte huit dixiemes de seconde en tout, douze sans mouvement", () => {
-    expect(dureeDeLaConclusion(false)).toBe(800);
-    expect(dureeDeLaConclusion(true)).toBe(1200);
+  it("compte une seconde et quarante-cinq centiemes au plus court", () => {
+    expect(dureeDeLaConclusion()).toBe(1450);
   });
 
   it("enchaine les quatre phases dans l ordre", () => {
-    const ordre = [...AVANT_ECRITURE, ...apresEcriture(false)].map((e) => e.phase);
+    const ordre = [...AVANT_ECRITURE, PENDANT_L_ECRITURE, APRES_ECRITURE].map((e) => e.phase);
     expect(ordre).toEqual(PHASES_DE_SEQUENCE);
-  });
-
-  /* CHAQUE APPEL REND SES PROPRES ETAPES : deux conclusions qui se
-     suivent ne partagent aucun objet. */
-  it("ne rend pas deux fois le meme tableau", () => {
-    expect(apresEcriture(false)).not.toBe(apresEcriture(false));
-    expect(apresEcriture(false)).toEqual(apresEcriture(false));
   });
 
   it("nomme les trois minuteries qui restent", () => {
     expect(DUREE_SORTIE).toBe(620);
     expect(DELAI_FOCUS).toBe(900);
     expect(DELAI_DEMONSTRATION).toBe(50);
-    /* Le clavier reprend la main APRES que la revelation soit posee. */
-    expect(DELAI_FOCUS).toBeGreaterThan(dureeDeLaConclusion(false) - 700);
+    /* Le clavier reprend la main quand les mots sont poses : le texte
+       met pres d une seconde a se lever, le bouton plus encore. */
+    expect(DELAI_FOCUS).toBeGreaterThan(DUREE_SORTIE);
   });
 });
 
@@ -281,7 +267,7 @@ describe("les deux echelles de texte", () => {
      pour la sequence : il retombe sur le defaut. Constate, non
      corrige. */
   it("retombe sur « en attente » pour les cinq autres phases", () => {
-    for (const p of ["implosion", "singularite", "explosion", "revelation", "verrouille"] as Phase[]) {
+    for (const p of ["enflement", "effondrement", "tempsMort", "projection", "verrouille"] as Phase[]) {
       expect(cleDuMessage(p, false)).toBe("thecall.awaiting");
     }
   });
@@ -297,10 +283,10 @@ describe("les deux echelles de texte", () => {
     expect(cleDeLAnnonce("critique")).toBe(cleDuMessage("critique", false));
   });
 
-  /* PENDANT TOUTE LA CONCLUSION, LA REGION VIVE SE TAIT. Huit dixiemes
-     de seconde d effondrement, de souffle et de revelation ne sont
-     annonces par rien ; l achevement ne s entend qu une fois la
-     revelation quittee. Constate, non corrige. */
+  /* PENDANT TOUTE LA CONCLUSION, LA REGION VIVE SE TAIT. L enflement,
+     l effondrement, le silence et la projection ne sont annonces par
+     rien ; l achevement ne s entend qu une fois la projection quittee.
+     Constate, non corrige. */
   it("se tait pendant les quatre phases de la conclusion", () => {
     for (const p of PHASES_DE_SEQUENCE) expect(cleDeLAnnonce(p)).toBe("");
   });
@@ -323,10 +309,10 @@ describe("les deux echelles de texte", () => {
       ["attente", "thecall.awaiting", ""],
       ["montee", "thecall.rising", "thecall.syncing"],
       ["critique", "thecall.critical", "thecall.critical"],
-      ["implosion", "thecall.awaiting", ""],
-      ["singularite", "thecall.awaiting", ""],
-      ["explosion", "thecall.awaiting", ""],
-      ["revelation", "thecall.awaiting", ""],
+      ["enflement", "thecall.awaiting", ""],
+      ["effondrement", "thecall.awaiting", ""],
+      ["tempsMort", "thecall.awaiting", ""],
+      ["projection", "thecall.awaiting", ""],
       ["verrouille", "thecall.awaiting", "thecall.announceDone"],
     ]);
   });

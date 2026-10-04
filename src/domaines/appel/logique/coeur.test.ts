@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  FOND_MAX, INCLINAISONS_BASE, NB_ANNEAUX, SEPARATION_MINIMALE, SEUILS, TAU,
-  avancementDuSouffle, cadenceDesArcs, cadenceDesFilaments, cadenceDesOndes, clamp01,
-  contractionDuCoeur, deplacementParGravite, geometrieDUnAnneau, intensiteDuFond, lerp,
-  lobesDuCoeur, rayonDuCoeur, rayonDuSouffle, separationDesLobes, souffleDuCoeur,
-  transformationDePhase, tremblement, vitesseDUnAnneau, type EtatDesAnneaux,
+  DUREE_SOUFFLE, DUREE_SOUFFLE_IMMOBILE, FOND_MAX, INCLINAISONS_BASE, NB_ANNEAUX, SEPARATION_MINIMALE,
+  SEUILS, TAU, cadenceDesOndes, clamp01, contractionDuCoeur, deplacementParGravite, doux,
+  dureeDeLEradication, geometrieDUnAnneau, intensiteDuFond, lobesDuCoeur, rayonDuCoeur,
+  rayonDuSouffle, souffleDuCoeur, transformationDePhase, tremblement, vitesseDUnAnneau,
+  type EtatDesAnneaux,
 } from "./coeur";
+import { DUREE_EFFONDREMENT, DUREE_ENFLEMENT, DUREE_TEMPS_MORT } from "./sequence";
 
 describe("ce que la phase fait a l echelle", () => {
   it("laisse tout entier tant qu on tient", () => {
@@ -19,30 +20,63 @@ describe("ce que la phase fait a l echelle", () => {
     expect(transformationDePhase("montee", 0, 0.5, false).eclat).toBe(1.7);
   });
 
-  it("ecrase presque tout a l implosion, en une demi-seconde", () => {
-    expect(transformationDePhase("implosion", 0, 0, false)).toEqual({ echelle: 1, eclat: 1, calme: 0, naissance: 1 });
-    expect(transformationDePhase("implosion", 0.25, 0, false).echelle).toBeCloseTo(0.515, 10);
-    expect(transformationDePhase("implosion", 0.5, 0, false).echelle).toBeCloseTo(0.03, 10);
-    /* Au-dela d une demi-seconde, plus rien ne bouge. */
-    expect(transformationDePhase("implosion", 5, 0, false).echelle).toBeCloseTo(0.03, 10);
+  /* LE PREMIER TEMPS GONFLE LA COQUILLE AU-DELA DE SA TAILLE, et ce
+     depassement annonce qu elle va lacher : 42 % de plus au bout de
+     l enflement, puis plus rien ne bouge. */
+  it("gonfle le coeur de 42 % pendant l enflement", () => {
+    const fin = DUREE_ENFLEMENT / 1000;
+    expect(transformationDePhase("enflement", 0, 0, false)).toEqual({ echelle: 1, eclat: 1, calme: 0, naissance: 1 });
+    expect(transformationDePhase("enflement", fin / 2, 0, false).echelle).toBeCloseTo(1.21, 10);
+    const gonfle = transformationDePhase("enflement", fin, 0, false);
+    expect(gonfle.echelle).toBeCloseTo(1.42, 12);
+    expect(gonfle.eclat).toBeCloseTo(1.9, 12);
+    expect(transformationDePhase("enflement", 5, 0, false).echelle).toBeCloseTo(1.42, 12);
   });
 
-  /* L ECLAIR DU SEUIL DISPARAIT DES L IMPLOSION : les deux phases qui
-     ecrasent l eclat ne l additionnent pas, elles le remplacent. Sans
-     cela, un seuil franchi juste avant l effondrement ajouterait un
+  /* L EFFONDREMENT PART DES LA PREMIERE IMAGE ET ACCELERE : c est la
+     derivee qui croit, pas le depart qui tarde. A mi-temps la sphere a
+     deja perdu 16 % — a la puissance quatre, elle n en aurait perdu que
+     6 %, et la chute se lisait comme un decrochage tardif. */
+  it("reprend l enflement la ou il s arrete, puis s effondre en accelerant", () => {
+    const fin = DUREE_EFFONDREMENT / 1000;
+    expect(transformationDePhase("effondrement", 0, 0, false).echelle).toBe(1.42);
+    expect(transformationDePhase("effondrement", fin / 2, 0, false).echelle)
+      .toBeCloseTo(1.42 - (1.42 - 0.05) * Math.pow(0.5, 2.6), 10);
+    expect(1 - transformationDePhase("effondrement", fin / 2, 0, false).echelle / 1.42).toBeCloseTo(0.159, 3);
+    const effondre = transformationDePhase("effondrement", fin, 0, false);
+    expect(effondre.echelle).toBeCloseTo(0.05, 12);
+    expect(effondre.eclat).toBeCloseTo(6.9, 12);
+    /* Il finit exactement ou le temps mort commence : pas de saut. */
+    expect(effondre.echelle).toBeCloseTo(transformationDePhase("tempsMort", 0, 0, false).echelle, 12);
+  });
+
+  /* L ECLAIR DU SEUIL NE COMPTE PLUS DES L ENFLEMENT : les quatre temps
+     posent chacun le leur. Un seuil franchi juste avant ajouterait un
      flash a un flash. */
-  it("oublie l eclair du seuil des que l effondrement commence", () => {
-    expect(transformationDePhase("implosion", 0.5, 1, false).eclat).toBe(4);
-    expect(transformationDePhase("singularite", 0, 1, false).eclat).toBe(4);
+  it("oublie l eclair du seuil des que la conclusion commence", () => {
+    for (const ph of ["enflement", "effondrement", "tempsMort", "projection"] as const) {
+      expect(transformationDePhase(ph, 0.2, 1, false)).toEqual(transformationDePhase(ph, 0.2, 0, false));
+    }
   });
 
-  it("reduit la singularite a un point", () => {
-    expect(transformationDePhase("singularite", 0, 0, false)).toEqual({ echelle: 0.03, eclat: 4, calme: 0, naissance: 1 });
+  /* LE TEMPS MORT N EST PAS LE NOIR : un point residuel qui palpite, et
+     qui palpite aussi longtemps que l ecriture se fait attendre. */
+  it("garde un point qui palpite pendant le temps mort, aussi long soit-il", () => {
+    expect(transformationDePhase("tempsMort", 0, 0, false)).toEqual({ echelle: 0.05, eclat: 1.6, calme: 0, naissance: 1 });
+    const eclats = [0.1, 0.3, 1, 3, 7.3].map((t) => transformationDePhase("tempsMort", t, 0, false).eclat);
+    for (const e of eclats) expect(e).toBeGreaterThan(0.4);
+    expect(new Set(eclats.map((e) => e.toFixed(3))).size).toBe(eclats.length);
+    /* Passe son silence minimal, il s est eteint de 45 % et n en bouge plus. */
+    const apres = DUREE_TEMPS_MORT / 1000;
+    const creux = (t: number) => transformationDePhase("tempsMort", t, 0, false).eclat / (1.6 + Math.sin(t * 11) * 0.7);
+    expect(creux(apres)).toBeCloseTo(0.55, 10);
+    expect(creux(30)).toBeCloseTo(0.55, 10);
   });
 
-  it("efface le coeur pendant le souffle et la revelation", () => {
-    expect(transformationDePhase("explosion", 0.2, 0, false).echelle).toBe(0);
-    expect(transformationDePhase("revelation", 9, 0, false).echelle).toBe(0);
+  it("comprime le nexus a un point fixe pendant la projection", () => {
+    for (const t of [0, 4, 600]) {
+      expect(transformationDePhase("projection", t, 0, false)).toEqual({ echelle: 0.06, eclat: 2.2, calme: 0, naissance: 1 });
+    }
   });
 
   /* L ASTRE D APRES SE LEVE, IL NE SURGIT PAS : une cubique sur 1,1
@@ -263,15 +297,9 @@ describe("le coeur", () => {
     expect(rayonDuCoeur(64, 1, 1, 0, 1, 1)).toBe(rayonDuCoeur(64, 1, 1, 0, 1, 0) * 0.8);
   });
 
-  /* LE DEDOUBLEMENT S OUVRE ET SE REFERME : un sinus, donc nul aux
-     deux bouts. Sous un demi-pixel on repasse a un seul lobe — sans
-     quoi deux cercles superposes doubleraient l eclat du centre. */
-  it("se dedouble au milieu de la scission, et pas aux bouts", () => {
-    expect(separationDesLobes(0, 64, 1)).toBe(0);
-    expect(separationDesLobes(1, 64, 1)).toBeCloseTo(0, 12);
-    expect(separationDesLobes(0.5, 64, 1)).toBeCloseTo(14.08, 10);
-  });
-
+  /* Sous un demi-pixel on repasse a un seul lobe — sans quoi deux
+     cercles superposes doubleraient l eclat du centre. L ecart lui-meme
+     se compte dans `fusion.ts`. */
   it("revient a un seul lobe sous un demi-pixel", () => {
     expect(SEPARATION_MINIMALE).toBe(0.5);
     expect(lobesDuCoeur(10, 20, 0.5)).toEqual([[10, 20]]);
@@ -288,27 +316,41 @@ describe("le coeur", () => {
 });
 
 describe("les cadences et le souffle", () => {
-  it("resserrent les emissions a mesure qu on avance", () => {
+  it("resserrent les ondes a mesure qu on avance", () => {
     expect(cadenceDesOndes(0)).toBe(1500);
     expect(cadenceDesOndes(1)).toBe(170);
-    expect(cadenceDesFilaments(0)).toBe(420);
-    expect(cadenceDesFilaments(1)).toBe(40);
-    expect(cadenceDesArcs(0)).toBe(900);
-    expect(cadenceDesArcs(1)).toBe(70);
-    for (const f of [cadenceDesOndes, cadenceDesFilaments, cadenceDesArcs]) {
-      expect(f(0.5)).toBe(lerp(f(0), f(1), 0.5));
-    }
+    expect(cadenceDesOndes(0.5)).toBe(835);
   });
 
-  /* LE SOUFFLE DURE PLUS LONGTEMPS QUAND ON NE BOUGE PAS, ET IL EST
-     ALORS LINEAIRE : la meme onde, sans l a-coup. */
+  /* LE SOUFFLE EST LINEAIRE QUAND ON NE BOUGE PAS : la meme onde, sans
+     l a-coup. */
   it("part vite en mouvement et regulier a l arret", () => {
-    expect(avancementDuSouffle(0.55, false)).toBe(1);
-    expect(avancementDuSouffle(0.55, true)).toBeCloseTo(0.6111, 4);
-    expect(avancementDuSouffle(9, true)).toBe(1);
     expect(rayonDuSouffle(0.25, 900, false)).toBeGreaterThan(rayonDuSouffle(0.25, 900, true));
     expect(rayonDuSouffle(1, 900, false)).toBe(900);
     expect(rayonDuSouffle(1, 900, true)).toBe(900);
+  });
+
+  /* L ERADICATION DURE DEUX FOIS ET DEMIE LE SOUFFLE D ORIGINE, et plus
+     encore a l arret : c est ce qui lui laisse le temps de sortir du
+     cadre en continuant d accelerer. */
+  it("dure assez pour sortir du cadre", () => {
+    expect(dureeDeLEradication(false)).toBeCloseTo(DUREE_SOUFFLE * 2.6, 12);
+    expect(dureeDeLEradication(true)).toBeCloseTo(DUREE_SOUFFLE_IMMOBILE * 2.6, 12);
+    expect(dureeDeLEradication(true)).toBeGreaterThan(dureeDeLEradication(false));
+  });
+});
+
+describe("la rampe douce", () => {
+  it("part et s arrete a vitesse nulle, bornee aux deux bouts", () => {
+    expect(doux(0, 1, -3)).toBe(0);
+    expect(doux(0, 1, 0)).toBe(0);
+    expect(doux(0, 1, 0.5)).toBe(0.5);
+    expect(doux(0, 1, 1)).toBe(1);
+    expect(doux(0, 1, 9)).toBe(1);
+    const pente = (x: number) => (doux(0, 1, x + 1e-6) - doux(0, 1, x)) / 1e-6;
+    expect(pente(0)).toBeLessThan(1e-4);
+    expect(pente(1 - 1e-6)).toBeLessThan(1e-4);
+    expect(doux(2, 4, 3)).toBe(0.5);
   });
 });
 

@@ -9,12 +9,11 @@
  *
  * Ce module ne dessine rien. Il rend les nombres.
  */
+import { DUREE_EFFONDREMENT, DUREE_ENFLEMENT, DUREE_TEMPS_MORT } from "./sequence";
 
 export const TAU = Math.PI * 2;
 export const NB_ANNEAUX = 5;
 export const MAX_ONDES = 16;
-export const MAX_FILAMENTS = 26;
-export const NB_DEBRIS = 22;
 
 /** Les quatre seuils du recit, en avancement. */
 export const SEUILS = [0.25, 0.5, 0.75, 0.9];
@@ -34,6 +33,14 @@ export const SEUILS = [0.25, 0.5, 0.75, 0.9];
  * la toile au compte a rebours. */
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+
+/* Une rampe qui part et s arrete a vitesse nulle, entre `a` et `b`. C est
+   la forme de presque tout ce qui bouge sur la toile : rien de ce qui a
+   une masse ne demarre ni ne s arrete net. */
+export function doux(a: number, b: number, x: number): number {
+  const t = clamp01((x - a) / (b - a));
+  return t * t * (3 - 2 * t);
+}
 
 /* LA RAMPE DE LA TOILE, ET SON DESACCORD AVEC CELLE DU TEXTE.
  *
@@ -61,7 +68,9 @@ export function teinte(p: number): [number, number, number] {
   return [lerp(255, 255, t), lerp(64, 245, t), lerp(255, 255, t)];
 }
 
-export const rgba = ([r, g, b]: [number, number, number], a: number) =>
+export type Couleur = [number, number, number];
+
+export const rgba = ([r, g, b]: Couleur, a: number) =>
   `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${a})`;
 
 /* ── LE MEME COEUR, SUR DU PAPIER ────────────────────────────── */
@@ -98,7 +107,7 @@ export function renduDe(sombre: boolean): Rendu {
 
 export type PhaseCoeur =
   | "attente" | "montee" | "critique"
-  | "implosion" | "singularite" | "explosion" | "revelation" | "verrouille";
+  | "enflement" | "effondrement" | "tempsMort" | "projection" | "verrouille";
 
 export interface TransformationDePhase {
   echelle: number;
@@ -107,13 +116,19 @@ export interface TransformationDePhase {
   naissance: number;
 }
 
-/* L EFFONDREMENT : tout rentre dans le point, puis en jaillit.
+/* LA CONCLUSION EN QUATRE TEMPS, ET LE TROISIEME EST LE PLUS IMPORTANT.
  *
- * L ECLAT DU SEUIL DISPARAIT DES L IMPLOSION. Dans les deux phases qui
- * ecrasent `eclat`, le petit eclair du recit ne compte plus : ce n est
- * pas un oubli, c est ce qui evite d ajouter un flash a un flash.
+ * Elle concluait en huit dixiemes de seconde par un evenement qui se
+ * termine : implosion, singularite, explosion, revelation. Elle devient
+ * un ETAT dans lequel on reste — les jets ne retombent pas, ils tiennent
+ * jusqu au clic. Et entre l effondrement et le jaillissement, un silence :
+ * c est lui qui donne sa taille a ce qui suit.
  *
- * L ASTRE D APRES NE SURGIT PAS, IL SE LEVE. La revelation n est plus
+ * L ECLAT DU SEUIL NE COMPTE PLUS DES L ENFLEMENT. Les quatre temps
+ * posent chacun le leur : ajouter le petit eclair du recit a un
+ * effondrement, ce serait un flash sur un flash.
+ *
+ * L ASTRE D APRES NE SURGIT PAS, IL SE LEVE. La projection n est pas
  * chassee par une minuterie : c est quelqu un qui la quitte, et ce
  * qu il retrouve doit arriver doucement — d ou la cubique. */
 export function transformationDePhase(
@@ -123,15 +138,34 @@ export function transformationDePhase(
   apres: boolean,
 ): TransformationDePhase {
   const t: TransformationDePhase = { echelle: 1, eclat: 1 + eclatSeuil * 1.4, calme: 0, naissance: 1 };
-  if (phase === "implosion") {
-    const u = Math.min(depuis / 0.5, 1);
-    t.echelle = 1 - u * 0.97;
-    t.eclat = 1 + u * 3;
-  } else if (phase === "singularite") {
-    t.echelle = 0.03;
-    t.eclat = 4;
-  } else if (phase === "explosion" || phase === "revelation") {
-    t.echelle = 0;
+  if (phase === "enflement") {
+    /* IL GONFLE AU-DELA DE SA TAILLE : la coquille se tend, et c est ce
+       depassement qui annonce qu elle va lacher. */
+    const u = clamp01(depuis / (DUREE_ENFLEMENT / 1000));
+    t.echelle = 1 + doux(0, 1, u) * 0.42;
+    t.eclat = 1 + u * 0.9;
+  } else if (phase === "effondrement") {
+    /* IL DOIT PARTIR TOUT DE SUITE. A la puissance quatre, la sphere
+       etait encore a 94 % de sa taille a mi-temps : l effondrement se
+       lisait comme un decrochage tardif. A 2,6 elle cede des la premiere
+       image et accelere sans discontinuer — c est la DERIVEE qui doit
+       croitre, pas le depart qui doit tarder. */
+    const u = clamp01(depuis / (DUREE_EFFONDREMENT / 1000));
+    t.echelle = lerp(1.42, 0.05, Math.pow(u, 2.6));
+    t.eclat = 1.9 + Math.pow(u, 3) * 5;
+  } else if (phase === "tempsMort") {
+    /* RIEN — mais pas le noir. Un point residuel qui palpite : le noir
+       total fait croire a une panne et casse la continuite du regard.
+       C est ce point survivant qui rend le jaillissement terrible. Il
+       palpite aussi longtemps que l ecriture en base se fait attendre. */
+    const u = clamp01(depuis / (DUREE_TEMPS_MORT / 1000));
+    t.echelle = 0.05;
+    t.eclat = (1.6 + Math.sin(depuis * 11) * 0.7) * (1 - u * 0.45);
+  } else if (phase === "projection") {
+    /* LE REGIME PERMANENT. Le nexus reste ultra comprime au centre et ne
+       bouge plus : c est la bouche des jets, pas un personnage. */
+    t.echelle = 0.06;
+    t.eclat = 2.2;
   } else if (phase === "verrouille") {
     if (apres) {
       const u = clamp01(depuis / 1.1);
@@ -251,15 +285,11 @@ export function rayonDuCoeur(
   return base * echelle * souffle * (1 + p * 0.35) * contraction * (calme ? 0.8 : 1);
 }
 
-/* LE DEDOUBLEMENT S OUVRE ET SE REFERME : un sinus sur la scission,
-   donc nul aux deux bouts et maximal au milieu. En dessous d un
+/* LE DEDOUBLEMENT SE COMPTE DANS `fusion.ts` : il ne s ouvre plus et ne
+   se referme plus par le meme chemin, il lutte. En dessous d un
    demi-pixel de separation, on repasse a un seul lobe — sans quoi deux
    cercles superposes doubleraient l eclat du centre. */
 export const SEPARATION_MINIMALE = 0.5;
-
-export function separationDesLobes(scission: number, base: number, echelle: number): number {
-  return Math.sin(scission * Math.PI) * base * 0.22 * echelle;
-}
 
 export function lobesDuCoeur(cx: number, cy: number, separation: number): [number, number][] {
   return separation > SEPARATION_MINIMALE
@@ -273,11 +303,10 @@ export function tremblement(p: number, immobile: boolean, excentrique: number): 
 
 /* ── LES CADENCES ────────────────────────────────────────────── */
 
-/* Toutes les trois se resserrent avec l avancement, et toutes les
-   trois sont des millisecondes entre deux emissions. */
+/* Des millisecondes entre deux ondes : le rythme se resserre avec
+   l avancement. Les filaments et les arcs, qui avaient les leurs, ont
+   cede la place aux protuberances et a la matiere. */
 export const cadenceDesOndes = (p: number) => lerp(1500, 170, p);
-export const cadenceDesFilaments = (p: number) => lerp(420, 40, p);
-export const cadenceDesArcs = (p: number) => lerp(900, 70, p);
 
 /* ── LE SOUFFLE FINAL ────────────────────────────────────────── */
 
@@ -291,6 +320,13 @@ export function rayonDuSouffle(u: number, portee: number, immobile: boolean): nu
 export const DUREE_SOUFFLE = 0.55;
 export const DUREE_SOUFFLE_IMMOBILE = 0.9;
 
-export function avancementDuSouffle(depuis: number, immobile: boolean): number {
-  return Math.min(depuis / (immobile ? DUREE_SOUFFLE_IMMOBILE : DUREE_SOUFFLE), 1);
+/* L ERADICATION DEPASSE LE CADRE. A 0,55 s et trois quarts de
+   diagonale, l onde effleurait le bord et s eteignait avant d en
+   sortir. Ce qui se lit comme une eradication doit SORTIR du champ en
+   continuant d accelerer, et durer assez pour qu on comprenne qu il ne
+   reste rien. */
+export const PORTEE_DE_L_ERADICATION = 2.4;
+
+export function dureeDeLEradication(immobile: boolean): number {
+  return (immobile ? DUREE_SOUFFLE_IMMOBILE : DUREE_SOUFFLE) * 2.6;
 }

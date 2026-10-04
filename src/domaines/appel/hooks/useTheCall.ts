@@ -28,19 +28,13 @@ export interface PacteAppel {
 /** Le jour de l utilisateur, pas celui du serveur. */
 export const jourLocal = (d: Date = new Date()) => d.toLocaleDateString("en-CA");
 
-interface ReponseAppel {
-  total: number;
-  serie: number;
-  jour: string;
-  deja_fait: boolean;
-}
-
-/* « types.ts » est genere, et il date d avant cette fonction : on la
-   nomme ici, avec sa signature exacte, le temps qu il soit regenere. */
-type AppelRpc = (
-  nom: "enregistrer_appel",
-  args: { p_pact_id: string; p_jour: string },
-) => Promise<{ data: ReponseAppel[] | null; error: { message: string } | null }>;
+/* L APPEL PASSE PAR LE CLIENT TYPE, PAS PAR UN CAST. Le cast datait
+   d avant la regeneration de « types.ts » — et un appel ecrit
+   `(supabase.rpc as unknown as …)("enregistrer_appel"` echappe a une
+   recherche de `.rpc("enregistrer_appel"`. C est exactement ce qui est
+   arrive a l audit du 06/09 : il a range la fonction parmi celles que
+   rien n appelle, l a revoquee, et le 23/09 plus aucun appel ne
+   s enregistrait (403). Voir la migration 20260923180000. */
 
 export function useTheCall() {
   const { user } = useAuth();
@@ -81,7 +75,7 @@ export function useTheCall() {
     mutationFn: async (): Promise<PacteAppel> => {
       if (!pacte) throw new Error("PACTE_ABSENT");
 
-      const { data, error } = await (supabase.rpc as unknown as AppelRpc)("enregistrer_appel", {
+      const { data, error } = await supabase.rpc("enregistrer_appel", {
         p_pact_id: pacte.id,
         p_jour: jourLocal(),
       });
@@ -120,3 +114,6 @@ export function useTheCall() {
     relire: requete.refetch,
   };
 }
+
+/** Ce que la page lit de la donnee — le banc en fabrique une feinte. */
+export type DonneesDeLAppel = ReturnType<typeof useTheCall>;

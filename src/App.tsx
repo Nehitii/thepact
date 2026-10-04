@@ -42,6 +42,7 @@ const BancDesOrdres = lazy(() => import("@/domaines/accueil/pages/BancDesOrdres"
 const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
 const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
 const BancDuTableau = lazy(() => import("@/domaines/accueil/pages/BancDuTableau"));
+const BancDeLAppel = lazy(() => import("@/domaines/appel/pages/BancDeLAppel"));
 const TodoList = lazy(routeImports.todoList);
 const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
 const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
@@ -171,6 +172,12 @@ function AppRoutes() {
           du tableau de bord s y comparent sur un scenario fictif : le
           registre de bord, le cadran du pacte, le serment vivant. */}
       <Route path="/banc/tableau" element={<BancDuTableau />} />
+
+      {/* LE BANC DE L APPEL — public, meme raison, et une de plus : The
+          Call ne se joue qu une fois par jour. La vraie toile du rituel
+          s y regarde autant qu on veut, autour d une prise qu on tient ou
+          d une lecture automatique. Il n ecrit rien. */}
+      <Route path="/banc/appel" element={<BancDeLAppel />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />

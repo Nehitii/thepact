@@ -5,11 +5,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
-import { useTheCall } from "@/domaines/appel/hooks/useTheCall";
+import { useTheCall, type DonneesDeLAppel } from "@/domaines/appel/hooks/useTheCall";
 import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/domaines/appel/composants/CoeurStellaire";
 import {
-  AVANT_ECRITURE, DELAI_DEMONSTRATION, DELAI_FOCUS, DUREE_MESSAGE_RUPTURE, DUREE_SORTIE,
-  apresEcriture, cleDeLAnnonce, cleDuMessage, enSequence, priseTenable, retourDe,
+  APRES_ECRITURE, AVANT_ECRITURE, DELAI_DEMONSTRATION, DELAI_FOCUS, DUREE_MESSAGE_RUPTURE, DUREE_SORTIE,
+  PENDANT_L_ECRITURE, cleDeLAnnonce, cleDuMessage, enSequence, priseTenable, retourDe,
   ruptureAuRelachement, type Phase,
 } from "@/domaines/appel/logique/sequence";
 import { DSPageShell } from "@/socle/ds";
@@ -73,24 +73,27 @@ function useEcranEtroit() {
   return etroit;
 }
 
-export default function TheCall() {
+/* `donnees` : le banc passe une donnee feinte ; la route, rien. */
+export default function TheCall({ donnees }: { donnees?: DonneesDeLAppel }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const immobile = useMouvementReduit();
   const etroit = useEcranEtroit();
 
-  /* Les cinq ameliorations retenues. « La matiere » — arcs, debris,
-     aurore — n a pas ete gardee. */
+  /* Les cinq comportements, tous allumes. La matiere n est plus l aurore
+     et les debris d autrefois : c est le disque d accretion, retenu sur
+     le banc. */
   const optionsCoeur = useMemo<OptionsCoeur>(
-    () => ({ recit: true, gravite: !etroit, main: true, final: true, apres: true }),
+    () => ({ recit: true, matiere: true, gravite: !etroit, main: true, apres: true }),
     [etroit],
   );
   const evenementsCoeur = useRef<EvenementMain[]>([]);
 
+  const reelles = useTheCall();
   const {
     pacte, chargement, erreurLecture, pret, dejaFait,
     enregistrer, erreurEcriture, reinitialiserErreur, relire,
-  } = useTheCall();
+  } = donnees ?? reelles;
 
   const [phase, setPhase] = useState<Phase>("attente");
   const [relacheTot, setRelacheTot] = useState(false);
@@ -116,8 +119,10 @@ export default function TheCall() {
   const verrouille = phase === "verrouille";
   const tenable = priseTenable(pret, phase);
 
+  /* L appel deja fait a l ouverture — pas celui qu on vient d ecrire, qui
+     passe a « fait » en plein temps mort : l astre se leverait avant la fin. */
   useEffect(() => {
-    if (dejaFait) { finiRef.current = true; setPhase("verrouille"); }
+    if (dejaFait && !finiRef.current) { finiRef.current = true; setPhase("verrouille"); }
   }, [dejaFait]);
 
   /* Il n y avait aucun nettoyage dans tout le fichier : quitter la page
@@ -167,26 +172,23 @@ export default function TheCall() {
     }
 
     /* L ecriture est ATTENDUE, et son echec remonte : la page ne dit
-       plus « connecte » avant que la base l ait accepte. En mode
-       demonstration, on ne touche pas a la base. */
+       plus « connecte » avant que la base l ait accepte. Elle se fait
+       PENDANT le temps mort, qui dure au moins son silence et autant
+       qu elle. En mode demonstration, on ne touche pas a la base. */
+    setPhase(PENDANT_L_ECRITURE.phase);
+    const silence = attendre(PENDANT_L_ECRITURE.attente);
     if (!autoRef.current && vitesseRef.current === 1) {
       try {
-        await enregistrer();
+        await Promise.all([enregistrer(), silence]);
       } catch {
         finiRef.current = false;
         if (vivantRef.current) rendreLaMain();
         return;
       }
-    }
-    /* Le controle de vie est en tete de boucle : il tombe donc aux
-       deux memes endroits qu avant — avant le souffle, et avant la
-       revelation. */
-    for (const etape of apresEcriture(immobile)) {
-      if (!vivantRef.current) return;
-      setPhase(etape.phase);
-      if (etape.attente) await attendre(etape.attente);
-    }
-  }, [peindre, enregistrer, immobile, rendreLaMain]);
+    } else await silence;
+    if (!vivantRef.current) return;
+    setPhase(APRES_ECRITURE.phase);
+  }, [peindre, enregistrer, rendreLaMain]);
 
   // ── La boucle ───────────────────────────────────────────────
   const boucleRef = useRef<() => void>(() => {});
@@ -276,24 +278,22 @@ export default function TheCall() {
   /* Le clavier doit pouvoir continuer : le bouton prend la main des que
      la revelation s installe. */
   useEffect(() => {
-    if (phase !== "revelation") return;
+    if (phase !== "projection") return;
     const id = setTimeout(() => suiteRef.current?.focus(), DELAI_FOCUS);
     return () => clearTimeout(id);
   }, [phase]);
 
+  /* ON QUITTE LA REVELATION POUR L ASTRE D APRES, et les deux se croisent :
+     la phase change au clic, les jets tombent pendant que les mots
+     s eteignent. Attendre la fin du fondu couperait franc sur du noir. */
   const quitterRevelation = useCallback(() => {
-    if (sortieRevelation) return;
+    if (sortieRevelation || phase !== "projection") return;
     setSortieRevelation(true);
-    /* Le temps que la revelation s eteigne, puis le poste revient — et
-       la toile fait lever l astre par-dessous. */
-    setTimeout(() => {
-      if (!vivantRef.current) return;
-      progresRef.current = 0;
-      peindre(0);
-      setSortieRevelation(false);
-      setPhase("verrouille");
-    }, DUREE_SORTIE);
-  }, [sortieRevelation, peindre]);
+    progresRef.current = 0;
+    peindre(0);
+    setPhase("verrouille");
+    setTimeout(() => { if (vivantRef.current) setSortieRevelation(false); }, DUREE_SORTIE);
+  }, [sortieRevelation, phase, peindre]);
 
   // ── Les textes d etat ───────────────────────────────────────
   const messageEtat = t(cleDuMessage(phase, relacheTot));
@@ -325,9 +325,15 @@ export default function TheCall() {
           evenements={evenementsCoeur}
         />
 
-        {/* Le poste : trame, equerres, rails */}
-        <span className="rit-trame" aria-hidden="true" />
-        <span className="rit-equerres" aria-hidden="true" />
+        {/* Le poste : trame, equerres, rails — effaces pendant la conclusion. */}
+        <span className={cn("rit-trame", sequence && "est-efface")} aria-hidden="true" />
+        <span className={cn("rit-equerres", sequence && "est-efface")} aria-hidden="true" />
+
+        {/* Le voile de la revelation : le clic n importe ou sur la PAGE, pas
+            sur la barre laterale. La scene le laisse passer. */}
+        {(phase === "projection" || sortieRevelation) && (
+          <div className="absolute inset-0 z-[5] cursor-pointer" onClick={quitterRevelation} aria-hidden="true" />
+        )}
 
         {/* ── Le rail haut ─────────────────────────────────────── */}
         <header className={cn("rit-rail", sequence && "est-efface")}>
@@ -381,42 +387,27 @@ export default function TheCall() {
         </div>
 
         {/* ── La scene ─────────────────────────────────────────── */}
-        <div className="flex-1 flex items-center justify-center w-full relative z-10 min-h-0">
+        <div className={cn("flex-1 flex items-center justify-center w-full relative z-10 min-h-0", sequence && "pointer-events-none")}>
           <div className="relative flex flex-col items-center justify-center">
-            <div className={cn(
-              "fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200",
-              phase === "singularite" ? "opacity-100" : "opacity-0",
-            )} />
-            <div className={cn(
-              "fixed inset-0 z-[100] pointer-events-none transition-opacity ease-out bg-white",
-              phase === "explosion"
-                ? (immobile ? "duration-500 opacity-70" : "duration-150 opacity-90")
-                : "[transition-duration:3000ms] opacity-0",
-            )} />
-
-            {phase === "revelation" && (
-              <div className={cn(
-                "absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full",
-                sortieRevelation && "est-sortie",
-              )}>
+            {/* La revelation se centre sur la prise, comme les jets — pas sur
+                la fenetre, qui compte la barre laterale. */}
+            {(phase === "projection" || sortieRevelation) && (
+              <div onClick={quitterRevelation} className={cn("absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full pointer-events-auto cursor-pointer", sortieRevelation && "est-sortie")}>
                 <p className="rit-connecte">{t("thecall.connected")}</p>
                 <span className="rit-trait" />
                 <p className="rit-sous-connecte">{t("thecall.synchronized")}</p>
-                <button
-                  ref={suiteRef}
-                  type="button"
-                  onClick={quitterRevelation}
-                  className="rit-outil est-large rit-suite"
-                >
+                <button ref={suiteRef} type="button" className="rit-outil est-large rit-suite"
+                  onClick={(e) => { e.stopPropagation(); quitterRevelation(); }}>
                   {t("thecall.backToConsole")}
                 </button>
               </div>
             )}
 
+            {/* La prise s efface sans quitter la mise en page : la toile se
+                centre sur elle, masquee elle enverrait les jets dans un coin. */}
             <div className={cn(
-              "relative transition-all",
-              phase === "implosion" ? "scale-0 opacity-0 duration-500" : "scale-100 opacity-100 duration-100",
-              phase === "revelation" ? "hidden" : "block",
+              "relative transition-opacity duration-300",
+              sequence ? "opacity-0 pointer-events-none" : "opacity-100",
             )}>
               <button
                 ref={boutonRef}
@@ -526,6 +517,7 @@ export default function TheCall() {
              coeur. Il ne reste que les lignes de balayage. */
           background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.016) 2px 4px);
           opacity: calc(0.5 + var(--rit-p) * 0.5);
+          transition: opacity 400ms var(--ds-ease-out);
         }
 
         /* Quatre equerres : le cadre d un viseur. */
@@ -541,6 +533,7 @@ export default function TheCall() {
             linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 100% / 30px 1px no-repeat,
             linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 100% / 1px 30px no-repeat;
           opacity: calc(0.35 + var(--rit-p) * 0.65);
+          transition: opacity 400ms var(--ds-ease-out);
         }
 
         /* ── Les rails ─────────────────────────────────────────── */
@@ -553,7 +546,8 @@ export default function TheCall() {
           white-space: nowrap;
           transition: opacity 400ms var(--ds-ease-out);
         }
-        .rit-rail.est-efface, .rit-titre-bloc.est-efface, .rit-pied.est-efface {
+        .rit-rail.est-efface, .rit-titre-bloc.est-efface, .rit-pied.est-efface,
+        .rit-trame.est-efface, .rit-equerres.est-efface {
           opacity: 0; pointer-events: none;
         }
         .rit-sig { color: var(--rit-teinte); transition: color 200ms linear; }
