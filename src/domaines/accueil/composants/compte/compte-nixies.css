@@ -1,0 +1,184 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROPOSITION B — LES NIXIES ET LE GALVANOMETRE
+
+   Un boitier de bakelite noire, des filets et des plaques de laiton.
+   Les tubes sont ceux de l atelier de nuit, en grand : verre, grille,
+   cathodes eteintes devinees derriere, le chiffre orange allume. Le
+   galvanometre a son cadran creme et sa zone rouge. Les chiffres des
+   tubes sont la Tilt Neon embarquee — redeclaree ici pour ne pas
+   dependre de l ordre de chargement des feuilles.
+   ═══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Tilt Neon';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/tilt-neon.woff2') format('woff2');
+}
+
+.cn {
+  --cn-laiton: #c9a35a;
+  --cn-voyant: #2fd98a;
+
+  container-type: inline-size;
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+}
+.cn[data-etat="attention"] { --cn-voyant: #ffb020; }
+.cn[data-etat="critique"] { --cn-voyant: #ff3b2b; }
+.cn[data-etat="a-venir"] { --cn-voyant: #6aa8ff; }
+
+/* La grille est a l interieur : une requete de conteneur interroge un
+   ANCETRE, jamais l element lui-meme. */
+.cn-boitier {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+  padding: 18px 24px;
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 70% 120% at 30% 0%, rgb(255 255 255 / 0.06), transparent 60%),
+    linear-gradient(175deg, #1d1b19, #0e0d0c);
+  box-shadow:
+    inset 0 0 0 1px rgb(201 163 90 / 0.35),
+    inset 0 0 0 5px #121110,
+    inset 0 0 0 6px rgb(201 163 90 / 0.18),
+    0 18px 40px -24px rgb(0 0 0 / 0.9);
+}
+
+/* ── Les tubes ── */
+.cn-compteur { display: grid; justify-items: center; gap: 10px; }
+.cn-tubes { display: inline-flex; align-items: flex-end; gap: 6px; user-select: none; }
+.cn-tube {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 84px;
+  padding-bottom: 9px;
+  border-radius: 26px 26px 7px 7px;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 55%, rgb(255 120 40 / 0.2), transparent 70%),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.16) 20%, rgb(255 255 255 / 0.03) 42%, rgb(255 255 255 / 0.09) 85%),
+    #140c08;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), inset 0 -12px 12px rgb(0 0 0 / 0.55), 0 4px 8px rgb(0 0 0 / 0.6);
+}
+.cn-tube::before {
+  content: "8";
+  position: absolute;
+  inset: 0 0 9px;
+  display: grid;
+  place-items: center;
+  font: 400 60px/1 "Tilt Neon", "Switzer", sans-serif;
+  color: rgb(255 150 70 / 0.08);
+}
+.cn-tube::after {
+  content: "";
+  position: absolute;
+  inset: auto 6px 0;
+  height: 9px;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(#2c2d31, #111214);
+}
+.cn-grille {
+  position: absolute;
+  inset: 8px 6px 14px;
+  z-index: 1;
+  border-radius: 20px 20px 3px 3px;
+  background:
+    repeating-linear-gradient(60deg, rgb(255 210 170 / 0.07) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(-60deg, rgb(255 210 170 / 0.07) 0 1px, transparent 1px 5px);
+}
+.cn-tube b {
+  position: relative;
+  font: 400 60px/1 "Tilt Neon", "Switzer", sans-serif;
+  color: #ffe0c2;
+  text-shadow: 0 0 2px #fff3e6, 0 0 8px #ff9a4a, 0 0 18px #ff6a14, 0 0 36px rgb(255 100 20 / 0.5);
+}
+/* Au terme, les tubes s eteignent : le verre, la grille, plus de neon. */
+.cn[data-etat="termine"] .cn-tube b { color: rgb(255 150 70 / 0.12); text-shadow: none; }
+
+/* Les plaques de laiton, gravees. */
+.cn-laiton {
+  padding: 4px 12px 3px;
+  border-radius: 3px;
+  background: linear-gradient(170deg, #e2c27f, #b88b3c 55%, #d7b46a);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -1px 0 rgb(0 0 0 / 0.25), 0 2px 4px rgb(0 0 0 / 0.5);
+  font: 700 10.5px/1.3 "Switzer", sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #2b1d08;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.cn-laiton--petit { font-size: 11px; letter-spacing: 0.08em; }
+
+/* ── Le galvanometre ── */
+.cn-galva { display: grid; justify-items: center; justify-self: center; gap: 8px; }
+.cn-cadran {
+  display: block;
+  width: 180px;
+  height: 114px;
+  border-radius: 8px 8px 4px 4px;
+  background:
+    linear-gradient(160deg, rgb(255 255 255 / 0.18), transparent 38%),
+    radial-gradient(ellipse at 50% 100%, #efe6cf, #d8cba9);
+  box-shadow: inset 0 0 0 3px #1a1816, inset 0 0 0 4px rgb(201 163 90 / 0.5), inset 0 6px 10px rgb(0 0 0 / 0.35);
+}
+.cn-zone { fill: none; stroke: #c4392d; stroke-width: 5; }
+.cn-trait { stroke: #2a241b; stroke-width: 0.7; }
+.cn-trait--fort { stroke-width: 1.5; }
+.cn-graduation { font: 700 7px "Switzer", sans-serif; fill: #2a241b; text-anchor: middle; dominant-baseline: central; }
+.cn-marque { font: 600 5.5px "Switzer", sans-serif; letter-spacing: 0.14em; text-transform: uppercase; fill: #7d6e52; text-anchor: middle; }
+.cn-aiguille { stroke: #141210; stroke-width: 1.4; stroke-linecap: round; }
+.cn-pivot { fill: #1a1816; stroke: #c9a35a; stroke-width: 1; }
+.cn-galva g { transition: transform 900ms cubic-bezier(0.3, 1.4, 0.5, 1); }
+
+/* ── Le cote : le voyant et les bornes ── */
+.cn-cote { display: grid; justify-items: end; gap: 12px; }
+.cn-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font: 700 11px/1 "Switzer", sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e9e1cf;
+}
+.cn-voyant {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffffff, var(--cn-voyant) 55%);
+  box-shadow: 0 0 0 2px #121110, 0 0 0 3px rgb(201 163 90 / 0.5), 0 0 12px var(--cn-voyant), 0 0 26px color-mix(in srgb, var(--cn-voyant) 45%, transparent);
+}
+.cn[data-etat="critique"] .cn-voyant { animation: cn-pouls 1.1s ease-in-out infinite; }
+@keyframes cn-pouls { 50% { opacity: 0.45; } }
+
+.cn-bornes { display: grid; gap: 6px; margin: 0; }
+.cn-bornes div { display: flex; align-items: baseline; justify-content: flex-end; gap: 10px; }
+.cn-bornes dt { font: 700 9.5px/1 "Switzer", sans-serif; letter-spacing: 0.18em; text-transform: uppercase; color: #a8957a; }
+.cn-bornes dd { margin: 0; font: 600 14px/1 "JetBrains Mono", ui-monospace, monospace; color: #efe6cf; font-variant-numeric: tabular-nums; }
+
+@container (max-width: 700px) {
+  .cn-boitier { grid-template-columns: minmax(0, 1fr) auto; gap: 18px; padding: 16px; }
+  .cn-compteur { grid-column: 1 / -1; }
+  .cn-galva { justify-self: start; }
+  .cn-cote { justify-items: start; }
+  .cn-cadran { width: 150px; height: 95px; }
+}
+@container (max-width: 420px) {
+  .cn-tube { width: 44px; height: 70px; }
+  .cn-tube b, .cn-tube::before { font-size: 48px; }
+  .cn-boitier { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .cn-galva { justify-self: center; }
+  .cn-cote { justify-items: center; }
+  .cn-bornes div { justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cn-galva g { transition: none; }
+  .cn[data-etat="critique"] .cn-voyant { animation: none; }
+}
+[data-reduce-motion="true"] .cn-galva g { transition: none; }
+[data-reduce-motion="true"] .cn[data-etat="critique"] .cn-voyant { animation: none; }

@@ -96,6 +96,17 @@ export interface OrdreAffiche {
   updated_at?: string;
 }
 
+/* CE QUE RECOIT UNE REFONTE DU COMPTE A REBOURS — les proprietes du
+ * panneau d avant, pour qu elle prenne sa place sans autre changement. */
+export interface ProprietesDuCompte {
+  /** Jours civils « AAAA-MM-JJ » : « project_start_date », « project_end_date ». */
+  projectStartDate?: string | null;
+  projectEndDate?: string | null;
+  /** Au banc seulement : une heure imposee. */
+  maintenant?: number;
+  className?: string;
+}
+
 /* CE QUE RECOIT UNE REFONTE DES ORDRES DU JOUR. Le repli est tenu par
  * celui qui la monte : c est une preference qui dure (« ORDRES_REPLIES »),
  * pas un etat du dessin. */

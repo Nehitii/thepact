@@ -43,6 +43,8 @@ import { useThemeSombre } from "@/socle/hooks/useThemeSombre";
 interface CountdownPanelProps {
   projectStartDate?: string | null;
   projectEndDate?: string | null;
+  /** Au banc seulement : une heure imposee, pour le comparer aux refontes. */
+  maintenant?: number;
 }
 
 /* Les phases gardent leurs teintes, leurs sceaux et leurs animations :
@@ -103,9 +105,10 @@ const ENCRE_PAPIER: Record<string, string> = {
 const JOUR_MS = 86_400_000;
 const HEURE_MS = 3_600_000;
 
-export function CountdownPanel({ projectStartDate, projectEndDate }: CountdownPanelProps) {
+export function CountdownPanel({ projectStartDate, projectEndDate, maintenant: impose }: CountdownPanelProps) {
   const sombre = useThemeSombre();
-  const [maintenant, setMaintenant] = useState(() => Date.now());
+  const [horloge, setHorloge] = useState(() => Date.now());
+  const maintenant = impose ?? horloge;
 
   const finMs = projectEndDate ? new Date(projectEndDate).getTime() : null;
   const resteMs = finMs === null ? 0 : Math.max(0, finMs - maintenant);
@@ -114,7 +117,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate }: CountdownPa
      redessins par minute pour un chiffre qui bouge une fois par jour.
      La cadence suit l'unite affichee : la minute tant qu'on compte en
      jours, la seconde seulement dans les deux derniers jours. */
-  useVisibleInterval(() => setMaintenant(Date.now()), resteMs > 2 * JOUR_MS ? 60_000 : 1_000);
+  useVisibleInterval(() => setHorloge(Date.now()), resteMs > 2 * JOUR_MS ? 60_000 : 1_000);
 
   const calc = useMemo(() => {
     if (finMs === null) return null;
