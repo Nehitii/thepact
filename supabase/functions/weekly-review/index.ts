@@ -2,11 +2,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
 import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
-interface LigneIdent { id: string }
-interface LigneEtape { id: string; goal_id: string; validated_at: string | null }
-interface LigneSante { mood_level: number | null; sleep_quality: number | null; activity_level: number | null }
-interface LigneMontant { amount: number | string | null }
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -68,27 +63,24 @@ Deno.serve(async (req) => {
       .from("steps")
       .select("id, goal_id, validated_at")
       .gte("validated_at", `${wsStr}T00:00:00`)
-      .lte("validated_at", `${weStr}T23:59:59`)
-      .returns<LigneEtape[]>();
+      .lte("validated_at", `${weStr}T23:59:59`);
 
     // Filter to user's goals via pacts
     const { data: userPacts } = await supabase
       .from("pacts")
       .select("id")
-      .eq("user_id", user_id)
-      .returns<LigneIdent[]>();
-    const pactIds = (userPacts || []).map((p) => p.id);
+      .eq("user_id", user_id);
+    const pactIds = (userPacts || []).map((p: any) => p.id);
 
     const { data: userGoals } = await supabase
       .from("goals")
       .select("id")
-      .in("pact_id", pactIds)
-      .returns<LigneIdent[]>();
-    const goalIds = new Set((userGoals || []).map((g) => g.id));
+      .in("pact_id", pactIds);
+    const goalIds = new Set((userGoals || []).map((g: any) => g.id));
 
-    const userSteps = (stepsData || []).filter((s) => goalIds.has(s.goal_id));
+    const userSteps = (stepsData || []).filter((s: any) => goalIds.has(s.goal_id));
     const stepsCompleted = userSteps.length;
-    const goalsProgressed = new Set(userSteps.map((s) => s.goal_id)).size;
+    const goalsProgressed = new Set(userSteps.map((s: any) => s.goal_id)).size;
 
     // 2. Health average score
     const { data: healthData } = await supabase
@@ -96,13 +88,12 @@ Deno.serve(async (req) => {
       .select("mood_level, sleep_quality, activity_level")
       .eq("user_id", user_id)
       .gte("entry_date", wsStr)
-      .lte("entry_date", weStr)
-      .returns<LigneSante[]>();
+      .lte("entry_date", weStr);
 
     let healthAvg = null;
     if (healthData && healthData.length > 0) {
       // Filter on type, not truthiness: a legitimate score of 0 must still count.
-      const scores = healthData.map((h) => {
+      const scores = healthData.map((h: any) => {
         const values = [h.mood_level, h.sleep_quality, h.activity_level]
           .filter((v: unknown): v is number => typeof v === "number");
         return values.length > 0 ? values.reduce((a: number, b: number) => a + b, 0) / values.length : null;
@@ -117,17 +108,15 @@ Deno.serve(async (req) => {
       .from("recurring_income")
       .select("amount")
       .eq("user_id", user_id)
-      .eq("is_active", true)
-      .returns<LigneMontant[]>();
+      .eq("is_active", true);
     const { data: expenses } = await supabase
       .from("recurring_expenses")
       .select("amount")
       .eq("user_id", user_id)
-      .eq("is_active", true)
-      .returns<LigneMontant[]>();
+      .eq("is_active", true);
     
-    const totalIncome = (income || []).reduce((s, i) => s + Number(i.amount), 0);
-    const totalExpenses = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+    const totalIncome = (income || []).reduce((s: number, i: any) => s + Number(i.amount), 0);
+    const totalExpenses = (expenses || []).reduce((s: number, e: any) => s + Number(e.amount), 0);
     const financeNet = totalIncome - totalExpenses;
 
     // 4. Journal entries count
@@ -151,7 +140,7 @@ Deno.serve(async (req) => {
     const aiKey = getAiKey();
     if (aiKey) {
       try {
-        const prompt = `You are M.I.A, the intelligence built into Overwrite, a life-management app. Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
+        const prompt = `You are a concise personal coach for a productivity/life-management app called "The Pact". Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
 
 This week's summary:
 - Goals progressed: ${goalsProgressed} goals, ${stepsCompleted} steps completed
@@ -165,11 +154,10 @@ Give practical advice based on patterns you notice. Use short bullet points.`;
         const aiResp = await chatCompletion({
           model: DEFAULT_CHAT_MODEL,
           messages: [
-            { role: "system", content: "You are M.I.A, concise and direct. Keep responses under 150 words." },
+            { role: "system", content: "You are a concise personal development coach. Keep responses under 150 words." },
             { role: "user", content: prompt },
           ],
-          /* Travail de fond : personne n'attend devant un écran. */
-        }, aiKey, { usage: "traitement", essaisMax: 6 });
+        }, aiKey);
 
         if (aiResp.ok) {
           const aiData = await aiResp.json();

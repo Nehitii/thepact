@@ -4,8 +4,6 @@
 // Exception: `guilds.owner_id` is NOT cascaded (a guild may outlive its
 // creator). We delete owned guilds explicitly here.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { messageDErreur } from "../_shared/erreurs.ts";
-import { exigerLeSecondFacteur } from "../_shared/secondFacteur.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,22 +38,6 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // A live session alone used to be enough to wipe the account: no current
-    // password, no second factor, no recency check. When the user has enrolled
-    // a verified TOTP factor, demand that this session actually carries it —
-    // the same bar the `mfa_aal2_requis` RLS policy sets on their own data.
-    // Users without a factor are unaffected: there is nothing to demand.
-    //
-    // The guard lives in `_shared/secondFacteur.ts` since 23/09: this block
-    // was written here and nowhere else, and `delete-all-data` wiped the
-    // same data without it for a month.
-    const refus = await exigerLeSecondFacteur(
-      () => userClient.rpc("a_un_second_facteur"),
-      claimsData.claims.aal,
-      corsHeaders,
-    );
-    if (refus) return refus;
-
     // Guilds are intentionally not FK-cascaded — drop the ones this user owns.
     await adminClient.from("guilds").delete().eq("owner_id", userId);
 
@@ -67,8 +49,8 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-  } catch (err: unknown) {
+  } catch (err: any) {
     console.error("delete-account error:", err);
-    return new Response(JSON.stringify({ error: messageDErreur(err) }), { status: 500, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
   }
 });

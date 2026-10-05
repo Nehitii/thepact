@@ -1,0 +1,63 @@
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMfa } from "@/hooks/useMfa";
+import { useProfile } from "@/hooks/useProfile";
+import { usePact } from "@/hooks/usePact";
+import { useSharedPacts } from "@/hooks/useSharedPacts";
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const mfa = useMfa();
+  const { data: profile, isError: profileError } = useProfile(user?.id);
+  const { data: personalPact, isError: pactError } = usePact(user?.id);
+  const { memberships, isError: sharedError } = useSharedPacts();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // If critical queries failed, render children anyway instead of bad redirects
+  if (profileError || pactError || sharedError) {
+    return <>{children}</>;
+  }
+
+  // Redirection de confort uniquement : la vraie contrainte est portée par
+  // les politiques RLS, qui exigent aal2 sur le JWT. Contourner cette
+  // redirection ne donne accès à aucune donnée.
+  if (location.pathname !== "/two-factor" && mfa.isRequired) {
+    return (
+      <Navigate
+        to="/two-factor"
+        replace
+        state={{ from: location.pathname + location.search + location.hash }}
+      />
+    );
+  }
+
+  // Pact selector: if user has personal pact + shared pact memberships and no active choice
+  const exemptPaths = ["/two-factor", "/pact-selector", "/onboarding", "/auth"];
+  if (
+    !exemptPaths.includes(location.pathname) &&
+    profile &&
+    !(profile as any).active_pact_id &&
+    personalPact &&
+    memberships.length > 0
+  ) {
+    return <Navigate to="/pact-selector" replace />;
+  }
+
+  return <>{children}</>;
+}
+

@@ -10,38 +10,11 @@
 //
 // Supported actions:
 //   - send_notification  { title, description, cta_url?, priority? }
-//   - mia_insight        { title, body, severity?: 'info'|'warn'|'critical' }
+//   - coach_insight      { title, body, severity?: 'info'|'warn'|'critical' }
 //   - grant_bonds        { amount }
 //
 // Cooldown: a rule never fires twice in the same UTC day.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import type { ClientSupabase } from "../_shared/client.ts";
-
-/* UNE REGLE, TELLE QUE LA TABLE LA PORTE.
-   `rule: any` laissait passer n'importe quel nom de champ : une colonne
-   renommee en base ne se serait vue qu'a l'execution, sur la regle d'un
-   utilisateur, une fois par nuit. Les deux `_config` restent en JSON —
-   leur forme depend du type de declencheur, et c'est deliberement libre. */
-interface RegleAutomatisation {
-  id: string;
-  user_id: string;
-  name: string | null;
-  description: string | null;
-  trigger_type: string | null;
-  trigger_config: Record<string, unknown> | null;
-  action_type: string | null;
-  action_config: Record<string, unknown> | null;
-  last_run_at: string | null;
-  last_status: string | null;
-  run_count: number | null;
-}
-
-interface LigneHabitude { goal_id: string | null; log_date: string; streak_count: number | null; completed: boolean | null }
-interface LigneIdent { id: string }
-/* `LigneTransaction` décrivait une ligne de `bank_transactions`, table
-   supprimée le 20/08. Le seul cas qui l'employait lève désormais — le
-   type n'a plus rien à décrire. */
-interface LigneSeance { duration_seconds: number | null }
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,31 +29,27 @@ function sameUtcDay(a: Date, b: Date) {
   return a.toISOString().slice(0, 10) === b.toISOString().slice(0, 10);
 }
 
-async function evalTrigger(sb: ClientSupabase, userId: string, rule: RegleAutomatisation): Promise<boolean> {
+async function evalTrigger(sb: any, userId: string, rule: any): Promise<boolean> {
   const cfg = rule.trigger_config ?? {};
   switch (rule.trigger_type) {
     case "streak_broken": {
       const minStreak = Number(cfg.min_streak_days ?? 2);
       const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
       const q = sb.from("habit_logs").select("goal_id,log_date,streak_count,completed").eq("user_id", userId).gte("log_date", since).order("log_date", { ascending: false });
-      /* .returns() se pose en DERNIER : applique avant .eq(), le type
-         impose masque les filtres encore disponibles. */
-      const { data } = cfg.habit_goal_id
-        ? await q.eq("goal_id", String(cfg.habit_goal_id)).returns<LigneHabitude[]>()
-        : await q.returns<LigneHabitude[]>();
+      const { data } = cfg.habit_goal_id ? await q.eq("goal_id", cfg.habit_goal_id) : await q;
       if (!data?.length) return false;
       // streak considered broken if today missing AND yesterday's streak >= minStreak
       const today = new Date().toISOString().slice(0, 10);
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      const todayLog = data.find((d) => d.log_date === today && d.completed);
+      const todayLog = data.find((d: any) => d.log_date === today && d.completed);
       if (todayLog) return false;
-      const yesterdayBest = Math.max(0, ...data.filter((d) => d.log_date === yesterday).map((d) => d.streak_count ?? 0));
+      const yesterdayBest = Math.max(0, ...data.filter((d: any) => d.log_date === yesterday).map((d: any) => d.streak_count ?? 0));
       return yesterdayBest >= minStreak;
     }
     case "goal_overdue": {
       const today = new Date().toISOString().slice(0, 10);
-      const { data: pacts } = await sb.from("pacts").select("id").eq("user_id", userId).returns<LigneIdent[]>();
-      const ids = (pacts ?? []).map((p) => p.id);
+      const { data: pacts } = await sb.from("pacts").select("id").eq("user_id", userId);
+      const ids = (pacts ?? []).map((p: any) => p.id);
       if (!ids.length) return false;
       let q = sb.from("goals").select("id,deadline,status,name").in("pact_id", ids).in("status", ["in_progress", "not_started"]).lt("deadline", today);
       if (cfg.goal_id) q = q.eq("id", cfg.goal_id);
@@ -88,34 +57,17 @@ async function evalTrigger(sb: ClientSupabase, userId: string, rule: RegleAutoma
       return (data?.length ?? 0) > 0;
     }
     case "budget_exceeded": {
-      /* ═══ CETTE RÈGLE N'A PLUS DE SOURCE, ET ELLE LE DIT ═══
-
-         Elle interrogeait `bank_transactions`, supprimée le 20/08 par
-         la migration `recentrer_finance_sur_le_pacte` en même temps que
-         `user_accounts`. Personne n'a repris ce cas.
-
-         CE QU'ELLE FAISAIT AVANT CETTE CORRECTION EST PIRE QUE DE NE
-         RIEN FAIRE : la requête échouait, `data` valait null, le total
-         tombait à zéro, et `total >= threshold` restait faux. Une règle
-         que quelqu'un aurait configurée ne se serait JAMAIS déclenchée,
-         sans un message, sans une trace. Une panne silencieuse dans un
-         moteur de règles est indétectable par construction — on attend
-         une notification qui ne vient pas, et rien ne dit pourquoi.
-
-         On lève donc. `user_automation_rules` est vide au 28/08 :
-         personne ne peut être surpris aujourd'hui. Le jour où l'écran
-         qui manque permettra de créer une telle règle, l'erreur dira
-         quoi rebrancher — probablement `recurring_expenses` et
-         `pact_spending`, qui sont ce qui reste des dépenses. */
-      throw new Error(
-        "budget_exceeded est hors service : sa source bank_transactions a été supprimée le 20/08. " +
-          "À rebrancher sur les tables de dépenses actuelles avant de proposer cette règle.",
-      );
+      const monthStart = new Date(); monthStart.setUTCDate(1);
+      const ws = monthStart.toISOString().slice(0, 10);
+      const { data } = await sb.from("bank_transactions").select("amount,category,transaction_type").eq("user_id", userId).gte("transaction_date", ws).eq("transaction_type", "expense");
+      const total = (data ?? []).filter((t: any) => !cfg.category || t.category === cfg.category).reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
+      const threshold = Number(cfg.threshold ?? 0);
+      return threshold > 0 && total >= threshold;
     }
     case "low_focus_week": {
       const since = new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data } = await sb.from("focus_sessions").select("duration_seconds").eq("user_id", userId).gte("started_at", since).returns<LigneSeance[]>();
-      const minutes = (data ?? []).reduce((s, r) => s + Number(r.duration_seconds ?? 0), 0) / 60;
+      const { data } = await sb.from("focus_sessions").select("duration_seconds").eq("user_id", userId).gte("started_at", since);
+      const minutes = (data ?? []).reduce((s: number, r: any) => s + Number(r.duration_seconds ?? 0), 0) / 60;
       return minutes < Number(cfg.min_minutes ?? 60);
     }
     case "daily_schedule": {
@@ -127,7 +79,7 @@ async function evalTrigger(sb: ClientSupabase, userId: string, rule: RegleAutoma
   }
 }
 
-async function runAction(sb: ClientSupabase, userId: string, rule: RegleAutomatisation): Promise<string> {
+async function runAction(sb: any, userId: string, rule: any): Promise<string> {
   const cfg = rule.action_config ?? {};
   switch (rule.action_type) {
     case "send_notification": {
@@ -144,11 +96,8 @@ async function runAction(sb: ClientSupabase, userId: string, rule: RegleAutomati
       });
       return "notification_sent";
     }
-    /* Renommé le 27/08 avec le reste du vocabulaire. Aucune règle
-       n'utilisait cette action — la table en comptait zéro — donc
-       aucune compatibilité à garder. */
-    case "mia_insight": {
-      await sb.from("mia_insights").insert({
+    case "coach_insight": {
+      await sb.from("coach_insights").insert({
         user_id: userId,
         type: "automation",
         severity: cfg.severity ?? "info",
@@ -163,15 +112,7 @@ async function runAction(sb: ClientSupabase, userId: string, rule: RegleAutomati
     case "grant_bonds": {
       const amount = Math.max(0, Math.min(500, Number(cfg.amount ?? 0)));
       if (amount > 0) {
-        /* IL Y AVAIT UN .catch() ICI, ET IL N'EXISTE PAS.
-           Le constructeur rendu par .rpc() n'implemente que PromiseLike :
-           il a un .then(), jamais un .catch(). L'appel levait donc
-           « catch is not a function » — a chaque fois que cette action
-           partait, c'est-a-dire a chaque regle « grant_bonds ». Personne
-           ne l'a vu parce que `sb: any` eteignait la verification. */
-        try {
-          await sb.rpc("award_bonds", { p_amount: amount, p_reason: `Automation: ${rule.name}` });
-        } catch { /* l'octroi echoue : la regle a quand meme tourne */ }
+        await sb.rpc("award_bonds", { p_amount: amount, p_reason: `Automation: ${rule.name}` }).catch(() => null);
       }
       return `bonds_${amount}`;
     }
@@ -194,8 +135,7 @@ Deno.serve(async (req) => {
   const { data: rules } = await sb
     .from("user_automation_rules")
     .select("*")
-    .eq("is_active", true)
-    .returns<RegleAutomatisation[]>();
+    .eq("is_active", true);
 
   let fired = 0, skipped = 0, errors = 0;
   const now = new Date();

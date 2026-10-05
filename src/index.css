@@ -1,24 +1,38 @@
 /* ─── Self-hosted fonts (latin subset, WOFF2) ─── */
-/* ═══ UNE POLICE VARIABLE, UN SEUL FICHIER ═══
-
-   Il y avait cinq @font-face pointant vers cinq fichiers — et les
-   cinq étaient IDENTIQUES, même empreinte MD5, 11 800 octets chacun.
-   Ce n'était pas un mauvais gras pour autant : le fichier porte une
-   table `fvar` avec un axe wght de 400 à 900, lu dans le woff2. Les
-   graisses étaient donc vraies, mais le même fichier était téléchargé
-   jusqu'à cinq fois sous cinq URL différentes, chacune avec son
-   entrée de cache.
-
-   Une seule déclaration, et une PLAGE de graisses au lieu d'une
-   valeur : le navigateur règle l'axe sur ce qu'on demande. La plage
-   n'est pas choisie, elle est relevée dans la table fvar — la
-   déclarer plus large ferait extrapoler, plus étroite ferait borner. */
 @font-face {
   font-family: 'Orbitron';
   font-style: normal;
-  font-weight: 400 900;
+  font-weight: 400;
   font-display: swap;
-  src: url('/fonts/orbitron.woff2') format('woff2');
+  src: url('/fonts/orbitron-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/orbitron-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/orbitron-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/orbitron-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/orbitron-900.woff2') format('woff2');
 }
 @font-face {
   font-family: 'Rajdhani';
@@ -48,44 +62,19 @@
   font-display: swap;
   src: url('/fonts/rajdhani-700.woff2') format('woff2');
 }
-/* Même cas : deux fichiers identiques de 31 432 octets, axe wght de
-   400 à 800 relevé dans fvar. */
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('/fonts/jetbrains-mono.woff2') format('woff2');
-}
-
-/* SWITZER — le grotesque de la maison, en trois graisses.
-   Indian Type Foundry, licence libre, 55,7 Ko au total.
-   Trois et pas cinq : 600 et 800 n existent pas dans les fichiers, le
-   navigateur les FABRIQUERAIT en epaississant le trait — un faux gras,
-   visible et sale.
-   Elle etait declaree dans « domaines/social/community.css », que seules
-   cinq pages importent, alors que la carte de profil, les deux ecrans
-   d authentification et desormais le titre du pacte la demandent. */
-@font-face {
-  font-family: 'Switzer';
-  font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/switzer-400.woff2') format('woff2');
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Switzer';
+  font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('/fonts/switzer-500.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Switzer';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/switzer-700.woff2') format('woff2');
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
 }
 
 /* design-tokens.css est importe depuis main.tsx. Un @import place ici, apres
@@ -148,16 +137,10 @@ html[data-idle] *::after {
 
 /* ────── Pacte OS — Global focus-visible (a11y AA) ────── */
 @layer base {
-  /* L ANNEAU DE FOCUS SUIT L ACCENT DU PACTE.
-     Il etait code en dur sur --ds-accent-primary, donc cyan, quelle que
-     soit la couleur choisie : un anneau cyan autour d un champ violet.
-     Meme correction que pour le halo du signe — la variable posee par
-     AccentColorSync depuis profiles.accent_color, avec le repli du
-     systeme quand aucun accent n est choisi. */
   *:focus-visible {
-    outline: 1px solid hsl(var(--ds-current-accent, var(--ds-accent-primary)));
+    outline: 1px solid hsl(var(--ds-accent-primary));
     outline-offset: 2px;
-    box-shadow: 0 0 0 3px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.18);
+    box-shadow: 0 0 0 3px hsl(var(--ds-accent-primary) / 0.18);
     border-radius: 2px;
   }
 }
@@ -230,42 +213,6 @@ All colors MUST be HSL.
     --background: 210 50% 96%;
     --foreground: 210 100% 12%;
 
-    /* L ENCRE DES TITRES.
-       Sept feuilles portaient #eaf6ff ou #f2f9ff en dur, invisibles
-       sur un fond clair. On ne pouvait pas les renvoyer vers
-       --foreground sans ternir le theme sombre, ou l encre des titres
-       est plus vive que le texte courant. */
-    --encre-titre: 210 100% 14%;
-    --encre-titre-douce: 210 60% 24%;
-
-    /* L encre secondaire et l accent d etat : mêmes raisons que
-       ci-dessus, un cran plus bas dans la hiérarchie. */
-    --encre-second: 210 34% 30%;
-
-    /* LES SIGNAUX, EN THÈME CLAIR.
-       Même teinte que le néon du thème sombre, luminosité descendue
-       jusqu'à passer 4,5 sur le sol ET sur une carte blanche. L'ambre
-       et le jaune, teintes les plus lumineuses du cercle, descendent
-       plus bas que les autres — c'est le prix de leur éclat. */
-    --signal-ambre:  38 96% 30%;
-    --signal-vert:   160 92% 25%;
-    --signal-cyan:   192 95% 27%;
-    --signal-jaune:  48 96% 26%;
-    --signal-rouge:  352 85% 42%;
-
-    /* LE HALO N'EST PAS LE SIGNAL.
-       Un texte doit passer 4,5 sur du blanc : l'ambre du signal est
-       donc descendu à 30 % de luminosité. Mais une lueur dessinée avec
-       cette teinte-là ne brille pas, elle SALIT — sur un fond clair,
-       du brun étalé se lit comme une ombre, jamais comme une lumière.
-       Le halo garde donc l'éclat que le texte a dû céder. Il ne porte
-       aucun mot, donc il n'a aucun contraste à tenir. */
-    --halo-ambre: 40 98% 52%;
-
-    /* Le troisieme rang de lecture : lisible sans appeler. */
-    --encre-discrete: 210 18% 45%;
-    --accent-ambre: 35 100% 27%;
-
     /* HUD Card Surfaces */
     --card: 210 40% 98%;
     --card-foreground: 210 100% 12%;
@@ -274,13 +221,10 @@ All colors MUST be HSL.
     --popover: 210 40% 98%;
     --popover-foreground: 210 100% 12%;
 
-    /* Primary — le cyan, en profondeur.
-       26 % de luminosite donne 4,97:1 sur le fond clair ; le neon a
-       67 % en donnait 1,8. Et comme il sert aussi de FOND a des
-       boutons, son encre passe au blanc. */
-    --primary: 200 100% 26%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 200 100% 38%;
+    /* Primary - Neon Cyan HUD Accent */
+    --primary: 200 100% 67%;
+    --primary-foreground: 210 100% 5%;
+    --primary-glow: 200 100% 75%;
 
     /* Secondary - Soft Blue Gray */
     --secondary: 210 30% 85%;
@@ -290,23 +234,21 @@ All colors MUST be HSL.
     --muted: 210 25% 90%;
     --muted-foreground: 210 20% 40%;
 
-    /* Accent — un cran plus clair que primary, jamais au-dessus de
-       ce que le fond supporte. */
-    --accent: 200 90% 30%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Luminous Highlight */
+    --accent: 200 100% 75%;
+    --accent-foreground: 210 100% 5%;
 
     /* Destructive */
     --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Health — meme teinte, assez sombre pour se lire. */
-    --health: 187 100% 27%;
+    /* Health green */
+    --health: 187 100% 50%;
     --health-foreground: 0 0% 100%;
 
-    /* HUD — le phosphore et l ambre sont des neons : en clair ils
-       descendent, sinon ils disparaissent dans le blanc. */
-    --hud-phosphor: 187 100% 27%;
-    --hud-amber: 43 100% 32%;
+    /* Health Biometric HUD */
+    --hud-phosphor: 187 100% 50%;
+    --hud-amber: 43 100% 50%;
     --hud-health-surface: 210 40% 95%;
     --hud-health-border: 187 80% 60%;
 
@@ -317,7 +259,7 @@ All colors MUST be HSL.
     /* HUD Borders and Inputs */
     --border: 200 50% 75%;
     --input: 210 35% 92%;
-    --ring: 200 100% 38%;
+    --ring: 200 100% 67%;
 
     --radius: 0.25rem;
 
@@ -338,12 +280,20 @@ All colors MUST be HSL.
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     /* CRITICAL: Preserve Original Difficulty Colors - DO NOT MODIFY */
-    --difficulty-easy: 142 70% 30%;
-    --difficulty-medium: 38 95% 33%;
-    --difficulty-hard: 22 95% 38%;
-    --difficulty-extreme: 0 80% 42%;
-    --difficulty-impossible: 280 70% 38%;
-    --difficulty-custom: 270 75% 42%;
+    --difficulty-easy: 142 70% 50%;
+    --difficulty-medium: 45 95% 55%;
+    --difficulty-hard: 25 100% 60%;
+    --difficulty-extreme: 0 90% 65%;
+    --difficulty-impossible: 280 75% 45%;
+    --difficulty-custom: 270 90% 65%;
+
+    /* Achievement Rarity Colors */
+    --achievement-common: 45 95% 55%;
+    --achievement-uncommon: 142 70% 50%;
+    --achievement-rare: 212 90% 55%;
+    --achievement-epic: 270 80% 60%;
+    --achievement-legendary: 45 100% 60%;
+    --achievement-mythic: 320 85% 60%;
 
     /* Nexus Panel System — theme-aware surfaces */
     --nexus-bg: hsla(210, 40%, 97%, 0.95);
@@ -366,6 +316,7 @@ All colors MUST be HSL.
     /* Meme correction cote theme clair : 0.4 sur fond clair etait sous le seuil. */
     --nexus-marker-dim: hsla(210, 15%, 32%, 0.95);
     --nexus-countdown-bg: linear-gradient(90deg, hsla(345, 50%, 96%, 0.98), hsla(345, 30%, 97%, 0.97), hsla(345, 40%, 97%, 0.98));
+    --nexus-countdown-border: hsla(345, 80%, 55%, 0.25);
     --nexus-rank-bg: linear-gradient(160deg, hsla(210, 45%, 96%, 0.97), hsla(210, 35%, 97%, 0.99));
     --nexus-rank-border: hsla(210, 80%, 55%, 0.25);
     --nexus-mission-bg: linear-gradient(145deg, hsla(40, 40%, 97%, 0.98), hsla(220, 25%, 97%, 0.98));
@@ -408,29 +359,6 @@ All colors MUST be HSL.
     --background: 210 100% 2%;
     --foreground: 205 100% 90%;
 
-    /* Exactement les valeurs qui etaient en dur : #eaf6ff et #f2f9ff.
-       Le theme sombre ne bouge pas d un cheveu. */
-    --encre-titre: 205 100% 96%;
-    --encre-titre-douce: 208 100% 97%;
-
-    /* Reprises des hexadécimaux qui étaient en dur : #cfe4f5 et
-       #ffc53d. Le thème sombre ne bouge pas. */
-    --encre-second: 207 65% 89%;
-
-    /* En sombre, les signaux reprennent exactement les valeurs
-       Tailwind qui étaient écrites en dur : amber-400, emerald-400,
-       cyan-400, yellow-400, rose-400. Rien ne bouge. */
-    --signal-ambre:  43 96% 56%;
-    --signal-vert:   158 64% 52%;
-    --signal-cyan:   187 85% 53%;
-    --signal-jaune:  54 97% 62%;
-    --signal-rouge:  351 95% 71%;
-    /* Sur du noir, le signal brille deja : le halo reprend sa teinte
-       telle quelle. C est en clair que les deux divergent. */
-    --halo-ambre:    43 96% 58%;
-    --encre-discrete: 208 22% 62%;
-    --accent-ambre: 42 100% 62%;
-
     /* HUD Card Surfaces - Deep Panels */
     --card: 210 80% 5%;
     --card-foreground: 205 100% 90%;
@@ -438,6 +366,7 @@ All colors MUST be HSL.
     /* Popover */
     --popover: 210 90% 4%;
     --popover-foreground: 205 100% 90%;
+
     /* Primary - Neon Cyan HUD Accent */
     --primary: 200 100% 67%;
     --primary-foreground: 210 100% 5%;
@@ -450,6 +379,7 @@ All colors MUST be HSL.
     /* Muted */
     --muted: 210 40% 10%;
     --muted-foreground: 210 30% 60%;
+
     /* Accent - Luminous Highlight */
     --accent: 200 100% 75%;
     --accent-foreground: 210 100% 5%;
@@ -461,6 +391,7 @@ All colors MUST be HSL.
     /* Health */
     --health: 187 100% 50%;
     --health-foreground: 0 0% 100%;
+
     /* Health Biometric HUD */
     --hud-phosphor: 187 100% 50%;
     --hud-amber: 43 100% 50%;
@@ -495,6 +426,14 @@ All colors MUST be HSL.
     --difficulty-extreme: 0 90% 65%;
     --difficulty-impossible: 280 75% 45%;
     --difficulty-custom: 270 90% 65%;
+
+    /* Achievement Rarity Colors */
+    --achievement-common: 45 95% 60%;
+    --achievement-uncommon: 142 70% 55%;
+    --achievement-rare: 212 90% 60%;
+    --achievement-epic: 270 85% 65%;
+    --achievement-legendary: 45 100% 65%;
+    --achievement-mythic: 320 90% 65%;
 
     /* Nexus Panel System — dark mode (pixel-perfect preservation) */
     /* Translucide : les panneaux flottent dans l espace du fond au lieu de
@@ -544,6 +483,7 @@ All colors MUST be HSL.
        paliers de difficulte : ce sont des donnees, pas du decor. */
     --nexus-marker-dim: rgba(255, 255, 255, 0.6);
     --nexus-countdown-bg: linear-gradient(90deg, rgba(20,0,4,0.98) 0%, rgba(10,2,6,0.97) 40%, rgba(8,0,3,0.98) 100%);
+    --nexus-countdown-border: rgba(255,23,68,0.3);
     --nexus-rank-bg: linear-gradient(160deg, rgba(0,15,40,0.97) 0%, rgba(3,8,20,0.99) 100%);
     --nexus-rank-border: rgba(0,140,255,0.25);
     --nexus-mission-bg: linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%);
@@ -600,13 +540,30 @@ All colors MUST be HSL.
     background: rgba(2, 4, 10, 0.97);
     border-bottom: 1px solid rgba(0, 210, 255, 0.4);
   }
-  /* La jauge du jour tient maintenant toute la largeur de la barre.
-     A 120 px, une lueur pulsee se lisait comme un temoin ; sur 627, la
-     meme pulsation devient un clignotant en haut de chaque page. Le
-     halo reste, discret, la respiration part. */
+  .neural-bar-scanline {
+    width: 60%;
+    background: linear-gradient(90deg, transparent, hsl(200 100% 50% / 0.5), transparent);
+    animation: scanline 4s linear infinite;
+    left: -100%;
+  }
   .neural-bar-progress {
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
-    box-shadow: 0 0 6px hsl(var(--primary) / 0.35);
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.15);
+    animation: pulseBar 3s ease-in-out infinite;
+  }
+  .neural-bar-clock {
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.5), 0 0 20px hsl(var(--primary) / 0.15);
+  }
+  .neural-bar-btn {
+    background: hsl(var(--primary) / 0.08);
+    border: 1px solid hsl(var(--primary) / 0.25);
+  }
+  .neural-bar-btn:hover {
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.4), 0 0 20px hsl(var(--primary) / 0.15);
+  }
+  .dark .neural-bar-btn {
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 210, 255, 0.4);
   }
 }
 
@@ -868,7 +825,7 @@ All colors MUST be HSL.
    pourcentage reel, masque en couronne — a l'echelle d'une pastille.
    closest-side est indispensable : sans lui le masque se calerait
    sur le coin de la boite et non sur son bord, ce qui laisse un
-   cercle dur (voir domaines/accueil/accueil.css). */
+   cercle dur (voir singularity.css). */
 @layer utilities {
   .quest-ring {
     position: relative;
@@ -894,104 +851,38 @@ All colors MUST be HSL.
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Compte a rebours : la regle
+   Compte a rebours : mise en page sur sa propre largeur
 
-   CE PANNEAU DISAIT UNE SEULE CHOSE — COMBIEN IL RESTE — DE NEUF
-   FACONS, ET IL CASSAIT EN LE DISANT.
+   Son point de rupture etait une requete de viewport (lg:grid-cols).
+   Tant qu'il occupait toute la largeur, viewport et element se
+   confondaient. Depuis qu'il partage une rangee avec le panneau de
+   rang, il ne fait plus qu'une demi-colonne — mais la requete
+   continue de lire le viewport et lui impose trois colonnes dans
+   600px, ce qui rogne la colonne de metadonnees.
 
-   Il cassait pour une raison precise : ses chiffres etaient en
-   clamp(28px, 4vw, 48px), donc dimensionnes par le VIEWPORT, alors
-   que sa largeur vient de son CONTENEUR depuis qu'il partage une
-   rangee avec le monitoring. Les deux sont independants. Dans une
-   fenetre de 1400 px et une colonne de 560, les chiffres prenaient
-   leur taille maximale dans la boite minimale : trois lignes de
-   chiffres, des deux-points orphelins, 753 px de hauteur mesures.
-
-   Il disait aussi CINQ FOIS le meme segment de temps — jours
-   restants, jours au total, part ecoulee, debut, fin — plus le nom
-   du pacte (deja dans la barre systeme et dans le bandeau), la
-   completion des objectifs (deja dans le bandeau), et le statut
-   ecrit DEUX FOIS dans le meme cadre.
-
-   Une duree ne s'enumere pas, elle se montre. Les cinq releves
-   deviennent un dessin : une regle bornee par les deux dates, la
-   part faite en plein, le curseur sur aujourd'hui, et ce qu'il reste
-   se lit dans le vide. C'est la meme langue que la jauge du jour de
-   la barre systeme.
-
-   Les libelles de la regle sont en position absolue : ils ne
-   participent pas a la hauteur, qui reste donc constante d'une
-   largeur a l'autre. Et la typographie est en cqw : elle suit enfin
-   la boite qui la contient.
+   Une requete de conteneur lit la largeur de l'element lui-meme.
+   C'est le seul outil correct ici : un composant place dans une
+   grille ne connait pas d'avance la place qu'on lui donnera.
    ───────────────────────────────────────────────────────────── */
 .countdown-shell {
   container-type: inline-size;
   container-name: countdown;
 }
 
-.cd-corps { padding: 18px 22px 22px 26px; }
-
-.cd-tete {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.cd-chiffre {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 900;
-  font-size: clamp(30px, 6cqw, 44px);
-  line-height: 0.92;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
-
-.cd-unite,
-.cd-sceau,
-.cd-regle b {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-}
-
-.cd-unite { font-size: max(11px, 0.6875rem); }
-
-.cd-sceau {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: max(11px, 0.6875rem);
-  border: 1px solid;
-  border-radius: 2px;
-  padding: 3px 8px;
-  white-space: nowrap;
-}
-
-.cd-regle { position: relative; height: 48px; margin-top: 18px; }
-.cd-voie  { position: absolute; left: 0; right: 0; top: 20px; height: 4px; border-radius: 2px; }
-.cd-fait  { position: absolute; left: 0; top: 20px; height: 4px; border-radius: 2px; }
-.cd-borne { position: absolute; top: 12px; width: 1px; height: 20px; }
-.cd-ici   { position: absolute; top: 6px;  width: 2px; height: 32px; }
-
-.cd-regle b     { position: absolute; left: 0; font-size: 10px; white-space: nowrap; }
-.cd-borne b     { top: 22px; font-weight: 400; }
-.cd-borne-fin b { left: auto; right: 0; }
-.cd-ici b       { top: -15px; font-weight: 700; }
-
-/* Le remplissage et le curseur glissent. La part ecoulee d'un pacte
-   de six ans bouge d'un cheveu par minute, mais elle bouge — et un
-   saut sec la ferait passer pour un rechargement. */
-.cd-fait { transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1); }
-.cd-ici  { transition: left  600ms cubic-bezier(0.22, 1, 0.36, 1); }
-
-/* Sous 430 px les deux dates se rejoindraient. La date de fin est
-   celle qui compte : l'autre garde son trait, pas son libelle. */
-@container countdown (max-width: 430px) {
-  .cd-borne:not(.cd-borne-fin) b { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cd-fait, .cd-ici { transition: none; }
+@container countdown (min-width: 860px) {
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(215px, auto);
+    align-items: center;
+  }
+  .countdown-aside-left {
+    border-right: 1px solid var(--countdown-edge, transparent);
+    border-bottom: 0;
+  }
+  .countdown-aside-right {
+    border-left: 1px solid var(--countdown-edge, transparent);
+    border-top: 0;
+  }
 }
 /* ─────────────────────────────────────────────────────────────
    Acces rapide — cellule d'energie
@@ -1116,7 +1007,7 @@ All colors MUST be HSL.
   position: absolute;
   top: 0.5rem;
   right: 0.65rem;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.08em;
   color: var(--qa-c, #fff);
@@ -1130,46 +1021,6 @@ All colors MUST be HSL.
   color: var(--nexus-text-dimmer);
 }
 
-/* UNE CELLULE QUI N EN MENE PAS UNE AUTRE.
-   Six des sept acces conduisent AILLEURS — une page, une fenetre. Le
-   septieme ouvre un outil DANS cette page-ci : il a donc deux etats,
-   et il doit le dire sans quoi on clique deux fois sans comprendre.
-   La charge, qui se remplit au survol, reste pleine tant que l outil
-   est ouvert ; l arete prend la couleur de la cellule. */
-.qa-cell[data-actif] {
-  border-color: color-mix(in srgb, var(--qa-c, #fff) 55%, transparent);
-}
-.qa-cell[data-actif]::before { opacity: 0.13; }
-.qa-cell[data-actif] .qa-charge i { inset: 0 0 0 0; }
-
-/* Indisponible n est pas verrouille : le module est bien la, c est
-   l instant qui ne s y prete pas. Pas de cadenas, pas de renvoi vers
-   la boutique — juste un bouton qui ne repond pas et dit pourquoi. */
-.qa-cell:disabled { cursor: not-allowed; }
-
-/* Le bouton de fermeture du tirage. Il herite sa teinte du panneau
-   (couleur posee en style inline), donc une seule regle sert aux deux
-   themes. */
-.mr-tirage-fermer {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  background: transparent;
-  opacity: 0.7;
-  cursor: pointer;
-  transition: opacity 200ms ease, border-color 200ms ease, background 200ms ease;
-}
-.mr-tirage-fermer:hover,
-.mr-tirage-fermer:focus-visible {
-  opacity: 1;
-  border-color: color-mix(in srgb, currentColor 40%, transparent);
-  background: color-mix(in srgb, currentColor 10%, transparent);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .qa-cell, .qa-well, .qa-charge i, .qa-well svg { transition-duration: 120ms; }
   .qa-cell:hover, .qa-cell:focus-visible { transform: none; }
@@ -1181,7 +1032,7 @@ All colors MUST be HSL.
    pourcentage reel, masque en couronne — a l'echelle d'une pastille.
    closest-side est indispensable : sans lui le masque se calerait
    sur le coin de la boite et non sur son bord, ce qui laisse un
-   cercle dur (voir domaines/accueil/accueil.css). */
+   cercle dur (voir singularity.css). */
 @layer utilities {
   .quest-ring {
     position: relative;
@@ -1207,6 +1058,41 @@ All colors MUST be HSL.
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Compte a rebours : mise en page sur sa propre largeur
+
+   Son point de rupture etait une requete de viewport (lg:grid-cols).
+   Tant qu'il occupait toute la largeur, viewport et element se
+   confondaient. Depuis qu'il partage une rangee avec le panneau de
+   rang, il ne fait plus qu'une demi-colonne — mais la requete
+   continue de lire le viewport et lui impose trois colonnes dans
+   600px, ce qui rogne la colonne de metadonnees.
+
+   Une requete de conteneur lit la largeur de l'element lui-meme.
+   C'est le seul outil correct ici : un composant place dans une
+   grille ne connait pas d'avance la place qu'on lui donnera.
+   ───────────────────────────────────────────────────────────── */
+.countdown-shell {
+  container-type: inline-size;
+  container-name: countdown;
+}
+
+@container countdown (min-width: 860px) {
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(215px, auto);
+    align-items: center;
+  }
+  .countdown-aside-left {
+    border-right: 1px solid var(--countdown-edge, transparent);
+    border-bottom: 0;
+  }
+  .countdown-aside-right {
+    border-left: 1px solid var(--countdown-edge, transparent);
+    border-top: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    Quetes — ordres de mission
 
    Direction retenue apres maquette. Chaque quete est une directive :
@@ -1219,220 +1105,6 @@ All colors MUST be HSL.
    Le passage a l'or est le seul moment ou la bande demande une action
    plutot que d'informer — il doit se voir de loin.
    ───────────────────────────────────────────────────────────── */
-/* ─────────────────────────────────────────────────────────────
-   ORDRES DU JOUR — la feuille
-
-   L ancienne carte etait un filet : un libelle minuscule, un trait,
-   une mention a droite, et sous les trois quarts du temps une phrase
-   grise avec un bouton. Elle avait la hauteur d une barre d outils
-   et l air d un element desactive.
-
-   Ce qui la remplit maintenant, ce n est pas de la decoration : c est
-   la prime du jour et sa barre. Une carte d ordres doit dire ce qui
-   est en jeu, et cette mesure resume les trois lignes d un coup.
-   ───────────────────────────────────────────────────────────── */
-.od-carte {
-  position: relative;
-  padding: 14px 16px 15px;
-  border-radius: 4px;
-  background: var(--nexus-bg);
-  border: 1px solid var(--nexus-border);
-  box-shadow: var(--nexus-shadow);
-  /* Le liseré du haut prend la couleur de l etat : bleu tant qu on
-     travaille, or des qu une prime attend, vert quand tout est pris. */
-  --od-c: hsl(var(--primary));
-}
-.od-carte[data-etat="a-reclamer"] { --od-c: #ffd700; }
-.od-carte[data-etat="clos"]       { --od-c: #34d399; }
-.od-carte::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--od-c), transparent);
-  opacity: 0.75;
-  transition: background 600ms ease;
-}
-
-.od-tete {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 9px;
-}
-.od-titre {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  transition: color 400ms ease;
-}
-/* La prime pousse le temps restant tout a droite. */
-.od-prime { margin-left: auto; display: inline-flex; align-items: baseline; gap: 3px; }
-.od-prime b {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  transition: color 400ms ease;
-}
-.od-prime s {
-  text-decoration: none;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  font-variant-numeric: tabular-nums;
-  color: var(--nexus-text-dim);
-}
-.od-prime em {
-  font-style: normal;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--nexus-text-dimmer);
-  margin-left: 2px;
-}
-.od-reste {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--nexus-text-dimmer);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* La barre de prime. Elle ne mesure pas l avancement des ordres mais
-   ce qui est DEJA ENCAISSE : un ordre fini mais non reclame ne la
-   remplit pas, et c est voulu — il reste un geste a faire. */
-.od-jauge {
-  position: relative;
-  height: 2px;
-  margin-bottom: 11px;
-  background: var(--nexus-track-bg, rgba(255, 255, 255, 0.07));
-  border-radius: 2px;
-  overflow: hidden;
-}
-.od-jauge i {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 2px;
-  transition: width 900ms cubic-bezier(0.16, 1, 0.3, 1), background 600ms ease;
-}
-
-/* ── LE REPLI ──────────────────────────────────────────────────
-   Cette carte a DEJA ete repliee une fois dans son histoire, sous une
-   etiquette « Advanced Monitoring » : elle n etait alors jamais vue, et
-   c est exactement pour ca qu elle en est sortie. Le repli revient donc
-   a deux conditions.
-
-   DEPLIEE PAR DEFAUT. Seul un choix explicite la referme, et ce choix
-   tient d une session a l autre.
-
-   REPLIEE, ELLE DIT ENCORE L ESSENTIEL. La prime acquise sur totale, sa
-   jauge, le temps restant, et le lisere du haut qui passe a l or des
-   qu une prime attend. On ne cache que le detail des trois ordres —
-   jamais le fait qu il y a quelque chose a prendre. */
-.od-droite {
-  margin-left: auto;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.od-bascule {
-  align-self: center;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--nexus-text-dimmer);
-  cursor: pointer;
-  transition: color 200ms ease, background 200ms ease, border-color 200ms ease;
-}
-.od-bascule:hover,
-.od-bascule:focus-visible {
-  color: var(--od-c);
-  border-color: color-mix(in srgb, var(--od-c) 38%, transparent);
-  background: color-mix(in srgb, var(--od-c) 9%, transparent);
-}
-.od-bascule svg { transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1); }
-.od-carte[data-replie] .od-bascule svg { transform: rotate(-90deg); }
-
-/* La hauteur s anime par les rangees de la grille : c est le seul moyen
-   d aller de la hauteur reelle du contenu a zero sans la coder en dur. */
-.od-corps {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.od-carte[data-replie] .od-corps { grid-template-rows: 0fr; }
-
-/* La visibilite retire du parcours de tabulation ET de l arbre
-   d accessibilite. Sans elle, les boutons « Reclamer » resteraient
-   atteignables au clavier dans une boite de zero pixel. Le delai la
-   laisse tomber une fois le repli fini ; au deploiement elle revient
-   sans attendre. */
-.od-corps > * {
-  overflow: hidden;
-  min-height: 0;
-  visibility: visible;
-  transition: visibility 0s;
-}
-.od-carte[data-replie] .od-corps > * {
-  visibility: hidden;
-  transition: visibility 0s linear 320ms;
-}
-
-/* Repliee, la jauge n a plus de liste a annoncer : elle se recolle au
-   bas de la carte. */
-.od-jauge { transition: margin-bottom 320ms cubic-bezier(0.22, 1, 0.36, 1); }
-.od-carte[data-replie] .od-jauge { margin-bottom: 1px; }
-
-@media (prefers-reduced-motion: reduce) {
-  .od-corps, .od-bascule svg, .od-jauge { transition: none; }
-}
-
-.od-liste { display: flex; flex-direction: column; gap: 5px; }
-.od-mot {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
-  color: var(--nexus-text-dim);
-  margin: 2px 0 0;
-}
-
-/* Le geste de la carte. C etait un bouton fantome, du meme gris que
-   le texte a cote : la seule action de la bande ne se voyait pas.
-   Sur un aplat d or, l encre passe en reserve — le meme renversement
-   que partout ailleurs. */
-.od-reclamer {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #241c00;
-  background: linear-gradient(180deg, #ffd700, #e8b800);
-  border: 0;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
-  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms;
-}
-.od-reclamer:hover {
-  background: linear-gradient(180deg, #ffe14d, #f0c400);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28), 0 0 18px -4px #ffd700;
-}
-.od-reclamer:active { transform: translateY(1px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.25); }
-
-/* Un ordre reclame se retire sans disparaitre : il a ete tenu, il
-   reste lisible, il cesse seulement de demander l attention. */
-.quest-order[data-reclamee] { opacity: 0.55; }
-
 .quest-order {
   position: relative;
   display: grid;
@@ -1516,13 +1188,13 @@ All colors MUST be HSL.
 .quest-prime { text-align: right; flex: none; }
 .quest-prime b {
   display: block;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: 0.9rem;
   color: var(--qo-c, #fff);
   font-variant-numeric: tabular-nums;
 }
 .quest-prime span {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.14em;
   color: var(--nexus-text-dimmer);
@@ -1544,7 +1216,7 @@ All colors MUST be HSL.
   overflow: hidden;
 }
 .mon-switch-btn {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1563,157 +1235,30 @@ All colors MUST be HSL.
 }
 
 /* ── Radar ── */
-/* ── LE VISEUR ─────────────────────────────────────────────────
-   Le radar dessinait une grille d'hexagones concentriques traversée
-   de six rayons : cela ne se lit pas comme une échelle, cela se lit
-   comme un fil de fer en trois dimensions. Des anneaux gradués
-   disent ce qu'ils sont — des portées. */
-/* Le panneau se declare conteneur : depuis que le monitoring occupe
-   toute la largeur, sa bascule en une colonne doit suivre la largeur
-   du PANNEAU et non celle de la fenetre. */
-.mon-panneau { container-type: inline-size; container-name: monitoring; }
-
-.mon-anneau { fill: none; stroke: hsl(var(--primary) / 0.16); stroke-width: 1; }
-.mon-grad   { fill: none; stroke: hsl(var(--primary) / 0.26); stroke-linecap: butt; }
-.mon-axe    { stroke-opacity: 0.22; stroke-width: 1; }
-
+.mon-grid { fill: none; stroke: hsl(var(--primary) / 0.16); }
+.mon-axe { stroke: hsl(var(--primary) / 0.13); }
 .mon-poly {
-  fill: hsl(var(--primary) / 0.13);
-  stroke: none;
+  fill: hsl(var(--primary) / 0.16);
+  stroke: hsl(var(--primary));
+  stroke-width: 1.6;
+  filter: drop-shadow(0 0 8px hsl(var(--primary)));
   transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-/* Chaque arête part dans la couleur du palier qu'elle quitte : six
-   couleurs avaient été choisies pour ce panneau, une seule arrivait
-   au dessin. */
-.mon-arete {
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-opacity: 0.9;
-  transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.mon-pt   { transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1); }
-.mon-halo { fill-opacity: 0.22; animation: mon-pouls 3.4s ease-in-out infinite; }
-@keyframes mon-pouls { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-
+.mon-pt { fill: #fff; filter: drop-shadow(0 0 7px var(--c, hsl(var(--primary)))); }
 .mon-lab {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 8.5px;
-  letter-spacing: 1px;
-  fill: var(--nexus-text-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
 }
 .mon-pct {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
   font-size: 11px;
-  font-weight: 700;
 }
-
-/* Le balayage garde sa traîne, mais il ne porte plus l'animation à
-   lui tout seul : ce sont les POINTS qui respirent, chacun à son
-   tour. Ce qui pulse est ce qui porte une charge. */
-.mon-bal { transform-origin: 150px 150px; animation: mon-tourne 7s linear infinite; }
-.mon-bal-vif { stroke: hsl(var(--primary)); stroke-width: 1.2; stroke-opacity: 0.7; }
+/* Le balayage : deux tours par cycle de respiration du c(oe)ur, pour
+   que les deux mouvements de la page ne se calent pas l'un sur l'autre. */
+.mon-sweep { transform-origin: 150px 150px; animation: mon-tourne 6s linear infinite; }
 @keyframes mon-tourne { to { transform: rotate(360deg); } }
-
-/* LE VIDE LATÉRAL DEVIENT LA COLONNE DE CHARGE.
-   Le SVG était en `w-full h-full` sur un viewBox carré plafonné à
-   330 px : sur 862 px de panneau, 532 px ne servaient à rien. Une
-   figure polaire est carrée et le restera ; c'est la place qui reste
-   qu'on occupe. */
-/* Le viseur RESPIRE entre 300 et 372 px. A 589 px de panneau — la
-   largeur reelle a 917 px de fenetre — une premiere colonne figee a
-   372 ne laissait pas ses 190 px a la charge : les deux se
-   empilaient, et le panneau passait de 439 a 654 px de haut. Il
-   retombe a 403 en laissant le viseur se serrer. */
-.mon-duo {
-  display: grid;
-  grid-template-columns: minmax(0, 372px) minmax(210px, 1fr);
-  gap: 24px;
-  align-items: center;
-}
-/* Le viewBox fait 356 × 316, pas 300 × 300 : la couronne d'étiquettes
-   déborde du dessin de 17 px de chaque côté, et sous 400 px de
-   panneau c'est « IMPOSSIBLE » qui perdait 21 px. La réserve est dans
-   le viewBox, donc aucune taille de rendu ne peut plus rogner un mot. */
-.mon-viseur { width: 100%; height: auto; max-width: 372px; }
-
-/* Le seuil se lit sur la BOITE DE CONTENU du conteneur, pas sur sa
-   largeur de bordure : a 589 px de panneau il reste 553 px dedans.
-   Un seuil pose a 560 empilait donc les deux colonnes juste la ou
-   elles tenaient encore. */
-/* Entre 500 et 700 px, la piste tombait a 58 px : une barre de
-   comparaison de 58 px ne compare rien. Les effectifs quittent la
-   ligne — la barre les dit deja, le point du viseur les donne au
-   survol, et la vue Diag les enumere. */
-@container monitoring (max-width: 700px) {
-  .mon-cl > s { display: none; }
-}
-
-@container monitoring (max-width: 500px) {
-  .mon-duo { grid-template-columns: 1fr; gap: 16px; }
-  .mon-viseur { width: 100%; height: auto; max-width: 372px; margin: 0 auto; }
-}
-
-.mon-charge { display: grid; gap: 9px; align-content: center; }
-.mon-ctitre {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--nexus-text-dimmer);
-  margin: 0 0 2px;
-}
-.mon-cl { display: grid; grid-template-columns: minmax(0, 82px) minmax(0, 1fr) auto; gap: 10px; align-items: center; }
-.mon-cl > i {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-style: normal;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  color: var(--c);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* La piste entière vaut la part du palier dans le volume total ; la
-   portion pleine, ce qui en est fait. Deux paliers à 80 % n'ont donc
-   pas la même barre si l'un pèse trois fois l'autre — c'est
-   exactement ce que le radar seul ne pouvait pas dire. */
-.mon-cpiste {
-  position: relative;
-  height: 7px;
-  border-radius: 1px;
-  background: var(--nexus-track-bg, rgba(255, 255, 255, 0.07));
-  overflow: hidden;
-}
-.mon-cpiste u,
-.mon-cpiste b {
-  position: absolute;
-  inset: 0 auto 0 0;
-  text-decoration: none;
-  background: var(--c);
-  transition: width 900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.mon-cpiste u { opacity: 0.26; }
-.mon-cl > s {
-  text-decoration: none;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(10px, 0.625rem);
-  color: var(--nexus-text-dimmer);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.mon-cpied {
-  display: flex;
-  justify-content: space-between;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: max(10px, 0.625rem);
-  letter-spacing: 0.1em;
-  color: var(--nexus-text-dimmer);
-  border-top: 1px solid var(--nexus-separator);
-  padding-top: 8px;
-  margin-top: 3px;
-}
-.mon-cpied b { color: var(--nexus-text-label); font-variant-numeric: tabular-nums; }
 
 .mon-note {
   font-size: 0.82rem;
@@ -1793,179 +1338,5 @@ All colors MUST be HSL.
 @keyframes mon-cur { 50% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .mon-bal, .mon-halo, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
-  .mon-poly, .mon-arete, .mon-pt, .mon-cpiste u, .mon-cpiste b { transition: none; }
+  .mon-sweep, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
 }
-
-/* ── La barre de defilement ne doit jamais disparaitre ──
-   A l ouverture d un menu Radix (Select, Dialog, Dropdown), le verrou de
-   defilement pose overflow:hidden sur body. La barre disparait alors —
-   mesure : 11px a 0 — sans compensation en padding-right, et toute la
-   page saute de 11px. C etait visible en choisissant un tri sur la page
-   Objectifs.
-
-   scrollbar-gutter: stable ne suffit pas, verifie a l execution : la
-   gouttiere n est pas retenue quand l overflow de body passe a hidden,
-   la mesure retombe a 0. overflow-y: scroll fait de html lui-meme le
-   conteneur de defilement, avec une barre permanente que l overflow de
-   body ne propage plus — mesure : 11px dans les deux cas.
-
-   Le correctif est global parce que le defaut l est : il concerne
-   chaque surimpression de l application, pas seulement ce tri. */
-html {
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
-}
-
-/* ── Le verrou de defilement ne doit plus compenser ──
-   react-remove-scroll, sous Radix, pose margin-right sur body a hauteur
-   de la barre retiree (--removed-body-scroll-bar-size : 11px ici) pour
-   eviter le saut. Avec overflow-y: scroll plus haut, la barre ne
-   disparait plus jamais : cette compensation retrecit body de 11px sans
-   raison et fait bouger toute la page, barre laterale comprise.
-   Mesure a l ouverture d un menu : body 969 → 958, main 689 → 678.
-
-   Le prefixe html n est pas decoratif. react-remove-scroll injecte
-   exactement le meme selecteur, avec !important :
-     body[data-scroll-locked] { margin-right: 11px !important }
-   A specificite egale, la regle injectee a l execution arrive plus tard
-   dans la cascade et l emporte. html la fait passer de (0,1,1) a (0,1,2).
-
-   On neutralise la compensation, pas le verrou : empecher le defilement
-   de l arriere-plan reste souhaitable. */
-html body[data-scroll-locked] {
-  margin-right: 0 !important;
-  padding-right: 0 !important;
-  /* Et surtout : on annule le verrou lui-meme.
-
-     react-remove-scroll pose overflow:hidden sur body. Avec overflow-y:
-     scroll sur html — necessaire pour que la barre ne disparaisse pas —
-     html devient le conteneur de defilement, et un body en overflow
-     hidden ecrase sa hauteur defilable. Le navigateur ramene alors le
-     defilement au nouveau maximum : mesure, scrollY tombait de 420 a
-     106 des l ouverture d une liste deroulante, page scrollee.
-
-     Verrouiller html a la place preserverait la position mais
-     supprimerait la barre — on retomberait sur le decalage de 11px.
-
-     On laisse donc l arriere-plan defiler. Radix repositionne son
-     popper au defilement, la liste reste accrochee a son declencheur :
-     le desagrement est nul, la ou le saut de 314px etait brutal. */
-  overflow: visible !important;
-  position: static !important;
-  top: auto !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   LES UTILITAIRES DE SIGNAL SUIVENT LE THÈME
-
-   Deux cent quarante et une fois dans l'app, un composant écrit
-   text-amber-400, text-cyan-500, text-emerald-400. Sur du noir ils
-   brillent ; sur le sol clair ils tombent entre 1,1 et 1,7 — c'est ce
-   qui rendait quatre-vingt-seize textes invisibles.
-
-   On ne réécrit pas les appels : on redéfinit ce que la classe VEUT
-   DIRE. Et il n'y a pas besoin d'exclure les sous-arbres sombres au
-   sélecteur — à l'intérieur d'un « dark », c'est la VARIABLE qui
-   reprend sa valeur néon. Le mécanisme se corrige lui-même.
-
-   Les variantes d'opacité ont leur propre règle plutôt qu'un balayage
-   large : /40 et /90 ne disent pas la même chose, l'un murmure et
-   l'autre affirme.
-   ═══════════════════════════════════════════════════════════════ */
-:root:not(.dark) {
-  .text-amber-300, .text-amber-400, .text-amber-500, .text-orange-400, .text-orange-500, .text-hud-amber { color: hsl(var(--signal-ambre)); }
-  .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-green-400, .text-green-500, .text-teal-400 { color: hsl(var(--signal-vert)); }
-  .text-cyan-300, .text-cyan-400, .text-cyan-500, .text-sky-400, .text-sky-500, .text-blue-400, .text-blue-500, .text-hud-phosphor { color: hsl(var(--signal-cyan)); }
-  .text-yellow-300, .text-yellow-400, .text-yellow-500, .text-lime-400, .text-lime-500 { color: hsl(var(--signal-jaune)); }
-  .text-rose-400, .text-red-400, .text-red-500, .text-pink-400, .text-fuchsia-400, .text-violet-400, .text-violet-500, .text-purple-400, .text-purple-500, .text-indigo-400 { color: hsl(var(--signal-rouge)); }
-
-  .text-amber-300\/40, .text-amber-400\/40, .text-amber-500\/40, .text-orange-400\/40, .text-orange-500\/40, .text-hud-amber\/40 { color: hsl(var(--signal-ambre) / 0.4); }
-  .text-amber-300\/50, .text-amber-400\/50, .text-amber-500\/50, .text-orange-400\/50, .text-orange-500\/50, .text-hud-amber\/50 { color: hsl(var(--signal-ambre) / 0.5); }
-  .text-amber-300\/60, .text-amber-400\/60, .text-amber-500\/60, .text-orange-400\/60, .text-orange-500\/60, .text-hud-amber\/60 { color: hsl(var(--signal-ambre) / 0.6); }
-  .text-amber-300\/70, .text-amber-400\/70, .text-amber-500\/70, .text-orange-400\/70, .text-orange-500\/70, .text-hud-amber\/70 { color: hsl(var(--signal-ambre) / 0.7); }
-  .text-amber-300\/80, .text-amber-400\/80, .text-amber-500\/80, .text-orange-400\/80, .text-orange-500\/80, .text-hud-amber\/80 { color: hsl(var(--signal-ambre) / 0.8); }
-  .text-amber-300\/90, .text-amber-400\/90, .text-amber-500\/90, .text-orange-400\/90, .text-orange-500\/90, .text-hud-amber\/90 { color: hsl(var(--signal-ambre) / 0.9); }
-  .text-emerald-300\/40, .text-emerald-400\/40, .text-emerald-500\/40, .text-green-400\/40, .text-green-500\/40, .text-teal-400\/40 { color: hsl(var(--signal-vert) / 0.4); }
-  .text-emerald-300\/50, .text-emerald-400\/50, .text-emerald-500\/50, .text-green-400\/50, .text-green-500\/50, .text-teal-400\/50 { color: hsl(var(--signal-vert) / 0.5); }
-  .text-emerald-300\/60, .text-emerald-400\/60, .text-emerald-500\/60, .text-green-400\/60, .text-green-500\/60, .text-teal-400\/60 { color: hsl(var(--signal-vert) / 0.6); }
-  .text-emerald-300\/70, .text-emerald-400\/70, .text-emerald-500\/70, .text-green-400\/70, .text-green-500\/70, .text-teal-400\/70 { color: hsl(var(--signal-vert) / 0.7); }
-  .text-emerald-300\/80, .text-emerald-400\/80, .text-emerald-500\/80, .text-green-400\/80, .text-green-500\/80, .text-teal-400\/80 { color: hsl(var(--signal-vert) / 0.8); }
-  .text-emerald-300\/90, .text-emerald-400\/90, .text-emerald-500\/90, .text-green-400\/90, .text-green-500\/90, .text-teal-400\/90 { color: hsl(var(--signal-vert) / 0.9); }
-  .text-cyan-300\/40, .text-cyan-400\/40, .text-cyan-500\/40, .text-sky-400\/40, .text-sky-500\/40, .text-blue-400\/40, .text-blue-500\/40, .text-hud-phosphor\/40 { color: hsl(var(--signal-cyan) / 0.4); }
-  .text-cyan-300\/50, .text-cyan-400\/50, .text-cyan-500\/50, .text-sky-400\/50, .text-sky-500\/50, .text-blue-400\/50, .text-blue-500\/50, .text-hud-phosphor\/50 { color: hsl(var(--signal-cyan) / 0.5); }
-  .text-cyan-300\/60, .text-cyan-400\/60, .text-cyan-500\/60, .text-sky-400\/60, .text-sky-500\/60, .text-blue-400\/60, .text-blue-500\/60, .text-hud-phosphor\/60 { color: hsl(var(--signal-cyan) / 0.6); }
-  .text-cyan-300\/70, .text-cyan-400\/70, .text-cyan-500\/70, .text-sky-400\/70, .text-sky-500\/70, .text-blue-400\/70, .text-blue-500\/70, .text-hud-phosphor\/70 { color: hsl(var(--signal-cyan) / 0.7); }
-  .text-cyan-300\/80, .text-cyan-400\/80, .text-cyan-500\/80, .text-sky-400\/80, .text-sky-500\/80, .text-blue-400\/80, .text-blue-500\/80, .text-hud-phosphor\/80 { color: hsl(var(--signal-cyan) / 0.8); }
-  .text-cyan-300\/90, .text-cyan-400\/90, .text-cyan-500\/90, .text-sky-400\/90, .text-sky-500\/90, .text-blue-400\/90, .text-blue-500\/90, .text-hud-phosphor\/90 { color: hsl(var(--signal-cyan) / 0.9); }
-  .text-yellow-300\/40, .text-yellow-400\/40, .text-yellow-500\/40, .text-lime-400\/40, .text-lime-500\/40 { color: hsl(var(--signal-jaune) / 0.4); }
-  .text-yellow-300\/50, .text-yellow-400\/50, .text-yellow-500\/50, .text-lime-400\/50, .text-lime-500\/50 { color: hsl(var(--signal-jaune) / 0.5); }
-  .text-yellow-300\/60, .text-yellow-400\/60, .text-yellow-500\/60, .text-lime-400\/60, .text-lime-500\/60 { color: hsl(var(--signal-jaune) / 0.6); }
-  .text-yellow-300\/70, .text-yellow-400\/70, .text-yellow-500\/70, .text-lime-400\/70, .text-lime-500\/70 { color: hsl(var(--signal-jaune) / 0.7); }
-  .text-yellow-300\/80, .text-yellow-400\/80, .text-yellow-500\/80, .text-lime-400\/80, .text-lime-500\/80 { color: hsl(var(--signal-jaune) / 0.8); }
-  .text-yellow-300\/90, .text-yellow-400\/90, .text-yellow-500\/90, .text-lime-400\/90, .text-lime-500\/90 { color: hsl(var(--signal-jaune) / 0.9); }
-  .text-rose-400\/40, .text-red-400\/40, .text-red-500\/40, .text-pink-400\/40, .text-fuchsia-400\/40, .text-violet-400\/40, .text-violet-500\/40, .text-purple-400\/40, .text-purple-500\/40, .text-indigo-400\/40 { color: hsl(var(--signal-rouge) / 0.4); }
-  .text-rose-400\/50, .text-red-400\/50, .text-red-500\/50, .text-pink-400\/50, .text-fuchsia-400\/50, .text-violet-400\/50, .text-violet-500\/50, .text-purple-400\/50, .text-purple-500\/50, .text-indigo-400\/50 { color: hsl(var(--signal-rouge) / 0.5); }
-  .text-rose-400\/60, .text-red-400\/60, .text-red-500\/60, .text-pink-400\/60, .text-fuchsia-400\/60, .text-violet-400\/60, .text-violet-500\/60, .text-purple-400\/60, .text-purple-500\/60, .text-indigo-400\/60 { color: hsl(var(--signal-rouge) / 0.6); }
-  .text-rose-400\/70, .text-red-400\/70, .text-red-500\/70, .text-pink-400\/70, .text-fuchsia-400\/70, .text-violet-400\/70, .text-violet-500\/70, .text-purple-400\/70, .text-purple-500\/70, .text-indigo-400\/70 { color: hsl(var(--signal-rouge) / 0.7); }
-  .text-rose-400\/80, .text-red-400\/80, .text-red-500\/80, .text-pink-400\/80, .text-fuchsia-400\/80, .text-violet-400\/80, .text-violet-500\/80, .text-purple-400\/80, .text-purple-500\/80, .text-indigo-400\/80 { color: hsl(var(--signal-rouge) / 0.8); }
-  .text-rose-400\/90, .text-red-400\/90, .text-red-500\/90, .text-pink-400\/90, .text-fuchsia-400\/90, .text-violet-400\/90, .text-violet-500\/90, .text-purple-400\/90, .text-purple-500\/90, .text-indigo-400\/90 { color: hsl(var(--signal-rouge) / 0.9); }
-
-  /* Le texte discret de shadcn, employé translucide : composé sur du
-     clair, 80 % d'un gris moyen s'efface. On le rend opaque et on
-     laisse l'encre discrète porter la hiérarchie. */
-  .text-muted-foreground\/80, .text-muted-foreground\/70,
-  .text-muted-foreground\/60, .text-muted-foreground\/50 { color: hsl(var(--encre-discrete)); }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   « ANIMATIONS RÉDUITES », BRANCHÉE
-   ───────────────────────────────────────────────────────────────
-   `ProfilePreferencesSync` posait bien `data-reduce-motion` sur la
-   racine, et `profiles.reduce_motion` s'écrivait bien en base — mais
-   rien, nulle part, ne lisait ni l'un ni l'autre. L'interrupteur
-   basculait, la valeur partait au serveur, et l'écran continuait
-   exactement pareil.
-
-   Le réglage fait désormais ce que le système fait quand on le lui
-   demande : couper le mouvement, sans rien retirer d'autre. Les
-   durées ne tombent pas à zéro mais à un cent-millième de seconde —
-   une durée nulle empêche `transitionend` et `animationend` de se
-   déclencher, et les composants qui les écoutent resteraient en
-   suspens.
-   ═══════════════════════════════════════════════════════════════ */
-[data-reduce-motion="true"] *,
-[data-reduce-motion="true"] *::before,
-[data-reduce-motion="true"] *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  animation-delay: 0ms !important;
-  transition-delay: 0ms !important;
-}
-
-[data-reduce-motion="true"] {
-  scroll-behavior: auto !important;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   LA BARRE ⌘K
-
-   Elle portait deux cents caracteres de classes utilitaires, dont
-   « dark » et un fond « #03060A » ecrits EN DUR : le seul element de
-   l application qui refusait le theme. Ses couleurs viennent des
-   jetons, et le theme clair la reprend dans theme-clair.css.
-   ═══════════════════════════════════════════════════════════ */
-/* LA BARRE FLOTTANTE A ETE RETIREE.
-   Sa pastille doublait la recherche de la barre laterale — deux portes
-   cote a cote pour la meme piece. Le raccourci reste : c est la
-   fonction, pas le bouton. Ses regles vivaient ici (limites, barre,
-   poignee, declencheur, mot, touche) et ne servaient plus. */
-
-.cmdk-entree {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-.cmdk-entree svg { width: 16px; height: 16px; color: hsl(var(--primary) / 0.7); }

@@ -15,7 +15,10 @@ verify_jwt = true
 [functions.delete-account]
 verify_jwt = true
 
-[functions.ai-mia]
+[functions.two-factor]
+verify_jwt = true
+
+[functions.ai-coach]
 verify_jwt = true
 
 [functions.goal-decompose]
@@ -32,11 +35,15 @@ verify_jwt = true
 verify_jwt = false
 
 # Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
-[functions.mia-index-memory]
+[functions.coach-index-memory]
 verify_jwt = false
 
 # Dual mode: per-user JWT OR cron with CRON_SECRET. JWT verification handled in code.
-[functions.mia-pattern-detect]
+[functions.coach-pattern-detect]
+verify_jwt = false
+
+# Dual mode: per-user JWT OR cron with CRON_SECRET. JWT verification handled in code.
+[functions.generate-daily-quests]
 verify_jwt = false
 
 # Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
@@ -44,7 +51,7 @@ verify_jwt = false
 verify_jwt = false
 
 # Dual mode: cron + user. JWT auth handled in code.
-[functions.mia-weekly-digest]
+[functions.coach-weekly-digest]
 verify_jwt = false
 
 # Cron-only. Each verifies CRON_SECRET in code; leaving verify_jwt at its
@@ -53,7 +60,7 @@ verify_jwt = false
 [functions.season-reset]
 verify_jwt = false
 
-[functions.mia-cron-runner]
+[functions.coach-cron-runner]
 verify_jwt = false
 
 [functions.automation-evaluator]

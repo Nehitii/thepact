@@ -46,6 +46,3 @@ public/_pantheon-preview.html
 .claude/skills/
 .agents/
 .codex/
-# L etat local de l outil de design (reglage, cache de la garde,
-# questions) : il appartient au poste, pas au depot.
-.impeccable/

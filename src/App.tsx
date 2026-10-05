@@ -1,26 +1,23 @@
-import { lazy, Suspense, useEffect } from "react";
-import { MotionConfig } from "framer-motion";
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AppProviders } from "@/app/AppProviders";
-import { ProtectedRoute } from "@/app/ProtectedRoute";
-import { AppLayout } from "@/app/AppLayout";
-import { AdminRoute } from "@/app/AdminRoute";
-import { ErrorBoundary } from "@/app/ErrorBoundary";
-import { useSocialFeatures } from "@/socle/hooks/useSocialFeatures";
-import { CONNEXION_ETABLIE } from "@/socle/contextes/AuthContext";
-import { trackLogin, initializeAchievementTracking } from "@/domaines/succes";
-import { routeImports } from "@/app/prefetchRoutes";
+import { AppProviders } from "@/components/AppProviders";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { AdminRoute } from "@/components/AdminRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useSocialFeatures } from "@/hooks/useSocialFeatures";
+import { routeImports } from "@/lib/prefetchRoutes";
 
 // Lazy-loaded pages
-const Auth = lazy(() => import("@/domaines/authentification/pages/Auth"));
-const TwoFactor = lazy(() => import("@/domaines/authentification/pages/TwoFactor"));
-const Onboarding = lazy(() => import("@/domaines/onboarding/pages/Onboarding"));
+const Auth = lazy(() => import("./pages/Auth"));
+const TwoFactor = lazy(() => import("./pages/TwoFactor"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Home = lazy(routeImports.home);
-const TheCall = lazy(() => import("@/domaines/appel/pages/TheCall"));
+const TheCall = lazy(() => import("./pages/TheCall"));
 const Goals = lazy(routeImports.goals);
 const NewGoal = lazy(routeImports.newGoal);
 const GoalDetail = lazy(routeImports.goalDetail);
-const StepDetail = lazy(() => import("@/domaines/objectifs/pages/StepDetail"));
+const StepDetail = lazy(() => import("./pages/StepDetail"));
 const Finance = lazy(routeImports.finance);
 const Journal = lazy(routeImports.journal);
 const Profile = lazy(routeImports.profile);
@@ -30,46 +27,37 @@ const DisplaySound = lazy(routeImports.displaySound);
 const PrivacyControl = lazy(routeImports.privacyControl);
 const NotificationSettings = lazy(routeImports.notificationSettings);
 const DataPortability = lazy(routeImports.dataPortability);
-const HealthSettings = lazy(routeImports.healthSettings);
+const LifeAreas = lazy(routeImports.lifeAreas);
+const Automations = lazy(routeImports.automations);
 const Achievements = lazy(routeImports.achievements);
 const Shop = lazy(routeImports.shop);
-const Community = lazy(() => import("@/domaines/social/pages/Community"));
-const Legal = lazy(() => import("@/domaines/mentions-legales/pages/Legal"));
-const BancDuRite = lazy(() => import("@/domaines/onboarding/pages/BancDuRite"));
-const BancDuBandeau = lazy(() => import("@/domaines/accueil/pages/BancDuBandeau"));
-const BancDeLAcces = lazy(() => import("@/domaines/accueil/pages/BancDeLAcces"));
-const BancDesOrdres = lazy(() => import("@/domaines/accueil/pages/BancDesOrdres"));
-const BancDuCompte = lazy(() => import("@/domaines/accueil/pages/BancDuCompte"));
-const BancDeLaFinance = lazy(() => import("@/domaines/finance/pages/BancDeLaFinance"));
-const BancDuFond = lazy(() => import("@/domaines/accueil/pages/BancDuFond"));
-const BancDuTableau = lazy(() => import("@/domaines/accueil/pages/BancDuTableau"));
-const BancDeLAppel = lazy(() => import("@/domaines/appel/pages/BancDeLAppel"));
+const Community = lazy(() => import("./pages/Community"));
+const Legal = lazy(() => import("./pages/Legal"));
 const TodoList = lazy(routeImports.todoList);
-const Inbox = lazy(() => import("@/domaines/social/pages/Inbox"));
-const InboxThread = lazy(() => import("@/domaines/social/pages/InboxThread"));
+const Inbox = lazy(() => import("./pages/Inbox"));
+const InboxThread = lazy(() => import("./pages/InboxThread"));
 const Health = lazy(routeImports.health);
 const Wishlist = lazy(routeImports.wishlist);
-const Leaderboard = lazy(() => import("@/domaines/social/pages/Leaderboard"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Focus = lazy(routeImports.focus);
 const Analytics = lazy(routeImports.analytics);
-const Friends = lazy(() => import("@/domaines/social/pages/Friends"));
+const Friends = lazy(() => import("./pages/Friends"));
 const Calendar = lazy(routeImports.calendar);
-const ContractSign = lazy(() => import("@/domaines/objectifs/pages/ContractSign"));
-const GoalsGraph = lazy(() => import("@/domaines/objectifs/pages/GoalsGraph"));
-const HallOfFame = lazy(() => import("@/domaines/succes/pages/HallOfFame"));
-const GuildPage = lazy(() => import("@/domaines/social/pages/GuildPage"));
-const PactSelector = lazy(() =>
-  import("@/domaines/objectifs").then((m) => ({ default: m.PactSelectorModal })),
-);
-const Admin = lazy(() => import("@/domaines/administration/pages/Admin"));
-const AdminAcces = lazy(() => import("@/domaines/administration/pages/AdminAcces"));
-const AdminCosmeticsManager = lazy(() => import("@/domaines/administration/pages/AdminCosmeticsManager"));
-const AdminModuleManager = lazy(() => import("@/domaines/administration/pages/AdminModuleManager"));
-const AdminMoneyManager = lazy(() => import("@/domaines/administration/pages/AdminMoneyManager"));
-const AdminMode = lazy(() => import("@/domaines/administration/pages/AdminMode"));
-const AdminNotifications = lazy(() => import("@/domaines/administration/pages/AdminNotifications"));
-const AdminPromoManager = lazy(() => import("@/domaines/administration/pages/AdminPromoManager"));
-const NotFound = lazy(() => import("@/app/NotFound"));
+const Reviews = lazy(routeImports.reviews);
+const ContractSign = lazy(() => import("./pages/ContractSign"));
+const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
+const TemplatesMarketplace = lazy(() => import("./pages/TemplatesMarketplace"));
+const HallOfFame = lazy(() => import("./pages/HallOfFame"));
+const GuildPage = lazy(() => import("./pages/GuildPage"));
+const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
+const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
+const AdminMoneyManager = lazy(() => import("./pages/AdminMoneyManager"));
+const AdminMode = lazy(() => import("./pages/AdminMode"));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
+const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function SocialGate({
   enabled,
@@ -92,98 +80,10 @@ function SocialGate({
 
 function AppRoutes() {
   const social = useSocialFeatures();
-
-  /* LE COMPTAGE DE LA CONNEXION SE FAIT ICI, PAS DANS LE CONTEXTE.
-     AuthContext vit dans le socle et quatorze domaines l importent ;
-     il annonce la connexion, et c est ce fichier — la racine de
-     composition, la seule qui ait le droit de tout connaitre — qui
-     appelle le domaine succes. */
-  useEffect(() => {
-    const compter = (e: Event) => {
-      const id = (e as CustomEvent<{ userId: string }>).detail?.userId;
-      if (!id) return;
-      initializeAchievementTracking(id);
-      trackLogin(id);
-    };
-    window.addEventListener(CONNEXION_ETABLIE, compter);
-    return () => window.removeEventListener(CONNEXION_ETABLIE, compter);
-  }, []);
   return (
     <Routes>
       {/* Public */}
       <Route path="/auth" element={<Auth />} />
-      {/* LES CONDITIONS SONT PUBLIQUES.
-
-          Elles etaient derriere ProtectedRoute : inaccessibles a qui
-          n avait pas encore de compte, alors que leur article 5 demande
-          justement de les accepter AVANT d en creer un. Des mentions
-          legales qu on ne peut lire qu une fois inscrit ne remplissent
-          pas leur office. */}
-      <Route path="/legal" element={<Legal />} />
-
-      {/* LE BANC D ESSAI DU RITE — public, et il le faut.
-
-          Retravailler l onboarding demandait de creer un compte a
-          chaque passage : le rite ne se joue qu une fois, et il ecrit
-          un pacte, qu on ne peut avoir qu en un seul exemplaire.
-          Autant dire qu on ne le regardait pas — et ce qu on ne
-          regarde pas, on ne le corrige pas.
-
-          Il n ecrit RIEN : le scellement y est feint et montre les
-          lignes qui auraient ete posees. Le mettre derriere
-          « ProtectedRoute » lui reprendrait tout son interet. */}
-      <Route path="/banc/rite" element={<BancDuRite />} />
-
-      {/* LE BANC DU BANDEAU — public, et pour la meme raison.
-          Le tableau de bord est derriere la session, la double
-          authentification et un pacte deja jure : regarder son bandeau
-          demandait de se connecter, ce qui suffit a ne pas le
-          regarder. Et il y a plus a voir ici qu ailleurs — quatre
-          polices, six effets, neuf symboles, un sceau qui descend du
-          nom et des valeurs : c est la COMBINAISON qu il faut juger.
-          Il ne lit ni n ecrit rien ; tout vient de ses menus. */}
-      <Route path="/banc/bandeau" element={<BancDuBandeau />} />
-
-      {/* LE BANC DE L ACCES RAPIDE — public, meme raison que le bandeau :
-          les refontes de la barre sous l enseigne, et ses etats (modules
-          achetes, tirage). Il n ecrit rien et ne quitte pas le banc. */}
-      <Route path="/banc/acces" element={<BancDeLAcces />} />
-
-      {/* LE BANC DES ORDRES DU JOUR — public, meme raison : les refontes
-          du panneau des ordres sous l enseigne et la rue, sur une
-          journee feinte qu on fait avancer. Il n ecrit rien. */}
-      <Route path="/banc/ordres" element={<BancDesOrdres />} />
-
-      {/* LE BANC DU COMPTE A REBOURS — public, meme raison : ses refontes
-          sous le temps « Agir » de l accueil, a tous les moments d un
-          pacte, du jour d avant au terme passe. Il n ecrit rien. */}
-      <Route path="/banc/compte" element={<BancDuCompte />} />
-
-      {/* LE BANC DE LA FINANCE — public, et pour la troisieme fois la
-          meme raison. L onglet porte 3 436 lignes de CSS et n avait pas
-          une regle « .light » : en clair il rendait un tableau de bord
-          de nuit pose sur du papier. On ne pouvait pas ecrire son
-          jumeau de jour sans le voir. Il ne lit rien : sans session,
-          la page montre ses etats a zero. */}
-      <Route path="/banc/finance" element={<BancDeLaFinance />} />
-
-      {/* LE BANC DES FONDS — public, pour la raison des trois autres.
-          Le ciel classique et huit autres fonds s y comparent en plein
-          ecran, derriere le vrai bandeau et des panneaux aux couleurs de
-          l accueil, dans les six teintes du pacte. Sept d entre eux se
-          choisissent dans les options. Rien n y est lu. */}
-      <Route path="/banc/fond" element={<BancDuFond />} />
-
-      {/* LE BANC DU TABLEAU DE BORD — public, meme raison. Trois refontes
-          du tableau de bord s y comparent sur un scenario fictif : le
-          registre de bord, le cadran du pacte, le serment vivant. */}
-      <Route path="/banc/tableau" element={<BancDuTableau />} />
-
-      {/* LE BANC DE L APPEL — public, meme raison, et une de plus : The
-          Call ne se joue qu une fois par jour. La vraie toile du rituel
-          s y regarde autant qu on veut, autour d une prise qu on tient ou
-          d une lecture automatique. Il n ecrit rien. */}
-      <Route path="/banc/appel" element={<BancDeLAppel />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />
@@ -196,24 +96,25 @@ function AppRoutes() {
         <Route path="the-call" element={<TheCall />} />
         <Route path="goals" element={<Goals />} />
         <Route path="goals/graph" element={<GoalsGraph />} />
+        <Route path="templates/marketplace" element={<SocialGate enabled={social.templatesMarketplace} loading={social.loadingMap.templatesMarketplace}><TemplatesMarketplace /></SocialGate>} />
         <Route path="goals/new" element={<NewGoal />} />
         <Route path="goals/:id" element={<GoalDetail />} />
         <Route path="step/:stepId" element={<StepDetail />} />
         <Route path="finance" element={<Finance />} />
         <Route path="journal" element={<Journal />} />
         <Route path="profile" element={<Profile />} />
-        <Route path="profile/security" element={<Profile />} />
         <Route path="profile/bounded" element={<BoundedProfile />} />
         <Route path="profile/pact-settings" element={<PactSettings />} />
-        <Route path="profile/pact-rules" element={<PactSettings />} />
         <Route path="profile/display-sound" element={<DisplaySound />} />
         <Route path="profile/privacy" element={<PrivacyControl />} />
         <Route path="profile/notifications" element={<NotificationSettings />} />
-        <Route path="profile/health" element={<HealthSettings />} />
         <Route path="profile/data" element={<DataPortability />} />
+        <Route path="profile/life-areas" element={<LifeAreas />} />
+        <Route path="profile/automations" element={<Automations />} />
         <Route path="achievements" element={<Achievements />} />
         <Route path="shop" element={<Shop />} />
         <Route path="community" element={<SocialGate enabled={social.community} loading={social.loadingMap.community}><Community /></SocialGate>} />
+        <Route path="legal" element={<Legal />} />
         <Route path="todo" element={<TodoList />} />
         <Route path="inbox" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><Inbox /></SocialGate>} />
         <Route path="inbox/thread/:userId" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><InboxThread /></SocialGate>} />
@@ -226,12 +127,12 @@ function AppRoutes() {
         <Route path="friends" element={<SocialGate enabled={social.friends} loading={social.loadingMap.friends}><Friends /></SocialGate>} />
         <Route path="guild/:id" element={<SocialGate enabled={social.guilds} loading={social.loadingMap.guilds}><GuildPage /></SocialGate>} />
         <Route path="calendar" element={<Calendar />} />
+        <Route path="reviews" element={<Reviews />} />
         <Route path="contracts/sign/:contractId" element={<ContractSign />} />
       </Route>
 
       {/* Admin */}
       <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-      <Route path="/admin/acces" element={<AdminRoute><AdminAcces /></AdminRoute>} />
       <Route path="/admin/cosmetics" element={<AdminRoute><AdminCosmeticsManager /></AdminRoute>} />
       <Route path="/admin/modules" element={<AdminRoute><AdminModuleManager /></AdminRoute>} />
       <Route path="/admin/money" element={<AdminRoute><AdminMoneyManager /></AdminRoute>} />
@@ -244,23 +145,18 @@ function AppRoutes() {
   );
 }
 
-/* reducedMotion="user" fait respecter la preference systeme par TOUTES
-   les animations Framer Motion de l application d un seul geste. Sans
-   lui, chaque composant devait y penser — et un seul le faisait. */
 const App = () => (
-  <MotionConfig reducedMotion="user">
-    <AppProviders>
-      <ErrorBoundary>
-        <Suspense fallback={
-          <div className="flex min-h-screen items-center justify-center bg-background">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        }>
-          <AppRoutes />
-        </Suspense>
-      </ErrorBoundary>
-    </AppProviders>
-  </MotionConfig>
+  <AppProviders>
+    <ErrorBoundary>
+      <Suspense fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      }>
+        <AppRoutes />
+      </Suspense>
+    </ErrorBoundary>
+  </AppProviders>
 );
 
 export default App;

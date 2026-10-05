@@ -1,25 +1,3 @@
-/* ═══ CE PREMIER IMPORT DOIT RESTER LE PREMIER ═══
-   Les modules ES sont évalués dans l ordre des imports, AVANT la
-   première ligne de ce fichier : un appel de fonction posé ici
-   s exécuterait après que tous les autres modules ont déjà lu leurs
-   réglages. C est donc l import lui-même qui déplace les clés de
-   « vowpact… » vers « overwrite… ». Le déplacement est aussi déclenché
-   par preferencesAffichage.ts, au cas où un outil réordonnerait cette
-   liste : la fonction ne fait rien la seconde fois. */
-import "@/socle/outils/renommageLocal";
-
-/* ═══ CELUI-CI AUSSI DOIT PRÉCÉDER LE RENDU ═══
-   Il capture l'erreur qu'un fournisseur d'authentification laisse dans
-   l'URL. Le retour se fait sur « / », une route protégée : sans
-   session le routeur rebondit vers « /auth » et le rebond perd le
-   fragment. Ce module le lit avant que React n'existe. */
-import "@/socle/outils/erreurOAuth";
-
-/* Le relais vers Sentry. Il n'importe PAS @sentry/react — c'est tout
-   son intérêt : il met les appels en file jusqu'à ce que l'import
-   dynamique plus bas lui passe l'instance réelle. */
-import { attacher as attacherSentry } from "@/socle/outils/sentry";
-
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -33,22 +11,21 @@ import "./index.css";
 // n'etaient donc jamais chargees — d'ou le lien "Skip to content" visible sur
 // toutes les pages, qui aurait du rester masque hors focus.
 import "./styles/design-tokens.css";
-import "./socle/ds/fond-journal.css";
-import "./styles/sidebar.css";
-// EN DERNIER, ET CE N EST PAS un detail : chaque regle de
-// theme-clair.css est prefixee .light, ce qui lui donne une classe
-// de specificite de plus que la regle qu elle corrige. Le sombre
-// n est atteint par aucune d entre elles.
-import "./styles/theme-clair.css";
+import "./styles/singularity.css";
+import "./styles/hero-animations.css";
+import "./styles/difficulty.css";
+import "./styles/shop.css";
+import "./styles/glassmorphism.css";
+import "./styles/journal.css";
 // finance.css, analytics.css and goals.css are co-located with their
 // respective lazy pages (Finance/Analytics/Goals) so they ship in the
 // page chunk instead of the initial bundle.
 
 // i18n must be initialized once, before any components render.
-import "@/socle/i18n/i18n";
+import "@/i18n/i18n";
 
 // Suspend les animations perpetuelles quand l'onglet est cache.
-import { watchIdleAnimations } from "@/socle/outils/idleAnimations";
+import { watchIdleAnimations } from "@/lib/idleAnimations";
 watchIdleAnimations();
 
 // Service worker: register only on real top-level pages (push notifications).
@@ -63,15 +40,11 @@ watchIdleAnimations();
     }).catch(() => {});
     return;
   }
-  /* PLUS D'INSCRIPTION À LA MAIN.
-     vite-plugin-pwa injecte déjà un script registerSW.js dans
-     index.html, qui inscrit /sw.js. Celle-ci inscrivait le MÊME
-     chemin une seconde fois — et, en développement où le greffon
-     s'abstient, elle inscrivait le fichier de push brut, qui prenait
-     alors le contrôle de la page sans rien mettre en cache.
-
-     La désinscription en iframe, elle, reste : elle protège les
-     aperçus intégrés, et le greffon ne la fait pas. */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
 })();
 
 createRoot(document.getElementById("root")!).render(<App />);
@@ -94,16 +67,8 @@ function initSentryDeferred() {
       environment: SENTRY_ENV,
       sampleRate: 1.0,
       tracesSampleRate: SENTRY_ENV === "production" ? 0.1 : 0,
-      /* AUCUN ENREGISTREMENT DE SESSION, DANS AUCUN CAS.
-         La page /legal dit « l'enregistrement des sessions est
-         désactivé ». C'était vrai des sessions ordinaires
-         (replaysSessionSampleRate: 0) et faux en cas d'erreur, où une
-         sur deux était bel et bien enregistrée — masquée, mais
-         enregistrée. Deux valeurs à zéro valent mieux qu'une phrase à
-         réécrire : l'enregistrement n'a jamais servi à un diagnostic
-         ici, la pile d'appels suffit. */
       replaysSessionSampleRate: 0,
-      replaysOnErrorSampleRate: 0,
+      replaysOnErrorSampleRate: 0.5,
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
@@ -118,26 +83,14 @@ function initSentryDeferred() {
         return event;
       },
     });
-    /* ═══ LE RELAIS REÇOIT L'INSTANCE ICI, ET PAS AVANT ═══
-       Le reste de l'application appelle `@/socle/outils/sentry`, jamais
-       `@sentry/react` : c'est ce qui garde les 159 Ko hors du premier
-       chargement. Les appels faits avant cette ligne ont été mis en
-       file et sont rejoués maintenant — un utilisateur identifié pendant
-       le démarrage n'est donc pas perdu. */
-    attacherSentry({
-      setUser: (u) => Sentry.setUser(u),
-      captureException: (e, contexte) => Sentry.captureException(e, contexte),
-    });
     console.info("[Sentry] initialized", { env: SENTRY_ENV });
   }).catch((err) => {
     console.warn("[Sentry] failed to load", err);
   });
 }
 
-/* Safari n'a `requestIdleCallback` que depuis la 18.4 : on retombe sur
-   un simple delai plus bas quand il manque. */
 const ric: typeof window.requestIdleCallback | undefined =
-  typeof window !== "undefined" ? window.requestIdleCallback : undefined;
+  typeof window !== "undefined" ? (window as any).requestIdleCallback : undefined;
 if (ric) {
   ric(() => initSentryDeferred(), { timeout: 4000 });
 } else {

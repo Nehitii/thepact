@@ -6,29 +6,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    /* LE SERVEUR DE DEV EST OFFERT AU RESEAU LOCAL.
-     *
-     * Il ne l etait plus. Le commentaire precedent le fermait au nom de
-     * deux failles precises : un contournement de `server.fs.deny` par
-     * chemins alternatifs Windows dans Vite <= 6.4.2, et une lecture du
-     * serveur de dev par n importe quel site dans esbuild <= 0.24.2.
-     *
-     * LES DEUX SONT CORRIGEES DEPUIS. Ce projet tourne en Vite 7.3.6 et
-     * esbuild 0.28.2 — la justification ecrite ne decrivait plus rien.
-     * Une precaution qu on ne peut plus expliquer finit par etre
-     * contournee sans y penser ; mieux vaut la lever franchement et
-     * dire ce qui reste vrai.
-     *
-     * CE QUI RESTE VRAI : un serveur de dev n a AUCUNE
-     * AUTHENTIFICATION et sert les sources du projet a qui l atteint.
-     * Sur un reseau domestique le risque est faible ; sur un Wi-Fi
-     * partage — hotel, espace de travail, aeroport — il ne l est pas.
-     * Le jour ou l on developpe ailleurs qu a la maison, cette ligne se
-     * commente le temps du sejour.
-     *
-     * La production ne passe pas par ici : `vite build` produit des
-     * fichiers statiques, et rien de ce reglage ne les suit. */
-    host: true,
+    host: "0.0.0.0",
     port: 8080,
     hmr: {
       overlay: false,
@@ -46,29 +24,10 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: { enabled: false },
-      includeAssets: ["favicon.ico", "robots.txt", "marque/overwrite-symbole.svg"],
+      includeAssets: ["favicon.ico", "robots.txt", "placeholder.svg"],
       workbox: {
-        /* LE GESTIONNAIRE DE PUSH EST IMPORTÉ, PAS ÉCRASÉ.
-           Il vivait dans public/sw.js, c'est-à-dire au nom même que
-           ce greffon donne à SON service worker. Vite recopie
-           public/ puis le greffon écrit par-dessus : le fichier
-           disparaissait à chaque construction, et les notifications
-           poussées ne pouvaient pas fonctionner en production. */
-        importScripts: ["/push-sw.js"],
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
-        /* LA VILLE NE SE PRÉCHARGE PAS.
-           2,27 Mo, décorative, et affichée seulement au-dessus de
-           1100 px — la mettre dans le préchargement d'installation la
-           ferait descendre sur tous les téléphones qui ne la verront
-           jamais. Workbox refuse d'ailleurs au-delà de 2 Mio, et il a
-           raison : lever la limite aurait été répondre à côté. Elle est
-           prise au vol et gardée trente jours, règle ci-dessous. */
-        /* mia-flottante.png : 322 Ko, vue uniquement sur une 404. La
-           précharger ferait descendre l'illustration d'une page
-           d'erreur à CHAQUE installation, sur chaque téléphone.
-           Même traitement que la ville de l'écran de connexion :
-           prise au vol, gardée trente jours, règle ci-dessous. */
-        globIgnores: ["**/stats.html", "**/marque/auth-cite.png", "**/marque/mia-flottante.png", "**/marque/mia-sas.png", "**/push-sw.js"],
+        globIgnores: ["**/stats.html"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {
@@ -82,20 +41,6 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "google-fonts", expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
           },
           {
-            /* Les deux grandes illustrations — la ville de l'écran de
-               connexion, la dormeuse de la 404 : jamais préchargées,
-               prises au premier affichage puis gardées. */
-            urlPattern: ({ url }) =>
-              url.pathname === "/marque/auth-cite.png" ||
-              url.pathname === "/marque/mia-flottante.png" ||
-              url.pathname === "/marque/mia-sas.png",
-            handler: "CacheFirst",
-            options: {
-              cacheName: "marque",
-              expiration: { maxEntries: 4, maxAgeSeconds: 30 * 24 * 60 * 60 },
-            },
-          },
-          {
             urlPattern: /^https:\/\/[a-z0-9]+\.supabase\.co\/storage\/.*\.(webp|png|jpg|jpeg|svg|gif)$/i,
             handler: "CacheFirst",
             options: {
@@ -106,33 +51,18 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "Overwrite",
-        short_name: "Overwrite",
+        name: "Vowpact",
+        short_name: "Vowpact",
         description: "Find The Light",
-        /* Le greffon posait « lang: en » par defaut, comme index.html le
-           faisait avant correction. L interface est en francais. */
-        lang: "fr",
         theme_color: "#0b1018",
         background_color: "#0b1018",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
         scope: "/",
-        /* CES DEUX LIGNES POINTAIENT VERS `placeholder.svg` — le carré
-           gris livré par l'échafaudage. L'application installée portait
-           donc un placeholder sur l'écran d'accueil, à la bonne taille et
-           sans rien dire.
-
-           `purpose: "any"`, et PAS "maskable" : le symbole occupe 88 %
-           de la largeur de l'icône, alors que la zone sûre d'un masque
-           Android est un cercle de 80 %. Déclarer « maskable » ferait
-           rogner les lignes de glitch sur la moitié des appareils. Une
-           variante masquable se fabrique avec le `build.py` du pack en
-           passant RATIO à 0.6 — il demande Python, cairosvg et Pillow. */
         icons: [
-          { src: "/marque/overwrite-violet-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-          { src: "/marque/overwrite-violet-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-          { src: "/marque/overwrite-symbole.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+          { src: "/placeholder.svg", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+          { src: "/placeholder.svg", sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" },
         ],
       },
     }),
@@ -142,56 +72,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  /* Les paquets TipTap doivent partager une seule instance de
-     ProseMirror. Decouverts en cours de route — l editeur du journal
-     n est charge qu a l ouverture de la fenetre — Vite les
-     pre-empaquette en deux fois, et la page se retrouve avec deux
-     ProseMirror : le schema du second est nul et l editeur casse. On
-     les declare pour qu ils soient tailles ensemble au demarrage. */
-  optimizeDeps: {
-    include: [
-      "@tiptap/core",
-      "@tiptap/pm/view",
-      "@tiptap/react",
-      "@tiptap/react/menus",
-      "@tiptap/starter-kit",
-      "@tiptap/extension-text-style",
-      "@tiptap/extension-task-list",
-      "@tiptap/extension-task-item",
-    ],
-  },
   build: {
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        /* ═══ MILLE SIX CENT TRENTE-SIX MORCEAUX, ET ON LES GARDE ═══
-           Rollup sort un fichier par module partage entre deux routes
-           differees : 1 636 morceaux dont 1 513 sous un kilo-octet.
-           Le chiffre est spectaculaire, la correction ne vaut rien.
-
-           MESURE DU 06/09, fermeture statique par route, gzip :
-
-             variante              morceaux  entree  GoalDetail
-             celle-ci                 1 636   405 Ko  71 morceaux, 93 Ko
-             minChunkSize 20 ko       1 588   418 Ko  —
-             noyaux logique+hooks       119   633 Ko  12 morceaux, 30 Ko
-             noyaux logique seule       128   584 Ko  19 morceaux, 54 Ko
-
-           Regrouper les modules par domaine effondre bien le cout des
-           routes — « GoalDetail » passe de 71 requetes a 12 — mais
-           l entree grossit de 180 a 230 Ko : elle touche un module de
-           « social » et un de « succes », et tire alors leurs paquets
-           entiers, 143 et 130 Ko.
-
-           On echange donc une seconde de telechargement au premier
-           chargement contre cinquante requetes de moins de 700 octets
-           sur une route, multiplexees en HTTP/2. Le troc est mauvais,
-           et il l est dans le sens qui compte le plus : la premiere
-           visite, cache froid.
-
-           CE QUI CHANGERAIT LA DONNE : que l entree cesse d importer
-           statiquement quoi que ce soit de « social » et de « succes ».
-           C est un travail sur les imports, pas sur le decoupage. */
         manualChunks: {
           "react-vendor": ["react", "react-dom", "react-router-dom"],
           "supabase-vendor": ["@supabase/supabase-js"],
