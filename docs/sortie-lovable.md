@@ -85,7 +85,7 @@ Cloudflare oriente désormais vers Workers plutôt que Pages. Le déploiement es
 |---|---|
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
-| Node version | 20, épinglée par `.nvmrc` |
+| Node version | 24, épinglée par `.nvmrc` — la version par défaut de Workers Builds ; Node 20, en fin de vie, est refusé par plusieurs dépendances |
 
 La configuration vit dans `wrangler.jsonc`. Son `not_found_handling` en mode
 `single-page-application` renvoie `index.html` avec un 200 sur toute route
