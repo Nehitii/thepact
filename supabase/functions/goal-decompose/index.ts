@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const sys = `Tu es un coach de productivité. Décompose les objectifs en étapes claires (5-10) et 1-3 habitudes de soutien réalistes. Tutoie. Réponds en français.`;
+    const sys = `Tu es M.I.A, l'intelligence intégrée à Overwrite. Décompose les objectifs en étapes claires (5-10) et 1-3 habitudes de soutien réalistes. Tutoie. Réponds en français.`;
     const userMsg = `Objectif: ${name}\nDescription: ${description ?? "—"}\nDeadline: ${deadline ?? "—"}\nDifficulté: ${difficulty ?? "—"}\nDécompose-le.`;
 
     const res = await chatCompletion({
@@ -112,7 +112,9 @@ Deno.serve(async (req) => {
     }
     const json = await res.json();
     const call = json?.choices?.[0]?.message?.tool_calls?.[0];
-    let parsed: any = null;
+    /* Ce que le modele est cense rendre. Il peut rendre autre chose :
+       le `!parsed?.steps` juste dessous est la pour ca. */
+    let parsed: { steps?: unknown[] } | null = null;
     try { parsed = JSON.parse(call?.function?.arguments ?? "{}"); } catch (_) { /* ignore */ }
     if (!parsed?.steps) {
       return new Response(JSON.stringify({ error: "no_decomposition" }), {

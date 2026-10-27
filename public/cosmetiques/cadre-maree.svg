@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><filter id="g"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#g)" fill="none" stroke="#2dd4bf" stroke-linecap="round">
+  <g stroke-width="4" opacity=".9">
+    <path d="M128 22a106 106 0 0 1 92 54" />
+    <path d="M40 190a106 106 0 0 0 92 54" />
+    <animateTransform attributeName="transform" type="rotate" from="0 128 128" to="360 128 128" dur="16s" repeatCount="indefinite"/>
+  </g>
+  <g stroke-width="2.4" opacity=".6">
+    <path d="M22 116a106 106 0 0 1 40-66"/><path d="M234 140a106 106 0 0 1-40 66"/>
+    <animateTransform attributeName="transform" type="rotate" from="360 128 128" to="0 128 128" dur="22s" repeatCount="indefinite"/>
+  </g>
+  <circle cx="128" cy="128" r="120" stroke-width="1.2" opacity=".3"/>
+</g>
+<g filter="url(#g)" fill="#99f6e4">
+<circle cx="242.6" cy="169.7" r="2" opacity=".8"/><circle cx="166.9" cy="243.6" r="3.6" opacity=".8"/><circle cx="61.8" cy="230.5" r="2" opacity=".8"/><circle cx="6.6" cy="140.1" r="3.6" opacity=".8"/><circle cx="42.8" cy="40.7" r="2" opacity=".8"/><circle cx="143.2" cy="6.9" r="3.6" opacity=".8"/><circle cx="232.1" cy="64.4" r="2" opacity=".8"/>
+</g></svg>

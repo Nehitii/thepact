@@ -1,0 +1,156 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROPOSITION B — LE PUPITRE
+
+   Une platine d acier brosse, quatre vis aux coins. Chaque poste est
+   un bouton : une lunette chromee, un verre colore — eteint au repos,
+   allume au survol, enfonce a l appui — et une plaque gravee.
+
+   Le verre eteint n est pas gris : c est la couleur du bouton sans
+   courant, sombre et desaturee. On sait quel bouton fait quoi avant
+   de le toucher.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ap-pupitre {
+  padding: 20px 18px 18px;
+  border-radius: 6px;
+  container-type: inline-size;
+  background:
+    radial-gradient(circle at 10px 10px, #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at 10px calc(100% - 10px), #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #9aa0aa 0 2.5px, #2b2e34 3px 4px, transparent 4.5px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px),
+    linear-gradient(175deg, #33363d, #1c1e23);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 -2px 0 rgb(0 0 0 / 0.45),
+    0 0 0 1px #0a0b0d,
+    0 18px 40px -24px rgb(0 0 0 / 0.9);
+}
+
+/* La grille est a l interieur : une requete de conteneur interroge un
+   ANCETRE, jamais l element lui-meme. */
+.ap-grille {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ap-poste {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+.ap-poste:focus-visible { outline: 2px solid var(--ap-c); outline-offset: 2px; }
+.ap-poste:disabled { cursor: not-allowed; }
+
+/* ── La lunette et son verre ── */
+.ap-lunette {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #eef1f5, #8a909b 52%, #3e424a);
+  box-shadow: 0 3px 6px rgb(0 0 0 / 0.6), inset 0 -1px 1px rgb(0 0 0 / 0.4);
+}
+.ap-poste[data-forme="carre"] .ap-lunette { border-radius: 11px; }
+.ap-poste[data-forme="champignon"] .ap-lunette { width: 62px; height: 62px; }
+
+.ap-verre {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  /* Le pictogramme est imprime sur le verre : noir, un peu transparent,
+     il prend la couleur du verre par en dessous. */
+  color: rgb(8 9 12 / 0.72);
+  background: radial-gradient(circle at 40% 34%,
+    color-mix(in srgb, var(--ap-c) 30%, #ffffff) 0%,
+    var(--ap-c) 42%,
+    color-mix(in srgb, var(--ap-c) 55%, #000000) 100%);
+  box-shadow: inset 0 2px 3px rgb(255 255 255 / 0.35), inset 0 -3px 5px rgb(0 0 0 / 0.45), 0 1px 0 rgb(0 0 0 / 0.5);
+  filter: brightness(0.62) saturate(0.85);
+  transition: filter 160ms ease-out, box-shadow 160ms ease-out, transform 90ms ease-out;
+}
+.ap-poste[data-forme="carre"] .ap-verre { border-radius: 8px; }
+/* Le champignon : un dome, plus haut, qui deborde de sa lunette. */
+.ap-poste[data-forme="champignon"] .ap-verre {
+  width: 56px;
+  height: 56px;
+  box-shadow: inset 0 3px 4px rgb(255 255 255 / 0.4), inset 0 -5px 8px rgb(0 0 0 / 0.5), 0 4px 6px rgb(0 0 0 / 0.55);
+}
+
+.ap-poste:hover:not(:disabled) .ap-verre,
+.ap-poste:focus-visible .ap-verre,
+.ap-poste[data-ouvert] .ap-verre {
+  filter: none;
+  box-shadow: inset 0 2px 3px rgb(255 255 255 / 0.4), inset 0 -3px 5px rgb(0 0 0 / 0.3),
+    0 0 14px var(--ap-c), 0 0 30px color-mix(in srgb, var(--ap-c) 45%, transparent);
+}
+.ap-poste:active:not(:disabled) .ap-verre { transform: translateY(2px) scale(0.97); }
+
+/* ── Le bouton a cle ── */
+.ap-poste[data-verrouille] .ap-verre {
+  filter: none;
+  background: radial-gradient(circle at 40% 34%, #5a5e66, #2a2c31 70%);
+}
+.ap-poste[data-verrouille] .ap-verre::after {
+  content: "";
+  width: 7px;
+  height: 16px;
+  border-radius: 3.5px 3.5px 1px 1px;
+  background: #0b0c0e;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
+/* ── Le capot de securite, rabattu ── */
+.ap-capot {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.26), rgb(255 255 255 / 0.05) 55%, rgb(255 255 255 / 0.14));
+  box-shadow: inset 0 0 0 2px rgb(255 214 110 / 0.55), inset 0 0 14px rgb(255 255 255 / 0.12), 0 3px 6px rgb(0 0 0 / 0.5);
+}
+
+/* ── La plaque gravee ── */
+.ap-plaque {
+  display: grid;
+  gap: 3px;
+  max-width: 100%;
+  padding: 5px 9px 4px;
+  border-radius: 3px;
+  background: linear-gradient(#16171a, #0b0c0e);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.08);
+  font: 700 10px/1.3 "Switzer", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #dfe2e8;
+  overflow-wrap: anywhere;
+}
+.ap-plaque small {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #9ea4ae;
+}
+
+@container (max-width: 640px) {
+  .ap-grille { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-verre { transition: none; }
+}
+[data-reduce-motion="true"] .ap-verre { transition: none; }

@@ -1,0 +1,403 @@
+/* ═══════════════════════════════════════════════════════════════
+   L'ADMINISTRATION — « .ad- »
+
+   ═══ CE QUE CET ENDROIT EST, ET N'EST PAS ═══
+
+   L'application est une vitrine : néons, halos, cadres chanfreinés,
+   compteurs qui montent. L'administration est L'ARRIÈRE-BOUTIQUE. On
+   n'y vient pas pour être impressionné, on y vient pour trouver une
+   ligne parmi trente et la modifier sans se tromper.
+
+   Elle garde donc les mêmes jetons — c'est la même maison — mais elle
+   les emploie autrement : plus dense, plus sobre, la couleur réservée
+   à ce qui change d'état. Un panneau d'administration qui brille
+   autant que le produit fatigue celui qui doit y passer une heure.
+
+   ═══ TOUT DESCEND DE « --ds-* » ═══
+
+   Qui possède déjà son miroir clair : aucune surcharge « .light »
+   n'est nécessaire, et il n'y en a aucune. L'ancien écran écrivait
+   « text-primary/40 », « bg-amber-500/5 », « border-primary/30 » en
+   dur, plus un halo de 800 px en fond fixe sur chaque page.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ad {
+  --ad-plaque:  hsl(var(--ds-surface-1));
+  --ad-creux:   hsl(var(--ds-surface-2));
+  --ad-releve:  hsl(var(--ds-surface-3));
+  --ad-trait:   hsl(var(--ds-border-default) / 0.16);
+  --ad-bord:    hsl(var(--ds-text-muted) / 0.5);
+  --ad-encre:   hsl(var(--ds-text-primary));
+  --ad-encre-2: hsl(var(--ds-text-secondary));
+  --ad-encre-3: hsl(var(--ds-text-muted));
+
+  --ad-signal:  hsl(var(--ds-accent-primary));
+  --ad-veille:  hsl(var(--ds-accent-warning));
+  --ad-alerte:  hsl(var(--ds-accent-critical));
+  --ad-vif:     hsl(var(--ds-accent-success));
+
+  --ad-e: var(--ds-ease-out, cubic-bezier(.16, 1, .3, 1));
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 20px 0 96px;
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  color: var(--ad-encre);
+}
+
+/* ── L'en-tête d'un écran ────────────────────────────────────── */
+.ad-tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.ad-tete-gauche { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ad-tete-icone {
+  display: grid; place-items: center;
+  width: 38px; height: 38px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 9px;
+  background: var(--ad-creux);
+  color: var(--ad-signal);
+  flex-shrink: 0;
+}
+.ad-tete-icone svg { width: 18px; height: 18px; }
+.ad-titre {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(17px, 2.2vw, 22px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: var(--ad-encre);
+}
+.ad-sous {
+  margin: 2px 0 0;
+  font-size: max(13px, 0.8125rem);
+  color: var(--ad-encre-3);
+}
+
+/* ── Le rail des sections ─────────────────────────────────────────
+   L'ancien fil d'Ariane alignait sept liens de onze pixels séparés
+   par des points médians, à quarante pour cent d'opacité. On ne
+   savait pas où l'on était et on visait mal ce qu'on voulait. */
+.ad-rail {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 10px;
+  background: var(--ad-creux);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ad-rail::-webkit-scrollbar { height: 0; display: none; }
+.ad-onglet {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--ad-encre-3);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 180ms var(--ad-e), color 180ms var(--ad-e);
+}
+.ad-onglet svg { width: 14px; height: 14px; }
+.ad-onglet:hover { color: var(--ad-encre-2); }
+.ad-onglet[data-actif="true"] { background: var(--ad-plaque); color: var(--ad-signal); }
+.ad-onglet:focus-visible { outline: 2px solid var(--ad-signal); outline-offset: 2px; }
+.ad-onglet i {
+  font-style: normal;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ad-releve);
+  color: var(--ad-encre-2);
+  font-size: max(10px, 0.625rem);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Les mesures en tête ─────────────────────────────────────── */
+.ad-mesures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.ad-mesure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 10px;
+  background: var(--ad-plaque);
+}
+.ad-mesure b {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(21px, 1.3125rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ad-encre);
+  line-height: 1.1;
+}
+.ad-mesure span {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ad-encre-3);
+}
+.ad-mesure em { font-style: normal; font-size: max(12px, 0.75rem); color: var(--ad-encre-3); }
+
+/* ── Un panneau ──────────────────────────────────────────────── */
+.ad-panneau {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 12px;
+  background: var(--ad-plaque);
+}
+.ad-panneau-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ad-panneau-titre {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ad-encre-3);
+}
+
+/* ── La liste, motif dominant de l'administration ─────────────────
+   Cosmétiques, modules, offres, codes : six écrans sur sept sont une
+   liste et un formulaire. Ils se dessinaient chacun à leur façon —
+   ici, une seule ligne pour tous, et ce qui change d'un écran à
+   l'autre tient dans l'aperçu de gauche. */
+.ad-liste { display: flex; flex-direction: column; gap: 6px; }
+.ad-ligne {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 10px;
+  background: var(--ad-plaque);
+  transition: border-color 160ms var(--ad-e), background 160ms var(--ad-e);
+}
+.ad-ligne:hover { border-color: hsl(var(--ds-accent-primary) / 0.4); background: var(--ad-creux); }
+.ad-ligne[data-inactif="true"] { opacity: 0.55; }
+
+.ad-ligne-corps { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ad-ligne-nom {
+  margin: 0;
+  font-size: max(14.5px, 0.90625rem);
+  font-weight: 600;
+  color: var(--ad-encre);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-ligne-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  color: var(--ad-encre-3);
+}
+.ad-ligne-gestes { display: flex; align-items: center; gap: 4px; }
+
+/* L'aperçu : ce qui distingue un cadre d'une bannière d'un module. */
+.ad-apercu {
+  display: grid; place-items: center;
+  width: 40px; height: 40px;
+  border: 1px solid var(--ad-trait);
+  border-radius: 8px;
+  background: var(--ad-creux);
+  color: var(--ad-signal);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ad-apercu img { width: 100%; height: 100%; object-fit: contain; }
+.ad-apercu svg { width: 17px; height: 17px; }
+
+/* ── Les étiquettes d'état ───────────────────────────────────── */
+.ad-etat {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(9.5px, 0.59375rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ad-etat[data-ton="actif"]   { color: var(--ad-vif); }
+.ad-etat[data-ton="dormant"] { color: var(--ad-encre-3); }
+.ad-etat[data-ton="veille"]  { color: var(--ad-veille); }
+.ad-etat[data-ton="alerte"]  { color: var(--ad-alerte); }
+
+/* ── Les gestes ──────────────────────────────────────────────── */
+.ad-geste {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--ad-bord);
+  border-radius: 8px;
+  background: none;
+  color: var(--ad-encre-2);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10.5px, 0.65625rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 150ms var(--ad-e), border-color 150ms var(--ad-e), background 150ms var(--ad-e);
+}
+.ad-geste svg { width: 13px; height: 13px; }
+.ad-geste:hover:not(:disabled) { color: var(--ad-encre); border-color: var(--ad-signal); }
+.ad-geste:focus-visible { outline: 2px solid var(--ad-signal); outline-offset: 2px; }
+.ad-geste:disabled { opacity: 0.45; cursor: not-allowed; }
+.ad-geste[data-ton="primaire"] {
+  border-color: var(--ad-signal);
+  background: var(--ad-signal);
+  color: hsl(var(--ds-bg-base));
+}
+.ad-geste[data-ton="primaire"]:hover:not(:disabled) { opacity: 0.88; color: hsl(var(--ds-bg-base)); }
+.ad-geste[data-ton="danger"] { color: var(--ad-alerte); border-color: hsl(var(--ds-accent-critical) / 0.45); }
+.ad-geste[data-ton="danger"]:hover:not(:disabled) { border-color: var(--ad-alerte); background: hsl(var(--ds-accent-critical) / 0.1); color: var(--ad-alerte); }
+
+/* Un geste réduit à son icône, dans une rangée de ligne. */
+.ad-icone {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--ad-encre-3);
+  cursor: pointer;
+  transition: color 150ms var(--ad-e), background 150ms var(--ad-e);
+}
+.ad-icone svg { width: 15px; height: 15px; }
+.ad-icone:hover { color: var(--ad-encre); background: var(--ad-releve); }
+.ad-icone[data-ton="danger"]:hover { color: var(--ad-alerte); background: hsl(var(--ds-accent-critical) / 0.1); }
+.ad-icone:focus-visible { outline: 2px solid var(--ad-signal); outline-offset: 1px; }
+
+/* ── Le formulaire ───────────────────────────────────────────── */
+.ad-champs { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.ad-champ { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ad-champ > span {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: max(10px, 0.625rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ad-encre-3);
+}
+.ad-champ input,
+.ad-champ textarea,
+.ad-champ select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--ad-bord);
+  border-radius: 8px;
+  background: var(--ad-creux);
+  color: var(--ad-encre);
+  font-family: inherit;
+  font-size: max(14px, 0.875rem);
+}
+.ad-champ textarea { min-height: 72px; resize: vertical; line-height: 1.45; }
+.ad-champ input:focus-visible,
+.ad-champ textarea:focus-visible,
+.ad-champ select:focus-visible { outline: 2px solid var(--ad-signal); outline-offset: 1px; }
+.ad-champ input::placeholder, .ad-champ textarea::placeholder { color: var(--ad-encre-3); }
+.ad-champ--large { grid-column: 1 / -1; }
+.ad-aide { margin: 0; font-size: max(12px, 0.75rem); color: var(--ad-encre-3); line-height: 1.4; }
+
+/* Un interrupteur textuel : plus lisible qu'une case à cocher dans
+   une grille de champs, et il dit ce qu'il fait. */
+.ad-bascule {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--ad-bord);
+  border-radius: 8px;
+  background: none;
+  color: var(--ad-encre-2);
+  font-family: inherit;
+  font-size: max(13.5px, 0.84375rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 150ms var(--ad-e), border-color 150ms var(--ad-e);
+}
+.ad-bascule u {
+  width: 30px; height: 17px;
+  border-radius: 999px;
+  background: var(--ad-releve);
+  position: relative;
+  transition: background 180ms var(--ad-e);
+  flex-shrink: 0;
+}
+.ad-bascule u::after {
+  content: "";
+  position: absolute; top: 3px; left: 3px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--ad-encre-3);
+  transition: transform 180ms var(--ad-e), background 180ms var(--ad-e);
+}
+.ad-bascule[aria-pressed="true"] { color: var(--ad-encre); border-color: var(--ad-signal); }
+.ad-bascule[aria-pressed="true"] u { background: hsl(var(--ds-accent-primary) / 0.35); }
+.ad-bascule[aria-pressed="true"] u::after { transform: translateX(13px); background: var(--ad-signal); }
+.ad-bascule:focus-visible { outline: 2px solid var(--ad-signal); outline-offset: 2px; }
+
+/* ── Le vide, et l'attente ───────────────────────────────────── */
+.ad-vide {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 44px 24px;
+  border: 1px dashed var(--ad-trait);
+  border-radius: 12px;
+  text-align: center;
+}
+.ad-vide > svg { width: 26px; height: 26px; color: var(--ad-encre-3); opacity: 0.7; }
+.ad-vide h3 { margin: 0; font-size: max(15px, 0.9375rem); font-weight: 700; color: var(--ad-encre-2); }
+.ad-vide p { margin: 0; max-width: 46ch; font-size: max(13px, 0.8125rem); line-height: 1.5; color: var(--ad-encre-3); }
+
+.ad-os {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--ad-creux) 25%, var(--ad-releve) 50%, var(--ad-creux) 75%);
+  background-size: 200% 100%;
+  animation: ad-onde 1.3s linear infinite;
+}
+@keyframes ad-onde { to { background-position: -200% 0; } }
+
+/* ── L'avertissement ─────────────────────────────────────────── */
+.ad-avis {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid hsl(var(--ds-accent-warning) / 0.4);
+  border-radius: 10px;
+  background: hsl(var(--ds-accent-warning) / 0.07);
+  font-size: max(13.5px, 0.84375rem);
+  line-height: 1.5;
+  color: var(--ad-encre-2);
+}
+.ad-avis svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; color: var(--ad-veille); }
+.ad-avis b { color: var(--ad-encre); }
+
+@media (max-width: 560px) {
+  .ad { gap: 14px; }
+  .ad-ligne { grid-template-columns: auto minmax(0, 1fr); }
+  .ad-ligne-gestes { grid-column: 1 / -1; justify-content: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-onglet, .ad-ligne, .ad-geste, .ad-icone, .ad-bascule, .ad-bascule u, .ad-bascule u::after { transition: none; }
+  .ad-os { animation: none; }
+}

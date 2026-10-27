@@ -1,0 +1,21 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- RESTAURE DEPUIS LE REGISTRE DE LA BASE, LE 06/09/2026
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- Cette migration a ete APPLIQUEE en production le 2026-08-26
+-- sans qu un fichier soit ecrit dans le depot. Elle n existait plus
+-- que dans « supabase_migrations.schema_migrations », qui garde le SQL
+-- de chaque migration en plus de son numero.
+--
+-- Le contenu ci-dessous est celui du registre, mot pour mot — la prose
+-- d origine comprise. Rien n a ete reecrit.
+--
+-- NE PAS LA REJOUER : elle est deja appliquee. Elle est ici pour que
+-- « supabase/migrations » redevienne un compte rendu fidele du schema,
+-- et pour qu un environnement neuf puisse etre reconstruit.
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Une fonction de déclencheur n'a aucune raison d'être appelable en RPC.
+-- SECURITY DEFINER la rendait exécutable par « anon » et « authenticated »
+-- via /rest/v1/rpc — sans effet utile (elle a besoin de NEW), mais exposée.
+revoke execute on function public.garde_trois_listes() from anon, authenticated, public;

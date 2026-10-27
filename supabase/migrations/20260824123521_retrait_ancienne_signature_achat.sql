@@ -1,0 +1,22 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- RESTAURE DEPUIS LE REGISTRE DE LA BASE, LE 06/09/2026
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- Cette migration a ete APPLIQUEE en production le 2026-08-24
+-- sans qu un fichier soit ecrit dans le depot. Elle n existait plus
+-- que dans « supabase_migrations.schema_migrations », qui garde le SQL
+-- de chaque migration en plus de son numero.
+--
+-- Le contenu ci-dessous est celui du registre, mot pour mot — la prose
+-- d origine comprise. Rien n a ete reecrit.
+--
+-- NE PAS LA REJOUER : elle est deja appliquee. Elle est ici pour que
+-- « supabase/migrations » redevienne un compte rendu fidele du schema,
+-- et pour qu un environnement neuf puisse etre reconstruit.
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Le client n appelle plus la version a trois arguments. On la retire :
+-- laisser les deux en place ferait cohabiter une signature qui promet
+-- un prix pilote par l appelant avec une qui ne le promet pas, et les
+-- types generes ne peuvent en decrire qu une.
+drop function if exists public.purchase_shop_item(uuid, text, integer);

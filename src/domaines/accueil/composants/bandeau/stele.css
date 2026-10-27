@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE E — LA STELE
+
+   UNE LETTRE GRAVEE, C EST UNE OMBRE EN HAUT ET UN RELIEF EN BAS. La
+   lumiere rasante vient d en haut a gauche : le bord superieur du
+   creux est dans l ombre, le bord inferieur accroche la lumiere. Deux
+   ombres portees de un pixel suffisent a le dire — a condition d avoir
+   ce signe-la, et pas l inverse, qui ferait une lettre en relief.
+
+   LES LETTRES SONT RECHAMPIES : peintes a la chaux dans le creux,
+   comme sur les monuments. Une gravure nue se lit mal a l ecran ; une
+   gravure peinte se lit de loin. Sur le calcaire du theme clair, la
+   peinture devient sombre.
+
+   LA PIERRE NE BOUGE PAS. Le sceau s arrete de tourner, le logo perd
+   sa couleur et son mouvement : il est taille, pas projete.
+   ═══════════════════════════════════════════════════════════════ */
+
+.st {
+  --st-fond: #313236;
+  --st-encre: #e4dfd4;
+  --st-encre-2: #b9b4a9;
+  --st-ombre: rgb(0 0 0 / 0.78);
+  --st-arete: rgb(255 255 255 / 0.15);
+  --st-dore: #dcb55c;
+  --st-medaillon: 228 4% 20%;
+
+  container-type: inline-size;
+  filter: drop-shadow(0 22px 22px rgb(0 0 0 / 0.5));
+  font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+}
+.light .st {
+  --st-fond: #dcd6ca;
+  --st-encre: #2f2c27;
+  --st-encre-2: #5b564c;
+  --st-ombre: rgb(72 60 40 / 0.4);
+  --st-arete: rgb(255 255 255 / 0.8);
+  --st-dore: #9c7420;
+  --st-medaillon: 40 18% 83%;
+  filter: drop-shadow(0 18px 20px rgb(60 48 30 / 0.28));
+}
+.st ::selection { background: color-mix(in srgb, var(--st-teinte) 38%, transparent); }
+
+.st-dalle {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  padding: clamp(24px, 4cqi, 44px) clamp(18px, 5cqi, 60px) clamp(22px, 3.2cqi, 34px);
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px),
+    calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  background-color: var(--st-fond);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><filter id='v'><feTurbulence type='fractalNoise' baseFrequency='.006 .03' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23v)'/></svg>"),
+    radial-gradient(ellipse at 22% -10%, rgb(255 255 255 / 0.09), transparent 58%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(0 0 0 / 0.16));
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.08), inset 0 -3px 0 rgb(0 0 0 / 0.3);
+}
+
+/* Le calcaire est plus fin que le basalte : ses veines, peintes du meme
+   noir que sur la pierre sombre, faisaient des rayures. */
+.light .st-dalle {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3 0 0 0 0 .26 0 0 0 0 .2 0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><filter id='v'><feTurbulence type='fractalNoise' baseFrequency='.006 .03' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .22 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23v)'/></svg>"),
+    radial-gradient(ellipse at 22% -10%, rgb(255 255 255 / 0.35), transparent 58%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(90 70 40 / 0.1));
+}
+
+/* La lettre gravee, et sa peinture. */
+.st-lettre {
+  color: var(--st-encre);
+  text-shadow:
+    0 min(-1px, -0.028em) 0 var(--st-ombre),
+    0 max(1px, 0.028em) 0 var(--st-arete);
+}
+
+/* ── Le medaillon ── */
+.st-medaillon {
+  width: clamp(72px, 10.5cqi, 104px);
+  aspect-ratio: 1;
+  padding: 5px;
+  border-radius: 50%;
+  color: var(--st-encre);
+  --ds-bg-base: var(--st-medaillon);
+  background: radial-gradient(circle at 38% 32%, rgb(255 255 255 / 0.08), transparent 62%), var(--st-fond);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.3),
+    inset 0 2px 0 rgb(255 255 255 / 0.1),
+    inset 0 -3px 6px rgb(0 0 0 / 0.4),
+    0 5px 9px -3px rgb(0 0 0 / 0.5);
+}
+.st-medaillon svg {
+  filter: drop-shadow(0 1px 0 var(--st-ombre)) drop-shadow(0 -1px 0 var(--st-arete));
+}
+.st .sceau-couche,
+.st .sceau-anime,
+.st .bdx-embleme * { animation: none !important; }
+.st .bdx-embleme { filter: grayscale(1) contrast(0.85) brightness(1.3); opacity: 0.85; }
+.light .st .bdx-embleme { filter: grayscale(1) contrast(1.1) brightness(0.55); }
+
+/* ── Le nom et l inscription ── */
+.st-nom {
+  margin: 18px 0 0;
+  max-width: 100%;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.st[data-finition="dorure"] .st-nom {
+  color: var(--st-dore);
+  text-shadow:
+    0 min(-1px, -0.028em) 0 rgb(50 34 0 / 0.85),
+    0 max(1px, 0.028em) 0 rgb(255 238 196 / 0.35);
+}
+.st[data-finition="email"] .st-nom { color: var(--st-email); }
+.light .st[data-finition="email"] .st-nom { color: color-mix(in srgb, var(--st-email) 72%, #000000); }
+
+.st-raison {
+  max-width: 62ch;
+  margin: 14px 0 0;
+  font-size: clamp(12px, 1.6cqi, 15.5px);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.24em;
+  color: var(--st-encre-2);
+}
+
+/* Les filets graves : une ligne d ombre, une ligne de lumiere. */
+.st-valeurs,
+.st-nombres { position: relative; width: min(660px, 100%); }
+.st-valeurs::before,
+.st-nombres::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(var(--st-ombre) 0 1px, var(--st-arete) 1px 2px);
+}
+
+.st-valeurs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 22px 0 0;
+  padding: 16px 0 0;
+  list-style: none;
+  font-size: clamp(11.5px, 1.45cqi, 13.5px);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.st-valeurs li { padding: 2px 1.3em; }
+.st-valeurs li + li { box-shadow: inset 1px 0 0 var(--st-ombre), inset 2px 0 0 var(--st-arete); }
+
+.st-nombres {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 18px 0 0;
+  padding: 18px 0 0;
+}
+/* Le chiffre romain d abord, le libelle dessous : l ordre du document
+   dit « terme, definition », l ordre de la pierre dit l inverse. Les
+   trois chiffres restent alignes en haut, meme si un libelle passe sur
+   deux lignes. */
+.st-nombres > div { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; }
+.st-nombres dd { order: -1; }
+.st-nombres dt {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--st-encre-2);
+}
+.st-romain {
+  margin: 0;
+  font-size: clamp(22px, 3.8cqi, 40px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+}
+
+/* ── Le sillon et sa coulee d email ── */
+.st-sillon {
+  position: relative;
+  width: min(660px, 100%);
+  height: 10px;
+  margin: 24px 0 0;
+  border-radius: 5px;
+  background: rgb(0 0 0 / 0.42);
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.75),
+    inset 0 -1px 0 rgb(255 255 255 / 0.07),
+    0 1px 0 var(--st-arete);
+}
+.light .st-sillon { background: rgb(90 74 46 / 0.2); box-shadow: inset 0 2px 3px rgb(70 56 30 / 0.4), 0 1px 0 var(--st-arete); }
+.st-coulee {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) * var(--st-p));
+  border-radius: 3px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--st-email) 55%, #ffffff) 0 18%,
+    var(--st-email) 48%,
+    color-mix(in srgb, var(--st-email) 72%, #000000) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 0 9px color-mix(in srgb, var(--st-email) 40%, transparent);
+  transition: width 2.4s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s;
+}
+
+.st-pied {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 26px;
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--st-encre-2);
+}
+.st-pied .st-lettre { color: var(--st-encre-2); }
+.st-bascule {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+.st-pied .st-bascule { color: var(--st-encre); }
+button.st-bascule {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--st-encre) 35%, transparent);
+  text-underline-offset: 0.4em;
+}
+button.st-bascule:hover { text-decoration-color: var(--st-email); }
+button.st-bascule:focus-visible { outline: 2px solid var(--st-email); outline-offset: 4px; }
+
+/* « Parasites » : la dalle est fendue. */
+.st-fissure {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgb(0 0 0 / 0.72);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(1px 1px 0 var(--st-arete));
+  pointer-events: none;
+}
+
+@container (max-width: 520px) {
+  .st-valeurs { letter-spacing: 0.16em; }
+  .st-valeurs li { padding: 2px 0.8em; }
+  .st-nombres dt { font-size: 9.5px; letter-spacing: 0.12em; }
+  .st-pied { flex-direction: column; align-items: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-coulee { transition: none; }
+}

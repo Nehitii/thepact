@@ -1,9 +1,23 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { messageDErreur } from "../_shared/erreurs.ts";
+
+/* LA JOINTURE A UNE FORME, ET PERSONNE NE LA DECLARAIT.
+   `pacts!inner(user_id)` produit un objet imbrique que les types generes
+   ne savent pas deduire : le reflexe etait `(goal as any).pacts`, qui
+   eteignait aussi le controle sur name, deadline et pact_id — les trois
+   champs lus juste apres. */
+interface LigneEcheance {
+  id: string;
+  name: string | null;
+  deadline: string | null;
+  pact_id: string | null;
+  pacts: { user_id: string } | null;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-cron-secret",
 };
 
 Deno.serve(async (req) => {
@@ -12,10 +26,36 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Require CRON_SECRET — this endpoint runs over all users and must not be publicly callable.
+    /* ═══ LE SECRET N'ARRIVAIT PAS PAR LA PORTE QU'ON SURVEILLAIT ═══
+
+       Cette fonction a répondu 401 vingt-deux fois sur vingt-deux en
+       vingt-quatre heures. Elle n'était pas cassée : elle refusait
+       correctement un appelant qui ne s'annonçait pas — sauf que
+       l'appelant, c'était le cron du projet.
+
+       Le travail planifié envoie le secret dans `x-cron-secret` :
+
+         headers := jsonb_build_object(
+           'Content-Type', 'application/json',
+           'x-cron-secret', COALESCE(private.cron_get('CRON_SECRET'), '')
+         )
+
+       Ici on ne lisait que `Authorization: Bearer …`. Deux noms pour
+       la même chose, et personne pour les rapprocher. Sur les neuf
+       fonctions gardées par CRON_SECRET, cinq acceptaient déjà les
+       deux en-têtes ; celle-ci était restée sur l'ancien seul, et
+       c'est la seule que le cron appelle directement — donc la seule
+       où l'écart se voyait.
+
+       ON ACCEPTE LES DEUX, comme season-reset et push-send. Retirer
+       `Authorization` fermerait la porte à un appel manuel qui,
+       lui, marchait. */
     const cronSecret = Deno.env.get("CRON_SECRET");
     const auth = req.headers.get("Authorization") ?? "";
-    if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
+    const enTeteCron = req.headers.get("x-cron-secret") ?? "";
+    const autorise = Boolean(cronSecret) &&
+      (auth === `Bearer ${cronSecret}` || enTeteCron === cronSecret);
+    if (!autorise) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -45,11 +85,15 @@ Deno.serve(async (req) => {
       .select("id, name, deadline, pact_id, pacts!inner(user_id)")
       .not("deadline", "is", null)
       .in("status", ["not_started", "in_progress"])
-      .lte("deadline", new Date(now.getTime() + 3 * 86400000).toISOString().split("T")[0]);
+      .lte("deadline", new Date(now.getTime() + 3 * 86400000).toISOString().split("T")[0])
+      /* .returns() se pose en DERNIER : chaque appel de filtre rend un
+         constructeur different, et le type impose ici ne connait plus
+         .not() ni .in(). */
+      .returns<LigneEcheance[]>();
 
     if (goals) {
       for (const goal of goals) {
-        const userId = (goal as any).pacts?.user_id;
+        const userId = goal.pacts?.user_id;
         if (!userId) continue;
 
         const deadlineDate = new Date(goal.deadline!);
@@ -281,9 +325,9 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: messageDErreur(error) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

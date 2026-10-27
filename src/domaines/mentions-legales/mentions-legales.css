@@ -1,0 +1,218 @@
+/* ═══════════════════════════════════════════════════════════════
+   CONDITIONS ET MENTIONS LÉGALES — LA MISE EN PAGE
+
+   La page avait son propre langage visuel : cartes à coins arrondis,
+   halos flous, dégradés sur les titres. Un vocabulaire que plus
+   aucune autre page n'emploie depuis la refonte épurée — elle datait
+   d'avant, et ça se voyait.
+
+   Elle emprunte maintenant les panneaux de la console de réglages.
+   Ce fichier n'ajoute que ce qu'un document long réclame en propre :
+   des articles numérotés, des listes, et deux registres pour ce qui
+   compte plus que le reste.
+   ═══════════════════════════════════════════════════════════════ */
+
+.lg-volet {
+  /* Un document se lit plus large qu un panneau de réglages, mais pas
+     au-delà de ce qu une ligne de texte supporte. */
+  max-width: 780px;
+  margin-inline: auto;
+  padding-bottom: 48px;
+}
+
+.lg-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 6px 2px;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms linear;
+}
+.lg-retour:hover { color: hsl(var(--primary)); }
+.lg-retour:focus-visible { outline: 1px solid hsl(var(--primary) / 0.6); outline-offset: 3px; }
+.lg-retour svg { width: 14px; height: 14px; }
+
+/* ── LE MANQUE, ANNONCÉ ─────────────────────────────────────────
+   Publier des mentions légales sans éditeur est exactement ce
+   qu'elles servent à éviter. Tant que l'identité manque, la page le
+   dit — en haut, et sans qu'on puisse le rater. */
+.lg-manque {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+  background: hsl(38 92% 50% / 0.08);
+  border: 1px solid hsl(38 92% 50% / 0.35);
+  border-left-width: 3px;
+}
+.lg-manque svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px; color: hsl(38 92% 55%); }
+.lg-manque b { font-weight: 700; }
+.lg-manque code {
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: 0.92em;
+  padding: 1px 4px;
+  background: hsl(var(--muted) / 0.5);
+}
+
+/* ── LE CORPS D UN PANNEAU ──────────────────────────────────── */
+.lg-section { display: flex; flex-direction: column; gap: 22px; padding: 4px 0 8px; }
+
+.lg-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.55;
+  color: hsl(var(--muted-foreground));
+}
+.lg-intro svg { flex-shrink: 0; width: 15px; height: 15px; margin-top: 2px; color: hsl(var(--primary) / 0.75); }
+
+/* ── UN ARTICLE ─────────────────────────────────────────────────
+   Numéroté, parce qu'un texte de trente articles doit pouvoir se
+   citer : « article 17 » vaut mieux que « le passage sur l'IA ». */
+.lg-article { display: flex; flex-direction: column; gap: 9px; }
+
+.lg-article-titre {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--rg-titre, "Rajdhani", sans-serif);
+  font-size: max(15px, 0.9375rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: hsl(var(--foreground));
+}
+.lg-article-num {
+  flex-shrink: 0;
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(11px, 0.6875rem);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--primary) / 0.55);
+}
+
+.lg-para {
+  margin: 0;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.62;
+  color: hsl(var(--muted-foreground));
+}
+
+.lg-liste {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lg-liste li {
+  position: relative;
+  padding-left: 18px;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.55;
+  color: hsl(var(--muted-foreground));
+}
+.lg-liste li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.68em;
+  width: 5px;
+  height: 1px;
+  background: hsl(var(--primary) / 0.55);
+}
+
+/* Deux registres pour ce qui compte plus que le reste : ce qu il faut
+   retenir, et ce qui peut coûter cher. */
+.lg-souligne {
+  margin: 0;
+  padding-left: 11px;
+  border-left: 2px solid hsl(var(--primary) / 0.45);
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.55;
+  color: hsl(var(--foreground));
+}
+
+.lg-alerte {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: max(13px, 0.8125rem);
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+  background: hsl(var(--destructive) / 0.07);
+  border-left: 2px solid hsl(var(--destructive) / 0.55);
+}
+.lg-alerte svg { flex-shrink: 0; width: 15px; height: 15px; margin-top: 1px; color: hsl(var(--destructive)); }
+
+/* ── LA FICHE D IDENTITÉ ────────────────────────────────────────
+   L'éditeur et l'hébergeur sont des VALEURS, pas de la prose : en
+   tableau, on voit d'un coup d'œil ce qui manque. */
+.lg-fiche { display: flex; flex-direction: column; gap: 0; margin: 0; }
+.lg-fiche > div {
+  display: grid;
+  grid-template-columns: minmax(0, 168px) minmax(0, 1fr);
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid hsl(var(--border) / 0.35);
+}
+.lg-fiche > div:last-child { border-bottom: 0; }
+.lg-fiche dt {
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.8);
+  align-self: center;
+}
+.lg-fiche dd {
+  margin: 0;
+  font-size: max(13px, 0.8125rem);
+  color: hsl(var(--foreground));
+  overflow-wrap: anywhere;
+}
+.lg-fiche dd[data-vide] {
+  font-style: italic;
+  color: hsl(38 92% 58%);
+}
+
+.lg-vers-suppression { display: flex; }
+
+/* ── LE PIED ────────────────────────────────────────────────────
+   La version et la date font foi : c'est ce qu'on cite quand on
+   demande quelle rédaction s'appliquait à quelle date. */
+.lg-pied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid hsl(var(--border) / 0.4);
+  font-family: var(--rg-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: max(10px, 0.625rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground) / 0.75);
+}
+
+@media (max-width: 560px) {
+  .lg-fiche > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}

@@ -1,0 +1,249 @@
+/* ─────────────────────────────────────────────────────────────
+   LE PLAN DU RESEAU.
+
+   Une affiche de nuit : encre bleu nuit, lignes pleines de neuf pixels,
+   stations blanches, grotesque suisse. Au quai, un tableau Solari noir
+   a lettres ambre. Deux objets, deux lumieres — l affiche imprimee et
+   l afficheur electromecanique — et rien qui ressemble a un panneau
+   d interface.
+   ───────────────────────────────────────────────────────────── */
+
+.rs {
+  --rs-nuit: #0a1122;
+  --rs-trait: rgba(190, 210, 255, 0.14);
+  --rs-blanc: #eef3fb;
+  --rs-gris: #a3b3cd;
+  --rs-ambre: #ffb52e;
+  max-width: 1420px;
+  margin: 0 auto;
+  padding: 22px 16px 140px;
+  display: grid;
+  gap: 14px;
+  font-family: Switzer, system-ui, sans-serif;
+  color: var(--rs-blanc);
+}
+.rs ::selection { background: rgba(255, 181, 46, 0.35); color: #fff; }
+/* Un enfant de grille prend par defaut sa largeur minimale de contenu :
+   le plan, qui en exige 980 px, elargissait toute la page sur un
+   telephone. A zero, c est l affiche qui defile, pas la page. */
+.rs > *, .rs-bas > * { min-width: 0; }
+.rs h1, .rs h2 { margin: 0; font-family: Switzer, system-ui, sans-serif; letter-spacing: normal; text-transform: none; }
+
+/* ── L en-tete de la regie ── */
+.rs-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  padding: 14px 22px;
+  border: 1px solid var(--rs-trait);
+  border-radius: 12px;
+  background: var(--rs-nuit);
+}
+.rs-regie { display: flex; align-items: center; gap: 16px; }
+.rs-rond {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--teinte, #8b5cf6);
+  box-shadow: 0 0 0 3px var(--rs-nuit), 0 0 0 5px var(--teinte, #8b5cf6);
+}
+.rs-rond-sceau { width: 46px; height: 46px; color: #fff; }
+.rs-tete h1 { font-size: 27px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.rs-tete p { margin: 3px 0 0; font-size: 14px; color: var(--rs-gris); }
+.rs-releves { display: flex; gap: 30px; margin: 0; }
+.rs-releves dt { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rs-gris); }
+.rs-releves dd { margin: 3px 0 0; font-size: 25px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.rs-releves small { font-size: 14px; font-weight: 500; color: var(--rs-gris); }
+
+/* ── L affiche ── */
+.rs-affiche {
+  margin: 0;
+  padding: 10px;
+  overflow-x: auto;
+  border: 1px solid var(--rs-trait);
+  border-radius: 14px;
+  background: var(--rs-nuit);
+  box-shadow: 0 34px 70px -34px rgba(0, 0, 0, 0.85);
+  scrollbar-color: var(--rs-trait) transparent;
+}
+.rs-plan { display: block; width: 100%; min-width: 980px; height: auto; }
+
+.rs-zone rect { fill: rgba(255, 255, 255, 0.022); stroke: rgba(190, 210, 255, 0.1); stroke-dasharray: 2 6; }
+.rs-zone-nom { font: 600 12px Switzer, sans-serif; letter-spacing: 0.26em; text-transform: uppercase; fill: var(--rs-gris); }
+.rs-zone-valeur { font: 700 23px Switzer, sans-serif; fill: rgba(238, 243, 251, 0.85); }
+.rs-meridien { stroke: rgba(255, 255, 255, 0.34); stroke-width: 1.5; stroke-dasharray: 3 7; }
+.rs-meridien-etiquette rect { fill: var(--rs-blanc); }
+.rs-meridien-etiquette text {
+  font: 700 13px Switzer, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: var(--rs-nuit);
+}
+
+.rs-ligne { cursor: pointer; outline: none; transition: opacity 220ms ease-out; }
+.rs-plan[data-une-choisie] .rs-ligne:not([data-choisie]) { opacity: 0.3; }
+.rs-troncon { fill: none; stroke: var(--l); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.5; }
+.rs-troncon.rs-fait { opacity: 1; }
+.rs-troncon.rs-express { stroke-width: 5; stroke-dasharray: 0.1 11; opacity: 0.95; }
+.rs-ligne[data-projet] .rs-troncon { stroke-dasharray: 14 9; stroke-linecap: butt; opacity: 0.62; }
+.rs-prise { fill: none; stroke: transparent; stroke-width: 28; }
+.rs-ligne:focus-visible .rs-prise { stroke: rgba(255, 255, 255, 0.16); }
+
+.rs-station { fill: var(--rs-nuit); stroke: var(--rs-blanc); stroke-width: 3; }
+.rs-station-faite { fill: var(--rs-blanc); stroke: var(--rs-nuit); stroke-width: 2; }
+.rs-courante { fill: var(--rs-blanc); stroke: var(--l); stroke-width: 5; }
+.rs-halo {
+  fill: none;
+  stroke: var(--l);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rs-quai 2.6s ease-out infinite;
+}
+@keyframes rs-quai { from { transform: scale(0.7); opacity: 0.85; } to { transform: scale(1.7); opacity: 0; } }
+.rs-train { fill: var(--rs-blanc); stroke: var(--l); stroke-width: 3; }
+.rs-saut { font: italic 600 12.5px Switzer, sans-serif; text-anchor: middle; fill: var(--l); }
+.rs-nom-station {
+  font: 500 14px Switzer, sans-serif;
+  fill: rgba(238, 243, 251, 0.78);
+  paint-order: stroke;
+  stroke: var(--rs-nuit);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.rs-nom-station[data-courante] { font-weight: 700; fill: #fff; }
+.rs-numero { font: 700 14px Switzer, sans-serif; text-anchor: middle; dominant-baseline: middle; fill: var(--rs-nuit); }
+.rs-terminus-nom { font: 700 17px Switzer, sans-serif; fill: var(--rs-blanc); dominant-baseline: middle; }
+.rs-terminus-palier { font: 600 11px Switzer, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--rs-gris); }
+
+.rs-legende rect { fill: rgba(10, 17, 34, 0.92); stroke: var(--rs-trait); }
+.rs-legende text { font: 500 13px Switzer, sans-serif; fill: var(--rs-gris); dominant-baseline: middle; }
+.rs-legende .rs-station-faite,
+.rs-legende .rs-courante { --l: #8b9bff; }
+.rs-legende-express { stroke: var(--rs-blanc); stroke-width: 4; stroke-dasharray: 0.1 7; stroke-linecap: round; }
+.rs-legende-projet { stroke: var(--rs-gris); stroke-width: 6; stroke-dasharray: 9 6; }
+
+/* ── Le quai : le tableau des departs et l index ── */
+.rs-bas { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+
+.rs-departs {
+  overflow-x: auto;
+  padding: 14px 16px 12px;
+  border: 1px solid #1d2334;
+  border-radius: 12px;
+  background: #07090f;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 44px -26px rgba(0, 0, 0, 0.8);
+}
+.rs-departs header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 8px; }
+.rs-departs h2 { font-size: 23px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--rs-ambre); }
+.rs-departs header p { margin: 0; font-size: 13px; color: #7d889e; }
+.rs-departs header b { font: 700 16px "JetBrains Mono", monospace; color: var(--rs-ambre); }
+.rs-departs table { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+.rs-departs th {
+  padding: 0 6px 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #6f7a90;
+}
+.rs-departs td { padding: 0 6px; vertical-align: middle; white-space: nowrap; }
+.rs-volets { display: inline-flex; }
+.rs-volets > span[aria-hidden] { display: inline-flex; gap: 2px; }
+.rs-case {
+  display: inline-grid;
+  place-items: center;
+  width: 12px;
+  height: 22px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #1b1e26 0 48%, #06070a 48% 52%, #15171e 52%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  font: 700 13px/1 "JetBrains Mono", monospace;
+  color: var(--rs-ambre);
+  perspective: 80px;
+}
+.rs-case > span { display: block; animation: rs-volet 110ms ease-out; transform-origin: 50% 55%; }
+@keyframes rs-volet { from { transform: rotateX(-80deg); opacity: 0.4; } }
+.rs-par .rs-case { color: #e9e3d2; }
+.rs-departs [data-etat="parti"] .rs-case { color: #5d677c; }
+.rs-departs [data-etat="a-valider"] .rs-case { color: #ffd166; }
+.rs-lu { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.rs-puce {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  font: 700 12px Switzer, sans-serif;
+  color: var(--rs-nuit);
+}
+.rs-puce-neutre { background: #2a3142; color: var(--rs-ambre); }
+.rs-valider {
+  padding: 4px 12px;
+  border: 1px solid var(--rs-ambre);
+  border-radius: 3px;
+  background: rgba(255, 181, 46, 0.12);
+  color: var(--rs-ambre);
+  font: 700 12px Switzer, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.rs-valider:hover { background: rgba(255, 181, 46, 0.24); }
+
+.rs-index { padding: 14px 12px 10px; border: 1px solid var(--rs-trait); border-radius: 12px; background: var(--rs-nuit); }
+.rs-index h2 { margin: 0 4px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--rs-gris); }
+.rs-index ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rs-index button {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--rs-blanc);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease-out;
+}
+.rs-index button:hover,
+.rs-index button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.07); }
+.rs-index-nom { min-width: 0; font-size: 14.5px; font-weight: 600; }
+.rs-index-nom em {
+  display: block;
+  overflow: hidden;
+  font-size: 12.5px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--rs-gris);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rs-index-compte { font: 600 12.5px "JetBrains Mono", monospace; color: var(--rs-gris); }
+
+.rs button:focus-visible { outline: 2px solid var(--rs-ambre); outline-offset: 2px; }
+
+@media (max-width: 1180px) {
+  .rs-bas { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .rs-releves { gap: 18px; }
+  .rs-releves dd { font-size: 20px; }
+  .rs-departs th:nth-child(4), .rs-departs td:nth-child(4) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rs-halo, .rs-case > span { animation: none; }
+  .rs-ligne, .rs-index button { transition: none; }
+}

@@ -5,7 +5,11 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  /* `.claude` héberge des worktrees git — des COPIES du dépôt. Sans
+     cet ignore, chaque avertissement est compté deux fois : une fois
+     dans le vrai fichier, une fois dans sa copie. On croit avoir
+     introduit des problèmes qu'on n'a pas touchés. */
+  { ignores: ["dist", ".claude"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

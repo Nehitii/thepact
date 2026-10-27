@@ -1,0 +1,243 @@
+/* ─────────────────────────────────────────────────────────────
+   LE CADRAN DU PACTE.
+
+   L instrument flotte dans le ciel, sans panneau autour : c est un
+   objet, pas une carte. Un disque de nuit derriere lui garde ses
+   traits lisibles sur n importe quel fond, et laisse l espace aux
+   coins. Le panneau de droite, lui, est un panneau : on y agit.
+   ───────────────────────────────────────────────────────────── */
+
+.ca {
+  --ca-vif: #00d4ff;
+  --ca-or: #ffcc00;
+  --ca-orange: #ff8c00;
+  --ca-rang: #5bb4ff;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 18px 16px 140px;
+  display: grid;
+  gap: 14px;
+  font-family: Rajdhani, system-ui, sans-serif;
+  color: var(--nexus-text-label);
+}
+.ca ::selection { background: color-mix(in srgb, var(--teinte, #8b5cf6) 45%, transparent); color: #fff; }
+
+.ca-barre,
+.ca-bloc {
+  position: relative;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-radius: 4px;
+  box-shadow: var(--nexus-shadow);
+}
+
+.ca-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  padding: 12px 20px;
+}
+.ca-nom h1 {
+  margin: 0;
+  font: 800 22px/1.1 Orbitron, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nexus-heading);
+}
+.ca-nom p { margin: 3px 0 0; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--nexus-text-dim); }
+.ca-releve { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; font-size: 13px; color: var(--nexus-text-dim); }
+.ca-releve b {
+  font: 600 15px "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--nexus-heading);
+}
+
+.ca-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 14px;
+  align-items: start;
+}
+
+/* ── L instrument ── */
+.ca-instrument {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  margin: 0;
+  justify-self: center;
+  aspect-ratio: 1;
+}
+.ca-instrument::before {
+  content: "";
+  position: absolute;
+  inset: 1%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--nexus-bg) 60%, color-mix(in srgb, var(--nexus-bg) 72%, transparent) 80%, transparent 100%);
+}
+.ca-svg { position: relative; display: block; width: 100%; height: auto; overflow: visible; }
+
+.ca-piste { fill: none; stroke: var(--nexus-track-bg); stroke-width: 5; }
+.ca-piste-fine { stroke-width: 2; }
+.ca-piste-large { stroke-width: 9; }
+.ca-rang { fill: none; stroke: var(--ca-rang); stroke-width: 3.5; stroke-linecap: round; }
+.ca-journee { fill: none; stroke: var(--ca-vif); stroke-width: 5; }
+.ca-delai { fill: none; stroke: var(--teinte, #8b5cf6); stroke-width: 9; }
+.ca-piste-palier { fill: none; stroke: color-mix(in srgb, var(--p) 22%, transparent); stroke-width: 16; }
+.ca-palier { fill: none; stroke: var(--p); stroke-width: 16; }
+
+.ca-graduation { stroke: var(--nexus-text-dimmer); stroke-width: 1.3; opacity: 0.7; }
+.ca-graduation-majeure { stroke: var(--nexus-text-dim); stroke-width: 2.4; }
+.ca-evenement { stroke: var(--nexus-bg); stroke-width: 2.5; }
+.ca-chute { fill: var(--nexus-bg); stroke: var(--ca-or); stroke-width: 2.5; }
+.ca-aiguille { stroke: var(--ca-vif); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.8)); }
+.ca-aujourdhui { stroke: var(--nexus-heading); stroke-width: 3.5; stroke-linecap: round; }
+.ca-echeance { stroke: var(--nexus-bg); stroke-width: 2; }
+.ca-echeance-choisie { stroke: var(--nexus-heading); stroke-width: 3; }
+.ca-lien { stroke-width: 2; stroke-dasharray: 5 6; opacity: 0.85; fill: none; }
+
+.ca-heure,
+.ca-annee,
+.ca-jour,
+.ca-nom-palier { text-anchor: middle; dominant-baseline: middle; }
+.ca-heure { font: 500 18px "JetBrains Mono", monospace; fill: var(--nexus-text-dim); }
+.ca-annee { font: 500 15px "JetBrains Mono", monospace; fill: var(--nexus-text-dimmer); }
+.ca-jour { font: 700 16px Rajdhani, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--nexus-heading); }
+.ca-nom-palier { font: 700 16px Rajdhani, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; fill: var(--p); }
+
+.ca-sat-corps { fill: color-mix(in srgb, var(--p) 22%, var(--nexus-bg)); stroke: var(--p); stroke-width: 2.2; }
+.ca-sat-tenu .ca-sat-corps { fill: var(--p); }
+.ca-sat-attente .ca-sat-corps { fill: var(--nexus-bg); stroke-dasharray: 3 3; }
+.ca-sat-part { fill: none; stroke: var(--p); stroke-width: 3; stroke-linecap: round; }
+.ca-sat-choisi { fill: none; stroke: var(--nexus-heading); stroke-width: 2.5; animation: ca-halo 2.4s ease-in-out infinite; }
+@keyframes ca-halo { 50% { opacity: 0.3; } }
+
+/* Le trace d entree : chaque anneau se dessine, du bord vers le coeur.
+   C est le seul mouvement de la page qui ne dise rien d autre que
+   « l instrument s allume » — il ne se rejoue pas. */
+.ca-trace {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ca-trace 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes ca-trace { to { stroke-dashoffset: 0; } }
+
+.ca-coeur {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 25%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+}
+.ca-sceau { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--teinte, #8b5cf6); }
+.ca-symbole { position: relative; z-index: 1; }
+
+.ca-sat-bouton {
+  position: absolute;
+  width: var(--taille);
+  min-width: 28px;
+  min-height: 28px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.ca-sat-bouton:focus-visible { outline: 2px solid var(--ca-vif); outline-offset: 2px; }
+
+/* ── Le panneau ── */
+.ca-panneau { display: grid; gap: 14px; position: sticky; top: 16px; }
+.ca-bloc { padding: 14px 16px 16px; }
+.ca-bloc h2 {
+  margin: 0 0 10px;
+  font: 700 13px Rajdhani, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nexus-heading);
+}
+.ca-objectif h2 { margin: 0; font-size: 22px; letter-spacing: 0.01em; text-transform: none; line-height: 1.2; }
+
+.ca-mission { padding: 10px 12px; border-radius: 4px; background: color-mix(in srgb, var(--ca-orange) 11%, transparent); }
+.ca-mission-titre { margin: 0; font-size: 17px; font-weight: 700; color: var(--nexus-heading); }
+.ca-mission-detail { margin: 2px 0 0; font-size: 13px; color: var(--nexus-text-dim); }
+.ca-mission-detail b { font: 600 13px "JetBrains Mono", monospace; color: var(--ca-orange); }
+
+.ca-ordres { list-style: none; margin: 8px 0 0; padding: 0; }
+.ca-ordres li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--nexus-separator);
+}
+.ca-marque svg { display: block; width: 14px; height: 14px; }
+.ca-ordres [data-etat="en-cours"] .ca-marque { color: var(--ca-vif); }
+.ca-ordres [data-etat="pret"] .ca-marque { color: var(--ca-or); }
+.ca-ordres [data-etat="tenu"] .ca-marque { color: #34d399; }
+.ca-ordre-titre { font-size: 14.5px; font-weight: 600; color: var(--nexus-heading); }
+.ca-ordres [data-etat="tenu"] .ca-ordre-titre { color: var(--nexus-text-dim); }
+.ca-ordre-etat { font: 500 12px "JetBrains Mono", monospace; color: var(--nexus-text-dim); }
+.ca-reclamer {
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--ca-or) 60%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ca-or) 10%, transparent);
+  color: var(--ca-or);
+  font: 700 12.5px Rajdhani, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ca-reclamer:hover { background: color-mix(in srgb, var(--ca-or) 20%, transparent); }
+.ca-reclamer b { font-family: "JetBrains Mono", monospace; }
+
+.ca-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 12px; font-size: 13px; color: var(--nexus-text-dim); }
+.ca-pastille {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--p) 16%, transparent);
+  color: var(--p);
+  font: 700 11.5px Rajdhani, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ca-avance { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ca-avance-piste { height: 5px; border-radius: 3px; background: var(--nexus-track-bg); overflow: hidden; }
+.ca-avance-piste i { display: block; height: 100%; background: var(--p); }
+.ca-avance-compte { font: 600 12.5px "JetBrains Mono", monospace; color: var(--nexus-heading); }
+.ca-ligne { margin: 9px 0 0; font-size: 14px; line-height: 1.4; color: var(--nexus-text-dim); }
+.ca-ligne b { font-weight: 600; color: var(--nexus-heading); }
+
+.ca-legende dl { display: grid; gap: 10px; margin: 0; }
+.ca-legende dt { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--nexus-heading); }
+.ca-legende dd { margin: 2px 0 0 30px; font-size: 13px; line-height: 1.4; color: var(--nexus-text-dim); }
+.ca-glyphe { width: 22px; height: 22px; flex: none; }
+.ca-glyphe circle { fill: none; stroke: var(--nexus-text-dimmer); stroke-width: 1; opacity: 0.45; }
+.ca-glyphe circle[data-actif] { stroke: var(--ca-vif); stroke-width: 2; opacity: 1; }
+.ca-pied { margin: 12px 0 0; font-size: 13px; color: var(--nexus-text-dim); }
+
+.ca button:focus-visible { outline: 2px solid var(--ca-vif); outline-offset: 2px; }
+
+@media (max-width: 1120px) {
+  .ca-corps { grid-template-columns: minmax(0, 1fr); }
+  .ca-panneau { position: static; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .ca-annee { display: none; }
+  .ca-heure, .ca-nom-palier, .ca-jour { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ca-trace { animation: none; stroke-dashoffset: 0; }
+  .ca-sat-choisi { animation: none; }
+}
+
+.light .ca { --ca-vif: #00697a; --ca-or: #7a5a00; --ca-orange: #a34d00; --ca-rang: #1f5f9e; }
+.light .ca-aiguille { filter: none; }

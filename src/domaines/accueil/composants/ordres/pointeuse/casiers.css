@@ -1,0 +1,181 @@
+/* ═══════════════════════════════════════════════════════════════
+   VARIANTE B2 — LES DEUX CASIERS
+
+   Deux casiers encastres dans la platine, trois poches chacun. Une
+   poche vide est un creux sombre et son devant d acier ; une carte y
+   depasse de toute sa tete. Le devant porte un porte-etiquette chrome,
+   comme dans les vrais ateliers.
+   ═══════════════════════════════════════════════════════════════ */
+
+.pc { container-type: inline-size; }
+
+.pc-cadre { padding: 14px 16px 16px; border-radius: 6px; }
+
+.pc-tete { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 2px 8px 12px; }
+.pc-droite { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-left: auto; }
+.pc-releve { display: inline-flex; align-items: center; gap: 7px; }
+.pc-releve small {
+  font: 600 9.5px/1 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a2a8b2;
+}
+
+/* La grille est a l interieur : une requete de conteneur interroge un
+   ANCETRE, jamais l element lui-meme. */
+.pc-casiers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.pc-casier {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 5px;
+  background: linear-gradient(#131417, #1c1e22);
+  box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.72);
+}
+.pc-titre {
+  justify-self: start;
+  padding: 4px 10px 3px;
+  border-radius: 3px;
+  background: linear-gradient(#16171a, #0b0c0e);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.08);
+  font: 700 10px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #e4e7ec;
+}
+.pc-titre small { margin-left: 6px; font: 600 10px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: 0; color: #a2a8b2; }
+
+.pc-poches { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+/* La poche : un creux, et son devant d acier. Une poche pleine garde
+   le meme dessin — la fiche se pose exactement par-dessus. */
+.pc-poche {
+  position: relative;
+  height: 88px;
+  border-radius: 3px;
+  background: linear-gradient(#08090b, #131417);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.85);
+}
+.pc-poche::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 30px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(#3b3e45, #25272c);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 0.1), 0 -4px 8px rgb(0 0 0 / 0.45);
+}
+
+.pc-fiche {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 30px;
+}
+.pc-fiche[data-pointage] .pc-carton { animation: pt-inserer 700ms cubic-bezier(0.3, 1.2, 0.4, 1); }
+
+.pc-carton {
+  --pt-papier: #efe6cc;
+  --pt-encre: #27231c;
+  --pt-rouge: #ae2f29;
+
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  margin: 6px 8px -8px;
+  padding: 9px 11px 12px;
+  overflow: hidden;
+  border-radius: 3px 3px 0 0;
+  background-color: var(--pt-papier);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .13 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
+  color: var(--pt-encre);
+}
+.pc-carton::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: color-mix(in srgb, var(--pt-c) 70%, var(--pt-papier));
+}
+.pc-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 700 9.5px/1.3 "Switzer", ui-sans-serif, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pt-rouge);
+}
+.pc-genre { margin-left: auto; }
+.pc-ligne--nom { align-items: center; gap: 12px; letter-spacing: 0; text-transform: none; }
+.pc-nom {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font: 400 16px/1.15 "Special Elite", "Courier New", monospace;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--pt-encre);
+}
+/* Le tampon tombe au milieu de la tete, entre le nom et les trous. */
+.pc-tampon { top: 7px; right: 34%; bottom: auto; padding: 2px 7px 1px; font-size: 11px; border-width: 2px; }
+.pc-tampon small, .pc-tampon b { font-size: 9px; }
+
+.pc-devant {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 6px 0 10px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(#4a4e56, #2b2d32);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 0.16), 0 -4px 8px rgb(0 0 0 / 0.45);
+}
+/* Le porte-etiquette : un carton creme sous un cadre chrome. */
+.pc-etiquette {
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: #eee8d6;
+  box-shadow: inset 0 0 0 1px #8d939c, inset 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 0 rgb(255 255 255 / 0.15);
+  font: 600 10px/1.45 "JetBrains Mono", ui-monospace, monospace;
+  white-space: nowrap;
+  color: #27231c;
+}
+.pc-devant .pt-pointer {
+  min-height: 22px;
+  padding: 0 10px;
+  font-size: 10px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 2px 0 #6b1410, 0 3px 6px rgb(0 0 0 / 0.35);
+}
+
+.pc-mot { grid-column: 1 / -1; margin: 4px 4px 12px; font: 400 14px/1.5 "Special Elite", "Courier New", monospace; color: #c9ccd2; }
+.pc-mot[data-attente] { animation: pc-attente 1.6s ease-in-out infinite; }
+@keyframes pc-attente { 50% { opacity: 0.45; } }
+
+/* Replie : les deux casiers et leurs comptes, rien d autre. */
+.pc[data-replie] .pc-poches { display: none; }
+.pc[data-replie] .pc-casier { padding: 8px 10px; }
+
+/* Sur un telephone, les casiers s empilent, et une poche vide n est plus
+   qu une fente : le matin, les « Pointées » ne prennent pas la page. */
+@container (max-width: 640px) {
+  .pc-cadre { padding: 12px 10px 14px; }
+  .pc-casiers { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .pc[data-replie] .pc-casiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pc-poche[data-vide] { height: 22px; }
+  .pc-poche[data-vide]::after { height: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-fiche[data-pointage] .pc-carton, .pc-mot[data-attente] { animation: none; }
+}
+[data-reduce-motion="true"] .pc-fiche[data-pointage] .pc-carton,
+[data-reduce-motion="true"] .pc-mot[data-attente] { animation: none; }

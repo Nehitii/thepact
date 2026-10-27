@@ -1,0 +1,286 @@
+/* ─────────────────────────────────────────────────────────────
+   LE C(OE)UR DU PACTE — la singularite.
+
+   Ces regles etaient dans « domaines/accueil/accueil.css », que seule
+   la page d accueil importe. Or le bloc qu elles habillent — le sceau,
+   le logo, les couches de lumiere — n est plus au seul tableau de
+   bord : « Mon pacte » le montre aussi, pour qu on voie ce qu on regle
+   pendant qu on le regle.
+
+   MESURE AVANT DEPLACEMENT : sur le banc du bandeau, sans cette
+   feuille, « .singularity-core » retombait en « display: block » et
+   « .singularity-sceau » en « position: static ». Le sceau et le logo
+   se posaient donc l un SOUS l autre au lieu d etre concentriques, et
+   les quatre couches de lumiere mesuraient zero pixel de haut. Une
+   feuille qui ne suit pas son composant ne le suit nulle part.
+
+   CE QUI N A PAS SUIVI : le fond stellaire (« .singularity-field »),
+   le cadre (« .singularity-stage ») et la lumiere jetee sur la page
+   (« .singularity-cast »). Ceux-la sont le decor du tableau de bord,
+   pas l objet.
+
+   L ORDRE NE DECIDE DE RIEN entre les deux feuilles : les regles du
+   theme clair sont prefixees « .light », soit (0,2,0) contre (0,1,0).
+   Elles gagnent qu elles soient chargees avant ou apres. Entre elles,
+   en revanche, l ordre compte — la passe « plus dense » repasse sur la
+   premiere a specificite egale — et il est conserve tel quel.
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Le c\oeur ──────────────────────────────────────────────────
+   Empile trois couches concentriques. La taille est en em pour
+   suivre la taille de police, comme le reste de l'interface. */
+.singularity-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 16.5em;
+  height: 16.5em;
+}
+/* Couronne : la couche qui respire. C'est la seule floutee. */
+.singularity-corona {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 100% 62% / calc(0.70 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 50% / calc(0.32 * var(--sing-lum, 1))) 38%,
+    transparent 68%);
+  filter: blur(14px);
+  animation: sing-breathe var(--sing-breath, 8s) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+/* La respiration : amplitude volontairement faible. Un c\oeur qui
+   pulse fort a l'air d'alerter ; celui-ci a l'air d'etre en vie. */
+@keyframes sing-breathe {
+  0%, 100% { transform: scale(1);     opacity: 0.82; }
+  50%      { transform: scale(1.085); opacity: 1; }
+}
+/* Ejections : rayons en rotation, decales de la respiration pour
+   que les deux mouvements ne se synchronisent jamais. */
+.singularity-flare {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(var(--ds-accent-hue, 200) 100% 70% / calc(0.16 * var(--sing-lum, 1))) 12deg,
+    transparent 34deg,
+    transparent 96deg,
+    hsl(calc(var(--ds-accent-hue, 200) + 30) 100% 68% / calc(0.11 * var(--sing-lum, 1))) 122deg,
+    transparent 148deg,
+    transparent 214deg,
+    hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.09 * var(--sing-lum, 1))) 238deg,
+    transparent 266deg,
+    transparent 360deg);
+  mask-image: radial-gradient(circle closest-side, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
+  animation: sing-rotate calc(var(--sing-breath, 8s) * 7) linear infinite;
+}
+@keyframes sing-rotate {
+  to { transform: rotate(360deg); }
+}
+/* Noyau : la lumiere dense au centre.
+   Une lueur et non un disque plein — le symbole du pacte se tient
+   dedans, et un disque opaque l'aurait simplement recouvert.
+   inset centre la boite sans transform : la respiration en utilise
+   deja un, et le second ecraserait le premier. */
+.singularity-nucleus {
+  position: absolute;
+  /* RESSERRE SUR LE LOGO, PAS SUR LE SCEAU. A 26 %, la lueur faisait
+     126 px de large sur un sceau de 238 : elle couvrait le c(oe)ur,
+     l etoile et la moitie des medaillons. Elle eclairait la place de
+     l ancien rond plein, qui survivait a un bloom ; un dessin au trait
+     n y survit pas. A 34 %, elle fait 79 px et halo le logo, qui en
+     fait 60. */
+  inset: 34%;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 46% 42%,
+    hsl(var(--ds-accent-hue, 200) 100% 96% / calc(0.62 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 80% / calc(0.38 * var(--sing-lum, 1))) 34%,
+    hsl(var(--ds-accent-hue, 200) 100% 62% / calc(0.18 * var(--sing-lum, 1))) 58%,
+    transparent 76%);
+  box-shadow:
+    0 0 2.4em hsl(var(--ds-accent-hue, 200) 100% 60% / calc(0.55 * var(--sing-lum, 1))),
+    0 0 6em   hsl(var(--ds-accent-hue, 200) 100% 52% / calc(0.28 * var(--sing-lum, 1)));
+  animation: sing-breathe var(--sing-breath, 8s) ease-in-out infinite;
+}
+/* Anneau d'accretion : marque la progression reelle sur le pourtour.
+   conic-gradient s'arrete a --sing-progress, donc l'anneau EST la
+   jauge — pas une decoration posee a cote d'un chiffre. */
+/* ── LE SCEAU, A LA PLACE DU ROND ──────────────────────────────
+   « .singularity-ring » etait un degrade conique masque en anneau,
+   pilote par --sing-progress : pas un ornement, LA JAUGE du pacte.
+   La rosace la reprend sur sa piste externe, en SVG — et porte en
+   plus ce que le rond ne disait pas : le nom, les valeurs et leur
+   ordre. Le degrade conique disparait avec lui ; --sing-progress
+   reste, il nourrit encore la luminosite du noyau. */
+.singularity-sceau {
+  position: absolute;
+  inset: 2%;
+  width: 96%;
+  height: 96%;
+  /* LE DESSIN PASSE AU-DESSUS DE LA LUMIERE. Le noyau portait
+     « z-index: 1 » et le sceau rien : une lueur de 126 px se peignait
+     donc PAR-DESSUS le milieu de la figure. C est ce qui la rendait
+     terne au tableau de bord alors qu elle est nette au banc du rite,
+     ou rien ne la recouvre. Deux : au-dessus du noyau, sous le logo,
+     qui est a quatre. */
+  z-index: 2;
+  color: hsl(var(--ds-accent-hue, 200) 100% 68%);
+  filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.55));
+  pointer-events: none;
+}
+/* ── Accessibilite ──────────────────────────────────────────────
+   Sans mouvement, le c(oe)ur reste une image : les couches et la
+   luminosite subsistent, seules les animations s arretent.
+   Le meme bloc visait aussi le fond stellaire, reste a l accueil. */
+@media (prefers-reduced-motion: reduce) {
+  .singularity-corona,
+  .singularity-nucleus,
+  .singularity-flare {
+    animation: none;
+  }
+  .singularity-corona { opacity: 0.92; }
+}
+/* ── Influx ─────────────────────────────────────────────────────
+   Le geste que le reste ne portait pas : la matiere TOMBE vers le
+   c\oeur. Sans lui, la Singularite est un bel objet calme ; avec
+   lui, elle concentre.
+
+   Des rayons fins en conic-gradient, masques en couronne, que l'on
+   fait retrecir vers le centre. scale() plutot qu'une animation de
+   position : une seule propriete composee, aucun recalcul de mise
+   en page a chaque image. */
+.singularity-influx {
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 7deg,
+    hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.09 * var(--sing-lum, 1))) 8deg,
+    transparent 9deg,
+    transparent 16deg);
+  mask-image: radial-gradient(circle closest-side, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
+  animation: sing-infall calc(var(--sing-breath, 8s) * 1.6) cubic-bezier(0.55, 0, 0.85, 0.35) infinite;
+  will-change: transform, opacity;
+}
+/* La chute : part large et faible, arrive serree et vive, puis
+   disparait au moment d'atteindre le noyau. L'easing accelere vers
+   la fin, comme une matiere qui tombe dans un puits. */
+@keyframes sing-infall {
+  0%   { transform: scale(1);    opacity: 0; }
+  18%  {                         opacity: 1; }
+  100% { transform: scale(0.18); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .singularity-influx { animation: none; opacity: 0.35; transform: scale(0.55); }
+}
+/* ── LA SINGULARITÉ, EN ENCRE ──────────────────────────────────────
+   « Le rond central n'est pas fou non plus. » Il ne l'était pas :
+   la première passe s'était contentée d'un opacity: 0.35 sur les
+   couches, ce qui donne exactement ce qu'on voyait — une tache bleue
+   délavée au milieu d'une carte blanche.
+
+   Le problème n'était pas le réglage, c'était le principe. Cet objet
+   est fait de LUMIÈRE : chacune de ses couches est un hsl à 62, 72,
+   96 % de clarté, posé sur du quasi-noir. Sur du papier, une couche
+   plus claire que le fond n'existe pas — le noyau, à 96 %, était
+   littéralement invisible, et le reste ne pouvait que griser.
+
+   L'inversion juste n'est pas d'assombrir les couches une à une :
+   c'est de changer ce qui fait la masse. Sur du noir, la matière se
+   voit parce qu'elle RAYONNE ; sur du papier, parce qu'elle est
+   DENSE. La singularité devient une goutte d'encre — le pigment
+   s'accumule vers le centre au lieu que la lumière en jaillisse.
+
+   Une chose est conservée telle quelle : la densité reste pilotée par
+   --sing-lum, donc par la progression réelle du pacte. Un pacte qui
+   démarre reste pâle, un pacte avancé est dense. L'objet garde son
+   sens, il change de matière.
+
+   Et le centre reste CLAIR : le symbole du pacte s'y tient, encré en
+   sombre. Le pigment s'accumule en couronne autour de lui — ce qui est
+   d'ailleurs plus juste, la masse d'un disque d'accrétion étant dans
+   le disque et non au centre. */
+
+/* La couronne : une diffusion, plus un rayonnement. Moins de flou —
+   une encre qui se répand garde un bord, une lumière n'en a pas. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 72% 42% / calc(0.3 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 78% 36% / calc(0.16 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+  filter: blur(9px);
+}
+
+/* Le noyau : une couronne de pigment autour d'une clairière. */
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 80% 38% / calc(0.34 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 84% 32% / calc(0.2 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+  box-shadow: none;
+}
+
+/* Les éjections et la chute : à 0,09 d'alpha sur du blanc, il n'en
+   restait rien. Même dessin, encre lisible. */
+.light .singularity-flare {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(var(--ds-accent-hue, 200) 76% 40% / calc(0.3 * var(--sing-lum, 1))) 12deg,
+    transparent 34deg,
+    transparent 96deg,
+    hsl(calc(var(--ds-accent-hue, 200) + 30) 74% 42% / calc(0.22 * var(--sing-lum, 1))) 122deg,
+    transparent 148deg,
+    transparent 214deg,
+    hsl(var(--ds-accent-hue, 200) 76% 44% / calc(0.18 * var(--sing-lum, 1))) 238deg,
+    transparent 266deg,
+    transparent 360deg);
+}
+.light .singularity-influx {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 7deg,
+    hsl(var(--ds-accent-hue, 200) 78% 40% / calc(0.1 * var(--sing-lum, 1))) 8deg,
+    transparent 9deg,
+    transparent 16deg);
+}
+
+/* L'anneau d'accrétion EST la jauge de progression : c'est la seule
+   couche qui porte une information, donc la seule qui doit être
+   franche. Opaque, et sans la lueur qui l'aurait floutée. */
+/* Sur papier, le halo empate les traits fins du sceau au lieu de les
+   allumer : on le coupe et l on fonce l encre. */
+.light .singularity-sceau {
+  color: hsl(var(--ds-accent-hue, 200) 88% 34%);
+  filter: none;
+}
+/* ── LA SINGULARITÉ, PLUS DENSE ────────────────────────────────────
+   Sur un support de béton et non de blanc pur, les densités du premier
+   réglage retombaient dans le pâle. L'encre se charge. */
+.light .singularity-corona {
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 82% 34% / calc(0.42 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 86% 28% / calc(0.22 * var(--sing-lum, 1))) 42%,
+    transparent 70%);
+}
+.light .singularity-nucleus {
+  background: radial-gradient(circle at 46% 42%,
+    transparent 0%,
+    transparent 26%,
+    hsl(var(--ds-accent-hue, 200) 88% 30% / calc(0.46 * var(--sing-lum, 1))) 52%,
+    hsl(var(--ds-accent-hue, 200) 92% 24% / calc(0.28 * var(--sing-lum, 1))) 66%,
+    transparent 78%);
+}

@@ -1,0 +1,101 @@
+/* ─────────────────────────────────────────────────────────────
+   LE FOND DU TABLEAU DE BORD, DANS LES OPTIONS.
+
+   Un ecran, puis les choix. L ecran est en bandeau — plus large que
+   haut, comme les marges ou le fond se verra vraiment — et porte le
+   chanfrein de la plaque : c est une piece de la maison, pas une
+   capture collee dessus. Les choix reprennent le segmente de la
+   console, en grille : huit mots ne tiennent pas sur une ligne.
+   ───────────────────────────────────────────────────────────── */
+
+.rg-fond {
+  display: grid;
+  gap: 14px;
+  padding: 14px 0 12px;
+}
+
+.rg-fond-apercu {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.rg-fond-ecran {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+  border: 1px solid var(--rg-fil);
+  background: #02040a;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+/* Deux lignes reservees, toujours : une legende d une ligne faisait
+   remonter la grille des choix, et le bouton suivant fuyait sous le
+   curseur au moment du clic. */
+.rg-fond-legende {
+  margin: 0;
+  min-height: calc(13.5px * 1.45 * 2);
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--rg-encre);
+  max-width: 62ch;
+}
+
+.rg-fond-choix {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--rg-fil);
+  border-radius: 8px;
+  background: var(--rg-creux);
+}
+
+.rg-fond-option {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--rg-sourdine);
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+.rg-fond-option:hover { color: var(--rg-encre); }
+.rg-fond-option[aria-pressed="true"] {
+  color: var(--rg-vif);
+  background: hsl(var(--primary) / 0.12);
+}
+.rg-fond-option:focus-visible {
+  outline: 2px solid var(--rg-vif);
+  outline-offset: 1px;
+}
+
+.rg-fond-note {
+  margin: 0;
+  font-family: "Rajdhani", system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--rg-sourdine);
+  max-width: 62ch;
+}
+
+@media (max-width: 560px) {
+  .rg-fond-ecran { aspect-ratio: 16 / 10; }
+  .rg-fond-choix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-fond-option { transition: none; }
+}

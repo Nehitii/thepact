@@ -1,0 +1,33 @@
+# EN-TETES DE LA PRODUCTION
+#
+# Le Worker `thepact` sert `dist/` tel quel, et Workers lit ce fichier
+# a la racine des fichiers servis. Jusqu au 22/09, la production ne
+# renvoyait AUCUN en-tete de securite : ni CSP, ni HSTS, ni protection
+# contre l encadrement — une page tierce pouvait afficher l application
+# sous un calque et faire cliquer « Supprimer mes donnees ». (Audit.)
+#
+# LA CSP EST EN « REPORT-ONLY ». Elle ne bloque rien : elle ecrit dans
+# la console chaque chargement qu elle aurait refuse. Les sources
+# ci-dessous sont celles que le code nomme — Supabase et son temps
+# reel, Sentry, Google Fonts, les lecteurs YouTube et Spotify du mode
+# focus, et des images de n importe ou, puisque la liste d envies
+# affiche celles des boutiques. Quand la console sera restee muette
+# quelques jours, l en-tete perdra son « -Report-Only ».
+#
+# HSTS ne vaut qu apres une premiere visite en HTTPS : la toute
+# premiere en `http://` ne se redirige qu avec un domaine personnalise
+# et « Always Use HTTPS ».
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://upfethjdvrgmmfgfvqdo.supabase.co wss://upfethjdvrgmmfgfvqdo.supabase.co https://*.sentry.io https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.youtube-nocookie.com https://open.spotify.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+# Les fichiers a empreinte changent de nom quand leur contenu change :
+# on peut les garder un an. Ils partaient avec `max-age=0`, et chaque
+# visite redemandait les mille six cents morceaux un a un.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
