@@ -8,7 +8,7 @@ et dans quel ordre.
 | Élément | Statut |
 |---|---|
 | `lovable-tagger` (package.json + vite.config.ts) | supprimé |
-| `bun.lock` / `bun.lockb` | supprimés — trois lockfiles, Cloudflare aurait choisi bun et réinstallé `lovable-tagger` |
+| `bun.lock` / `bun.lockb` | supprimés — trois lockfiles, Cloudflare aurait choisi bun et réinstallé `lovable-tagger`. Revenu le 05/09 avec la reprise de deux commits de Lovable, il a fait échouer chaque construction jusqu'au 27/10 ; retiré de nouveau, et ignoré par git |
 | Images OG signées sur le bucket `gpt-engineer` | remplacées par `/og-image.png` (l'URL signée avait expiré le 2026-03-15) |
 | Détection d'hôte `lovableproject.com` / `lovable.app` / `id-preview--` | supprimée de `src/main.tsx` |
 | `.lovable/plan.md` | supprimé |
